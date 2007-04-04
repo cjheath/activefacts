@@ -29,7 +29,7 @@ module ActiveFacts
 	end
 
 	def self.read_model
-	    @model = ActiveFacts::Base::Model.new(@x_model.attributes['Name'])
+	    @model = Model.new(@x_model.attributes['Name'])
 
 	    # Find all elements having an "id" attribute and index them
 	    x_identified = @x_model.elements.to_a("//*[@id]")
@@ -60,7 +60,7 @@ module ActiveFacts
 		name = nil if name.size == 0
 		# puts "EntityType #{name} is #{id}"
 		entity_types <<
-		    @by_id[id] = ActiveFacts::Base::EntityType.new(@model, name)
+		    @by_id[id] = EntityType.new(@model, name)
 		# x.attributes['_ReferenceMode'] is implied.
 
 		# REVISIT: deal with PreferredIdentifier
@@ -82,13 +82,13 @@ module ActiveFacts
 		scale = cdt.attributes['Scale'].to_i
 		length = cdt.attributes['Length'].to_i
 		base_type = @x_by_id[cdt.attributes['ref']]
-		data_type = ActiveFacts::Base::DataType.new(base_type.name.sub(/^orm:/,''))
+		data_type = DataType.new(base_type.name.sub(/^orm:/,''))
 		data_type.length = length
 		data_type.scale = scale
 
 		# puts "ValueType #{name} is #{id}"
 		value_types <<
-		    @by_id[id] = ActiveFacts::Base::ValueType.new(@model, name, data_type)
+		    @by_id[id] = ValueType.new(@model, name, data_type)
 	    }
 	end
 
@@ -102,7 +102,7 @@ module ActiveFacts
 		name = nil if name.size == 0
 		# puts "FactType #{name || id}"
 
-		facts << @by_id[id] = fact_type = ActiveFacts::Base::FactType.new(name)
+		facts << @by_id[id] = fact_type = FactType.new(name)
 	    }
 	end
 
@@ -123,7 +123,7 @@ module ActiveFacts
 
 		nested_types <<
 		    @by_id[id] =
-		    nested_type = ActiveFacts::Base::NestedType.new(@model, name)
+		    nested_type = NestedType.new(@model, name)
 
 		fact_id = x_fact_type.attributes['ref']
 		fact_type = @by_id[fact_id]
@@ -158,7 +158,7 @@ module ActiveFacts
 		    throw "RolePlayer for #{name||ref} was not found" if !object_type
 
 		    # puts "\tRole "+(name||id)+" played by "+object_type.name
-		    role = @by_id[id] = ActiveFacts::Base::Role.new(x.attributes['Name'], object_type)
+		    role = @by_id[id] = Role.new(x.attributes['Name'], object_type)
 		    fact_type.add_role(role)
 		}
 
@@ -167,7 +167,7 @@ module ActiveFacts
 		    x_role_sequence = x.elements.to_a('orm:RoleSequence/*')
 		    x_readings = x.elements.to_a('orm:Readings/orm:Reading/orm:Data')
 
-		    role_sequence = ActiveFacts::Base::RoleSequence.new
+		    role_sequence = RoleSequence.new
 		    x_role_sequence.each{|x|
 			ref = x.attributes['ref']
 			role = @by_id[ref]
@@ -176,7 +176,7 @@ module ActiveFacts
 		    role_sequence = @model.get_role_sequence(role_sequence)
 
 		    x_readings.each{|x|
-			fact_type.readings << ActiveFacts::Base::Reading.new(role_sequence, x.text)
+			fact_type.readings << Reading.new(role_sequence, x.text)
 		    }
 		}
 
@@ -194,7 +194,7 @@ module ActiveFacts
 		    roles = x_roles.map{|x| @by_id[x.attributes['ref']] }
 		    # We didn't make Implied objects, so some constraints are unconnectable
 		    next if roles.include? nil
-		    rs = ActiveFacts::Base::RoleSequence.new
+		    rs = RoleSequence.new
 		    roles.each{|r| rs << r }
 		    rs = @model.get_role_sequence(rs)
 
@@ -223,11 +223,11 @@ puts "Mandatory("+roles.map{|r|
 		    roles = x_roles.map{|x| @by_id[x.attributes['ref']] }
 		    # We didn't make Implied objects, so some constraints are unconnectable
 		    next if roles.include? nil
-		    rs = ActiveFacts::Base::RoleSequence.new
+		    rs = RoleSequence.new
 		    roles.each{|r| rs << r }
 		    rs = @model.get_role_sequence(rs)
 
-		    pc = ActiveFacts::Base::PresenceConstraint.new(
+		    pc = PresenceConstraint.new(
 				    constraint_name,
 				    rs,
 				    1, 1,

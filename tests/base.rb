@@ -1,11 +1,11 @@
 #
-# Simple test program that calls the ActiveFacts::Base API directly
+# Simple test program that calls the ActiveFacts Base API directly
 #
 $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'rubygems'
 require 'activefacts'
-include ActiveFacts::Base
+include ActiveFacts
 
 m = Model.new("foo")
 puts m
