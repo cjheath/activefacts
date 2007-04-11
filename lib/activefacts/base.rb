@@ -435,7 +435,7 @@ module ActiveFacts
     # REVISIT: Incomplete
     #==============================================================
 
-    class RoleSequence < RoleSequenceBase	# One or more Roles
+    class RoleSequence			# One or more Roles
 	def to_s
 	    "("+map{|r| r.to_s }*", "+")"
 	end

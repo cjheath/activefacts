@@ -109,7 +109,7 @@ module ActiveFacts
 	def self.read_nested_types
 	    # Process NestedTypes, but ignore ones having an NestedPredicate with IsImplied="true"
 	    nested_types = []
-	    x_nested_types = @x_model.elements.to_a("orm:Objects/orm:NestedType")
+	    x_nested_types = @x_model.elements.to_a("orm:Objects/orm:ObjectifiedType")
 	    x_nested_types.each{|x|
 		id = x.attributes['id']
 		name = x.attributes['Name'] || ""
@@ -121,16 +121,14 @@ module ActiveFacts
 		# puts "NestedType #{name} is #{id}, is_implied=#{is_implied}"
 		next if is_implied
 
-		nested_types <<
-		    @by_id[id] =
-		    nested_type = NestedType.new(@model, name)
-
 		fact_id = x_fact_type.attributes['ref']
 		fact_type = @by_id[fact_id]
 		throw "Nested fact #{fact_id} not found" if !fact_type
 
-		# puts "nested_type: #{nested_type.name} nests #{fact_type.name}"
-		nested_type.fact_type = fact_type
+		#puts "NestedType #{name} is #{id}, nests #{fact_type.name}"
+		nested_types <<
+		    @by_id[id] =
+		    nested_type = NestedType.new(@model, name, fact_type)
 
 		# REVISIT: deal with PreferredIdentifier
 	    }
@@ -198,9 +196,7 @@ module ActiveFacts
 		    roles.each{|r| rs << r }
 		    rs = @model.get_role_sequence(rs)
 
-puts "Mandatory("+roles.map{|r|
-	"#{r.object_type.name} in #{r.fact_type.to_s}"
-    }*", "+")"
+# puts "Mandatory("+roles.map{|r| "#{r.object_type.name} in #{r.fact_type.to_s}" }*", "+")"
 
 		    mandatory_constraints[rs] = true
 	    }
