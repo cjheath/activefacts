@@ -508,13 +508,35 @@ module ActiveFacts
 	    self.is_preferred_id = _pref
 	end
 
+	def preferred_id_for
+	    return nil if !is_preferred_id  # Not preferred_id
+
+	    # Find all objects involved in all facts this constraint has a role in:
+	    all_objects = @role_sequence.map{|r|
+		    r.fact_type.roles
+		}.flatten.map{|r|
+		    r.object_type
+		}.uniq
+	    # Remove all objects this constraint has roles for:
+	    pi_for = all_objects - @role_sequence.map{|r| r.object_type}
+	    if pi_for.size == 0
+		# When a PC covers all roles of an objectified fact, the above computes an empty set:
+		return @role_sequence[0].fact_type.nested_as
+	    else
+		throw "Preferred identifier PresenceConstraint #{name} must identify one object"+
+		    ", not #{pi_for.map{|o| o.name}.inspect}" if pi_for.size != 1
+		return pi_for[0]
+	    end
+	end
+
 	def to_s
 	    frequency = [
 		    ((min && min > 0 && min != max) ? " at least #{min} time#{min>1?"s":""}" : nil),
 		    ((max && min != max) ? " at most #{max} time#{max>1?"s":""}" : nil),
 		    ((max && min == max) ? " exactly #{max} time#{max>1?"s":""}" : nil)
 		].compact * " and"
-	    pref = is_preferred_id ? " (preferred identifier)" : ""
+
+	    pref = is_preferred_id ? " (preferred identifier for #{preferred_id_for.name})" : ""
 	    mand = (is_mandatory ? " must" : " may") + " occur"
 
 	    name + ": " + @role_sequence.to_s + mand + frequency + pref
