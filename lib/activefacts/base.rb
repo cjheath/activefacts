@@ -447,7 +447,6 @@ module ActiveFacts
 
     #==============================================================
     # Constraints
-    # REVISIT: Incomplete
     #==============================================================
 
     class RoleSequence			# One or more Roles
@@ -474,6 +473,11 @@ module ActiveFacts
 
     class Constraint < Feature
 	typed_attr true, :must	# Alethic (must), Deontic (should)
+
+	def initialize(*args)
+	    super(*args)
+	    @model.constraints << self if (@model)
+	end
     end
 
     class SetConstraint < Constraint	# One RoleSequence
@@ -499,8 +503,8 @@ module ActiveFacts
 	attr_accessor :is_mandatory	# Complement of "zero freq is ok"
 	attr_accessor :is_preferred_id
 
-	def initialize(_name, rs, _min, _max, _mand, _pref = nil)
-	    super(_name, rs)
+	def initialize(_model, _name, rs, _min, _max, _mand, _pref = nil)
+	    super(_model, _name, rs)
 	    self.min = _min
 	    self.max = _max
 	    self.is_mandatory = _mand
@@ -550,23 +554,49 @@ module ActiveFacts
     end
 
     class RingConstraint < SetConstraint
-	(   Undefined,
-	    PurelyReflexive,
-	    Irreflexive,
-	    Acyclic,
-	    Intransitive,
-	    Symmetric,
-	    Asymmetric,
-	    AntiSymmetric,
-	    AcyclicIntransitive,
-	    SymmetricIrreflexive,
-	    SymmetricIntransitive,
-	    AsymmetricIntransitive) = *(0..12)
-	attr_accessor :type
-	typed_attr Role, :from_role, :to_role
+	TypeNames = %w{
+	    Undefined
+	    PurelyReflexive
+	    Irreflexive
+	    Acyclic
+	    Intransitive
+	    Symmetric
+	    Asymmetric
+	    AntiSymmetric
+	    AcyclicIntransitive
+	    SymmetricIrreflexive
+	    SymmetricIntransitive
+	    AsymmetricIntransitive
+	}
+	eval "(#{TypeNames * ", "}) = *(0..12)"
+
+	typed_attr Integer, :type_num do |v| v >= 0 && v <= AsymmetricIntransitive; end
+	def from_role; @role_sequence[0]; end 
+	def to_role; @role_sequence[1]; end
 
 	def initialize(*args)
-	    raise "REVISIT: Incomplete"
+	    @from_role = @to_role = nil
+	    args.delete_if{|a|
+		case a
+		when Integer
+		    self.type_num = a
+		else
+		    next
+		end
+		true
+	    }
+	    super(*args)
+	    throw "Ring Constraint #{name} needs two roles" if role_sequence.size != 2
+	    from_role = role_sequence[0]
+	    to_role = role_sequence[1]
+	end
+
+	def type_name
+	    TypeNames[type_num]
+	end
+
+	def to_s
+	    "RingConstraint #{name}, #{type_name} over #{role_sequence}"
 	end
     end
 
@@ -575,7 +605,28 @@ module ActiveFacts
 	typed_attr RoleSequence, :subset_role_sequence
 
 	def initialize(*args)
-	    raise "REVISIT: Incomplete"
+	    @superset_role_sequence = @subset_role_sequence = nil
+	    args.delete_if{|a|
+		case a
+		when RoleSequence
+		    if !@superset_role_sequence
+			@superset_role_sequence = a
+		    elsif !@subset_role_sequence
+			@subset_role_sequence = a
+		    else
+			next
+		    end
+		else
+		    next
+		end
+		true
+	    }
+	    super(*args)
+	    throw "Subset Constraint #{name} needs two role sequences" unless subset_role_sequence
+	end
+
+	def to_s
+	    "SubsetConstraint #{name} #{subset_role_sequence} < #{superset_role_sequence}"
 	end
     end
 
@@ -583,7 +634,22 @@ module ActiveFacts
 	array_attr RoleSequence, :role_sequences
 
 	def initialize(*args)
-	    raise "REVISIT: Incomplete"
+	    args.delete_if{|a|
+		case a
+		when Array
+		    role_sequences.concat(a)
+		when RoleSequence
+		    role_sequences << a
+		else
+		    next
+		end
+		true
+	    }
+	    super(*args)
+	end
+
+	def to_s
+	    "ExclusionConstraint #{name} over #{role_sequences.map{|rs| rs.to_s }*", "}"
 	end
     end
 
@@ -591,7 +657,24 @@ module ActiveFacts
 	array_attr RoleSequence, :role_sequences
 
 	def initialize(*args)
-	    raise "REVISIT: Incomplete"
+	    @superset_role_sequence = @subset_role_sequence = nil
+	    args.delete_if{|a|
+		case a
+		when Array
+		    role_sequences.concat(a)
+		when RoleSequence
+		    role_sequences << a
+		else
+		    next
+		end
+		true
+	    }
+	    super(*args)
+	    throw "EqualityConstraint Constraint #{name} needs more than one role sequence" unless @role_sequences.size > 1
+	end
+
+	def to_s
+	    "EqualityConstraint #{name} between #{role_sequences.map{|rs| rs.to_s}*", "}"
 	end
     end
 

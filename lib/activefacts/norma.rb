@@ -272,6 +272,7 @@ module ActiveFacts
 	    read_subset_constraints
 	    read_ring_constraints
 	    read_value_constraints
+	    read_equality_constraints
 	end
 
 	def read_mandatory_constraints
@@ -335,6 +336,7 @@ module ActiveFacts
 		#    (mc ? " (mandatory)" : "") if pi && !mc
 
 		pc = PresenceConstraint.new(
+				@model,
 				name,
 				rs,
 				1, 1,
@@ -342,9 +344,6 @@ module ActiveFacts
 				pi != nil
 			    )
 		(@constraints_by_rs[rs] ||= []) << pc
-
-		# puts pc.to_s
-		@model.constraints << pc
 	    }
 	end
 
@@ -354,9 +353,31 @@ module ActiveFacts
 		name = x.attributes["Name"]
 		x_mandatory = (m = x.elements.to_a("orm:ExclusiveOrMandatoryConstraint")[0]) &&
 				@x_by_id[m.attributes['ref']]
-		puts "REVISIT: ExclusionConstraint #{name}" +
-		    (x_mandatory ? " (having mandatory #{x_mandatory.attributes['Name']})" : "") +
-		    " not loaded yet"
+		rss = []
+		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
+			rss << @model.get_role_sequence(RoleSequence.new(
+				x_rs.elements.to_a("orm:Role").map{|xr|
+					@by_id[xr.attributes['ref']]
+				    }
+			    ))
+		    }
+		ec = ExclusionConstraint.new(@model, name, rss)
+	    }
+	end
+
+	def read_equality_constraints
+	    x_equality_constraints = @x_model.elements.to_a("orm:Constraints/orm:EqualityConstraint")
+	    x_equality_constraints.each{|x|
+		name = x.attributes["Name"]
+		rss = []
+		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
+			rss << @model.get_role_sequence(RoleSequence.new(
+				x_rs.elements.to_a("orm:Role").map{|xr|
+					@by_id[xr.attributes['ref']]
+				    }
+			    ))
+		    }
+		ec = EqualityConstraint.new(@model, name, rss)
 	    }
 	end
 
@@ -364,7 +385,15 @@ module ActiveFacts
 	    x_subset_constraints = @x_model.elements.to_a("orm:Constraints/orm:SubsetConstraint")
 	    x_subset_constraints.each{|x|
 		name = x.attributes["Name"]
-		puts "REVISIT: SubsetConstraint #{name} not loaded yet"
+		rss = []
+		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
+			rss << @model.get_role_sequence(RoleSequence.new(
+				x_rs.elements.to_a("orm:Role").map{|xr|
+					@by_id[xr.attributes['ref']]
+				    }
+			    ))
+		    }
+		ec = SubsetConstraint.new(@model, name, *rss)
 	    }
 	end
 
@@ -372,7 +401,20 @@ module ActiveFacts
 	    x_ring_constraints = @x_model.elements.to_a("orm:Constraints/orm:RingConstraint")
 	    x_ring_constraints.each{|x|
 		name = x.attributes["Name"]
-		puts "REVISIT: RingConstraint #{name} not loaded yet"
+		type = x.attributes["Type"]
+		begin
+		    # Convert the RingConstraint name to a number:
+		    type_num = eval("::ActiveFacts::RingConstraint::#{type}") 
+		rescue => e
+		    throw "RingConstraint type #{type} isn't known"
+		end
+
+		rs = @model.get_role_sequence(RoleSequence.new(
+			x.elements.to_a("orm:RoleSequence/orm:Role").map{|xr|
+				@by_id[xr.attributes['ref']]
+			    }
+		    ))
+		RingConstraint.new(@model, name, type_num, rs)
 	    }
 	end
 
@@ -381,6 +423,7 @@ module ActiveFacts
 	    x_value_constraints.each{|x|
 		name = x.attributes["Name"]
 		puts "REVISIT: ValueConstraint #{name} not loaded yet"
+		puts x
 	    }
 	end
 

@@ -41,6 +41,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ManyToMany.orm</DependentUpon>
     </Compile>
+    <Compile Include="ObjectifiedUnary.CoRef._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ObjectifiedUnary.CoRef.orm</DependentUpon>
+    </Compile>
     <Compile Include="ObjectifiedUnary._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
@@ -300,6 +304,13 @@
     <None Include="SubType.CoRef.orm">
       <AutoGen>True</AutoGen>
       <DependentUpon>SubType.orm</DependentUpon>
+      <ORMGenerator>CoRefORM</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('ObjectifiedUnary.orm')">
+    <None Include="ObjectifiedUnary.CoRef.orm">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
       <ORMGenerator>CoRefORM</ORMGenerator>
     </None>
   </ItemGroup>
