@@ -53,8 +53,8 @@ module ActiveFacts
 	    read_entity_types
 	    read_value_types
 	    read_fact_types
-	    read_subtypes
 	    read_nested_types
+	    read_subtypes
 	    read_roles
 	    read_constraints
 	end
@@ -104,7 +104,8 @@ module ActiveFacts
 	    @x_facts.each{|x|
 		id = x.attributes['id']
 		name = x.attributes['Name'] || x.attributes['_Name']
-		name = nil if name.size == 0
+		name = "<unnamed>" if !name
+		name = "" if !name || name.size == 0
 		# puts "FactType #{name || id}"
 
 		facts << @by_id[id] = fact_type = FactType.new(@model, name)
@@ -131,7 +132,8 @@ module ActiveFacts
 		supertype_id = x_supertype_role.elements['orm:RolePlayer'].attributes['ref']
 		supertype = @by_id[supertype_id]
 
-		throw "Subtype #{subtype_id} and #{supertype_id} not both found" if !subtype || !supertype
+		throw "For Subtype fact #{name}, the supertype #{supertype_id} was not found" if !supertype
+		throw "For Subtype fact #{name}, the subtype #{subtype_id} was not found" if !subtype
 	#	puts "#{subtype.name} is a subtype of #{supertype.name}"
 
 		fact_type = SubtypeFactType.new(name, @model, subtype, supertype)
@@ -352,7 +354,9 @@ module ActiveFacts
 		name = x.attributes["Name"]
 		x_mandatory = (m = x.elements.to_a("orm:ExclusiveOrMandatoryConstraint")[0]) &&
 				@x_by_id[m.attributes['ref']]
-		puts "REVISIT: ExclusionConstraint #{name} (having mandatory #{x_mandatory.attributes['Name']}) not loaded yet"
+		puts "REVISIT: ExclusionConstraint #{name}" +
+		    (x_mandatory ? " (having mandatory #{x_mandatory.attributes['Name']})" : "") +
+		    " not loaded yet"
 	    }
 	end
 

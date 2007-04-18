@@ -511,10 +511,9 @@ module ActiveFacts
 	def preferred_id_for
 	    return nil if !is_preferred_id  # Not preferred_id
 
-	    if (@role_sequence.size > 1 && @role_sequence.internal?)
-		ft = @role_sequence[0].fact_type
-		throw "Internal PresenceConstraint #{name} cannot be preferred identifier for non-nested fact #{ft.name}" unless ft.nested_as
-		return ft.nested_as
+	    # An internal preferred id for a nested fact can only be for the nesting:
+	    if (@role_sequence.internal? && (nested_as = @role_sequence[0].fact_type.nested_as))
+		return nested_as
 	    end
 
 	    # Find all objects involved in all facts this constraint has a role in:
