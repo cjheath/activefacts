@@ -300,14 +300,21 @@ module ActiveFacts
 	    x_uniqueness_constraints = @x_model.elements.to_a("orm:Constraints/orm:UniquenessConstraint")
 	    x_uniqueness_constraints.each{|x|
 		name = x.attributes["Name"]
-		x_pi = x.elements.to_a("orm:PreferredIdentifierFor")
-		x_pi = x_pi.size > 0 ? x_pi[0] : nil
+		x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
 		pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
 
 		# Skip uniqueness constraints on implied object types
 		if x_pi && !pi
 		    puts "Skipping uniqueness constraint #{name}, entity not found"
 		    next
+		end
+
+		# A uniqueness constraint on a fact having an implied objectification isn't preferred:
+		if pi &&
+		    (x_pi_for = @x_by_id[eref]) &&
+		    (np = x_pi_for.elements.to_a('orm:NestedPredicate')[0]) &&
+		    np.attributes['IsImplied']
+			pi = nil
 		end
 
 		# Get the RoleSequence:

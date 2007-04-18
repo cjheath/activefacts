@@ -11,7 +11,7 @@ puts model.to_s
 
 puts "All Object Types:"
 model.object_types.each{|o|
-	puts "\t"+o.to_s+" and plays roles in:"
+	puts "\t"+o.to_s+" and plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
 	o.fact_types.each{|f|
 		puts "\t\t"+f.to_s
 	    }

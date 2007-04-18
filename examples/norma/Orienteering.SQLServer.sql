@@ -47,7 +47,7 @@ CREATE TABLE Orienteering.Entrant
 	Competitor_BirthYear BIGINT , 
 	Competitor_EntrantPostCode BIGINT , 
 	Club_Code NATIONAL CHARACTER VARYING(6) , 
-	CONSTRAINT ENtrantIDIsOfOneEntrant PRIMARY KEY(EntrantID), 
+	CONSTRAINT EntrantIDIsOfOneEntrant PRIMARY KEY(EntrantID), 
 	CONSTRAINT Cmpttr_CmpttrHsDstnctNm UNIQUE(Competitor_FamilyName), 
 	CONSTRAINT CompetitorHasDistinctName UNIQUE(GivenName)
 )
