@@ -21,7 +21,6 @@ module ActiveFacts
     # Fact Types forward declared
     class Role < Feature; end
     class FactType < Feature; end
-    class SubType < Feature; end # Joins SubType, SuperType, SubtypeFactType
     class SubtypeFactType < FactType; end		# Needed?
     class Reading < Feature; end
 
@@ -140,6 +139,11 @@ module ActiveFacts
 	    }
 	    super(*args)
 	    model.data_types << self if (model)
+
+	    puts "DataType should have name" if !name
+	    puts "DataType #{name} should be part of Model" if !model
+	    # REVISIT: We have no built-in types yet:
+	    # puts "DataType #{name} should have base DateType" if !base || base == ""
 	end
 
 	def to_s
@@ -166,7 +170,7 @@ module ActiveFacts
 		case a
 		when ObjectType
 		    self.object_type = a
-		when FactType
+		when FactType, SubtypeFactType
 		    self.fact_type = a
 		when DataType
 		    self.data_type = a
@@ -179,15 +183,21 @@ module ActiveFacts
 	    name ||= @object_type.name
 	    raise "Role must have an ObjectType" unless @object_type
 	    #raise "Role must have a FactType" unless @fact_type
+
+	    puts "Role #{self} should be part of Model" if !model
+	    #puts "Role should have name" if !name
+	    #puts "Role #{name} should have base DateType" if !base || base == ""
 	end
 
 	def to_s
-	    (@name != "" ? "#{@name}: " : "") + object_type.name
+	    # Show role name only if set and different from Role Player's name:
+	    (@name && @name != "" && @name != object_type.name ? "#{@name} of " : "") + 
+		object_type.name
 	end
     end
 
     class FactType < Feature
-	array_attr Role, :roles		# Array of Role
+	typed_attr RoleSequence, :roles		# Array of Role
 	array_attr Reading, :readings	# Array of Readings
 	array_attr Fact, :facts		# Array of fact instance
 	typed_attr NestedType, :nested_as	# NestedType
@@ -199,6 +209,7 @@ module ActiveFacts
 
 	def initialize(*args)
 	    model = args.detect{|a| Model === a }
+	    @roles ||= RoleSequence.new
 	    args.delete_if{|a|
 		case a
 		when Role
@@ -213,18 +224,19 @@ module ActiveFacts
 	    super(*args)
 	    # @nested_as will get set afterwards if needed
 	    model.fact_types << self if (model)
+
+	    puts "FactType #{self} should be part of Model" if !model
 	end
 
 	def add_role(role)
 	    roles << role
 	    role.fact_type = self;
-#???		role.object_type.roles << role
+	    role.object_type.roles << role
 	end
 
 	def to_s
-	    "#{name}" +
-		(nested_as ? " (nested as #{nested_as.name})" : "") +
-		"(" + (roles.map{|r| r.to_s} * ", ") + ")"
+	    roles.to_s +
+		(nested_as ? " (nested as #{nested_as.name})" : "")
 	end
     end
 
@@ -235,12 +247,13 @@ module ActiveFacts
 	def initialize(*args)
 	    # No Roles passed, just Super, Sub
 	    model = args.detect{|a| Model === a }
+	    @roles = RoleSequence.new
 	    objects = []
 	    args.delete_if{|a|
 		case a
 		when ObjectType
 		    objects << a
-		    @roles << Role.new(model, a)
+		    self.roles << (r = Role.new(model, a, self))
 		else
 		    next
 		end
@@ -256,23 +269,13 @@ module ActiveFacts
 	end
 
 	def readings
-	    return super.readings if super.readings.size > 0
-	    # REVISIT: Check this default reading:
-	    Reading.new(self, "{1} is a subtype of #{0}")
+	    return super if super.size > 0
+	    [Reading.new(self.roles, "{0} is a subtype of {1}")]
 	end
     end
 
     class Reading < Feature
 	typed_attr RoleSequence, :role_sequence
-
-	def to_s
-	    expanded = name
-	    (0...@role_sequence.size).each{|i|
-		expanded.gsub!("{#{i}}", @role_sequence[i].object_type.name)
-	    }
-
-	    "Reading '#{expanded}'"
-	end
 
 	def initialize(*args)
 	    args.delete_if{|a|
@@ -284,8 +287,17 @@ module ActiveFacts
 		end
 		true
 	    }
-	    raise "Reading requires a RoleSequence" unless role_sequence
+	    raise "Reading requires a RoleSequence" unless @role_sequence
 	    super(*args)
+	end
+
+	def to_s
+	    expanded = name
+	    (0...@role_sequence.size).each{|i|
+		expanded.gsub!("{#{i}}", @role_sequence[i].object_type.name)
+	    }
+
+	    "Reading '#{expanded}'"
 	end
     end
 
@@ -299,6 +311,8 @@ module ActiveFacts
 	def initialize(*args)
 	    super(*args)
 	    model.object_types << self if (model)
+
+	    puts "ObjectType #{self} should be part of Model" if !model
 	end
 
 	# All unique fact types in which this object plays a role
@@ -369,7 +383,7 @@ module ActiveFacts
 	end
 
 	def to_s
-	    "#{@name} is a ValueType of #{data_type.to_s}\n"
+	    "#{@name} is a ValueType of #{data_type.to_s}"
 	end
     end
 
@@ -388,11 +402,12 @@ module ActiveFacts
 		true
 	    }
 	    raise "NestedType requires FactType to nest!" if !fact_type
+	    fact_type.nested_as = self
 	    super(*args)
 	end
 
 	def to_s
-	    "#{name} nests #{@fact_type.to_s}"
+	    "#{name} nests #{@fact_type.roles.to_s}"
 	end
     end
 
@@ -437,16 +452,28 @@ module ActiveFacts
 
     class RoleSequence			# One or more Roles
 	def to_s
-	    "("+map{|r| r.to_s }*", "+")"
+	    if internal?		# All Roles are on the same fact
+		self[0].fact_type.name +
+		"(" +
+		map{|r| r ? r.to_s : "nil" } * ", " +
+		")"
+	    else
+		"(" +
+		map{|r|
+		    r.fact_type.name + "." + (r ? r.to_s : "nil")
+		} * ", " +
+		")"
+	    end
 	end
 
 	def internal?
-	    !detect{|r| r.fact_type != self[0].fact_type}
+	    first_fact = self[0].fact_type
+	    !detect{|r| r.fact_type != first_fact }
 	end
     end
 
     class Constraint < Feature
-	typed_attr true, :must	# Alethic (should), Deontic (must)
+	typed_attr true, :must	# Alethic (must), Deontic (should)
     end
 
     class SetConstraint < Constraint	# One RoleSequence
@@ -462,7 +489,7 @@ module ActiveFacts
 		end
 		true
 	    }
-	    raise "#{self.class} requires a RolsSequence" if !role_sequence
+	    raise "#{self.class} requires a RoleSequence" if !role_sequence
 	    super(*args)
 	end
     end
@@ -477,37 +504,21 @@ module ActiveFacts
 	    self.min = _min
 	    self.max = _max
 	    self.is_mandatory = _mand
+	    self.min = 0 if (!self.is_mandatory && min == 1)
 	    self.is_preferred_id = _pref
 	end
 
-	# Which object is constrained?
-	def object_type
-	    all_fact_roles = role_sequence.inject([]){|a, r|
-				a.concat(r.fact_type.roles)
-			    }.uniq
-	    covered_roles = all_fact_roles-role_sequence
-#		puts "============= covered_roles ============="
-#		p covered_roles.map{|r| r.name || r.object_type.name}
-
-# REVISIT: This is wrong where a PresenceConstraint includes all roles of a fact
-# Hack to make it get past here:
-return role_sequence[0].object_type if (covered_roles.size == 0)
-
-	    throw "PresenceConstraint #{name} has no covered roles" if covered_roles.size == 0
-	    throw "PresenceConstraint #{name} covers more than one object type" if covered_roles.detect{|r| r.object_type != covered_roles[0].object_type }
-	    covered_roles[0].object_type
-	end
-
 	def to_s
-	    object_type.name +
-		(is_mandatory ? " must" : " may") +
-		" play " +
-		@role_sequence[0].fact_type.to_s +	# Find a reading instead!
-		[ ((min && min != max) ? " at least #{min} time#{min>1?"s":""}" : nil),
-		  ((max && min != max) ? " at most #{max} time#{max>1?"s":""}" : nil),
-		  ((max && min == max) ? " exactly #{max} time#{max>1?"s":""}" : nil)
-		].compact * " and" +
-		(is_preferred_id ? " (preferred identifier)" : "")
+	    frequency = [
+		    ((min && min > 0 && min != max) ? " at least #{min} time#{min>1?"s":""}" : nil),
+		    ((max && min != max) ? " at most #{max} time#{max>1?"s":""}" : nil),
+		    ((max && min == max) ? " exactly #{max} time#{max>1?"s":""}" : nil)
+		].compact * " and"
+	    pref = is_preferred_id ? " (preferred identifier)" : ""
+	    mand = (is_mandatory ? " must" : " may") + " occur"
+
+	    name + ": " + @role_sequence.to_s + mand + frequency + pref
+	    # REVISIT: Find a reading instead!
 	end
     end
 

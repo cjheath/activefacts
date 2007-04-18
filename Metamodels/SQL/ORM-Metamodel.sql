@@ -96,6 +96,7 @@ GO
 
 CREATE TABLE Role (
 	RoleID			int IDENTITY NOT NULL,
+	Name			nvarchar (64) NOT NULL,
 	FactTypeID		int NOT NULL,
 	ObjectTypeID		int NOT NULL,
 	DataSubTypeID		int NULL,	-- Must be a subtype of Object's DataType
@@ -160,6 +161,7 @@ GO
  */
 CREATE TABLE PresenceConstraint (
 	PresenceConstraintID	int IDENTITY NOT NULL,
+	Name			nvarchar (64) NOT NULL,
 	RoleSequenceID		int NOT NULL,
 	MinOccurs		int NULL,
 	MaxOccurs		int NULL,
@@ -175,6 +177,7 @@ GO
 
 CREATE TABLE SetComparisonConstraint (
 	SetComparisonConstraintID int IDENTITY NOT NULL,
+	Name			nvarchar (64) NOT NULL,
 	Comparison		int NOT NULL,
 	FromRoleSequenceID	int NOT NULL,
 	ToRoleSequenceID	int NOT NULL,
@@ -191,6 +194,7 @@ GO
 
 CREATE TABLE EqualityConstraint (
 	EqualityConstraintID int IDENTITY NOT NULL,
+	Name			nvarchar (64) NOT NULL,
 	CONSTRAINT PK_EqualityConstraint
 		PRIMARY KEY CLUSTERED (EqualityConstraintID)
 )
@@ -212,6 +216,7 @@ GO
 
 CREATE TABLE ExclusionConstraint (
 	ExclusionConstraintID int IDENTITY NOT NULL,
+	Name			nvarchar (64) NOT NULL,
 	CONSTRAINT PK_ExclusionConstraint
 		PRIMARY KEY CLUSTERED (ExclusionConstraintID)
 )
@@ -233,6 +238,7 @@ GO
 
 CREATE TABLE RingConstraint (
 	RingConstraintID	int IDENTITY NOT NULL,
+	Name			nvarchar (64) NOT NULL,
 	RingType		int NOT NULL,
 	FromRoleID		int NOT NULL,
 	ToRoleID		int NOT NULL,
@@ -250,23 +256,45 @@ GO
 /*
  * Sample Populations
  */
+CREATE TABLE Population (
+	PopulationID	int IDENTITY NOT NULL,
+	ModelID		int NOT NULL ,
+	Name		nvarchar (64) NOT NULL,
+	CONSTRAINT PK_Population
+		PRIMARY KEY CLUSTERED (PopulationID),
+	CONSTRAINT UQ_Population
+		UNIQUE (Name),
+	CONSTRAINT FK_Population_Model
+		FOREIGN KEY (ModelID)
+		REFERENCES Model (ModelID)
+)
+GO
+
 CREATE TABLE Instance (
 	InstanceID		int IDENTITY NOT NULL,
+	PopulationID		int NOT NULL,
 	ObjectTypeID		int NOT NULL,
 	[Value]			nvarchar (256) NULL,	-- Only if ObjectType has DataType
 	CONSTRAINT PK_Instance
 		PRIMARY KEY CLUSTERED (InstanceID),
 	CONSTRAINT FK_Instance_ObjectType
 		FOREIGN KEY (ObjectTypeID)
-		REFERENCES ObjectType(ObjectTypeID)
+		REFERENCES ObjectType(ObjectTypeID),
+	CONSTRAINT FK_Instance_Population
+		FOREIGN KEY (PopulationID)
+		REFERENCES Model (PopulationID)
 )
 GO
 
 CREATE TABLE Fact (
 	FactID			int IDENTITY NOT NULL,
+	PopulationID		int NOT NULL,
 	FactTypeID		int NOT NULL,
 	CONSTRAINT PK_Fact
 		PRIMARY KEY CLUSTERED (FactID),
+	CONSTRAINT FK_Instance_Population
+		FOREIGN KEY (PopulationID)
+		REFERENCES Model (PopulationID),
 	CONSTRAINT FK_Fact_FactType
 		FOREIGN KEY (FactTypeID)
 		REFERENCES FactType(FactTypeID)
@@ -274,11 +302,15 @@ CREATE TABLE Fact (
 GO
 
 CREATE TABLE FactRole (
+	PopulationID		int NOT NULL,
 	FactID			int NOT NULL,
 	RoleID			int NOT NULL,
 	InstanceID		int NOT NULL,
 	CONSTRAINT PK_FactRole
 		PRIMARY KEY CLUSTERED (FactID, RoleID),
+	CONSTRAINT FK_Instance_Population
+		FOREIGN KEY (PopulationID)
+		REFERENCES Model (PopulationID),
 	CONSTRAINT FK_FactRole_Fact
 		FOREIGN KEY (FactID)
 		REFERENCES Fact(FactID),
