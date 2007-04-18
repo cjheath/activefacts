@@ -413,7 +413,7 @@ module ActiveFacts
 
     #==============================================================
     # Instances
-    # REVISIT: Incomplete
+    # REVISIT: Instances are Incomplete
     #==============================================================
 
     class Fact
@@ -421,7 +421,7 @@ module ActiveFacts
 	array_attr FactRole, :fact_roles
 
 	def initialize(*args)
-	    raise "REVISIT: Incomplete"
+	    raise "REVISIT: Fact is Incomplete"
 	end
     end
 
@@ -431,7 +431,7 @@ module ActiveFacts
 	typed_attr Value, :value
 
 	def initialize(*args)
-	    raise "REVISIT: Incomplete"
+	    raise "REVISIT: FactRole is Incomplete"
 	end
     end
 
@@ -441,7 +441,7 @@ module ActiveFacts
 	typed_attr nil, :value do |v| String === v || Integer === v; end
 
 	def initialize(*args)
-	    raise "REVISIT: Incomplete"
+	    raise "REVISIT: Value is Incomplete"
 	end
     end
 

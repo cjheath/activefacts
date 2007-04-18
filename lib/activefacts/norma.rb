@@ -94,6 +94,10 @@ module ActiveFacts
 		# puts "ValueType #{name} is #{id}"
 		value_types <<
 		    @by_id[id] = ValueType.new(@model, name, data_type)
+
+		# Look for value restrictions
+		value_ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
+		p value_ranges if value_ranges.size > 0
 	    }
 	end
 
