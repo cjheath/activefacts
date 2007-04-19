@@ -1,0 +1,132 @@
+ActiveFacts
+-----------
+
+Clifford Heath.
+
+The ActiveFacts project lives on RubyForge, with access
+detils here: <http://rubyforge.org/scm/?group_id=3253>.
+
+Status as at 19 April 2007
+--------------------------
+
+ActiveFacts now has a nearly complete ORM2 API written
+in Ruby (for more about ORM2, see <http://www.orm.net>)
+It's loading all the NORMA <http://sourceforge.net/orm>
+models I can find and a few I built myself, with the
+exception of Value Restrictions (on data types and
+roles), and the sample fact data populations. Those
+should be finished this week.
+
+To look at ActiveFacts, install Subversion (either
+<http://subversion.tigris.org/> or one of the bundles
+like Tortoise SVN, cygwin, etc), and issue the checkout
+instruction on the RubyForge webpage listed above.
+
+My NORMA models are checked into the "examples/norma"
+directory, and "examples/pdf" contains PDF versions of
+all the model diagrams, so folk who don't have NORMA
+or VS2005 can look at them.
+
+Most of the models are trivial, except the Orienteering
+model, which models the orienteering system currently
+hosted at both <http://street.orienteerig]ng.com.au>
+and <http://www.vicorienteering.asn.au/parkstreet/>. I
+compete in these events, and have even built scoring
+hardware for it using low-power microprocessors (not
+yet in use). The point being that this is a *real life*
+model, which will continue to be my main demonstration
+model.
+
+Finally if you have Ruby installed <www.ruby-lang.org>
+you can load a NORMA model using the command:
+
+ruby -I lib tests/read_norma.rb <MyModel>.orm
+
+read_norma simply reads a NORMA file and spits out some
+textual notes so you can see it's understood it.
+
+Metamodel
+---------
+
+ActiveFacts also contains a Metamodels directory which
+has an SQL metamodel that matches my Ruby API. So far,
+the API can't save or load models into an SQL database,
+but that's feasible, it's just a matter of time. There's
+a PDF of the SQL schema as well as the DDL for SQL Server.
+
+My meta-model merges mandatory, uniqueness and frequency
+constraints into one "Presence Constraint" object. This
+is because all three constraint types have to do with
+the number of times a role or role sequence may be played.
+This was agreed with Terry while he was reviewing my SQL
+schema a month ago.
+
+For object types (Entity, Value and Objectified Facts),
+I have separate classes in the Ruby API, but these are
+absorbed into one ObjectType table in the SQL. This
+allows proper referential integrity from the Role table.
+A consequence is that in sample populations, the entity
+instances and value instances are absorbed into one
+Instance table as well, with a nullable Value field.
+
+Finally my API supports sub-models, and more than one named
+Population, so that you can have a sample population used
+for model validation, another as an initial population for
+a production database, and even another for the production
+database itself.
+
+Sorry, but I haven't yet produced a UML model of the Ruby
+API... that'll happen sometime. In the meantime, the code
+itself in "lib/activefacts/base.rb" is pretty readable
+even if you've never seen Ruby. Since Ruby uses "open
+classes", similar to C#'s partial classes, I'm able to
+omit from "base.rb" anything that relates to other aspects
+of th API, like derivation etc.
+
+Future
+------
+
+Next on my list of tasks is:
+* To adapt a set of database drivers to allow reverse
+  engineering an existing SQL database into an ER model.
+  ActiveFacts can represent a non-elementary schema (an
+  ER schema which has compound fact types) just as well
+  as an elementary (ORM2) one. This is the first step to...
+
+* Reverse engineering an ER schema to an elementary ORM2
+  one.
+
+* Writing a textual language processor for ORM2 so models
+  may be loaded (and perhaps exported) to a textual format
+  for version management and model interchange. This might
+  take the form of a Ruby DSL or a properly parsed language
+  that can be parsed with an ANTLR parser, and hence used
+  as an ORM2 modeling language with C#, Java, etc.
+
+* Testing. The basic framework for writing tests using
+  RSpec is there, but I've been baaaad and started writing
+  code *before* I had the tests written :-).
+
+Tasks I'll then address in an uncertain order are:
+
+* Absorbing an ORM2 (elementary) model down to an ER
+  schema,
+* Constructing a query conceptual API that can query an
+  ER schema, writing the SQL code as appropriate,
+* Converting conceptual query against an elementary (ORM2)
+  model into one against the ER mapping of the same, and
+  on executing it, converting the resultant compound fact
+  population back into a elementary one to match the
+  original query.
+
+Thanks for you attention. I look forward to receiving any
+feedback you have. I expect that the above list of tasks
+will take longer than the four weeks I have available
+before visiting Neumont in May - however I can make pretty
+rapid progress since I don't have to coordinate an army of
+worker ants or try to keep an academic syllabus running.
+I'm on this task almost full-time, self-funded, until then,
+and after that, I need to find a way to make a living from
+it :-). All offers considered!
+
+Clifford Heath, clifford.heath@gmail.com.
