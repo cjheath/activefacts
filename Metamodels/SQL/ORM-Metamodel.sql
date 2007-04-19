@@ -58,7 +58,7 @@ CREATE TABLE ObjectType (
 	Name			nvarchar (64) NOT NULL,
 	ModelID			int NOT NULL,
 	DataTypeID		int NULL,		-- Only if a ValueType
-	ObjectifiesFactType	int NULL,		-- Only if an ObjectifiedType
+	NestsFactType		int NULL,		-- Only if an ObjectifiedType
 	IsIndependent		bit NOT NULL DEFAULT 0,
 	IsPersonal		bit NOT NULL DEFAULT 0,
 	CONSTRAINT PK_ObjectType
@@ -162,6 +162,7 @@ GO
 CREATE TABLE PresenceConstraint (
 	PresenceConstraintID	int IDENTITY NOT NULL,
 	Name			nvarchar (64) NOT NULL,
+	Enforcement		char(1) default 'M',
 	RoleSequenceID		int NOT NULL,
 	MinOccurs		int NULL,
 	MaxOccurs		int NULL,
@@ -175,18 +176,18 @@ CREATE TABLE PresenceConstraint (
 )
 GO
 
-CREATE TABLE SetComparisonConstraint (
-	SetComparisonConstraintID int IDENTITY NOT NULL,
+CREATE TABLE SubsetConstraint (
+	SubsetConstraintID	int IDENTITY NOT NULL,
 	Name			nvarchar (64) NOT NULL,
-	Comparison		int NOT NULL,
+	Enforcement		char(1) default 'M',
 	FromRoleSequenceID	int NOT NULL,
 	ToRoleSequenceID	int NOT NULL,
-	CONSTRAINT PK_SetComparisonConstraint
-		PRIMARY KEY CLUSTERED (SetComparisonConstraintID),
-	CONSTRAINT FK_SetComparisonConstraint_RoleSequence
+	CONSTRAINT PK_SubsetConstraint
+		PRIMARY KEY CLUSTERED (SubsetConstraintID),
+	CONSTRAINT FK_SubsetConstraint_FromRoleSequence
 		FOREIGN KEY (FromRoleSequenceID)
 		REFERENCES RoleSequence(RoleSequenceID),
-	CONSTRAINT FK_SetComparisonConstraint_RoleSequence1
+	CONSTRAINT FK_SubsetConstraint_ToRoleSequence
 		FOREIGN KEY (ToRoleSequenceID)
 		REFERENCES RoleSequence(RoleSequenceID)
 )
@@ -195,6 +196,7 @@ GO
 CREATE TABLE EqualityConstraint (
 	EqualityConstraintID int IDENTITY NOT NULL,
 	Name			nvarchar (64) NOT NULL,
+	Enforcement		char(1) default 'M',
 	CONSTRAINT PK_EqualityConstraint
 		PRIMARY KEY CLUSTERED (EqualityConstraintID)
 )
@@ -217,6 +219,7 @@ GO
 CREATE TABLE ExclusionConstraint (
 	ExclusionConstraintID int IDENTITY NOT NULL,
 	Name			nvarchar (64) NOT NULL,
+	Enforcement		char(1) default 'M',
 	CONSTRAINT PK_ExclusionConstraint
 		PRIMARY KEY CLUSTERED (ExclusionConstraintID)
 )
@@ -239,6 +242,7 @@ GO
 CREATE TABLE RingConstraint (
 	RingConstraintID	int IDENTITY NOT NULL,
 	Name			nvarchar (64) NOT NULL,
+	Enforcement		char(1) default 'M',
 	RingType		int NOT NULL,
 	FromRoleID		int NOT NULL,
 	ToRoleID		int NOT NULL,
@@ -282,7 +286,7 @@ CREATE TABLE Instance (
 		REFERENCES ObjectType(ObjectTypeID),
 	CONSTRAINT FK_Instance_Population
 		FOREIGN KEY (PopulationID)
-		REFERENCES Model (PopulationID)
+		REFERENCES Population (PopulationID)
 )
 GO
 
@@ -292,9 +296,9 @@ CREATE TABLE Fact (
 	FactTypeID		int NOT NULL,
 	CONSTRAINT PK_Fact
 		PRIMARY KEY CLUSTERED (FactID),
-	CONSTRAINT FK_Instance_Population
+	CONSTRAINT FK_Fact_Population
 		FOREIGN KEY (PopulationID)
-		REFERENCES Model (PopulationID),
+		REFERENCES Population (PopulationID),
 	CONSTRAINT FK_Fact_FactType
 		FOREIGN KEY (FactTypeID)
 		REFERENCES FactType(FactTypeID)
@@ -302,15 +306,15 @@ CREATE TABLE Fact (
 GO
 
 CREATE TABLE FactRole (
-	PopulationID		int NOT NULL,
 	FactID			int NOT NULL,
 	RoleID			int NOT NULL,
+	PopulationID		int NOT NULL,
 	InstanceID		int NOT NULL,
 	CONSTRAINT PK_FactRole
 		PRIMARY KEY CLUSTERED (FactID, RoleID),
-	CONSTRAINT FK_Instance_Population
+	CONSTRAINT FK_FactRole_Population
 		FOREIGN KEY (PopulationID)
-		REFERENCES Model (PopulationID),
+		REFERENCES Population (PopulationID),
 	CONSTRAINT FK_FactRole_Fact
 		FOREIGN KEY (FactID)
 		REFERENCES Fact(FactID),
