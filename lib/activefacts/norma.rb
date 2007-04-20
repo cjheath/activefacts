@@ -103,8 +103,8 @@ module ActiveFacts
 			    ranges.map{|r|
 				min = r.attributes['MinValue']
 				max = r.attributes['MaxValue']
-				min = "'#{min}'" if min !~ /\A[0-9\.]*\Z/
-				max = "'#{max}'" if max !~ /\A[0-9\.]*\Z/
+				min = "'#{min}'" if min =~ /[^0-9\.]/
+				max = "'#{max}'" if max =~ /[^0-9\.]/
 				min == max ? min : "#{min}..#{max}"
 			    } * ", " +
 			    " }"
@@ -232,8 +232,8 @@ module ActiveFacts
 			    ranges.map{|r|
 				min = r.attributes['MinValue']
 				max = r.attributes['MaxValue']
-				min = "'#{min}'" if min !~ /\A[0-9\.]*\Z/
-				max = "'#{max}'" if max !~ /\A[0-9\.]*\Z/
+				min = "'#{min}'" if min =~ /[^0-9\.]/
+				max = "'#{max}'" if max =~ /[^0-9\.]/
 				min == max ? min : "#{min}..#{max}"
 			    } * ", " +
 			    " }"
