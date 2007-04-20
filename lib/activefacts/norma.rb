@@ -95,9 +95,20 @@ module ActiveFacts
 		value_types <<
 		    @by_id[id] = ValueType.new(@model, name, data_type)
 
-		# Look for value restrictions
-		value_ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
-		p value_ranges if value_ranges.size > 0
+		# REVISIT: Handle ValueType value restrictions:
+		ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
+		if ranges.size > 0
+			puts "REVISIT: ValueType #{name} is restricted to" +
+			    " { "+
+			    ranges.map{|r|
+				min = r.attributes['MinValue']
+				max = r.attributes['MaxValue']
+				min = "'#{min}'" if min !~ /\A[0-9\.]*\Z/
+				max = "'#{max}'" if max !~ /\A[0-9\.]*\Z/
+				min == max ? min : "#{min}..#{max}"
+			    } * ", " +
+			    " }"
+		end
 	    }
 	end
 
@@ -186,6 +197,8 @@ module ActiveFacts
 	    @x_facts.each{|x|
 		id = x.attributes['id']
 		fact_type = @by_id[id]
+		fact_name = x.attributes['Name'] || x.attributes['_Name']
+		fact_name = nil if fact_name == ''
 
 		x_fact_roles = x.elements.to_a('orm:FactRoles/*')
 		x_reading_orders = x.elements.to_a('orm:ReadingOrders/*')
@@ -194,6 +207,7 @@ module ActiveFacts
 		x_fact_roles.each{|x|
 		    name = x.attributes['Name'] || ""
 		    name = nil if name.size == 0
+
 		    # _IsMandatory = x.attributes['_IsMandatory']
 		    # _Multiplicity = x.attributes['_Multiplicity]
 		    id = x.attributes['id']
@@ -205,6 +219,25 @@ module ActiveFacts
 
 		    #puts "#{@model}, Name=#{x.attributes['Name']}, object_type=#{object_type}"
 		    throw "Role is played by #{object_type.class} not ObjectType" if !(ObjectType === object_type)
+
+		    x_vr = x.elements.to_a("orm:ValueRestriction")
+		    x_vr.each{|vr|
+			ranges = vr.elements.to_a("orm:RoleValueConstraint/orm:ValueRanges/orm:ValueRange")
+			player = vr.parent.elements.to_a('orm:RolePlayer')[0]
+			playername = @x_by_id[player.attributes['ref']].attributes['Name']
+			rolename = vr.parent.attributes['Name']
+			rolename = playername if !rolename || rolename == ''
+			puts "REVISIT: Role #{fact_name}.#{rolename} is restricted to" +
+			    " { "+
+			    ranges.map{|r|
+				min = r.attributes['MinValue']
+				max = r.attributes['MaxValue']
+				min = "'#{min}'" if min !~ /\A[0-9\.]*\Z/
+				max = "'#{max}'" if max !~ /\A[0-9\.]*\Z/
+				min == max ? min : "#{min}..#{max}"
+			    } * ", " +
+			    " }"
+		    }
 
 		    role = @by_id[id] = Role.new(@model, x.attributes['Name'], object_type)
 		    fact_type.add_role(role)
@@ -275,7 +308,6 @@ module ActiveFacts
 	    read_exclusion_constraints
 	    read_subset_constraints
 	    read_ring_constraints
-	    read_value_constraints
 	    read_equality_constraints
 	end
 
@@ -419,15 +451,6 @@ module ActiveFacts
 			    }
 		    ))
 		RingConstraint.new(@model, name, type_num, rs)
-	    }
-	end
-
-	def read_value_constraints
-	    x_value_constraints = @x_model.elements.to_a("orm:Constraints/orm:ValueConstraint")
-	    x_value_constraints.each{|x|
-		name = x.attributes["Name"]
-		puts "REVISIT: ValueConstraint #{name} not loaded yet"
-		puts x
 	    }
 	end
 
