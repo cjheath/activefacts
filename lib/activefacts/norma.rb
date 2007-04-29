@@ -372,12 +372,12 @@ module ActiveFacts
 		#    (mc ? " (mandatory)" : "") if pi && !mc
 
 		pc = PresenceConstraint.new(
-				@model,
-				name,
-				rs,
-				1, 1,
-				mc,
-				pi != nil
+				@model,	    # In Model,
+				name,	    # this constraint
+				rs,	    # requires that these Roles
+				mc,	    # must/may occur
+				1, 1,	    # exactly once
+				pi != nil   # which may be a preferred ID
 			    )
 		(@constraints_by_rs[rs] ||= []) << pc
 	    }

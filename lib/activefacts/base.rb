@@ -116,6 +116,9 @@ module ActiveFacts
 	    @scale = nil
 	    args.delete_if{|a|
 		case a
+		when DataType
+		    next if @base
+		    @base = a.name
 		when String
 		    if !@name
 			@name = a
@@ -152,15 +155,10 @@ module ActiveFacts
     end
 
     class Role < Feature
-	typed_attr ObjectType, :object_type # role player
-	typed_attr FactType, :fact_type	# Fact it's a role of
-	typed_attr DataType, :data_type	# subtype of object_type's DataT
+	typed_attr ObjectType, :object_type	# role player
+	typed_attr FactType, :fact_type		# Fact it's a role of
+	typed_attr DataType, :data_type		# subtype of object_type's DataT
 	array_attr FactRole, :fact_roles	# Instances of this Role
-
-	# These things will go in "derive":
-	#attr_accessor :value_restriction	# RoleValueRestriction
-	#attr_accessor :_is_mandatory	# Boolean, derived
-	#attr_accessor :_multiplicity	# Multiplicity, derived
 
 	def initialize(*args)
 	    @object_type = nil
@@ -172,7 +170,7 @@ module ActiveFacts
 		    self.object_type = a
 		when FactType, SubtypeFactType
 		    self.fact_type = a
-		when DataType
+		when DataType	# Used only when Role ValueRestrictions apply
 		    self.data_type = a
 		else
 		    next
@@ -486,7 +484,7 @@ module ActiveFacts
 	def initialize(*args)
 	    args.delete_if{|a|
 		case a
-		when RoleSequence
+		when RoleSequence, Array
 		    @role_sequence = a
 		else
 		    next
@@ -499,15 +497,15 @@ module ActiveFacts
     end
 
     class PresenceConstraint < SetConstraint # Unique,Mandatory,Freq
-	typed_attr Integer, :min, :max
+	typed_attr Integer, nil, :min, :max
 	attr_accessor :is_mandatory	# Complement of "zero freq is ok"
 	attr_accessor :is_preferred_id
 
-	def initialize(_model, _name, rs, _min, _max, _mand, _pref = nil)
+	def initialize(_model, _name, rs, _mand, _min, _max, _pref = nil)
 	    super(_model, _name, rs)
+	    self.is_mandatory = _mand
 	    self.min = _min
 	    self.max = _max
-	    self.is_mandatory = _mand
 	    self.min = 0 if (!self.is_mandatory && min == 1)
 	    self.is_preferred_id = _pref
 	end

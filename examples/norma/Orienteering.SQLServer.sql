@@ -1,5 +1,9 @@
+CREATE SCHEMA Orienteering
+GO
 
-CREATE TABLE Event
+GO
+
+CREATE TABLE Orienteering.Event
 (
 	EventName NATIONAL CHARACTER VARYING(50) , 
 	StartLocation NATIONAL CHARACTER VARYING(200) NOT NULL, 
@@ -13,7 +17,7 @@ CREATE TABLE Event
 GO
 
 
-CREATE TABLE Club
+CREATE TABLE Orienteering.Club
 (
 	ClubName NATIONAL CHARACTER VARYING(32) NOT NULL, 
 	Code NATIONAL CHARACTER VARYING(6) NOT NULL, 
@@ -23,7 +27,7 @@ CREATE TABLE Club
 GO
 
 
-CREATE TABLE Map
+CREATE TABLE Orienteering.Map
 (
 	Name NATIONAL CHARACTER VARYING(80) NOT NULL, 
 	Accessibility NATIONAL CHARACTER(1) CONSTRAINT Accessibility_Chk CHECK ((LEN(LTRIM(RTRIM(Accessibility)))) >= 1) , 
@@ -33,7 +37,7 @@ CREATE TABLE Map
 GO
 
 
-CREATE TABLE Entrant
+CREATE TABLE Orienteering.Entrant
 (
 	IsTeam BIT NOT NULL, 
 	EntrantID BIGINT IDENTITY (1, 1) NOT NULL, 
@@ -51,7 +55,7 @@ Competitor_Gender IN ('M', 'F')) ,
 GO
 
 
-CREATE TABLE TeamMember
+CREATE TABLE Orienteering.TeamMember
 (
 	EventCourse_ID BIGINT NOT NULL, 
 	EventCourse_Course NATIONAL CHARACTER VARYING(16) CONSTRAINT Course_Chk CHECK (EventCourse_Course IN ('PW')) NOT NULL, 
@@ -62,7 +66,7 @@ CREATE TABLE TeamMember
 GO
 
 
-CREATE TABLE Visit
+CREATE TABLE Orienteering.Visit
 (
 	"Time" BIGINT NOT NULL, 
 	Checked BIT NOT NULL, 
@@ -74,31 +78,31 @@ CREATE TABLE Visit
 GO
 
 
-CREATE TABLE PunchPlacement
+CREATE TABLE Orienteering.PunchPlacement
 (
 	Punch_PunchID BIGINT NOT NULL, 
 	EventControl_ID BIGINT NOT NULL, 
-	EventControl_Control BIGINT CONSTRAINT Control_Chk2 CHECK (EventControl_Control BETWEEN 1 AND 1000) NOT NULL, 
+	EventControl_Control BIGINT CONSTRAINT Control_Chk CHECK (EventControl_Control BETWEEN 1 AND 1000) NOT NULL, 
 	Event_ID BIGINT NOT NULL, 
 	CONSTRAINT PunchIsAtOneEventControl PRIMARY KEY(Punch_PunchID, Event_ID)
 )
 GO
 
 
-CREATE TABLE EventControl
+CREATE TABLE Orienteering.EventControl
 (
-	Control BIGINT CONSTRAINT Control_Chk3 CHECK (Control BETWEEN 1 AND 1000) NOT NULL, 
-	Points BIGINT , 
+	Control BIGINT CONSTRAINT Control_Chk CHECK (Control BETWEEN 1 AND 1000) NOT NULL, 
+	PointValue BIGINT , 
 	Event_ID BIGINT NOT NULL, 
 	CONSTRAINT EventHasEachControlOnce PRIMARY KEY(Event_ID, Control)
 )
 GO
 
 
-CREATE TABLE EventCourse
+CREATE TABLE Orienteering.EventCourse
 (
 	ScoringMethod NATIONAL CHARACTER VARYING(32) CONSTRAINT ScoringMethod_Chk CHECK (ScoringMethod IN ('Score', 'Scatter', 'Special')) , 
-	Course NATIONAL CHARACTER VARYING(16) CONSTRAINT Course_Chk2 CHECK (Course IN ('PW')) NOT NULL, 
+	Course NATIONAL CHARACTER VARYING(16) CONSTRAINT Course_Chk CHECK (Course IN ('PW')) NOT NULL, 
 	Individual BIT NOT NULL, 
 	Event_ID BIGINT NOT NULL, 
 	CONSTRAINT EventIncludesEachCourseOnce PRIMARY KEY(Event_ID, Course)
@@ -106,13 +110,13 @@ CREATE TABLE EventCourse
 GO
 
 
-CREATE TABLE Entry
+CREATE TABLE Orienteering.Entry
 (
 	Score BIGINT , 
 	EntryID BIGINT IDENTITY (1, 1) NOT NULL, 
 	FinishOrder BIGINT , 
 	EventCourse_ID BIGINT NOT NULL, 
-	EventCourse_Course NATIONAL CHARACTER VARYING(16) CONSTRAINT Course_Chk3 CHECK (EventCourse_Course IN ('PW')) NOT NULL, 
+	EventCourse_Course NATIONAL CHARACTER VARYING(16) CONSTRAINT Course_Chk CHECK (EventCourse_Course IN ('PW')) NOT NULL, 
 	Entrant_EntrantID BIGINT NOT NULL, 
 	CONSTRAINT EntryIDIsOfOneEntry PRIMARY KEY(EntryID), 
 	CONSTRAINT EntryIsForEventCourseOnce UNIQUE(Entrant_EntrantID, EventCourse_ID, EventCourse_Course)
@@ -120,7 +124,7 @@ CREATE TABLE Entry
 GO
 
 
-CREATE TABLE SeriesEvent
+CREATE TABLE Orienteering.SeriesEvent
 (
 	Number BIGINT CONSTRAINT Number_Chk CHECK (Number BETWEEN 1 AND 100) NOT NULL, 
 	Series_SeriesName NATIONAL CHARACTER VARYING(40) NOT NULL, 
@@ -130,72 +134,72 @@ CREATE TABLE SeriesEvent
 GO
 
 
-ALTER TABLE Event ADD CONSTRAINT Event_RunByClub_FK FOREIGN KEY (RunByClub_Code)  REFERENCES Club (Code)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Event ADD CONSTRAINT Event_RunByClub_FK FOREIGN KEY (RunByClub_Code)  REFERENCES Orienteering.Club (Code)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Event ADD CONSTRAINT Event_Map_FK FOREIGN KEY (Map_Name)  REFERENCES Map (Name)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Event ADD CONSTRAINT Event_Map_FK FOREIGN KEY (Map_Name)  REFERENCES Orienteering.Map (Name)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Map ADD CONSTRAINT Map_Owner_FK FOREIGN KEY (Owner_Code)  REFERENCES Club (Code)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Map ADD CONSTRAINT Map_Owner_FK FOREIGN KEY (Owner_Code)  REFERENCES Orienteering.Club (Code)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Entrant ADD CONSTRAINT Entrant_MemberOfClub_FK FOREIGN KEY (MemberOfClub_Code)  REFERENCES Club (Code)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Entrant ADD CONSTRAINT Entrant_MemberOfClub_FK FOREIGN KEY (MemberOfClub_Code)  REFERENCES Orienteering.Club (Code)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE TeamMember ADD CONSTRAINT TeamMember_EventCourse_FK FOREIGN KEY (EventCourse_ID, EventCourse_Course)  REFERENCES EventCourse (Event_ID, Course)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.TeamMember ADD CONSTRAINT TeamMember_EventCourse_FK FOREIGN KEY (EventCourse_ID, EventCourse_Course)  REFERENCES Orienteering.EventCourse (ID, Course)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE TeamMember ADD CONSTRAINT TeamMember_Competitor_FK FOREIGN KEY (Competitor_EntrantID)  REFERENCES Entrant (EntrantID)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.TeamMember ADD CONSTRAINT TeamMember_Competitor_FK FOREIGN KEY (Competitor_EntrantID)  REFERENCES Orienteering.Entrant (EntrantID)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE TeamMember ADD CONSTRAINT TeamMember_Team_FK FOREIGN KEY (Team_EntrantID)  REFERENCES Entrant (EntrantID)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.TeamMember ADD CONSTRAINT TeamMember_Team_FK FOREIGN KEY (Team_EntrantID)  REFERENCES Orienteering.Entrant (EntrantID)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Visit ADD CONSTRAINT Visit_EventControl_FK FOREIGN KEY (EventControl_ID, EventControl_Control)  REFERENCES EventControl (Event_ID, Control)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Visit ADD CONSTRAINT Visit_EventControl_FK FOREIGN KEY (EventControl_ID, EventControl_Control)  REFERENCES Orienteering.EventControl (ID, Control)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Visit ADD CONSTRAINT Visit_Entrant_FK FOREIGN KEY (Entrant_EntrantID)  REFERENCES Entrant (EntrantID)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Visit ADD CONSTRAINT Visit_Entrant_FK FOREIGN KEY (Entrant_EntrantID)  REFERENCES Orienteering.Entrant (EntrantID)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE PunchPlacement ADD CONSTRAINT PunchPlacement_EventControl_FK FOREIGN KEY (EventControl_ID, EventControl_Control)  REFERENCES EventControl (Event_ID, Control)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.PunchPlacement ADD CONSTRAINT PunchPlacement_EventControl_FK FOREIGN KEY (EventControl_ID, EventControl_Control)  REFERENCES Orienteering.EventControl (ID, Control)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE PunchPlacement ADD CONSTRAINT PunchPlacement_Event_FK FOREIGN KEY (Event_ID)  REFERENCES Event (ID)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.PunchPlacement ADD CONSTRAINT PunchPlacement_Event_FK FOREIGN KEY (Event_ID)  REFERENCES Orienteering.Event (ID)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE EventControl ADD CONSTRAINT EventControl_Event_FK FOREIGN KEY (Event_ID)  REFERENCES Event (ID)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.EventControl ADD CONSTRAINT EventControl_Event_FK FOREIGN KEY (Event_ID)  REFERENCES Orienteering.Event (ID)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE EventCourse ADD CONSTRAINT EventCourse_Event_FK FOREIGN KEY (Event_ID)  REFERENCES Event (ID)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.EventCourse ADD CONSTRAINT EventCourse_Event_FK FOREIGN KEY (Event_ID)  REFERENCES Orienteering.Event (ID)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Entry ADD CONSTRAINT Entry_EventCourse_FK FOREIGN KEY (EventCourse_ID, EventCourse_Course)  REFERENCES EventCourse (Event_ID, Course)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Entry ADD CONSTRAINT Entry_EventCourse_FK FOREIGN KEY (EventCourse_ID, EventCourse_Course)  REFERENCES Orienteering.EventCourse (ID, Course)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Entry ADD CONSTRAINT Entry_Entrant_FK FOREIGN KEY (Entrant_EntrantID)  REFERENCES Entrant (EntrantID)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Entry ADD CONSTRAINT Entry_Entrant_FK FOREIGN KEY (Entrant_EntrantID)  REFERENCES Orienteering.Entrant (EntrantID)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE SeriesEvent ADD CONSTRAINT SeriesEvent_Event_FK FOREIGN KEY (Event_ID)  REFERENCES Event (ID)  ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.SeriesEvent ADD CONSTRAINT SeriesEvent_Event_FK FOREIGN KEY (Event_ID)  REFERENCES Orienteering.Event (ID)  ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
 
-CREATE PROCEDURE InsertEvent
+CREATE PROCEDURE Orienteering.InsertEvent
 (
 	@EventName NATIONAL CHARACTER VARYING(50) , 
 	@StartLocation NATIONAL CHARACTER VARYING(200) , 
@@ -205,197 +209,197 @@ CREATE PROCEDURE InsertEvent
 	@Map_Name NATIONAL CHARACTER VARYING(80) 
 )
 AS
-	INSERT INTO Event(EventName, StartLocation, ID, "Date", RunByClub_Code, Map_Name)
+	INSERT INTO Orienteering.Event(EventName, StartLocation, ID, "Date", RunByClub_Code, Map_Name)
 	VALUES (@EventName, @StartLocation, @ID, @"Date", @RunByClub_Code, @Map_Name)
 GO
 
 
-CREATE PROCEDURE DeleteEvent
+CREATE PROCEDURE Orienteering.DeleteEvent
 (
 	@ID BIGINT 
 )
 AS
-	DELETE FROM Event
+	DELETE FROM Orienteering.Event
 	WHERE ID = @ID
 GO
 
 
-CREATE PROCEDURE UpdateEventEventName
+CREATE PROCEDURE Orienteering.UpdateEventEventName
 (
 	@old_ID BIGINT , 
 	@EventName NATIONAL CHARACTER VARYING(50) 
 )
 AS
-	UPDATE Event
+	UPDATE Orienteering.Event
 SET EventName = @EventName
 	WHERE ID = @old_ID
 GO
 
 
-CREATE PROCEDURE UpdateEventStartLocation
+CREATE PROCEDURE Orienteering.UpdateEventStartLocation
 (
 	@old_ID BIGINT , 
 	@StartLocation NATIONAL CHARACTER VARYING(200) 
 )
 AS
-	UPDATE Event
+	UPDATE Orienteering.Event
 SET StartLocation = @StartLocation
 	WHERE ID = @old_ID
 GO
 
 
-CREATE PROCEDURE UpdateEventID
+CREATE PROCEDURE Orienteering.UpdateEventID
 (
 	@old_ID BIGINT , 
 	@ID BIGINT 
 )
 AS
-	UPDATE Event
+	UPDATE Orienteering.Event
 SET ID = @ID
 	WHERE ID = @old_ID
 GO
 
 
-CREATE PROCEDURE "UpdateEvent""Date"""
+CREATE PROCEDURE Orienteering."UpdateEvent""Date"""
 (
 	@old_ID BIGINT , 
 	@"Date" BIGINT 
 )
 AS
-	UPDATE Event
+	UPDATE Orienteering.Event
 SET "Date" = @"Date"
 	WHERE ID = @old_ID
 GO
 
 
-CREATE PROCEDURE UpdateEventRunByClub_Code
+CREATE PROCEDURE Orienteering.UpdateEventRunByClub_Code
 (
 	@old_ID BIGINT , 
 	@RunByClub_Code NATIONAL CHARACTER VARYING(6) 
 )
 AS
-	UPDATE Event
+	UPDATE Orienteering.Event
 SET RunByClub_Code = @RunByClub_Code
 	WHERE ID = @old_ID
 GO
 
 
-CREATE PROCEDURE UpdateEventMap_Name
+CREATE PROCEDURE Orienteering.UpdateEventMap_Name
 (
 	@old_ID BIGINT , 
 	@Map_Name NATIONAL CHARACTER VARYING(80) 
 )
 AS
-	UPDATE Event
+	UPDATE Orienteering.Event
 SET Map_Name = @Map_Name
 	WHERE ID = @old_ID
 GO
 
 
-CREATE PROCEDURE InsertClub
+CREATE PROCEDURE Orienteering.InsertClub
 (
 	@ClubName NATIONAL CHARACTER VARYING(32) , 
 	@Code NATIONAL CHARACTER VARYING(6) 
 )
 AS
-	INSERT INTO Club(ClubName, Code)
+	INSERT INTO Orienteering.Club(ClubName, Code)
 	VALUES (@ClubName, @Code)
 GO
 
 
-CREATE PROCEDURE DeleteClub
+CREATE PROCEDURE Orienteering.DeleteClub
 (
 	@Code NATIONAL CHARACTER VARYING(6) 
 )
 AS
-	DELETE FROM Club
+	DELETE FROM Orienteering.Club
 	WHERE Code = @Code
 GO
 
 
-CREATE PROCEDURE UpdateClubClubName
+CREATE PROCEDURE Orienteering.UpdateClubClubName
 (
 	@old_Code NATIONAL CHARACTER VARYING(6) , 
 	@ClubName NATIONAL CHARACTER VARYING(32) 
 )
 AS
-	UPDATE Club
+	UPDATE Orienteering.Club
 SET ClubName = @ClubName
 	WHERE Code = @old_Code
 GO
 
 
-CREATE PROCEDURE UpdateClubCode
+CREATE PROCEDURE Orienteering.UpdateClubCode
 (
 	@old_Code NATIONAL CHARACTER VARYING(6) , 
 	@Code NATIONAL CHARACTER VARYING(6) 
 )
 AS
-	UPDATE Club
+	UPDATE Orienteering.Club
 SET Code = @Code
 	WHERE Code = @old_Code
 GO
 
 
-CREATE PROCEDURE InsertMap
+CREATE PROCEDURE Orienteering.InsertMap
 (
 	@Name NATIONAL CHARACTER VARYING(80) , 
 	@Accessibility NATIONAL CHARACTER(1) , 
 	@Owner_Code NATIONAL CHARACTER VARYING(6) 
 )
 AS
-	INSERT INTO Map(Name, Accessibility, Owner_Code)
+	INSERT INTO Orienteering.Map(Name, Accessibility, Owner_Code)
 	VALUES (@Name, @Accessibility, @Owner_Code)
 GO
 
 
-CREATE PROCEDURE DeleteMap
+CREATE PROCEDURE Orienteering.DeleteMap
 (
 	@Name NATIONAL CHARACTER VARYING(80) 
 )
 AS
-	DELETE FROM Map
+	DELETE FROM Orienteering.Map
 	WHERE Name = @Name
 GO
 
 
-CREATE PROCEDURE UpdateMapName
+CREATE PROCEDURE Orienteering.UpdateMapName
 (
 	@old_Name NATIONAL CHARACTER VARYING(80) , 
 	@Name NATIONAL CHARACTER VARYING(80) 
 )
 AS
-	UPDATE Map
+	UPDATE Orienteering.Map
 SET Name = @Name
 	WHERE Name = @old_Name
 GO
 
 
-CREATE PROCEDURE UpdateMapAccessibility
+CREATE PROCEDURE Orienteering.UpdateMapAccessibility
 (
 	@old_Name NATIONAL CHARACTER VARYING(80) , 
 	@Accessibility NATIONAL CHARACTER(1) 
 )
 AS
-	UPDATE Map
+	UPDATE Orienteering.Map
 SET Accessibility = @Accessibility
 	WHERE Name = @old_Name
 GO
 
 
-CREATE PROCEDURE UpdateMapOwner_Code
+CREATE PROCEDURE Orienteering.UpdateMapOwner_Code
 (
 	@old_Name NATIONAL CHARACTER VARYING(80) , 
 	@Owner_Code NATIONAL CHARACTER VARYING(6) 
 )
 AS
-	UPDATE Map
+	UPDATE Orienteering.Map
 SET Owner_Code = @Owner_Code
 	WHERE Name = @old_Name
 GO
 
 
-CREATE PROCEDURE InsertEntrant
+CREATE PROCEDURE Orienteering.InsertEntrant
 (
 	@IsTeam BIT , 
 	@EntrantID BIGINT , 
@@ -407,106 +411,106 @@ CREATE PROCEDURE InsertEntrant
 	@MemberOfClub_Code NATIONAL CHARACTER VARYING(6) 
 )
 AS
-	INSERT INTO Entrant(IsTeam, EntrantID, GivenName, Competitor_FamilyName, Competitor_Gender, Competitor_BirthYear, Competitor_PostCode, MemberOfClub_Code)
+	INSERT INTO Orienteering.Entrant(IsTeam, EntrantID, GivenName, Competitor_FamilyName, Competitor_Gender, Competitor_BirthYear, Competitor_PostCode, MemberOfClub_Code)
 	VALUES (@IsTeam, @EntrantID, @GivenName, @Competitor_FamilyName, @Competitor_Gender, @Competitor_BirthYear, @Competitor_PostCode, @MemberOfClub_Code)
 GO
 
 
-CREATE PROCEDURE DeleteEntrant
+CREATE PROCEDURE Orienteering.DeleteEntrant
 (
 	@EntrantID BIGINT 
 )
 AS
-	DELETE FROM Entrant
+	DELETE FROM Orienteering.Entrant
 	WHERE EntrantID = @EntrantID
 GO
 
 
-CREATE PROCEDURE UpdateEntrantIsTeam
+CREATE PROCEDURE Orienteering.UpdateEntrantIsTeam
 (
 	@old_EntrantID BIGINT , 
 	@IsTeam BIT 
 )
 AS
-	UPDATE Entrant
+	UPDATE Orienteering.Entrant
 SET IsTeam = @IsTeam
 	WHERE EntrantID = @old_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdateEntrantGivenName
+CREATE PROCEDURE Orienteering.UpdateEntrantGivenName
 (
 	@old_EntrantID BIGINT , 
 	@GivenName NATIONAL CHARACTER VARYING(48) 
 )
 AS
-	UPDATE Entrant
+	UPDATE Orienteering.Entrant
 SET GivenName = @GivenName
 	WHERE EntrantID = @old_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdtEntrntCmpttr_FmlyNm
+CREATE PROCEDURE Orienteering.UpdtEntrntCmpttr_FmlyNm
 (
 	@old_EntrantID BIGINT , 
 	@Competitor_FamilyName NATIONAL CHARACTER VARYING(48) 
 )
 AS
-	UPDATE Entrant
+	UPDATE Orienteering.Entrant
 SET Competitor_FamilyName = @Competitor_FamilyName
 	WHERE EntrantID = @old_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdateEntrantCompetitor_Gender
+CREATE PROCEDURE Orienteering.UpdateEntrantCompetitor_Gender
 (
 	@old_EntrantID BIGINT , 
 	@Competitor_Gender NATIONAL CHARACTER(1) 
 )
 AS
-	UPDATE Entrant
+	UPDATE Orienteering.Entrant
 SET Competitor_Gender = @Competitor_Gender
 	WHERE EntrantID = @old_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdtEntrntCmpttr_BrthYr
+CREATE PROCEDURE Orienteering.UpdtEntrntCmpttr_BrthYr
 (
 	@old_EntrantID BIGINT , 
 	@Competitor_BirthYear BIGINT 
 )
 AS
-	UPDATE Entrant
+	UPDATE Orienteering.Entrant
 SET Competitor_BirthYear = @Competitor_BirthYear
 	WHERE EntrantID = @old_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdtEntrntCmpttr_PstCd
+CREATE PROCEDURE Orienteering.UpdtEntrntCmpttr_PstCd
 (
 	@old_EntrantID BIGINT , 
 	@Competitor_PostCode BIGINT 
 )
 AS
-	UPDATE Entrant
+	UPDATE Orienteering.Entrant
 SET Competitor_PostCode = @Competitor_PostCode
 	WHERE EntrantID = @old_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdateEntrantMemberOfClub_Code
+CREATE PROCEDURE Orienteering.UpdateEntrantMemberOfClub_Code
 (
 	@old_EntrantID BIGINT , 
 	@MemberOfClub_Code NATIONAL CHARACTER VARYING(6) 
 )
 AS
-	UPDATE Entrant
+	UPDATE Orienteering.Entrant
 SET MemberOfClub_Code = @MemberOfClub_Code
 	WHERE EntrantID = @old_EntrantID
 GO
 
 
-CREATE PROCEDURE InsertTeamMember
+CREATE PROCEDURE Orienteering.InsertTeamMember
 (
 	@EventCourse_ID BIGINT , 
 	@EventCourse_Course NATIONAL CHARACTER VARYING(16) , 
@@ -514,26 +518,26 @@ CREATE PROCEDURE InsertTeamMember
 	@Team_EntrantID BIGINT 
 )
 AS
-	INSERT INTO TeamMember(EventCourse_ID, EventCourse_Course, Competitor_EntrantID, Team_EntrantID)
+	INSERT INTO Orienteering.TeamMember(EventCourse_ID, EventCourse_Course, Competitor_EntrantID, Team_EntrantID)
 	VALUES (@EventCourse_ID, @EventCourse_Course, @Competitor_EntrantID, @Team_EntrantID)
 GO
 
 
-CREATE PROCEDURE DeleteTeamMember
+CREATE PROCEDURE Orienteering.DeleteTeamMember
 (
 	@EventCourse_ID BIGINT , 
 	@EventCourse_Course NATIONAL CHARACTER VARYING(16) , 
 	@Competitor_EntrantID BIGINT 
 )
 AS
-	DELETE FROM TeamMember
+	DELETE FROM Orienteering.TeamMember
 	WHERE EventCourse_ID = @EventCourse_ID AND 
 EventCourse_Course = @EventCourse_Course AND 
 Competitor_EntrantID = @Competitor_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdateTeamMemberEventCourse_ID
+CREATE PROCEDURE Orienteering.UpdateTeamMemberEventCourse_ID
 (
 	@old_EventCourse_ID BIGINT , 
 	@old_EventCourse_Course NATIONAL CHARACTER VARYING(16) , 
@@ -541,7 +545,7 @@ CREATE PROCEDURE UpdateTeamMemberEventCourse_ID
 	@EventCourse_ID BIGINT 
 )
 AS
-	UPDATE TeamMember
+	UPDATE Orienteering.TeamMember
 SET EventCourse_ID = @EventCourse_ID
 	WHERE EventCourse_ID = @old_EventCourse_ID AND 
 EventCourse_Course = @old_EventCourse_Course AND 
@@ -549,7 +553,7 @@ Competitor_EntrantID = @old_Competitor_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdtTmMmbrEvntCrs_Crs
+CREATE PROCEDURE Orienteering.UpdtTmMmbrEvntCrs_Crs
 (
 	@old_EventCourse_ID BIGINT , 
 	@old_EventCourse_Course NATIONAL CHARACTER VARYING(16) , 
@@ -557,7 +561,7 @@ CREATE PROCEDURE UpdtTmMmbrEvntCrs_Crs
 	@EventCourse_Course NATIONAL CHARACTER VARYING(16) 
 )
 AS
-	UPDATE TeamMember
+	UPDATE Orienteering.TeamMember
 SET EventCourse_Course = @EventCourse_Course
 	WHERE EventCourse_ID = @old_EventCourse_ID AND 
 EventCourse_Course = @old_EventCourse_Course AND 
@@ -565,7 +569,7 @@ Competitor_EntrantID = @old_Competitor_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdtTmMmbrCmpttr_EntrntID
+CREATE PROCEDURE Orienteering.UpdtTmMmbrCmpttr_EntrntID
 (
 	@old_EventCourse_ID BIGINT , 
 	@old_EventCourse_Course NATIONAL CHARACTER VARYING(16) , 
@@ -573,7 +577,7 @@ CREATE PROCEDURE UpdtTmMmbrCmpttr_EntrntID
 	@Competitor_EntrantID BIGINT 
 )
 AS
-	UPDATE TeamMember
+	UPDATE Orienteering.TeamMember
 SET Competitor_EntrantID = @Competitor_EntrantID
 	WHERE EventCourse_ID = @old_EventCourse_ID AND 
 EventCourse_Course = @old_EventCourse_Course AND 
@@ -581,7 +585,7 @@ Competitor_EntrantID = @old_Competitor_EntrantID
 GO
 
 
-CREATE PROCEDURE UpdateTeamMemberTeam_EntrantID
+CREATE PROCEDURE Orienteering.UpdateTeamMemberTeam_EntrantID
 (
 	@old_EventCourse_ID BIGINT , 
 	@old_EventCourse_Course NATIONAL CHARACTER VARYING(16) , 
@@ -589,7 +593,7 @@ CREATE PROCEDURE UpdateTeamMemberTeam_EntrantID
 	@Team_EntrantID BIGINT 
 )
 AS
-	UPDATE TeamMember
+	UPDATE Orienteering.TeamMember
 SET Team_EntrantID = @Team_EntrantID
 	WHERE EventCourse_ID = @old_EventCourse_ID AND 
 EventCourse_Course = @old_EventCourse_Course AND 
@@ -597,7 +601,7 @@ Competitor_EntrantID = @old_Competitor_EntrantID
 GO
 
 
-CREATE PROCEDURE InsertVisit
+CREATE PROCEDURE Orienteering.InsertVisit
 (
 	@"Time" BIGINT , 
 	@Checked BIT , 
@@ -606,12 +610,12 @@ CREATE PROCEDURE InsertVisit
 	@Entrant_EntrantID BIGINT 
 )
 AS
-	INSERT INTO Visit("Time", Checked, EventControl_ID, EventControl_Control, Entrant_EntrantID)
+	INSERT INTO Orienteering.Visit("Time", Checked, EventControl_ID, EventControl_Control, Entrant_EntrantID)
 	VALUES (@"Time", @Checked, @EventControl_ID, @EventControl_Control, @Entrant_EntrantID)
 GO
 
 
-CREATE PROCEDURE DeleteVisit
+CREATE PROCEDURE Orienteering.DeleteVisit
 (
 	@EventControl_ID BIGINT , 
 	@EventControl_Control BIGINT , 
@@ -619,7 +623,7 @@ CREATE PROCEDURE DeleteVisit
 	@"Time" BIGINT 
 )
 AS
-	DELETE FROM Visit
+	DELETE FROM Orienteering.Visit
 	WHERE EventControl_ID = @EventControl_ID AND 
 EventControl_Control = @EventControl_Control AND 
 Entrant_EntrantID = @Entrant_EntrantID AND 
@@ -627,7 +631,7 @@ Entrant_EntrantID = @Entrant_EntrantID AND
 GO
 
 
-CREATE PROCEDURE "UpdateVisit""Time"""
+CREATE PROCEDURE Orienteering."UpdateVisit""Time"""
 (
 	@old_EventControl_ID BIGINT , 
 	@old_EventControl_Control BIGINT , 
@@ -636,7 +640,7 @@ CREATE PROCEDURE "UpdateVisit""Time"""
 	@"Time" BIGINT 
 )
 AS
-	UPDATE Visit
+	UPDATE Orienteering.Visit
 SET "Time" = @"Time"
 	WHERE EventControl_ID = @old_EventControl_ID AND 
 EventControl_Control = @old_EventControl_Control AND 
@@ -645,7 +649,7 @@ Entrant_EntrantID = @old_Entrant_EntrantID AND
 GO
 
 
-CREATE PROCEDURE UpdateVisitChecked
+CREATE PROCEDURE Orienteering.UpdateVisitChecked
 (
 	@old_EventControl_ID BIGINT , 
 	@old_EventControl_Control BIGINT , 
@@ -654,7 +658,7 @@ CREATE PROCEDURE UpdateVisitChecked
 	@Checked BIT 
 )
 AS
-	UPDATE Visit
+	UPDATE Orienteering.Visit
 SET Checked = @Checked
 	WHERE EventControl_ID = @old_EventControl_ID AND 
 EventControl_Control = @old_EventControl_Control AND 
@@ -663,7 +667,7 @@ Entrant_EntrantID = @old_Entrant_EntrantID AND
 GO
 
 
-CREATE PROCEDURE UpdateVisitEventControl_ID
+CREATE PROCEDURE Orienteering.UpdateVisitEventControl_ID
 (
 	@old_EventControl_ID BIGINT , 
 	@old_EventControl_Control BIGINT , 
@@ -672,7 +676,7 @@ CREATE PROCEDURE UpdateVisitEventControl_ID
 	@EventControl_ID BIGINT 
 )
 AS
-	UPDATE Visit
+	UPDATE Orienteering.Visit
 SET EventControl_ID = @EventControl_ID
 	WHERE EventControl_ID = @old_EventControl_ID AND 
 EventControl_Control = @old_EventControl_Control AND 
@@ -681,7 +685,7 @@ Entrant_EntrantID = @old_Entrant_EntrantID AND
 GO
 
 
-CREATE PROCEDURE UpdtVstEvntCntrl_Cntrl
+CREATE PROCEDURE Orienteering.UpdtVstEvntCntrl_Cntrl
 (
 	@old_EventControl_ID BIGINT , 
 	@old_EventControl_Control BIGINT , 
@@ -690,7 +694,7 @@ CREATE PROCEDURE UpdtVstEvntCntrl_Cntrl
 	@EventControl_Control BIGINT 
 )
 AS
-	UPDATE Visit
+	UPDATE Orienteering.Visit
 SET EventControl_Control = @EventControl_Control
 	WHERE EventControl_ID = @old_EventControl_ID AND 
 EventControl_Control = @old_EventControl_Control AND 
@@ -699,7 +703,7 @@ Entrant_EntrantID = @old_Entrant_EntrantID AND
 GO
 
 
-CREATE PROCEDURE UpdateVisitEntrant_EntrantID
+CREATE PROCEDURE Orienteering.UpdateVisitEntrant_EntrantID
 (
 	@old_EventControl_ID BIGINT , 
 	@old_EventControl_Control BIGINT , 
@@ -708,7 +712,7 @@ CREATE PROCEDURE UpdateVisitEntrant_EntrantID
 	@Entrant_EntrantID BIGINT 
 )
 AS
-	UPDATE Visit
+	UPDATE Orienteering.Visit
 SET Entrant_EntrantID = @Entrant_EntrantID
 	WHERE EventControl_ID = @old_EventControl_ID AND 
 EventControl_Control = @old_EventControl_Control AND 
@@ -717,7 +721,7 @@ Entrant_EntrantID = @old_Entrant_EntrantID AND
 GO
 
 
-CREATE PROCEDURE InsertPunchPlacement
+CREATE PROCEDURE Orienteering.InsertPunchPlacement
 (
 	@Punch_PunchID BIGINT , 
 	@EventControl_ID BIGINT , 
@@ -725,146 +729,146 @@ CREATE PROCEDURE InsertPunchPlacement
 	@Event_ID BIGINT 
 )
 AS
-	INSERT INTO PunchPlacement(Punch_PunchID, EventControl_ID, EventControl_Control, Event_ID)
+	INSERT INTO Orienteering.PunchPlacement(Punch_PunchID, EventControl_ID, EventControl_Control, Event_ID)
 	VALUES (@Punch_PunchID, @EventControl_ID, @EventControl_Control, @Event_ID)
 GO
 
 
-CREATE PROCEDURE DeletePunchPlacement
+CREATE PROCEDURE Orienteering.DeletePunchPlacement
 (
 	@Punch_PunchID BIGINT , 
 	@Event_ID BIGINT 
 )
 AS
-	DELETE FROM PunchPlacement
+	DELETE FROM Orienteering.PunchPlacement
 	WHERE Punch_PunchID = @Punch_PunchID AND 
 Event_ID = @Event_ID
 GO
 
 
-CREATE PROCEDURE UpdtPnchPlcmntPnch_PnchID
+CREATE PROCEDURE Orienteering.UpdtPnchPlcmntPnch_PnchID
 (
 	@old_Punch_PunchID BIGINT , 
 	@old_Event_ID BIGINT , 
 	@Punch_PunchID BIGINT 
 )
 AS
-	UPDATE PunchPlacement
+	UPDATE Orienteering.PunchPlacement
 SET Punch_PunchID = @Punch_PunchID
 	WHERE Punch_PunchID = @old_Punch_PunchID AND 
 Event_ID = @old_Event_ID
 GO
 
 
-CREATE PROCEDURE UpdtPnchPlcmntEvntCntrl_ID
+CREATE PROCEDURE Orienteering.UpdtPnchPlcmntEvntCntrl_ID
 (
 	@old_Punch_PunchID BIGINT , 
 	@old_Event_ID BIGINT , 
 	@EventControl_ID BIGINT 
 )
 AS
-	UPDATE PunchPlacement
+	UPDATE Orienteering.PunchPlacement
 SET EventControl_ID = @EventControl_ID
 	WHERE Punch_PunchID = @old_Punch_PunchID AND 
 Event_ID = @old_Event_ID
 GO
 
 
-CREATE PROCEDURE UpdtPnchPlcmntEvntCntrl_Cntrl
+CREATE PROCEDURE Orienteering.UpdtPnchPlcmntEvntCntrl_Cntrl
 (
 	@old_Punch_PunchID BIGINT , 
 	@old_Event_ID BIGINT , 
 	@EventControl_Control BIGINT 
 )
 AS
-	UPDATE PunchPlacement
+	UPDATE Orienteering.PunchPlacement
 SET EventControl_Control = @EventControl_Control
 	WHERE Punch_PunchID = @old_Punch_PunchID AND 
 Event_ID = @old_Event_ID
 GO
 
 
-CREATE PROCEDURE UpdatePunchPlacementEvent_ID
+CREATE PROCEDURE Orienteering.UpdatePunchPlacementEvent_ID
 (
 	@old_Punch_PunchID BIGINT , 
 	@old_Event_ID BIGINT , 
 	@Event_ID BIGINT 
 )
 AS
-	UPDATE PunchPlacement
+	UPDATE Orienteering.PunchPlacement
 SET Event_ID = @Event_ID
 	WHERE Punch_PunchID = @old_Punch_PunchID AND 
 Event_ID = @old_Event_ID
 GO
 
 
-CREATE PROCEDURE InsertEventControl
+CREATE PROCEDURE Orienteering.InsertEventControl
 (
 	@Control BIGINT , 
-	@Points BIGINT , 
+	@PointValue BIGINT , 
 	@Event_ID BIGINT 
 )
 AS
-	INSERT INTO EventControl(Control, Points, Event_ID)
-	VALUES (@Control, @Points, @Event_ID)
+	INSERT INTO Orienteering.EventControl(Control, PointValue, Event_ID)
+	VALUES (@Control, @PointValue, @Event_ID)
 GO
 
 
-CREATE PROCEDURE DeleteEventControl
+CREATE PROCEDURE Orienteering.DeleteEventControl
 (
 	@Event_ID BIGINT , 
 	@Control BIGINT 
 )
 AS
-	DELETE FROM EventControl
+	DELETE FROM Orienteering.EventControl
 	WHERE Event_ID = @Event_ID AND 
 Control = @Control
 GO
 
 
-CREATE PROCEDURE UpdateEventControlControl
+CREATE PROCEDURE Orienteering.UpdateEventControlControl
 (
 	@old_Event_ID BIGINT , 
 	@old_Control BIGINT , 
 	@Control BIGINT 
 )
 AS
-	UPDATE EventControl
+	UPDATE Orienteering.EventControl
 SET Control = @Control
 	WHERE Event_ID = @old_Event_ID AND 
 Control = @old_Control
 GO
 
 
-CREATE PROCEDURE UpdateEventControlPoints
+CREATE PROCEDURE Orienteering.UpdateEventControlPointValue
 (
 	@old_Event_ID BIGINT , 
 	@old_Control BIGINT , 
-	@Points BIGINT 
+	@PointValue BIGINT 
 )
 AS
-	UPDATE EventControl
-SET Points = @Points
+	UPDATE Orienteering.EventControl
+SET PointValue = @PointValue
 	WHERE Event_ID = @old_Event_ID AND 
 Control = @old_Control
 GO
 
 
-CREATE PROCEDURE UpdateEventControlEvent_ID
+CREATE PROCEDURE Orienteering.UpdateEventControlEvent_ID
 (
 	@old_Event_ID BIGINT , 
 	@old_Control BIGINT , 
 	@Event_ID BIGINT 
 )
 AS
-	UPDATE EventControl
+	UPDATE Orienteering.EventControl
 SET Event_ID = @Event_ID
 	WHERE Event_ID = @old_Event_ID AND 
 Control = @old_Control
 GO
 
 
-CREATE PROCEDURE InsertEventCourse
+CREATE PROCEDURE Orienteering.InsertEventCourse
 (
 	@ScoringMethod NATIONAL CHARACTER VARYING(32) , 
 	@Course NATIONAL CHARACTER VARYING(16) , 
@@ -872,80 +876,80 @@ CREATE PROCEDURE InsertEventCourse
 	@Event_ID BIGINT 
 )
 AS
-	INSERT INTO EventCourse(ScoringMethod, Course, Individual, Event_ID)
+	INSERT INTO Orienteering.EventCourse(ScoringMethod, Course, Individual, Event_ID)
 	VALUES (@ScoringMethod, @Course, @Individual, @Event_ID)
 GO
 
 
-CREATE PROCEDURE DeleteEventCourse
+CREATE PROCEDURE Orienteering.DeleteEventCourse
 (
 	@Event_ID BIGINT , 
 	@Course NATIONAL CHARACTER VARYING(16) 
 )
 AS
-	DELETE FROM EventCourse
+	DELETE FROM Orienteering.EventCourse
 	WHERE Event_ID = @Event_ID AND 
 Course = @Course
 GO
 
 
-CREATE PROCEDURE UpdateEventCourseScoringMethod
+CREATE PROCEDURE Orienteering.UpdateEventCourseScoringMethod
 (
 	@old_Event_ID BIGINT , 
 	@old_Course NATIONAL CHARACTER VARYING(16) , 
 	@ScoringMethod NATIONAL CHARACTER VARYING(32) 
 )
 AS
-	UPDATE EventCourse
+	UPDATE Orienteering.EventCourse
 SET ScoringMethod = @ScoringMethod
 	WHERE Event_ID = @old_Event_ID AND 
 Course = @old_Course
 GO
 
 
-CREATE PROCEDURE UpdateEventCourseCourse
+CREATE PROCEDURE Orienteering.UpdateEventCourseCourse
 (
 	@old_Event_ID BIGINT , 
 	@old_Course NATIONAL CHARACTER VARYING(16) , 
 	@Course NATIONAL CHARACTER VARYING(16) 
 )
 AS
-	UPDATE EventCourse
+	UPDATE Orienteering.EventCourse
 SET Course = @Course
 	WHERE Event_ID = @old_Event_ID AND 
 Course = @old_Course
 GO
 
 
-CREATE PROCEDURE UpdateEventCourseIndividual
+CREATE PROCEDURE Orienteering.UpdateEventCourseIndividual
 (
 	@old_Event_ID BIGINT , 
 	@old_Course NATIONAL CHARACTER VARYING(16) , 
 	@Individual BIT 
 )
 AS
-	UPDATE EventCourse
+	UPDATE Orienteering.EventCourse
 SET Individual = @Individual
 	WHERE Event_ID = @old_Event_ID AND 
 Course = @old_Course
 GO
 
 
-CREATE PROCEDURE UpdateEventCourseEvent_ID
+CREATE PROCEDURE Orienteering.UpdateEventCourseEvent_ID
 (
 	@old_Event_ID BIGINT , 
 	@old_Course NATIONAL CHARACTER VARYING(16) , 
 	@Event_ID BIGINT 
 )
 AS
-	UPDATE EventCourse
+	UPDATE Orienteering.EventCourse
 SET Event_ID = @Event_ID
 	WHERE Event_ID = @old_Event_ID AND 
 Course = @old_Course
 GO
 
 
-CREATE PROCEDURE InsertEntry
+CREATE PROCEDURE Orienteering.InsertEntry
 (
 	@Score BIGINT , 
 	@EntryID BIGINT , 
@@ -955,141 +959,141 @@ CREATE PROCEDURE InsertEntry
 	@Entrant_EntrantID BIGINT 
 )
 AS
-	INSERT INTO Entry(Score, EntryID, FinishOrder, EventCourse_ID, EventCourse_Course, Entrant_EntrantID)
+	INSERT INTO Orienteering.Entry(Score, EntryID, FinishOrder, EventCourse_ID, EventCourse_Course, Entrant_EntrantID)
 	VALUES (@Score, @EntryID, @FinishOrder, @EventCourse_ID, @EventCourse_Course, @Entrant_EntrantID)
 GO
 
 
-CREATE PROCEDURE DeleteEntry
+CREATE PROCEDURE Orienteering.DeleteEntry
 (
 	@EntryID BIGINT 
 )
 AS
-	DELETE FROM Entry
+	DELETE FROM Orienteering.Entry
 	WHERE EntryID = @EntryID
 GO
 
 
-CREATE PROCEDURE UpdateEntryScore
+CREATE PROCEDURE Orienteering.UpdateEntryScore
 (
 	@old_EntryID BIGINT , 
 	@Score BIGINT 
 )
 AS
-	UPDATE Entry
+	UPDATE Orienteering.Entry
 SET Score = @Score
 	WHERE EntryID = @old_EntryID
 GO
 
 
-CREATE PROCEDURE UpdateEntryFinishOrder
+CREATE PROCEDURE Orienteering.UpdateEntryFinishOrder
 (
 	@old_EntryID BIGINT , 
 	@FinishOrder BIGINT 
 )
 AS
-	UPDATE Entry
+	UPDATE Orienteering.Entry
 SET FinishOrder = @FinishOrder
 	WHERE EntryID = @old_EntryID
 GO
 
 
-CREATE PROCEDURE UpdateEntryEventCourse_ID
+CREATE PROCEDURE Orienteering.UpdateEntryEventCourse_ID
 (
 	@old_EntryID BIGINT , 
 	@EventCourse_ID BIGINT 
 )
 AS
-	UPDATE Entry
+	UPDATE Orienteering.Entry
 SET EventCourse_ID = @EventCourse_ID
 	WHERE EntryID = @old_EntryID
 GO
 
 
-CREATE PROCEDURE UpdateEntryEventCourse_Course
+CREATE PROCEDURE Orienteering.UpdateEntryEventCourse_Course
 (
 	@old_EntryID BIGINT , 
 	@EventCourse_Course NATIONAL CHARACTER VARYING(16) 
 )
 AS
-	UPDATE Entry
+	UPDATE Orienteering.Entry
 SET EventCourse_Course = @EventCourse_Course
 	WHERE EntryID = @old_EntryID
 GO
 
 
-CREATE PROCEDURE UpdateEntryEntrant_EntrantID
+CREATE PROCEDURE Orienteering.UpdateEntryEntrant_EntrantID
 (
 	@old_EntryID BIGINT , 
 	@Entrant_EntrantID BIGINT 
 )
 AS
-	UPDATE Entry
+	UPDATE Orienteering.Entry
 SET Entrant_EntrantID = @Entrant_EntrantID
 	WHERE EntryID = @old_EntryID
 GO
 
 
-CREATE PROCEDURE InsertSeriesEvent
+CREATE PROCEDURE Orienteering.InsertSeriesEvent
 (
 	@Number BIGINT , 
 	@Series_SeriesName NATIONAL CHARACTER VARYING(40) , 
 	@Event_ID BIGINT 
 )
 AS
-	INSERT INTO SeriesEvent(Number, Series_SeriesName, Event_ID)
+	INSERT INTO Orienteering.SeriesEvent(Number, Series_SeriesName, Event_ID)
 	VALUES (@Number, @Series_SeriesName, @Event_ID)
 GO
 
 
-CREATE PROCEDURE DeleteSeriesEvent
+CREATE PROCEDURE Orienteering.DeleteSeriesEvent
 (
 	@Number BIGINT , 
 	@Series_SeriesName NATIONAL CHARACTER VARYING(40) 
 )
 AS
-	DELETE FROM SeriesEvent
+	DELETE FROM Orienteering.SeriesEvent
 	WHERE Number = @Number AND 
 Series_SeriesName = @Series_SeriesName
 GO
 
 
-CREATE PROCEDURE UpdateSeriesEventNumber
+CREATE PROCEDURE Orienteering.UpdateSeriesEventNumber
 (
 	@old_Number BIGINT , 
 	@old_Series_SeriesName NATIONAL CHARACTER VARYING(40) , 
 	@Number BIGINT 
 )
 AS
-	UPDATE SeriesEvent
+	UPDATE Orienteering.SeriesEvent
 SET Number = @Number
 	WHERE Number = @old_Number AND 
 Series_SeriesName = @old_Series_SeriesName
 GO
 
 
-CREATE PROCEDURE UpdtSrsEvntSrs_SrsNm
+CREATE PROCEDURE Orienteering.UpdtSrsEvntSrs_SrsNm
 (
 	@old_Number BIGINT , 
 	@old_Series_SeriesName NATIONAL CHARACTER VARYING(40) , 
 	@Series_SeriesName NATIONAL CHARACTER VARYING(40) 
 )
 AS
-	UPDATE SeriesEvent
+	UPDATE Orienteering.SeriesEvent
 SET Series_SeriesName = @Series_SeriesName
 	WHERE Number = @old_Number AND 
 Series_SeriesName = @old_Series_SeriesName
 GO
 
 
-CREATE PROCEDURE UpdateSeriesEventEvent_ID
+CREATE PROCEDURE Orienteering.UpdateSeriesEventEvent_ID
 (
 	@old_Number BIGINT , 
 	@old_Series_SeriesName NATIONAL CHARACTER VARYING(40) , 
 	@Event_ID BIGINT 
 )
 AS
-	UPDATE SeriesEvent
+	UPDATE Orienteering.SeriesEvent
 SET Event_ID = @Event_ID
 	WHERE Number = @old_Number AND 
 Series_SeriesName = @old_Series_SeriesName

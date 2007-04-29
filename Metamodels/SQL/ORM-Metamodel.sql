@@ -108,7 +108,7 @@ CREATE TABLE Role (
 		FOREIGN KEY (FactTypeID)
 		REFERENCES FactType(FactTypeID),
 	CONSTRAINT FK_Role_ObjectType
-		FOREIGN KEY (RoleID)
+		FOREIGN KEY (ObjectTypeID)
 		REFERENCES ObjectType(ObjectTypeID),
 	CONSTRAINT FK_Role_DataType
 		FOREIGN KEY (DataSubTypeID)
