@@ -6,7 +6,7 @@ Clifford Heath.
 The ActiveFacts project lives on RubyForge, with access
 detils here: <http://rubyforge.org/scm/?group_id=3253>.
 
-Status as at 19 April 2007
+Status as at 30 April 2007
 --------------------------
 
 ActiveFacts now has a nearly complete ORM2 API written
@@ -14,8 +14,11 @@ in Ruby (for more about ORM2, see <http://www.orm.net>)
 It's loading all the NORMA <http://sourceforge.net/orm>
 models I can find and a few I built myself, with the
 exception of Value Restrictions (on data types and
-roles), and the sample fact data populations. Those
-should be finished this week.
+roles), and the sample fact data populations
+
+It's also using a custom-patched version of DRLSql to
+reflect the schema out of a database, back to a compound
+fact schema (not yet elementary).
 
 To look at ActiveFacts, install Subversion (either
 <http://subversion.tigris.org/> or one of the bundles
@@ -29,7 +32,7 @@ or VS2005 can look at them.
 
 Most of the models are trivial, except the Orienteering
 model, which models the orienteering system currently
-hosted at both <http://street.orienteerig]ng.com.au>
+hosted at both <http://street.orienteering.com.au>
 and <http://www.vicorienteering.asn.au/parkstreet/>. I
 compete in these events, and have even built scoring
 hardware for it using low-power microprocessors (not
@@ -87,14 +90,12 @@ Future
 ------
 
 Next on my list of tasks is:
-* To adapt a set of database drivers to allow reverse
-  engineering an existing SQL database into an ER model.
-  ActiveFacts can represent a non-elementary schema (an
-  ER schema which has compound fact types) just as well
-  as an elementary (ORM2) one. This is the first step to...
 
-* Reverse engineering an ER schema to an elementary ORM2
-  one.
+* Reverse engineering the ER (compound) schema to an ORM2
+  (elementary) one.
+
+* Constructing a query conceptual API that can query an
+  ER schema, writing the SQL code as appropriate,
 
 * Writing a textual language processor for ORM2 so models
   may be loaded (and perhaps exported) to a textual format
@@ -109,10 +110,8 @@ Next on my list of tasks is:
 
 Tasks I'll then address in an uncertain order are:
 
-* Absorbing an ORM2 (elementary) model down to an ER
-  schema,
-* Constructing a query conceptual API that can query an
-  ER schema, writing the SQL code as appropriate,
+* Absorbing an ORM2 (elementary) model down to an ER schema,
+
 * Converting conceptual query against an elementary (ORM2)
   model into one against the ER mapping of the same, and
   on executing it, converting the resultant compound fact

@@ -11,7 +11,7 @@ require "pp"
 require "active_record"
 require "drysql"
 require "activefacts"
-require "activefacts/drysql"
+require "activefacts/reflection"
 
 # Database connection parameters:
 adapter = "sqlserver"
@@ -45,7 +45,7 @@ ARGV.each{|arg|
 
 ActiveRecord::Base.pluralize_table_names = false
 ActiveRecord::Base.primary_key_prefix_type = :table_name
-schema = ActiveFacts::DrySQL.load(
+schema = ActiveFacts::Reflector.load(
 	:adapter => adapter,
 	:host => host,
 	:mode => mode,

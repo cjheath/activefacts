@@ -26,7 +26,7 @@ class NilClass
 end
 
 module ActiveFacts
-    class DrySQL
+    class Reflector
 	attr_reader :connection
 
 	def self.load(arghash)

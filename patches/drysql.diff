@@ -1,0 +1,581 @@
+Index: lib/connection_adapters/ibm_db2_adapter.rb
+===================================================================
+--- lib/connection_adapters/ibm_db2_adapter.rb	(revision 4)
++++ lib/connection_adapters/ibm_db2_adapter.rb	(working copy)
+@@ -147,11 +147,11 @@
+         @constraint_name = constraint_name
+         @table_name = table_name
+         @constraint_type = constraint_type
+-        if !column_name.nil? then @column_name = Set.new [column_name.downcase] end
++        if !column_name.nil? then @column_name = SortedSet.new [column_name.downcase] end
+         @referenced_table_name = referenced_table_name
+         @referenced_constraint_name = referenced_constraint_name
+         @delete_rule = delete_rule
+-        if !referenced_column_name.nil? then @referenced_column_name = referenced_column_name.downcase end
++        if !referenced_column_name.nil? then @referenced_column_name = SortedSet.new [referenced_column_name.downcase ] end
+       end
+       
+       def primary_key?
+@@ -299,14 +299,19 @@
+         if @iseries
+           return iseries_constraints(table_name, name)
+         else
+-          sql = "select CST.tabschema, CST.constname, CST.tabname, CST.type, COL.colname, \
+-            REF.constname as foreign_constraint_name, REF.tabname as foreign_table_name, \
+-            REF.refkeyname, REF.reftabname, REF.deleterule, REF.fk_colnames as foreign_columns, \
+-            REF.pk_colnames as referenced_columns from \
+-            ((select * from SYSCAT.TABCONST where tabname='#{table_name}') as CST \
+-            inner join (select colname, constname from SYSCAT.KEYCOLUSE where tabname='#{table_name}') \
+-            as COL on (CST.constname=COL.constname)) left outer join SYSCAT.REFERENCES REF on \
+-            (CST.constname=REF.refkeyname or CST.constname=REF.constname)"
++          sql = %Q{
++	    select  CST.tabschema, CST.constname as constraint_name, CST.tabname as table_name,
++		    CST.type as constraint_type, COL.colname as column_name,
++		    REF.constname as foreign_constraint_name, REF.tabname as foreign_table_name,
++		    REF.refkeyname, REF.reftabname, REF.deleterule, REF.fk_colnames as foreign_column_name,
++		    REF.pk_colnames as referenced_column_name
++	    from    ((select * from SYSCAT.TABCONST where tabname='#{table_name}') as CST
++		     inner join
++		     (select colname, constname from SYSCAT.KEYCOLUSE where tabname='#{table_name}') as COL
++		     on (CST.constname=COL.constname))
++	    left outer join SYSCAT.REFERENCES REF
++	    on	    (CST.constname=REF.refkeyname or CST.constname=REF.constname)
++	  }
+         end       
+         results = execute(sql, name)
+         constraint_name_hash = {}
+@@ -314,35 +319,37 @@
+         # Note that column names in constraint objects are downcased in order to
+         # be comparable with the column names produced by IBM_DB2Adapter.columns  
+         while row = DB2::fetch_assoc(results)
+-          constraint_name = row['constname']
++          constraint_name = row['constraint_name']
+           foreign_constraint_name = row['foreign_constraint_name']
+ 
+           # Process constraints local to this table
+-          if !constraint_name_hash.has_key?(constraint_name)
+-            current_constraint = IBM_DB2Constraint.new(row['tabschema'], constraint_name, row['type'], 
+-              row['tabname'], row['colname'], row['refkeyname'], row['reftabname'], 
+-              row['referenced_columns'], row['deleterule'])
++          current_constraint = constraint_name_hash[constraint_name]
++          if !current_constraint
++            current_constraint = IBM_DB2Constraint.new(row['tabschema'], constraint_name, row['constraint_type'], 
++              row['table_name'], row['column_name'], row['refkeyname'], row['reftabname'], 
++              row['referenced_column_name'], row['deleterule'])
+             constraints << current_constraint
+             constraint_name_hash[constraint_name] = current_constraint
+-          # This key is a composite
+-          else
+-            current_constraint = constraint_name_hash[constraint_name]
+-            # Unique Keys are currently the only type of composite keys supported
+-            if current_constraint.component_of_unique_key? 
+-              current_constraint.column_name.add(row['colname']) 
+-            end
++          else	# This key is a composite, and this is the 2nd field:
++	    current_constraint.column_name << row['column_name']
++	    referenced_column_name = row['referenced_column_name']
++	    current_constraint.referenced_column_name << referenced_column_name if referenced_column_name
+           end
+           
+           # Process constraints that reference this table's local constraints
+-          if !foreign_constraint_name.nil? && !constraint_name_hash.has_key?(foreign_constraint_name)
++          if foreign_constraint_name
++	    current_foreign_constraint = constraint_name_hash[foreign_constraint_name]
++	    if !current_foreign_constraint
+             current_foreign_constraint = IBM_DB2Constraint.new(row['tabschema'], foreign_constraint_name, IBM_DB2Constraint::FOREIGN_KEY_TYPE,
+-              row['foreign_table_name'], row['foreign_columns'], constraint_name, row['tabname'], row['colname'],
++                row['foreign_table_name'], row['foreign_column_name'], constraint_name, row['table_name'], row['column_name'],
+               row['deleterule'])
+               constraints << current_foreign_constraint
+               constraint_name_hash[foreign_constraint_name] = current_foreign_constraint
+-          # Composite FKs are currently not supported 
+-          # else
+-          #  constraint_name_hash[foreign_constraint_name].column_name.add(row['foreign_column_name'])
++	    else # Composite FKs column?
++	      current_foreign_constraint.column_name << row['foreign_column_name']
++	      referenced_column_name = row['column_name']
++	      current_foreign_constraint.referenced_column_name << referenced_column_name if referenced_column_name
++	    end
+           end        
+         end
+         constraints
+@@ -359,15 +366,19 @@
+       # schema views.
+       def iseries_constraints(table_name, name = nil)#:nodoc:
+         constraints = []  
+-        sql = "select CST.constraint_schema, CST.constraint_name, CST.table_name, CST.constraint_type, COL.column_name, \
+-          REF.constraint_name as foreign_constraint_name, REF.unique_constraint_name as referenced_constraint_name, \
+-          REF.delete_rule, COLREF.table_name as foreign_table_name, COLREF.column_name as foreign_column_name from \
+-          ((select * from SYSCST where table_name='#{table_name}') as CST \
+-	      inner join (select column_name, constraint_name from SYSCSTCOL where table_name='#{table_name}') \
+-	      as COL on (CST.constraint_name=COL.constraint_name) left outer join SYSREFCST REF on \
+-	      (CST.constraint_name=REF.unique_constraint_name or CST.constraint_name=REF.constraint_name) \
+-	      left join SYSCSTCOL AS COLREF on (NOT COLREF.table_name='#{table_name}' AND \
+-	      (REF.unique_constraint_name=COLREF.constraint_name or REF.constraint_name=COLREF.constraint_name)))"     
++        sql = %Q{
++		select	CST.constraint_schema, CST.constraint_name, CST.table_name, CST.constraint_type, COL.column_name,
++			REF.constraint_name as foreign_constraint_name, REF.unique_constraint_name as referenced_constraint_name,
++			REF.delete_rule, COLREF.table_name as foreign_table_name, COLREF.column_name as foreign_column_name
++		from	(select * from SYSCST where table_name='#{table_name}') as CST
++	        inner join (select column_name, constraint_name from SYSCSTCOL where table_name='#{table_name}') as COL
++		on	(CST.constraint_name=COL.constraint_name)
++		left outer join SYSREFCST as REF
++		on	(CST.constraint_name=REF.unique_constraint_name or CST.constraint_name=REF.constraint_name)
++	        left join SYSCSTCOL as COLREF
++		on	(NOT COLREF.table_name='#{table_name}'
++		and	 (REF.unique_constraint_name=COLREF.constraint_name or REF.constraint_name=COLREF.constraint_name))
++	}
+         results = execute(sql, name)
+         constraint_name_hash = {}
+           
+@@ -378,31 +389,33 @@
+           foreign_constraint_name = row['foreign_constraint_name']
+ 
+           # Process constraints local to this table
+-          if !constraint_name_hash.has_key?(constraint_name)
++          current_constraint = constraint_name_hash[constraint_name]
++          if !current_constraint
+             current_constraint = IBM_DB2Constraint.new(row['constraint_schema'], constraint_name, row['constraint_type'], 
+               row['table_name'], row['column_name'], row['referenced_constraint_name'], row['foreign_table_name'], 
+               row['foreign_column_name'], row['delete_rule'])
+             constraints << current_constraint
+             constraint_name_hash[constraint_name] = current_constraint
+-          # This key is a composite
+-          else
+-            current_constraint = constraint_name_hash[constraint_name]
+-            # Unique Keys are currently the only type of composite keys supported
+-            if current_constraint.component_of_unique_key? 
+-              current_constraint.column_name.add(row['column_name']) 
+-            end
++          else	# This key is a composite, and this is a subsequent field:
++	    current_constraint.column_name << row['column_name']
++	    referenced_column_name = row['foreign_column_name']
++	    current_constraint.referenced_column_name << referenced_column_name if referenced_column_name
+           end
+           
+           # Process constraints that reference this table's local constraints
+-          if !foreign_constraint_name.nil? && !constraint_name_hash.has_key?(foreign_constraint_name)
++          if foreign_constraint_name
++	    current_foreign_constraint = constraint_name_hash[foreign_constraint_name]
++	    if !current_foreign_constraint
+             current_foreign_constraint = IBM_DB2Constraint.new(row['constraint_schema'], constraint_name, IBM_DB2Constraint::FOREIGN_KEY_TYPE,
+               row['foreign_table_name'], row['foreign_column_name'], foreign_constraint_name, row['table_name'], row['column_name'],
+               row['delete_rule'])
+               constraints << current_foreign_constraint
+               constraint_name_hash[foreign_constraint_name] = current_foreign_constraint
+-          # Composite FKs are currently not supported 
+-          # else
+-          #  constraint_name_hash[foreign_constraint_name].column_name.add(row['foreign_column_name'])
++	    else # Composite FKs column?
++	      current_foreign_constraint.column_name << row['column_name']
++	      referenced_column_name = row['foreign_column_name']
++	      current_foreign_constraint.referenced_column_name << referenced_column_name if referenced_column_name
++	    end
+           end        
+         end
+         constraints
+Index: lib/connection_adapters/abstract_adapter.rb
+===================================================================
+--- lib/connection_adapters/abstract_adapter.rb	(revision 4)
++++ lib/connection_adapters/abstract_adapter.rb	(working copy)
+@@ -11,8 +11,10 @@
+       UNIQUE_KEY_TYPE = "UNIQUE"
+       CHECK_CONSTRAINT_TYPE = "CHECK"
+         
+-      attr_reader :constraint_name, :constraint_type, :table_schema, :table_name, :column_name,
+-        :referenced_table_name, :referenced_column_name
++      attr_reader :constraint_name, :constraint_type, :table_schema, :table_name,
++        :column_name,		    # A SortedSet
++        :referenced_table_name,
++	:referenced_column_name	    # A SortedSet
+         
+       attr_writer :member_of_composite
+       
+Index: lib/connection_adapters/postgresql_adapter.rb
+===================================================================
+--- lib/connection_adapters/postgresql_adapter.rb	(revision 4)
++++ lib/connection_adapters/postgresql_adapter.rb	(working copy)
+@@ -27,7 +27,7 @@
+         @constraint_type = constraint_type
+         @referenced_constraint_name = referenced_constraint_name
+         @referenced_table_name = referenced_table_name
+-        @referenced_column_name = referenced_column_name
++        @referenced_column_name = SortedSet.new [referenced_column_name] if referenced_column_name
+         @update_rule = update_rule
+         @delete_rule = delete_rule
+       end
+@@ -62,16 +62,25 @@
+       def constraints(table_name, name = nil)#:nodoc:
+         constraints = []     
+   
+-        sql = "select t1.*, KCU.column_name, REF2.unique_constraint_name, KCU2.table_name as referenced_table_name, \
+-          KCU2.column_name as referenced_column_name, REF2.delete_rule, REF2.update_rule from \
+-          (select constraint_name, table_catalog, table_schema, table_name, constraint_type from \
+-          information_schema.table_constraints where table_name='#{table_name.downcase}' or constraint_name in \
+-            (select REF.constraint_name from information_schema.referential_constraints as REF 
+-            where unique_constraint_name in (select constraint_name from information_schema.table_constraints 
+-            where table_name='#{table_name.downcase}'))) as t1 inner join information_schema.key_column_usage as KCU on \
+-            (t1.constraint_name=KCU.constraint_name) left join information_schema.referential_constraints as REF2 \
+-            on (REF2.constraint_name=t1.constraint_name) left join information_schema.key_column_usage as KCU2 \
+-            on (REF2.unique_constraint_name=KCU2.constraint_name)"
++        sql = %Q{
++		select	t1.*, KCU.column_name, REF2.unique_constraint_name, KCU2.table_name as referenced_table_name,
++			KCU2.column_name as referenced_column_name, REF2.delete_rule, REF2.update_rule
++		from	(select	constraint_name, table_catalog, table_schema, table_name, constraint_type
++			 from	information_schema.table_constraints
++			 where	table_name='#{table_name.downcase}'
++			    or	constraint_name in
++				(select	REF.constraint_name
++				 from information_schema.referential_constraints as REF
++				 where unique_constraint_name in
++				    (select constraint_name from information_schema.table_constraints
++				     where table_name='#{table_name.downcase}'))) as t1
++		inner join information_schema.key_column_usage as KCU
++		on	(t1.constraint_name=KCU.constraint_name)
++		left join information_schema.referential_constraints as REF2
++                on	(REF2.constraint_name=t1.constraint_name)
++		left join information_schema.key_column_usage as KCU2
++		on	(REF2.unique_constraint_name=KCU2.constraint_name)
++	}
+         
+         results = query(sql, name)
+         constraint_name_hash = {}
+Index: lib/connection_adapters/mysql_adapter.rb
+===================================================================
+--- lib/connection_adapters/mysql_adapter.rb	(revision 4)
++++ lib/connection_adapters/mysql_adapter.rb	(working copy)
+@@ -44,7 +44,7 @@
+         @constraint_type = constraint_type
+         @column_name = column_name
+         @referenced_table_name = referenced_table_name
+-        @referenced_column_name = referenced_column_name
++        @referenced_column_name = SortedSet.new [referenced_column_name] if referenced_column_name
+       end
+       
+       def is_foreign_constraint?(table_name)
+@@ -85,10 +85,19 @@
+       # depending on access to the complete set of constraints for the table at a later time
+       def constraints(table_name, name = nil)#:nodoc:
+         constraints = []
+-        sql = "select KCU.constraint_name, KCU.table_schema, KCU.table_name, KCU.column_name, TC.constraint_type, KCU.referenced_table_name, KCU.referenced_column_name from \
+-          ((select constraint_name, constraint_type, table_name from information_schema.table_constraints where table_schema='#{schema}' and table_name='#{table_name}') as TC right join \
+-          (select * from information_schema.key_column_usage where table_schema='#{schema}' and (table_name='#{table_name}' or referenced_table_name='#{table_name}')) as KCU on \
+-          (TC.constraint_name=KCU.constraint_name AND TC.table_name=KCU.table_name))"
++        sql = %Q{
++		select	KCU.constraint_name, KCU.table_schema, KCU.table_name, KCU.column_name,
++			TC.constraint_type, KCU.referenced_table_name, KCU.referenced_column_name
++		from	(select constraint_name, constraint_type, table_name
++			  from	information_schema.table_constraints
++			  where	table_schema='#{schema}'
++			    and	table_name='#{table_name}') as TC
++		right join (select * from information_schema.key_column_usage
++			  where table_schema='#{schema}'
++			    and	(table_name='#{table_name}' or referenced_table_name='#{table_name}')) as KCU
++		on	TC.constraint_name=KCU.constraint_name
++		and	TC.table_name=KCU.table_name
++	}
+         results = execute(sql, name)
+         constraint_name_hash = {}
+         results.each do |row| 
+Index: lib/connection_adapters/oracle_adapter.rb
+===================================================================
+--- lib/connection_adapters/oracle_adapter.rb	(revision 4)
++++ lib/connection_adapters/oracle_adapter.rb	(working copy)
+@@ -46,9 +46,9 @@
+         @table_schema = table_schema
+         @table_name = table_name
+         @constraint_type = constraint_type
+-        @column_name = Set.new [column_name]
++        @column_name = SortedSet.new [column_name]
+         @referenced_table_name = referenced_table_name
+-        @referenced_column_name = referenced_column_name
++        @referenced_column_name = SortedSet.new [ referenced_column_name ] if referenced_column_name
+         @delete_rule = delete_rule
+       end
+       
+@@ -95,15 +95,23 @@
+       def constraints(table_name, name = nil)#:nodoc:
+         constraints = []    
+         upcase_table_name = table_name.upcase   
+-        sql = "select UC.constraint_name, UC.constraint_type, UC.table_name, COL.column_name, \
+-          REF.r_constraint_name as referenced_constraint_name, REF.constraint_name as foreign_constraint_name, \
+-          REF.delete_rule as foreign_delete_rule, COLREF.table_name as foreign_table_name, COLREF.column_name as foreign_column_name from \
+-          (select owner, constraint_name, constraint_type, table_name, r_owner, r_constraint_name \
+-          from all_constraints where table_name='#{upcase_table_name}') UC inner join \
+-          (select constraint_name, table_name, column_name from all_cons_columns where table_name='#{upcase_table_name}') COL on \
+-          (COL.constraint_name = UC.constraint_name) left join all_constraints REF on \
+-          (UC.constraint_name=REF.constraint_name OR UC.constraint_name=REF.r_constraint_name) left join all_cons_columns COLREF on \
+-          (not COLREF.table_name='#{upcase_table_name}' AND (REF.constraint_name=COLREF.constraint_name OR REF.r_constraint_name=COLREF.constraint_name))"
++	sql = %Q{
++		select	UC.constraint_name, UC.constraint_type, UC.table_name, COL.column_name,
++			REF.r_constraint_name as referenced_constraint_name, REF.constraint_name as foreign_constraint_name,
++			REF.delete_rule as foreign_delete_rule,
++			COLREF.table_name as foreign_table_name,
++			COLREF.column_name as foreign_column_name
++		from	(select owner, constraint_name, constraint_type, table_name, r_owner, r_constraint_name
++			 from all_constraints
++			 where table_name='#{upcase_table_name}') as UC
++		inner join (select constraint_name, table_name, column_name from all_cons_columns where table_name='#{upcase_table_name}') as COL
++		on	(COL.constraint_name = UC.constraint_name)
++		left join all_constraints as REF
++		on	(UC.constraint_name=REF.constraint_name OR UC.constraint_name=REF.r_constraint_name)
++		left join all_cons_columns as COLREF
++		on	(not COLREF.table_name='#{upcase_table_name}'
++			 AND (REF.constraint_name=COLREF.constraint_name OR REF.r_constraint_name=COLREF.constraint_name))
++	}
+           
+         results = select_all(sql, name)     
+         constraint_name_hash = {}
+@@ -119,31 +127,31 @@
+           foreign_constraint_name = row['foreign_constraint_name']
+           
+           # Process constraints local to this table
+-          if !constraint_name_hash.has_key?(constraint_name)
++          if !(current_constraint = constraint_name_hash[constraint_name])
+             current_constraint = OracleConstraint.new(constraint_name, row['constraint_type'], row['table_name'], 
+             column_name, row['referenced_constraint_name'], row['foreign_table_name'], 
+             row['foreign_column_name'], row['foreign_delete_rule'])
+             constraints << current_constraint
+             constraint_name_hash[constraint_name] = current_constraint
+-          # This key is a composite
+-          else
+-            current_constraint = constraint_name_hash[constraint_name]
+-            # Unique Keys are currently the only type of composite keys supported
+-            if current_constraint.component_of_unique_key? 
+-              current_constraint.column_name.add(column_name)
+-            end
++          else	# This key is a composite, and this is the 2nd field:
++	    current_constraint.column_name << row['column_name']
++	    referenced_column_name = row['foreign_column_name']
++	    current_constraint.referenced_column_name << referenced_column_name if referenced_column_name
+           end
+           
+           # Process constraints that reference this table's local constraints
+-          if !foreign_constraint_name.nil? && !constraint_name_hash.has_key?(foreign_constraint_name)
++          if foreign_constraint_name
++	    if !(current_foreign_constraint = constraint_name_hash[foreign_constraint_name])
+             current_foreign_constraint = OracleConstraint.new(foreign_constraint_name, OracleConstraint::FOREIGN_KEY_TYPE,
+               row['foreign_table_name'], row['foreign_column_name'], constraint_name,  
+               row['table_name'], row['column_name'], row['foreign_delete_rule'])
+               constraints << current_foreign_constraint
+               constraint_name_hash[foreign_constraint_name] = current_foreign_constraint
+-          # Composite FKs are currently not supported 
+-          # else
+-          #  constraint_name_hash[foreign_constraint_name].column_name.add(row['foreign_column_name'])
++	    else # Composite FKs column?
++	      current_foreign_constraint.column_name << row['column_name']
++	      referenced_column_name = row['foreign_column_name']
++	      current_foreign_constraint.referenced_column_name << referenced_column_name if referenced_column_name
++	    end
+           end   
+         end
+         constraints       
+Index: lib/connection_adapters/sqlserver_adapter.rb
+===================================================================
+--- lib/connection_adapters/sqlserver_adapter.rb	(revision 4)
++++ lib/connection_adapters/sqlserver_adapter.rb	(working copy)
+@@ -34,9 +34,9 @@
+         referenced_constraint_name, referenced_table_name, referenced_column_name)
+         @table_schema = table_schema
+         @table_name = table_name
+-        @column_name = Set.new [column_name]
++        @column_name = SortedSet.new [column_name]
+         @referenced_table_name = referenced_table_name
+-        @referenced_column_name = referenced_column_name
++        @referenced_column_name = SortedSet.new [ referenced_column_name ] if referenced_column_name
+         @constraint_schema = constraint_schema
+         @referenced_constraint_name = referenced_constraint_name
+         @constraint_name = constraint_name 
+@@ -119,26 +119,113 @@
+       # -------------------------------
+       #  - The current query seems to be optimal for the strategy of retrieving local table constraints
+       #    as well as foreign keys into the current table in a single query
+-      #  - Since 4 tables need to be joined to return information about FKs into the current table
+-      #    the strategy is to join maximally reduced subsets of each table (i.e. rather than
+-      #    join the entire table, select minimum number of columns necessary and the minimum number of
+-      #    rows necessary from each table and then join the results)
++      #
++      #	(remaining text that was here removed because the method has changed and the text was
++      # incorrect anyway. Use "exec sp_helptext 'information_schema.table_constraints'", and
++      # look at the actual query plans, for more info.)
++      #
++      # This query cannot be done using the information_schema views because they don't yield
++      # information for multi-part foreign keys that allow matching the field pairs.
++      # The old query for indexes that used information_schema got all unique and PK constraints,
++      # but missed any unique indexes. This code fixes that, though you *do* need rights on the
++      # various system tables (this is the default).
++      #
+       #  - Due to the layout of the information_schema views, the database will always need to scan every
+       #    row in REFERENTIAL_CONSTRAINTS in order to stitch together table constraints and the FKs from
+       #    other tables that reference these table constraints, which means that performance is inversely
+       #    related to the number of FKs defined in the schema. Deleting unnecessary tables & FKs, and keeping
+       #    logically separate groups of tables in separate schemas will improve performance
++      #
++      # Of course, a better way would be to scan the FKs from the whole DB at once, and attach
++      # each FK to both tables at the same time. This doesn't match AR's way of doing things
++      # however. As a special case, if you pass nil or an empty string for the table_name, this
++      # returns information for all tables in the database. This isn't the case with the other
++      # adapters however.
++      #
+       def constraints(table_name, name = nil)#:nodoc:
+         constraints = [] 
+-        sql = "select TC.constraint_schema, TC.constraint_name, TC.table_name, TC.constraint_type, CCU.column_name, \
+-	      REF.constraint_name as foreign_constraint_name, REF.unique_constraint_name as referenced_constraint_name, REF.update_rule, \
+-	      REF.delete_rule, CCUREF.table_name as foreign_table_name, CCUREF.column_name as foreign_column_name from \
+-	      ((select * from information_schema.table_constraints where table_name='#{table_name}') as TC \
+-	      inner join (select column_name, constraint_name from information_schema.constraint_column_usage where table_name='#{table_name}') \
+-	      as CCU on (TC.constraint_name=CCU.constraint_name) left outer join information_schema.referential_constraints REF on \
+-	      (TC.constraint_name=REF.unique_constraint_name or TC.constraint_name=REF.constraint_name) \
+-	      left join information_schema.constraint_column_usage AS CCUREF on (NOT CCUREF.table_name='#{table_name}' AND \
+-	      (REF.unique_constraint_name=CCUREF.constraint_name or REF.constraint_name=CCUREF.constraint_name)))"
++        sql = %Q{
++		-- Get fields of all unique indexes:
++		SELECT	user_name(o.uid) as constraint_schema,
++			i.name AS constraint_name,
++			o.name AS table_name,
++			CASE (SELECT p.xtype FROM sysconstraints t, sysobjects p
++				    WHERE t.id = o.id
++				      AND t.constid = p.id
++				      AND i.name = p.name
++			    )
++			    WHEN 'PK' THEN 'PRIMARY KEY'
++			    WHEN 'UQ' THEN 'UNIQUE' -- unique constraint
++			    ELSE 'UNIQUE'		-- unique index
++			END AS constraint_type,
++			c.name AS column_name,
++			NULL AS foreign_constraint_name,
++			NULL AS referenced_constraint_name,
++			NULL AS update_rule,
++			NULL AS delete_rule,
++			NULL AS foreign_table_name,
++			NULL AS foreign_column_name
++		FROM	sysobjects AS o,
++			sysindexes AS i,
++			sysindexkeys AS k,
++			syscolumns AS c
++		WHERE	('#{table_name}' = ''	-- All tables
++			OR '#{table_name}' = o.name)
++		  AND	o.type = 'U'		-- Tables
++		  AND	o.status >= 0		-- exclude system tables
++		  AND	o.id = i.id		-- indexes for this table
++		  AND	o.id = k.id		-- indexkeys for table
++		  AND	i.indid = k.indid	-- indexkey for index
++		  AND	k.colid = c.colid	-- indexkey for column
++		  AND	o.id = c.id		-- column for table
++		  AND	(i.status&2) <> 0	-- unique
++		  AND	i.indid NOT IN (0, 255)	-- not base table or text
++		-- ORDER BY o.name, i.indid, k.keyno	-- Can't do this with UNION
++
++		UNION ALL   -- Don't bother with distinct union!
++
++		-- Get field pairs of all FK constraints to and from this table
++		SELECT	user_name(foreign_key.uid) AS constraint_schema,
++			foreign_key.name AS constraint_name,
++			from_table.name AS table_name,
++			'FOREIGN KEY' AS constraint_type,
++			from_column.name AS column_name,
++			foreign_key.name AS foreign_constraint_name,
++			i.name AS referenced_constraint_name,
++			CASE WHEN (ObjectProperty(f.constid, 'CnstIsUpdateCascade')=1)
++			    THEN 'CASCADE'
++			    ELSE 'NO ACTION'
++			END AS update_rule,
++			CASE WHEN (ObjectProperty(f.constid, 'CnstIsDeleteCascade')=1)
++			    THEN 'CASCADE'
++			    ELSE 'NO ACTION'
++			END AS delete_rule,
++			to_table.name AS foreign_table_name,
++			to_column.name AS foreign_column_name
++		FROM    sysobjects AS from_table,
++			sysforeignkeys AS f,
++			sysobjects AS to_table,
++			sysobjects AS foreign_key,
++			syscolumns AS from_column,
++			syscolumns AS to_column,
++			sysreferences AS r,
++			sysindexes AS i
++		WHERE   ('#{table_name}' = ''		-- FK's for all tables
++			OR from_table.name = '#{table_name}'
++			OR to_table.name = '#{table_name}')
++		  AND	from_table.type = 'U'   	-- All user tables
++		  AND   from_table.status >= 0
++		  AND   from_table.id = f.fkeyid        -- All fk's from the table
++		  AND   f.constid = foreign_key.id      -- Get the sysobject from fk
++		  AND   f.rkeyid = to_table.id  	-- Get referenced table
++		  AND   f.fkey = from_column.colid      -- Get source table's column
++		  AND   from_column.id = from_table.id
++		  AND   f.rkey = to_column.colid        -- And referenced's table's col
++		  AND   to_column.id = to_table.id
++		  AND	foreign_key.id = r.constid
++		  AND	r.rkeyid = i.id
++		  AND	r.rkeyindid = i.indid
++	    }
+ 
+         results = select_all(sql, name)
+         constraint_name_hash = {}
+@@ -147,27 +234,31 @@
+           foreign_constraint_name = row['foreign_constraint_name']
+ 
+           # Process constraints local to this table
+-          if !constraint_name_hash.has_key?(constraint_name)
++          current_constraint = constraint_name_hash[constraint_name]
++          if !current_constraint
+             current_constraint = SQLServerConstraint.new(row['constraint_schema'], row['table_name'], row['column_name'], constraint_name, 
+             row['constraint_type'], row['referenced_constraint_name'], row['foreign_table_name'], row['foreign_column_name'] )
+             constraints << current_constraint
+             constraint_name_hash[constraint_name] = current_constraint
+-          # This key is a composite
+-          else
+-            current_constraint = constraint_name_hash[constraint_name]
+-            # Unique Keys are currently the only type of composite keys supported
+-            if current_constraint.component_of_unique_key? then current_constraint.column_name.add(row['column_name']) end
++          else	# This key is a composite, and this is a subsequent field:
++	    current_constraint.column_name << row['column_name']
++	    referenced_column_name = row['foreign_column_name']
++	    current_constraint.referenced_column_name << referenced_column_name if referenced_column_name
+           end
+           
+           # Process constraints that reference this table's local constraints
+-          if !foreign_constraint_name.nil? && !constraint_name_hash.has_key?(foreign_constraint_name)
++          if foreign_constraint_name
++	    current_foreign_constraint = constraint_name_hash[foreign_constraint_name]
++	    if !current_foreign_constraint
+             current_foreign_constraint = SQLServerConstraint.new(row['constraint_schema'], row['foreign_table_name'], row['foreign_column_name'],
+               foreign_constraint_name, SQLServerConstraint::FOREIGN_KEY_TYPE, constraint_name, row['table_name'], row['column_name'] )
+               constraints << current_foreign_constraint
+               constraint_name_hash[foreign_constraint_name] = current_foreign_constraint
+-          # Composite FKs are currently not supported 
+-          # else
+-          #  constraint_name_hash[foreign_constraint_name].column_name.add(row['foreign_column_name'])
++	    else # Composite FKs column?
++	      current_foreign_constraint.column_name << row['column_name']
++	      referenced_column_name = row['foreign_column_name']
++	      current_foreign_constraint.referenced_column_name << referenced_column_name if referenced_column_name
++	    end
+           end
+         end
+         constraints
+Index: lib/dependencies.rb
+===================================================================
+--- lib/dependencies.rb	(revision 4)
++++ lib/dependencies.rb	(working copy)
+@@ -17,6 +17,7 @@
+         class #{class_id} < ActiveRecord::Base   
+         end
+       end_class_def
++      begin
+       if ActiveRecord::Base.table_exists?(class_id)
+         eval(class_def, TOPLEVEL_BINDING)     
+         ActiveRecord::Base.logger.info("DRYSQL >> GENERATED CLASS: #{class_id} < ActiveRecord::Base")     
+@@ -24,6 +25,9 @@
+         ActiveRecord::Base.logger.error("DRYSQL >> No matching table could be found for class: #{class_id}")
+         raise NameError     
+       end      
++      rescue ActiveRecord::ConnectionNotEstablished
++	throw "Can't look for missing class #{class_id} as a table in the database because no database connection has been established"
++      end
+     end
+     const_get(class_id)
+   end
+Index: lib/base.rb
+===================================================================
