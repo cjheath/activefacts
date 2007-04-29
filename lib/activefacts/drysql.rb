@@ -181,10 +181,6 @@ module ActiveFacts
 			    s.table_name != table_name
 		    ref_table = @entity_types[refname = s.referenced_table_name]
 		    throw "FK to unknown table #{refname}, #{s.inspect}" if (!ref_table)
-		    # REVISIT: Build a good name for the Role.
-		    # Need to cut off the field name of the referenced table.
-		    # Need to combine the field names if a multi-part PK.
-
 		    puts "\t\t#{refname}(#{s.column_name.join(",")})"
 		    fact_type.add_role(
 			role = Role.new(@model, refname, fact_type, ref_table)
@@ -195,21 +191,17 @@ module ActiveFacts
 		constraints.each{|uc|
 		    next if uc.constraint_type == "FOREIGN KEY"
 
+		    fks = []
 		    if (uc.column_name.size == 1)
 			fks = constraints.select{|fk|   # not an FK column
 				fk.constraint_type == "FOREIGN KEY" &&
 				fk.table_name == table_name &&
 				fk.column_name.member?(uc.column_name.entries[0])
 			    }
-			if (fks.size == 0)
-			    next
-			else
-			    # These UC's were missed because they span FK fields
-			    puts "\t\tREVISIT: Found FKs #{fks.map(&:constraint_name)*", "}"
-			end
+			next if (fks.size == 0)
 		    end
 
-		    # REVISIT: add remaining UCs here:
+		    # add remaining UCs here:
 		    puts "\t\tREVISIT: unique #{uc.constraint_name}(#{uc.column_name.entries*", "})"
 
 #		    PresenceConstraint.new(
