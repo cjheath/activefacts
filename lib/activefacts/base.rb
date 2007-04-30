@@ -189,15 +189,24 @@ module ActiveFacts
 
 	def to_s
 	    # Show role name only if set and different from Role Player's name:
-	    (@name && @name != "" && @name != object_type.name ? "#{@name} of " : "") + 
-		object_type.name
+	    player = ValueType === object_type ?
+			object_type.data_type.name :
+			object_type.name
+
+	    if (@name &&
+		@name != "" &&
+		@name != player)
+		"#{@name}(" + player + ")"
+	    else
+		player
+	    end
 	end
     end
 
     class FactType < Feature
 	typed_attr RoleSequence, :roles		# Array of Role
-	array_attr Reading, :readings	# Array of Readings
-	array_attr Fact, :facts		# Array of fact instance
+	array_attr Reading, :readings		# Array of Readings
+	array_attr Fact, :facts			# Array of fact instance
 	typed_attr NestedType, :nested_as	# NestedType
 
 	# These things will go in "derive":
@@ -230,6 +239,10 @@ module ActiveFacts
 	    roles << role
 	    role.fact_type = self;
 	    role.object_type.roles << role
+	end
+
+	def role_by_name(name)
+	    roles.detect{|r| r.name == name }
 	end
 
 	def to_s
@@ -482,10 +495,11 @@ module ActiveFacts
 	typed_attr RoleSequence, :role_sequence
 
 	def initialize(*args)
+	    model = args.detect{|a| Model === a }
 	    args.delete_if{|a|
 		case a
 		when RoleSequence, Array
-		    @role_sequence = a
+		    @role_sequence = model.get_role_sequence(a)
 		else
 		    next
 		end
@@ -543,10 +557,12 @@ module ActiveFacts
 		    ((max && min == max) ? " exactly #{max} time#{max>1?"s":""}" : nil)
 		].compact * " and"
 
-	    pref = is_preferred_id ? " (preferred identifier for #{preferred_id_for.name})" : ""
+	    pref = is_preferred_id ? " (preferred identifier)" : "" # for #{preferred_id_for.name})" : ""
 	    mand = (is_mandatory ? " must" : " may") + " occur"
 
-	    name + ": " + @role_sequence.to_s + mand + frequency + pref
+	    name + ": " +
+		(@role_sequence.size > 1 ? "the combination " : "the value ") +
+		@role_sequence.to_s + mand + frequency + pref
 	    # REVISIT: Find a reading instead!
 	end
     end

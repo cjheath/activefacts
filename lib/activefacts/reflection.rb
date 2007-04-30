@@ -9,31 +9,21 @@
 #
 require "rubygems"
 require "active_record"
-require "drysql"	# N.B. to handle multi-part FKs, you need my drysql patch.
+require "drysql"    # N.B. to handle multi-part FKs, you need my drysql patch.
 require "activefacts"
-
-# Standard class extensions that are used only in diagostics below:
-class SortedSet
-    def join(s = "")
-	to_a.join(s)
-    end
-end
-
-class NilClass
-    def join(s = "")
-	""
-    end
-end
 
 module ActiveFacts
     class Reflector
+	class LogNull; def puts(*args); end; end
 	attr_reader :connection
 
 	def self.load(arghash)
 	    self.new(arghash).load_schema
 	end
 
-	def initialize(arghash)
+	def initialize(arghash, logfile = nil)
+	    @log = logfile || LogNull.new
+
 	    @database = arghash[:dsn] || arghash[:database] || "unknown"
 
 	    ActiveRecord::Base.establish_connection(arghash)
@@ -44,7 +34,7 @@ module ActiveFacts
 	end
 
 	def load_schema
-	    puts "Loading database #{@database}"
+	    @log.puts "Loading database #{@database}"
 	    @model = Model.new(@database)
 
 	    # The process is as follows:
@@ -74,9 +64,9 @@ module ActiveFacts
 	    @value_types = {}	    # Named Data type with parameters defined
 	    @entity_columns = {}
 	    @entity_constraints = {}
-	    puts "Phase 1, create EntityTypes, functional roles, simple UC/MCs"
+	    @log.puts "Phase 1, create EntityTypes, functional roles, simple UC/MCs"
 	    @connection.tables.each{|table_name|
-		puts "\t#{table_name}:"
+		@log.puts "\t#{table_name}:"
 
 		# Create an EntityType for each table:
 		entity_type =
@@ -95,14 +85,15 @@ module ActiveFacts
 		    @fact_types[table_name] =
 		    FactType.new(
 			@model,
-			role = Role.new(@model, entity_type)
+			role = Role.new(@model, entity_type),
+			table_name
 		    )
 
 		# The EntityType role is mandatory here:
 		PresenceConstraint.new(
 			@model,
 			"#{table_name.capitalize}Is#{table_name.capitalize}",
-			[role],
+			RoleSequence.new([role]),
 			true,	# Must have...
 			1, 1	# exactly one occurrence.
 		    )
@@ -121,7 +112,7 @@ module ActiveFacts
 			    when s.constraint_type != "FOREIGN KEY" then false
 			    when s.table_name != table_name then false
 			    when s.column_name.member?(c.name)
-				# puts "\t\tColumn #{table_name}.#{c.name} is a FK, later"
+				# @log.puts "\t\tColumn #{table_name}.#{c.name} is a FK, later"
 				fk_columns << c
 				true
 			    else
@@ -129,12 +120,16 @@ module ActiveFacts
 			    end
 			}
 
-		    puts "\t\t#{c.name}"
-		    value_type = @value_types[c.sql_type] ||
-			make_value_type(c.name, c.sql_type)
+		    value_type = @value_types[c.sql_type]
+		    if (new_type = (!value_type || value_type.name != c.name))
+			value_type = make_value_type(c.name, c.sql_type)
+		    end
 
-		    # REVISIT: Consider c.limit, c.scale, c.precision
-		    fact_type.add_role(role = Role.new(@model, c.name, fact_type, value_type))
+#		    @log.puts "\t\tTo #{fact_type.name}, adding Role #{c.name}" +
+#			" of#{new_type ? " new" : " existing"} #{value_type.name}"
+		    role = Role.new(@model, c.name, fact_type, value_type)
+		    @log.puts "\t\t#{role.to_s}"
+		    fact_type.add_role(role)
 
 		    index = constraints.detect{|s|
 			    # Does the column have a unique index?
@@ -147,71 +142,111 @@ module ActiveFacts
 
 			constraint_name = (index && index.constraint_name) ||
 			    "#{table_name.capitalize}MustHave#{c.name.capitalize}"
-			puts "\t\tPresenceConstraint #{constraint_name}("+
-			    [ c.null ? "optional" : "mandatory",
-			      index ? "unique" : "non-unique",
-			      index && index.constraint_type=="PRIMARY KEY" ?
-				"primary" : nil
-			    ].compact*", "+")"
 
-			PresenceConstraint.new(
+			primary = index &&
+			    (index.constraint_type=="PRIMARY KEY" ? true : nil)
+
+			rs = RoleSequence.new([role])
+			pc = PresenceConstraint.new(
 				@model,
 				constraint_name,
-				[role],		    # Fact population of Role
+				rs,		    # Fact population of Role
 				!c.null,	    # must/may have
 				1,		    # at least one
 				index ? 1 : nil,    # at most one, or unlimited
 				index && index.constraint_type=="PRIMARY KEY"
 			    )
+			@log.puts "\t\t" + pc.to_s
+
+#			@log.puts "\t\t" +
+#			    (c.null ? "optional " : "mandatory ") +
+#			    (index ? "unique " : "non-unique ") +
+#			    (primary ? "primary " : "") +
+#			    "PresenceConstraint #{constraint_name}: " +
+#			    RoleSequence.new([role]).to_s
 		    end
 		}
 	    }
 
-	    puts "Phase 2, add EntityType roles (foreign keys)"
+	    @log.puts "Phase 2, add EntityType roles (foreign keys)"
 	    @connection.tables.each{|table_name|
-		puts "\t#{table_name}:"
+		@log.puts "\t#{table_name}:"
 
 		columns = @entity_columns[table_name]
 		constraints = @entity_constraints[table_name]
 		fact_type = @fact_types[table_name]
 
 		# Now add Roles for all tables referenced by foreign keys
-		constraints.each{|s|
-		    next if s.constraint_type != "FOREIGN KEY" ||
-			    s.table_name != table_name
-		    ref_table = @entity_types[refname = s.referenced_table_name]
-		    throw "FK to unknown table #{refname}, #{s.inspect}" if (!ref_table)
-		    puts "\t\t#{refname}(#{s.column_name.join(",")})"
+		@fk_names = {}
+		constraints.each{|fk|
+		    next if fk.constraint_type != "FOREIGN KEY" ||
+			    fk.table_name != table_name
+
+		    role_name, ref_table = *fk_role_name(fk)
+
 		    fact_type.add_role(
-			role = Role.new(@model, refname, fact_type, ref_table)
+			role = Role.new(@model, role_name, fact_type, ref_table)
 		    )
+		    @log.puts "\t\t#{role.to_s}"
 		}
 
 		# Look for missed UC's (multi-part, or on FK's):
 		constraints.each{|uc|
 		    next if uc.constraint_type == "FOREIGN KEY"
 
-		    fks = []
-		    if (uc.column_name.size == 1)
-			fks = constraints.select{|fk|   # not an FK column
-				fk.constraint_type == "FOREIGN KEY" &&
-				fk.table_name == table_name &&
-				fk.column_name.member?(uc.column_name.entries[0])
-			    }
-			next if (fks.size == 0)
-		    end
+		    constraint_name = uc.constraint_name
+		    colnames = uc.column_name.clone
+		    non_fk_colnames = colnames.clone
+		    #p (colnames.methods-Object.instance_methods).sort
 
-		    # add remaining UCs here:
-		    puts "\t\tREVISIT: unique #{uc.constraint_name}(#{uc.column_name.entries*", "})"
+		    mandatory = true
+		    colnames.entries.each{|c|
+			next unless columns.detect{|l| l.name == c }.null
+			mandatory = nil
+		    }
 
-#		    PresenceConstraint.new(
-#			    @model,
-#			    constraint_name,
-#			    1,	    # at least one
-#			    uc,	    # at most one, or unlimited
-#			    uc.constraint_type=="PRIMARY KEY"
-#			)
+		    # Find all FKs that have a column in the key:
+		    fks = constraints.select{|fk|   # not an FK column
+			    next if fk.constraint_type != "FOREIGN KEY"
+			    next if fk.table_name != table_name
 
+			    non_fk_colnames -= fk.column_name
+			    colnames - fk.column_name != colnames
+			}
+
+		    # Some constraints have already been processed:
+		    next if (uc.column_name.size == 1 && fks.size == 0)
+
+		    roles = RoleSequence.new
+		    fks.each{|fk|
+			role_name, table_name = *fk_role_name(fk)
+			role = fact_type.role_by_name(role_name)
+			roles << role
+		    }
+		    non_fk_colnames.each{|c|
+			role = fact_type.role_by_name(c)
+			roles << role
+		    }
+
+		    primary = uc.constraint_type=="PRIMARY KEY" ? true : nil
+
+		    pc = PresenceConstraint.new(
+			    @model,
+			    constraint_name,
+			    roles,
+			    mandatory,
+			    1,	    # at least one, but maybe optional
+			    1,	    # at most one
+			    primary
+			)
+		    @log.puts "\t\t" + pc.to_s
+
+#		    @log.puts "\t\t" +
+#			(mandatory ? "mandatory " : "optional ") +
+#			"unique " +
+#			(primary ? "primary " : "") +
+#			"PresenceConstraint #{constraint_name}: " +
+#			roles.to_s
 		}
 
 	    }
@@ -220,10 +255,11 @@ module ActiveFacts
 	end
 
 	def make_value_type(name, vtype)
+	    # REVISIT: Consider c.limit, c.scale, c.precision instead:
 	    vtparams = vtype.split(/\D+/).reject{|v| v==""}.map(&:to_i)
 	    dtname = vtype.sub(/\W.*/,'')
 
-	    #puts "Making base DataType #{dtname}" if !@data_types[dtname]
+	    @log.puts "\t\tMaking base DataType #{dtname}" if !@data_types[dtname]
 	    base_type =
 	    data_type =
 		@data_types[dtname] ||= DataType.new(
@@ -232,22 +268,55 @@ module ActiveFacts
 		)
 
 	    if (vtype != dtname)
-		# puts "Making refined DataType #{vtype}" if !@data_types[vtype]
+		@log.puts "\t\tMaking refined DataType #{vtype}" if !@data_types[vtype]
 		data_type =
 		    @data_types[vtype] ||= DataType.new(
 			@model,
-			name,    # here's where a name might be mis-associated
+			vtype,
 			base_type,
 			*vtparams
 		    )
 	    end
 
-	    # puts "Making ValueType(model, #{name}, #{dtname})"
+	    # @log.puts "Making ValueType(model, #{name}, #{dtname})"
 	    @value_types[vtype] = ValueType.new(
 		    @model,
 		    name,
 		    data_type
 		)
+	end
+
+	def fk_role_name(fk)
+	    role_name = fk.referenced_table_name
+	    ref_table = @entity_types[role_name]
+	    throw "FK to unknown table #{role_name}, #{fk.inspect}" if (!ref_table)
+	    # Already mapped this one?
+	    return [role_name, ref_table] if @fk_names[role_name]
+
+	    # If the FK has columns whose names correspond to the names
+	    # of columns of a UC on the referenced table, name the Role
+	    # the same as the name of the referenced table, assuming
+	    # that hasn't alread been done. Otherwise, concatenate the
+	    # column names of the FK and use that.
+	    ref_constraints = @entity_constraints[fk.referenced_table_name]
+	    if !ref_constraints.detect{|rc|
+		    next if rc.constraint_type == "FOREIGN KEY"
+		    # Consider a smarter match here.
+		    # For example, if the TableName is a prefix or suffix, crop
+		    fk.column_name == rc.column_name
+		}
+		# No matching UC found. Create a name (crop again?):
+		role_name = fk.column_name.entries.join
+		# @log.puts "Using column-sequence #{role_name} for #{fk.constraint_name}" if fk.column_name.entries.size > 1
+
+		if ((f = @fk_names[role_name]) && f != fk)
+		    throw "Identical FK #{role_name} from #{fk.table_name} to #{fk.referenced_table_name} twice (now #{fk.constraint_name}, was #{@fk_names[role_name].constraint_name}"
+		end
+	    end
+
+	    @fk_names[role_name] = fk
+
+	    [role_name, ref_table]
 	end
     end
 end
