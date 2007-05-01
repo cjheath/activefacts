@@ -38,25 +38,32 @@ module ActiveFacts
 	    @model = Model.new(@database)
 
 	    # The process is as follows:
-	    # 1) Create an EntityType for each table, and a FactType having
-	    #    ET as its only Role.
+	    #
+	    # 1) Create a FactType and an ObjectifiedEntityType for each table.
+	    #
 	    # 2) All columns that aren't part of a foreign key are added to
 	    #    this FactType as Roles of a ValueType.
+	    #
 	    #    The ValueTypes are instantiated progressively as we go along.
 	    #	 Each uses a datatype created on first occurrence of each SQL
 	    #	 Type, and a new VT is created for each distinct parameterised
 	    #	 type. This might result in fewer VTs than needed; we use the
 	    #	 column name for the Role where it differs from a prior usage
-	    #	 of that VT.
-	    #!!! Each not-null field also has a PresenceConstraint created for it.
+	    #	 of that VT. Each not-null field also has a PresenceConstraint
+	    #    created for it.
+	    #
 	    # 3) All FKs are created as Roles of the referenced EntityType
+	    #
 	    # 4) PresenceConstraints are created for all unique/primary keys.
 	    #    If an entity has UC but no PK, choose the first one as primary.
 	    #    If no UC, create a PresenceConstraint over all roles.
 	    #    Move the PK roles to the start of the fact
-	    # 5) All columns that are part of a FK are added as Roles of the
-	    #    same VT as the referenced table
-	    # 5) Check constraints aren't processed yet, neither are triggers
+	    #
+	    # 5) Incomplete:
+	    #	 * Columns that are part of a FK need to be added as implied
+	    #      Roles of the same VT as the PK column in the referenced table.
+	    #	 * Not sure how to handle FK's referencing columns of non-PK UCs.
+	    #    * Check constraints aren't processed yet, neither are triggers
 	    #
 	    @entity_types = {}
 	    @fact_types = {}
@@ -68,11 +75,6 @@ module ActiveFacts
 	    @connection.tables.each{|table_name|
 		@log.puts "\t#{table_name}:"
 
-		# Create an EntityType for each table:
-		entity_type =
-		    @entity_types[table_name] =
-		    EntityType.new(@model, table_name)
-
 		# Get all columns and constraints for each table:
 		columns =
 		    @entity_columns[table_name] =
@@ -83,20 +85,12 @@ module ActiveFacts
 
 		fact_type =
 		    @fact_types[table_name] =
-		    FactType.new(
-			@model,
-			role = Role.new(@model, entity_type),
-			table_name
-		    )
+		    FactType.new(@model, table_name)
 
-		# The EntityType role is mandatory here:
-		PresenceConstraint.new(
-			@model,
-			"#{table_name.capitalize}Is#{table_name.capitalize}",
-			RoleSequence.new([role]),
-			true,	# Must have...
-			1, 1	# exactly one occurrence.
-		    )
+		# Create an EntityType for each table:
+		entity_type =
+		    @entity_types[table_name] =
+		    NestedType.new(@model, table_name, fact_type)
 
 		# Ensure we have a datatype and valuetype for each column that
 		# isn't an FK column.
