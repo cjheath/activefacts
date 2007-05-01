@@ -6,6 +6,8 @@
 require 'rubygems'
 require 'chattr'
 
+$all_pcs = []
+
 module ActiveFacts
     #==============================================================
     # Forward declarations for all Base classes
@@ -143,8 +145,8 @@ module ActiveFacts
 	    super(*args)
 	    model.data_types << self if (model)
 
-	    puts "DataType should have name" if !name
-	    puts "DataType #{name} should be part of Model" if !model
+	    throw "DataType should have name" if !name
+	    throw "DataType #{name} should be part of Model" if !model
 	    # REVISIT: We have no built-in types yet:
 	    # puts "DataType #{name} should have base DateType" if !base || base == ""
 	end
@@ -182,21 +184,29 @@ module ActiveFacts
 	    raise "Role must have an ObjectType" unless @object_type
 	    #raise "Role must have a FactType" unless @fact_type
 
-	    puts "Role #{self} should be part of Model" if !model
+	    throw "Role #{self} should be part of Model" if !model
 	    #puts "Role should have name" if !name
 	    #puts "Role #{name} should have base DateType" if !base || base == ""
 	end
 
 	def to_s
-	    # Show role name only if set and different from Role Player's name:
-	    player = ValueType === object_type ?
-			object_type.data_type.name :
-			object_type.name
+	    player = object_type.name
 
+	    # For Value Types, just show the Role name (if set) or ValueType name
+	    if (ValueType === object_type)
+		return @name if (@name && @name != "")
+		o_n = object_type.name
+		return o_n if o_n && o_n != ""
+
+		# Otherwise for Value Types, show the data type, not the value type:
+		player = object_type.data_type.name
+	    end
+
+	    # Otherwise, show role name only if set and different from Role Player's name:
 	    if (@name &&
 		@name != "" &&
 		@name != player)
-		"#{@name}(" + player + ")"
+		"#{@name} : " + player
 	    else
 		player
 	    end
@@ -232,7 +242,7 @@ module ActiveFacts
 	    # @nested_as will get set afterwards if needed
 	    model.fact_types << self if (model)
 
-	    puts "FactType #{self} should be part of Model" if !model
+	    throw "FactType #{self} should be part of Model" if !model
 	end
 
 	def add_role(role)
@@ -242,7 +252,13 @@ module ActiveFacts
 	end
 
 	def role_by_name(name)
-	    roles.detect{|r| r.name == name }
+	    roles.detect{|r| r.name == name } ||    # Find the role directly, or
+	    roles.detect{|r|
+		EntityType === r.object_type &&	# Role is played by an EntityType
+		(pi = r.object_type.preferred_identifier) && # Having a PI
+		pi.role_sequence.size == 1 &&	    # With one role
+		pi.role_sequence[0].name == name    # Named appropriately
+	    }
 	end
 
 	def to_s
@@ -323,7 +339,7 @@ module ActiveFacts
 	    super(*args)
 	    model.object_types << self if (model)
 
-	    puts "ObjectType #{self} should be part of Model" if !model
+	    throw "ObjectType #{self} should be part of Model" if !model
 	end
 
 	# All unique fact types in which this object plays a role
@@ -338,22 +354,15 @@ module ActiveFacts
 	    }
 	end
 
-	# Get all RoleSequences that include this object:
-	# REVISIT: What was I smoking when I wrote this?
 	def preferred_identifier
-	    rss = role_sequences
-	    model.constraints.detect{|c|
-		c.kind_of?(PresenceConstraint) &&
-		    c.is_preferred_id &&
-		    rss.include?(c.PresenceConstraint)
-	    }
+	    throw "#{self.class} can not have a preferred_identifier"
 	end
     end
 
     class EntityType < ObjectType
 	# These things will go in "derive":
 	#attr_accessor :preferred_identifier	# -> Constraint
-	#attr_accessor :instances			# Array of EntityTypeInstance
+	#attr_accessor :instances		# Array of EntityTypeInstance
 	#attr_accessor :_reference_mode		# String, derived
 
 	def to_s
@@ -370,6 +379,40 @@ module ActiveFacts
 		end
 		a
 	    }
+	end
+
+	def preferred_identifier	# -> Constraint
+	    # The preferred identifier is a unique constraint over roles in one
+	    # or more fact types in which this object plays the other roles, or
+	    # in the case of a nested type, over roles of the nested fact type.
+	    # REVISIT: It's not clear whether a nested type may have a PI that
+	    # spans both nested and non-nested roles...? I've asked Terry this.
+	    facts = roles.map{|r| r.fact_type}.uniq
+
+	    candidates =
+		@model.constraints.select{|s|
+		    # The constraint must be a PC:
+		    next if !(PresenceConstraint === s)
+
+		    # The PC must be mandatory and unique:
+		    next if !s.is_mandatory || !s.max || s.max > 1
+
+		    # The PC must only span roles in facttypes we play a role in:
+		    next if s.role_sequence.detect{|r|  # Each role of the PC
+			!facts.detect{|f| r.fact_type == f}	# In one of our facts
+		    }
+		}
+	    # puts "Getting Preferred ID for #{to_s} from #{caller*"\n"}, considering (#{candidates.map(&:name)*", "})"
+	    # If we found one labelled Preferred, return it:
+	    pi = candidates.detect{|s| s.is_preferred_id }
+	    return pi if pi
+
+	    # Else return the UC covering fewest roles:
+	    pi = candidates.sort_by{|s| s.roles.size}[0]
+	    if !pi
+		throw "No preferred identifier found for #{to_s}"
+	    end
+	    return pi
 	end
     end
 
@@ -419,6 +462,30 @@ module ActiveFacts
 
 	def to_s
 	    "#{name} nests #{@fact_type.roles.to_s}"
+	end
+
+	def preferred_identifier	# -> Constraint
+	    candidates =
+		@model.constraints.select{|s|
+		    # The constraint must be a PC:
+		    PresenceConstraint === s &&
+			# The PC must be mandatory and unique:
+		    s.is_mandatory &&
+		    s.max &&
+		    s.max == 1 &&
+			# The PC must only span roles in our nested facttype
+		    !s.role_sequence.detect{|r| @fact_type != r.fact_type }
+		}
+
+	    # Chose the candidate that's marked as preferred, if any:
+	    pi = candidates.detect{|s| s.is_preferred_id }
+	    return pi if pi
+
+	    # Else return the UC covering fewest roles:
+	    pi = candidates.sort_by{|s| s.role_sequence.size}[0]
+
+	    # If no UC on nested fact, try superclass:
+	    return super if !pi
 	end
     end
 

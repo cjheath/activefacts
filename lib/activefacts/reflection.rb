@@ -191,38 +191,52 @@ module ActiveFacts
 		    constraint_name = uc.constraint_name
 		    colnames = uc.column_name.clone
 		    non_fk_colnames = colnames.clone
-		    #p (colnames.methods-Object.instance_methods).sort
+		    primary = uc.constraint_type=="PRIMARY KEY" ? true : nil
 
+		    # Check whether any column of the UC is optional:
 		    mandatory = true
 		    colnames.entries.each{|c|
 			next unless columns.detect{|l| l.name == c }.null
 			mandatory = nil
 		    }
 
-		    # Find all FKs that have a column in the key:
+		    # Find all FKs that have a column in the key, and partition the names:
 		    fks = constraints.select{|fk|   # not an FK column
 			    next if fk.constraint_type != "FOREIGN KEY"
 			    next if fk.table_name != table_name
 
+			    # Calculate the residual non-FK fields:
 			    non_fk_colnames -= fk.column_name
-			    colnames - fk.column_name != colnames
+
+			    # The FK is included if any of its columns are:
+			    relevant = colnames.intersection(fk.column_name) == fk.column_name
+			    if (relevant != (colnames.intersection(fk.column_name).size > 0))
+				# Odd, but possible situation, report it:
+				@log.puts "UC #{uc.constraint_name} includes only some of FK #{fk.constraint_name}"
+			    end
+
+			    relevant
 			}
 
 		    # Some constraints have already been processed:
 		    next if (uc.column_name.size == 1 && fks.size == 0)
 
+		    # Say what we're doing:
+		    @log.puts "\t\t#{primary ?"primary":"unique"} key #{uc.constraint_name} over (#{colnames.entries*", "})"
+		    @log.puts "\t\t\t#{constraint_name} includes optional columns" if !mandatory
+		    @log.puts "\t\t\t#{constraint_name} includes fks (#{fks.map(&:constraint_name)*","}) and non-fk columns (#{non_fk_colnames.entries*", "})"
+
 		    roles = RoleSequence.new
 		    fks.each{|fk|
-			role_name, table_name = *fk_role_name(fk)
+			role_name, junk = *fk_role_name(fk)
 			role = fact_type.role_by_name(role_name)
 			roles << role
 		    }
 		    non_fk_colnames.each{|c|
 			role = fact_type.role_by_name(c)
+			throw "Role #{c} in #{fact_type} not found when adding #{primary ?"primary":"unique"} constraint #{uc.constraint_name}" if !role
 			roles << role
 		    }
-
-		    primary = uc.constraint_type=="PRIMARY KEY" ? true : nil
 
 		    pc = PresenceConstraint.new(
 			    @model,
@@ -234,15 +248,7 @@ module ActiveFacts
 			    primary
 			)
 		    @log.puts "\t\t" + pc.to_s
-
-#		    @log.puts "\t\t" +
-#			(mandatory ? "mandatory " : "optional ") +
-#			"unique " +
-#			(primary ? "primary " : "") +
-#			"PresenceConstraint #{constraint_name}: " +
-#			roles.to_s
 		}
-
 	    }
 
 	    @model
