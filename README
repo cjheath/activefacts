@@ -1,24 +1,123 @@
 ActiveFacts
 -----------
 
-Clifford Heath.
+Clifford Heath, 2 May 2007
 
 The ActiveFacts project lives on RubyForge, with access
-detils here: <http://rubyforge.org/scm/?group_id=3253>.
+details here: <http://rubyforge.org/scm/?group_id=3253>.
 
-Status as at 30 April 2007
---------------------------
+What is Fact-based modeling?
+----------------------------
 
-ActiveFacts now has a nearly complete ORM2 API written
-in Ruby (for more about ORM2, see <http://www.orm.net>)
-It's loading all the NORMA <http://sourceforge.net/orm>
-models I can find and a few I built myself, with the
-exception of Value Restrictions (on data types and
-roles), and the sample fact data populations
+Fact-based information modeling is a form of conceptual
+modeling that operates at a higher level than either UML
+(and other object modeling approaches) or traditional ER
+(entity-relationship) data modeling. It supports the
+definition of conceptual information models that are
+"elementary", meaning that every element (fact, rule and
+constraint) is broken down to its simplest form, based
+in pure logic.
 
-It's also using a custom-patched version of DRLSql to
-reflect the schema out of a database, back to a compound
-fact schema (not yet elementary).
+With a model in elementary form, it's child's play to
+check its correctness, as each feature can be verbalised
+in short plain-language sentences as it's constructed.
+Example data may be entered for each fact type which
+allows automatic validation of constraints, and even
+intuition about what missing constraints might be added.
+It's possible to represent all constraint types that
+are supported in both UML and in SQL, and quite a number
+that are supported in neither, which gives the designer
+a greater power to express business rules than either.
+
+After the model has been fully validated, the tools
+automatically construct correct, efficient and fully
+normalized aggregations (class hierarchies or entity-
+relationship models) that are provably congruent.
+
+The perennial wars between DBAs and object modelers can
+be finished forever, and the abstruse skills of database
+normalization are almost irrelevant.
+
+Why ActiveFacts?
+----------------
+
+ActiveFacts aims to take the technique of fact-based
+modeling beyond what's been done anywhere previously,
+and instead of just using it as a design technique, to
+generate executable models. This means that:
+
+a) You can query a database (instance of a model) using
+the elementary form, and get back results in the same
+form - so you never need to know the physical storage
+details,
+
+b) The model may be maintained in both elementary form
+and in compound (relational) form at the same time, and
+both forms may be accessed using the same API,
+
+c) You can change the model in any way at any time and
+the database will be automatically and incrementally
+restructured to accommodate those changes, including by
+quick change now and a cleanup migration later,
+
+d) When a database must be restructured, any existing
+queries that request facts which are unchanged (though
+they may have ben moved to another table), those queries
+are automatically and transparently rewritten to work
+against the new physical structure.
+
+Status
+------
+
+ActiveFacts has a nearly complete fact-oriented API in
+Ruby, and can load models in two forms. Currently, all it
+does is to emit text to indicate that it has understood.
+
+The Object-Oriented meta-model used by the API is also
+congruent to a relational schema which is provided, so
+any model may in future be retrieved, manipulated and
+stored in a database.
+
+ActiveFacts can currently read models from NORMA, which
+are in elementary form (see below), and it can reverse
+engineer the schemas of existing databases in SQL Server,
+DB2 and Oracle. Other database products may be partially
+supported already, including MySql, PostgreSQL, etc.
+Reverse-engineered models are in compound form - mapping
+them to elementary form is a separate task.
+
+ActiveFacts relies on the database adapter infrastructure
+of ActiveRecord, but needs additional fixes in the form
+of DRYSql (with some further patches from me if they are
+not yet incorporated into the released version), and the
+Composite Primary Keys gem (again, with further patches
+if not already incorporated).
+
+NORMA
+-----
+
+NORMA is the latest in a line or products stretching back
+two decades which implement the Object Role Modeling (now
+version 2) fact based modeling notation. NORMA is a design
+tool that is open source, but runs as an extension to 
+Microsoft Visual Studio 2005 - Professional Edition (the
+Express Edition doesn't have the ability to load plug-ins).
+
+You can download the latest version of NORMA (and source
+code, if you wish) from <http://sourceforge.net/orm>. For
+more about ORM2, see <http://www.orm.net> and other
+resources.
+
+ActiveFacts is loading all the NORMA models I can find and
+a few I built myself, with the exception of:
+
+a) Value Restrictions (on data types and roles). These are
+parsed but not yet stored into the model
+
+b) Sample fact data populations
+
+Downloading
+-----------
 
 To look at ActiveFacts, install Subversion (either
 <http://subversion.tigris.org/> or one of the bundles
@@ -40,13 +139,29 @@ yet in use). The point being that this is a *real life*
 model, which will continue to be my main demonstration
 model.
 
-Finally if you have Ruby installed <www.ruby-lang.org>
-you can load a NORMA model using the command:
+Though the provided models are mostly simple, ActiveFacts
+has successfully reverse-engineered some large commercial
+database schemas, including that of ManageSoft, with all
+sub-products installed (265 tables).
 
-ruby -I lib tests/read_norma.rb <MyModel>.orm
+If you have Ruby installed <www.ruby-lang.org> you can
+load a NORMA model using the command:
+
+ruby -I lib tests/read_norma.rb MyModel.orm
 
 read_norma simply reads a NORMA file and spits out some
 textual notes so you can see it's understood it.
+
+If you also have ActiveRecord, DRLSql (patched with the
+patches provided) and CPK (composite primary keys),
+you can reverse engineer your own schema:
+
+ruby -I lib tests/reflect.rb --dsn=Orienteering \
+	--adapter=sqlserver --mode=ODBC --user=sa
+	--password=
+
+... or whatever ActiveRecord connection options are
+appropriate to connect to your database.
 
 Metamodel
 ---------
@@ -56,6 +171,7 @@ has an SQL metamodel that matches my Ruby API. So far,
 the API can't save or load models into an SQL database,
 but that's feasible, it's just a matter of time. There's
 a PDF of the SQL schema as well as the DDL for SQL Server.
+This section contains some notes on the mapping.
 
 My meta-model merges mandatory, uniqueness and frequency
 constraints into one "Presence Constraint" object. This
@@ -89,20 +205,23 @@ of th API, like derivation etc.
 Future
 ------
 
-Next on my list of tasks is:
+Next on my list of tasks (not strictly in order) is:
 
 * Reverse engineering the ER (compound) schema to an ORM2
   (elementary) one.
 
-* Constructing a query conceptual API that can query an
-  ER schema, writing the SQL code as appropriate,
+* Constructing a conceptual query API that can query a
+  database instance using the compound schema, by rewriting
+  the queries as SQL,
 
-* Writing a textual language processor for ORM2 so models
+* Writing a textual language parser for ORM2 so models
   may be loaded (and perhaps exported) to a textual format
-  for version management and model interchange. This might
-  take the form of a Ruby DSL or a properly parsed language
-  that can be parsed with an ANTLR parser, and hence used
-  as an ORM2 modeling language with C#, Java, etc.
+  for version management and model interchange. A book that
+  will define an official textual language is forthcoming,
+  but I might need to create an interim language before then.
+  This will take the form either of a Ruby DSL or a properly
+  parsed language with an ANTLR parser (usable as an ORM2
+  modeling language with C#, Java, etc).
 
 * Testing. The basic framework for writing tests using
   RSpec is there, but I've been baaaad and started writing
@@ -110,22 +229,21 @@ Next on my list of tasks is:
 
 Tasks I'll then address in an uncertain order are:
 
-* Absorbing an ORM2 (elementary) model down to an ER schema,
+* Absorbing an elementary model down to an ER schema,
 
-* Converting conceptual query against an elementary (ORM2)
-  model into one against the ER mapping of the same, and
-  on executing it, converting the resultant compound fact
-  population back into a elementary one to match the
-  original query.
+* Converting conceptual queries against an elementary model
+  into queries against the ER mapping of the same, and on
+  executing them, converting the resultant compound fact
+  populations back into elementary ones to match the original
+  query.
 
-Thanks for you attention. I look forward to receiving any
-feedback you have. I expect that the above list of tasks
-will take longer than the four weeks I have available
-before visiting Neumont in May - however I can make pretty
-rapid progress since I don't have to coordinate an army of
-worker ants or try to keep an academic syllabus running.
-I'm on this task almost full-time, self-funded, until then,
-and after that, I need to find a way to make a living from
-it :-). All offers considered!
+* Automatically generating database migration code to preserve
+  and transform an existig database to match changes to the
+  conceptual model.
+
+Thanks for your attention. I look forward to receiving any
+feedback you have. I'm doing this work almost full-time,
+self-funded for a time and after that, I need to find a way
+to make a living from it :-). All offers considered!
 
 Clifford Heath, clifford.heath@gmail.com.
