@@ -1,10 +1,14 @@
 ActiveFacts
 -----------
 
-Clifford Heath, 2 May 2007
+Clifford Heath, 2 May 2007.
 
 The ActiveFacts project lives on RubyForge, with access
 details here: <http://rubyforge.org/scm/?group_id=3253>.
+
+Status messages go to the Yahoo information_modeling
+group, which is also available as an NNTP feed on Gmane,
+news:gmane.comp.programming.modeling.information.
 
 What is Fact-based modeling?
 ----------------------------
@@ -51,9 +55,15 @@ the elementary form, and get back results in the same
 form - so you never need to know the physical storage
 details,
 
-b) The model may be maintained in both elementary form
-and in compound (relational) form at the same time, and
-both forms may be accessed using the same API,
+b) Queries span tables transparently, crossing conceptual
+relationships without explicit database joins, and return
+structured data in a hierarchical form, so for every
+user action in an application, a single query can be
+defined that provides all the data required to respond to
+that action. There's no need to fetch this, that, and the
+other. All required results are fetched at once, which
+improves application structure, performance, and even
+concurrency.
 
 c) You can change the model in any way at any time and
 the database will be automatically and incrementally
@@ -64,7 +74,11 @@ d) When a database must be restructured, any existing
 queries that request facts which are unchanged (though
 they may have ben moved to another table), those queries
 are automatically and transparently rewritten to work
-against the new physical structure.
+against the new physical structure,
+
+e) The model may be maintained in both elementary form
+and in compound (relational) form at the same time, and
+both forms may be managed using the same API.
 
 Status
 ------
@@ -96,7 +110,7 @@ if not already incorporated).
 NORMA
 -----
 
-NORMA is the latest in a line or products stretching back
+NORMA is the latest in a line of products stretching back
 two decades which implement the Object Role Modeling (now
 version 2) fact based modeling notation. NORMA is a design
 tool that is open source, but runs as an extension to 
@@ -109,9 +123,10 @@ more about ORM2, see <http://www.orm.net> and other
 resources.
 
 ActiveFacts is loading all the NORMA models I can find and
-a few I built myself, with the exception of:
+a few I built myself, with a few exceptions that will be
+handled soon:
 
-a) Value Restrictions (on data types and roles). These are
+a) Value Restrictions (on data types and roles) - these are
 parsed but not yet stored into the model
 
 b) Sample fact data populations
@@ -123,6 +138,8 @@ To look at ActiveFacts, install Subversion (either
 <http://subversion.tigris.org/> or one of the bundles
 like Tortoise SVN, cygwin, etc), and issue the checkout
 instruction on the RubyForge webpage listed above.
+You can also browse the files online at
+<http://viewvc.rubyforge.mmmultiworks.com/cgi/viewvc.cgi/?root=activefacts>
 
 My NORMA models are checked into the "examples/norma"
 directory, and "examples/pdf" contains PDF versions of
@@ -147,7 +164,7 @@ sub-products installed (265 tables).
 If you have Ruby installed <www.ruby-lang.org> you can
 load a NORMA model using the command:
 
-ruby -I lib tests/read_norma.rb MyModel.orm
+ruby -I lib bin/read_norma.rb MyModel.orm
 
 read_norma simply reads a NORMA file and spits out some
 textual notes so you can see it's understood it.
@@ -156,7 +173,7 @@ If you also have ActiveRecord, DRLSql (patched with the
 patches provided) and CPK (composite primary keys),
 you can reverse engineer your own schema:
 
-ruby -I lib tests/reflect.rb --dsn=Orienteering \
+ruby -I lib bin/reflect.rb --dsn=Orienteering \
 	--adapter=sqlserver --mode=ODBC --user=sa
 	--password=
 
@@ -169,9 +186,11 @@ Metamodel
 ActiveFacts also contains a Metamodels directory which
 has an SQL metamodel that matches my Ruby API. So far,
 the API can't save or load models into an SQL database,
-but that's feasible, it's just a matter of time. There's
-a PDF of the SQL schema as well as the DDL for SQL Server.
-This section contains some notes on the mapping.
+but that's feasible, it's just a matter of time. That
+will allow construction of a web-based information
+modeling tool. There's a PDF of the SQL schema as well
+as the DDL for SQL Server.  This section contains some
+notes on the mapping.
 
 My meta-model merges mandatory, uniqueness and frequency
 constraints into one "Presence Constraint" object. This
@@ -200,15 +219,12 @@ itself in "lib/activefacts/base.rb" is pretty readable
 even if you've never seen Ruby. Since Ruby uses "open
 classes", similar to C#'s partial classes, I'm able to
 omit from "base.rb" anything that relates to other aspects
-of th API, like derivation etc.
+of the API, like derivation etc.
 
 Future
 ------
 
 Next on my list of tasks (not strictly in order) is:
-
-* Reverse engineering the ER (compound) schema to an ORM2
-  (elementary) one.
 
 * Constructing a conceptual query API that can query a
   database instance using the compound schema, by rewriting
@@ -222,6 +238,9 @@ Next on my list of tasks (not strictly in order) is:
   This will take the form either of a Ruby DSL or a properly
   parsed language with an ANTLR parser (usable as an ORM2
   modeling language with C#, Java, etc).
+
+* Reverse engineering the ER (compound) schema to an ORM2
+  (elementary) one.
 
 * Testing. The basic framework for writing tests using
   RSpec is there, but I've been baaaad and started writing
