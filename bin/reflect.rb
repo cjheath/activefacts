@@ -1,9 +1,9 @@
 #! /usr/bin/ruby
 #
-# $Id$
-#
 #	Test Program to reverse engineer a schema from a database.
 #	Connections to the database are made using ActiveRecord.
+#
+# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 #
 
 require "rubygems"
@@ -12,6 +12,7 @@ require "active_record"
 require "drysql"
 require "activefacts"
 require "activefacts/reflection"
+require 'activefacts/dump'
 
 include ActiveFacts
 
@@ -65,43 +66,4 @@ reflector = ActiveFacts::Reflector.new(
 
 model = reflector.load_schema
 
-def show_roles(o, f)
-    num_fact_roles = f.roles.size
-    o_fact_roles = f.roles.select{|r| r.object_type == o}
-    nofr = o_fact_roles.size
-    puts "\t\t#{f.name}" +
-	(nofr > 1 ? ", #{o_fact_roles.size} of #{num_fact_roles} roles:" : "") +
-	" (#{o_fact_roles.map(&:to_s)*", "})"
-end
-
-puts "All Entity Types:"
-model.object_types.sort_by{|o| o.name}.each{|o|
-	next if !(EntityType === o)	# includes NestedTypes
-	puts "\t"+o.to_s+" and plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
-	o.fact_types.each{|f| show_roles(o, f) }
-    }
-
-puts "\n\nAll Value Types:"
-model.object_types.sort_by{|o| o.name}.each{|o|
-	next if EntityType === o
-	puts "\t"+o.to_s+" and plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
-	o.fact_types.each{|f| show_roles(o, f) }
-    }
-
-puts "\n\nAll Fact Types:"
-model.fact_types.each{|f|
-	puts "\t"+f.to_s
-	r = f.readings
-#	puts r.to_yaml
-	r.each{|r|
-	    puts "\t\t"+r.to_s
-	}
-    }
-
-puts "\n\nAll Constraints:"
-model.constraints.each{|c|
-	# Skip presence constraints on value types:
-    #    next if ActiveFacts::PresenceConstraint === c &&
-    #	    ActiveFacts::ValueType === c.object_type
-	puts "\t"+c.to_s
-    }
+model.dump

@@ -1659,7 +1659,7 @@
 					<orm:Role id="_0F2D5AB6-B290-497D-8A10-CE710C0BA87E" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_D545C5F5-7400-4DF1-A22B-BDCCC32ED1E8" />
 					</orm:Role>
-					<orm:Role id="_A374E988-93B4-4984-8893-00C8BF74F4AF" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_A374E988-93B4-4984-8893-00C8BF74F4AF" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_4079C453-8B78-494C-A006-1DDA6CE6CD41" />
 					</orm:Role>
 					<orm:Role id="_76D78177-EEE5-4D0C-92EC-979B7C7E194F" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
@@ -1682,6 +1682,7 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_1F36DADE-B975-4067-88F9-6C641EEA96F9" />
+					<orm:MandatoryConstraint ref="_102A73EA-AB9F-4F51-8AE5-FF01C656C3F1" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:ImpliedFact id="_B4BB9869-E33C-466A-BF60-1ECB5DF87531" _Name="NumberIsInvolvedInSeriesEvent">
@@ -1728,7 +1729,7 @@
 					<orm:RoleProxy id="_98A08DBD-D03C-4E23-8A25-C7AAD4B9A66A">
 						<orm:Role ref="_A374E988-93B4-4984-8893-00C8BF74F4AF" />
 					</orm:RoleProxy>
-					<orm:Role id="_79560D2B-6AF2-426E-9584-1CA9AB33EBA6" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+					<orm:Role id="_79560D2B-6AF2-426E-9584-1CA9AB33EBA6" _IsMandatory="true" _Multiplicity="OneToMany" Name="">
 						<orm:RolePlayer ref="_934FF555-84B1-407D-8E31-936929F1D656" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2701,6 +2702,11 @@
 			<orm:MandatoryConstraint id="_08C60E6E-3B3A-4C5A-91A1-F18C1E9B943F" Name="SimpleMandatoryConstraint5" Modality="Deontic" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_9C0E8349-C28C-499C-AEAE-2476021395B1" ref="_DF30F861-77C7-47A3-BEA0-2E28F4CE0873" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_102A73EA-AB9F-4F51-8AE5-FF01C656C3F1" Name="SimpleMandatoryConstraint6" Modality="Deontic" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_F55C5979-6B7E-4262-B5A9-8CB07144B06C" ref="_A374E988-93B4-4984-8893-00C8BF74F4AF" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
 		</orm:Constraints>

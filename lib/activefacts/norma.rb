@@ -1,3 +1,9 @@
+#
+# Process a NORMA file into an ActiveFacts model
+#
+# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
+# Author: Clifford Heath.
+#
 require 'rexml/document'
 require 'activefacts/base'
 

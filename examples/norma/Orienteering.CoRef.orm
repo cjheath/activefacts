@@ -1508,10 +1508,10 @@
 		</orm:Fact>
 		<orm:Fact id="_633CD466-D318-446A-B10E-34580792ABBA" _Name="SeriesIsInvolvedInSeriesEvent">
 			<orm:FactRoles>
-				<orm:Role _Multiplicity="ExactlyOne" id="_A374E988-93B4-4984-8893-00C8BF74F4AF" _IsMandatory="false" Name="">
+				<orm:Role _Multiplicity="ExactlyOne" id="_A374E988-93B4-4984-8893-00C8BF74F4AF" _IsMandatory="true" Name="">
 					<orm:RolePlayer ref="_4079C453-8B78-494C-A006-1DDA6CE6CD41" />
 				</orm:Role>
-				<orm:Role id="_79560D2B-6AF2-426E-9584-1CA9AB33EBA6" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+				<orm:Role id="_79560D2B-6AF2-426E-9584-1CA9AB33EBA6" _IsMandatory="true" _Multiplicity="OneToMany" Name="">
 					<orm:RolePlayer ref="_934FF555-84B1-407D-8E31-936929F1D656" />
 				</orm:Role>
 			</orm:FactRoles>
@@ -2464,6 +2464,11 @@
 		<orm:MandatoryConstraint id="_08C60E6E-3B3A-4C5A-91A1-F18C1E9B943F" Name="SimpleMandatoryConstraint5" Modality="Deontic" IsSimple="true">
 			<orm:RoleSequence>
 				<orm:Role id="_9C0E8349-C28C-499C-AEAE-2476021395B1" ref="_DF30F861-77C7-47A3-BEA0-2E28F4CE0873" />
+			</orm:RoleSequence>
+		</orm:MandatoryConstraint>
+		<orm:MandatoryConstraint id="_102A73EA-AB9F-4F51-8AE5-FF01C656C3F1" Name="SimpleMandatoryConstraint6" Modality="Deontic" IsSimple="true">
+			<orm:RoleSequence>
+				<orm:Role id="_F55C5979-6B7E-4262-B5A9-8CB07144B06C" ref="_A374E988-93B4-4984-8893-00C8BF74F4AF" />
 			</orm:RoleSequence>
 		</orm:MandatoryConstraint>
 		<orm:UniquenessConstraint id="_E6248FC7-7ABA-4BD5-A0DA-378B3545DD5F_unique" Name="_E6248FC7-7ABA-4BD5-A0DA-378B3545DD5F_unique" IsInternal="true">

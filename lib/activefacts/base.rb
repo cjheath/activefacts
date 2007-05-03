@@ -1,12 +1,12 @@
 =begin rdoc
 # Base class hierarchy for representing ORM2 schemas and fact instances.
 #
+# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
+#
 =end
 require 'rubygems'
 require 'chattr'
-
-$all_pcs = []
 
 module ActiveFacts
     #==============================================================
@@ -206,7 +206,7 @@ module ActiveFacts
 	    if (@name &&
 		@name != "" &&
 		@name != player)
-		"#{@name} : " + player
+		"#{@name} of " + player
 	    else
 		player
 	    end
@@ -318,13 +318,16 @@ module ActiveFacts
 	    super(*args)
 	end
 
-	def to_s
-	    expanded = name
-	    (0...@role_sequence.size).each{|i|
-		expanded.gsub!("{#{i}}", @role_sequence[i].object_type.name)
+	def self.expand(t, *names)
+	    expanded = "#{t}"
+	    (0...names.size).each{|i|
+		expanded.gsub!("{#{i}}", names[i])
 	    }
+	    expanded
+	end
 
-	    "Reading '#{expanded}'"
+	def to_s
+	    "Reading '#{self.class.expand(name, *@role_sequence.object_names)}'"
 	end
     end
 
@@ -402,7 +405,7 @@ module ActiveFacts
 			!facts.detect{|f| r.fact_type == f}	# In one of our facts
 		    }
 		}
-	    # puts "Getting Preferred ID for #{to_s} from #{caller*"\n"}, considering (#{candidates.map(&:name)*", "})"
+	    # puts "Getting Preferred ID for #{to_s} from #{caller*"\n"}, considering (#{candidates.map{|c|c.name}*", "})"
 	    # If we found one labelled Preferred, return it:
 	    pi = candidates.detect{|s| s.is_preferred_id }
 	    return pi if pi
@@ -547,6 +550,18 @@ module ActiveFacts
 	    first_fact = self[0].fact_type
 	    !detect{|r| r.fact_type != first_fact }
 	end
+
+	def role_name_list
+	    "(" + map{|r| r ? r.to_s : "nil" }*", " + ")"
+	end
+
+	def role_names
+	    map{|r| r.name != "" ? r.name : r.object_type.name}
+	end
+
+	def object_names
+	    map{|r| r.object_type.name}
+	end
     end
 
     class Constraint < Feature
@@ -627,9 +642,14 @@ module ActiveFacts
 	    pref = is_preferred_id ? " (preferred identifier)" : "" # for #{preferred_id_for.name})" : ""
 	    mand = (is_mandatory ? " must" : " may") + " occur"
 
-	    name + ": " +
-		(@role_sequence.size > 1 ? "the combination " : "the value ") +
-		@role_sequence.to_s + mand + frequency + pref
+	    cv = @role_sequence.size > 1 ? "combination" : "value"
+	    if (@role_sequence.internal?)
+		what = "in #{@role_sequence[0].fact_type.name}, each #{cv} #{@role_sequence.role_name_list}"
+	    else
+		what = "each "+cv+@role_sequence.to_s 
+	    end
+
+	    name + ": " + what + mand + frequency + pref
 	    # REVISIT: Find a reading instead!
 	end
     end

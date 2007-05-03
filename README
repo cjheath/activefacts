@@ -180,6 +180,13 @@ ruby -I lib bin/reflect.rb --dsn=Orienteering \
 ... or whatever ActiveRecord connection options are
 appropriate to connect to your database.
 
+Finally, I have a first pass at a Ruby DSL that you can
+use to define models in this version. Many parts aren't
+complete, but if you run the example and read the output,
+you'll see how much already does work:
+
+ruby -I lib examples/ruby/administration.rb
+
 Metamodel
 ---------
 

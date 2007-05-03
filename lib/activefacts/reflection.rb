@@ -1,11 +1,13 @@
 #
-# $Id$
+# ActiveFacts class which can reflect (reverse engineer) the
+# schema of any database.
 #
-# ActiveFacts module that provides a class which can use ActiveRecord
-# with DRYSql to reflect the schema of any database.
-#
+# Uses ActiveRecord with DRYSql.
 # DRYSql can't reflect foreign key constraints that have more than one
 # field - I have a patch that fixes this for SQL Server, IBM DB2 and Oracle.
+#
+# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
+# Author: Clifford Heath.
 #
 require "rubygems"
 require "active_record"
@@ -270,7 +272,7 @@ module ActiveFacts
 		# Say what we're doing:
 		@log.puts "\t\t#{primary ?"primary":"unique"} key #{uc.constraint_name} over (#{colnames.entries*", "})"
 		@log.puts "\t\t\t#{constraint_name} includes optional columns" if !mandatory
-		@log.puts "\t\t\t#{constraint_name} includes fks (#{fks.map(&:constraint_name)*","}) and non-fk columns (#{non_fk_colnames.entries*", "})"
+		@log.puts "\t\t\t#{constraint_name} includes fks (#{fks.map{|f| f.constraint_name}*","}) and non-fk columns (#{non_fk_colnames.entries*", "})"
 
 		roles = RoleSequence.new
 		fks.each{|fk|
@@ -299,7 +301,7 @@ module ActiveFacts
 
 	def make_value_type(name, vtype)
 	    # REVISIT: Consider c.limit, c.scale, c.precision instead:
-	    vtparams = vtype.split(/\D+/).reject{|v| v==""}.map(&:to_i)
+	    vtparams = vtype.split(/\D+/).reject{|v| v==""}.map{|v| v.to_i}
 	    dtname = vtype.sub(/\W.*/,'')
 
 	    @log.puts "\t\tMaking base DataType #{dtname}" if !@data_types[dtname]

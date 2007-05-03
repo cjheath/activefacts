@@ -1,6 +1,9 @@
 #
 # Simple test program that calls the ActiveFacts Base API directly
 #
+# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
+# Author: Clifford Heath.
+#
 $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'rubygems'
