@@ -396,7 +396,7 @@ module ActiveFacts
 		)
 
 	    if (primary || unique)
-		pc2_name = reading.sub(/\{0\}/, "one {0}").sub(/\{1\}/, "a given {1}")
+		pc2_name = reading.sub(/\{0\}/, "only one {0}").sub(/\{1\}/, "each {1}")
 		pc2_name = Reading.expand(pc2_name, fact_type.roles[0].object_type.name, fact_type.roles[1].object_type.name).
 				split(/\s+/).map{|w|
 				    w[0,1].upcase+w[1..-1]

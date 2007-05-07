@@ -7,7 +7,9 @@ include ActiveFacts
 administration = Model.Builder "Orienteering" do
     entity :Club do
 	value :Code, :nchar, 12, :primary, "has/is of"
+
 	value "is called/is name of", :ClubName, :nvarchar, 128, :unique
+
 	binary "runs/is run by", :Event do
 	    unique "EventIsRunByOneClub", :Club	# Only one club runs each Event
 	    mandatory :Club
@@ -18,10 +20,13 @@ administration = Model.Builder "Orienteering" do
 	value :MapName, :nvarchar, 80 do
 	    primary	# Equivalent to unique, mandatory and preferred
 	end
+
 	value :Accessibility, :nchar, 1 do
 	    restrict 'A'..'D'
 	end
+
 	binary "is owned by/owns", :Club
+
 	binary "is map for/uses", :Event do
 	    unique "EventIsOnOneMap", :Map
 	    mandatory :Event
@@ -30,20 +35,23 @@ administration = Model.Builder "Orienteering" do
 
     entity :Event do
 	value :ID, :autoinc, :primary
+
 	ternary "EventIsNumberIsSeries", :Series, :Number do
 	    unique "SeriesNumberIsOfOneEvent", :Series, :Number
-	    frequency :should, :Series, 2 # Every Series should have at least two events
+	    # Every Series should have at least two events
+	    frequency :should, :Series, 2
 	end
+
 	value :EventName, :nvarchar, 50, "is called/is name of" do
 	    # EventName is optional, because that's the default.
-#!!! REVISIT
-	    # unique	    # Every EventName is of one event
+	    # unique	    # REVISIT: Every EventName is of one event
 	end
 
 	# Every event must either be in a series or have a name, or both
 	mandatory :EventName, :EventIsNumberInSeries
 
 	value "starts at", :StartLocation, :nvarchar, 200, :mandatory
+
 	value "starts at", :StartTime, :datetime, :mandatory
     end
 
@@ -51,7 +59,6 @@ administration = Model.Builder "Orienteering" do
 	restrict 'A'..'F', 'PW'
     end
 
-#!!! REVISIT
 #    entity :EventCourse do
 #	nests binary("offers/is available at", :Event, :Course)
 #	unique "EventIncludesEachCourseOnce", :Event, :Course

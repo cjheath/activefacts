@@ -33,13 +33,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ManyToMany.CoRef._ORMCustomToolReport.cs">
+    <Compile Include="CompanyDirector.CoRef._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
-      <DependentUpon>ManyToMany.CoRef.orm</DependentUpon>
+      <DependentUpon>CompanyDirector.CoRef.orm</DependentUpon>
     </Compile>
-    <Compile Include="ManyToMany._ORMCustomToolReport.cs">
+    <Compile Include="CompanyDirector._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
-      <DependentUpon>ManyToMany.orm</DependentUpon>
+      <DependentUpon>CompanyDirector.orm</DependentUpon>
+    </Compile>
+    <Compile Include="EmployeeManagerCEO.CoRef._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EmployeeManagerCEO.CoRef.orm</DependentUpon>
     </Compile>
     <Compile Include="ObjectifiedUnary.CoRef._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -86,27 +90,15 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SimpleTernary.orm</DependentUpon>
     </Compile>
-    <Compile Include="SubType.CoRef._ORMCustomToolReport.cs">
+    <Compile Include="EmployeeManagerCEO._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
-      <DependentUpon>SubType.CoRef.orm</DependentUpon>
-    </Compile>
-    <Compile Include="SubType._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SubType.orm</DependentUpon>
-    </Compile>
-    <Compile Include="TernaryByNesting.CoRef._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TernaryByNesting.CoRef.orm</DependentUpon>
-    </Compile>
-    <Compile Include="TernaryByNesting._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TernaryByNesting.orm</DependentUpon>
+      <DependentUpon>EmployeeManagerCEO.orm</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ManyToMany.orm">
+    <None Include="CompanyDirector.orm">
       <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>ManyToMany._ORMCustomToolReport.cs</LastGenOutput>
+      <LastGenOutput>CompanyDirector._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="ObjectifiedUnary.orm">
       <Generator>ORMCustomTool</Generator>
@@ -132,13 +124,9 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>SimpleTernary._ORMCustomToolReport.cs</LastGenOutput>
     </None>
-    <None Include="SubType.orm">
+    <None Include="EmployeeManagerCEO.orm">
       <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>SubType._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
-    <None Include="TernaryByNesting.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>TernaryByNesting._ORMCustomToolReport.cs</LastGenOutput>
+      <LastGenOutput>EmployeeManagerCEO._ORMCustomToolReport.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('SchoolActivities.orm')">
@@ -227,60 +215,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('TernaryByNesting.orm')">
-    <None Include="TernaryByNesting.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TernaryByNesting.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-    </None>
-    <None Include="TernaryByNesting.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TernaryByNesting.orm</DependentUpon>
-      <ORMGenerator>OIALtoDCIL</ORMGenerator>
-    </None>
-    <None Include="TernaryByNesting.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TernaryByNesting.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="TernaryByNesting.OIAL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TernaryByNesting.orm</DependentUpon>
-      <ORMGenerator>ORMtoOIAL</ORMGenerator>
-    </None>
-    <None Include="TernaryByNesting.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TernaryByNesting.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="Exists('ManyToMany.orm')">
-    <None Include="ManyToMany.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ManyToMany.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-    </None>
-    <None Include="ManyToMany.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ManyToMany.orm</DependentUpon>
-      <ORMGenerator>OIALtoDCIL</ORMGenerator>
-    </None>
-    <None Include="ManyToMany.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ManyToMany.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="ManyToMany.OIAL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ManyToMany.orm</DependentUpon>
-      <ORMGenerator>ORMtoOIAL</ORMGenerator>
-    </None>
-    <None Include="ManyToMany.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ManyToMany.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('PersonAddressAbsorption.orm')">
     <None Include="PersonAddressAbsorption.CoRef.orm">
       <AutoGen>True</AutoGen>
@@ -308,17 +242,44 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('SubType.orm')">
-    <None Include="SubType.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SubType.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('ObjectifiedUnary.orm')">
     <None Include="ObjectifiedUnary.CoRef.orm">
       <AutoGen>True</AutoGen>
       <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
+      <ORMGenerator>CoRefORM</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('CompanyDirector.orm')">
+    <None Include="CompanyDirector.CoRef.orm">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyDirector.orm</DependentUpon>
+      <ORMGenerator>CoRefORM</ORMGenerator>
+    </None>
+    <None Include="CompanyDirector.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyDirector.orm</DependentUpon>
+      <ORMGenerator>OIALtoDCIL</ORMGenerator>
+    </None>
+    <None Include="CompanyDirector.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyDirector.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="CompanyDirector.OIAL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyDirector.orm</DependentUpon>
+      <ORMGenerator>ORMtoOIAL</ORMGenerator>
+    </None>
+    <None Include="CompanyDirector.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyDirector.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('EmployeeManagerCEO.orm')">
+    <None Include="EmployeeManagerCEO.CoRef.orm">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EmployeeManagerCEO.orm</DependentUpon>
       <ORMGenerator>CoRefORM</ORMGenerator>
     </None>
   </ItemGroup>
