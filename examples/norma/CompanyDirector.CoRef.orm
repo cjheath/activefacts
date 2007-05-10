@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<orm:ORMModel id="_98D57448-9A15-4188-9224-218FC8299BDB" Name="ManyToMany" xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
+<orm:ORMModel id="_98D57448-9A15-4188-9224-218FC8299BDB" Name="CompanyDirector" xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
 	<orm:Objects>
 		<orm:EntityType id="_DFC45711-72ED-4E50-A15A-A559A33A66DF" Name="Person" _ReferenceMode="Name" IsPersonal="true">
 			<orm:PlayedRoles>
@@ -43,7 +43,7 @@
 			</orm:PlayedRoles>
 			<orm:ConceptualDataType id="_191EDDDD-A4EB-42B7-9165-B6FF5F8C7EC0" ref="_2220003A-82A6-4D1E-B955-B514B45D8228" Scale="0" Length="0" />
 		</orm:ValueType>
-		<orm:EntityType id="_AFAB4D5A-CD05-4AF9-AA1C-EF1577485D2D" Name="DirectorAttendedBoardMeetingOnDate" IsIndependent="true" _ReferenceMode="">
+		<orm:EntityType id="_AFAB4D5A-CD05-4AF9-AA1C-EF1577485D2D" Name="Attendance" IsIndependent="true" _ReferenceMode="">
 			<orm:PlayedRoles>
 				<orm:Role ref="_3FD7BAA0-1D40-4336-B725-9C4AD5B21C8C" />
 				<orm:Role ref="_13AA8184-5A0D-4DBD-BC46-49283FCA472E" />
@@ -232,7 +232,7 @@
 				<orm:UniquenessConstraint ref="_CE469BA8-38FA-43A5-8A0C-F92BBFD320E7" />
 			</orm:InternalConstraints>
 		</orm:Fact>
-		<orm:Fact id="_FA6EECAF-11C9-4CA3-874E-DED0BBFAA222" _Name="DateIsInvolvedInDirectorAttendedBoardMeetingOnDate">
+		<orm:Fact id="_FA6EECAF-11C9-4CA3-874E-DED0BBFAA222" _Name="DateIsInvolvedInAttendance">
 			<orm:FactRoles>
 				<orm:Role _Multiplicity="ExactlyOne" id="_63937388-4EB8-4CA0-B98D-C9BE03E44B52" _IsMandatory="false" Name="">
 					<orm:RolePlayer ref="_72001F12-4E59-4E01-9ED7-0C543BCFEBFC" />
@@ -270,7 +270,7 @@
 				<orm:UniquenessConstraint ref="_1C83C6D0-4D4C-4A6F-A0D3-50D28C216392" />
 			</orm:InternalConstraints>
 		</orm:Fact>
-		<orm:Fact id="_9FD2FAB2-EAA6-4083-B516-577CCFCEDE93" _Name="DirectorIsInvolvedInDirectorAttendedBoardMeetingOnDate">
+		<orm:Fact id="_9FD2FAB2-EAA6-4083-B516-577CCFCEDE93" _Name="DirectorIsInvolvedInAttendance">
 			<orm:FactRoles>
 				<orm:Role _Multiplicity="ExactlyOne" id="_7BB95FD5-2180-48E1-8C78-808154CFA92C" _IsMandatory="false" Name="">
 					<orm:RolePlayer ref="_50320266-CCB4-45A5-89DB-AADE63810AAF" />

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
-	<orm:ORMModel id="_98D57448-9A15-4188-9224-218FC8299BDB" Name="ManyToMany">
+	<orm:ORMModel id="_98D57448-9A15-4188-9224-218FC8299BDB" Name="CompanyDirector">
 		<orm:Objects>
 			<orm:EntityType id="_DFC45711-72ED-4E50-A15A-A559A33A66DF" Name="Person" _ReferenceMode="Name" IsPersonal="true">
 				<orm:PlayedRoles>
@@ -45,7 +45,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_191EDDDD-A4EB-42B7-9165-B6FF5F8C7EC0" ref="_2220003A-82A6-4D1E-B955-B514B45D8228" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ObjectifiedType id="_AFAB4D5A-CD05-4AF9-AA1C-EF1577485D2D" Name="DirectorAttendedBoardMeetingOnDate" IsIndependent="true" _ReferenceMode="">
+			<orm:ObjectifiedType id="_AFAB4D5A-CD05-4AF9-AA1C-EF1577485D2D" Name="Attendance" IsIndependent="true" _ReferenceMode="">
 				<orm:PlayedRoles>
 					<orm:Role ref="_3FD7BAA0-1D40-4336-B725-9C4AD5B21C8C" />
 					<orm:Role ref="_13AA8184-5A0D-4DBD-BC46-49283FCA472E" />
@@ -264,7 +264,7 @@
 					<orm:UniquenessConstraint ref="_CE469BA8-38FA-43A5-8A0C-F92BBFD320E7" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_A0348CB0-0E00-42C5-9EAF-57AC8FB28CDF" _Name="DirectorAttendedBoardMeetingOnDate">
+			<orm:Fact id="_A0348CB0-0E00-42C5-9EAF-57AC8FB28CDF" _Name="Attendance">
 				<orm:FactRoles>
 					<orm:Role id="_63937388-4EB8-4CA0-B98D-C9BE03E44B52" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_72001F12-4E59-4E01-9ED7-0C543BCFEBFC" />
@@ -290,7 +290,7 @@
 					<orm:UniquenessConstraint ref="_F64C0BE9-45A4-4209-81B4-D6C1CB6A80CD" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:ImpliedFact id="_FA6EECAF-11C9-4CA3-874E-DED0BBFAA222" _Name="DateIsInvolvedInDirectorAttendedBoardMeetingOnDate">
+			<orm:ImpliedFact id="_FA6EECAF-11C9-4CA3-874E-DED0BBFAA222" _Name="DateIsInvolvedInAttendance">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_753834C4-B6DF-495B-8A32-534A1C14C5A2">
 						<orm:Role ref="_63937388-4EB8-4CA0-B98D-C9BE03E44B52" />
@@ -329,7 +329,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_6478D6AE-47E5-4B49-AE33-3A409A03E186" />
 			</orm:ImpliedFact>
-			<orm:ImpliedFact id="_9FD2FAB2-EAA6-4083-B516-577CCFCEDE93" _Name="DirectorIsInvolvedInDirectorAttendedBoardMeetingOnDate">
+			<orm:ImpliedFact id="_9FD2FAB2-EAA6-4083-B516-577CCFCEDE93" _Name="DirectorIsInvolvedInAttendance">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_A6F15EA7-864C-47FC-A355-A2F92031505B">
 						<orm:Role ref="_7BB95FD5-2180-48E1-8C78-808154CFA92C" />
@@ -477,12 +477,12 @@
 			<orm:ReferenceModeKind id="_DFA079C5-E78A-4D68-AA9B-220A4C8278AC" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>
-	<ormDiagram:ORMDiagram id="_23C5D2B7-DDCE-438A-B457-1082B09C7F8B" IsCompleteView="false" Name="ManyToMany" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
+	<ormDiagram:ORMDiagram id="_23C5D2B7-DDCE-438A-B457-1082B09C7F8B" IsCompleteView="false" Name="CompanyDirector" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
 			<ormDiagram:ObjectTypeShape id="_1C231AF3-4B6B-4640-8EF6-A10739CBD0A0" IsExpanded="true" AbsoluteBounds="0.5, 0.50844141789153219, 0.53540977358818054, 0.35900605320930479">
 				<ormDiagram:Subject ref="_DFC45711-72ED-4E50-A15A-A559A33A66DF" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_957A050B-C9E3-44E7-8212-867C1E3F6F9C" IsExpanded="true" AbsoluteBounds="2.4166666269302368, 0.50844141789153219, 0.62128620862960815, 0.35900605320930479">
+			<ormDiagram:ObjectTypeShape id="_957A050B-C9E3-44E7-8212-867C1E3F6F9C" IsExpanded="true" AbsoluteBounds="2.4270832935969033, 0.50844141789153219, 0.62128620862960815, 0.35900605320930479">
 				<ormDiagram:Subject ref="_03E42D8C-6D87-4BD6-98BB-0E9626D75A7E" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_263364C5-3BA3-4297-B272-4B508C6AA60F" IsExpanded="true" AbsoluteBounds="1.580833214124044, 0.5, 0.51388888899236917, 0.30588888899236916" ConstraintDisplayPosition="Top">
