@@ -1,0 +1,313 @@
+
+<h2>ActiveFacts Example Models and introduction to ORM2 terminology.</h2>
+<p>This links to a number of example ORM2 model files in various representations:</p>
+<ul>
+  <li>A number of ORM2 models in a <a href="norma/ExampleModels.sln">project</a>
+    for Visual Studio 2005 (Pro) with <a href="http://sf.net/projects/orm">NORMA</a>
+    installed,</li>
+  <li><a href="pdf">PDF</a> documents showing the diagrams from the above
+    project, and images for some of those,</li>
+  <li>A Ruby code <a href="ruby">example</a> using a proposed Ruby DSL (Domain Specific
+    Language) to define a model</li>
+</ul>
+<p>The models are as follows. ORM2 terminology is <i>italicised</i> on first
+use.</p>
+
+<h3>CompanyDirector</h3>
+<p>This very simple <a href="pdf/CompanyDirector.pdf">model</a> shows a
+basic example of the features of ORM2 you'll be seeing most often, so
+I'll use it to introduce the features of the ORM2 visual language.<img src="images/CompanyDirector.png" align="right" width="458" height="370"></p>
+<ul>
+  <li><i>Entity Types</i>: <b>Person</b> and <b>Company</b>,</li>
+  <li>Simple identification schemes for each, in the form of a <b>Name</b>, see
+    below for more information,</li>
+  <li><i>Objectified</i> or <i>Nested</i> <i>Type:</i> <b>Director</b> is a
+    nested type, which is an entity that contains a fact type.</li>
+  <li><i>Fact Types</i> have a series of one or more Role boxes; Director has
+    two roles (it's a binary fact type), which are <i>played by</i> Person and
+    Company respectively. The Director also plays two other roles in this model;
+    a role in the fact type that defines on what date the director was
+    appointed, and one in another fact type that defines on which dates this
+    director attended a board meeting.</li>
+  <li><i>Value Type</i>: Date is a value type, which has an associated data type
+    (datetime, not shown). Value types have a dashed outline.</li>
+  <li><i>Uniqueness constraints</i>: The horizontal lines above the fact types
+    are uniqueness constraints (UC). There are three UCs showing, one that says
+    that a director was appointed on only one date, one that says that a given
+    combination (Person, Company) can only occur once, and one that says that a
+    given director can only attend a single board meeting on a given date. A UC
+    covering one role of a binary fact type implies that only one instance of
+    the <i>other</i> role player may occur for a given instance of the player of
+    the covered role.&nbsp; In pure ORM2, a UC must cover at least N-1 roles of
+    an N-ary fact type; any fewer and the fact type is not <i>elementary</i>.</li>
+  <li><i>Role Names</i>: The &quot;Director was appointed on Date&quot; fact
+    type has non-default role names, bracketed in blue, which override the default of using the
+    names of the role players.</li>
+  <li><i>Mandatory constraint</i>: The heavy dot on the Company role box of
+    Director is a mandatory constraint (MC) that requires every company to have
+    at least one director. A mandatory constraint may also be shown as a hollow
+    dot, which says <i>should</i>, rather than <i>must</i> (the technical terms
+    are <i>deontic</i> rather than <i>alethic</i>).</li>
+  <li><i>F</i><i>act Readings</i> in the form of text under each fact type.
+    NORMA can show two readings for a binary fact type, separated by a slash /,
+    and read in the obvious way. If a reading is given for one direction only,
+    and that direction requires a reading order which is reversed from the
+    obvious way, an arrow-head is shown to indicate the reading direction.</li>
+  <li><i>Preferred Identifiers</i>: PI, also called Primary Reference Mode, are
+    shown here as Name in parentheses under the name of an entity type. Name in
+    each case is a value type which is hidden along with a fact type, two UCs,
+    and an MC, inside the entity type (it's possible in NORMA to expand these to
+    look at or edit them).</li>
+</ul>
+<p>Note that ORM2 contains additional symbols that are used when a PI, UC, or MC
+applies to roles of more than one fact type. Such constraints are called <i>external
+constraints.</i> All the constraints on this diagram are <i>internal</i>.</p>
+
+<br clear="all">
+<h3>SimpleTernary</h3>
+<img src="images/SimpleTernary.png" align="right" width="396" height="166">
+<p>This simple model shows a ternary fact type, with a UC spanning all roles.
+Application here is the name of a software application, which can be installed
+on any computer by any user. Applications may be installed for individual users
+on a computer, so a given application is regarded as being installed on a given
+computer by each user for (or by) whom it is installed. That's why the UC spans
+all three roles. Note how a single reading is displayed with the role names in
+brackets. It's possible for a ternary fact type to have up to six different
+reading orders, and NORMA even allows more than one reading to be defined for
+each reading order.<br>
+</p>
+
+
+<br clear="all">
+<h3>SchoolActivities
+</h3>
+<p align="center"><img src="images/SchoolActivities.png" align="right" width="545" height="360"></p>
+<p>This model shows a ternary (which represents a student's participation in a
+school-sanctioned activity). The Participation ternary has a UC spanning two
+roles (which says that a given Student may only participate in a given Activity
+for a single School). But there are two occurrences of a new symbol, <i>subset constraints<b>.</b></i>
+These constraints specify restrictions on the allowed <i>fact population</i> of
+the ternary fact type. The UC doesn't specify <b>which</b> school a student may
+represent for an activity, but the lower UC does - the population of the
+(School, Student) pair inside the ternary must be a subset of the enrolment
+population (always a matching pair). In simple terms, this requires that each
+student who participates in some activity may only do so as a representative of
+the school in which they're enrolled, and not for any other school. Furthermore,
+the upper subset constraint requires that such participation may only occur for
+an activity that is sanctioned by that school. Note that due to a display bug,
+the arrow head is missing here. It should point to the superset, which in this
+case is the <b>sanctions</b> fact type. This direction is consistent with the
+arrows used in sub-typing, as shown in the next case.
+</p>
+
+<br clear="all">
+<h3>EmployeeManagerCEO
+</h3>
+<img src="images/EmployeeManagerCEO.png" align="right" width="401" height="359">
+<p>This example introduces many of the remaining features of ORM2, and shows one
+way to handle a particular thorny problem. The most obvious new features are the
+subtype relationships, which show respectively that a Person may be an Employee,
+and may be a Manager. ORM2 does not require that any person is either (they may
+be neither), or that a person is not both. Such external mandatory or exclusion
+constraints may be added to the implicit binary <i>subtyping fact type</i> if
+needed (not in this case).
+</p>
+<p>The manages/managed by fact type between employee and manager is mandatory
+for each manager (a manager must have subordinates), but not for employee -
+because the CEO is an employee who has no manager.
+</p>
+<p>Instead of adding a further subtype CEO to Employee, here we see a <i>unary
+fact type</i> called <b>isCEO</b>, which corresponds to a boolean condition on
+the player (an employee). An external <i>exclusive-or </i>constraint joins this
+role and the employees role in &quot;managed by&quot;. This constraint is read
+&quot;Each employee must either be CEO or be managed by some manager, but not
+both&quot;. Note that the exclusive-or symbol consists of a heavy dot, like the
+mandatory dot, indicating the mandatory aspect, and an X, symbolising &quot;not
+both&quot;. ORM2 also allows <i>external mandatory constraints</i> (or <i>inclusive-or
+constraints</i>) shown like this but without the X, and external exclusion
+constraints which are the same again, but without the heavy dot.
+</p>
+<p>The final new feature of this model is a <i>ring constraint</i>, of which
+there are eleven types. This one is an <i>acyclic constraint</i>, which says
+that no manager may be self-managed, nor may they be managed by any direct or
+indirect subordinate.
+</p>
+
+<br clear="all">
+<h3>ObjectifiedUnary
+</h3>
+<img src="images/ObjectifiedUnary.png" align="right" width="295" height="225">
+This
+example is more a curiosity than anything else, serving to illustrate a case
+that you might not otherwise think was possible. Person may play a unary role in
+the fact type &quot;is dead&quot;. If they are in fact dead, we might wish to
+record some facts about the event of their death, so we nest (objectify) the
+&quot;is dead&quot; fact type as a new entity, Death. This allows us to
+associate their death with a value indicating the cause of death. The uniqueness
+constraint requires that we record only one cause of death.
+<p>
+
+<br clear="all">
+<h3>
+PersonAddressAbsorption
+</h3>
+
+<p>By now you're asking how all this mess of detail is going to be turned into a
+usable database design. Before moving on to a larger real-life example, let's
+cover the concept of <i>absorption</i> into a relational, or <i>compound</i>
+schema. Note that the absorption process requires <b>all</b> the entity types,
+fact types, and constraints for the model. Adding a single fact type or changing
+a constraint might require that some features are represented in new tables, or
+different ones, and these changes can <b>cascade</b>, so that a small change in
+the conceptual model requires a large database migration. Don't worry about that
+for now, as there are ways of minimizing the impact, and in the future the
+migration process will be fully automatic, and larger impacts may perhaps even
+be delayed without delaying the incremental schema change.
+</p>
+
+<img src="images/PersonAddressAbsorption.png" align="right" width="602" height="501">
+Before launching in, we see an external uniqueness constraint here for the first
+time. it joins the roles of FamilyName and GivenName; this schema will never
+allow two people to have the same two names. Normally, an external UC has a
+single line through the middle of the circle, consistent with the single line
+above covered roles in an internal UC, but this one is also a preferred
+identifier (for Person, obviously), so it has a double line. A double line is
+also used when showing a internal UC that's a PI.
+<p>Ok, here goes. How is it that the SQL for this whole detailed diagram
+requires only the single table shown? You can see that Street has exactly two
+StreetLine values allowed, and is identified by the combination of both, so here
+we can <b>absorb</b> these fact roles into a Street entity, which would be shown
+as an objectified type Street having two fact roles, one for each street line.
+The same principle applies again to Address, except here it absorbs StreetNumber,
+City, Postcode and <b>both</b> roles of the Street nested type. The same process
+continues with Person, which is finally absorbed to the single table you see
+shown in the SQL code. Note how the respective role names are appended to form
+column names like <b>Address_Street_StreetLine1</b>. This column should in fact
+be called <b>Address_Street_Line1</b>, but the <b>Line1</b> role name has not
+been used (this is a bug in NORMA at present).</p>
+<p>Note also that this table doesn't have, and cannot have, uniqueness
+constraints requiring that each Address occurs once only. Each Address is
+identified by its roles, but more than one person may live at the same address.
+Enforcement of the uniqueness constraints are unnecessary however. Just consider
+the absorbed Address roles as forming a multi-part <i>foreign key</i> to a table
+that's not needed. If someone wants the unique list of all addresses, it's
+possible to write an SQL projection to compute that set.</p>
+<p>It's also possible to mark Address as an <i>independent entity type</i>,
+which is an instruction to the absorption process that indicates that this
+entity might exist apart from any roles it might play. Independent entity types
+are shown in ORM2 as having an exlamation point <b>!</b> after their name. In
+order to represent an independent entity type in SQL, a separate table is always
+needed, and this can be used to enforce uniqueness. In this case however, Person
+would have a large multi-part foreign key into the new Address table, so it's
+preferable to introduce a <i>surrogate key</i> in the form of a
+database-allocated unique integer into the address entity, and mark that key as
+the preferred identifier instead. Note that this is <b>not</b> a detail of the
+conceptual model, but is merely a pragmatic concern which should not need to be
+shown; instead the absorption process should apply rules that require it to
+introduce such a surrogate key. Unfortunately this feature is not yet present in
+NORMA.</p>
+
+<h3>
+Orienteering
+</h3>
+<p>Finally, the <i>piece de resistance</i>, a working model of an
+administration, registration and scoring system for the sport of Orienteering.
+This model is somewhat extended to allow team events, as occurs in the
+derivative, but rather more extreme, sport of rogaining. Because the model is so
+big, it's presented in three separate diagrams, representing the three aspects
+already introduced. Any feature may show on more than one diagram, and the ORM2
+rules don't indicate that such an element has a special affinity with any
+diagram on which it appears. Entities that appear on other diagrams are shown
+with a drop-shadow. The diagrams are presented without much comment, and
+after that, the absorbed (compound) form is shown as an entity-relationship
+diagram.
+</p>
+<h3>
+Administration
+</h3>
+<img src="images/OrienteeringAdministration.png" align="right" width="809" height="448">A couple of new
+features are shown here. <i>Value restrictions</i> or constraints and <i>role
+value restrictions</i> are shown in mauve. These are lists of values, or of
+ranges of values, which are drawn from the allowed values of the underlying type
+(data type or value type respectively), and restrict that value type or that
+role to values in the defined set.
+<p>Also here you'll see an external mandatory constraint shown for the first
+time. This one requires that an event is either part of a series, or has a name,
+or both.
+</p>
+<p>Finally there is a number of cases throughout this model where a surrogate
+key is used. In a pure conceptual modelling tool these should <b>never</b>
+occur, but as mentioned previously, NORMA doesn't have rules that tell it when
+and how to inject one into a physical model. In addition to that, the resultant
+model was to be used with Ruby on Rails, whose ActiveRecord module has a strong
+preference for surrogate keys on every table.
+
+<br clear="all">
+</p>
+<h3>
+Registration
+</h3>
+
+<img src="images/OrienteeringRegistration.png" align="right" width="605" height="468">The new feature
+here is an external x-or constraint on two subtype connectors, indicating that
+an Entrant must be either a Team or a Competitor, but not both.
+<p>The subset constraint requires that a competitor may only be entered as a
+team member if their team is already entered for that same event course.
+
+<br clear="all">
+</p>
+<h3>
+Scoring
+</h3>
+
+<img src="images/OrienteeringScoring.png" align="right" width="775" height="488">Just for the sake of
+completeness, this diagram shows a <i>frequency constraint</i>, attached to the
+placement of a punch at an event. This constraint requires that no more than 4
+punches be placed at any control point for a given event. A frequency constraint
+can be added on a non-mandatory role or role sequence, for example we could
+require that at least 2 but no more than 4 punches are placed at each control
+point, and that the recording of these placements is not mandatory. If any punch
+is recorded, the number recorded must fall in the required range.
+<p>This model also shows the resultant score for a given Entrant's Entry to a
+given Event. Normally this value will be computed from the times of their visits
+to punches during the event, and according to a scoring method as advised.
+However in this case we cannot record the complexities of all possible scoring
+algorithms, nor the discretion of the judges in possibly adjusting scores, and
+we don't require that Visit information necessarily be recorded in any case.
+Either there may be no electronic recording of visits, or the score might depend
+only on finishing order, and a provisional score awarded to be checked against
+valid Visit data at a later time.
+
+<br clear="all">
+
+</p>
+
+<h3>
+Relational Schema
+</h3>
+<p>
+This is the final schema exactly as computed by NORMA. It looks right, and it is, almost.
+The only serious error I've found is that the PI for Competitor, which was split
+between the inherited GivenName role of Entrant and the competitor's family
+name, is not properly defined. It's a nice, pretty schema however and should
+work well after final adjustments have been made.
+</p>
+
+<img src="images/OrienteeringER.png">
+
+<br clear="all">
+
+<h3>
+Relational Schema expressed in pseudo-ORM form
+</h3>
+
+<img src="images/OrienteeringERAdministration.png" align="right">
+
+This diagram was produced in NORMA, but it is not elementary, rather it's a
+representation of the administration part of the relational schema. Consequently
+NORMA is showing us quite a bit of red ink - it requires elementary schemas and
+throws validation errors when this is not the case. Nevertheless it gives some
+idea how the ActiveFacts project initially represents a schema that's been
+extracted from a relational database, or one that's been absorbed into compound
+(relational) form.
+<br clear="all">
