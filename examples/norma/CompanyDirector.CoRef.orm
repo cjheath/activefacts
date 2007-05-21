@@ -208,10 +208,10 @@
 		</orm:Fact>
 		<orm:Fact id="_8140F50F-679F-4E60-AAA0-91FCC9ED5585" _Name="DirectorWasAppointedOnDate">
 			<orm:FactRoles>
-				<orm:Role id="_A46E6303-24C5-4DCE-B2C8-2944BF0E328E" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="Director">
+				<orm:Role id="_A46E6303-24C5-4DCE-B2C8-2944BF0E328E" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="Director">
 					<orm:RolePlayer ref="_50320266-CCB4-45A5-89DB-AADE63810AAF" />
 				</orm:Role>
-				<orm:Role id="_F5AD730C-46A4-4E12-A2A3-B248D1F3F161" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="Appointed">
+				<orm:Role id="_F5AD730C-46A4-4E12-A2A3-B248D1F3F161" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="Appointed">
 					<orm:RolePlayer ref="_72001F12-4E59-4E01-9ED7-0C543BCFEBFC" />
 				</orm:Role>
 			</orm:FactRoles>
@@ -230,6 +230,7 @@
 			</orm:ReadingOrders>
 			<orm:InternalConstraints>
 				<orm:UniquenessConstraint ref="_CE469BA8-38FA-43A5-8A0C-F92BBFD320E7" />
+				<orm:MandatoryConstraint ref="_B05559ED-1E03-4A32-9F60-B1AFAED60F1A" />
 			</orm:InternalConstraints>
 		</orm:Fact>
 		<orm:Fact id="_FA6EECAF-11C9-4CA3-874E-DED0BBFAA222" _Name="DateIsInvolvedInAttendance">
@@ -406,6 +407,11 @@
 				<orm:Role id="_68ACD595-0FC7-485A-93CA-CB00862775FD" ref="_13AA8184-5A0D-4DBD-BC46-49283FCA472E" />
 			</orm:RoleSequence>
 		</orm:UniquenessConstraint>
+		<orm:MandatoryConstraint id="_B05559ED-1E03-4A32-9F60-B1AFAED60F1A" Name="SimpleMandatoryConstraint5" Modality="Deontic" IsSimple="true">
+			<orm:RoleSequence>
+				<orm:Role id="_D58D1D6D-BB7E-4F6F-961F-74BB9749C305" ref="_A46E6303-24C5-4DCE-B2C8-2944BF0E328E" />
+			</orm:RoleSequence>
+		</orm:MandatoryConstraint>
 	</orm:Constraints>
 	<orm:DataTypes>
 		<orm:TrueOrFalseLogicalDataType id="_true_or_false_logical_Data_Type" />

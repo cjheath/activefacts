@@ -1,5 +1,13 @@
+<html>
+<head>
+<title>
+ActiveFacts Example Models and introduction to ORM2 terminology.
+</title>
+</head>
 
+<body>
 <h2>ActiveFacts Example Models and introduction to ORM2 terminology.</h2>
+<p><font size="-1">Copyright (c) 2007 Clifford Heath.</font></p>
 <p>This links to a number of example ORM2 model files in various representations:</p>
 <ul>
   <li>A number of ORM2 models in a <a href="norma/ExampleModels.sln">project</a>
@@ -16,7 +24,10 @@ use.</p>
 <h3>CompanyDirector</h3>
 <p>This very simple <a href="pdf/CompanyDirector.pdf">model</a> shows a
 basic example of the features of ORM2 you'll be seeing most often, so
-I'll use it to introduce the features of the ORM2 visual language.<img src="images/CompanyDirector.png" align="right" width="458" height="370"></p>
+I'll use it to introduce the features of the ORM2 visual language.
+<p><center>
+<img src="images/CompanyDirector.png"></p>
+</center></p>
 <ul>
   <li><i>Entity Types</i>: <b>Person</b> and <b>Company</b>,</li>
   <li>Simple identification schemes for each, in the form of a <b>Name</b>, see
@@ -65,7 +76,9 @@ constraints.</i> All the constraints on this diagram are <i>internal</i>.</p>
 
 <br clear="all">
 <h3>SimpleTernary</h3>
-<img src="images/SimpleTernary.png" align="right" width="396" height="166">
+<p><center>
+<img src="images/SimpleTernary.png">
+</center></p>
 <p>This simple model shows a ternary fact type, with a UC spanning all roles.
 Application here is the name of a software application, which can be installed
 on any computer by any user. Applications may be installed for individual users
@@ -81,7 +94,7 @@ each reading order.<br>
 <br clear="all">
 <h3>SchoolActivities
 </h3>
-<p align="center"><img src="images/SchoolActivities.png" align="right" width="545" height="360"></p>
+<p align="center"><img src="images/SchoolActivities.png"></p>
 <p>This model shows a ternary (which represents a student's participation in a
 school-sanctioned activity). The Participation ternary has a UC spanning two
 roles (which says that a given Student may only participate in a given Activity
@@ -103,7 +116,7 @@ arrows used in sub-typing, as shown in the next case.
 <br clear="all">
 <h3>EmployeeManagerCEO
 </h3>
-<img src="images/EmployeeManagerCEO.png" align="right" width="401" height="359">
+<img src="images/EmployeeManagerCEO.png" align="right">
 <p>This example introduces many of the remaining features of ORM2, and shows one
 way to handle a particular thorny problem. The most obvious new features are the
 subtype relationships, which show respectively that a Person may be an Employee,
@@ -136,7 +149,7 @@ indirect subordinate.
 <br clear="all">
 <h3>ObjectifiedUnary
 </h3>
-<img src="images/ObjectifiedUnary.png" align="right" width="295" height="225">
+<img src="images/ObjectifiedUnary.png" align="right">
 This
 example is more a curiosity than anything else, serving to illustrate a case
 that you might not otherwise think was possible. Person may play a unary role in
@@ -152,6 +165,8 @@ constraint requires that we record only one cause of death.
 PersonAddressAbsorption
 </h3>
 
+<p align="center"><img src="images/PersonAddressAbsorption.png"></p>
+
 <p>By now you're asking how all this mess of detail is going to be turned into a
 usable database design. Before moving on to a larger real-life example, let's
 cover the concept of <i>absorption</i> into a relational, or <i>compound</i>
@@ -165,7 +180,7 @@ migration process will be fully automatic, and larger impacts may perhaps even
 be delayed without delaying the incremental schema change.
 </p>
 
-<img src="images/PersonAddressAbsorption.png" align="right" width="602" height="501">
+<p>
 Before launching in, we see an external uniqueness constraint here for the first
 time. it joins the roles of FamilyName and GivenName; this schema will never
 allow two people to have the same two names. Normally, an external UC has a
@@ -173,6 +188,9 @@ single line through the middle of the circle, consistent with the single line
 above covered roles in an internal UC, but this one is also a preferred
 identifier (for Person, obviously), so it has a double line. A double line is
 also used when showing a internal UC that's a PI.
+</p>
+
+<img src="images/PersonAddressAbsorptionSQL.png" align="right">
 <p>Ok, here goes. How is it that the SQL for this whole detailed diagram
 requires only the single table shown? You can see that Street has exactly two
 StreetLine values allowed, and is identified by the combination of both, so here
@@ -225,7 +243,8 @@ diagram.
 <h3>
 Administration
 </h3>
-<img src="images/OrienteeringAdministration.png" align="right" width="809" height="448">A couple of new
+<p align="center"><img src="images/OrienteeringAdministration.png"></p>
+A couple of new
 features are shown here. <i>Value restrictions</i> or constraints and <i>role
 value restrictions</i> are shown in mauve. These are lists of values, or of
 ranges of values, which are drawn from the allowed values of the underlying type
@@ -248,11 +267,13 @@ preference for surrogate keys on every table.
 Registration
 </h3>
 
-<img src="images/OrienteeringRegistration.png" align="right" width="605" height="468">The new feature
-here is an external x-or constraint on two subtype connectors, indicating that
+<p align="center"><img src="images/OrienteeringRegistration.png"></p>
+<p>
+The new feature here is an external x-or constraint on two subtype connectors, indicating that
 an Entrant must be either a Team or a Competitor, but not both.
-<p>The subset constraint requires that a competitor may only be entered as a
+The subset constraint requires that a competitor may only be entered as a
 team member if their team is already entered for that same event course.
+</p>
 
 <br clear="all">
 </p>
@@ -260,8 +281,8 @@ team member if their team is already entered for that same event course.
 Scoring
 </h3>
 
-<img src="images/OrienteeringScoring.png" align="right" width="775" height="488">Just for the sake of
-completeness, this diagram shows a <i>frequency constraint</i>, attached to the
+<p align="center"><img src="images/OrienteeringScoring.png"></p>
+Just for the sake of completeness, this diagram shows a <i>frequency constraint</i>, attached to the
 placement of a punch at an event. This constraint requires that no more than 4
 punches be placed at any control point for a given event. A frequency constraint
 can be added on a non-mandatory role or role sequence, for example we could
@@ -293,7 +314,7 @@ name, is not properly defined. It's a nice, pretty schema however and should
 work well after final adjustments have been made.
 </p>
 
-<img src="images/OrienteeringER.png">
+<p align="center"><img src="images/OrienteeringER.png"></p>
 
 <br clear="all">
 
@@ -301,13 +322,14 @@ work well after final adjustments have been made.
 Relational Schema expressed in pseudo-ORM form
 </h3>
 
-<img src="images/OrienteeringERAdministration.png" align="right">
+<p align="center"><img src="images/OrienteeringERAdministration.png"></p>
 
 This diagram was produced in NORMA, but it is not elementary, rather it's a
-representation of the administration part of the relational schema. Consequently
-NORMA is showing us quite a bit of red ink - it requires elementary schemas and
-throws validation errors when this is not the case. Nevertheless it gives some
-idea how the ActiveFacts project initially represents a schema that's been
-extracted from a relational database, or one that's been absorbed into compound
-(relational) form.
+representation of just the administration part of the relational schema. I've
+turned off the red ink that NORMA displays when it detects non-elementary
+schemas. When the ActiveFacts project extracts the schema from a relational
+database, or one that's been absorbed into compound (relational) form,
+this is how it would look in ORM notation.
 <br clear="all">
+</body>
+</html>
