@@ -101,10 +101,10 @@
 			</orm:Fact>
 			<orm:Fact id="_0B212D9E-134C-4B80-ADC4-600727613F66" _Name="PersonHasGivenName">
 				<orm:FactRoles>
-					<orm:Role id="_6056650B-23E7-4947-9D1B-99A2492606FB" _IsMandatory="false" _Multiplicity="OneToMany" Name="">
+					<orm:Role id="_6056650B-23E7-4947-9D1B-99A2492606FB" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_5A75B421-1B30-4691-95ED-5BA0BCEA513B" />
 					</orm:Role>
-					<orm:Role id="_E8DB78B3-6FE5-409E-9325-FE0156E06D1A" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_E8DB78B3-6FE5-409E-9325-FE0156E06D1A" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
 						<orm:RolePlayer ref="_EA841AE0-85CC-4F32-A068-30B3EE6B6F01" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -122,8 +122,8 @@
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
-					<orm:MandatoryConstraint ref="_0ED57392-A723-403B-BACE-605223DAF159" />
 					<orm:UniquenessConstraint ref="_961D705D-C57C-4AAB-BAF7-59EE2AC98969" />
+					<orm:MandatoryConstraint ref="_4CC5955A-DCDA-4485-BC8C-EDF66409CD14" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_091CE261-61A6-41EF-BE1E-749796BA811E" _Name="PersonLivesAtAddress">
@@ -329,11 +329,6 @@
 					<orm:Role id="_EB734602-18DA-405E-A146-AB47B20A6B55" ref="_D6EE6716-CE6D-4E60-AE87-4DF950146818" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:MandatoryConstraint id="_0ED57392-A723-403B-BACE-605223DAF159" Name="GivenNameMustBeOfPerson" IsSimple="true">
-				<orm:RoleSequence>
-					<orm:Role id="_3A9D7523-41DA-43DD-99AB-A9F0AC0CC775" ref="_E8DB78B3-6FE5-409E-9325-FE0156E06D1A" />
-				</orm:RoleSequence>
-			</orm:MandatoryConstraint>
 			<orm:UniquenessConstraint id="_6983DAA1-2AAD-446F-8836-714ECE5098CF" Name="PersonIsKnownByFamilyNameGivenName">
 				<orm:RoleSequence>
 					<orm:Role id="_4D548CB8-DBEB-46D1-87CE-74BE5733C3EF" ref="_FAA39341-DFF7-48D7-9F12-A3DBC99C0863" />
@@ -417,6 +412,11 @@
 				</orm:RoleSequence>
 				<orm:PreferredIdentifierFor ref="_9227EBC1-2C02-4FB9-BF47-631CCE67240F" />
 			</orm:UniquenessConstraint>
+			<orm:MandatoryConstraint id="_4CC5955A-DCDA-4485-BC8C-EDF66409CD14" Name="SimpleMandatoryConstraint1" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_DC5A7A7F-EBDA-4B60-9FFF-0A4229F09C32" ref="_6056650B-23E7-4947-9D1B-99A2492606FB" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:VariableLengthTextDataType id="_0491E1C9-8539-4C49-8EAB-7E14CB85A7C4" />

@@ -41,6 +41,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirector.orm</DependentUpon>
     </Compile>
+    <Compile Include="ComplexPI.CoRef._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ComplexPI.CoRef.orm</DependentUpon>
+    </Compile>
     <Compile Include="ComplexPI._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>ComplexPI.orm</DependentUpon>
@@ -289,6 +293,33 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>EmployeeManagerCEO.orm</DependentUpon>
       <ORMGenerator>CoRefORM</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('ComplexPI.orm')">
+    <None Include="ComplexPI.CoRef.orm">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ComplexPI.orm</DependentUpon>
+      <ORMGenerator>CoRefORM</ORMGenerator>
+    </None>
+    <None Include="ComplexPI.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ComplexPI.orm</DependentUpon>
+      <ORMGenerator>OIALtoDCIL</ORMGenerator>
+    </None>
+    <None Include="ComplexPI.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ComplexPI.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="ComplexPI.OIAL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ComplexPI.orm</DependentUpon>
+      <ORMGenerator>ORMtoOIAL</ORMGenerator>
+    </None>
+    <None Include="ComplexPI.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ComplexPI.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -63,6 +63,7 @@ module ActiveFacts
 	    read_subtypes
 	    read_roles
 	    read_constraints
+	    read_instances
 	end
 
 	def read_entity_types
@@ -76,6 +77,11 @@ module ActiveFacts
 		# puts "EntityType #{name} is #{id}"
 		entity_types <<
 		    @by_id[id] = EntityType.new(@model, name)
+#		x_pref = x.elements.to_a("orm:PreferredIdentifier")[0]
+#		if x_pref
+#		    pi_id = x_pref.attributes['ref']
+#		    @pref_id_for[pi_id] = x
+#		end
 	    }
 	end
 
@@ -99,22 +105,18 @@ module ActiveFacts
 
 		# puts "ValueType #{name} is #{id}"
 		value_types <<
-		    @by_id[id] = ValueType.new(@model, name, data_type)
+		    @by_id[id] =
+		    vt = ValueType.new(@model, name, data_type)
 
-		# REVISIT: Handle ValueType value restrictions:
 		ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
-		if ranges.size > 0
-			puts "REVISIT: ValueType #{name} is restricted to" +
-			    " { "+
-			    ranges.map{|r|
-				min = r.attributes['MinValue']
-				max = r.attributes['MaxValue']
-				min = "'#{min}'" if min =~ /[^0-9\.]/
-				max = "'#{max}'" if max =~ /[^0-9\.]/
-				min == max ? min : "#{min}..#{max}"
-			    } * ", " +
-			    " }"
-		end
+		ranges.each{|r|
+		    min = r.attributes['MinValue']
+		    max = r.attributes['MaxValue']
+		    min = min =~ /[^0-9\.]/ ? min : min.to_i
+		    max = max =~ /[^0-9\.]/ ? max : max.to_i
+		    av = (!max || max == min) ? min : min..max
+		    data_type.allowed_values << av
+		}
 	    }
 	end
 
@@ -226,6 +228,8 @@ module ActiveFacts
 		    #puts "#{@model}, Name=#{x.attributes['Name']}, object_type=#{object_type}"
 		    throw "Role is played by #{object_type.class} not ObjectType" if !(ObjectType === object_type)
 
+		    role = @by_id[id] = Role.new(@model, x.attributes['Name'], object_type)
+
 		    x_vr = x.elements.to_a("orm:ValueRestriction")
 		    x_vr.each{|vr|
 			ranges = vr.elements.to_a("orm:RoleValueConstraint/orm:ValueRanges/orm:ValueRange")
@@ -233,19 +237,19 @@ module ActiveFacts
 			playername = @x_by_id[player.attributes['ref']].attributes['Name']
 			rolename = vr.parent.attributes['Name']
 			rolename = playername if !rolename || rolename == ''
-			puts "REVISIT: Role #{fact_name}.#{rolename} is restricted to" +
-			    " { "+
-			    ranges.map{|r|
-				min = r.attributes['MinValue']
-				max = r.attributes['MaxValue']
-				min = "'#{min}'" if min =~ /[^0-9\.]/
-				max = "'#{max}'" if max =~ /[^0-9\.]/
-				min == max ? min : "#{min}..#{max}"
-			    } * ", " +
-			    " }"
+
+			ranges.each{|r|
+			    min = r.attributes['MinValue']
+			    max = r.attributes['MaxValue']
+			    min = min =~ /[^0-9\.]/ ? min : min.to_i
+			    max = max =~ /[^0-9\.]/ ? max : max.to_i
+			    av = (!max || max == min) ? min : min..max
+			    # puts "adding RVR #{av.inspect} to #{role}"
+			    role.allowed_values << av
+			}
 		    }
 
-		    role = @by_id[id] = Role.new(@model, x.attributes['Name'], object_type)
+		    # puts "Adding Role #{role.name} to #{fact_type.name}"
 		    fact_type.add_role(role)
 		    # puts "\tRole #{role} is #{id}"
 		}
@@ -268,6 +272,7 @@ module ActiveFacts
 		    }
 		}
 	    }
+	    # @model.fact_types.each{|ft| puts ft }
 	end
 
 	def map_roles(x_roles, why = nil)
@@ -345,6 +350,7 @@ module ActiveFacts
 	    x_uniqueness_constraints = @x_model.elements.to_a("orm:Constraints/orm:UniquenessConstraint")
 	    x_uniqueness_constraints.each{|x|
 		name = x.attributes["Name"]
+		id = x.attributes["id"]
 		x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
 		pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
 
@@ -469,6 +475,133 @@ module ActiveFacts
 	    }
 	end
 
+	def read_instances
+	    population = Population.new(@model, "sample")
+
+	    # Value instances first, then entities then facts:
+
+	    x_values = @x_model.elements.to_a("orm:Objects/orm:ValueType/orm:Instances/orm:ValueTypeInstance/orm:Value")
+	    #pp x_values.map{|v| [ v.parent.attributes['id'], v.text ] }
+	    x_values.each{|v|
+		id = v.parent.attributes['id']
+		# Get details of the ValueType:
+		xvt = v.parent.parent.parent
+		vt_id = xvt.attributes['id']
+		vtname = xvt.attributes['Name']
+		vt = @by_id[vt_id]
+		throw "ValueType #{vtname} not found" unless vt
+
+		i = Instance.new(vt, v.text)
+		@by_id[id] = i
+		# show_xmlobj(v)
+	    }
+
+	    # Use the "id" attribute of EntityTypeInstance
+	    x_entities = @x_model.elements.to_a("orm:Objects/orm:EntityType/orm:Instances/orm:EntityTypeInstance")
+	    #pp x_entities
+	    # x_entities.each{|v| show_xmlobj(v) }
+	    last_et_id = nil
+	    last_et = nil
+	    et = nil
+	    x_entities.each{|v|
+		id = v.attributes['id']
+
+		# Get details of the EntityType:
+		xet = v.parent.parent
+		et_id = xet.attributes['id']
+		if (et_id != last_et_id)
+		    etname = xet.attributes['Name']
+		    last_et = et = @by_id[et_id]
+		    last_et_id = et_id
+		    throw "EntityType #{etname} not found" unless et
+		end
+
+		instance = Instance.new(et)
+		@by_id[id] = instance
+		# puts "Made new EntityType #{etname}"
+	    }
+
+	    # The EntityType instances have implicit facts for the PI facts.
+	    # We must create implicit PI facts after all the instances.
+	    entity_count = 0
+	    pi_fact_count = 0
+	    x_entities.each{|v|
+		id = v.attributes['id']
+		instance = @by_id[id]
+		et = @by_id[v.parent.parent.attributes['id']]
+		next unless (preferred_id = et.preferred_identifier)
+
+		# puts "Create identifying facts using #{preferred_id}"
+
+		# Collate the referenced objects by role:
+		role_instances = v.elements[1].elements.inject({}){|h, v|
+			etri = @x_by_id[v.attributes['ref']]
+			x_role_id = etri.parent.parent.attributes['id']
+			role = @by_id[x_role_id]
+			object = @by_id[object_id = etri.attributes['ref']]
+			h[role] = object
+			h
+		    }
+
+		# Create an instance of each required fact type, for compound identification:
+		preferred_id.role_sequence.map(&:fact_type).uniq.each{|ft|
+		    # puts "\tFor FactType #{ft}"
+		    fact_roles = ft.roles.map{|role|
+			if role.object_type == et
+			    object = instance
+			else
+			    object = role_instances[role]
+			    # puts "\t\tinstance for role #{role} is #{object}"
+			end
+			FactRole.new(role, object)
+		    }
+		    f = Fact.new(population, ft, *fact_roles)
+		    pi_fact_count += 1
+		}
+		entity_count += 1
+	    }
+	    # puts "Created #{pi_fact_count} facts to identify #{entity_count} entities"
+
+	    # Use the "ref" attribute of FactTypeRoleInstance:
+	    x_fact_roles = @x_model.elements.to_a("orm:Facts/orm:Fact/orm:Instances/orm:FactTypeInstance/orm:RoleInstances/orm:FactTypeRoleInstance")
+
+	    last_id = nil
+	    last_fact_type = nil
+	    fact_roles = []
+	    x_fact_roles.each{|v|
+		fact_type_id = v.parent.parent.parent.parent.attributes['id']
+		id = v.parent.parent.attributes['id']
+		fact_type = @by_id[fact_type_id]
+		throw "Fact type #{fact_type_id} not found" unless fact_type
+
+		if (last_id && id != last_id)
+		    # Process completed fact now we have all roles:
+		    last_fact = Fact.new(population, last_fact_type, *fact_roles)
+		    fact_roles = []
+		else
+		    last_fact_type = fact_type
+		end
+
+		#show_xmlobj(v)
+
+		last_id = id
+		x_role_instance = @x_by_id[v.attributes['ref']]
+		x_role_id = x_role_instance.parent.parent.attributes['id']
+		role = @by_id[x_role_id]
+		throw "Role not found for instance #{x_role_id}" unless role
+		instance_id = x_role_instance.attributes['ref']
+		instance = @by_id[instance_id]
+		throw "Instance not found for FactRole #{instance_id}" unless instance
+		fact_roles << FactRole.new(role, instance)
+	    }
+
+	    if (last_id)
+		# Process final completed fact now we have all roles:
+		last_fact = Fact.new(population, last_fact_type, *fact_roles)
+	    end
+
+	end
+
 	def read_rest
 	    puts "Reading Implied Facts (not yet)"
 =begin
@@ -485,6 +618,28 @@ module ActiveFacts
 	    x_refmodekinds = @x_model.elements.to_a("orm:ReferenceModeKinds/*")
 	    pp x_refmodekinds
 =end
+	end
+
+	def show_xmlobj(x, indent = "")
+	    parentage = []
+	    p = x
+	    while (p)
+		parentage.unshift(p)
+		p = p.parent
+	    end
+	    #parentage = parentage.shift
+	    puts "#{indent}#{x.name} object has heritage {"
+	    parentage.each{|p|
+		next if REXML::Document === p
+		puts "#{indent}\t#{p.name}#{
+		    }#{(n = p.attributes['Name']) ? " Name='#{n}'" : ""
+		    }#{(id = p.attributes['id']) ? " #{id}" : ""
+		    }#{(ref = p.attributes['ref']) ? " -> #{ref}" : ""
+		    }#{/\S/ === ((text = p.text)) ? " "+text.inspect : ""
+		    }"
+		show_xmlobj(@x_by_id[ref], "\t#{indent}") if ref
+	    }
+	    puts "#{indent}}"
 	end
     end
 end

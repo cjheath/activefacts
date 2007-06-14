@@ -33,10 +33,10 @@ module ActiveFacts
     class NestedType < EntityType; end
 
     # Instances forward declared
+    class Population < Feature; end
     class Fact; end
     class FactRole; end
-    class Value; end
-    class Instance; end	# Usually? an EntityInstance.
+    class Instance; end
 
     # Constraints forward declared
     RoleSequenceBase = Array(Role)			# Generated base class
@@ -78,10 +78,11 @@ module ActiveFacts
 
     class Model
 	array_attr ObjectType, :object_types	# Array of ObjectType
-	array_attr FactType, :fact_types		# Array of FactType
-	array_attr Constraint, :constraints		# Array of Constraint
-	array_attr DataType, :data_types		# Array of DataType
-	array_attr RoleSequence, :role_sequences	# Array of DataType
+	array_attr FactType, :fact_types	# Array of FactType
+	array_attr Constraint, :constraints	# Array of Constraint
+	array_attr DataType, :data_types	# Array of DataType
+	array_attr RoleSequence, :role_sequences# Array of RoleSequences
+	array_attr Population, :populations	# Array of Population
 	# hash_attr Role, RoleSequence, :role_sequence_by_role # Role->RoleSequence
 
 	def initialize(*args)
@@ -96,6 +97,12 @@ module ActiveFacts
 	    role_sequences.each{|e| return e if e == rs }
 	    role_sequences << rs
 	    rs
+	end
+
+	def preferred_ids
+	    constraints.select{|c|
+		PresenceConstraint === c && c.is_preferred_id
+	    }
 	end
     end
 
@@ -152,7 +159,10 @@ module ActiveFacts
 	end
 
 	def to_s
-	    "DataType #{@name} : #{@base}#{[@length, @scale].compact.inspect}"
+	    # REVISIT: Look up DataType base by name, recursively and report?
+	    "DataType #{@name} : #{@base}#{[@length, @scale].compact.inspect}" +
+	    (allowed_values.size == 0 ? "" :
+		" limited to #{allowed_values.inspect}")
 	end
     end
 
@@ -161,6 +171,9 @@ module ActiveFacts
 	typed_attr FactType, :fact_type		# Fact it's a role of
 	typed_attr DataType, :data_type		# subtype of object_type's DataT
 	array_attr FactRole, :fact_roles	# Instances of this Role
+	array_attr :allowed_values do |given|	# Array of AllowedValues
+		    Range === given || Integer === given || String === given
+		end
 
 	def initialize(*args)
 	    @object_type = nil
@@ -189,27 +202,43 @@ module ActiveFacts
 	    #puts "Role #{name} should have base DateType" if !base || base == ""
 	end
 
-	def to_s
+	def to_s(verbose = false)
 	    player = object_type.name
 
 	    # For Value Types, just show the Role name (if set) or ValueType name
 	    if (ValueType === object_type)
-		return @name if (@name && @name != "")
 		o_n = object_type.name
-		return o_n if o_n && o_n != ""
-
-		# Otherwise for Value Types, show the data type, not the value type:
-		player = object_type.data_type.name
+		case
+		when @name && @name != ""
+		    return @name + extra_s(verbose)
+		when o_n && o_n != ""
+		    return o_n + extra_s(verbose)
+		else
+		    # Otherwise for Value Types, show the data type, not the value type:
+		    player = object_type.data_type.name
+		end
 	    end
 
 	    # Otherwise, show role name only if set and different from Role Player's name:
-	    if (@name &&
-		@name != "" &&
-		@name != player)
-		"#{@name} of " + player
+	    (@name && @name != "" && @name != player ? "#{@name} of " : "") +
+		player +
+		extra_s(verbose)
+	end
+
+	def name
+	    case
+	    when @name && @name != ''
+		@name
+	    when object_type.name && object_type.name != ''
+		object_type.name
 	    else
-		player
+		object_type.data_type.name
 	    end
+	end
+
+	def extra_s(verbose)
+	    return "" if (!verbose || allowed_values.size == 0)
+	    return " restricted to "+allowed_values.inspect
 	end
     end
 
@@ -241,6 +270,7 @@ module ActiveFacts
 	    super(*args)
 	    # @nested_as will get set afterwards if needed
 	    model.fact_types << self if (model)
+	    fact_types = []
 
 	    throw "FactType #{self} should be part of Model" if !model
 	end
@@ -262,7 +292,7 @@ module ActiveFacts
 	end
 
 	def to_s
-	    roles.to_s +
+	    roles.to_s(true) +
 		(nested_as ? " (nested as #{nested_as.name})" : "")
 	end
     end
@@ -288,6 +318,8 @@ module ActiveFacts
 	    }
 	    raise "Subtyping requires 2 objects" if (roles.size != 2)
 	    @subtype, @supertype = *objects
+	    @supertype.roles << roles[0]
+	    @subtype.roles << roles[1]
 	    super(*args)
 	end
 
@@ -335,8 +367,8 @@ module ActiveFacts
     class ObjectType < Feature
 	array_attr Role, :roles			# All Played Roles
 	array_attr Instance, :instances		# Array of Instance
-	attr_accessor :is_independent    		# Boolean, default false
-	attr_accessor :is_personal			# Boolean, default false
+	attr_accessor :is_independent  		# Boolean, default false
+	attr_accessor :is_personal		# Boolean, default false
 
 	def initialize(*args)
 	    super(*args)
@@ -372,6 +404,23 @@ module ActiveFacts
 	    "#{@name} is an EntityType"
 	end
 
+	def supertype
+	    sup = nil
+	    roles.find{|r|
+		f = r.fact_type
+		SubtypeFactType === f &&
+		    f.roles.size == 2 &&
+		    f.subtype == self &&
+		    (sup = f.supertype)
+	    }
+	    sup
+	end
+
+	# An array of self followed by all supertypes in order:
+	def supertypes
+	    [ self ] + ((sup = supertype) ? sup.supertypes : [])
+	end
+
 	def subtypes
 	    roles.inject([]){|a, r|
 		f = r.fact_type
@@ -388,34 +437,29 @@ module ActiveFacts
 	    # The preferred identifier is a unique constraint over roles in one
 	    # or more fact types in which this object plays the other roles, or
 	    # in the case of a nested type, over roles of the nested fact type.
-	    # REVISIT: It's not clear whether a nested type may have a PI that
-	    # spans both nested and non-nested roles...? I've asked Terry this.
-	    facts = roles.map{|r| r.fact_type}.uniq
+	    # A nested type may NOT have a PI that spans both nested and
+	    # non-nested roles (according to Terry H)
 
-	    candidates =
-		@model.constraints.select{|s|
-		    # The constraint must be a PC:
-		    next if !(PresenceConstraint === s)
-
-		    # The PC must be mandatory and unique:
-		    next if !s.is_mandatory || !s.max || s.max > 1
-
-		    # The PC must only span roles in facttypes we play a role in:
-		    next if s.role_sequence.detect{|r|  # Each role of the PC
-			!facts.detect{|f| r.fact_type == f}	# In one of our facts
-		    }
-		}
-	    # puts "Getting Preferred ID for #{to_s} from #{caller*"\n"}, considering (#{candidates.map{|c|c.name}*", "})"
-	    # If we found one labelled Preferred, return it:
-	    pi = candidates.detect{|s| s.is_preferred_id }
-	    return pi if pi
-
-	    # Else return the UC covering fewest roles:
-	    pi = candidates.sort_by{|s| s.roles.size}[0]
-	    if !pi
-		throw "No preferred identifier found for #{to_s}"
-	    end
-	    return pi
+	    @model.preferred_ids.each{|pi|
+		# Every fact type which this PI spans must have no non-PI roles
+		# except for this object's:
+		rs = pi.role_sequence
+		fact_types = rs.map(&:fact_type).uniq
+		if NestedType === self
+		    next if fact_types.size != 1
+		    return pi if fact_types[0] == self.fact_type
+		else
+		    if fact_types.detect{|ft|
+			    residual = ft.roles-rs
+			    residual.size > 1 ||    # Any residual must be self or a supertype:
+				(residual.size == 1 && !supertypes.include?(residual[0].object_type))
+			}
+			next
+		    end
+		end
+		return pi
+	    }
+	    throw "No preferred identifier found for #{to_s}"
 	end
     end
 
@@ -493,36 +537,144 @@ module ActiveFacts
     end
 
     #==============================================================
-    # Instances
-    # REVISIT: Instances are Incomplete
+    # Instance Populations:
     #==============================================================
-
-    class Fact
-	typed_attr FactType, :fact_type
-	array_attr FactRole, :fact_roles
+    class Population
+	array_attr Fact, :facts
 
 	def initialize(*args)
-	    raise "REVISIT: Fact is Incomplete"
+	    super(*args)			# Handle name, model
+	    @model.populations << self if @model
+	end
+    end
+
+    class Fact
+	typed_attr Population, :population	# Population it's a member of
+	typed_attr FactType, :fact_type		# FactType it's an instance of
+	array_attr FactRole, :fact_roles	# Array of FactRoles
+
+	def initialize(*args)
+	    @population = nil
+	    args.delete_if{|a|
+		case a
+		when Population
+		    self.population = a
+		when FactType
+		    self.fact_type = a
+		when FactRole
+		    self.fact_roles << a
+		    a.fact = self
+		else
+		    next
+		end
+		true
+	    }
+	    @population.facts << self if @population
+	    @fact_type.facts << self if @fact_type
+	    # puts "Adding fact to fact_type #{@fact_type.name}" if @fact_type
+
+	    # Make sure all FactRoles are from this fact type:
+	    throw "All Fact Roles must be from one Fact Type" \
+		if fact_roles.detect{|fr| !fact_type.roles.detect{|r| fr.role == r} }
+	    throw "Wrong number of fact roles or duplicate role" \
+		unless @fact_roles.map(&:role).uniq.size == @fact_type.roles.size
+	end
+
+	def to_s
+	    # REVISIT: Verbalize fact instance?
+	    "#{fact_type.name}(#{fact_roles.map(&:to_s).join(", ")})"
 	end
     end
 
     class FactRole
 	typed_attr Role, :role
 	typed_attr Fact, :fact
-	typed_attr Value, :value
+	typed_attr Instance, :instance
 
 	def initialize(*args)
-	    raise "REVISIT: FactRole is Incomplete"
+	    args.delete_if{|a|
+		case a
+		when Role
+		    self.role = a
+		when Fact
+		    self.fact = a
+		when Instance
+		    self.instance = a
+		else
+		    next
+		end
+		true
+	    }
+	end
+
+	def to_s
+	    "#{role.name} is #{instance.to_s}"
 	end
     end
 
-    # An Instance, often a Value of a ValueType
-    class Value
+    # An Instance, either a Value of a ValueType or an Entity
+    class Instance
 	typed_attr ObjectType, :object_type
-	typed_attr nil, :value do |v| String === v || Integer === v; end
+	typed_attr nil, :value do |v|
+	    String === v || Integer === v
+	end
 
 	def initialize(*args)
-	    raise "REVISIT: Value is Incomplete"
+	    args.delete_if{|a|
+		case a
+		when ObjectType
+		    self.object_type = a
+		when String, Integer	    # Revisit: DateTime, etc?
+		    self.value = a
+		else
+		    next
+		end
+		true
+	    }
+	    raise "Instance lacks object type" \
+		if (!self.object_type)
+	    raise "Instance of ValueType #{@object_type.name} lacks value" \
+		if (!self.value && ValueType === self.object_type)
+	    @object_type.instances << self
+	end
+
+	def to_s
+	    case object_type
+	    when ValueType
+		"'#{value}'"
+	    when EntityType
+		pi = object_type.preferred_identifier
+		rs = pi.role_sequence	    # Gather PI FactRole values
+		# puts "Instance of #{object_type.name} with PI #{rs}"
+		fact_types = object_type.roles.map{|r|
+			r.fact_type
+		    }.uniq.select{|ft|
+			(ft.roles-rs).size == 1
+		    }
+		# puts "Looking for role values in instances of #{ fact_types.map(&:to_s)*"; "}"
+
+		# An internal PI covers one fact only:
+		internal = pi.internal?
+		last_fact_type = nil
+		last_instance = nil
+
+		role_values = rs.map{|r|
+		    # Get Role Value.
+		    # In the case of an Instance of a non-nested type, a
+		    # single Fact (FactType instance) has this Instance as
+		    # one role, and this role as the other - find the value
+		    # of this other role on that fact instance.
+
+		    facts = r.fact_type.facts.select{|f|
+			    f.fact_roles.detect{|x| x.instance == self}
+			}
+		    throw "Instance with no identifying fact!" if (facts.size == 0)
+		    fact_role = facts[0].fact_roles.find{|fr| fr.role == r }
+		    fact_role.instance.to_s
+		}
+
+		"#{object_type.name}(#{role_values * ", "})"
+	    end
 	end
     end
 
@@ -531,16 +683,16 @@ module ActiveFacts
     #==============================================================
 
     class RoleSequence			# One or more Roles
-	def to_s
+	def to_s(verbose = false)
 	    if internal?		# All Roles are on the same fact
 		self[0].fact_type.name +
 		"(" +
-		map{|r| r ? r.to_s : "nil" } * ", " +
+		map{|r| r ? r.to_s(verbose) : "nil" } * ", " +
 		")"
 	    else
 		"(" +
 		map{|r|
-		    r.fact_type.name + "." + (r ? r.to_s : "nil")
+		    r.fact_type.name + "." + (r ? r.to_s(verbose) : "nil")
 		} * ", " +
 		")"
 	    end
@@ -590,6 +742,10 @@ module ActiveFacts
 	    raise "#{self.class} requires a RoleSequence" if !role_sequence
 	    super(*args)
 	end
+
+	def internal?
+	    role_sequence.internal?
+	end
     end
 
     class PresenceConstraint < SetConstraint # Unique,Mandatory,Freq
@@ -604,6 +760,7 @@ module ActiveFacts
 	    self.max = _max
 	    self.min = 0 if (!self.is_mandatory && min == 1)
 	    self.is_preferred_id = _pref
+	    # puts "PI(#{object_id}) #{rs[0].fact_type.name}#{rs}" if (_pref)
 	end
 
 	def preferred_id_for

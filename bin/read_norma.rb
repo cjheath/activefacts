@@ -17,3 +17,6 @@ include ActiveFacts
 model = ActiveFacts::Norma.read(ARGV[0])
 
 model.dump
+#model.preferred_ids.each{|c| puts "#{c}" }
+#model.dump_entity_types
+#model.dump_fact_types

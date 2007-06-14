@@ -50,7 +50,7 @@ GO
 
 CREATE TABLE Orienteering.Entrant
 (
-	IsTeam BIT NOT NULL, 
+	IsTeam BIT , 
 	EntrantID BIGINT IDENTITY (1, 1) NOT NULL, 
 	GivenName NATIONAL CHARACTER VARYING(48) NOT NULL, 
 	Competitor_FamilyName NATIONAL CHARACTER VARYING(48) , 
@@ -102,7 +102,7 @@ CREATE TABLE Orienteering.EventCourse
 (
 	ScoringMethod NATIONAL CHARACTER VARYING(32) CONSTRAINT ScoringMethod_Chk CHECK (ScoringMethod IN ('Score', 'Scatter', 'Special')) , 
 	Course NATIONAL CHARACTER VARYING(16) CONSTRAINT Course_Chk CHECK (Course IN ('PW')) NOT NULL, 
-	Individual BIT NOT NULL, 
+	Individual BIT , 
 	Event_ID BIGINT NOT NULL, 
 	CONSTRAINT EventIncludesEachCourseOnce PRIMARY KEY(Event_ID, Course)
 )
