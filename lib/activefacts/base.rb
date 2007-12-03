@@ -667,10 +667,10 @@ module ActiveFacts
 	def preferred_identifier	# -> Constraint
 	    candidates =
 		@model.constraints.select{|s|
-		    # The constraint must be a PC:
-		    PresenceConstraint === s &&
+		    PresenceConstraint === s &&	# The constraint must be a PC:
 			# The PC must be mandatory and unique:
-		    s.is_mandatory &&
+	      # REVISIT: sometimes these aren't marked mandatory, find out why.
+#		    s.is_mandatory &&
 		    s.max &&
 		    s.max == 1 &&
 			# The PC must only span roles in our nested facttype
@@ -679,10 +679,8 @@ module ActiveFacts
 
 	    # Chose the candidate that's marked as preferred, if any:
 	    pi = candidates.detect{|s| s.is_preferred_id }
+	    # puts "Candidate PIs are #{candidates.map(&:to_s)*"; "}" if candidates.size > 1
 	    return pi if pi
-
-	    # Else return the UC covering fewest roles:
-	    pi = candidates.sort_by{|s| s.role_sequence.size}[0]
 
 	    # If no UC on nested fact, try superclass:
 	    return super if !pi
