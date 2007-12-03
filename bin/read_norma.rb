@@ -10,11 +10,17 @@ require 'rubygems'
 require 'active_support'
 require 'activefacts'
 require 'activefacts/norma'
-require 'activefacts/dump'
 require "pp"
 include ActiveFacts
 
-model = ActiveFacts::Norma.read(ARGV[0])
+arg = ARGV.shift
+if arg == "-C"
+  require 'activefacts/cqldump'
+  arg = ARGV.shift
+else
+  require 'activefacts/dump'
+end
+model = ActiveFacts::Norma.read(arg)
 
 model.dump
 #model.preferred_ids.each{|c| puts "#{c}" }

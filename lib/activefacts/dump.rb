@@ -31,21 +31,22 @@ module ActiveFacts
     end
 
     class Model
-	def dump_entity_types(out = $>)
-	    out.puts "All Entity Types:"
-	    object_types.sort_by{|o| o.name}.each{|o|
-		    next if !(EntityType === o)	# includes NestedTypes
-		    out.puts "\t"+o.to_s+" and plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
-		    o.fact_types.each{|f| Dump.show_roles(out, o, f) }
-		}
-	end
-
 	def dump_value_types(out = $>)
 	    out.puts "\n\nAll Value Types:"
 	    object_types.sort_by{|o| o.name}.each{|o|
 		    next if EntityType === o
 		    out.puts "\t"+o.to_s+
-			" and plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
+			", plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
+		    o.fact_types.each{|f| Dump.show_roles(out, o, f) }
+		}
+	end
+
+	def dump_entity_types(out = $>)
+	    out.puts "All Entity Types:"
+	    object_types.sort_by{|o| o.name}.each{|o|
+		    next if !(EntityType === o)	# includes NestedTypes
+		    pi = o.preferred_identifier
+		    out.puts "\t"+o.to_s+" known by #{pi.role_sequence.map(&:name)*", "}, plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
 		    o.fact_types.each{|f| Dump.show_roles(out, o, f) }
 		}
 	end
@@ -59,7 +60,7 @@ module ActiveFacts
 		    r = f.readings
 		#   out.puts r.to_yaml
 		    r.each{|r|
-			out.puts "\t\t"+r.to_s
+			out.puts "\t\tReading: '"+r.to_s+"'"
 		    }
 
 		    # Dump the instances:

@@ -8,7 +8,9 @@ require 'rexml/document'
 require 'activefacts/base'
 
 module ActiveFacts
+
     class Norma
+
 	def self.read(filename)
 	    Norma.new(filename).read
 	end 
@@ -99,7 +101,13 @@ module ActiveFacts
 		scale = cdt.attributes['Scale'].to_i
 		length = cdt.attributes['Length'].to_i
 		base_type = @x_by_id[cdt.attributes['ref']]
-		data_type = DataType.new(@model, base_type.name.sub(/^orm:/,''))
+		type_name = "#{base_type.name}"
+		type_name.sub!(/^orm:/,'')
+		type_name.sub!(/DataType\Z/,'')
+		type_name.sub!(/Numeric\Z/,'')
+		type_name.sub!(/Temporal\Z/,'')
+		length = 32 if type_name =~ /Integer\Z/ && length.to_i == 0 # Set default integer length
+		data_type = DataType.new(@model, type_name)
 		data_type.length = length
 		data_type.scale = scale
 
@@ -114,7 +122,7 @@ module ActiveFacts
 		    max = r.attributes['MaxValue']
 		    min = min =~ /[^0-9\.]/ ? min : min.to_i
 		    max = max =~ /[^0-9\.]/ ? max : max.to_i
-		    av = (!max || max == min) ? min : min..max
+		    av = (!max || max == min) ? min : OpenRange.new(min, max)
 		    data_type.allowed_values << av
 		}
 	    }
@@ -225,6 +233,13 @@ module ActiveFacts
 		    object_type = @by_id[ref]
 		    throw "RolePlayer for #{name||ref} was not found" if !object_type
 
+		    # Skip implicit roles added to make unaries into binaries
+		    if (ox = @x_by_id[ref]) && ox.attributes['IsImplicitBooleanValue']
+		      object_type.delete
+		      @by_id.delete(ref)
+		      next
+		    end
+
 		    #puts "#{@model}, Name=#{x.attributes['Name']}, object_type=#{object_type}"
 		    throw "Role is played by #{object_type.class} not ObjectType" if !(ObjectType === object_type)
 
@@ -243,7 +258,7 @@ module ActiveFacts
 			    max = r.attributes['MaxValue']
 			    min = min =~ /[^0-9\.]/ ? min : min.to_i
 			    max = max =~ /[^0-9\.]/ ? max : max.to_i
-			    av = (!max || max == min) ? min : min..max
+			    av = (!max || max == min) ? min : OpenRange.new(min,max)
 			    # puts "adding RVR #{av.inspect} to #{role}"
 			    role.allowed_values << av
 			}

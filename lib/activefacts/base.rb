@@ -6,6 +6,7 @@
 #
 =end
 require 'rubygems'
+require 'rational'
 require 'chattr'
 
 module ActiveFacts
@@ -18,6 +19,7 @@ module ActiveFacts
 
     # Data Types forward declared
     #class AllowedValues; end   # No class, use Range, Integer, String
+    class Unit < Feature; end
     class DataType < Feature; end
 
     # Fact Types forward declared
@@ -53,6 +55,60 @@ module ActiveFacts
     # Forward declarations finished; define the structural features
     #==============================================================
 
+    class OpenRange
+	attr_reader :first, :last
+	include Enumerable
+	def initialize(first = nil, last = nil)
+	    @first, @last = first, last
+	end
+
+	def each
+	    if (first)
+		x = self.first
+		loop do
+		    yield x
+		    x = x.succ
+		    break if x == self.last
+		end
+	    elsif self.last
+		x = self.last
+		x.downto(-1.0/0) do |y|	  # Stop at -Infinity
+		    yield y
+		end
+	    end
+	    self
+	end
+
+	def ===(value)
+	    (!self.first || value >= self.first) &&
+	    (!self.last || value <= self.last)
+	end
+
+	def begin
+	    self.start
+	end
+
+	def end
+	    self.last
+	end
+
+	def length
+	    self.first && self.last ? self.last - self.start : 1.0/0
+	end
+
+	def size
+	    length
+	end
+
+	def inspect
+	  to_s
+	end
+
+	def to_s
+	    (@first && @first.inspect) + ".." + (@last && @last.inspect)
+	end
+    end
+
     # A Feature is a named item in a model
     class Feature
 	typed_attr "", :name	    # Name, default empty string
@@ -76,7 +132,7 @@ module ActiveFacts
 	end
     end
 
-    class Model
+    class Model < Feature
 	array_attr ObjectType, :object_types	# Array of ObjectType
 	array_attr FactType, :fact_types	# Array of FactType
 	array_attr Constraint, :constraints	# Array of Constraint
@@ -111,12 +167,50 @@ module ActiveFacts
 	typed_attr Model, :model
     end
 
+    class BaseUnit
+	typed_attr Unit, :base_for
+	typed_attr Unit, :base_unit
+	typed_attr Integer, :exponent
+
+	def initialize(*args)
+	    args.delete_if{|a|
+		case a
+		when Integer
+		    @exponent = a
+		when Unit
+		    @base_unit = a
+		end
+	    }
+	    super(*args)
+	end
+    end
+
+    class Unit
+	typed_attr String, :name
+	typed_attr Numeric, :coefficient
+	typed_attr TrueClass, :is_precise
+	array_attr BaseUnit, :base_units
+
+	def initialize(*args)
+	    args.delete_if{|a|
+		case a
+		when String
+		    @name = a
+		when BaseUnit
+		    @base_units << a
+		    a.base_for = self
+		end
+	    }
+	    super(*args)
+	end
+    end
+
     class DataType < Feature
 	typed_attr String, :base # Name of the base type of this Data Type
 	typed_attr Integer, nil, :length
 	typed_attr Integer, nil, :scale
 	array_attr :allowed_values do |given|	# Array of AllowedValues
-		    Range === given || Integer === given || String === given
+		    Range === given || Integer === given || String === given || OpenRange === given
 		end
 
 	def initialize(*args)
@@ -160,9 +254,13 @@ module ActiveFacts
 
 	def to_s
 	    # REVISIT: Look up DataType base by name, recursively and report?
-	    "DataType #{@name} : #{@base}#{[@length, @scale].compact.inspect}" +
+	    parameters = []
+	    parameters << @length.to_s if (@length != 0 || @scale != 0)
+	    parameters << @scale.to_s if (@scale != 0)
+	    parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : "()"
+	    "#{@name}#{parameters}" +
 	    (allowed_values.size == 0 ? "" :
-		" limited to #{allowed_values.inspect}")
+		" restricted to {#{(allowed_values.map{|r| r.inspect}*", ").gsub('"',"'")}}")
 	end
     end
 
@@ -172,7 +270,7 @@ module ActiveFacts
 	typed_attr DataType, :data_type		# subtype of object_type's DataT
 	array_attr FactRole, :fact_roles	# Instances of this Role
 	array_attr :allowed_values do |given|	# Array of AllowedValues
-		    Range === given || Integer === given || String === given
+		    Range === given || Integer === given || String === given || OpenRange === given
 		end
 
 	def initialize(*args)
@@ -202,6 +300,30 @@ module ActiveFacts
 	    #puts "Role #{name} should have base DateType" if !base || base == ""
 	end
 
+	def player_name
+	    if object_type.name && object_type.name != ''
+		object_type.name
+	    else
+		object_type.data_type.name
+	    end
+	end
+
+	def name
+	    case
+	    when hyphen_bound
+		@name[0..-2]+" "+player_name
+	    when @name && @name != ''
+		@name
+	    else
+		player_name
+	    end
+	end
+
+	# NORMA stores hyphen-binding in the reading text; ActiveFacts in the role name
+	def hyphen_bound
+	  @name && @name[-1] == ?-
+	end
+
 	def to_s(verbose = false)
 	    player = object_type.name
 
@@ -225,20 +347,9 @@ module ActiveFacts
 		extra_s(verbose)
 	end
 
-	def name
-	    case
-	    when @name && @name != ''
-		@name
-	    when object_type.name && object_type.name != ''
-		object_type.name
-	    else
-		object_type.data_type.name
-	    end
-	end
-
 	def extra_s(verbose)
 	    return "" if (!verbose || allowed_values.size == 0)
-	    return " restricted to "+allowed_values.inspect
+	    return " restricted to {#{(allowed_values.map{|r| r.inspect}*", ").gsub('"',"'")}}"
 	end
     end
 
@@ -273,6 +384,11 @@ module ActiveFacts
 	    fact_types = []
 
 	    throw "FactType #{self} should be part of Model" if !model
+	end
+
+	def preferred_reading
+	  return unless reading = readings[0]
+	  reading.to_s
 	end
 
 	def add_role(role)
@@ -350,16 +466,45 @@ module ActiveFacts
 	    super(*args)
 	end
 
-	def self.expand(t, *names)
+	def self.expand(t, names, constraint_hash = {})
 	    expanded = "#{t}"
 	    (0...names.size).each{|i|
-		expanded.gsub!("{#{i}}", names[i])
+		expanded.gsub!("{#{i}}") {
+		    names[i]
+		  }
 	    }
 	    expanded
 	end
 
-	def to_s
-	    "Reading '#{self.class.expand(name, *@role_sequence.object_names)}'"
+	def expand(constraint_hash = {})
+	    expanded = "#{name}"
+	    (0...@role_sequence.size).each{|i|
+		role = @role_sequence[i]
+
+		# REVISIT: Handle trailing hyphen-binding here:
+		role_with_adjectives_re =
+		    %r|(?:\b([A-Za-z][A-Za-z0-9_]*)- +(?:([A-Za-z0-9_][A-Za-z0-9_ ]*[A-Za-z0-9_]) +)?)?\{#{i}\}|
+
+		expanded.gsub!(role_with_adjectives_re) {
+		    constraint = constraint_hash[@role_sequence[i]]
+		    constraint_text = constraint && PresenceConstraint === constraint && constraint.frequency
+		    # Indicate that we've used this constraint
+		    constraint_hash.delete(@role_sequence[i]) if (constraint_text)
+		    player = @role_sequence[i].object_type
+		    [
+		      constraint_text,
+		      $1 && $1 != "" && $1,
+		      $2 && $2 != "" && $2,
+		      player.name,
+		      player.name != role.name ? "(as #{role.name})" : nil
+		    ].compact*" "
+		}
+	    }
+	    expanded
+	end
+
+	def to_s(constraint_hash = {})
+	    expand(constraint_hash)
 	end
     end
 
@@ -375,6 +520,11 @@ module ActiveFacts
 	    model.object_types << self if (model)
 
 	    throw "ObjectType #{self} should be part of Model" if !model
+	end
+
+	def delete
+	    @roles && @roles.each(&:delete)
+	    @model.object_types.delete(self) if (@model)
 	end
 
 	# All unique fact types in which this object plays a role
@@ -401,9 +551,10 @@ module ActiveFacts
 	#attr_accessor :_reference_mode		# String, derived
 
 	def to_s
-	    "#{@name} is an EntityType"
+	    "#{@name} = entity"
 	end
 
+	# REVISIT: Can have more than one supertype.
 	def supertype
 	    sup = nil
 	    roles.find{|r|
@@ -439,28 +590,30 @@ module ActiveFacts
 	    # in the case of a nested type, over roles of the nested fact type.
 	    # A nested type may NOT have a PI that spans both nested and
 	    # non-nested roles (according to Terry H)
-
 	    @model.preferred_ids.each{|pi|
 		# Every fact type which this PI spans must have no non-PI roles
 		# except for this object's:
 		rs = pi.role_sequence
 		fact_types = rs.map(&:fact_type).uniq
-		if NestedType === self
-		    next if fact_types.size != 1
-		    return pi if fact_types[0] == self.fact_type
-		else
-		    if fact_types.detect{|ft|
-			    residual = ft.roles-rs
-			    residual.size > 1 ||    # Any residual must be self or a supertype:
-				(residual.size == 1 && !supertypes.include?(residual[0].object_type))
-			}
-			next
-		    end
+
+		if NestedType === self &&
+		    fact_types.size == 1 &&    # PI must not span more than one fact type
+		    fact_types[0] == self.fact_type
+			return pi
+		end
+
+		if fact_types.detect{|ft|
+			residual = ft.roles-rs
+			residual.size > 1 ||    # Any residual must be self or a supertype:
+			    (residual.size == 1 && !supertypes.include?(residual[0].object_type))
+		    }
+		    next
 		end
 		return pi
 	    }
 	    throw "No preferred identifier found for #{to_s}"
 	end
+	nil
     end
 
     # define anonymous DataType, instead of supporting ValueRestrictions
@@ -484,7 +637,7 @@ module ActiveFacts
 	end
 
 	def to_s
-	    "#{@name} is a ValueType of #{data_type.to_s}"
+	    "#{@name} = #{data_type.to_s}"
 	end
     end
 
@@ -789,12 +942,20 @@ module ActiveFacts
 #	    end
 	end
 
+	def frequency
+	    [
+		((min && min > 0 && min != max) ? "at least #{min}" : nil),
+		((max && min != max) ? "at most #{max == 1 ? "one" : max.to_s}" : nil),
+		((max && min == max) ? "exactly #{max == 1 ? "one" : max.to_s}" : nil)
+	    ].compact * " and"
+	end
+
 	def to_s
 	    frequency = [
-		    ((min && min > 0 && min != max) ? " at least #{min} time#{min>1?"s":""}" : nil),
-		    ((max && min != max) ? " at most #{max} time#{max>1?"s":""}" : nil),
-		    ((max && min == max) ? " exactly #{max} time#{max>1?"s":""}" : nil)
-		].compact * " and"
+		    ((min && min > 0 && min != max) ? " at least #{min}" : nil),
+		    ((max && min != max) ? " at most #{max}" : nil),
+		    ((max && min == max) ? " exactly #{max}" : nil)
+		].compact * " and" + " time#{max>1?"s":""}"
 
 	    pref = is_preferred_id ? " (preferred identifier)" : "" # for #{preferred_id_for.name})" : ""
 	    mand = (is_mandatory ? " must" : " may") + " occur"
