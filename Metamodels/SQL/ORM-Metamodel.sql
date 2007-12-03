@@ -2,45 +2,83 @@
  * Object Role Modeling Metamodel
  */
 
-CREATE TABLE Model (
-	ModelID			int IDENTITY NOT NULL,
+CREATE TABLE [Schema] (
+	SchemaID		int IDENTITY NOT NULL,
 	Name			nvarchar (64) NOT NULL,
-	PartOfModelID		int NULL,
-	CONSTRAINT PK_Model
-		PRIMARY KEY CLUSTERED (ModelID),
-	CONSTRAINT UQ_Model
+	PartOfSchemaID		int NULL,
+	CONSTRAINT PK_Schema
+		PRIMARY KEY CLUSTERED (SchemaID),
+	CONSTRAINT UQ_Schema
 		UNIQUE(Name),
-	CONSTRAINT FK_Model_PartOfModel
-		FOREIGN KEY (PartOfModelID)
-		REFERENCES Model(ModelID)
+	CONSTRAINT FK_Schema_PartOfSchema
+		FOREIGN KEY (PartOfSchemaID)
+		REFERENCES [Schema](SchemaID)
 )
 GO
 
+-- Definition of Units
+CREATE TABLE Unit (
+	UnitID			int IDENTITY NOT NULL,
+	UnitName		nvarchar (64) NOT NULL,
+	Numerator		decimal(38,19) NULL,
+	Denominator		int NULL,
+	IsPrecise		bit NOT NULL DEFAULT 1,
+	CONSTRAINT PK_Unit
+		PRIMARY KEY CLUSTERED (UnitID)
+)
+GO
+
+-- All the BaseUnits that are for a Unit form the Unit's definition
+CREATE TABLE BaseUnit (
+	BaseForUnitID		int NOT NULL,
+	BaseUnitID		int NOT NULL,
+	Exponent		int NULL,
+	CONSTRAINT PK_BaseUnit
+		PRIMARY KEY CLUSTERED (BaseForUnitID, BaseUnitID)
+)
+GO
+
+CREATE TABLE ValueRestriction (
+	ValueRestrictionID	int IDENTITY NOT NULL,
+	CONSTRAINT PK_ValueRestriction
+		PRIMARY KEY CLUSTERED (ValueRestrictionID)
+)
+GO
+
+CREATE TABLE ValueRange (
+	ValueRangeID		int IDENTITY NOT NULL,
+	ValueRestrictionID	int NOT NULL,
+	Minimum			nvarchar (256) NULL,	-- Lexical representation of value
+	Maximum			nvarchar (256) NULL,	-- Lexical representation of value
+	Clusivity		int DEFAULT 1,		-- Bitmask, 1=Min, 2=Max
+	CONSTRAINT PK_ValueRange
+		PRIMARY KEY CLUSTERED (ValueRangeID),
+	CONSTRAINT FK_ValueRange_ValueRestriction
+		FOREIGN KEY (ValueRestrictionID)
+		REFERENCES ValueRestriction(ValueRestrictionID)
+)
+GO
+
+-- A DataType's representation maps to a programming language or storage type
+-- If a DataType has no ValueRestrictionID, all values of the base type are allowed
 CREATE TABLE DataType (
 	DataTypeID		int IDENTITY NOT NULL,
-	DataTypeName		nvarchar (64) NOT NULL,
-	BaseType		nvarchar (64) NOT NULL,
+	Name			nvarchar (64) NOT NULL,
+	Representation		nvarchar (64) NOT NULL,
 	Length			int NULL,
-	[Precision]		int NULL,
+	Scale			int NULL,
+	ValueRestrictionID	int NULL,
+	UnitID			int NULL,
 	CONSTRAINT PK_DataType
 		PRIMARY KEY CLUSTERED (DataTypeID),
 	CONSTRAINT UQ_DataType
-		UNIQUE(DataTypeName)
-)
-GO
-
--- If a DataType has no AllowedValues, all values of the base type are allowed
-CREATE TABLE AllowedValues (
-	AllowedValuesID		int IDENTITY NOT NULL,
-	DataTypeID		int NOT NULL,
-	Minimum			nvarchar (256) NULL,
-	Maximum			nvarchar (256) NULL,
-	Clusivity		int DEFAULT 1,		-- Bitmask, 1=Min, 2=Max
-	CONSTRAINT PK_AllowedValues
-		PRIMARY KEY CLUSTERED (AllowedValuesID),
-	CONSTRAINT FK_AllowedValues_DataType
-		FOREIGN KEY (DataTypeID)
-		REFERENCES DataType(DataTypeID)
+		UNIQUE(Name),
+	CONSTRAINT FK_DataType_Unit
+		FOREIGN KEY (UnitID)
+		REFERENCES Unit(UnitID),
+	CONSTRAINT FK_DataType_ValueRestriction
+		FOREIGN KEY (ValueRestrictionID)
+		REFERENCES ValueRestriction(ValueRestrictionID)
 )
 GO
 
@@ -56,7 +94,7 @@ GO
 CREATE TABLE ObjectType (
 	ObjectTypeID		int IDENTITY NOT NULL,
 	Name			nvarchar (64) NOT NULL,
-	ModelID			int NOT NULL,
+	SchemaID		int NOT NULL,
 	DataTypeID		int NULL,		-- Only if a ValueType
 	NestsFactType		int NULL,		-- Only if an ObjectifiedType
 	IsIndependent		bit NOT NULL DEFAULT 0,
@@ -68,11 +106,11 @@ CREATE TABLE ObjectType (
 		FOREIGN KEY (DataTypeID)
 		REFERENCES DataType(DataTypeID),
 	CONSTRAINT FK_ObjectType_FactType
-		FOREIGN KEY (ObjectifiesFactType)
+		FOREIGN KEY (NestsFactType)
 		REFERENCES FactType(FactTypeID),
-	CONSTRAINT FK_ObjectType_Model
-		FOREIGN KEY (ModelID)
-		REFERENCES Model(ModelID),
+	CONSTRAINT FK_ObjectType_Schema
+		FOREIGN KEY (SchemaID)
+		REFERENCES [Schema](SchemaID),
 )
 GO
 
@@ -262,15 +300,15 @@ GO
  */
 CREATE TABLE Population (
 	PopulationID	int IDENTITY NOT NULL,
-	ModelID		int NOT NULL ,
+	SchemaID	int NOT NULL ,
 	Name		nvarchar (64) NOT NULL,
 	CONSTRAINT PK_Population
 		PRIMARY KEY CLUSTERED (PopulationID),
 	CONSTRAINT UQ_Population
 		UNIQUE (Name),
-	CONSTRAINT FK_Population_Model
-		FOREIGN KEY (ModelID)
-		REFERENCES Model (ModelID)
+	CONSTRAINT FK_Population_Schema
+		FOREIGN KEY (SchemaID)
+		REFERENCES [Schema](SchemaID)
 )
 GO
 

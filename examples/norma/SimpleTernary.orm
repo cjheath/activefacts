@@ -15,7 +15,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_0EDF77EE-48FB-4536-9A2D-001815047BBF" ref="_4C1F4DEB-1664-4D25-8BA8-475A47FC9E35" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ValueType id="_606F9CAB-FE23-4E49-BD8E-F57F8ADC1F6F" Name="Computer_Id">
+			<orm:ValueType id="_606F9CAB-FE23-4E49-BD8E-F57F8ADC1F6F" Name="ComputerId">
 				<orm:PlayedRoles>
 					<orm:Role ref="_6386CF2C-9899-4721-8975-6E7D6116CF0B" />
 				</orm:PlayedRoles>
@@ -28,7 +28,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_4932D36C-C8EA-4BEE-A2E2-CA7BE62607CF" />
 			</orm:EntityType>
-			<orm:ValueType id="_639EDE30-4E9D-4F64-870E-2DAB2F284440" Name="User_Name">
+			<orm:ValueType id="_639EDE30-4E9D-4F64-870E-2DAB2F284440" Name="UserName">
 				<orm:PlayedRoles>
 					<orm:Role ref="_FB2CDDC5-6825-4E61-B6DB-EA56A0F62D51" />
 				</orm:PlayedRoles>
@@ -45,7 +45,7 @@
 			</orm:ObjectifiedType>
 		</orm:Objects>
 		<orm:Facts>
-			<orm:Fact id="_311883F4-68CD-4E7D-8322-FED5E8D81397" _Name="ComputerHasComputer_Id">
+			<orm:Fact id="_311883F4-68CD-4E7D-8322-FED5E8D81397" _Name="ComputerHasComputerId">
 				<orm:FactRoles>
 					<orm:Role id="_11FCCD22-937F-4B89-805F-01B1556D58DD" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_53F42420-FD6B-48D7-8DA5-F2CF3995EFD5" />
@@ -84,7 +84,7 @@
 					<orm:MandatoryConstraint ref="_E827B5FD-A0DA-4838-8141-771398F03FC1" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_2975CD96-1B16-4FCC-A04C-28DF5227CE58" _Name="UserHasUser_Name">
+			<orm:Fact id="_2975CD96-1B16-4FCC-A04C-28DF5227CE58" _Name="UserHasUserName">
 				<orm:FactRoles>
 					<orm:Role id="_B6A03B4E-9AF7-40C8-8B6E-FD826566AFFC" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_C97214F6-8200-4E10-829C-25966CF355B3" />
@@ -349,7 +349,7 @@
 		</orm:DataTypes>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_30FF8C9F-069E-415D-8E35-6A9DDC86B39E" FormatString="{1}" ReferenceModeType="General" />
-			<orm:ReferenceModeKind id="_201AD1E3-720F-4D09-958E-3FBFF8B06BFE" FormatString="{0}_{1}" ReferenceModeType="Popular" />
+			<orm:ReferenceModeKind id="_201AD1E3-720F-4D09-958E-3FBFF8B06BFE" FormatString="{0}{1}" ReferenceModeType="Popular" />
 			<orm:ReferenceModeKind id="_A6142BC1-A502-4F7E-9935-6C41F670AE08" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>

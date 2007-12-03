@@ -198,9 +198,6 @@
 							<orm:Reading id="_FD561570-51CF-4A62-AF62-448B3ACA616F">
 								<orm:Data>map {0} belongs to {1} and has {2}</orm:Data>
 							</orm:Reading>
-							<orm:Reading id="_682CCCD0-404A-4A85-9FB9-56703EBFAE62">
-								<orm:Data>{0} is of DELETED  {1}  {2}</orm:Data>
-							</orm:Reading>
 						</orm:Readings>
 						<orm:RoleSequence>
 							<orm:Role ref="_B237EFB1-B256-4756-A24F-93ED61AC4DA3" />
@@ -359,9 +356,6 @@
 						<orm:Readings>
 							<orm:Reading id="_A55D2D62-1534-405D-A117-B0A1CC572C35">
 								<orm:Data>event {0} is called {1} and uses {2} and is run by {3} and is run on {4} starting at {5} and may be {6}</orm:Data>
-							</orm:Reading>
-							<orm:Reading id="_E0BFDCDA-509E-4049-8DA6-D5AF770AD09D">
-								<orm:Data>{0} is of DELETED  {1}  {2}  {3}  {4}  {5}  {6}</orm:Data>
 							</orm:Reading>
 						</orm:Readings>
 						<orm:RoleSequence>
@@ -1480,7 +1474,7 @@
 		</orm:ModelErrors>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_ABB06AF9-6C90-4E33-A399-010A2CBB21F7" FormatString="{1}" ReferenceModeType="General" />
-			<orm:ReferenceModeKind id="_3B26EEB2-5DF0-4D72-90FE-429B536A3E3A" FormatString="{0}_{1}" ReferenceModeType="Popular" />
+			<orm:ReferenceModeKind id="_3B26EEB2-5DF0-4D72-90FE-429B536A3E3A" FormatString="{0}{1}" ReferenceModeType="Popular" />
 			<orm:ReferenceModeKind id="_943DD9D2-D20E-46DC-8637-F85A7DD16B03" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>

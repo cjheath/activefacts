@@ -3,12 +3,12 @@ GO
 
 GO
 
-CREATE TABLE SimpleTernary.CmptrHsApplctnInstlldByUsr
+CREATE TABLE SimpleTernary.ComputerHasApplicationInstalledByUser
 (
-	Computer_Computer_Id BIGINT NOT NULL, 
-	User_User_Name NATIONAL CHARACTER VARYING() NOT NULL, 
-	Application NATIONAL CHARACTER VARYING() NOT NULL, 
-	CONSTRAINT AIIOCBEUO PRIMARY KEY(Application, Computer_Computer_Id, User_User_Name)
+	Computer_ComputerId BIGINT NOT NULL,
+	User_UserName NATIONAL CHARACTER VARYING() NOT NULL,
+	Application NATIONAL CHARACTER VARYING() NOT NULL,
+	CONSTRAINT ApplicationIsInstalledOnComputerByEachUserOnce PRIMARY KEY(Application, Computer_ComputerId, User_UserName)
 )
 GO
 
