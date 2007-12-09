@@ -79,12 +79,12 @@ GO
 CREATE TABLE Orienteering.Entry
 (
 	EntryID INTEGER IDENTITY (1, 1) NOT NULL,
-	course NATIONAL CHARACTER VARYING(16) CHECK (course IN ('PW') OR course BETWEEN 'A' AND 'E') NOT NULL,
 	PersonID INTEGER NOT NULL,
 	EventID INTEGER NOT NULL,
+	course NATIONAL CHARACTER VARYING(16) CHECK (course IN ('PW') OR course BETWEEN 'A' AND 'E') NOT NULL,
 	score INTEGER,
 	finishPosition INTEGER CHECK (finishPosition >= 0),
-	CONSTRAINT InternalUniquenessConstraint10 UNIQUE(course, PersonID, EventID),
+	CONSTRAINT InternalUniquenessConstraint10 UNIQUE(PersonID, EventID),
 	CONSTRAINT EntryHasOneEntryID PRIMARY KEY(EntryID)
 )
 GO
