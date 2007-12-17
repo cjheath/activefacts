@@ -1,295 +1,446 @@
-<center>
-<h2> ActiveFacts </h2>
-<p>
-Clifford Heath, 2 May 2007.
-</p>
-</center>
-<p>
-The ActiveFacts project lives on RubyForge, with access
-details <a href="http://rubyforge.org/scm/?group_id=3253">here</a>.
-</p><p>
-Status messages go to the Yahoo
-<a href="http://tech.groups.yahoo.com/group/information_modeling">information_modeling</a>
-group, which is also available as an 
-<a href="news:gmane.comp.programming.modeling.information">NNTP feed on Gmane</a>.
-</p>
-<p>
-If you want pictures first, go straight my <a href="examples/">quick ORM2 tutorial</a>.
-This document is part of the ActiveFacts project; if you aren't viewing this
-from a checkout of the released files, the local links in the remainder of
-this document won't work. Remote links are fine, of course.
-</p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="date" content="17 December 2007"/>
+    <meta name="author" content="Clifford Heath"/>
+    <title>ActiveFacts</title>
 
-<h3>
-What is Fact-based modeling?
+    <link href="style.css" media="screen" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+<div class="index" style="position:fixed; left:5px; top:60px;">
+  <strong>Table of Contents</strong><br/>
+  <a href="#introduction">Introduction</a><br/>
+  <a href="#structure">Structure</a><br/>
+  <a href="#status">Status</a><br/>
+  <a href="#norma">NORMA</a><br/>
+  <a href="#metamodel">Metamodel</a><br/>
+  <a href="#download">Download</a><br/>
+  <a href="#information">Keep in touch</a><br/>
+  <a href="#future">Future</a><br/>
+</div
+
+<a name="introduction">
+</a>
+<div id="header">
+<h1 class="title">
+ActiveFacts
+</h2>
+<h3 class="authors">
+<a href="http://dataconstellation.com/ActiveFacts">Clifford Heath</a>
 </h3>
+<h4 class="date"> 16 December 2007 </h4>
+</div>
 
-<p>
-Fact-based information modeling is a form of conceptual
-modeling that operates at a higher level than either UML
-(and other object modeling approaches) or traditional ER
-(entity-relationship) data modeling. It supports the
-definition of conceptual information models that are
-"elementary", meaning that every element (fact, rule and
-constraint) is broken down to its simplest form, based
-in pure logic.
-</p><p>
-With a model in elementary form, it's child's play to
-check its correctness, as each feature can be verbalised
-in short plain-language sentences as it's constructed.
-Example data may be entered for each fact type which
-allows automatic validation of constraints, and even
-intuition about what missing constraints might be added.
-It's possible to represent all constraint types that
-are supported in both UML and in SQL, and quite a number
-that are supported in neither, which gives the designer
-a greater power to express business rules than either.
-</p><p>
-After the model has been fully validated, the tools
-automatically construct correct, efficient and fully
-normalized aggregations (class hierarchies or entity-
-relationship models) that are provably congruent.
-</p><p>
-The perennial wars between DBAs and object modelers can
-be finished forever, and the abstruse skills of database
-normalization are almost irrelevant.
-</p>
-<p>
-The primary language used for fact-based modeling is
-called <a href="http://www.orm.net">Object Role Modeling</a>,
-which is now in its second incarnation, <b>ORM2</b>.
-For a more detailed introduction to ORM2, please read
-<a href="examples/">my introduction to ORM2</a>.
-</p>
+<div class="content">
+  <div class="chapter">
+    <div class="content">
+      <p>
+      ActiveFacts is a <strong>semantic modeling toolkit</strong> that
+      revolutionises the processes of software <strong>specification</strong>,
+      <strong>design</strong> and <strong>implementation</strong>.  The
+      programmers and database people share joint control with the business
+      expert, who becomes the central player in a way never before possible.
 
-<h3>
-Why ActiveFacts?
-</h3>
-<p>
-ActiveFacts aims to take the technique of fact-based
-modeling beyond what's been done anywhere previously,
-and instead of just using it as a design technique, to
-generate executable models. This means that
-<ul>
-<li> You can query a database (instance of a model) using
-the elementary form, and get back results in the same
-form - so you never need to know the physical storage
-details,
-</li>
-<li> Queries span tables transparently, crossing conceptual
-relationships without explicit database joins, and return
-structured data in a hierarchical form, so for every
-user action in an application, a single query can be
-defined that provides all the data required to respond to
-that action. There's no need to fetch this, that, and the
-other. All required results are fetched at once, which
-improves application structure, performance, and even
-concurrency.
-</li>
-<li> You can change the model in any way at any time and
-the database will be automatically and incrementally
-restructured to accommodate those changes, including by
-quick change now and a cleanup migration later,
-</li>
-<li> When a database must be restructured, any existing
-queries that request facts which are unchanged (though
-they may have ben moved to another table), those queries
-are automatically and transparently rewritten to work
-against the new physical structure,
-</li>
-<li> The model may be maintained in both elementary form
-and in compound (relational) form at the same time, and
-both forms may be managed using the same API.
-</li>
-</ul>
+      </p><p>
+      Software is not mainly about <em>how</em>, but about <em>what</em> and
+      <em>why</em>. Software projects fail most commonly because they build
+      the <em>wrong thing</em>, not because they build it wrongly.  Other
+      forms of modeling, such as object modeling and entity relationship
+      modeling, attempt to capture <em>what</em>, but the models are shaped
+      from the start by the needs of implementation (<em>how</em>).  That
+      shuts out the non-technical business expert, and bends the model out
+      of shape, losing track of <em>why</em> each feature is needed, what it
+      means and under what terms, the roles it plays in the overall system.
+      <strong>Semantic modeling</strong> incorporates and transcends both
+      approaches, and works in either Agile or traditional environments.
 
-<h3>
-Status
-</h3>
-<p>
-ActiveFacts has a nearly complete fact-oriented API in
-Ruby, and can load models in two forms. Currently, all it
-does is to emit text to indicate that it has understood.
-</p><p>
-The Object-Oriented meta-model used by the API is also
-congruent to a relational schema which is provided, so
-any model may in future be retrieved, manipulated and
-stored in a database.
-</p><p>
-ActiveFacts can currently read models from NORMA, which
-are in elementary form (see below), and it can reverse
-engineer the schemas of existing databases in SQL Server,
-DB2 and Oracle. Other database products may be partially
-supported already, including MySql, PostgreSQL, etc.
-Reverse-engineered models are in compound form - mapping
-them to elementary form is a separate task.
-</p><p>
-ActiveFacts relies on the database adapter infrastructure
-of ActiveRecord, but needs additional fixes in the form
-of DRYSql (with some further patches from me if they are
-not yet incorporated into the released version), and the
-Composite Primary Keys gem (again, with further patches
-if not already incorporated).
-</p>
+      </p><p>
+      ActiveFacts uses a <strong>fact-oriented</strong> approach to
+      constructing models in <strong>elementary</strong> form. Every
+      concept, whether a business entity or a relationship, is represented
+      in the simplest possible form, isolated from all other concerns.
+      Every role that each concept plays in the system is incorporated in
+      simple <strong>business rules</strong> that can be effectively
+      verbalised in plain language, displayed on diagrams, and managed in a
+      system ontology (vocabulary).  The elementary form is the most direct
+      mind-map of the business domain that can be constructed, is based on
+      pure logic, and is unsullied by implementation concerns. That makes it
+      much easier to understand and validate by all parties, especially the
+      business expert. Purely for its benefits in specification, semantic
+      modeling is revolutionary, but that's not all...
 
-<h3>
-NORMA
-</h3>
-<p>
-<a href="http://sf.net/projects/orm">NORMA</a> is the latest in a line of products stretching back
-two decades which implement the Object Role Modeling (now
-version 2) fact based modeling notation. NORMA is a design
-tool that is open source, but runs as an extension to 
-Microsoft Visual Studio 2005 - Professional Edition (the
-Express Edition doesn't have the ability to load plug-ins). You can download the latest version of NORMA (and source
-code, if you wish) from <a href="http://sf.net/projects/orm">SourceForge</a>.
-</p><p>
-ActiveFacts is loading all the NORMA models I can find and
-a few I built myself, with a few exceptions that will be
-handled soon:
-<ul>
-<li> Value Restrictions (on data types and roles) - these are
-parsed but not yet stored into the model
-</li>
-<li> Sample fact data populations
-</li>
-</ul>
+      </p><p>
+      The true power of the semantic approach lies in automatic
+      <strong>composition</strong> of the elementary form into
+      convenient straightforward object hierarchies and database designs
+      in efficient third normal form. There are many known ways to
+      design good databases, but efficient physical storage necessitates
+      composition (aggregation) from the elementary conceptual form.
+      The process of aggregation causes the database to be much more
+      sensitive to small changes than the elementary model; the physical
+      database design is <em>unstable</em>. Reliance on SQL fails to
+      hide most of this unstability, so <strong>evolution</strong> is
+      costly, and the database design gets left behind. Existing tools
+      for Object/Relational Mapping (such as Hibernate) help somewhat,
+      but ActiveFacts <em>automates</em> the mapping by incorporating a
+      <strong>conceptual query language</strong> and a <strong>semantic
+      runtime</strong> that completely isolates the implementation from
+      the flow-on effects of aggregation.
+      </p>
 
-<h3> Downloading </h3>
-To look at ActiveFacts, install Subversion (either
-<a href="http://subversion.tigris.org/">from the home site</a> or one of the bundles
-like Tortoise SVN, cygwin, etc), and issue the checkout
-instruction on the RubyForge web-page listed above.
-You can also browse the files online at
-<a href="http://viewvc.rubyforge.mmmultiworks.com/cgi/viewvc.cgi/?root=activefacts">the Rubyforge source code repository browser</a>.<p>
-My NORMA models are checked-in <a href="examples/norma">here</a> You can read about them
-in the <a href="examples/">tutorial</a>.
-</p><p>
-Most of the models are trivial, except the Orienteering
-model, which models the orienteering system currently
-hosted at both <a href="http://street.orienteering.com.au">street.orienteering.com.au</a>
-and <a href="http://www.vicorienteering.asn.au/parkstreet/">the Victorian Orienteering Association</a>. I
-compete in these events, and have even built scoring
-hardware for it using low-power microprocessors (not
-yet in use). The point being that this is a <b>real life</b>
-model, which will continue to be my main demonstration
-model.
-</p><p>
-Though the provided models are mostly simple, ActiveFacts
-has successfully reverse-engineered some large commercial
-database schemas, including that of <a href="http://www.managesoft.com">ManageSoft</a>, with all
-sub-products installed (265 tables).
-</p><p>
-If you have Ruby installed <www.ruby-lang.org> you can
-load a NORMA model using the command:
-</p><ul>
-<i>
-ruby -I lib bin/read_norma.rb MyModel.orm</i>
-</ul><p>
-read_norma simply reads a NORMA file and spits out some
-textual notes so you can see it's understood it.
-</p><p>
-If you also have ActiveRecord, DRYSql (patched with the
-patches provided) and CPK (composite primary keys),
-you can reverse engineer your own schema:
-</p><ul>
-<i>
-ruby -I lib bin/reflect.rb --dsn=Orienteering --adapter=sqlserver --mode=ODBC --user=sa
-	--password=whatever</i>
-</ul><p>
-using whatever ActiveRecord connection options are
-appropriate to connect to your database.
-</p><p>
-Finally, I have a first pass at a Ruby DSL that you can
-use to define models in this version. Many parts aren't
-complete, but if you run the example and read the output,
-you'll see how much already does work:
-</p>
-<ul>
-ruby -I lib examples/ruby/administration.rb
-</ul>
+      <p>
+      Many of these techniques have been studied for decades, but never
+      before have they been combined. It's possible to be finished forever
+      with
+      <ul>
+      <li> Systematic disenfranchisement of business users,
+      <li> The perennial wars between DBAs and object modelers,
+      <li> Database designs that are hopelessly out of date with the applications.
+      </ul>
+      </p>
+    </div>
+  </div>
 
-<h3> Metamodel </h3>
-<p>
-ActiveFacts also contains a Metamodels directory which
-has an SQL metamodel that matches my Ruby API. So far,
-the API can't save or load models into an SQL database,
-but that's feasible, it's just a matter of time. That
-will allow construction of a web-based information
-modeling tool. There's a PDF of the SQL schema as well
-as the DDL for SQL Server.  This section contains some
-notes on the mapping.
-</p><p>
-My meta-model merges mandatory, uniqueness and frequency
-constraints into one "Presence Constraint" object. This
-is because all three constraint types have to do with
-the number of times a role or role sequence may be played.
-This was agreed with Terry while he was reviewing my SQL
-schema a month ago.
-</p><p>
-For object types (Entity, Value and Objectified Facts),
-I have separate classes in the Ruby API, but these are
-absorbed into one ObjectType table in the SQL. This
-allows proper referential integrity from the Role table.
-A consequence is that in sample populations, the entity
-instances and value instances are absorbed into one
-Instance table as well, with a nullable Value field.
-</p><p>
-Finally my API supports sub-models, and more than one named
-Population, so that you can have a sample population used
-for model validation, another as an initial population for
-a production database, and even another for the production
-database itself.
-</p><p>
-Sorry, but I haven't yet produced a UML model of the Ruby
-API... that'll happen sometime. In the meantime, the code
-itself in "lib/activefacts/base.rb" is pretty readable
-even if you've never seen Ruby. Since Ruby uses "open
-classes", similar to C#'s partial classes, I'm able to
-omit from "base.rb" anything that relates to other aspects
-of the API, like derivation etc.
-</p>
-<h3>
-Future
-</h3>
-<p>
-Next on my list of tasks (not strictly in order) is:
-<ul>
-<li> Constructing a conceptual query API that can query a
-  database instance using the compound schema, by rewriting
-  the queries as SQL,</li>
+  <a name="structure"></a>
+  <div class="chapter">
+    <h2 class="title">
+      <big>
+      ActiveFacts Structure
+      </big>
+    </h2>
 
-<li> Writing a textual language parser for ORM2 so models
-  may be loaded (and perhaps exported) to a textual format
-  for version management and model interchange. A book that
-  will define an official textual language is forthcoming,
-  but I might need to create an interim language before then.
-  This will take the form either of a Ruby DSL or a properly
-  parsed language with an ANTLR parser (usable as an ORM2
-  modeling language with C#, Java, etc).</li>
-<li> Reverse engineering the ER (compound) schema to an ORM2
-  (elementary) one.</li>
-<li> Testing. The basic framework for writing tests using
-  RSpec is there, but I've been baaaad and started writing
-  code *before* I had the tests written :-).</li>
-</ul>
+    <div class="content">
+      <p>
+      ActiveFacts consists of the following main toolsets:
+      <dl>
+	<dt>  Base API
+	<dd>  The base API is the switching-yard for all the
+	      tools and converters. It implements all parts of
+	      the semantic meta-model.
 
-Tasks I'll then address in an uncertain order are:
-<ul>
-<li> Absorbing an elementary model down to an ER schema, </li>
+	<dt>  Reverse engineering tools
+	<dd>  Extract the schema and analyse the data from your
+	      existing databases into a rudimentary semantic
+	      model that you can then complete. ActiveFacts can
+	      also import fact-based ORM models from the Neumont
+	      Object Role Modeling Architect,
+	      <a href="http://sf.net/projects/orm">NORMA</a>.
 
-<li> Converting conceptual queries against an elementary model
-  into queries against the ER mapping of the same, and on
-  executing them, converting the resultant compound fact
-  populations back into elementary ones to match the original
-  query. </li>
+	<dt>  CQL
+	<dd>  The Constellation Query Language combines the
+	      power of a formal language with the intuitive
+	      feel of natural language. It can be used both
+	      to define and query semantic models.
 
-<li> Automatically generating database migration code to preserve
-  and transform an existing database to match changes to the
-  conceptual model.
-</ul>
-Thanks for your attention. I look forward to receiving any
-feedback you have. I'm doing this work almost full-time,
-self-funded for a time and after that, I need to find a way
-to make a living from it :-). All offers considered!<p>
-Clifford Heath, &lt;first&gt;.&lt;last&gt;@gmail.com.
+	<dt>  APRIMO
+	<dd>  APRIMO is a semantic modeling scrapbook and IDE,
+	      written to run as a one-page web application
+	      using the powerful Ruby on Rails web framework.
+
+	<dt>  Semantic Model Storage
+	<dd>  This relational database adapter provides a way
+	      to store your models while you're developing them
+	      with APRIMO.
+
+	<dt>  Relational compositor
+	<dd>  The relational Compositor turns your semantic
+	      model into an efficient normalized database schema,
+	      writing SQL for a range of commercial and open
+	      source DBMS products. Future work will automatically
+	      migrate your database between revisions.
+
+	<dt>  Semantic Runtime
+	<dd>  The semantic runtime allows you to query and update
+	      your relational database, without being dependent
+	      on the physical database structure. It translates
+	      your CQL queries into SQL, runs it, and translates
+	      the results back into conceptual form.
+      </dl>
+
+  <a name="status"></a>
+  <div class="chapter">
+    <h2 class="title">
+      <big>
+      Status
+      </big>
+    </h2>
+
+    <div class="content">
+
+      <p>
+      The Base API (in Ruby) is complete representing static fact-oriented
+      information models.  The Query API is under construction at present,
+      and future additions will include events, actions and agents (roles).
+
+      </p><p>
+      The Semantic Model Storage schema (congruent to the Base API),
+      allows any model to be stored, retrieved and manipulated in a
+      relational database. The Semantic Model Storage module is however
+      not yet integrated with the Base API.
+
+      </p><p>
+      Constellation Query Language is available as an export format from
+      the base API, and as a language recogniser (parser). The parser
+      back-end is incomplete at present, and complex constraints are
+      not yet handled.
+
+      </p><p>
+      Queries in CQL span tables transparently, crossing conceptual
+      relationships (fact types) without explicit database joins, and
+      return structured data in a nested-relational form (called
+      constellation form). For every user action in an application, a
+      single query can be defined that provides all the data required to
+      respond to that action.  There's no need to fetch this, that, and
+      the other. All required results are fetched at once, which
+      improves application structure, performance, and even concurrency.
+
+      </p><p>
+      ActiveFacts can currently read models from NORMA, which are in
+      elementary form, and it can reverse engineer the schemas of
+      existing databases in SQL Server, DB2, Oracle, and open source
+      databases not yet tested including MySQL, PostgreSQL, etc.
+      Reverse-engineered models are still in composite form - the
+      mapping to elementary form is incomplete.  Reverse engineering
+      does not yet analyse actual data.
+
+      </p><p>
+      ActiveFacts relies on the database adapter infrastructure of
+      ActiveRecord, but needs additional fixes in the form of DRYSql
+      (with some further patches from me if they are not yet
+      incorporated into the released version), and the Composite
+      Primary Keys gem (again, with further patches if not already
+      incorporated).
+
+      </p><p>
+      APRIMO allows the definition of vocabulary aspects, and addition
+      of entity and value objects and the fact types that link them.
+      Subtyping, data types and units, and complex constraints are still
+      to be implemented.
+
+      </p><p>
+      The Relational Compositor has not been started, and neither has
+      the Semantic Runtime.
+      </p>
+    </div>
+  </div>
+
+  <a name="norma"></a>
+  <div class="chapter">
+    <h2 class="title">
+      <big>
+      NORMA
+      </big>
+    </h2>
+
+    <div class="content">
+
+      <!--p>
+      Example data may be entered for each fact type which
+      allows automatic validation of constraints, and even
+      intuition about what missing constraints might be added.
+      </p>
+
+      <p>
+      The primary language used for fact-based modeling is
+      called <a href="http://www.orm.net">Object Role Modeling</a>,
+      which is now in its second incarnation, <b>ORM2</b>.
+      For a more detailed introduction to ORM2, please read
+      <a href="examples/">my introduction to ORM2</a>.
+      </p-->
+
+      <p> <a href="http://sf.net/projects/orm">NORMA</a> is the latest
+      in a line of products stretching back two decades which implement
+      the Object Role Modeling (now version 2) fact based modeling
+      notation. NORMA is a design tool that is open source, but runs as
+      an extension to Microsoft Visual Studio 2005 - Professional
+      Edition (the Express Edition doesn't have the ability to load
+      plug-ins). You can download the latest version of NORMA (and
+      source code, if you wish) from <a
+      href="http://sf.net/projects/orm">SourceForge</a>.
+
+      </p><p>
+      ActiveFacts is loading all the NORMA models I can find and a few I
+      built myself, with the exception of sample fact data populations.
+    </div>
+  </div>
+
+  <a name="metamodel"></a>
+  <div class="chapter">
+    <h2 class="title">
+      <big>
+      Metamodel
+      </big>
+    </h2>
+
+    <div class="content">
+
+      <p>
+      ActiveFacts also contains a Metamodels directory which
+      contains a diagram and SQL DDLof the relational schema
+      of the Semantic Model Storage schema. The schema also
+      exists in a form modified to be suitable for Ruby on Rails,
+      which is the form APRIMO uses.  The Base API can't yet save
+      or load models into APRIMO database.
+
+      </p><p>
+      My meta-model merges mandatory, uniqueness and frequency
+      constraints into one "Presence Constraint" object. This
+      is because all three constraint types have to do with
+      the number of times a role or role sequence may be played.
+
+      </p><p>
+      For object types (Entity, Value and Objectified Facts),
+      I have separate classes in the Ruby API, but these are
+      absorbed into one ObjectType table in the SQL. This
+      allows proper referential integrity from the Role table.
+      A consequence is that in sample populations, the entity
+      instances and value instances are absorbed into one
+      Instance table as well, with a nullable Value field.
+
+      </p><p>
+      Finally my API supports sub-models (known as Aspects or as
+      Vocabularies), and more than one named Population, so that
+      you can have a sample population used for model validation,
+      another as a reference population, and even another for the
+      production database itself.
+
+      </p>
+    </div>
+  </div>
+
+  <a name="download"></a>
+  <div class="chapter">
+    <h2 class="title">
+      <big>
+      Download and Examples
+      </big>
+    </h2>
+
+    <div class="content">
+      <p>
+      To look at ActiveFacts, install Subversion (either
+      <a href="http://subversion.tigris.org/">from the home site</a> or one of the bundles
+      like Tortoise SVN, cygwin, etc), and issue the checkout
+      instruction on the RubyForge web-page listed above.
+      You can also browse the files online at
+      <a href="http://viewvc.rubyforge.mmmultiworks.com/cgi/viewvc.cgi/?root=activefacts">the Rubyforge source code repository browser</a>.<p>
+      My NORMA models are checked-in <a href="examples/norma">here</a> You can read about them
+      in the <a href="examples/">tutorial</a>.
+
+      </p><p>
+      Most of the models are trivial demonstrations of some interesting
+      feature of fact-based modelin. The exceptions are the Orienteering
+      model and the Oil Supply model. The Orienteering model covers the
+      orienteering system currently hosted at both 
+      <a href="http://street.orienteering.com.au">street.orienteering.com.au</a>
+      and <a href="http://www.vicorienteering.asn.au/parkstreet/">the
+      Victorian Orienteering Association</a>. I compete in these events,
+      and have even built scoring hardware for it using low-power
+      microprocessors (not yet in use). The point being that this is a
+      <b>real life</b> model, which will continue to be my main demonstration
+      model. The OilSupply model is extracted from an actual schema from a
+      major oil company, and shows regional demand predictions against
+      production commitments with transport availability.
+
+      </p><p>
+      Though the provided models are mostly simple, ActiveFacts
+      has successfully reverse-engineered some large commercial
+      database schemas, including that of <a href="http://www.managesoft.com">ManageSoft</a>, with all
+      sub-products installed (265 tables).
+
+      </p><p>
+      If you have Ruby installed <www.ruby-lang.org> you can
+      load a NORMA model using the command:
+      </p>
+      <pre>
+      ruby -I lib bin/read_norma.rb -C MyModel.orm
+      </pre>
+      read_norma reads a NORMA file and emits CQL.
+
+      </p><p>
+      If you also have ActiveRecord, DRYSql (patched with the
+      patches provided) and CPK (composite primary keys),
+      you can reverse engineer your own schema:
+      </p>
+      <pre>
+      ruby -I lib bin/reflect.rb --dsn=Orienteering \
+	  --adapter=sqlserver --mode=ODBC --user=sa \
+	  --password=whatever</i>
+      </pre>
+      using whatever ActiveRecord connection options are
+      appropriate to connect to your database.
+    </div>
+  </div>
+
+  <a name="information"></a>
+  <div class="chapter">
+    <h2 class="title">
+      <big>
+      Where can I get more information?
+      </big>
+    </h2>
+
+      <p>
+      The ActiveFacts project lives on RubyForge, with access
+      details <a href="http://rubyforge.org/scm/?group_id=3253">here</a>.
+      </p><p>
+      Status messages go to the Yahoo
+      <a href="http://tech.groups.yahoo.com/group/information_modeling">information_modeling</a>
+      group, which is also available as an 
+      <a href="news:gmane.comp.programming.modeling.information">NNTP feed on Gmane</a>.
+      </p>
+      <p>
+      If you want pictures first, go straight the <a href="examples/">quick ORM2 tutorial</a>.
+      This document is part of the ActiveFacts project; if you aren't viewing this
+      from a checkout of the released files, the local links in the remainder of
+      this document won't work. Remote links are fine, of course.
+      </p>
+    </div>
+  </div>
+
+  <a name="future"></a>
+  <!--div class="chapter">
+    <h2 class="title">
+      <big>
+      Future
+      </big>
+    </h2>
+
+    <div class="content">
+
+      <p>
+      Next on my list of tasks (not strictly in order) is:
+      <ul>
+      <li> Extending the base API and Semantic Model Storage to handle
+        conceptual queries from CQL.  </li>
+
+      <li> Completing the reverse engineering of a compound schema
+        to an elementary one.</li>
+
+      </ul>
+
+      Tasks I'll then address in an uncertain order are:
+      <ul>
+      <li> The Relational Compositor </li>
+
+      <li> Converting basic conceptual queries into queries against
+	the relational form, executing them converting the resultant
+	compound fact populations back into elementary ones to match
+	the original query. </li>
+
+      <li> Automatically generating database migration code to preserve
+	and transform an existing database to match changes to the
+	conceptual model.
+      </ul>
+
+    </div>
+  </div-->
+
+</div>
+
+</body>
+</html>

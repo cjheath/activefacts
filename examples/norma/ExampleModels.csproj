@@ -41,21 +41,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirector.orm</DependentUpon>
     </Compile>
-    <Compile Include="ComplexPI.CoRef._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ComplexPI.CoRef.orm</DependentUpon>
-    </Compile>
     <Compile Include="ComplexPI._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>ComplexPI.orm</DependentUpon>
-    </Compile>
-    <Compile Include="EmployeeManagerCEO.CoRef._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>EmployeeManagerCEO.CoRef.orm</DependentUpon>
-    </Compile>
-    <Compile Include="ObjectifiedUnary.CoRef._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ObjectifiedUnary.CoRef.orm</DependentUpon>
     </Compile>
     <Compile Include="ObjectifiedUnary._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -73,10 +61,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>OrienteeringER.orm</DependentUpon>
     </Compile>
-    <Compile Include="PersonAddressAbsorption.CoRef._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PersonAddressAbsorption.CoRef.orm</DependentUpon>
-    </Compile>
     <Compile Include="PersonAddressAbsorption._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>PersonAddressAbsorption.orm</DependentUpon>
@@ -86,17 +70,9 @@
       <DependentUpon>PersonName.orm</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SchoolActivities.CoRef._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SchoolActivities.CoRef.orm</DependentUpon>
-    </Compile>
     <Compile Include="SchoolActivities._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>SchoolActivities.orm</DependentUpon>
-    </Compile>
-    <Compile Include="SimpleTernary.CoRef._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleTernary.CoRef.orm</DependentUpon>
     </Compile>
     <Compile Include="SimpleTernary._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -166,11 +142,6 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('SchoolActivities.orm')">
-    <None Include="SchoolActivities.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SchoolActivities.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-    </None>
     <None Include="SchoolActivities.DB2.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>SchoolActivities.orm</DependentUpon>
@@ -198,11 +169,6 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('SimpleTernary.orm')">
-    <None Include="SimpleTernary.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleTernary.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-    </None>
     <None Include="SimpleTernary.DCIL.xml">
       <AutoGen>True</AutoGen>
       <DependentUpon>SimpleTernary.orm</DependentUpon>
@@ -225,11 +191,6 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('PersonAddressAbsorption.orm')">
-    <None Include="PersonAddressAbsorption.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PersonAddressAbsorption.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-    </None>
     <None Include="PersonAddressAbsorption.DCIL.xml">
       <AutoGen>True</AutoGen>
       <DependentUpon>PersonAddressAbsorption.orm</DependentUpon>
@@ -251,20 +212,7 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('ObjectifiedUnary.orm')">
-    <None Include="ObjectifiedUnary.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('ComplexPI.orm')">
-    <None Include="ComplexPI.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ComplexPI.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-      <SubType>Designer</SubType>
-    </None>
     <None Include="ComplexPI.DCIL.xml">
       <AutoGen>True</AutoGen>
       <DependentUpon>ComplexPI.orm</DependentUpon>
@@ -287,11 +235,6 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('EmployeeManagerCEO.orm')">
-    <None Include="EmployeeManagerCEO.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>EmployeeManagerCEO.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
-    </None>
     <None Include="EmployeeManagerCEO.DCIL.xml">
       <AutoGen>True</AutoGen>
       <DependentUpon>EmployeeManagerCEO.orm</DependentUpon>
