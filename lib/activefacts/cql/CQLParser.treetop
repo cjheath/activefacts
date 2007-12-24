@@ -1,0 +1,571 @@
+module ActiveFacts
+  grammar CQL
+
+    rule cql_file
+      s seq:definition*
+      {
+	def definitions
+	  seq.elements.map{|e| e.value }
+	end
+	def inspect
+	  definitions.map{|d|
+	      d.inspect
+	    }*"\n"
+	end
+	def compile
+	  definitions.each{|d|
+	      p d
+	    }
+	end
+      }
+    end
+
+    rule definition
+      s opt_name:(name:variable s defined_as s )? defined s ';' s
+      {
+	def name
+	  # REVISIT: Probably should use opt_name.name.value rather than text_value:
+	  opt_name.name.text_value if opt_name.elements
+	end
+
+	def definitions
+	  [ value ]
+	end
+
+	def value
+	  [ name, defined.defined_type ]
+	end
+      }
+    end
+
+    rule defined_as
+      '=' / ( 'is' S 'defined' S as )
+    end
+
+    rule defined
+      # entity_type must be first, or we'll get a failed data_type parse:
+      entity_type
+      / data_type
+      / fact_type
+    end
+
+    rule data_type
+      id s '(' s params:(length:number s param2:( ',' s scale:number s )? )? ')' s u0:(!restricted u1:unit s)? r:restriction?
+      {
+	def defined_type
+	  [
+	    :data_type,
+	    id.text_value,
+	    [ # REVISIT: Maybe it'd be better just to have a list of parameters...
+	      !params.empty? && params.length.value,
+	      !params.empty? && !params.param2.empty? && params.param2.scale.value,
+	    ],
+	    !u0.empty? && u0.u1.text_value,
+	    !r.empty? && r.ranges,
+	  ]
+	end
+      }
+    end
+
+    rule unit
+      unit_name:id ('^' '-'? [0-9])?
+    end
+
+    rule restriction
+      restricted s to s range_list s unit?
+      {
+	def ranges
+	  range_list.ranges
+	end
+      }
+    end
+
+    rule range_list
+      '{' s
+	head:range s tail:( ',' s range )*
+      '}' s
+      {
+	def ranges
+	  [head.value] + tail.elements.map{|e| e.range.value }
+	end
+      }
+    end
+
+    rule entity_type
+      entity s identification:( reference_mode / known_by ) ( ':' s / where S )? c:conditions?
+      {
+	def defined_type
+	  [
+	    :entity_type,
+	    identification.respond_to?(:mode_name) ?
+	      {:mode => identification.mode_name.text_value} :
+	      {:roles => identification.role_list.roles },
+	    c.empty? ? [] : c.condition_list
+	  ]
+	end
+      }
+    end
+
+    rule fact_type
+      f0:fact_clause
+	ftail:( (',' / and ) s f1:fact_clause s )*
+	ctail:( (':' / where ) s c:conditions s)?
+	returning?
+      {
+	def defined_type
+	  r = [
+	    :fact_type,
+	    [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
+	  ]
+	  r += ctail.c.condition_list unless ctail.empty?
+	  r
+	end
+      }
+    end
+
+    rule reference_mode
+      '(' s mode_name:id s ')' s
+    end
+
+    rule returning
+      returning return (',' return)*
+    end
+
+    rule return
+      by order 'REVISIT: return'
+    end
+
+    rule known_by
+      known S by S role_list
+    end
+
+    rule role_list 
+      head:id s tail:( ( and S / ',' s ) role:id s )*
+      {
+	def roles
+	  [head.text_value] + tail.elements.map{|i| i.role.text_value}
+	end
+      }
+    end
+
+    rule conditions
+      head:condition s tail:( (',' s / and S) next:condition s )*
+      {
+	def condition_list
+	  [head.condition] + tail.elements.map{|i| i.next.condition}
+	end
+      }
+    end
+
+    rule condition
+      head:clause s tail:(or S alternate:clause s )*
+      {
+	def condition
+	  if tail.elements.size == 0
+	    head.clause
+	  else
+	    [:"||", head.clause] + tail.elements.map{|i| i.alternate.clause}
+	  end
+	end
+      }
+    end
+
+    rule clause
+      (fact_clause / comparison)
+      {
+	def clause
+	  self.body
+	end
+      }
+    end
+
+    rule fact_clause
+      q:qualifier? s reading s p:post_qualifiers? s
+      {
+	def body
+	  [ :fact_clause,
+	    (q.empty? ? [] : [ q.text_value ]) +
+	      (p.empty? ? [] : p.list),
+	    reading.value
+	  ]
+	end
+      }
+    end
+
+    rule qualifier
+      ( 'maybe' / 'definitely' / 'every' ) !alphanumeric
+    end
+
+    rule post_qualifiers
+      '[' s q0:post_qualifier tail:( s ',' s q1:post_qualifier )* s ']' s
+      {
+	def list
+	  [q0.text_value] + tail.elements.map{|e| e.q1.text_value}
+	end
+      }
+    end
+
+    rule post_qualifier
+      ('static' / 'transient' / 'transitive' / 'acyclic' / 'symmetric' ) !alphanumeric
+    end
+
+    rule reading
+      role+
+      {
+	def value
+	  elements.map{|r| r.value}
+	end
+      }
+    end
+
+    # This is the rule that causes most back-tracking. I think you can see why.
+    # When we have an expression, we will come down here perhaps multiple times,
+    # but find no way out as soon as we hit the trailing non_role.
+    rule role
+      q:quantifier?
+      adj0:(!non_role_word a:id '-' s)?
+      player:(!non_role_word p:id !'-' s)+
+      adj1:( '-' a:(!non_role_word a:id s)? )?
+      func:function_call?
+      role_name:( '(' s as S r:id s ')' s )?
+      lr:( literal / restriction )?
+      !non_role
+      {
+	def value
+	  r = {}
+	  quantifier = !q.empty? && q.value
+	  r[:quantifier] = quantifier if quantifier
+	  r[:leading_adjective] = adj0.a.text_value unless adj0.empty?
+	  r[:words] = player.elements.map{|w| w.p.text_value}
+	  r[:trailing_adjective] = adj1.a.a.text_value unless adj1.empty?
+	  r[:function] = func.value if !func.empty?
+	  r[:role_name] = role_name.r.text_value unless role_name.empty?
+	  r[:restriction] = lr.ranges if !lr.empty? && lr.respond_to?(:ranges)
+	  r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
+	  r
+	end
+      }
+    end
+
+    rule non_role
+      comparator /
+      '||' /
+      add_op /
+      mul_op
+    end
+
+    rule non_role_word
+      quantifier
+      / boolean
+      / restriction
+    end
+
+    rule quantifier
+      some S			{ def value; nil; end }
+      / one S			{ def value; [1, 1]; end }
+      / exactly S quantity	{ def value; q = quantity.value; [q, q]; end }
+      / at S least S quantity most:( and S at S most S q:quantity )?
+				{ def value;
+				    [ quantity.value,
+				      most.empty? ? nil : most.q.value
+				    ]
+				  end
+				}
+      / at S most S quantity	{ def value; [ nil, quantity.value ]; end }
+      / from s numeric_range s	{ def value; numeric_range.value; end }
+    end
+
+    rule quantity
+      one S			{ def value; 1; end }
+      / number s		{ def value; number.value; end }
+    end
+
+    rule comparison
+      e1:expression s comparator s e2:expression
+      {
+	def body
+	  [ comparator.text_value,
+	    e1.value,
+	    e2.value
+	  ]
+	end
+      }
+    end
+
+    rule comparator
+      '<=' / '<' / '=' / '>=' / '>' / matches / includes
+    end
+
+    rule expression
+      sum
+    end
+
+    rule sum
+      t0:term s tail:( o:add_op s t1:term s )*
+      {
+	def value
+	  return t0.value if tail.empty?
+	  [ :"+",
+	    *([t0.value] +
+	      tail.elements.map{|e|
+		  e.o.text_value == '-' ? [ :"-", e.t1.value ] : e.t1.value
+		}
+	    )
+	  ]
+	end
+      }
+    end
+
+    rule add_op
+      '+' / '-'
+    end
+
+    rule term
+      f0:factor s tail:( o:mul_op s f1:factor s )*
+      {
+	def value
+	  return f0.value if tail.empty?
+	  [ :"*",
+	    *([f0.value] +
+	      tail.elements.map{|e|
+		  e.o.text_value != '*' ? [ :"-", e.f1.value ] : e.f1.value
+		}
+	    )
+	  ]
+	end
+      }
+    end
+
+    rule factor
+      literal u:unit? s
+	  { def value
+	      u.empty? ? literal.value : [ literal.value, u.text_value ]
+	    end
+	  }
+      / derived_variable
+      / '(' s sum s ')' s		    { def value; sum.value; end }
+    end
+
+    rule derived_variable
+      variable s p:function_call*
+      {
+	def value
+	  r = variable.value
+	  # Apply the function_call operators in order:
+	  p.elements.each{|p| r = [ p.value, r ] }
+	  r
+	end
+      }
+    end
+
+    rule variable
+      id0:id o0:( !(s 'is' S 'defined' S as ) s id1:id o1:( s id2:id )? )?
+      {
+	def value
+	  # Variable names may consist of up to three words:
+	  r = [ :variable, id0.text_value ]
+	  unless o0.empty?
+	    r += [ o0.id1.text_value ]
+	    r += [ o0.o1.id2.text_value ] unless o0.o1.empty?
+	  end
+	  r
+	end
+      }
+    end
+
+    rule function_call
+      '.' s func:id s param_list:( '(' s params:( p0:expression s tail:( ',' s p1:expression s )* )? ')' s )?
+      {
+	def value
+	  r = [ :"(", func.text_value ]
+	  return r if param_list.empty? || param_list.params.empty?
+	  r += [ param_list.params.p0.value ]
+	  param_list.params.tail.elements.each{|e|
+	      r += [ e.p1.value ]
+	    }
+	  r
+	end
+      }
+    end
+
+    rule range
+      numeric_range / string_range
+    end
+
+    rule numeric_range
+      number s tail:( '..' s end:number? s )?
+      {
+	def value
+	  if !tail.empty?
+	    [ number.value, tail.end.value ]
+	  else
+	    number.value
+	  end
+	end
+      }
+      / '..' s number s
+      {
+	def value
+	  [ nil, number.value ]
+	end
+      }
+    end
+
+    rule string_range
+      string s tail:( '..' s end:string? s )?
+      {
+	def value
+	  first = string.value
+	  if !tail.empty?
+	    last = tail.end.value unless tail.empty?
+	    [ first, last ]
+	  else
+	    first
+	  end
+	end
+      }
+      / '..' s string s
+      {
+	def value
+	  [ nil, string.value ]
+	end
+      }
+    end
+
+    rule literal
+      ( boolean
+      / string
+      / number
+      ) s
+      {
+	def value
+	  elements[0].value
+	end
+      }
+    end
+
+    rule boolean
+      ( 'true' { def value; true; end }
+      / 'false' { def value; false; end }
+      ) !alphanumeric
+      {
+	def value; elements[0].value end
+      }
+    end
+
+    rule string
+      "'" (string_char)* "'"
+      {
+	def value
+	  eval(text_value.sub(/\A'(.*)'\Z/,'"\1"'))
+	end
+      }
+    end
+
+    rule number
+      ( real /
+        fractional_real /
+        hexnumber /
+        octalnumber
+      ) !alphanumeric
+      {
+	def value
+	  eval(text_value)
+	end
+      }
+    end
+
+    # All purely lexical rules from here down, no-one looks at the structure, just the text_value:
+
+    rule string_char
+      ( '\\' [befntr\\']
+      / '\\' [0-7] [0-7] [0-7]
+      / '\\0'
+      / '\\x' [0-9A-Fa-f] [0-9A-Fa-f]
+      / '\\u' [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f]
+      / (![\'\\\0-\x07\x0A-\x1F] .)
+      )
+    end
+
+    rule real
+      [-+]? [1-9] [0-9]* fraction? exponent?
+    end
+
+    rule fractional_real
+      [-+]? '0' fraction exponent?
+    end
+
+    rule fraction
+      '.' [0-9]+
+    end
+
+    rule exponent
+      ( [Ee] '-'? [0-9]+ )
+    end
+
+    rule hexnumber
+      '0x' [0-9A-Fa-f]+
+    end
+
+    rule octalnumber
+      '0' [0-7]*
+    end
+
+    rule and 'and' !alphanumeric end
+    rule as 'as' !alphanumeric end
+    rule at 'at' !alphanumeric end
+    rule by 'by' !alphanumeric end 
+    rule entity 'entity' !alphanumeric end 
+    rule exactly 'exactly' !alphanumeric end
+    rule from  'from' !alphanumeric end
+    rule includes 'includes' !alphanumeric end
+    rule known 'known' !alphanumeric end 
+    rule least 'least' !alphanumeric end
+    rule matches 'matches' !alphanumeric end
+    rule most 'most' !alphanumeric end
+    rule one 'one' !alphanumeric end
+    rule or 'or' !alphanumeric end 
+    rule restricted 'restricted' !alphanumeric end
+    rule returning 'returning' !alphanumeric end
+    rule some 'some' !alphanumeric end
+    rule to 'to' !alphanumeric end
+    rule where 'where' !alphanumeric end 
+
+    rule mul_op
+      '/' / '%' / '*'
+    end
+
+    rule id
+      alpha alphanumeric*
+    end
+
+    rule alpha
+      [A-Za-z_]
+    end
+
+    rule alphanumeric
+      alpha / [0-9]
+    end
+
+    rule s	# Optional space
+      S?
+    end
+
+    rule S	# Mandatory space
+      (white / comment_to_eol / comment_c_style)+
+    end
+
+    rule white
+      [ \t\n\r]+
+    end
+
+    rule comment_to_eol
+      '//' (!"\n" .)+
+    end
+
+    rule comment_c_style
+      '/*' (!'*/' . )* '*/'
+    end
+
+  end
+end

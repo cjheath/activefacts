@@ -19,7 +19,7 @@ task :test do
 
     $LOAD_PATH.unshift "lib"	# Make sure we know where to find the module
     Spec::Runner::CommandLine::run(
-	    %w{spec/active_facts_spec.rb -f s},
+	    %w{spec/cql_spec.rb -f s},
 	    $stderr, $stdout,
 	    false		# Don't exit after testing
 	)
