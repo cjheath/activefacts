@@ -1,2 +1,2 @@
-bcp ORM..dtproperties out ORM-Metamodel.bcp -c -T -S .
+bcp ORM..dtproperties out Metamodel.bcp -c -T -S .
 

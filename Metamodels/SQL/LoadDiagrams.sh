@@ -1,1 +1,1 @@
-bcp ORM..dtproperties in ORM-Metamodel.bcp -c -T -S .
+bcp ORM..dtproperties in Metamodel.bcp -c -T -S .
