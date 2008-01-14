@@ -494,12 +494,10 @@ module ActiveFacts
 		    throw "RingConstraint type #{type} isn't known"
 		end
 
-		rs = @model.get_role_sequence(RoleSequence.new(
-			x.elements.to_a("orm:RoleSequence/orm:Role").map{|xr|
+		from, to = *x.elements.to_a("orm:RoleSequence/orm:Role").map{|xr|
 				@by_id[xr.attributes['ref']]
 			    }
-		    ))
-		RingConstraint.new(@model, name, type_num, rs)
+		RingConstraint.new(@model, name, type_num, from, to)
 	    }
 	end
 

@@ -224,7 +224,7 @@ module ActiveFacts
     end
 
     rule post_qualifier
-      ('static' / 'transient' / 'transitive' / 'acyclic' / 'symmetric' ) !alphanumeric
+      ('static' / 'transient' / ' intransitive' / 'transitive' / 'acyclic' / 'symmetric' ) !alphanumeric
     end
 
     rule reading

@@ -46,7 +46,7 @@ module ActiveFacts
     class Constraint < Feature; end
     class SetConstraint < Constraint; end		# One RoleSequence
     class PresenceConstraint < SetConstraint; end	# Unique,Mandatory,Freq
-    class RingConstraint < SetConstraint; end
+    class RingConstraint < Constraint; end
     class SubsetConstraint < Constraint; end	# Compares two RoleSeq's
     class ExclusionConstraint < Constraint; end	# Many RoleSequences
     class EqualityConstraint < Constraint; end	# Many RoleSequences
@@ -128,7 +128,7 @@ module ActiveFacts
 		end
 		true
 	    }
-	    raise "Unrecognised #{self.class} initialisers: #{args.inspect}" if args.size > 0
+	    raise "Unrecognised #{self.class} initialisers: #{args.map(&:class).inspect}" if args.size > 0
 	end
     end
 
@@ -337,10 +337,6 @@ module ActiveFacts
 	    end
 	end
 
-	def name=(s)
-	  @name = s
-	end
-
 	def name
 	    case
 	    when @name && @name != ''
@@ -455,6 +451,9 @@ module ActiveFacts
 	      hash[role] = constraint if constraint
 	      hash
 	    }
+	end
+
+	def all_ring_constraints(fact_constraints)
 	end
     end
 
@@ -580,7 +579,13 @@ module ActiveFacts
 		    ].compact*" "
 		}
 	    }
-	    expanded.gsub(/ *- */, '-')	# Remove spaces around adjectives
+	    expanded.gsub!(/ *- */, '-')	# Remove spaces around adjectives
+
+	    if rings = constraint_hash[:rings]
+	      expanded += " [#{rings[0].type_name}]"
+	      rings.shift
+	    end
+	    expanded
 	end
 
 	def to_s(constraint_hash = {})
@@ -1066,7 +1071,7 @@ module ActiveFacts
 	end
     end
 
-    class RingConstraint < SetConstraint
+    class RingConstraint < Constraint
 	TypeNames = %w{
 	    Undefined
 	    PurelyReflexive
@@ -1084,8 +1089,9 @@ module ActiveFacts
 	eval "(#{TypeNames * ", "}) = *(0..12)"
 
 	typed_attr Integer, :type_num do |v| v >= 0 && v <= AsymmetricIntransitive; end
-	def from_role; @role_sequence[0]; end 
-	def to_role; @role_sequence[1]; end
+	typed_attr Role, :from_role, :to_role
+	# def from_role; @role_sequence[0]; end 
+	# def to_role; @role_sequence[1]; end
 
 	def initialize(*args)
 	    @from_role = @to_role = nil
@@ -1093,23 +1099,28 @@ module ActiveFacts
 		case a
 		when Integer
 		    self.type_num = a
+		when Role
+		    unless (from_role)
+			self.from_role = a
+		    else
+			self.to_role = a
+		    end
+		    true
 		else
 		    next
 		end
 		true
 	    }
 	    super(*args)
-	    throw "Ring Constraint #{name} needs two roles" if role_sequence.size != 2
-	    from_role = role_sequence[0]
-	    to_role = role_sequence[1]
+	    throw "Ring Constraint #{name} needs two roles" unless to_role
 	end
 
 	def type_name
-	    TypeNames[type_num]
+	    (TypeNames[type_num].scan(/[A-Z][a-z]*/)*", ").downcase
 	end
 
 	def to_s
-	    "RingConstraint #{name}, #{type_name} over #{role_sequence}"
+	    "RingConstraint #{name}, #{type_name} over #{from_role}, #{to_role}"
 	end
     end
 

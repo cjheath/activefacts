@@ -25,16 +25,23 @@ module ActiveFacts
     end
 
     def build_indices
-      @set_constraints_by_fact = @model.constraints.inject({}) { |h, c|
-	  if SetConstraint === c
+      @set_constraints_by_fact = {}
+      @ring_constraints_by_fact = {}
+
+      @model.constraints.each { |c|
+	  case c
+	  when SetConstraint
 	    fact_types = c.role_sequence.map(&:fact_type).uniq	# All fact types spanned by this constraint
 	    if fact_types.size == 1	# There's only one, save it:
 	      # $stderr.puts "Single-fact constraint on #{fact_types[0].name}: #{c.name}"
-	      (h[fact_types[0]] ||= []) << c
+	      (@set_constraints_by_fact[fact_types[0]] ||= []) << c
 	    end
+	  when RingConstraint
+	    puts "Indexing Ring Constraint #{c.name} by #{c.from_role.fact_type}"
+	    (@ring_constraints_by_fact[c.from_role.fact_type] ||= []) << c
+	  else
+	    #puts "Found unhandled #{c.class} #{c.name}"
 	  end
-
-	  h
 	}
       @constraints_used = {}
       @fact_set_constraints_exhausted = {}
@@ -64,14 +71,20 @@ module ActiveFacts
 	  # Build a hash of presence constraints keyed by the residual (uncovered) role:
 	  expand_using = fact_type.all_presence_constraints_by_uncovered_role(fact_constraints)
 
+	  if (rings = @ring_constraints_by_fact[fact_type]) && rings.size > 0
+	    rings.each{|rc| @constraints_used[rc] = true}
+	    expand_using.update({:rings => rings})
+	  end
+
 	  constraints = expand_using.values
 
 	  # expand() will delete from the hash any constraints it could verbalise:
 	  s = r.expand(expand_using, define_role_names)
 
-	  unverbalised_constraints = constraints-expand_using.values
-	  fact_constraints -= unverbalised_constraints
-	  unverbalised_constraints.each{|c|
+	  # So we subtract the remaining ones from constraints to find which were ok:
+	  verbalised_constraints = constraints-expand_using.values
+	  fact_constraints -= verbalised_constraints
+	  verbalised_constraints.each{|c|
 	      @constraints_used[c] = true
 	    }
 	  define_role_names = false	# No need to define role names in subsequent readings
