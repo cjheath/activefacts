@@ -338,7 +338,6 @@ module ActiveFacts
 	end
 
 	def name=(s)
-	  puts "Name assigned from #{@name.inspect} to #{s.inspect}"
 	  @name = s
 	end
 

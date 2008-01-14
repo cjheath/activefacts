@@ -6,8 +6,6 @@
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
 #
-require 'pp'
-
 module ActiveFacts
 
   class CQLDumper
@@ -91,7 +89,7 @@ module ActiveFacts
       identifying_roles = pi.role_sequence.map{|r| r.role_name }*" and "
 
       identifying_facts = pi.role_sequence.map{|r| r.fact_type }.uniq
-      #pp identifying_facts.map{|f| f.preferred_reading }
+      #p identifying_facts.map{|f| f.preferred_reading }
       " known by #{ identifying_roles }:\n\t" +
       # REVISIT: Consider emitting all fact types we can, not just identifying ones?
 	  identifying_facts.map{|f|
