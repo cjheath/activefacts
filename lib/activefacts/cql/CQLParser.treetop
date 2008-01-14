@@ -21,7 +21,21 @@ module ActiveFacts
     end
 
     rule definition
-      s opt_name:(name:variable s defined_as s )? defined s ';' s
+      'vocabulary' S id s ';' s
+      {
+	def value
+	  puts "vocabulary #{id.text_value}: not implemented"
+	  [ id.text_value, [ :vocabulary ] ]
+	end
+      }
+      / 'import' S id alias_list ';' s
+      {
+	def value
+	  puts "import #{id.text_value}: not implemented"
+	  [ id.text_value, [ :import ] ]
+	end
+      }
+      / s opt_name:(name:variable s defined_as s )? defined s ';' s
       {
 	def name
 	  # REVISIT: Probably should use opt_name.name.value rather than text_value:
@@ -40,6 +54,10 @@ module ActiveFacts
 
     rule defined_as
       '=' / ( 'is' S 'defined' S as )
+    end
+
+    rule alias_list
+      ( s ',' s 'alias' S aliased:id S 'as' S alias:id s )*
     end
 
     rule defined

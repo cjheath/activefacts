@@ -268,6 +268,7 @@ module ActiveFacts
 	typed_attr ObjectType, :object_type	# role player
 	typed_attr FactType, :fact_type		# Fact it's a role of
 	typed_attr DataType, :data_type		# subtype of object_type's DataT
+	typed_attr String, "", :leading_adjective, :trailing_adjective
 	array_attr FactRole, :fact_roles	# Instances of this Role
 	array_attr :allowed_values do |given|	# Array of AllowedValues
 		    Range === given || Integer === given || String === given || OpenRange === given
@@ -285,6 +286,12 @@ module ActiveFacts
 		    self.fact_type = a
 		when DataType	# Used only when Role ValueRestrictions apply
 		    self.data_type = a
+		when String
+		    if self.leading_adjective == ""
+		      self.leading_adjective = a
+		    else
+		      self.trailing_adjective = a
+		    end
 		else
 		    next
 		end
@@ -300,6 +307,28 @@ module ActiveFacts
 	    #puts "Role #{name} should have base DateType" if !base || base == ""
 	end
 
+	def leading_adjectival_form
+	    la = "#{@leading_adjective}"
+	    la.sub!(/(.\b|.\Z)/, '\1-')
+	    la = nil if la == ""
+	    la
+	end
+
+	def trailing_adjective_form
+	    ta = "#{@trailing_adjective}"
+	    ta.sub!(/(\b.|\A.)/, '-\1')
+	    ta = nil if ta == ""
+	    ta
+	end
+
+	def role_name
+	    [
+	      leading_adjectival_form,
+	      self.name,
+	      trailing_adjective_form
+	    ].compact.join(" ").gsub(/ *- */, '-')	# Remove spaces around adjectives
+	end
+
 	def player_name
 	    if object_type.name && object_type.name != ''
 		object_type.name
@@ -308,20 +337,18 @@ module ActiveFacts
 	    end
 	end
 
+	def name=(s)
+	  puts "Name assigned from #{@name.inspect} to #{s.inspect}"
+	  @name = s
+	end
+
 	def name
 	    case
-	    when hyphen_bound
-		@name[0] == ?- ? player_name + @name : @name+player_name
 	    when @name && @name != ''
-		@name
+		@name		# Role name
 	    else
 		player_name
 	    end
-	end
-
-	# NORMA stores hyphen-binding in the reading text; ActiveFacts in the role name
-	def hyphen_bound
-	  @name && (@name[-1] == ?- || @name[0] == '-')
 	end
 
 	def to_s(verbose = false)
@@ -486,6 +513,33 @@ module ActiveFacts
 	    }
 	    raise "Reading requires a RoleSequence" unless @role_sequence
 	    super(*args)
+	    extract_adjectives
+	end
+
+	def extract_adjectives
+	    (0...@role_sequence.size).each{|i|
+		role = @role_sequence[i]
+
+		word = '\b([A-Za-z][A-Za-z0-9_]*)\b'
+		leading_adjectives = "(?:#{word}- *(?:#{word} +)?)"
+		trailing_adjectives = "(?: +(?:#{word} +) *-#{word}?)"
+		role_with_adjectives_re =
+		    %r| ?#{leading_adjectives}?\{#{i}\}#{trailing_adjectives}? ?|
+
+		@name.gsub!(role_with_adjectives_re) {
+		    la1 = ($1 && $1 != "" ? $1 : nil)	# First leading adjective
+		    la2 = ($2 && $2 != "" ? $2 : nil)	# Second leading adjective
+		    ta1 = ($3 && $3 != "" ? $3 : nil)	# First trailing adjective
+		    ta2 = ($4 && $4 != "" ? $4 : nil)	# Second trailing adjective
+		    la = @role_sequence[i].leading_adjective = [la1, la2].compact*" "
+		    ta = @role_sequence[i].trailing_adjective = [ta1, ta2].compact*" "
+		    #puts "Reading '#{name}' has role #{i} adjectives '#{la}' '#{ta}'" if la != "" || ta != ""
+
+		    " {#{i}} "
+		}
+	    }
+	    @name.sub!(/\A /, '')
+	    @name.sub!(/ \Z/, '')
 	end
 
 	def self.expand(t, names, constraint_hash = {})
@@ -502,32 +556,32 @@ module ActiveFacts
 	    expanded = "#{name}"
 	    (0...@role_sequence.size).each{|i|
 		role = @role_sequence[i]
+		la = "#{role.leading_adjective}"
+		la.sub!(/(.\b|.\Z)/, '\1-')
+		la = nil if la == ""
+		ta = "#{role.trailing_adjective}"
+		ta.sub!(/(\b.|\A.)/, '-\1')
+		ta = nil if ta == ""
 
-		word = '\b([A-Za-z][A-Za-z0-9_]*)\b'
-		leading_adjectives = "(?:#{word}- *(?:#{word} +)?)"
-		trailing_adjectives = "(?: +(?:#{word} +) *-#{word}?)"
-		role_with_adjectives_re =
-		    %r|#{leading_adjectives}?\{#{i}\}#{trailing_adjectives}?|
-
-		expanded.gsub!(role_with_adjectives_re) {
-		    #constraint = constraint_hash[@role_sequence[i]]
+		expanded.gsub!(/\{#{i}\}/) {
+		    # Get the frequency text for the constraint over this role, if any:
 		    constraint = i > 0 ? constraint_hash[@role_sequence[i]] : nil
 		    constraint_text = constraint && PresenceConstraint === constraint && constraint.frequency
+
 		    # Indicate that we've used this constraint
 		    constraint_hash.delete(@role_sequence[i]) if (constraint_text)
+
 		    player = @role_sequence[i].object_type
 		    [
 		      constraint_text,
-		      ($1 && $1 != "" ? $1+"-" : "") +		# First leading adjective
-			($2 && $2 != "" ? $2+" " : "") +	# Second leading adjective
-			(!define_role_names && role.name ? role.name : player.name) +
-			($3 && $3 != "" ? $3+" " : "") +	# First trailing adjective
-			($4 && $4 != "" ? "-"+$4 : ""),		# Second trailing adjective
+		      la,
+		      !define_role_names && role.name ? role.name : player.name,
+		      ta,
 		      define_role_names && player.name != role.name ? "(as #{role.name})" : nil
 		    ].compact*" "
 		}
 	    }
-	    expanded
+	    expanded.gsub(/ *- */, '-')	# Remove spaces around adjectives
 	end
 
 	def to_s(constraint_hash = {})
@@ -777,7 +831,6 @@ module ActiveFacts
 	end
 
 	def to_s
-	    # REVISIT: Verbalize fact instance?
 	    "#{fact_type.name}(#{fact_roles.map(&:to_s).join(", ")})"
 	end
     end
@@ -1011,7 +1064,6 @@ module ActiveFacts
 	    end
 
 	    name + ": " + what + mand + frequency + pref
-	    # REVISIT: Find a reading instead!
 	end
     end
 

@@ -48,7 +48,7 @@ module ActiveFacts
 	  next if EntityType === o
 	  if o.name == o.data_type.name
 	      # In ActiveFacts, parameterising a ValueType will create a new datatype
-	      # throw Can't handle parameterized value tpe of saame name as its datatype" if ...
+	      # throw Can't handle parameterized value type of same name as its datatype" if ...
 	  end
 
 	  @out.puts "#{o.to_s};"
@@ -63,11 +63,14 @@ module ActiveFacts
 	  # Find all role numbers in order of occurrence:
 	  roles = r.name.scan(/\{(\d)\}/).flatten.map{|m| r.role_sequence[Integer(m)] }
 
+	  # Build a hash of presence constraints keyed by the residual (uncovered) role:
 	  expand_using = fact_type.all_presence_constraints_by_uncovered_role(fact_constraints)
 
 	  constraints = expand_using.values
 
+	  # expand() will delete from the hash any constraints it could verbalise:
 	  s = r.expand(expand_using, define_role_names)
+
 	  unverbalised_constraints = constraints-expand_using.values
 	  fact_constraints -= unverbalised_constraints
 	  unverbalised_constraints.each{|c|
@@ -85,7 +88,7 @@ module ActiveFacts
 
     def known_by(o, pi)
       # REVISIT: Need to include adjectives here:
-      identifying_roles = pi.role_sequence.map{|r| r.name }*" and "
+      identifying_roles = pi.role_sequence.map{|r| r.role_name }*" and "
 
       identifying_facts = pi.role_sequence.map{|r| r.fact_type }.uniq
       #pp identifying_facts.map{|f| f.preferred_reading }
@@ -190,15 +193,17 @@ module ActiveFacts
       end
     end
 
+    # Dump fact types.
+    # Include as many as possible internal presence constraints in the fact type readings.
     def dump_fact_types
-      # REVISIT: Include all simple presence constraints in the fact type readings
-      # REVISIT: Omit the readings for the implicit subtyping fact types
       # REVISIT: Mandatory on the LHS of a binary can be coded using "every"
       # REVISIT: Uniqueness on the LHS of a binary can be coded using "distinct"
 
       @out.puts "\n/*\n * Fact Types\n */"
       @model.fact_types.each{|f|
-	  next if f.nested_as ||  # REVISIT: There might be constraints we have to merge into the nested entity:
+	  # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
+	  # These will come up as un-handled constraints
+	  next if f.nested_as ||
 	    @fact_set_constraints_exhausted[f] ||
 	    SubtypeFactType === f
 
@@ -240,12 +245,16 @@ module ActiveFacts
       @model.constraints.each{|c|
 	  next if except[c]
 
-	  # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
-	  if ActiveFacts::PresenceConstraint === c &&
-	      c.max == 1 &&	    # Uniqueness
+	  # Skip some PresenceConstraints:
+	  if ActiveFacts::PresenceConstraint === c
+	    # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
+	    next if c.max == 1 &&	    # Uniqueness
 	      c.role_sequence.size == c.role_sequence[0].fact_type.roles.size &&	# Same number of roles
 	      c.role_sequence[0].fact_type.roles.all?{|r| c.role_sequence.include? r}	# All present
-	    next
+
+	    # Skip internal PresenceConstraints over SubtypeFactTypes:
+	    next if SubtypeFactType === c.role_sequence[0].fact_type &&
+	      !c.role_sequence.detect{|r| r.fact_type != c.role_sequence[0].fact_type }
 	  end
 
 	  unless heading

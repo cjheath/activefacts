@@ -240,8 +240,8 @@ module ActiveFacts
 		    object_type = @by_id[ref]
 		    throw "RolePlayer for #{name||ref} was not found" if !object_type
 
-		    # Skip implicit roles added to make unaries into binaries
-		    # This would makes constraints over the deleted roles impossible,
+		    # Skip implicit roles added by NORMA to make unaries into binaries.
+		    # This would make constraints over the deleted roles impossible,
 		    # so as a SPECIAL CASE we index the unary role by the id of the
 		    # implicit role. That means care is needed when handling unary FTs.
 		    if (ox = @x_by_id[ref]) && ox.attributes['IsImplicitBooleanValue']
@@ -252,6 +252,10 @@ module ActiveFacts
 		      other_role = @by_id[other_role_id]
 		      # puts "Indexing unary FT role #{other_role_id} by implicit boolean role #{id}"
 		      @by_id[id] = other_role
+
+		      # The role name of the ignored role is the one that applies:
+		      role_name = x.attributes['Name']
+		      other_role.name = role_name if role_name && role_name != ''
 
 		      object_type.delete    # Delete our object for the implicit boolean ValueType
 		      @by_id.delete(ref)    # and de-index it from our list
@@ -301,14 +305,6 @@ module ActiveFacts
 		    role_sequence = @model.get_role_sequence(role_sequence)
 
 		    x_readings.each{|x|
-			# REVISIT: Think about what to do with adjectival forms (hyphen binding) here:
-=begin
-			leading_adjectives = ""
-			x.text.gsub!(/\b(\w+-[\w ]*)?\{(\d)/){|m|
-			    leading_adjectives += m[0..-2] if m.size > 0
-			    "{"+$2
-			  }
-=end
 			fact_type.readings << Reading.new(role_sequence, x.text)
 		    }
 		}
