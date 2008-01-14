@@ -37,15 +37,27 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Metamodel.orm</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestUnary._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TestUnary.orm</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Metamodel.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Metamodel._ORMCustomToolReport.cs</LastGenOutput>
     </None>
+    <None Include="TestUnary.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>TestUnary._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('ORM-Metamodel.orm')">
+  </ItemGroup>
+  <ItemGroup Condition="Exists('TestUnary.orm')">
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
