@@ -17,7 +17,7 @@ module ActiveFacts
 
     def dump(out = $>)
       @out = out
-      @out.puts "// "+ @model.to_s
+      @out.puts "vocabulary #{@model.name};\n\n"
 
       build_indices
       dump_value_types()
@@ -43,6 +43,7 @@ module ActiveFacts
     end
 
     def dump_value_types
+      @out.puts "/*\n * Value Types\n */"
       @model.object_types.sort_by{|o| o.name}.each{|o|
 	  next if EntityType === o
 	  if o.name == o.data_type.name
@@ -55,26 +56,25 @@ module ActiveFacts
     end
 
     def fact_readings_with_constraints(fact_type)
+      define_role_names = true
       fact_constraints = @set_constraints_by_fact[fact_type].clone
-       readings = fact_type.readings.map{|r|
-	    # Find a PresenceConstraint over the last role
-	    n = r.name.sub(/.*\{(\d)\}[^\{]*\Z/,'\1')	# Get the Role number from the {n} insertion
-	    role = r.role_sequence[n.to_i]		# and the Role object
+      readings = fact_type.readings.map{|r|
+	  # Find relevant PresenceConstraints
+	  # Find all role numbers in order of occurrence:
+	  roles = r.name.scan(/\{(\d)\}/).flatten.map{|m| r.role_sequence[Integer(m)] }
 
-	    constraint = (n && fact_constraints.find{|c|	# Find a PC that spans all other Roles
-		# internal PresenceConstraints span all roles but one, the residual:
-		PresenceConstraint === c &&
-		  (residual = (fact_type.roles-c.role_sequence)).size == 1 &&
-		  residual[0] == role
-	      })
-	    expand_using = { role => constraint }
+	  expand_using = fact_type.all_presence_constraints_by_uncovered_role(fact_constraints)
 
-	    s = r.to_s(expand_using)
-	    if expand_using.size == 0    # Constraint was verbalised
-	      fact_constraints -= [constraint]
-	      @constraints_used[constraint] = true
-	    end
-	    s
+	  constraints = expand_using.values
+
+	  s = r.expand(expand_using, define_role_names)
+	  unverbalised_constraints = constraints-expand_using.values
+	  fact_constraints -= unverbalised_constraints
+	  unverbalised_constraints.each{|c|
+	      @constraints_used[c] = true
+	    }
+	  define_role_names = false	# No need to define role names in subsequent readings
+	  s
 	}
       if fact_constraints.size == 0
 	# We've exhausted the set constraints on this fact type.
@@ -83,25 +83,40 @@ module ActiveFacts
       readings
     end
 
-    def dump_entity_type(o)
-      pi = o.preferred_identifier
-
+    def known_by(o, pi)
       # REVISIT: Need to include adjectives here:
       identifying_roles = pi.role_sequence.map{|r| r.name }*" and "
-      @constraints_used[pi] = true
-
-      # REVISIT: Consider emitting all fact types we can, not just identifying ones?
-      # REVISIT: Handle subtypes here
 
       identifying_facts = pi.role_sequence.map{|r| r.fact_type }.uniq
       #pp identifying_facts.map{|f| f.preferred_reading }
-      @out.puts("#{o.name} = entity known by #{ identifying_roles }:\n\t" +
-	  identifying_facts.map{|f| fact_readings_with_constraints(f) }.flatten*",\n\t" + ";\n\n")
+      " known by #{ identifying_roles }:\n\t" +
+      # REVISIT: Consider emitting all fact types we can, not just identifying ones?
+	  identifying_facts.map{|f|
+	      fact_readings_with_constraints(f)
+	  }.flatten*",\n\t"
+    end
+
+    def dump_entity_type(o)
+      pi = o.preferred_identifier
+      @constraints_used[pi] = true
+
+      if (supertype = o.primary_supertype)
+	spi = o.primary_supertype.preferred_identifier
+	@out.puts "#{o.name} = subtype of #{ o.supertypes.map(&:name)*", " }" +
+	  (pi != spi ? known_by(o, pi) : "") +
+	  ";\n\n"
+      else
+	@out.puts "#{o.name} = entity" +
+	  known_by(o, pi) +
+	  ";\n\n"
+      end
     end
 
     def dump_entity_types
-      # Try to dump entity types in order of name,
-      # but we need to dump ETs before they're referenced in preferred ids.
+      @out.puts "\n/*\n * Entity Types\n */"
+      # Try to dump entity types in order of name, but we need
+      # to dump ETs before they're referenced in preferred ids
+      # if possible (it's not always, there may be loops!)
       # Build hash tables of precursors and followers to use:
       entity_count = 0
       precursors, followers = *@model.object_types.inject([{},{}]) { |a, o|
@@ -114,8 +129,13 @@ module ActiveFacts
 		player = r.object_type
 		next unless EntityType === player
 		# player is a precursor of o
-		(precursor[o] ||= []) << player
-		(follower[player] ||= []) << o
+		(precursor[o] ||= []) << player if (player != o)
+		(follower[player] ||= []) << o if (player != o)
+	      }
+	    # Supertypes are precursors too:
+	    o.subtypes.each{|s|
+		(precursor[s] ||= []) << o
+		(follower[o] ||= []) << s
 	      }
 	  end
 	  a
@@ -123,30 +143,64 @@ module ActiveFacts
 
       sorted = @model.object_types.sort_by{|o| o.name}
       done = {}
+      panic = nil
       while entity_count > 0 do
+	count_this_pass = 0
 	sorted.each{|o|
 	    next unless EntityType === o && !done[o]	# Not an ET or already done
-	    next if ((p = precursors[o]) && p.size > 0)	# Not yet, still blocked
+	    # precursors[o] -= [o] if precursors[o]
+
+	    next if (o != panic && (p = precursors[o]) && p.size > 0)	# Not yet, still blocked
 
 	    # We're going to emit o - remove it from precursors of others:
 	    (followers[o]||[]).each{|f|
 		precursors[f] -= [o]
 	      }
 	    entity_count -= 1
+	    count_this_pass += 1
 	    done[o] = true
+	    panic = nil
 
 	    dump_entity_type(o)
 	  }
+
+	  # Check that we made progress:
+	  if count_this_pass == 0 && entity_count > 0
+	    if panic
+	      # This won't happen again unless the above code is changed to decide it can't dump "panic".
+	      raise "Unresolvable cycle of forward references: " +
+		(bad = sorted.select{|o| EntityType === o && !done[o]}).map{|o| o.name }.inspect +
+		":\n\t" + bad.map{|o|
+		  o.name +
+		  ": " +
+		  precursors[o].map{|p| p.name}.uniq.inspect
+		} * "\n\t" + "\n"
+	    else
+	      # Find the object that has the most followers and no fwd-ref'd supertypes:
+	      panic = sorted.
+		select{|o| !done[o] }.
+		sort_by{|o|
+		    f = followers[o] || []; 
+		    o.supertypes.detect{|s| !done[s] } ? 0 : -f.size
+		  }[0]
+	      # puts "Panic mode, selected #{panic.name} next"
+	    end
+	  end
 
       end
     end
 
     def dump_fact_types
       # REVISIT: Include all simple presence constraints in the fact type readings
+      # REVISIT: Omit the readings for the implicit subtyping fact types
+      # REVISIT: Mandatory on the LHS of a binary can be coded using "every"
+      # REVISIT: Uniqueness on the LHS of a binary can be coded using "distinct"
 
+      @out.puts "\n/*\n * Fact Types\n */"
       @model.fact_types.each{|f|
 	  next if f.nested_as ||  # REVISIT: There might be constraints we have to merge into the nested entity:
-	    @fact_set_constraints_exhausted[f]
+	    @fact_set_constraints_exhausted[f] ||
+	    SubtypeFactType === f
 
 	  fact_constraints = @set_constraints_by_fact[f]
 

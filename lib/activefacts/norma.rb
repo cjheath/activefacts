@@ -4,6 +4,11 @@
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
 #
+# This code uses variables prefixed with x_ when they refer to Rexml nodes.
+# Every node having an id="..." is indexed in @x_by_id[] hash before processing.
+# As we build ActiveFacts objects to match, we index those in @by_id[].
+# Both these hashes may be looked up by any of the ref="..." values in the file.
+#
 require 'rexml/document'
 require 'activefacts/base'
 
@@ -167,7 +172,9 @@ module ActiveFacts
 		throw "For Subtype fact #{name}, the subtype #{subtype_id} was not found" if !subtype
 	#	puts "#{subtype.name} is a subtype of #{supertype.name}"
 
-		fact_type = SubtypeFactType.new(name, @model, subtype, supertype)
+		options = []
+		options << :primary if x.attributes["IsPrimary"] == "true"
+		fact_type = SubtypeFactType.new(name, @model, subtype, supertype, *options)
 		facts << @by_id[id] = fact_type
 
 		# Index the new Roles so we can find constraints on them:
@@ -234,9 +241,20 @@ module ActiveFacts
 		    throw "RolePlayer for #{name||ref} was not found" if !object_type
 
 		    # Skip implicit roles added to make unaries into binaries
+		    # This would makes constraints over the deleted roles impossible,
+		    # so as a SPECIAL CASE we index the unary role by the id of the
+		    # implicit role. That means care is needed when handling unary FTs.
 		    if (ox = @x_by_id[ref]) && ox.attributes['IsImplicitBooleanValue']
-		      object_type.delete
-		      @by_id.delete(ref)
+		      x_other_role = x.parent.elements.to_a('orm:Role').reject{|x_role|
+			  x_role == x
+			}[0]
+		      other_role_id = x_other_role.attributes["id"]
+		      other_role = @by_id[other_role_id]
+		      # puts "Indexing unary FT role #{other_role_id} by implicit boolean role #{id}"
+		      @by_id[id] = other_role
+
+		      object_type.delete    # Delete our object for the implicit boolean ValueType
+		      @by_id.delete(ref)    # and de-index it from our list
 		      next
 		    end
 
@@ -283,6 +301,14 @@ module ActiveFacts
 		    role_sequence = @model.get_role_sequence(role_sequence)
 
 		    x_readings.each{|x|
+			# REVISIT: Think about what to do with adjectival forms (hyphen binding) here:
+=begin
+			leading_adjectives = ""
+			x.text.gsub!(/\b(\w+-[\w ]*)?\{(\d)/){|m|
+			    leading_adjectives += m[0..-2] if m.size > 0
+			    "{"+$2
+			  }
+=end
 			fact_type.readings << Reading.new(role_sequence, x.text)
 		    }
 		}

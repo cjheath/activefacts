@@ -300,7 +300,7 @@ module ActiveFacts
 	end
 
 	def make_value_type(name, vtype)
-	    # REVISIT: Consider c.limit, c.scale, c.precision instead:
+	    # REVISIT: Consider using c.limit, c.scale, c.precision instead:
 	    vtparams = vtype.split(/\D+/).reject{|v| v==""}.map{|v| v.to_i}
 	    dtname = vtype.sub(/\W.*/,'')
 

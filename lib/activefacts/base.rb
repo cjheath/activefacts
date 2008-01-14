@@ -311,7 +311,7 @@ module ActiveFacts
 	def name
 	    case
 	    when hyphen_bound
-		@name[0..-2]+" "+player_name
+		@name[0] == ?- ? player_name + @name : @name+player_name
 	    when @name && @name != ''
 		@name
 	    else
@@ -321,7 +321,7 @@ module ActiveFacts
 
 	# NORMA stores hyphen-binding in the reading text; ActiveFacts in the role name
 	def hyphen_bound
-	  @name && @name[-1] == ?-
+	  @name && (@name[-1] == ?- || @name[0] == '-')
 	end
 
 	def to_s(verbose = false)
@@ -411,11 +411,31 @@ module ActiveFacts
 	    roles.to_s(true) +
 		(nested_as ? " (nested as #{nested_as.name})" : "")
 	end
+
+	# In elementary form, all presence constraints cover all or all-but-one role
+	# Here we find all the all-but-one constraints and return them in a hash
+	# indexed by the uncovered role.
+	# This is used when verbalising fact types with the constraints inline.
+	# The constraints are selected from those passed.
+	def all_presence_constraints_by_uncovered_role(fact_constraints)
+	  roles.inject({}) {|hash, role|
+	      constraint = fact_constraints.find{|c|	# Find a PC that spans all other Roles
+		  # internal PresenceConstraints span all roles but one, the residual:
+		  PresenceConstraint === c &&
+		    c.role_sequence[0].fact_type == self &&
+		    (residual = (roles-c.role_sequence)).size == 1 &&
+		    residual[0] == role
+		}
+	      hash[role] = constraint if constraint
+	      hash
+	    }
+	end
     end
 
     class SubtypeFactType < FactType
 	typed_attr EntityType, :supertype
 	typed_attr EntityType, :subtype
+	attr_accessor :is_primary		# Boolean
 
 	def initialize(*args)
 	    # No Roles passed, just Super, Sub
@@ -427,6 +447,8 @@ module ActiveFacts
 		when ObjectType
 		    objects << a
 		    self.roles << (r = Role.new(model, a, self))
+		when Symbol
+		    is_primary = true if a == :primary
 		else
 		    next
 		end
@@ -476,27 +498,32 @@ module ActiveFacts
 	    expanded
 	end
 
-	def expand(constraint_hash = {})
+	def expand(constraint_hash = {}, define_role_names = true)
 	    expanded = "#{name}"
 	    (0...@role_sequence.size).each{|i|
 		role = @role_sequence[i]
 
-		# REVISIT: Handle trailing hyphen-binding here:
+		word = '\b([A-Za-z][A-Za-z0-9_]*)\b'
+		leading_adjectives = "(?:#{word}- *(?:#{word} +)?)"
+		trailing_adjectives = "(?: +(?:#{word} +) *-#{word}?)"
 		role_with_adjectives_re =
-		    %r|(?:\b([A-Za-z][A-Za-z0-9_]*)- +(?:([A-Za-z0-9_][A-Za-z0-9_ ]*[A-Za-z0-9_]) +)?)?\{#{i}\}|
+		    %r|#{leading_adjectives}?\{#{i}\}#{trailing_adjectives}?|
 
 		expanded.gsub!(role_with_adjectives_re) {
-		    constraint = constraint_hash[@role_sequence[i]]
+		    #constraint = constraint_hash[@role_sequence[i]]
+		    constraint = i > 0 ? constraint_hash[@role_sequence[i]] : nil
 		    constraint_text = constraint && PresenceConstraint === constraint && constraint.frequency
 		    # Indicate that we've used this constraint
 		    constraint_hash.delete(@role_sequence[i]) if (constraint_text)
 		    player = @role_sequence[i].object_type
 		    [
 		      constraint_text,
-		      $1 && $1 != "" && $1,
-		      $2 && $2 != "" && $2,
-		      player.name,
-		      player.name != role.name ? "(as #{role.name})" : nil
+		      ($1 && $1 != "" ? $1+"-" : "") +		# First leading adjective
+			($2 && $2 != "" ? $2+" " : "") +	# Second leading adjective
+			(!define_role_names && role.name ? role.name : player.name) +
+			($3 && $3 != "" ? $3+" " : "") +	# First trailing adjective
+			($4 && $4 != "" ? "-"+$4 : ""),		# Second trailing adjective
+		      define_role_names && player.name != role.name ? "(as #{role.name})" : nil
 		    ].compact*" "
 		}
 	    }
@@ -554,33 +581,37 @@ module ActiveFacts
 	    "#{@name} = entity"
 	end
 
-	# REVISIT: Can have more than one supertype.
-	def supertype
-	    sup = nil
-	    roles.find{|r|
-		f = r.fact_type
-		SubtypeFactType === f &&
-		    f.roles.size == 2 &&
-		    f.subtype == self &&
-		    (sup = f.supertype)
+	def primary_supertype
+	  supertypes[0]				# supertypes[] returns primary first
+	end
+
+	# Can have more than one supertype.
+	def supertypes
+	  roles.select{|r|
+	      f = r.fact_type			# from the fact_types of all our roles
+	      SubtypeFactType === f &&	# Select the SubtypeFactType
+		f.roles.size == 2 &&		# Should always be true
+		f.subtype == self		# Where we're the subtype
+	    }.sort_by{|r|
+	      r.fact_type.is_primary ? 0 : 1	# Put the primary supertype first
+	    }.map{|r|
+	      r.fact_type.supertype		# and return the supertype
 	    }
-	    sup
 	end
 
 	# An array of self followed by all supertypes in order:
-	def supertypes
-	    [ self ] + ((sup = supertype) ? sup.supertypes : [])
+	def supertypes_transitive
+	    ([self] + supertypes.map{|s| s.supertypes_transitive }).flatten.uniq
 	end
 
 	def subtypes
-	    roles.inject([]){|a, r|
-		f = r.fact_type
-		if (f.roles.size == 2 &&
-			SubtypeFactType === f &&
-			f.supertype == self)
-		    a << f.subtype
-		end
-		a
+	  roles.select{|r|
+	      f = r.fact_type			# from the fact_types of all our roles
+	      SubtypeFactType === f &&	# Select the SubtypeFactType
+		f.roles.size == 2 &&		# Should always be true
+		f.supertype == self		# Where we're the supertype
+	    }.map{|r|
+	      r.fact_type.subtype		# and return the subtype
 	    }
 	end
 
@@ -590,7 +621,9 @@ module ActiveFacts
 	    # in the case of a nested type, over roles of the nested fact type.
 	    # A nested type may NOT have a PI that spans both nested and
 	    # non-nested roles (according to Terry H)
+#puts "Find PI for #{self.class.name} #{name}:"
 	    @model.preferred_ids.each{|pi|
+#puts "\tConsidering #{pi.name}:"
 		# Every fact type which this PI spans must have no non-PI roles
 		# except for this object's:
 		rs = pi.role_sequence
@@ -599,16 +632,24 @@ module ActiveFacts
 		if NestedType === self &&
 		    fact_types.size == 1 &&    # PI must not span more than one fact type
 		    fact_types[0] == self.fact_type
+#puts "\t\tMATCH (NestedType, PI has just the fact type that this nests)"
 			return pi
 		end
 
+#puts "\t\tChecking the PI's #{fact_types.size} fact types (#{fact_types.map(&:name)*", "}):"
 		if fact_types.detect{|ft|
 			residual = ft.roles-rs
-			residual.size > 1 ||    # Any residual must be self or a supertype:
-			    (residual.size == 1 && !supertypes.include?(residual[0].object_type))
+			bad = residual.size > 1 ||    # Any residual must be self or a supertype:
+			    (residual.size == 1 && !supertypes_transitive.include?(residual[0].object_type)) ||
+			    # Unary fact types have self as the role player *and* the constrained object:
+			    (residual.size == 0 && ft.roles.size != 1)
+#puts "\t\t#{ft.name} residual is #{residual.map(&:to_s)*", "}, supertypes=#{supertypes_transitive.map(&:name)*", "}"
+#puts "\t\tNo go\n" if bad
+			bad
 		    }
 		    next
 		end
+#puts "\t\tMATCH: #{pi.name} Doesn't seem to have problems"
 		return pi
 	    }
 	    throw "No preferred identifier found for #{to_s}"
@@ -634,6 +675,10 @@ module ActiveFacts
 	    # REVISIT: If no data_type, look for one by @name in @model,
 	    # Check for Integer args and make a subtype if needed
 	    super(*args)
+	end
+
+	def supertypes
+	  []  # REVISIT: Stub until new meta-model is implemented
 	end
 
 	def to_s
