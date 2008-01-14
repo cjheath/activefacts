@@ -45,6 +45,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ComplexPI.orm</DependentUpon>
     </Compile>
+    <Compile Include="Genealogy-Events._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy-Events.orm</DependentUpon>
+    </Compile>
     <Compile Include="ObjectifiedUnary._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
@@ -99,6 +103,10 @@
     <None Include="ComplexPI.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>ComplexPI._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Genealogy-Events.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Genealogy-Events._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="ObjectifiedUnary.orm">
       <Generator>ORMCustomTool</Generator>
@@ -346,6 +354,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>OilSupply.orm</DependentUpon>
       <ORMGenerator>DDILtoPostgreSQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Genealogy-Events.orm')">
+    <None Include="Genealogy-Events.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy-Events.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Genealogy-Events.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy-Events.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Genealogy-Events.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy-Events.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
