@@ -156,12 +156,23 @@
 					<orm:ReadingOrder id="_8C24D679-B54C-434E-95B2-E74F23E436AA">
 						<orm:Readings>
 							<orm:Reading id="_83E92834-ADB2-4151-86C4-4DCC88826A95">
-								<orm:Data>{0} is of {1}</orm:Data>
+								<orm:Data>{0} is of the club called {1}</orm:Data>
 							</orm:Reading>
 						</orm:Readings>
 						<orm:RoleSequence>
 							<orm:Role ref="_54A4AF78-CC68-41F1-BEB4-5C521CFFA773" />
 							<orm:Role ref="_9E58E216-2BBC-469B-9F43-BD3E78426EBF" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_024D1067-194E-4D3E-8DF7-A2B538E28686">
+						<orm:Readings>
+							<orm:Reading id="_EB7F36D4-F6D4-40A2-83C2-008A95CECD30">
+								<orm:Data>the club called {0} has {1}</orm:Data>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_9E58E216-2BBC-469B-9F43-BD3E78426EBF" />
+							<orm:Role ref="_54A4AF78-CC68-41F1-BEB4-5C521CFFA773" />
 						</orm:RoleSequence>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
@@ -1425,12 +1436,12 @@
 	</orm:ModelErrorDisplayFilter>
 	<ormDiagram:ORMDiagram id="_3C90E547-CDCE-4DA8-A926-03F3B44D3550" IsCompleteView="false" Name="OrienteeringER" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
-			<ormDiagram:FactTypeShape id="_FC6D533E-3407-4B77-8B05-26F68C6DB8D1" IsExpanded="true" AbsoluteBounds="2.8895833333333347, 1.1356666666666668, 0.51388888899236917, 0.30588888899236916" ConstraintDisplayPosition="Top">
+			<ormDiagram:FactTypeShape id="_FC6D533E-3407-4B77-8B05-26F68C6DB8D1" IsExpanded="true" AbsoluteBounds="2.8895833333333347, 1.0419166666666668, 0.51388888899236917, 0.30588888899236916" ConstraintDisplayPosition="Top">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_07163CDD-C1FE-4CFF-8274-A1F663F44B12" IsExpanded="true" AbsoluteBounds="3.0562500000000012, 1.4958904022946957, 0.21749989688396454, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_07163CDD-C1FE-4CFF-8274-A1F663F44B12" IsExpanded="true" AbsoluteBounds="2.4208333333333347, 1.4021404022946957, 2.0350046157836914, 0.12950302660465241">
 						<ormDiagram:Subject ref="_8C24D679-B54C-434E-95B2-E74F23E436AA" />
 					</ormDiagram:ReadingShape>
-					<ormDiagram:ObjectifiedFactTypeNameShape id="_5CA4E959-84E2-40DF-9709-59C4946A3032" IsExpanded="true" AbsoluteBounds="2.8895833333333347, 0.94141212675968822, 0.63757771253585815, 0.12950302660465241" ExpandRefMode="true">
+					<ormDiagram:ObjectifiedFactTypeNameShape id="_5CA4E959-84E2-40DF-9709-59C4946A3032" IsExpanded="true" AbsoluteBounds="2.8895833333333347, 0.84766212675968822, 0.63757771253585815, 0.12950302660465241" ExpandRefMode="true">
 						<ormDiagram:Subject ref="_AED6E8AD-818A-4786-ACCE-9D3D5E0C6EC9" />
 					</ormDiagram:ObjectifiedFactTypeNameShape>
 				</ormDiagram:RelativeShapes>

@@ -189,7 +189,7 @@
 					<orm:ReadingOrder id="_9C1A027A-4F19-4FEC-A507-DA3339F9879F">
 						<orm:Readings>
 							<orm:Reading id="_0C51E3B8-A27C-4AC2-B6FE-FBF7701255FC">
-								<orm:Data>aspect- {0} is of {1}</orm:Data>
+								<orm:Data>topic- {0} is of {1}</orm:Data>
 							</orm:Reading>
 						</orm:Readings>
 						<orm:RoleSequence>
@@ -457,7 +457,7 @@
 			</orm:ImpliedFact>
 			<orm:Fact id="_851464B4-1149-45EE-85B9-CB5F94FA0104" _Name="TopicBelongsToParentTopic">
 				<orm:FactRoles>
-					<orm:Role id="_8894E435-5F5A-474E-B776-9F74E6A7565E" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="ParentAspect">
+					<orm:Role id="_8894E435-5F5A-474E-B776-9F74E6A7565E" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="ParentTopic">
 						<orm:RolePlayer ref="_C0A7D83C-F105-4D55-900C-3666545B0299" />
 					</orm:Role>
 					<orm:Role id="_02926B8B-3142-476E-8A44-E9C51374C446" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
@@ -617,6 +617,17 @@
 						<orm:RoleSequence>
 							<orm:Role ref="_85CE6E36-CD45-4234-A7D6-F2F03FF6C963" />
 							<orm:Role ref="_3FC14002-3E10-45F0-AA21-109B82C8CE1D" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_F6643545-5173-4B7F-8BC0-FAA4FAB62FF5">
+						<orm:Readings>
+							<orm:Reading id="_C74A1888-43A6-40E1-A949-F361BAF119FF">
+								<orm:Data>{0} consists of text-{1}</orm:Data>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_3FC14002-3E10-45F0-AA21-109B82C8CE1D" />
+							<orm:Role ref="_85CE6E36-CD45-4234-A7D6-F2F03FF6C963" />
 						</orm:RoleSequence>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
@@ -896,6 +907,17 @@
 						<orm:RoleSequence>
 							<orm:Role ref="_A98424D8-DD92-43A0-B5EF-EAC791A17E94" />
 							<orm:Role ref="_EE81A421-6B25-42FD-96FC-8AD0E64B2880" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_327C2D53-1B8F-4C90-BD14-64ADF06B5A56">
+						<orm:Readings>
+							<orm:Reading id="_C173E99F-B24E-414E-A0FC-5C3C60C6A1AB">
+								<orm:Data>{0} is called {1}</orm:Data>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_EE81A421-6B25-42FD-96FC-8AD0E64B2880" />
+							<orm:Role ref="_A98424D8-DD92-43A0-B5EF-EAC791A17E94" />
 						</orm:RoleSequence>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
@@ -1208,7 +1230,7 @@
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_3F8A24CD-C7D9-4138-859B-F7CF6E293DE9" IsExpanded="true" AbsoluteBounds="0.71961691308145714, 0.85708325386047368, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top" DisplayRoleNames="Off">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_AE31F39F-6A5F-462C-90B0-5E3530F54D33" IsExpanded="true" AbsoluteBounds="0.71961691308145714, 1.1657236561551692, 1.2485871315002441, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_AE31F39F-6A5F-462C-90B0-5E3530F54D33" IsExpanded="true" AbsoluteBounds="0.71961691308145714, 1.1657236561551692, 1.1759078502655029, 0.12950302660465241">
 						<ormDiagram:Subject ref="_9C1A027A-4F19-4FEC-A507-DA3339F9879F" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -1233,7 +1255,7 @@
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_BDADA139-CDAA-4347-BD4A-48E7FF3980C1" IsExpanded="true" AbsoluteBounds="2.0420834922790538, 2.3566667461395259, 0.24388888899236916, 0.5438888889923692" ConstraintDisplayPosition="Top" DisplayOrientation="VerticalRotatedLeft">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_B73489FE-CFCB-420B-91AB-BCBD8E25F9EF" IsExpanded="true" AbsoluteBounds="1.7087501589457204, 2.9340571484342215, 1.7682608366012573, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_B73489FE-CFCB-420B-91AB-BCBD8E25F9EF" IsExpanded="true" AbsoluteBounds="1.7400001589457204, 2.9340571484342215, 1.7682608366012573, 0.12950302660465241">
 						<ormDiagram:Subject ref="_132C58C1-5824-453F-A128-98375A706645" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -1278,7 +1300,7 @@
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_234DBED1-4F95-45E7-9933-5F601B20C159" IsExpanded="true" AbsoluteBounds="3.9479168256123862, 2.7945834128061926, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_ACAF246F-09E5-4C5B-BAC7-276937EE6A2F" IsExpanded="true" AbsoluteBounds="3.9479168256123862, 3.103223815100888, 0.72179269790649414, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_ACAF246F-09E5-4C5B-BAC7-276937EE6A2F" IsExpanded="true" AbsoluteBounds="3.9479168256123862, 3.103223815100888, 1.5238759517669678, 0.12950302660465241">
 						<ormDiagram:Subject ref="_E3C15248-F88A-4D92-BD41-BD5E50FE7B1F" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -1324,7 +1346,7 @@
 			</ormDiagram:ExternalConstraintShape>
 			<ormDiagram:FactTypeShape id="_624C95BD-04B9-4133-914B-03336E9153EF" IsExpanded="true" AbsoluteBounds="2.06249992052714, 0.52255858210846773, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_08B0202E-6F8A-4500-9DA1-9E96A922B536" IsExpanded="true" AbsoluteBounds="2.06249992052714, 0.83119898440316309, 0.79955148696899414, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_08B0202E-6F8A-4500-9DA1-9E96A922B536" IsExpanded="true" AbsoluteBounds="2.06249992052714, 0.83119898440316309, 1.2517677545547485, 0.12950302660465241">
 						<ormDiagram:Subject ref="_8D71BA6F-79BB-458A-B3E9-14C2FF44EA81" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -1454,7 +1476,7 @@
 						<rcd:Columns>
 							<rcd:Column id="_5B60130C-3718-4796-8182-A6283AB908F0" Name="topicId" />
 							<rcd:Column id="_8C4962AB-AD9B-471D-B7F8-2E5A814F5074" Name="parentTopic" IsNullable="true" />
-							<rcd:Column id="_AE68AADF-FE37-45F8-94BD-3C670902358B" Name="aspectIsOfTopicId" />
+							<rcd:Column id="_AE68AADF-FE37-45F8-94BD-3C670902358B" Name="topicIdIsOf" />
 						</rcd:Columns>
 						<rcd:Constraints>
 							<rcd:ReferenceConstraint id="_64AF8812-003F-43C3-A285-64C0AC636E9B" Name="Topic_FK1">
@@ -1686,8 +1708,6 @@
 	</ormtooial:Bridge>
 	<oialtocdb:Bridge>
 		<oialtocdb:SchemaIsForAbstractionModel id="_5F57C301-684C-4D65-ADF8-26EFC5A124E4" Schema="_A4F112E8-18C8-4F04-9A00-F9DB7BD0E6DF" AbstractionModel="_4A0DF806-903A-48A1-8A72-12FD376470F7" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_77D8748E-0842-428D-8FFE-D3F9CCCC4A0C" Column="_AE68AADF-FE37-45F8-94BD-3C670902358B" ConceptTypeChild="_D05D1AA8-89F4-48B2-976B-3593E3E53F53" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_8D53FCE3-3FF4-4E73-954B-288F5659E212" Column="_AE68AADF-FE37-45F8-94BD-3C670902358B" ConceptTypeChild="_FB3EFBA3-15C5-46CA-8B98-8F39C33467CF" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_66CD6D0C-36AC-4962-B5F0-BE2A8B57022B" Column="_3442BB39-8FCE-4094-A48F-8579DA2863E1" ConceptTypeChild="_F2279F0A-3A57-4645-BB52-B8692533A2C8" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_725F78EC-5712-40F3-A6DE-F31002502EC2" Column="_ECA808B0-B29D-474C-80A2-6252AD964D09" ConceptTypeChild="_C5CDAA03-D547-4CDB-95C6-691F1DAEF93D" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_846C6207-5B6E-4A84-9F68-831C840D07B4" Column="_79BFADE4-73B7-4143-9CDE-EED522D6B90E" ConceptTypeChild="_B006371F-C204-4D10-BB3F-678E5F6B5EC2" />
@@ -1705,15 +1725,17 @@
 		<oialtocdb:ColumnHasConceptTypeChild id="_29FC409C-D198-4472-995D-20D0A1DA0B32" Column="_B721DB80-25C6-487F-85F4-25A9B05F3290" ConceptTypeChild="_DA29F650-67A2-4671-9E69-405F99EC4294" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_8B03BD15-2193-463F-8D75-E8A1B0F42B54" Column="_8B525060-387F-47BE-8545-0ECC2B20F306" ConceptTypeChild="_9E5EFA2E-44D9-4B0E-B203-FEE52BDF4472" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_89A867B0-7C7F-4B21-8920-9FC1A3892809" Column="_8B525060-387F-47BE-8545-0ECC2B20F306" ConceptTypeChild="_E9C0277C-422F-450E-BA71-A588B3E9F850" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_CB9B32F5-E34A-4DA4-B8BE-03A2CD0106EC" Column="_8D49EAF8-BF96-403B-AEB2-D2BE7B195AF2" ConceptTypeChild="_E9C0277C-422F-450E-BA71-A588B3E9F850" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_45EA9A6F-B738-48A3-8E56-3DDE8629DADB" Column="_ADEE69BA-2B1D-4EAF-A961-2B5B2AF0B0F4" ConceptTypeChild="_8604D014-5C95-4771-B52E-68C8DD1512E7" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_CEA48994-A4A2-4DAF-9AC4-26AC048ACC1B" Column="_ADEE69BA-2B1D-4EAF-A961-2B5B2AF0B0F4" ConceptTypeChild="_E9C0277C-422F-450E-BA71-A588B3E9F850" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_CB9B32F5-E34A-4DA4-B8BE-03A2CD0106EC" Column="_8D49EAF8-BF96-403B-AEB2-D2BE7B195AF2" ConceptTypeChild="_E9C0277C-422F-450E-BA71-A588B3E9F850" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_7839D61B-0686-4C50-A837-B72693986308" Column="_65B78D68-5A31-44D2-96E5-23060C4022ED" ConceptTypeChild="_0F72D69A-7047-4F57-84CC-9BE7777A5008" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_653BCD50-F598-4EDB-BB7F-6AF31C9BEEC3" Column="_A6FD342A-123F-45A1-B853-7847047D52B4" ConceptTypeChild="_B4DF1D09-2713-42E9-8ADE-8976A5081053" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_FD566B61-577F-4410-ADD8-23C7E86EA721" Column="_CD070DC0-9D93-4B3E-B326-5B9A6091C045" ConceptTypeChild="_9BDBD2BA-8C6F-43EA-8696-184D9BF5255F" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_68A090E2-B58C-44D5-B454-A501CED2CE1D" Column="_B56E107E-81D9-436D-8298-329937815374" ConceptTypeChild="_EE2E389D-1CE0-4B15-9B66-E7FDF51F9C82" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_A7760F24-8D9B-413C-AE00-99B78086780F" Column="_B56E107E-81D9-436D-8298-329937815374" ConceptTypeChild="_1C1DCD93-F110-480A-B034-337526C9E65E" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_4BE94020-F944-4DE0-B4B7-46901D5DB4B7" Column="_5B60130C-3718-4796-8182-A6283AB908F0" ConceptTypeChild="_1C1DCD93-F110-480A-B034-337526C9E65E" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_77D8748E-0842-428D-8FFE-D3F9CCCC4A0C" Column="_AE68AADF-FE37-45F8-94BD-3C670902358B" ConceptTypeChild="_D05D1AA8-89F4-48B2-976B-3593E3E53F53" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_8D53FCE3-3FF4-4E73-954B-288F5659E212" Column="_AE68AADF-FE37-45F8-94BD-3C670902358B" ConceptTypeChild="_FB3EFBA3-15C5-46CA-8B98-8F39C33467CF" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_A2E3610B-B932-4735-9DE6-80A5A9A6E44F" Table="_5455BF29-589E-44C8-B7E7-ED75F063B33B" ConceptType="_5504AA19-9702-4D24-A393-FBEB11E97A23" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_C18221FE-F7DE-406D-8A27-CFFFAB84ED03" Table="_6E261216-675C-4722-AD7D-8AB48F669371" ConceptType="_B45B0337-56D6-4FCB-884D-2D330C2B2252" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_BC0151A2-75FB-4296-8580-D76DD498EDD8" Table="_057D79C3-109F-4A70-A0A0-A7C882464BE6" ConceptType="_888F7A1E-0365-44AD-8A58-B2434F5D6061" />

@@ -49,6 +49,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Genealogy-Events.orm</DependentUpon>
     </Compile>
+    <Compile Include="Metamodel._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel.orm</DependentUpon>
+    </Compile>
     <Compile Include="ObjectifiedUnary._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
@@ -78,10 +82,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SchoolActivities.orm</DependentUpon>
     </Compile>
-    <Compile Include="SimpleTernary._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleTernary.orm</DependentUpon>
-    </Compile>
     <Compile Include="EmployeeManagerCEO._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>EmployeeManagerCEO.orm</DependentUpon>
@@ -107,6 +107,10 @@
     <None Include="Genealogy-Events.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Genealogy-Events._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Metamodel.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Metamodel._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="ObjectifiedUnary.orm">
       <Generator>ORMCustomTool</Generator>
@@ -135,10 +139,6 @@
     <None Include="SchoolActivities.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>SchoolActivities._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
-    <None Include="SimpleTernary.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>SimpleTernary._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="EmployeeManagerCEO.orm">
       <Generator>ORMCustomTool</Generator>
@@ -173,28 +173,6 @@
     <None Include="SchoolActivities.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>SchoolActivities.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="Exists('SimpleTernary.orm')">
-    <None Include="SimpleTernary.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleTernary.orm</DependentUpon>
-      <ORMGenerator>OIALtoDCIL</ORMGenerator>
-    </None>
-    <None Include="SimpleTernary.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleTernary.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="SimpleTernary.OIAL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleTernary.orm</DependentUpon>
-      <ORMGenerator>ORMtoOIAL</ORMGenerator>
-    </None>
-    <None Include="SimpleTernary.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SimpleTernary.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
@@ -317,23 +295,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('Blog.orm')">
-    <None Include="Blog.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Blog.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Blog.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Blog.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Blog.SQLStandard.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Blog.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('OilSupply.orm')">
     <None Include="OilSupply.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -371,6 +332,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Genealogy-Events.orm</DependentUpon>
       <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Blog.orm')">
+    <None Include="Blog.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Blog.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Blog.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
