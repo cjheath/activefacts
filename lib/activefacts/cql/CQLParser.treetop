@@ -158,12 +158,18 @@ module ActiveFacts
     end
 
     rule role_list 
-      head:id s tail:( ( and S / ',' s ) role:id s )*
+      head:role_player s tail:( ( and S / ',' s ) role:role_player s )*
       {
 	def roles
 	  [head.text_value] + tail.elements.map{|i| i.role.text_value}
 	end
       }
+    end
+
+    rule role_player
+      !and id0:id '-' (s !and id1:id ( s !and id2:id )? )?
+      /
+      !and id0:id (s !and id1:id ( s '-' !and id2:id / s id2:id )? )?
     end
 
     rule conditions
@@ -224,7 +230,7 @@ module ActiveFacts
     end
 
     rule post_qualifier
-      ('static' / 'transient' / ' intransitive' / 'transitive' / 'acyclic' / 'symmetric' ) !alphanumeric
+      ('static' / 'transient' / 'intransitive' / 'transitive' / 'acyclic' / 'symmetric' ) !alphanumeric
     end
 
     rule reading

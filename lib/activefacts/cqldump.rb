@@ -37,7 +37,6 @@ module ActiveFacts
 	      (@set_constraints_by_fact[fact_types[0]] ||= []) << c
 	    end
 	  when RingConstraint
-	    puts "Indexing Ring Constraint #{c.name} by #{c.from_role.fact_type}"
 	    (@ring_constraints_by_fact[c.from_role.fact_type] ||= []) << c
 	  else
 	    #puts "Found unhandled #{c.class} #{c.name}"
@@ -210,7 +209,7 @@ module ActiveFacts
       # REVISIT: Mandatory on the LHS of a binary can be coded using "every"
       # REVISIT: Uniqueness on the LHS of a binary can be coded using "distinct"
 
-      @out.puts "\n/*\n * Fact Types\n */"
+      @out.puts "/*\n * Fact Types\n */"
       @model.fact_types.each{|f|
 	  # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
 	  # These will come up as un-handled constraints
