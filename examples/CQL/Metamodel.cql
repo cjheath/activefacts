@@ -93,7 +93,7 @@ ValueRestriction = entity known by ValueRestriction_Id:
 	ValueRestriction_Id is of at most one ValueRestriction;
 
 BaseUnit = entity known by base-Unit and Unit:
-	Unit is derived from base-Unit [acyclic,intransitive];
+	Unit is derived from base-Unit [acyclic, intransitive];
 
 ReadingRole = entity known by Role and Reading:
 	ReadingRole is for exactly one Role,
@@ -129,9 +129,9 @@ Population = entity known by Vocabulary and Name:
 
 RoleName = subtype of NamedObject;
 
-TypeInheritance = subtype of FactType known by EntityType and EntityType:
-	EntityType is supertype of EntityType [acyclic],
-	EntityType is subtype of EntityType;
+TypeInheritance = subtype of FactType known by EntityType and super-EntityType:
+	super-EntityType is supertype of EntityType [acyclic],
+	EntityType is subtype of super-EntityType;
 
 ValueType = subtype of Concept;
 
