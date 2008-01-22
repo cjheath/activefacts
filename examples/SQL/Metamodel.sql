@@ -221,7 +221,7 @@ GO
 CREATE TABLE SubsetConstraint (
 	SubsetConstraintId	int IDENTITY NOT NULL,
 	Name			nvarchar (64) NOT NULL,
-	Enforcement		char NOT NULL DEFAULT 1,
+	Enforcement		char (1) NULL DEFAULT 'M',
 	SupersetSequenceID	int NOT NULL,
 	SubsetSequenceId	int NOT NULL,
 	CONSTRAINT PK_SubsetConstraint PRIMARY KEY (

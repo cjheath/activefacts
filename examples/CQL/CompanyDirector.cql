@@ -11,7 +11,7 @@ PersonName = VariableLengthText(48);
  * Entity Types
  */
 Company = entity known by CompanyName:
-	Company has exactly one CompanyName,
+	Company is called exactly one CompanyName,
 	CompanyName is of at most one Company;
 
 Person = entity known by PersonName:
@@ -20,7 +20,7 @@ Person = entity known by PersonName:
 
 Directorship = entity known by Person and Company:
 	Person directs Company,
-	Company is directed by Person;
+	Company is directed by at least 1 Person;
 
 /*
  * Fact Types

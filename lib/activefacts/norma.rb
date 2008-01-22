@@ -357,11 +357,13 @@ module ActiveFacts
 	    read_subset_constraints
 	    read_ring_constraints
 	    read_equality_constraints
+	    read_residual_mandatory_constraints
 	end
 
 	def read_mandatory_constraints
 	    x_mandatory_constraints = @x_model.elements.to_a("orm:Constraints/orm:MandatoryConstraint")
-	    @mandatory_constraints = {}
+	    @mandatory_constraints_by_rs = {}
+	    @mandatory_constraint_rs_by_id = {}
 	    x_mandatory_constraints.each{|x|
 		    name = x.attributes["Name"]
 		    x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
@@ -377,9 +379,27 @@ module ActiveFacts
 		    roles.each{|r| rs << r }
 		    rs = @model.get_role_sequence(rs)
 
-# puts "Mandatory("+roles.map{|r| "#{r.object_type.name} in #{r.fact_type.to_s}" }*", "+")"
+#puts "Mandatory("+roles.map{|r| "#{r.object_type.name} in #{r.fact_type.to_s}" }*", "+")"
 
-		    @mandatory_constraints[rs] = true
+		    @mandatory_constraints_by_rs[rs] = x
+		    @mandatory_constraint_rs_by_id[x.attributes['id']] = rs
+	    }
+	end
+
+	def read_residual_mandatory_constraints
+	    @mandatory_constraints_by_rs.each { |rs, x|
+		# Create a simply-mandatory PresenceConstraint for each mandatory constraint
+		name = x.attributes["Name"]
+		# puts "Mandatory: #{rs.to_s}"
+
+		pc = PresenceConstraint.new(
+				@model,	    # In Model,
+				name,	    # this constraint
+				rs,	    # requires that these Roles
+				true,	    # must occur
+				1, nil	    # at least once
+			    )
+		(@constraints_by_rs[rs] ||= []) << pc
 	    }
 	end
 
@@ -413,7 +433,11 @@ module ActiveFacts
 		rs = RoleSequence.new
 		roles.each{|r| rs << r }
 		rs = @model.get_role_sequence(rs)
-		mc = @mandatory_constraints[rs]
+		if (mc = @mandatory_constraints_by_rs[rs])
+		    # Remove absorbed mandatory constraints, leaving residual ones.
+		    @mandatory_constraints_by_rs.delete(rs)
+		    @mandatory_constraint_rs_by_id.delete(mc.attributes['id'])
+		end
 
 		# A UC that spans more than one Role of a fact will be a Preferred Id for the implied object
 		#puts "Unique" + rs.to_s +
@@ -437,7 +461,7 @@ module ActiveFacts
 	    x_exclusion_constraints.each{|x|
 		name = x.attributes["Name"]
 		x_mandatory = (m = x.elements.to_a("orm:ExclusiveOrMandatoryConstraint")[0]) &&
-				@x_by_id[m.attributes['ref']]
+				@x_by_id[mc_id = m.attributes['ref']]
 		rss = []
 		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
 			rss << @model.get_role_sequence(RoleSequence.new(
@@ -446,7 +470,13 @@ module ActiveFacts
 				    }
 			    ))
 		    }
-		ec = ExclusionConstraint.new(@model, name, rss)
+		if x_mandatory
+		    # Remove absorbed mandatory constraints, leaving residual ones.
+		    mc_rs = @mandatory_constraint_rs_by_id[mc_id]
+		    @mandatory_constraint_rs_by_id.delete(mc_id)
+		    @mandatory_constraints_by_rs.delete(mc_rs)
+		end
+		ec = ExclusionConstraint.new(@model, name, rss, x_mandatory ? true : nil)
 	    }
 	end
 

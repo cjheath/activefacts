@@ -22,11 +22,11 @@ CEO = subtype of Manager;
  * Fact Types
  */
 Employee is managed by at most one Manager [acyclic],
-	Manager manages Employee;
+	Manager manages at least 1 Employee;
 Manager is CEO;
 Person is manager;
 
 /*
 Constraints:
-	ExclusionConstraint EmployeeCannotHaveManagerAndBeCEO over EmployeeIsManagedByManager(Employee), ManagerIsCEO(Manager)
+	MandatoryExclusionConstraint EmployeeCannotHaveManagerAndBeCEO over EmployeeIsManagedByManager(Employee), ManagerIsCEO(Manager)
  */

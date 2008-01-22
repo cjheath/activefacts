@@ -21,12 +21,12 @@ Competitor = subtype of Entrant;
 /*
  * Fact Types
  */
-EntrantHasGivenName = Entrant has GivenName,
+EntrantHasGivenName = Entrant has at least 1 GivenName,
 	GivenName is of Entrant;
 Competitor has exactly one FamilyName;
 
 /*
 Constraints:
 	FamilyAndGivenNamesAreUnique: each combination(CompetitorHasFamilyName.FamilyName, EntrantHasGivenName.GivenName) may occur at most 1 time
-	ExclusionConstraint ExclusiveOrConstraint2 over CompetitorIsASubtypeOfEntrant(Entrant), TeamIsASubtypeOfEntrant(Entrant)
+	MandatoryExclusionConstraint ExclusiveOrConstraint2 over CompetitorIsASubtypeOfEntrant(Entrant), TeamIsASubtypeOfEntrant(Entrant)
  */

@@ -59,5 +59,6 @@ Name is of at most one Author,
 
 /*
 Constraints:
-	ExclusionConstraint ExclusiveOrConstraint1 over PostSectionSequence(Section), SectionProvidesTextOfComment(Section)
+	MandatoryExclusionConstraint ExclusiveOrConstraint1 over PostSectionSequence(Section), SectionProvidesTextOfComment(Section)
+	SimpleMandatoryConstraint18: in ParagraphComment, each value (Comment) must occur at least 1 time
  */

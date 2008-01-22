@@ -96,3 +96,10 @@ User provided Source,
 Email is of User,
 	User has at most one Email;
 Friend is confirmed;
+
+/*
+Constraints:
+	SimpleMandatoryConstraint16: in EventParticipants, each value (Person) must occur at least 1 time
+	InclusiveOrConstraint1: each combination(EventDateOccurredInOrAfterYear.EventDate, EventDateOccurredInOrBeforeYear.EventDate, EventDateOccurredInMonth.EventDate, EventDateOccurredOnDay.EventDate) must occur at least 1 time
+	SimpleMandatoryConstraint9: in EventParticipants, each value (Event) must occur at least 1 time
+ */

@@ -65,7 +65,8 @@ Series = entity known by SeriesID:
 /*
  * Fact Types
  */
-Event is called at most one EventName;
+Event is called at most one EventName,
+	EventName is name of at most one Event;
 Map is map for Event,
 	Event uses exactly one Map;
 start-Location is where Event starts,
@@ -101,10 +102,10 @@ Club runs Event,
 
 /*
 Constraints:
-	EventNameIsOfOneEvent: in EventIsCalledEventName, each value (EventName) may occur at most 1 time
 	CompetitorHasDistinctName: each combination(PersonHasGivenName.GivenName, PersonHasFamilyName.FamilyName) may occur at most 1 time
 	OnlyOneScoringMethodForEachEventAndCourse: in EventScoringMethod, each combination (Course, Event) may occur at most 1 time
 	PersonMayEnterEventOnce: in Entry, each combination (Person, Event) may occur at most 1 time
 	ExternalUniquenessConstraint1: each combination(EventIsInSeries.Series, EventHasNumber.Number) may occur at most 1 time
 	EqualityConstraint EqualityConstraint1 between EventIsInSeries(Event), EventHasNumber(Event)
+	EventHasSeriesNumberOrName: each combination(EventIsCalledEventName.Event, EventIsInSeries.Event) must occur at least 1 time
  */

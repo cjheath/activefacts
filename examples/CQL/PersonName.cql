@@ -19,6 +19,6 @@ Person = entity known by PersonId:
  * Fact Types
  */
 Person has exactly one family-Name;
-PersonHasOrdinalGivenName = Person has Ordinal at most one given-Name,
-	Person has given-Name as Ordinal name;
+PersonHasGivenNameAsOrdinalName = Person has at most one given-Name as Ordinal name,
+	Person has Ordinal given-Name;
 Person is called at most one GivenNames;

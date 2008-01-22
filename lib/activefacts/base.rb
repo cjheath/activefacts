@@ -1055,7 +1055,7 @@ module ActiveFacts
 		    ((min && min > 0 && min != max) ? " at least #{min}" : nil),
 		    ((max && min != max) ? " at most #{max}" : nil),
 		    ((max && min == max) ? " exactly #{max}" : nil)
-		].compact * " and" + " time#{max>1?"s":""}"
+		].compact * " and" + " time#{max && max>1?"s":""}"
 
 	    pref = is_preferred_id ? " (preferred identifier)" : "" # for #{preferred_id_for.name})" : ""
 	    mand = (is_mandatory ? " must" : " may") + " occur"
@@ -1156,6 +1156,7 @@ module ActiveFacts
 
     class ExclusionConstraint < Constraint	# Many RoleSequences
 	array_attr RoleSequence, :role_sequences
+	typed_attr TrueClass, :mandatory
 
 	def initialize(*args)
 	    args.delete_if{|a|
@@ -1164,6 +1165,8 @@ module ActiveFacts
 		    role_sequences.concat(a)
 		when RoleSequence
 		    role_sequences << a
+		when TrueClass, NilClass
+		    @mandatory = a
 		else
 		    next
 		end
@@ -1173,7 +1176,7 @@ module ActiveFacts
 	end
 
 	def to_s
-	    "ExclusionConstraint #{name} over #{role_sequences.map{|rs| rs.to_s }*", "}"
+	    "#{@mandatory ? "Mandatory" : ""}ExclusionConstraint #{name} over #{role_sequences.map{|rs| rs.to_s }*", "}"
 	end
     end
 
