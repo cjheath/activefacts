@@ -357,6 +357,7 @@ module ActiveFacts
 	    read_subset_constraints
 	    read_ring_constraints
 	    read_equality_constraints
+	    read_frequency_constraints
 	    read_residual_mandatory_constraints
 	end
 
@@ -435,6 +436,7 @@ module ActiveFacts
 		rs = @model.get_role_sequence(rs)
 		if (mc = @mandatory_constraints_by_rs[rs])
 		    # Remove absorbed mandatory constraints, leaving residual ones.
+		    # puts "Absorbing MC #{mc.attributes['Name']}"
 		    @mandatory_constraints_by_rs.delete(rs)
 		    @mandatory_constraint_rs_by_id.delete(mc.attributes['id'])
 		end
@@ -529,6 +531,11 @@ module ActiveFacts
 			    }
 		RingConstraint.new(@model, name, type_num, from, to)
 	    }
+	end
+
+	def read_frequency_constraints
+	    x_frequency_constraints = @x_model.elements.to_a("orm:Constraints/orm:FrequencyConstraint")
+	    # REVISIT: FrequencyConstraints not handled yet
 	end
 
 	def show_constraints_by_role_sequence

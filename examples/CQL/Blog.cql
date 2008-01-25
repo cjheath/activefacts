@@ -53,12 +53,12 @@ Post was written by exactly one Author;
 Author wrote Comment,
 	Comment was written by exactly one Author;
 ParagraphComment = paragraph-Sequence in Post has Comment,
-	Comment on Post applies to at most one paragraph-Sequence;
+	Comment on Post applies to at most one paragraph-Sequence,
+	each Comment on some Post applies to some paragraph-Sequence;
 Name is of at most one Author,
 	Author is called exactly one Name;
 
 /*
 Constraints:
 	MandatoryExclusionConstraint ExclusiveOrConstraint1 over PostSectionSequence(Section), SectionProvidesTextOfComment(Section)
-	SimpleMandatoryConstraint18: in ParagraphComment, each value (Comment) must occur at least 1 time
  */

@@ -103,9 +103,9 @@ Club runs Event,
 /*
 Constraints:
 	CompetitorHasDistinctName: each combination(PersonHasGivenName.GivenName, PersonHasFamilyName.FamilyName) may occur at most 1 time
-	OnlyOneScoringMethodForEachEventAndCourse: in EventScoringMethod, each combination (Course, Event) may occur at most 1 time
-	PersonMayEnterEventOnce: in Entry, each combination (Person, Event) may occur at most 1 time
-	ExternalUniquenessConstraint1: each combination(EventIsInSeries.Series, EventHasNumber.Number) may occur at most 1 time
 	EqualityConstraint EqualityConstraint1 between EventIsInSeries(Event), EventHasNumber(Event)
 	EventHasSeriesNumberOrName: each combination(EventIsCalledEventName.Event, EventIsInSeries.Event) must occur at least 1 time
+	ExternalUniquenessConstraint1: each combination(EventIsInSeries.Series, EventHasNumber.Number) may occur at most 1 time
+	OnlyOneScoringMethodForEachEventAndCourse: in EventScoringMethod, each combination (Course, Event) may occur at most 1 time
+	PersonMayEnterEventOnce: in Entry, each combination (Person, Event) may occur at most 1 time
  */

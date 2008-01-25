@@ -167,9 +167,13 @@ module ActiveFacts
     end
 
     rule role_player
-      !and id0:id '-' (s !and id1:id ( s !and id2:id )? )?
+      !role_list_sep id0:id '-' (s !role_list_sep id1:id ( s !role_list_sep id2:id )? )?
       /
-      !and id0:id (s !and id1:id ( s '-' !and id2:id / s id2:id )? )?
+      !role_list_sep id0:id (s !role_list_sep id1:id ( s '-' !role_list_sep id2:id / s id2:id )? )?
+    end
+
+    rule role_list_sep
+      (where / and)
     end
 
     rule conditions
@@ -217,7 +221,7 @@ module ActiveFacts
     end
 
     rule qualifier
-      ( 'maybe' / 'definitely' / 'every' ) !alphanumeric
+      ( 'maybe' / 'definitely' ) !alphanumeric
     end
 
     rule post_qualifiers
@@ -285,7 +289,8 @@ module ActiveFacts
     end
 
     rule quantifier
-      some S			{ def value; nil; end }
+      each S			{ def value; [1, nil]; end }
+      / some S			{ def value; nil; end }
       / one S			{ def value; [1, 1]; end }
       / exactly S quantity	{ def value; q = quantity.value; [q, q]; end }
       / at S least S quantity most:( and S at S most S q:quantity )?
@@ -539,6 +544,7 @@ module ActiveFacts
     rule as 'as' !alphanumeric end
     rule at 'at' !alphanumeric end
     rule by 'by' !alphanumeric end 
+    rule each 'each' !alphanumeric end 
     rule entity 'entity' !alphanumeric end 
     rule exactly 'exactly' !alphanumeric end
     rule from  'from' !alphanumeric end

@@ -85,6 +85,8 @@ preferred-Picture is of Person,
 Email is of Person,
 	Person has at most one Email;
 EventParticipants = Person played Role in Event according to at most one Source,
+	each Person played some Role in some Event according to some Source,
+	some Person played some Role in each Event according to some Source,
 	Person was involved in Event according to Source in Role,
 	Source claims Person played Role in Event;
 Role is called exactly one EventRoleName,
@@ -99,7 +101,5 @@ Friend is confirmed;
 
 /*
 Constraints:
-	SimpleMandatoryConstraint16: in EventParticipants, each value (Person) must occur at least 1 time
 	InclusiveOrConstraint1: each combination(EventDateOccurredInOrAfterYear.EventDate, EventDateOccurredInOrBeforeYear.EventDate, EventDateOccurredInMonth.EventDate, EventDateOccurredOnDay.EventDate) must occur at least 1 time
-	SimpleMandatoryConstraint9: in EventParticipants, each value (Event) must occur at least 1 time
  */

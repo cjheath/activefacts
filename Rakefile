@@ -9,21 +9,18 @@ require 'rake/rdoctask'
 require 'rake/gempackagetask'
 require 'rake/clean'
 require 'spec'
+require 'spec/rake/spectask'
 
 #task :default => [ :test, :rdoc, :packaging, :package ]
 task :default => [ :rdoc, :packaging, :package ]
 
-task :test do
-    gem 'rspec', "> 0"
-    require 'spec'
-
-    $LOAD_PATH.unshift "lib"	# Make sure we know where to find the module
-    Spec::Runner::CommandLine::run(
-	    %w{spec/cql_spec.rb -f s},
-	    $stderr, $stdout,
-	    false		# Don't exit after testing
-	)
+rst = Spec::Rake::SpecTask.new(:test) do |t|
+    t.ruby_opts = ['-I', "lib"]
+    t.spec_files = FileList['spec/**/*_spec.rb']
+    # t.rcov = true
+    # t.rcov_opts = ['--exclude', 'spec,/usr/lib/ruby' ]
 end
+#rst.options.files.clear
 
 Rake::RDocTask.new do |rd|
     rd.rdoc_files.include("lib/**/*.rb", "LICENSE")

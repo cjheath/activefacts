@@ -30,7 +30,8 @@ ValueRestriction_Id = AutoCounter();
  */
 Bound = entity known by Value and Bound:
 	Bound has exactly one Value,
-	Value is of at least 1 Bound,
+	Value is of at least one Bound,
+	each Value is of some Bound,
 	Bound is inclusive;
 
 Coefficient = entity known by Numerator and Denominator:
@@ -57,8 +58,9 @@ PresenceConstraint = subtype of Constraint;
 
 Reading = entity known by Ordinal and FactType:
 	Reading is in at most one Ordinal position,
-	Ordinal  is Reading,
-	FactType has at least 1 Reading,
+	Ordinal reading for fact type is Reading,
+	FactType has at least one Reading,
+	each FactType has some Reading,
 	Reading is for exactly one FactType;
 
 RingConstraint = subtype of Constraint;
@@ -72,9 +74,10 @@ RoleSequence = entity known by RoleSequence_Id:
 	RoleSequence_Id is of at most one RoleSequence;
 
 RoleValue = entity known by Instance and Fact:
-	Instance plays at least 1 RoleValue,
+	Instance plays RoleValue,
 	RoleValue is of exactly one Instance,
-	RoleValue fulfils exactly one Fact;
+	RoleValue fulfils exactly one Fact,
+	some RoleValue fulfils each Fact;
 
 SetConstraint = subtype of Constraint;
 
@@ -101,8 +104,10 @@ MandatoryConstraint = subtype of PresenceConstraint;
 
 ReadingRole = entity known by Role and Reading:
 	ReadingRole is for exactly one Role,
-	Role has place in at least 1 ReadingRole,
-	Reading includes at least 1 ReadingRole,
+	Role has place in at least one ReadingRole,
+	each Role has place in some ReadingRole,
+	Reading includes at least one ReadingRole,
+	each Reading includes some ReadingRole,
 	ReadingRole is for exactly one Reading;
 
 SetComparisonConstraint = subtype of SetConstraint;
@@ -119,6 +124,8 @@ NamedObject = entity known by Name and Vocabulary:
 	Vocabulary contains NamedObject;
 
 Vocabulary = subtype of NamedObject;
+
+Alias = subtype of NamedObject;
 
 Concept = subtype of NamedObject;
 
@@ -148,8 +155,6 @@ parent-Vocabulary contains Vocabulary [acyclic, intransitive],
 	Vocabulary extends at most one parent-Vocabulary;
 ValueType is subtype of at most one ValueType [acyclic],
 	ValueType is supertype of ValueType;
-Alias = Name from Import is to be called at most one alias-Name,
-	alias-Name means at most one Name in the scope of Import;
 TypeInheritance defines primary supertype;
 Role has at most one RoleName,
 	RoleName is name of Role;
@@ -158,7 +163,8 @@ ValueType has at most one Length,
 ValueType has at most one Scale,
 	Scale is of ValueType;
 ValueType has at most one ValueRestriction;
-ValueRestrictionAllowsValueRange = ValueRestriction allows at least 1 ValueRange;
+ValueRestrictionAllowsValueRange = ValueRestriction allows at least one ValueRange,
+	each ValueRestriction allows some ValueRange;
 ValueType is of at most one Unit;
 BaseUnit has at most one Exponent;
 Coefficient is precise;
@@ -181,10 +187,12 @@ other-Role is of RingConstraint,
 Name is of Constraint,
 	Constraint is called at most one Name;
 Constraint requires at most one Enforcement;
-SetComparisonConstraintCoversRoleSequence = SetComparisonConstraint covers at least 1 RoleSequence;
+SetComparisonConstraintCoversRoleSequence = SetComparisonConstraint covers at least one RoleSequence,
+	each SetComparisonConstraint covers some RoleSequence;
 PresenceConstraint covers exactly one RoleSequence;
-RoleInSequence = Role has Ordinal place in RoleSequence,
-	RoleSequence includes Ordinal  at most one Role;
+RoleInSequence = RoleSequence includes in at most one Ordinal place at most one Role,
+	each RoleSequence includes in some Ordinal place some Role,
+	Role has Ordinal place in RoleSequence;
 SubsetConstraint covers exactly one superset-RoleSequence;
 SubsetConstraint covers exactly one subset-RoleSequence;
 RingConstraint is of exactly one RingType;
@@ -197,7 +205,6 @@ Population includes Instance,
 Fact is of exactly one FactType;
 Population includes RoleValue,
 	RoleValue belongs to exactly one Population;
-RoleValue fulfils exactly one Fact;
 RoleValue is of exactly one Role;
 Population includes Fact,
 	Fact belongs to exactly one Population;
@@ -205,18 +212,22 @@ Bound is inclusive;
 PresenceConstraint is preferred identifier;
 PresenceConstraint is mandatory;
 SetExclusionConstraint is mandatory;
+Name has Alias,
+	Alias is for exactly one Name;
+Import includes Alias,
+	Alias is for exactly one Import;
 
 /*
 Constraints:
-	OnlyOneSupertypeMayBePrimary: each combination(TypeInheritance.EntityType, TypeInheritanceDefinesPrimarySupertype.TypeInheritance) may occur at most 1 time
-	EachRoleIsAtOneOrdinalPositionInFactType: in Role, each combination (FactType, Ordinal) may occur at most 1 time
 	MandatoryExclusionConstraint ConceptMayNotBeBothValueTypeAndEntityType over EntityTypeIsASubtypeOfConcept(Concept), ValueTypeIsASubtypeOfConcept(Concept)
 	MandatoryExclusionConstraint ConstraintMustBeOneConcreteType over RingConstraintIsASubtypeOfConstraint(Constraint), SetEqualityConstraintIsASubtypeOfSetComparisonConstraint(SetComparisonConstraint), SetExclusionConstraintIsASubtypeOfSetComparisonConstraint(SetComparisonConstraint), SubsetConstraintIsASubtypeOfSetConstraint(SetConstraint), PresenceConstraintIsASubtypeOfConstraint(Constraint)
-	MandatoryExclusionConstraint NamedObjectMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfNamedObject(NamedObject), ConceptIsASubtypeOfNamedObject(NamedObject), RoleNameIsASubtypeOfNamedObject(NamedObject)
-	SubsetConstraint ValueTypeWithLengthMayHaveScale ValueTypeHasLength(ValueType) < ValueTypeHasScale(ValueType)
+	EachFactTypeHasAtLeastOneRole: in Role, each value (FactType) must occur at least 1 time
+	EachRoleIsAtOneOrdinalPositionInFactType: in Role, each combination (FactType, Ordinal) may occur at most 1 time
+	ExternalUniquenessConstraint1: each combination(NameHasAlias.Name, ImportIncludesAlias.Import) may occur at most 1 time
+	MandatoryExclusionConstraint NamedObjectMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfNamedObject(NamedObject), ConceptIsASubtypeOfNamedObject(NamedObject), RoleNameIsASubtypeOfNamedObject(NamedObject), AliasIsASubtypeOfNamedObject(NamedObject)
+	OnlyOneSupertypeMayBePrimary: each combination(TypeInheritance.EntityType, TypeInheritanceDefinesPrimarySupertype.TypeInheritance) may occur at most 1 time
 	SubsetConstraint PreferredIdentifierHasMaxFrequency PresenceConstraintHasMaxFrequency(PresenceConstraint) < PresenceConstraintIsPreferredIdentifier(PresenceConstraint)
 	PresenceConstraintMustHaveFrequency: each combination(PresenceConstraintHasMinFrequency.PresenceConstraint, PresenceConstraintHasMaxFrequency.PresenceConstraint, PresenceConstraintIsMandatory.PresenceConstraint) must occur at least 1 time
-	EachRoleSequenceHasAtLeastOneRole: in RoleInSequence, each value (RoleSequence) must occur at least 1 time
 	ValueRangeMustHaveAtLeastOneBound: each combination(ValueRangeHasMinimumBound.ValueRange, ValueRangeHasMaximumBound.ValueRange) must occur at least 1 time
-	EachFactHasAtLeastOneRoleValue: in RoleValueFulfilsFact, each value (Fact) must occur at least 1 time
+	SubsetConstraint ValueTypeWithLengthMayHaveScale ValueTypeHasLength(ValueType) < ValueTypeHasScale(ValueType)
  */

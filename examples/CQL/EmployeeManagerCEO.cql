@@ -22,7 +22,8 @@ CEO = subtype of Manager;
  * Fact Types
  */
 Employee is managed by at most one Manager [acyclic],
-	Manager manages at least 1 Employee;
+	Manager manages at least one Employee,
+	each Manager manages some Employee;
 Manager is CEO;
 Person is manager;
 

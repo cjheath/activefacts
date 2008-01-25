@@ -540,17 +540,7 @@ module ActiveFacts
 	    @name.sub!(/ \Z/, '')
 	end
 
-	def self.expand(t, names, constraint_hash = {})
-	    expanded = "#{t}"
-	    (0...names.size).each{|i|
-		expanded.gsub!("{#{i}}") {
-		    names[i]
-		  }
-	    }
-	    expanded
-	end
-
-	def expand(constraint_hash = {}, define_role_names = true)
+	def expand(frequencies = [], define_role_names = true)
 	    expanded = "#{name}"
 	    (0...@role_sequence.size).each{|i|
 		role = @role_sequence[i]
@@ -562,16 +552,9 @@ module ActiveFacts
 		ta = nil if ta == ""
 
 		expanded.gsub!(/\{#{i}\}/) {
-		    # Get the frequency text for the constraint over this role, if any:
-		    constraint = i > 0 ? constraint_hash[@role_sequence[i]] : nil
-		    constraint_text = constraint && PresenceConstraint === constraint && constraint.frequency
-
-		    # Indicate that we've used this constraint
-		    constraint_hash.delete(@role_sequence[i]) if (constraint_text)
-
 		    player = @role_sequence[i].object_type
 		    [
-		      constraint_text,
+		      frequencies[i],
 		      la,
 		      !define_role_names && role.name ? role.name : player.name,
 		      ta,
@@ -580,16 +563,13 @@ module ActiveFacts
 		}
 	    }
 	    expanded.gsub!(/ *- */, '-')	# Remove spaces around adjectives
-
-	    if rings = constraint_hash[:rings]
-	      expanded += " [#{rings[0].type_name}]"
-	      rings.shift
-	    end
 	    expanded
 	end
 
 	def to_s(constraint_hash = {})
-	    expand(constraint_hash)
+	    # REVISIT: Find where a constraint_hash is passed here!
+	    raise "constraint_hash deprecated" unless constraint_hash.empty?
+	    expand()
 	end
     end
 
@@ -1044,7 +1024,7 @@ module ActiveFacts
 
 	def frequency
 	    [
-		((min && min > 0 && min != max) ? "at least #{min}" : nil),
+		((min && min > 0 && min != max) ? "at least #{min == 1 ? "one" : min.to_s}" : nil),
 		((max && min != max) ? "at most #{max == 1 ? "one" : max.to_s}" : nil),
 		((max && min == max) ? "exactly #{max == 1 ? "one" : max.to_s}" : nil)
 	    ].compact * " and"

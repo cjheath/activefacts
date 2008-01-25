@@ -21,7 +21,7 @@ module ActiveFacts
       dump_value_types()
       dump_entity_types()
       dump_fact_types()
-      dump_constraint_types(@constraints_used)
+      dump_constraints(@constraints_used)
     end
 
     def build_indices
@@ -61,35 +61,84 @@ module ActiveFacts
 
     def fact_readings_with_constraints(fact_type)
       define_role_names = true
-      fact_constraints = @set_constraints_by_fact[fact_type].clone
-      readings = fact_type.readings.map{|r|
-	  # Find relevant PresenceConstraints
-	  # Find all role numbers in order of occurrence:
-	  roles = r.name.scan(/\{(\d)\}/).flatten.map{|m| r.role_sequence[Integer(m)] }
+      fact_constraints = @set_constraints_by_fact[fact_type]
+      used_constraints = []
+      readings = fact_type.readings.inject([]){|reading_array, reading|
+	  # Find all role numbers in order of occurrence in this reading:
+	  roles = reading.name.scan(/\{(\d)\}/).flatten.map{|m| reading.role_sequence[Integer(m)] }
 
-	  # Build a hash of presence constraints keyed by the residual (uncovered) role:
-	  expand_using = fact_type.all_presence_constraints_by_uncovered_role(fact_constraints)
+	  # Find the frequencies that constraints imply over each role we can verbalise:
+	  frequencies = []
+	  role_mandatory_but_not_unique = []
+	  roles.each {|role|
+	      # Find a mandatory constraint that's *not* unique; this will need an extra reading
+	      role_is_first_in = fact_type.readings.detect{|r| r.role_sequence[0] == role }
 
-	  if (rings = @ring_constraints_by_fact[fact_type]) && rings.size > 0
-	    rings.each{|rc| @constraints_used[rc] = true}
-	    expand_using.update({:rings => rings})
+	      role_mandatory_but_not_unique <<
+		(
+		  (!role_is_first_in || role_is_first_in == reading) &&
+		  fact_constraints.find{|c|
+		      PresenceConstraint === c &&
+		      c.is_mandatory &&
+		      (!c.max || c.max > 1) &&
+		      c.role_sequence == [role] &&
+		      !@constraints_used[c]	# Already verbalised
+		    }
+		)
+
+	      if (role != roles[0])   # First role of the reading?
+		# REVISIT: With a ternary, doing this on other than the last role can be ambiguous,
+		# in case both the 2nd and 3rd roles have frequencies. Think some more!
+
+		constraint = fact_constraints.find{|c|	# Find a UC that spans all other Roles
+		    # internal uniqueness constraints span all roles but one, the residual:
+		    PresenceConstraint === c &&
+		      # REVISIT: I think this next clause isn't necessary:
+		      #c.role_sequence[0].fact_type == fact_type &&	# The first role of the constraint is the right fact
+		      roles-c.role_sequence == [role] &&
+		      !@constraints_used[c]	# Already verbalised
+		  }
+		# Index the frequency implied by the constraint under the role position in the reading
+		if constraint	  # Mark this constraint as "verbalised" so we don't do it again:
+		  @constraints_used[constraint] = true
+		  used_constraints << constraint
+		end
+		frequencies << (constraint ? constraint.frequency : nil)
+	      else
+		frequencies << nil
+	      end
+	    }
+
+	  reading_array << reading.expand(frequencies, define_role_names)
+
+	  if (ft_rings = @ring_constraints_by_fact[fact_type]) &&
+	     (ring = ft_rings.detect{|rc| !@constraints_used[rc]})
+	    @constraints_used[ring] = true
+	    used_constraints << ring
+	    reading_array[-1] << " [#{ring.type_name}]"
 	  end
 
-	  constraints = expand_using.values
-
-	  # expand() will delete from the hash any constraints it could verbalise:
-	  s = r.expand(expand_using, define_role_names)
-
-	  # So we subtract the remaining ones from constraints to find which were ok:
-	  verbalised_constraints = constraints-expand_using.values
-	  fact_constraints -= verbalised_constraints
-	  verbalised_constraints.each{|c|
-	      @constraints_used[c] = true
-	    }
 	  define_role_names = false	# No need to define role names in subsequent readings
-	  s
+
+	  # If the first Role is mandatory but not unique, and we haven't absorbed this
+	  # mandation into a uniqueness constraint, we need to re-iterate this reading by
+	  # saying "each X has some Y for some Z"
+	  role_mandatory_but_not_unique.each_with_index{|mc, i|
+	      next unless mc
+	      frequencies = [ "some" ]*i + [ "each" ] + [ "some" ]*(roles.size-i-1)
+	      reading_array << reading.expand(frequencies, false)
+
+	      # REVISIT: If min > 1 (a frequency constraint), this constraint isn't fully verbalised
+#	      if first_role_mandatory.min == 1
+		@constraints_used[mc] = true
+		used_constraints << mc
+#	      end
+	    }
+
+	  reading_array
 	}
-      if fact_constraints.size == 0
+      #puts "Used #{fact_constraints_used} of #{used_constraints.uniq.size} constraints over #{fact_type.name}"
+      if (fact_constraints-used_constraints).size == 0
 	# We've exhausted the set constraints on this fact type.
 	@fact_set_constraints_exhausted[fact_type] = true
       end
@@ -97,13 +146,14 @@ module ActiveFacts
     end
 
     def known_by(o, pi)
-      # REVISIT: Need to include adjectives here:
       identifying_roles = pi.role_sequence.map{|r| r.role_name }*" and "
 
       identifying_facts = pi.role_sequence.map{|r| r.fact_type }.uniq
       #p identifying_facts.map{|f| f.preferred_reading }
-      " known by #{ identifying_roles }:\n\t" +
+
       # REVISIT: Consider emitting all fact types we can, not just identifying ones?
+
+      " known by #{ identifying_roles }:\n\t" +
 	  identifying_facts.map{|f|
 	      fact_readings_with_constraints(f)
 	  }.flatten*",\n\t"
@@ -111,7 +161,6 @@ module ActiveFacts
 
     def dump_entity_type(o)
       pi = o.preferred_identifier
-      @constraints_used[pi] = true
 
       if (supertype = o.primary_supertype)
 	spi = o.primary_supertype.preferred_identifier
@@ -123,6 +172,7 @@ module ActiveFacts
 	  known_by(o, pi) +
 	  ";\n\n"
       end
+      @constraints_used[pi] = true
     end
 
     def dump_entity_types
@@ -206,7 +256,6 @@ module ActiveFacts
     # Dump fact types.
     # Include as many as possible internal presence constraints in the fact type readings.
     def dump_fact_types
-      # REVISIT: Mandatory on the LHS of a binary can be coded using "every"
       # REVISIT: Uniqueness on the LHS of a binary can be coded using "distinct"
 
       @out.puts "/*\n * Fact Types\n */"
@@ -250,9 +299,9 @@ module ActiveFacts
       }
     end
 
-    def dump_constraint_types(except = {})
+    def dump_constraints(except = {})
       heading = false
-      @model.constraints.each{|c|
+      @model.constraints.sort_by{|c| c.name}.each{|c|
 	  next if except[c]
 
 	  # Skip some PresenceConstraints:

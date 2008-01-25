@@ -41,7 +41,7 @@ Address is in exactly one City;
 Address is in at most one Postcode,
 	Postcode is of Address;
 Address is at at most one StreetNumber;
-Family has exactly one FamilyName;
+Family has FamilyName;
 
 /*
 Constraints:
