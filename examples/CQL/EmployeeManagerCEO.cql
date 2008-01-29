@@ -11,21 +11,17 @@ PersonName = VariableLengthText();
 Person = entity known by PersonName:
 	Person has exactly one PersonName,
 	PersonName is of at most one Person;
+Person is manager;
 
 Employee = subtype of Person;
 
 Manager = subtype of Person;
-
-CEO = subtype of Manager;
-
-/*
- * Fact Types
- */
 Employee is managed by at most one Manager [acyclic],
 	Manager manages at least one Employee,
 	each Manager manages some Employee;
 Manager is CEO;
-Person is manager;
+
+CEO = subtype of Manager;
 
 /*
 Constraints:

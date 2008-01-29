@@ -497,7 +497,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_7831A418-6C01-4283-AC7F-C4AE71D3B92D" />
 			</orm:EntityType>
-			<orm:ValueType id="_1FF8B848-0034-4A13-8E6B-FCA9779317C8" Name="BoundIsInclusive" IsImplicitBooleanValue="true">
+			<orm:ValueType id="_1FF8B848-0034-4A13-8E6B-FCA9779317C8" Name="BoundInclusiveBound" IsImplicitBooleanValue="true">
 				<orm:PlayedRoles>
 					<orm:Role ref="_B8B02DAE-BD17-42FC-AB0E-8F02646BA645" />
 				</orm:PlayedRoles>
@@ -3386,10 +3386,10 @@
 			</orm:Fact>
 			<orm:Fact id="_0A84082C-628C-461A-869D-3228B82063BD" _Name="BoundIsInclusive">
 				<orm:FactRoles>
-					<orm:Role id="_5C65BD23-177B-4EE6-A885-34347AD92ECE" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_5C65BD23-177B-4EE6-A885-34347AD92ECE" _IsMandatory="false" _Multiplicity="Unspecified" Name="InclusiveBound">
 						<orm:RolePlayer ref="_C3949D07-0497-46CF-9360-D0A856F628A6" />
 					</orm:Role>
-					<orm:Role id="_B8B02DAE-BD17-42FC-AB0E-8F02646BA645" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_B8B02DAE-BD17-42FC-AB0E-8F02646BA645" _IsMandatory="false" _Multiplicity="Unspecified" Name="InclusiveBound">
 						<orm:RolePlayer ref="_1FF8B848-0034-4A13-8E6B-FCA9779317C8" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -5567,6 +5567,9 @@
 					<ormDiagram:ReadingShape id="_39D513F2-122F-4FFE-89F4-62ADD33C2601" IsExpanded="true" AbsoluteBounds="5.2604165077209464, 1.8740569894885024, 0.50498902797698975, 0.12950302660465241">
 						<ormDiagram:Subject ref="_A67B3421-F852-4928-8D32-6689586E39F2" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_6867A83B-27C5-4B04-A9E8-7619141CBE5C" IsExpanded="true" AbsoluteBounds="5.0604165077209462, 1.4354165871938069, 0.77771443128585815, 0.12950302660465241">
+						<ormDiagram:Subject ref="_5C65BD23-177B-4EE6-A885-34347AD92ECE" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_0A84082C-628C-461A-869D-3228B82063BD" />
 			</ormDiagram:FactTypeShape>

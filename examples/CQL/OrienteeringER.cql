@@ -44,10 +44,6 @@ SeriesEvent = entity known by Number and SeriesName:
 	event Number is in SeriesName;
 
 /*
- * Fact Types
- */
-
-/*
 Constraints:
 	InternalUniquenessConstraint22: in Event, each value (EventName) may occur at most 1 time
 	InternalUniquenessConstraint4: in Event, each value (SeriesEvent) may occur at most 1 time

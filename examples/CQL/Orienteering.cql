@@ -37,68 +37,64 @@ Year = UnsignedInteger(32) restricted to {1900..3000};
 Club = entity known by ClubCode:
 	Club has exactly one ClubCode,
 	ClubCode is of at most one Club;
+ClubName is name of at most one Club,
+	Club is called exactly one ClubName;
 
 Entry = entity known by EntryID:
 	Entry has exactly one EntryID,
 	EntryID is of at most one Entry;
+Entry received at most one Score;
+Entry finished in at most one finish-Position;
 
 Event = entity known by EventID:
 	Event has exactly one EventID,
 	EventID is of at most one Event;
+Event is called at most one EventName,
+	EventName is name of at most one Event;
+start-Location is where Event starts,
+	Event starts at exactly one start-Location;
+Event is held on exactly one StartTime;
+EventScoringMethod = ScoringMethod is used for Course of Event;
+ControlValue = ControlNumber for Event has at most one PointValue;
+Event has at most one Number;
+Club runs Event,
+	Event is run by exactly one Club;
 
 Map = entity known by MapID:
 	Map has exactly one MapID,
 	MapID is of at most one Map;
+Map is map for Event,
+	Event uses exactly one Map;
+Map has exactly one MapName,
+	MapName is of at most one Map;
+Club owns Map,
+	Map is owned by exactly one Club;
+Map has at most one Accessibility;
 
 Person = entity known by PersonID:
 	Person has exactly one PersonID,
 	PersonID is of at most one Person;
-
-Punch = entity known by PunchID:
-	Punch has exactly one PunchID,
-	PunchID is of at most one Punch;
-
-Series = entity known by SeriesID:
-	Series has exactly one SeriesID,
-	SeriesID is of at most one Series;
-
-/*
- * Fact Types
- */
-Event is called at most one EventName,
-	EventName is name of at most one Event;
-Map is map for Event,
-	Event uses exactly one Map;
-start-Location is where Event starts,
-	Event starts at exactly one start-Location;
-ClubName is name of at most one Club,
-	Club is called exactly one ClubName;
-Map has exactly one MapName,
-	MapName is of at most one Map;
-Event is held on exactly one StartTime;
 Person has exactly one FamilyName,
 	FamilyName is of Person;
-Club owns Map,
-	Map is owned by exactly one Club;
-Visit = Punch was visited by Entry at Time;
-Series has exactly one SeriesName,
-	SeriesName is of at most one Series;
-Map has at most one Accessibility;
 Person has exactly one GivenName,
 	GivenName is name of Person;
 Person is of at most one Gender;
 Person was born in at most one Year;
 Person has at most one PostCode;
 Person is a member of at most one Club;
-Entry received at most one Score;
-Entry finished in at most one finish-Position;
-EventScoringMethod = ScoringMethod is used for Course of Event;
-ControlValue = ControlNumber for Event has at most one PointValue;
+
+Punch = entity known by PunchID:
+	Punch has exactly one PunchID,
+	PunchID is of at most one Punch;
+Visit = Punch was visited by Entry at Time;
 PunchPlacement = Event has Punch at at most one ControlNumber;
+
+Series = entity known by SeriesID:
+	Series has exactly one SeriesID,
+	SeriesID is of at most one Series;
+Series has exactly one SeriesName,
+	SeriesName is of at most one Series;
 Event is in at most one Series;
-Event has at most one Number;
-Club runs Event,
-	Event is run by exactly one Club;
 
 /*
 Constraints:

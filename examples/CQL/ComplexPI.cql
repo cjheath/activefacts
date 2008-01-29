@@ -20,6 +20,3 @@ Window = entity known by Room and WallNumber and WindowNumber:
 	Window is located in exactly one WallNumber,
 	Window has exactly one WindowNumber;
 
-/*
- * Fact Types
- */

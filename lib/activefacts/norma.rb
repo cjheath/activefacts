@@ -431,6 +431,18 @@ module ActiveFacts
 		roles = map_roles(x_roles, "uniqueness constraint #{name}")
 		next if !roles
 
+		# There is an implicit uniqueness constraint when any object plays a unary. Skip it.
+		if (x_roles.size == 1 &&
+		    (id = x_roles[0].attributes['ref']) &&
+		    (x_role = @x_by_id[id]) &&
+		    x_role.parent.elements.size == 2 &&
+		    (sibling = x_role.parent.elements[2]) &&
+		    (ib_id = sibling.elements[1].attributes['ref']) &&
+		    (ib = @x_by_id[ib_id]) &&
+		    ib.attributes['IsImplicitBooleanValue'])
+		  next	  # Skip uniqueness constraint over our role in this implicit boolean
+		end
+
 		rs = RoleSequence.new
 		roles.each{|r| rs << r }
 		rs = @model.get_role_sequence(rs)

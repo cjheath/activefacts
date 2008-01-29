@@ -246,8 +246,8 @@ module ActiveFacts
 	    super(*args)
 	    model.data_types << self if (model)
 
-	    throw "DataType should have name" if !name
-	    throw "DataType #{name} should be part of Model" if !model
+	    raise "DataType should have name" if !name
+	    raise "DataType #{name} should be part of Model" if !model
 	    # REVISIT: We have no built-in types yet:
 	    # puts "DataType #{name} should have base DateType" if !base || base == ""
 	end
@@ -298,11 +298,11 @@ module ActiveFacts
 		true
 	    }
 	    super(*args)
-	    name ||= @object_type.name
+	    # name ||= @object_type.name
 	    raise "Role must have an ObjectType" unless @object_type
 	    #raise "Role must have a FactType" unless @fact_type
 
-	    throw "Role #{self} should be part of Model" if !model
+	    raise "Role #{self} should be part of Model" if !model
 	    #puts "Role should have name" if !name
 	    #puts "Role #{name} should have base DateType" if !base || base == ""
 	end
@@ -322,6 +322,8 @@ module ActiveFacts
 	end
 
 	def role_name
+	    # Use the Role Name if one is defined, else the adjectival form:
+	    (@name && @name != '' ? @name : false) ||
 	    [
 	      leading_adjectival_form,
 	      self.name,
@@ -405,7 +407,7 @@ module ActiveFacts
 	    model.fact_types << self if (model)
 	    fact_types = []
 
-	    throw "FactType #{self} should be part of Model" if !model
+	    raise "FactType #{self} should be part of Model" if !model
 	end
 
 	def preferred_reading
@@ -584,7 +586,7 @@ module ActiveFacts
 	    super(*args)
 	    model.object_types << self if (model)
 
-	    throw "ObjectType #{self} should be part of Model" if !model
+	    raise "ObjectType #{self} should be part of Model" if !model
 	end
 
 	def delete
@@ -605,7 +607,7 @@ module ActiveFacts
 	end
 
 	def preferred_identifier
-	    throw "#{self.class} can not have a preferred_identifier"
+	    raise "#{self.class} can not have a preferred_identifier"
 	end
     end
 
@@ -690,9 +692,17 @@ module ActiveFacts
 #puts "\t\tMATCH: #{pi.name} Doesn't seem to have problems"
 		return pi
 	    }
-	    throw "No preferred identifier found for #{to_s}"
+
+	    if NestedType === self && fact_type.roles.size == 1
+	      # Objectified unary has an implicit PI.
+	      #raise "preferred identifier for objectified unary #{to_s} is implicit"
+	      return nil
+	    end
+
+	    raise "No preferred identifier found for #{to_s}"
+
+	    nil
 	end
-	nil
     end
 
     # define anonymous DataType, instead of supporting ValueRestrictions
@@ -808,9 +818,9 @@ module ActiveFacts
 	    # puts "Adding fact to fact_type #{@fact_type.name}" if @fact_type
 
 	    # Make sure all FactRoles are from this fact type:
-	    throw "All Fact Roles must be from one Fact Type" \
+	    raise "All Fact Roles must be from one Fact Type" \
 		if fact_roles.detect{|fr| !fact_type.roles.detect{|r| fr.role == r} }
-	    throw "Wrong number of fact roles or duplicate role" \
+	    raise "Wrong number of fact roles or duplicate role" \
 		unless @fact_roles.map(&:role).uniq.size == @fact_type.roles.size
 	end
 
@@ -901,7 +911,7 @@ module ActiveFacts
 		    facts = r.fact_type.facts.select{|f|
 			    f.fact_roles.detect{|x| x.instance == self}
 			}
-		    throw "Instance with no identifying fact!" if (facts.size == 0)
+		    raise "Instance with no identifying fact!" if (facts.size == 0)
 		    fact_role = facts[0].fact_roles.find{|fr| fr.role == r }
 		    fact_role.instance.to_s
 		}
@@ -1016,7 +1026,7 @@ module ActiveFacts
 #		# When a PC covers all roles of an objectified fact, the above computes an empty set:
 #		return @role_sequence[0].fact_type.nested_as
 #	    else
-		throw "Preferred identifier PresenceConstraint #{name} must identify one object"+
+		raise "Preferred identifier PresenceConstraint #{name} must identify one object"+
 		    ", not #{pi_for.map{|o| o.name}.inspect}" if pi_for.size != 1
 		return pi_for[0]
 #	    end
@@ -1092,7 +1102,7 @@ module ActiveFacts
 		true
 	    }
 	    super(*args)
-	    throw "Ring Constraint #{name} needs two roles" unless to_role
+	    raise "Ring Constraint #{name} needs two roles" unless to_role
 	end
 
 	def type_name
@@ -1126,7 +1136,7 @@ module ActiveFacts
 		true
 	    }
 	    super(*args)
-	    throw "Subset Constraint #{name} needs two role sequences" unless subset_role_sequence
+	    raise "Subset Constraint #{name} needs two role sequences" unless subset_role_sequence
 	end
 
 	def to_s
@@ -1177,7 +1187,7 @@ module ActiveFacts
 		true
 	    }
 	    super(*args)
-	    throw "EqualityConstraint Constraint #{name} needs more than one role sequence" unless @role_sequences.size > 1
+	    raise "EqualityConstraint Constraint #{name} needs more than one role sequence" unless @role_sequences.size > 1
 	end
 
 	def to_s

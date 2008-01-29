@@ -14,11 +14,8 @@ PersonId = AutoCounter();
 Person = entity known by PersonId:
 	Person has exactly one PersonId,
 	PersonId is of at most one Person;
-
-/*
- * Fact Types
- */
 Person has exactly one family-Name;
 PersonHasGivenNameAsOrdinalName = Person has at most one given-Name as Ordinal name,
 	Person has Ordinal given-Name;
 Person is called at most one GivenNames;
+

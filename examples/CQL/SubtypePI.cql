@@ -13,17 +13,13 @@ GivenName = VariableLengthText();
 Entrant = entity known by EntrantID:
 	Entrant has exactly one EntrantID,
 	EntrantID is of at most one Entrant;
+EntrantHasGivenName = Entrant has at least one GivenName,
+	each Entrant has some GivenName,
+	GivenName is of Entrant;
 
 Team = subtype of Entrant;
 
 Competitor = subtype of Entrant;
-
-/*
- * Fact Types
- */
-EntrantHasGivenName = Entrant has at least one GivenName,
-	each Entrant has some GivenName,
-	GivenName is of Entrant;
 Competitor has exactly one FamilyName;
 
 /*

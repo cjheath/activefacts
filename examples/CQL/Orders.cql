@@ -17,14 +17,11 @@ Order = entity known by OrderID:
 
 OrderLine = entity known by Number and Order:
 	Order has line Number;
+OrderLine is for at most one quantity-Number;
 
 SKU = entity known by SKUID:
 	SKU has exactly one SKUID,
 	SKUID is of at most one SKU;
-
-/*
- * Fact Types
- */
 OrderLine is for at most one SKU;
-OrderLine is for at most one quantity-Number;
 SKU has at most one Description;
+

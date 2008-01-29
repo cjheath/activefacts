@@ -15,8 +15,5 @@ Person = entity known by PersonName:
 
 Death = entity known by Person:
 	Person is dead;
-
-/*
- * Fact Types
- */
 Death was due to at most one CauseOfDeath;
+

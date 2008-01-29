@@ -17,17 +17,13 @@ Activity = entity known by ActivityName:
 School = entity known by SchoolName:
 	School has exactly one SchoolName,
 	SchoolName is of at most one School;
+SchoolSanctionsActivity = School sanctions Activity;
 
 Student = entity known by StudentName:
 	Student has exactly one StudentName,
 	StudentName is of at most one Student;
-
-/*
- * Fact Types
- */
 Student is enrolled in exactly one School;
 StudentParticipation = Student participates in Activity which is sanctioned by at most one School;
-SchoolSanctionsActivity = School sanctions Activity;
 
 /*
 Constraints:

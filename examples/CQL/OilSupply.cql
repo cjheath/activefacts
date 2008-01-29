@@ -22,6 +22,10 @@ AcceptableSubstitutes = entity known by Product and alternate-Product and Season
 Refinery = entity known by RefineryName:
 	Refinery has exactly one RefineryName,
 	RefineryName is of at most one Refinery;
+TransportRoute = Transportation is available from Refinery to Region,
+	Transportation is available to Region from Refinery;
+ProductionCommitment = Refinery has committed by Month to produce Product in Quantity,
+	in Month Refinery has committed to produce Quantity of Product;
 
 RegionalDemand = entity known by Product and Year and Month and Region:
 	Region in Month of Year will need Product in at most one Quantity;
@@ -30,7 +34,4 @@ RegionalDemand = entity known by Product and Year and Month and Region:
  * Fact Types
  */
 Month is in at most one Season;
-TransportRoute = Transportation is available from Refinery to Region,
-	Transportation is available to Region from Refinery;
-ProductionCommitment = Refinery has committed by Month to produce Product in Quantity,
-	in Month Refinery has committed to produce Quantity of Product;
+
