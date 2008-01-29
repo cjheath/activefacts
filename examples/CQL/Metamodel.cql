@@ -3,26 +3,26 @@ vocabulary Metamodel;
 /*
  * Value Types
  */
-Adjective = VariableLengthText();
+Adjective = VariableLengthText(64);
 Constraint_Id = AutoCounter();
 Denominator = UnsignedInteger(32);
-Enforcement = VariableLengthText();
+Enforcement = VariableLengthText(16);
 Exponent = SignedSmallInteger(32);
 FactType_Id = AutoCounter();
 Fact_Id = AutoCounter();
 Frequency = UnsignedInteger(32);
 Instance_Id = AutoCounter();
 Length = UnsignedInteger(32);
-Name = VariableLengthText();
+Name = VariableLengthText(64);
 Numerator = Decimal();
 Ordinal = UnsignedSmallInteger(32);
-ReadingText = VariableLengthText();
+ReadingText = VariableLengthText(256);
 RingType = VariableLengthText();
 RoleSequence_Id = AutoCounter();
 Role_Id = AutoCounter();
 Scale = UnsignedInteger(32);
 Unit_Id = AutoCounter();
-Value = VariableLengthText();
+Value = VariableLengthText(256);
 ValueRestriction_Id = AutoCounter();
 
 /*
@@ -33,7 +33,6 @@ Bound = entity known by Value and InclusiveBound:
 	Value is of at least one Bound,
 	each Value is of some Bound,
 	Bound (as InclusiveBound) is inclusive;
-Bound (as InclusiveBound) is inclusive;
 
 Coefficient = entity known by Numerator and Denominator:
 	Coefficient has exactly one Numerator,
@@ -89,10 +88,9 @@ other-Role is of RingConstraint,
 RoleSequence = entity known by RoleSequence_Id:
 	RoleSequence has exactly one RoleSequence_Id,
 	RoleSequence_Id is of at most one RoleSequence;
+Reading is in exactly one RoleSequence,
+	RoleSequence is for Reading;
 PresenceConstraint covers exactly one RoleSequence;
-RoleInSequence = RoleSequence includes in at most one Ordinal place at most one Role,
-	each RoleSequence includes in some Ordinal place some Role,
-	Role has Ordinal place in RoleSequence;
 
 RoleValue = entity known by Instance and Fact:
 	Instance plays RoleValue,
@@ -115,6 +113,7 @@ Unit = entity known by Unit_Id:
 Unit has at most one Coefficient;
 Name is of Unit,
 	Unit is called exactly one Name;
+Unit is fundamental;
 
 ValueRange = entity known by minimum-Bound and maximum-Bound:
 	ValueRange has at most one minimum-Bound,
@@ -132,17 +131,17 @@ BaseUnit = entity known by base-Unit and Unit:
 	Unit is derived from base-Unit [acyclic, intransitive];
 BaseUnit has at most one Exponent;
 
+FrequencyConstraint = subtype of PresenceConstraint;
+
 MandatoryConstraint = subtype of PresenceConstraint;
 
-ReadingRole = entity known by Role and Reading:
-	ReadingRole is for exactly one Role,
-	Role has place in at least one ReadingRole,
-	each Role has place in some ReadingRole,
-	Reading includes at least one ReadingRole,
-	each Reading includes some ReadingRole,
-	ReadingRole is for exactly one Reading;
-ReadingRole has at most one leading-Adjective;
-ReadingRole has at most one trailing-Adjective;
+RoleInSequence = entity known by RoleSequence and Ordinal:
+	Role is in RoleSequence in at most one Ordinal place,
+	RoleSequence includes at most one Role in Ordinal place,
+	each RoleSequence includes some Role in some Ordinal place,
+	Role has Ordinal place in RoleSequence;
+RoleInSequence has at most one leading-Adjective;
+RoleInSequence has at most one trailing-Adjective;
 
 SetComparisonConstraint = subtype of SetConstraint;
 SetComparisonConstraintCoversRoleSequence = SetComparisonConstraint covers at least one RoleSequence,
@@ -153,8 +152,6 @@ SetEqualityConstraint = subtype of SetComparisonConstraint;
 SetExclusionConstraint = subtype of SetComparisonConstraint;
 SetExclusionConstraint is mandatory;
 
-FrequencyConstraint = subtype of MandatoryConstraint;
-
 NamedObject = entity known by Name and Vocabulary:
 	NamedObject is called exactly one Name,
 	NamedObject belongs to at most one Vocabulary,
@@ -163,10 +160,10 @@ NamedObject = entity known by Name and Vocabulary:
 Vocabulary = subtype of NamedObject;
 parent-Vocabulary contains Vocabulary [acyclic, intransitive],
 	Vocabulary extends at most one parent-Vocabulary;
+Vocabulary contains Constraint,
+	Constraint belongs to at most one Vocabulary;
 
 Alias = subtype of NamedObject;
-Name has Alias,
-	Alias is for exactly one Name;
 
 Concept = subtype of NamedObject;
 Instance is of exactly one Concept;
@@ -179,8 +176,7 @@ EntityType nests at most one FactType,
 
 Import = entity known by imported-Vocabulary and Vocabulary:
 	Vocabulary imports imported-Vocabulary [acyclic];
-Import includes Alias,
-	Alias is for exactly one Import;
+Correspondence = in Import imported-NamedObject corresponds to at most one local-NamedObject;
 
 Population = entity known by Vocabulary and Name:
 	Vocabulary includes Population,
@@ -196,7 +192,8 @@ Population includes Fact,
 
 RoleName = subtype of NamedObject;
 Role has at most one RoleName,
-	RoleName is name of Role;
+	RoleName is name of at least one Role,
+	each RoleName is name of some Role;
 
 TypeInheritance = subtype of FactType known by EntityType and super-EntityType:
 	super-EntityType is supertype of EntityType [acyclic],
@@ -218,8 +215,8 @@ Constraints:
 	MandatoryExclusionConstraint ConceptMayNotBeBothValueTypeAndEntityType over EntityTypeIsASubtypeOfConcept(Concept), ValueTypeIsASubtypeOfConcept(Concept)
 	MandatoryExclusionConstraint ConstraintMustBeOneConcreteType over RingConstraintIsASubtypeOfConstraint(Constraint), SetEqualityConstraintIsASubtypeOfSetComparisonConstraint(SetComparisonConstraint), SetExclusionConstraintIsASubtypeOfSetComparisonConstraint(SetComparisonConstraint), SubsetConstraintIsASubtypeOfSetConstraint(SetConstraint), PresenceConstraintIsASubtypeOfConstraint(Constraint)
 	EachFactTypeHasAtLeastOneRole: in Role, each value (FactType) must occur at least 1 time
-	EachRoleIsAtOneOrdinalPositionInFactType: in Role, each combination (FactType, Ordinal) may occur at most 1 time
-	ExternalUniquenessConstraint1: each combination(NameHasAlias.Name, ImportIncludesAlias.Import) may occur at most 1 time
+	MandatoryExclusionConstraint ExclusiveOrConstraint1 over UnitIsFundamental(Unit), BaseUnit(Unit)
+	ExternalUniquenessConstraint1: each combination(NameIsOfConstraint.Name, VocabularyContainsConstraint.Vocabulary) may occur at most 1 time
 	MandatoryExclusionConstraint NamedObjectMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfNamedObject(NamedObject), ConceptIsASubtypeOfNamedObject(NamedObject), RoleNameIsASubtypeOfNamedObject(NamedObject), AliasIsASubtypeOfNamedObject(NamedObject)
 	OnlyOneSupertypeMayBePrimary: each combination(TypeInheritance.EntityType, TypeInheritanceDefinesPrimarySupertype.TypeInheritance) may occur at most 1 time
 	SubsetConstraint PreferredIdentifierHasMaxFrequency PresenceConstraintHasMaxFrequency(PresenceConstraint) < PresenceConstraintIsPreferredIdentifier(PresenceConstraint)
