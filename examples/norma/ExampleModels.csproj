@@ -81,10 +81,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>PersonAddressAbsorption.orm</DependentUpon>
     </Compile>
-    <Compile Include="PersonName._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PersonName.orm</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SchoolActivities._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -143,10 +139,6 @@
     <None Include="PersonAddressAbsorption.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>PersonAddressAbsorption._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
-    <None Include="PersonName.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>PersonName._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="SchoolActivities.orm">
       <Generator>ORMCustomTool</Generator>
@@ -255,23 +247,6 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('Units.orm')">
-  </ItemGroup>
-  <ItemGroup Condition="Exists('PersonName.orm')">
-    <None Include="PersonName.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PersonName.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="PersonName.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PersonName.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="PersonName.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PersonName.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('CompanyDirector.orm')">
     <None Include="CompanyDirector.DCIL.xml">

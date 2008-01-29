@@ -354,6 +354,11 @@
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:EntityType id="_22D5E427-6719-4B7B-A8ED-53FED9CA226C" Name="PresenceConstraint" _ReferenceMode="">
+				<orm:Notes>
+					<orm:Note id="_C16705E2-5601-4ED9-96A6-C471EE9244BA">
+						<orm:Text>A PresenceConstraint is internal if all Roles of its RoleSequence are of the same FactType, else it's external</orm:Text>
+					</orm:Note>
+				</orm:Notes>
 				<orm:PlayedRoles>
 					<orm:SubtypeMetaRole ref="_E8AAFA9B-8C89-495F-8A16-2D84B01A2294" />
 					<orm:Role ref="_393A3D48-D7E4-493F-B33A-1889D9323A38" />
@@ -552,16 +557,31 @@
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:EntityType id="_552035B7-06C9-40E9-ADD3-E758AB9131D7" Name="UniquenessConstraint" _ReferenceMode="">
+				<orm:Notes>
+					<orm:Note id="_148E992D-E280-4C25-8AC2-C7E340FFFB43">
+						<orm:Text>A UniquenessConstraint is a PresenceConstraint having a max-Frequency of 1</orm:Text>
+					</orm:Note>
+				</orm:Notes>
 				<orm:PlayedRoles>
 					<orm:SubtypeMetaRole ref="_6C8C531A-B526-4898-9D2C-674339E50BC7" />
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:EntityType id="_0301A56F-74C1-4594-AE73-DD326F8914C7" Name="MandatoryConstraint" _ReferenceMode="">
+				<orm:Notes>
+					<orm:Note id="_E4635561-7CCD-4ED7-B7D9-7478691A75C4">
+						<orm:Text>A MandatoryConstraint plays the role "is mandatory", and has an implicit min-Frequency of 1</orm:Text>
+					</orm:Note>
+				</orm:Notes>
 				<orm:PlayedRoles>
 					<orm:SubtypeMetaRole ref="_79033190-523A-4C9D-9EE6-EF1987F8555B" />
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:EntityType id="_96D3BDC5-D883-435D-B42C-3C2CC48ED124" Name="FrequencyConstraint" _ReferenceMode="">
+				<orm:Notes>
+					<orm:Note id="_5C727D9D-AC67-44F8-B1B4-3E9035D7F411">
+						<orm:Text>A FrequencyConstraint must have either a max-Frequency of 1 or more, a min-Frequency of 2 or more, or play the "is mandatory" role, implying a min-Frequency of 1</orm:Text>
+					</orm:Note>
+				</orm:Notes>
 				<orm:PlayedRoles>
 					<orm:SubtypeMetaRole ref="_AEAB4F86-2C95-4341-9455-FC0116E61EA3" />
 				</orm:PlayedRoles>
