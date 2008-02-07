@@ -49,12 +49,12 @@ module CompanyDirector
 
   if __FILE__ == $0
 
-    print "CompanyName.roles: "; p CompanyName.roles
-    print "PersonName.roles: "; p PersonName.roles
-    print "Company.roles: "; p Company.roles
-    print "Person.roles: "; p Person.roles
-    print "Attendance.roles: "; p Attendance.roles
-    print "Directorship.roles: "; p Directorship.roles
+    print "CompanyName.role: "; p CompanyName.role
+    print "PersonName.role: "; p PersonName.role
+    print "Company.role: "; p Company.role
+    print "Person.role: "; p Person.role
+    print "Attendance.role: "; p Attendance.role
+    print "Directorship.role: "; p Directorship.role
 
     print "CompanyName.length: "; p CompanyName.length
     print "PersonName.length: "; p PersonName.length
