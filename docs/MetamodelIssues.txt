@@ -1,0 +1,21 @@
+Metamodel topics on which a position needs to be finalised:
+
+1) RoleNames not being allowed to conflict with ObjectType names
+   (Important for parsing CQL... I only use them as a shorthand for a
+   subtype).
+
+2) ValueType vs DataType - do we need both? I think not. I'm going to
+   leave DataTypes absent from my model for now, though NORMA has them
+   in.
+
+3) Should we model ValueType/DataType parameters (what the NORMA team
+   calls facets)? It's not hard, but it's not hard to add later either,
+   and the current picture shows what both tools are actually doing.
+
+4) Is my model for Units sufficient for now, even though it can't convert
+   temperatures between systems?
+
+5) My model lacks a way to use join paths, so there's no way to express
+   constraints over joins. Needed yet? Simple to add?
+
+6) Is the model for Imports, Correspondence and Aliases rich enough yet?
