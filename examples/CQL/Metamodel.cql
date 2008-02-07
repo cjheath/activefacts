@@ -122,7 +122,7 @@ ValueRange = entity known by minimum-Bound and maximum-Bound:
 ValueRestriction = entity known by ValueRestriction_Id:
 	ValueRestriction has exactly one ValueRestriction_Id,
 	ValueRestriction_Id is of at most one ValueRestriction;
-ValueRestrictionAllowsValueRange = ValueRestriction allows at least one ValueRange,
+AllowedRange = ValueRestriction allows at least one ValueRange,
 	each ValueRestriction allows some ValueRange;
 Role has at most one ValueRestriction,
 	ValueRestriction applies to Role;
@@ -152,20 +152,20 @@ SetEqualityConstraint = subtype of SetComparisonConstraint;
 SetExclusionConstraint = subtype of SetComparisonConstraint;
 SetExclusionConstraint is mandatory;
 
-NamedObject = entity known by Name and Vocabulary:
-	NamedObject is called exactly one Name,
-	NamedObject belongs to at most one Vocabulary,
-	Vocabulary contains NamedObject;
+Feature = entity known by Name and Vocabulary:
+	Feature is called exactly one Name,
+	Feature belongs to at most one Vocabulary,
+	Vocabulary contains Feature;
 
-Vocabulary = subtype of NamedObject;
+Vocabulary = subtype of Feature;
 parent-Vocabulary contains Vocabulary [acyclic, intransitive],
 	Vocabulary extends at most one parent-Vocabulary;
 Vocabulary contains Constraint,
 	Constraint belongs to at most one Vocabulary;
 
-Alias = subtype of NamedObject;
+Alias = subtype of Feature;
 
-Concept = subtype of NamedObject;
+Concept = subtype of Feature;
 Instance is of exactly one Concept;
 
 EntityType = subtype of Concept;
@@ -176,7 +176,7 @@ EntityType nests at most one FactType,
 
 Import = entity known by imported-Vocabulary and Vocabulary:
 	Vocabulary imports imported-Vocabulary [acyclic];
-Correspondence = in Import imported-NamedObject corresponds to at most one local-NamedObject;
+Correspondence = in Import imported-Feature corresponds to at most one local-Feature;
 
 Population = entity known by Vocabulary and Name:
 	Vocabulary includes Population,
@@ -190,7 +190,7 @@ Population includes RoleValue,
 Population includes Fact,
 	Fact belongs to exactly one Population;
 
-RoleName = subtype of NamedObject;
+RoleName = subtype of Feature;
 Role has at most one RoleName,
 	RoleName is name of at least one Role,
 	each RoleName is name of some Role;
@@ -217,7 +217,7 @@ Constraints:
 	EachFactTypeHasAtLeastOneRole: in Role, each value (FactType) must occur at least 1 time
 	MandatoryExclusionConstraint ExclusiveOrConstraint1 over UnitIsFundamental(Unit), BaseUnit(Unit)
 	ExternalUniquenessConstraint1: each combination(NameIsOfConstraint.Name, VocabularyContainsConstraint.Vocabulary) may occur at most 1 time
-	MandatoryExclusionConstraint NamedObjectMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfNamedObject(NamedObject), ConceptIsASubtypeOfNamedObject(NamedObject), RoleNameIsASubtypeOfNamedObject(NamedObject), AliasIsASubtypeOfNamedObject(NamedObject)
+	MandatoryExclusionConstraint NamedObjectMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfFeature(Feature), ConceptIsASubtypeOfFeature(Feature), RoleNameIsASubtypeOfFeature(Feature), AliasIsASubtypeOfFeature(Feature)
 	OnlyOneSupertypeMayBePrimary: each combination(TypeInheritance.EntityType, TypeInheritanceDefinesPrimarySupertype.TypeInheritance) may occur at most 1 time
 	SubsetConstraint PreferredIdentifierHasMaxFrequency PresenceConstraintHasMaxFrequency(PresenceConstraint) < PresenceConstraintIsPreferredIdentifier(PresenceConstraint)
 	PresenceConstraintMustHaveFrequency: each combination(PresenceConstraintHasMinFrequency.PresenceConstraint, PresenceConstraintHasMaxFrequency.PresenceConstraint, PresenceConstraintIsMandatory.PresenceConstraint) must occur at least 1 time

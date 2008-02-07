@@ -119,10 +119,10 @@
 		<orm:Facts>
 			<orm:Fact id="_648612C9-359A-4F30-8175-61B04E87AA4E" _Name="MonthIsInSeason">
 				<orm:FactRoles>
-					<orm:Role id="_25811225-AD77-45D7-879F-31161027F3E6" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
+					<orm:Role id="_25811225-AD77-45D7-879F-31161027F3E6" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_CDF8EE98-34F1-4989-9B58-61B99A61E8E2" />
 					</orm:Role>
-					<orm:Role id="_C55C16BC-FEF6-4181-91B3-209EFEDCEF74" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_C55C16BC-FEF6-4181-91B3-209EFEDCEF74" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
 						<orm:RolePlayer ref="_97C68700-C3CF-4E26-B7E5-FA6CACB2290A" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -141,6 +141,7 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_468B0482-A8FB-4051-8FE8-83B2DDFE055C" />
+					<orm:MandatoryConstraint ref="_A2BD59DD-8EE2-42C6-9655-A99B7A55C761" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_BA2C1FB3-7749-498C-8A68-AF787CEB5B4D" _Name="TransportRoute">
@@ -1149,6 +1150,11 @@
 					<orm:Role id="_7321C0C4-2FAD-4050-8DEA-767CB8EF6631" ref="_D479C192-1292-4A30-AB90-D8EB3DC9B857" />
 				</orm:RoleSequence>
 			</orm:RingConstraint>
+			<orm:MandatoryConstraint id="_A2BD59DD-8EE2-42C6-9655-A99B7A55C761" Name="SimpleMandatoryConstraint17" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_E1523498-EF4C-4C56-B119-AE017FFDC19F" ref="_25811225-AD77-45D7-879F-31161027F3E6" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:VariableLengthTextDataType id="_934D0409-6FFB-4BCA-BAD4-77AA14C466B8" />
@@ -1285,7 +1291,7 @@
 			<oial:conceptType id="_A2A3DDF5-B642-403B-932D-3E0105C84A41" name="Month">
 				<oial:children>
 					<oial:informationType id="_DDCE94E3-B1E0-43E6-AF1B-A28488505408" ref="_B3BA57C1-D450-44E9-947A-8D501687CF61" isMandatory="true" name="MonthValue" />
-					<oial:informationType id="_68802C8F-3CF1-4119-8ED9-636F53DDDA2C" ref="_383B36DC-0C7F-4FFB-8C8E-460EE40AFE6A" name="Season" />
+					<oial:informationType id="_68802C8F-3CF1-4119-8ED9-636F53DDDA2C" ref="_383B36DC-0C7F-4FFB-8C8E-460EE40AFE6A" isMandatory="true" name="Season" />
 				</oial:children>
 				<oial:uniquenessConstraints>
 					<oial:uniquenessConstraint id="_A3125726-47D8-4EF0-96F5-A03C3E2687B5" name="MonthUniqueness" isPreferred="true">
@@ -1386,7 +1392,7 @@
 					<rcd:Table id="_DE007905-1982-4FDA-B527-539E63E3CC9F" Name="Month">
 						<rcd:Columns>
 							<rcd:Column id="_29D963EC-0A0E-4EE6-BDA1-6D59F2319FD6" Name="monthValue" />
-							<rcd:Column id="_0204EE37-5A44-4DCC-8317-3A57BFF71C61" Name="season" IsNullable="true" />
+							<rcd:Column id="_0204EE37-5A44-4DCC-8317-3A57BFF71C61" Name="season" />
 						</rcd:Columns>
 						<rcd:Constraints>
 							<rcd:UniquenessConstraint id="_E4750F0A-7B52-44EE-BA49-9CB8D483F547" Name="MonthUniqueness" IsPrimary="true">
@@ -1483,7 +1489,7 @@
 	</rcd:Catalog>
 	<ormtooial:Bridge>
 		<ormtooial:AbstractionModelIsForORMModel id="_BA0C3FD6-4C05-41F0-8AE8-74A416756387" AbstractionModel="_B4635FCF-0A9B-4BEA-934D-F81E0C79195D" ORMModel="_3C3418E6-6276-4A3C-8394-965D9D6AB9B3" />
-		<ormtooial:FactTypeMapsTowardsRole id="_18052651-E3F8-4E15-82BB-8261DABEFA9C" FactType="_648612C9-359A-4F30-8175-61B04E87AA4E" TowardsRole="_25811225-AD77-45D7-879F-31161027F3E6" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_18052651-E3F8-4E15-82BB-8261DABEFA9C" FactType="_648612C9-359A-4F30-8175-61B04E87AA4E" TowardsRole="_25811225-AD77-45D7-879F-31161027F3E6" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_1B75AE50-0D20-47EE-8ECC-674F41C4EC2C" FactType="_B9841BF0-8234-41BB-B166-9C509E8745A8" TowardsRole="_591C2217-D2E5-4849-8D36-33954E10532C" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_F1EE73E0-E66D-462D-BB3F-5696CF015C76" FactType="_E16C914A-45D9-45D6-8D8E-6B4F6CA6415A" TowardsRole="_C0E2BE91-4139-4FA2-8959-890D3DEAACB7" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_756835A4-69A0-4ACE-90B7-A7D4E97FC2D8" FactType="_D5D25B73-2B41-4B08-86FF-26781BFFCF8E" TowardsRole="_A8D6FD59-572A-453D-BC8C-25AC7AB46075" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />

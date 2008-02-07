@@ -216,10 +216,10 @@ identifier (for Person, obviously), so it has a double line. A double line is
 also used when showing a internal UC that's a PI.
 </p>
 
-<img src="images/PersonAddressSQL.png" align="right">
+<img src="images/PersonAddressSQL.png" align="left">
 <p>Ok, here goes. How is it that the SQL for this whole detailed diagram
-requires only the single table shown? You can see that Street has exactly two
-StreetLine values allowed, and is identified by the combination of both, so here
+requires only the single table shown? You can see that Street has exactly three
+StreetLine values allowed, and is identified by the combination, so here
 we can <b>absorb</b> these fact roles into a Street entity, which would be shown
 as an objectified type Street having three fact roles, one for each street line.
 The same principle applies again to Address, except here it absorbs StreetNumber,
