@@ -4,23 +4,15 @@
 Notes:
 ======
 
-1) The API makes widespread of proxy objects to access an underlying
-object from a given point-of-view, adding a few extra methods. This
-might be a performance issue with the number of small objects?
-Careful programming will allow the same proxies to be re-used.
-
-2) Concept here means any ValueType, EntityType, or objectified
+1) Concept here means any ValueType, EntityType, or objectified
 FactType (whether objectified explicitly or implicitly). Each
 Concept is represented by a Ruby class with extensions.
 Instance means an instance of any Concept.
 
-3) All Concepts and Instances support the verbalise method.
-All Concepts support the vocabulary method.
-All Instances have a single method for each role played by the Concept.
-All Instances support the class method (which returns the Concept).
-All Instances support the constellation method.
-All Instances support the query method (perhaps class could be
-rolled in under this?).
+2) All Concepts and Instances support the verbalise method.
+
+3) All Concepts belong to a Vocabulary, and all Instances to a
+Constellation, which pertains to one Vocabulary.
 
 4) No fact objects are created for binary functional dependencies.
 This means the API isn't immune to changes in uniqueness that affect
@@ -32,7 +24,7 @@ those have a different API.
 6) There's mixed data and metadata for the query API, which needs to
 be teased apart.
 
-7) This API, instantiated for the Metamodel, is the design-time API.
+6) This API, instantiated for the Metamodel, is the design-time API.
 
 
 Instance:
@@ -45,12 +37,22 @@ Instance:
 	For an FD role, assign the value
 	For a non-FD Role: REVISIT: What to do here, assign an array?
 
-	#<role_name>() ->
 	For a FD Role:
-		FactProxy for the associated FactType
+		#<role_name>() -> Return the associated Instance
+		#<role_name>=(value) -> Assign the associated Instance.
 
 	For a non-FD Role:
-		FactSetProxy (a proxy to an array of FactProxies)
+		#<role_name>() ->
+		FactSetProxy (a proxy to a set of Facts) with a focus
+		on this instance, meaning that "...role_name[n] = value"
+		will assign the other role. If ternary or higher, the
+		fact is always objectified, and the other player is the
+		objectified instance.
+
+	These actions are not supported, but must be:
+		- access the original role values
+		- detect whether changed from original
+		- revert
 
 Value Instance (use String, Integer, Date, etc?):
 	#verbalise() -> Return "#{self.class.name} #{inspect}"
@@ -62,47 +64,32 @@ Entity Instance (normal Class):
 FactSetProxy
 	#focus() -> The Instance from which this FactSet was reached
 	#size -> the number of facts in the set
-	#[n] -> the nth fact in the set
+	#[n] -> the non-focus role player of the nth fact in the set
+	#[n]= -> assign the player of the non-focus role of the nth fact
 	#mutable (or .static?) -> boolean saying whether this set may be changed
 	#add(...) -> to be defined
-
-FactProxy: (Proxy for a fact viewed from one of its players)
-	#focus() -> The Instance from which this Fact was reached
-	#delete() -> Delete this Fact
-	#original() -> The original values of an FD role player
-	#role()[n] ->
-	#<role_name>() -> A RoleProxy for the instance that plays the specified role
-	#all methods for the player of the other role of a binary fact, if __focus() set.
-
-RoleProxy:
-	=(v) -> Assign a new value to the instance that plays this role
-	#all methods of this instance
-
-Fact:
-	#verbalise() -> e.g. "Person has given-Name 'Fred'"
-	#class() -> Return the FactType class
-	#query() -> Return the QueryFactType for the invoked fact type
-	#constellation() -> Return the Constellation for this query invocation
-	#<role_name> -> Return the role player
-	Following methods might be qualified by ".fact.<method>"...? (how?)
-	#player()[n] -> Access the role players
-	#original()[n] -> original value of role player
-	#is_changed() -> TRUE if value != original
-	#delete() -> remove this fact (un-play all players)
+	#<role_name> -> return the instance that plays that role
+	#<role_name>= -> assign the role value
+	#delete(n) -> delete this fact instance
+	#verbalise(n) -> verbalise this fact instance preferring this focus
+	#query(n) -> Return the QueryFactType for the invoked fact type
 
 Constellation:
+	#vocabulary() -> Return the Vocabulary this constellation is built from
 	#query() -> Return the Query head node
-	#session() -> Return the database Session we were fetched from
+	#session() -> Return the database Session this was fetched from
 	#transaction() -> Return the transaction sequence-number when we were fetched
 	#validate_internal() -> Do all possible validity checks before saving
 	#save() -> Save all changes
 	#digest() -> Return a unique digest of all content
-	... (all required indexes, etc).
+	#instances() -> Return a hash by Concept (Ruby class).
+		Each hash contains all instances of that class in this Constellation.
 
 Metadata objects
 ================
 
 Vocabulary:
+	#concepts() -> return a hash of all concepts, by Ruby class basename
 	#constraints()
 	...
 
@@ -110,12 +97,15 @@ Concept:
 	#verbalise() -> Return CQL definition for concept
 	#vocabulary() -> Return the Vocabulary object
 	#role()[n] -> Return the nth role
+	#single(args) -> Define a role this concept's instance may play once only
+	#multi(args) -> Define a role that may be played more than once
+	#reading(arg) -> Add a reading to this concept
 
 FactType:
-	#verbalise() -> Return CQL definition for fact type
-	#vocabulary() -> Return the Vocabulary object
-	#role()[n] -> Return the nth role
-	#reading()[n] -> Access the readings
+	Hmmm, it seems there are no fact types, just FactSetProxies :-)
+	I suspect there'll be real fact types internally, always binary.
+	All non-FD fact types including ternaries and higher are objectified
+	as Concepts.
 
 Query objects
 =============

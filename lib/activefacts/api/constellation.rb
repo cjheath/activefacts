@@ -4,6 +4,11 @@ module ActiveFacts
     attr_reader :query
     attr_reader :instances	# Can say c.instances[MyClass].each{|k, v| ... }
 				# REVISIT: Protect instances from modification?
+    #attr_reader :session	# REVISIT: add persistence support
+    #attr_reader :transaction	# REVISIT: add persistence support
+    #def save; ... end		# REVISIT: add persistence support
+    #def digest; ... end	# REVISIT: add digest capability
+    #def validate_internal; ... end	# REVISIT: add constraints
 
     def initialize(vocabulary, query = nil)
       @vocabulary = vocabulary
