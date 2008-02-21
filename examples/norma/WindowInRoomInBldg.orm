@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
-	<orm:ORMModel id="_08145487-9E0C-4768-87D5-E30B6ED1724A" Name="NewModel">
+	<orm:ORMModel id="_08145487-9E0C-4768-87D5-E30B6ED1724A" Name="WindowInRoomInBldg">
 		<orm:Objects>
 			<orm:EntityType id="_F8D089ED-F6FB-4F73-AEAA-D7E8C1102D2B" Name="Room" _ReferenceMode="">
 				<orm:PlayedRoles>
@@ -246,6 +246,36 @@
 					<orm:Role id="_BC00547E-1765-4CFA-ACC1-52D8332FC603" ref="_4A193B6B-33D0-49AE-B1ED-C83D0FBDF62C" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_C3115957-656B-4ADC-B3C4-6FCCD216AACB" Name="ImpliedMandatoryConstraint1" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_2AE39089-B5AC-4A76-A72A-FF6ACBD7819E" ref="_C3F40F39-BE56-4E77-ACB8-0C71C697F554" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_F8D089ED-F6FB-4F73-AEAA-D7E8C1102D2B" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_E5EECDD6-A2E7-48E3-95D8-D29E754ACE5C" Name="ImpliedMandatoryConstraint2" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_2AF8E86D-CE5C-4C3D-9CF6-44B4DF955582" ref="_76BF00AD-1258-4E99-9F18-14B154958DFA" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_4BA52554-2D27-40EE-89DD-6119A70901F0" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_C5D2159C-0CEC-4B73-84BB-B813D5676A2F" Name="ImpliedMandatoryConstraint3" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_34B7E0CE-16CB-4EA8-8561-2E3E2112B9D0" ref="_DCA03ACD-83DC-4094-B5DD-AE32904F0B4E" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_A3D48C97-BE8A-4ABB-B838-1E4F3CBBB0B0" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_1E2100AF-B0B6-4B0F-9048-6A2672CAE931" Name="ImpliedMandatoryConstraint4" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_3F19888E-BB8E-4794-8BBB-E02A7A67BB64" ref="_9E03EBD9-FF70-4ECE-9F11-29BB06F9E6BD" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_7AE7F197-26CE-445F-A75F-56279656C670" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_A3B92D27-FBD1-4167-A4AF-72F0C4EF8D31" Name="ImpliedMandatoryConstraint5" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_B15B716E-1C5A-4356-BCFC-90B0C94BBBBF" ref="_C332D662-7296-4B7A-8EE3-200348B885BE" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_48FD2F08-AECF-4A1A-99BB-85454F67252C" />
+			</orm:MandatoryConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:SignedIntegerNumericDataType id="_DECB0EB7-C0D8-4FF0-8359-65FF6C389DF1" />
@@ -257,7 +287,7 @@
 			<orm:ReferenceModeKind id="_EFED39B7-66F8-44C1-AC82-661204154128" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>
-	<ormDiagram:ORMDiagram id="_ED1A62C5-A78A-49C6-B6D7-2CA2567814BF" IsCompleteView="false" Name="ComplexPI" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
+	<ormDiagram:ORMDiagram id="_ED1A62C5-A78A-49C6-B6D7-2CA2567814BF" IsCompleteView="false" Name="WindowInRoomInBldg" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
 			<ormDiagram:ObjectTypeShape id="_484A4276-5CD1-4E1D-B85A-2414BBAF7BF4" IsExpanded="true" AbsoluteBounds="0.52083327372868848, 1.0734430106667181, 0.44426396012306213, 0.22950302660465241">
 				<ormDiagram:Subject ref="_F8D089ED-F6FB-4F73-AEAA-D7E8C1102D2B" />
@@ -281,7 +311,7 @@
 			<ormDiagram:ExternalConstraintShape id="_199D403C-570C-440F-B0BF-A7CDE3BA8864" IsExpanded="true" AbsoluteBounds="1.9375001390775042, 0.84427626452719173, 0.16, 0.16">
 				<ormDiagram:Subject ref="_057FD720-E6AE-42AB-8CC2-E693A6E87E20" />
 			</ormDiagram:ExternalConstraintShape>
-			<ormDiagram:ObjectTypeShape id="_7C1C8EC8-71C3-4C64-B438-9E2B6D02B9D2" IsExpanded="true" AbsoluteBounds="2.502295583486557, 0.54219293119385825, 0.56607657194137584, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_7C1C8EC8-71C3-4C64-B438-9E2B6D02B9D2" IsExpanded="true" AbsoluteBounds="2.4918789168198905, 0.54219293119385825, 0.56607657194137584, 0.22950302660465241">
 				<ormDiagram:Subject ref="_4BA52554-2D27-40EE-89DD-6119A70901F0" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_FE4F5B47-793C-4158-B27E-A0BB659E6D68" IsExpanded="true" AbsoluteBounds="2.351338704427083, 1.0734430106667181, 0.84715699672698974, 0.22950302660465241">

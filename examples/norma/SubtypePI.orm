@@ -365,6 +365,24 @@
 					<orm:Role id="_979F8C5A-BE3B-4103-A8F7-6913006F32B5" ref="_D715C96F-2892-4B24-9200-8A384629E7BF" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
+			<orm:MandatoryConstraint id="_EF8806AD-0453-400A-8232-4E0760D75337" Name="ImpliedMandatoryConstraint1" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_4D8717D4-4722-47DF-99FF-077A3FE7644C" ref="_BEAB9AB3-D522-48D8-A687-6C677835E78C" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_1BADDD1B-51C5-4773-ABF2-3F5A19827510" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_A34E9DEA-71DB-49D4-B0FE-97EFF8F8DFE7" Name="ImpliedMandatoryConstraint2" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_36B5666C-AE29-47CA-AA45-D21D866DA8E5" ref="_7CDF7CF7-E34A-462F-A9E7-B0943A6038A7" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_C11C77B4-AD6B-43F8-8CF8-3AEA4AD2EAA6" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_289D800C-F2CF-4884-8BB1-C67B25713DAA" Name="ImpliedMandatoryConstraint3" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_1262D568-4D11-48F9-88F1-839065F1E7FB" ref="_4E7787B6-9333-4D52-9979-96C5DB72F48E" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_C5242E48-97D5-41AC-ADF0-7269EF0C52EF" />
+			</orm:MandatoryConstraint>
 			<orm:ExclusionConstraint id="_151C2815-792C-412A-8F07-FBD091B92E7E" Name="ExclusiveOrConstraint2">
 				<orm:RoleSequences>
 					<orm:RoleSequence id="_2F88FC2E-8A24-4E91-B22E-FB741D6F015B">
@@ -421,7 +439,7 @@
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_D5240A34-2D34-4623-A270-51C61F2B2596" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ExternalConstraintShape id="_87BD086E-C93B-4BED-B526-FEC86025EA12" IsExpanded="true" AbsoluteBounds="2.7916665077209473, 1.914577529325036, 0.16, 0.16">
+			<ormDiagram:ExternalConstraintShape id="_87BD086E-C93B-4BED-B526-FEC86025EA12" IsExpanded="true" AbsoluteBounds="2.8124998410542807, 1.914577529325036, 0.16, 0.16">
 				<ormDiagram:Subject ref="_1D8C571C-06B4-4E71-8BD4-5D9FE4C7960A" />
 			</ormDiagram:ExternalConstraintShape>
 			<ormDiagram:ObjectTypeShape id="_D698E4CB-AEBF-4EE9-B3DC-B8946A4343B3" IsExpanded="true" AbsoluteBounds="1.0813564409812289, 0.5, 0.42864572525024419, 0.22950302660465241">

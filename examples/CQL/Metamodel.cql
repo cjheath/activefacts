@@ -44,7 +44,8 @@ Constraint = entity known by Constraint_Id:
 	Constraint_Id is of at most one Constraint;
 Name is of Constraint,
 	Constraint is called at most one Name;
-Constraint requires at most one Enforcement;
+Constraint requires at most one Enforcement,
+	Enforcement applies to Constraint;
 
 Fact = entity known by Fact_Id:
 	Fact has exactly one Fact_Id,
@@ -217,7 +218,7 @@ Constraints:
 	EachFactTypeHasAtLeastOneRole: in Role, each value (FactType) must occur at least 1 time
 	MandatoryExclusionConstraint ExclusiveOrConstraint1 over UnitIsFundamental(Unit), BaseUnit(Unit)
 	ExternalUniquenessConstraint1: each combination(NameIsOfConstraint.Name, VocabularyContainsConstraint.Vocabulary) may occur at most 1 time
-	MandatoryExclusionConstraint NamedObjectMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfFeature(Feature), ConceptIsASubtypeOfFeature(Feature), RoleNameIsASubtypeOfFeature(Feature), AliasIsASubtypeOfFeature(Feature)
+	MandatoryExclusionConstraint FeatureMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfFeature(Feature), ConceptIsASubtypeOfFeature(Feature), RoleNameIsASubtypeOfFeature(Feature), AliasIsASubtypeOfFeature(Feature)
 	OnlyOneSupertypeMayBePrimary: each combination(TypeInheritance.EntityType, TypeInheritanceDefinesPrimarySupertype.TypeInheritance) may occur at most 1 time
 	SubsetConstraint PreferredIdentifierHasMaxFrequency PresenceConstraintHasMaxFrequency(PresenceConstraint) < PresenceConstraintIsPreferredIdentifier(PresenceConstraint)
 	PresenceConstraintMustHaveFrequency: each combination(PresenceConstraintHasMinFrequency.PresenceConstraint, PresenceConstraintHasMaxFrequency.PresenceConstraint, PresenceConstraintIsMandatory.PresenceConstraint) must occur at least 1 time

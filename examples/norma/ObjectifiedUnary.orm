@@ -30,7 +30,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_3FF72F43-3727-4C7A-959D-8D6F8B24F72A" ref="_33FF09B8-1ADF-4AEC-A356-A0F61708EBD1" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ValueType id="_67956A98-7107-457B-A4F1-0D2BEE6AF45F" Name="Death" IsImplicitBooleanValue="true">
+			<orm:ValueType id="_67956A98-7107-457B-A4F1-0D2BEE6AF45F" Name="PersonDeathRole" IsImplicitBooleanValue="true">
 				<orm:PlayedRoles>
 					<orm:Role ref="_BED65E5C-365D-41ED-AF10-49BCF4EFCAF3" />
 				</orm:PlayedRoles>
@@ -86,10 +86,10 @@
 			</orm:Fact>
 			<orm:Fact id="_5D7BCDF7-D80B-4C34-89E6-F6DD081CD5F1" _Name="Death">
 				<orm:FactRoles>
-					<orm:Role id="_9EAC5BAB-C107-4CFD-AF62-B3F9FAC42053" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_9EAC5BAB-C107-4CFD-AF62-B3F9FAC42053" _IsMandatory="false" _Multiplicity="Unspecified" Name="DeathRole">
 						<orm:RolePlayer ref="_4EA0F648-DF10-48C6-95BA-2DB41C518D9A" />
 					</orm:Role>
-					<orm:Role id="_BED65E5C-365D-41ED-AF10-49BCF4EFCAF3" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_BED65E5C-365D-41ED-AF10-49BCF4EFCAF3" _IsMandatory="false" _Multiplicity="Unspecified" Name="DeathRole">
 						<orm:RolePlayer ref="_67956A98-7107-457B-A4F1-0D2BEE6AF45F" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -174,7 +174,7 @@
 					<orm:UniquenessConstraint ref="_158CE9D9-2949-43E8-A8C4-3AFED075CBF6" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:ImpliedFact id="_FE21314C-6EEF-4D2F-A64F-CA22DE3EF4A2" _Name="DeathIsInvolvedInDeath">
+			<orm:ImpliedFact id="_FE21314C-6EEF-4D2F-A64F-CA22DE3EF4A2" _Name="PersonDeathRoleIsInvolvedInDeath">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_EF5EB282-3774-4E86-B55F-E83F2C19B997">
 						<orm:Role ref="_BED65E5C-365D-41ED-AF10-49BCF4EFCAF3" />
@@ -262,19 +262,35 @@
 					<orm:Role id="_12C7FE0A-167F-4496-AA93-D69D059613E2" ref="_419797A3-FD26-4FA0-A294-FA5B4848E215" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_613B27DB-2F8B-418D-9EAB-5D682AF5FB47" Name="ImpliedMandatoryConstraint1" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_6E478D8C-EECA-4205-85BF-D0901F1A7F4E" ref="_9EAC5BAB-C107-4CFD-AF62-B3F9FAC42053" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_4EA0F648-DF10-48C6-95BA-2DB41C518D9A" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_01D24A4B-99A2-41C3-B2BB-EA339DCDEE66" Name="ImpliedMandatoryConstraint2" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_59BF09B4-2E71-4B20-B4E3-30FA7BE5DA99" ref="_6CE24733-685F-4954-B4CB-CA6348F2968E" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_93BDA1FC-1961-4699-99AA-83074119F087" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_4ACFBDB2-0EF0-434C-9EC4-AF713C18E7D7" Name="ImpliedMandatoryConstraint3" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_DABC808B-F87B-4FA1-9E4A-94D404036E6C" ref="_BA9F1B3E-147F-444A-B05D-C763FA0657DD" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_FCE239EC-2972-4F52-93FF-D4B7D6404A2A" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_1B1FC730-36FB-4D97-B475-DEC0A68C8FD8" Name="ImpliedMandatoryConstraint4" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_8626271E-14C5-408D-A5BD-E7F26399C91F" ref="_BED65E5C-365D-41ED-AF10-49BCF4EFCAF3" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_67956A98-7107-457B-A4F1-0D2BEE6AF45F" />
+			</orm:MandatoryConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:VariableLengthTextDataType id="_33FF09B8-1ADF-4AEC-A356-A0F61708EBD1" />
 			<orm:TrueOrFalseLogicalDataType id="_692B5A0D-7F5B-4124-82E1-CD3084D67808" />
 		</orm:DataTypes>
-		<orm:ModelErrors>
-			<orm:ObjectTypeDuplicateNameError id="_EC7DDB50-CF3C-4510-B1B7-696EE229D615" Name="Model 'ObjectifiedUnary' contains multiple object types named 'Death'. Type names must be unique across all entity and value types in a model.">
-				<orm:Objects>
-					<orm:Object ref="_6EB6C824-F641-4858-9793-41F6F50735D8" />
-					<orm:Object ref="_67956A98-7107-457B-A4F1-0D2BEE6AF45F" />
-				</orm:Objects>
-			</orm:ObjectTypeDuplicateNameError>
-		</orm:ModelErrors>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_9793CE1B-E9C7-4CC8-A9C4-95864BDD05EF" FormatString="{1}" ReferenceModeType="General" />
 			<orm:ReferenceModeKind id="_38CAEFB4-9A62-4A00-AE2D-932ED5B2A9ED" FormatString="{0}{1}" ReferenceModeType="Popular" />
@@ -286,7 +302,7 @@
 			<ormDiagram:ObjectTypeShape id="_170AFA82-68C2-46CA-B852-ED4E2DF65770" IsExpanded="true" AbsoluteBounds="0.5, 0.5, 0.53540977358818054, 0.35900605320930479">
 				<ormDiagram:Subject ref="_4EA0F648-DF10-48C6-95BA-2DB41C518D9A" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_8C27ADA2-8AD9-4CF5-9FB0-9598ABFBFD2A" IsExpanded="true" AbsoluteBounds="1.4865937756312391, 0.56155858210846787, 0.35388888899236914, 0.23588888899236918" ConstraintDisplayPosition="Top">
+			<ormDiagram:FactTypeShape id="_8C27ADA2-8AD9-4CF5-9FB0-9598ABFBFD2A" IsExpanded="true" AbsoluteBounds="1.4865937756312391, 0.56155858210846787, 0.35388888899236914, 0.23588888899236918" ConstraintDisplayPosition="Top" DisplayRoleNames="Off">
 				<ormDiagram:RelativeShapes>
 					<ormDiagram:ReadingShape id="_D946FDEA-C1D9-40CD-A25E-A11FAFC6C5CA" IsExpanded="true" AbsoluteBounds="1.4865937756312391, 0.93219898440316373, 0.34719282388687134, 0.12950302660465241">
 						<ormDiagram:Subject ref="_41C257A9-731B-4D42-8E0F-B25E6B0C710B" />
@@ -300,9 +316,9 @@
 			<ormDiagram:ObjectTypeShape id="_388AAADA-878E-40AB-9270-1ACAEC9C56C7" IsExpanded="true" AbsoluteBounds="2.8229167064030967, 0.5647515133023262, 0.87060808658599853, 0.22950302660465241">
 				<ormDiagram:Subject ref="_FCE239EC-2972-4F52-93FF-D4B7D6404A2A" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_3907C3AF-721D-4CF2-9F2C-433FA62CED05" IsExpanded="true" AbsoluteBounds="2.2083333333333335, 0.52255858210846784, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
+			<ormDiagram:FactTypeShape id="_3907C3AF-721D-4CF2-9F2C-433FA62CED05" IsExpanded="true" AbsoluteBounds="2.1770833333333335, 0.52255858210846784, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_D166E146-B63C-4686-8604-BF62A79842BF" IsExpanded="true" AbsoluteBounds="2.2083333333333335, 0.8311989844031632, 0.51828116178512573, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_D166E146-B63C-4686-8604-BF62A79842BF" IsExpanded="true" AbsoluteBounds="2.1770833333333335, 0.8311989844031632, 0.51828116178512573, 0.12950302660465241">
 						<ormDiagram:Subject ref="_9CB72FE3-21A2-4A61-9D7C-C135928CF150" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>

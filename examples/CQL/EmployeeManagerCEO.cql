@@ -1,4 +1,4 @@
-vocabulary SubType;
+vocabulary EmployeeManagerCEO;
 
 /*
  * Value Types

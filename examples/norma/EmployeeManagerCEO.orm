@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
-	<orm:ORMModel id="_2B0C093C-5E17-4E97-A32E-72739CE86EBD" Name="SubType">
+	<orm:ORMModel id="_2B0C093C-5E17-4E97-A32E-72739CE86EBD" Name="EmployeeManagerCEO">
 		<orm:Objects>
 			<orm:EntityType id="_FF29E40A-8169-4065-A8E3-D862E7DC0717" Name="Person" _ReferenceMode="Name">
 				<orm:PlayedRoles>
@@ -332,6 +332,32 @@
 					<orm:Role id="_F48C8EF4-F708-40E9-B756-227CDDA69AEA" ref="_146D5622-D2A3-489B-A4BC-0A6BC1E85992" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
+			<orm:MandatoryConstraint id="_82652433-EACB-4463-9E57-440C51A02374" Name="ImpliedMandatoryConstraint1" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_1ADF9983-060D-4BA9-A682-F8046526B6FC" ref="_44271ACF-FCB3-48E9-8ABB-89CD91DE3C53" />
+					<orm:Role id="_3A554AA8-8FF2-483C-A7B6-A665EDA9A7C9" ref="_EEBC8DC7-145E-4CE0-80C0-F52455C2C3B2" />
+					<orm:Role id="_13F3C056-B1B4-4EB6-908B-9497CB0921D7" ref="_2FB91EE7-0D78-45E7-9E01-2F5F09CD2A63" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_FF29E40A-8169-4065-A8E3-D862E7DC0717" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_2F06607B-6AEA-43B3-949C-04A4A9794377" Name="ImpliedMandatoryConstraint2" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_55A4329F-78F9-4F73-AB45-FEAAC2A02681" ref="_0ABE2176-31AB-44B0-888A-69C0954FA4D3" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_FD321D52-CAFC-42E3-BF8F-8118741C1587" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_D1240996-48E1-48AC-8670-61C3B56DB1EE" Name="ImpliedMandatoryConstraint3" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_EE81B224-1239-493A-95BA-86F99303A4D6" ref="_603041B4-7759-49E0-9182-0328A6F3BAC2" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_1F0D3837-CAA0-4639-AA11-A33067FD0A3B" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_8A3680FF-A493-437D-97EF-0D50160F6ABB" Name="ImpliedMandatoryConstraint4" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_9DA6AC5A-BDE7-499D-85E7-A54A3FE98E37" ref="_3232DD67-DB77-4040-AF1C-14DF5D6E0377" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_C84C5655-D1BD-4BC4-91A9-F1C532835755" />
+			</orm:MandatoryConstraint>
 			<orm:ExclusionConstraint id="_A821C0A8-0354-47E7-9CBF-8A2B3A1F2A29" Name="EmployeeCannotHaveManagerAndBeCEO">
 				<orm:RoleSequences>
 					<orm:RoleSequence id="_2177D9B0-160A-4682-AE62-65D087BE8CCF">
@@ -395,7 +421,7 @@
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_B6B44E1E-7AA6-423C-ADD8-39BB70181DD9" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_42E9FB19-F069-4877-A821-6639683E7D15" IsExpanded="true" AbsoluteBounds="2.78125, 2.0520832538604736, 0.35796024918556213, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_42E9FB19-F069-4877-A821-6639683E7D15" IsExpanded="true" AbsoluteBounds="2.833333333333333, 2.0520832538604736, 0.35796024918556213, 0.22950302660465241">
 				<ormDiagram:Subject ref="_53F6561B-D74E-4F50-A78D-48642976ADDE" />
 			</ormDiagram:ObjectTypeShape>
 		</ormDiagram:Shapes>

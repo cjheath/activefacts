@@ -79,9 +79,9 @@ Person has exactly one FamilyName,
 Person has exactly one GivenName,
 	GivenName is name of Person;
 Person is of at most one Gender;
-Person was born in at most one Year;
+Person was born in at most one birth-Year;
 Person has at most one PostCode;
-Person is a member of at most one Club;
+Person is at most one member-of Club;
 
 Punch = entity known by PunchID:
 	Punch has exactly one PunchID,

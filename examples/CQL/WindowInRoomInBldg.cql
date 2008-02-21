@@ -1,4 +1,4 @@
-vocabulary NewModel;
+vocabulary WindowInRoomInBldg;
 
 /*
  * Value Types
