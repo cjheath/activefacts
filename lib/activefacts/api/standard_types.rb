@@ -3,22 +3,27 @@ require 'date'
 module ActiveFacts
   # Adapter module to add value_type to all potential value classes
   module ValueClass
-    def value_type *args
-      include Value
+    def value_type *args, &block
+      include ActiveFacts::Value
       # the included method adds the Value::ClassMethods
-      # REVISIT: args could be a hash, with keys :length, :scale, :unit, :allow
-      raise "value_type args unexpected" if args.size > 0
+      initialise_value_type *args, &block
     end
   end
 end
 
-ValueClasses = [String, Numeric, Date]
-ValueClasses.each{|c| c.send :extend, ActiveFacts::ValueClass }
+require 'activefacts/api/numeric'
+
+# Add the methods that convert our classes into Concept types:
+
+ValueClasses = [String, Date, Int, Real]
+ValueClasses.each{|c|
+    c.send :extend, ActiveFacts::ValueClass
+  }
 
 class Class
   def entity_type *args
     raise "not an entity type" if respond_to? :value_type
     include ActiveFacts::Entity
-    known_by *args
+    initialise_entity_type *args
   end
 end

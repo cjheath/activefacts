@@ -31,6 +31,10 @@ module ActiveFacts
 	instance
       end
     end
+
+    def adopt(obj)
+    #  @instances[obj.class][... REVISIT, need identifying values here ...] = obj
+    end
   end
 end
 

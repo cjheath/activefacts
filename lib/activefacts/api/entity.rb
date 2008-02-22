@@ -3,7 +3,18 @@ module ActiveFacts
     include Instance
 
     # Entity instance methods:
-    # REVISIT
+
+    def initialize(*args)
+      raise "Wrong number of parameters to #{self.class}.new, " +
+	  "expect (#{self.class.identifying_roles*","}) " +
+	  "got (#{args.map{|a| a.to_s.inspect}*", "})" if args.size != self.class.identifying_roles.size
+
+      # Assign the identifying roles in order
+      self.class.identifying_roles.zip(args).each{|pair|
+	  role, value = *pair
+	  send("#{role}=", value)
+	}
+    end
 
     # verbalise this Value
     def verbalise
@@ -20,7 +31,7 @@ module ActiveFacts
 
       # A concept that isn't a ValueType must have an identification scheme,
       # which is a list of roles it plays:
-      def known_by(*args)
+      def initialise_entity_type(*args)
 	# REVISIT: Process the role names passed now, or later if necessary
 	@identifying_roles = args
 	args.each{|role|

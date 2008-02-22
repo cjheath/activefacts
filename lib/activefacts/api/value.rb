@@ -13,6 +13,11 @@ module ActiveFacts
     module ClassMethods
       include Instance::ClassMethods
 
+      def initialise_value_type *args, &block
+	# REVISIT: args could be a hash, with keys :length, :scale, :unit, :allow
+	#raise "value_type args unexpected" if args.size > 0
+      end
+
       class_def :length do |*args|
 	@length = args[0] if args.length > 0
 	@length
