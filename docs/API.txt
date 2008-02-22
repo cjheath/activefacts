@@ -9,23 +9,45 @@ FactType (whether objectified explicitly or implicitly). Each
 Concept is represented by a Ruby class with extensions.
 Instance means an instance of any Concept.
 
-2) All Concepts and Instances support the verbalise method.
-
-3) All Concepts belong to a Vocabulary, and all Instances to a
+2) All Concepts belong to a Vocabulary, and all Instances to a
 Constellation, which pertains to one Vocabulary.
 
-4) No fact objects are created for binary functional dependencies.
+3) No fact objects are created for binary functional dependencies.
 This means the API isn't immune to changes in uniqueness that affect
 FDs, because a role will go from single-valued to multi-valued, and
 those have a different API.
 
-5) No representation of constraints is shown here yet.
+4) No representation of constraints is shown here yet.
 
-6) There's mixed data and metadata for the query API, which needs to
-be teased apart.
+5) The Query API isn't cooked. It contains mixed data and metadata.
 
 6) This API, instantiated for the Metamodel, is the design-time API.
 
+
+Metadata objects
+================
+
+Concept:
+	#verbalise() -> Return CQL definition for concept
+	#vocabulary() -> Return the Vocabulary object
+	#role(n) -> Return the nth role, or the role where n is Symbol or String
+	#role() -> Return the role array
+	#single(args) -> Define a role this concept's instance may play once only
+	#multi(args) -> Define a role that may be played more than once
+	#reading(arg) -> Add a reading to this concept
+
+Vocabulary:
+	#concepts() -> return a hash of all concepts, by Ruby class basename
+	#constraints()
+	...
+
+FactType:
+	Non-objectified Fact Types are always 1:N, so are represented by an
+	array sub-class called FactSet. The FactSet is instantiated by each
+	player on the N side, and supports verbalisation, etc.
+
+Instance objects
+================
 
 Instance:
 	#verbalise() -> Return CQL definition for concept instance, see below
@@ -76,36 +98,18 @@ FactSetProxy
 
 Constellation:
 	#vocabulary() -> Return the Vocabulary this constellation is built from
+	#<concept_name>(values) -> Find or make a new Instance
+	#<concept_name>() -> Return a collection of all Instances of that concept
+	#instances() -> Return a hash by Concept (Ruby class).
+		Each hash contains all instances of that class in this Constellation.
+
+	Constellation database API:
 	#query() -> Return the Query head node
 	#session() -> Return the database Session this was fetched from
 	#transaction() -> Return the transaction sequence-number when we were fetched
 	#validate_internal() -> Do all possible validity checks before saving
 	#save() -> Save all changes
 	#digest() -> Return a unique digest of all content
-	#instances() -> Return a hash by Concept (Ruby class).
-		Each hash contains all instances of that class in this Constellation.
-
-Metadata objects
-================
-
-Vocabulary:
-	#concepts() -> return a hash of all concepts, by Ruby class basename
-	#constraints()
-	...
-
-Concept:
-	#verbalise() -> Return CQL definition for concept
-	#vocabulary() -> Return the Vocabulary object
-	#role()[n] -> Return the nth role
-	#single(args) -> Define a role this concept's instance may play once only
-	#multi(args) -> Define a role that may be played more than once
-	#reading(arg) -> Add a reading to this concept
-
-FactType:
-	Hmmm, it seems there are no fact types, just FactSetProxies :-)
-	I suspect there'll be real fact types internally, always binary.
-	All non-FD fact types including ternaries and higher are objectified
-	as Concepts.
 
 Query objects
 =============
