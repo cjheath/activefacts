@@ -73,15 +73,35 @@ module ActiveFacts
 	raise "Role #{role_name} does not resolve to any existing class (found #{klass.inspect} in #{roles.map{|r|r.name}.inspect})" unless Class === klass
 
 	# Create a value instance we can hack if the value isn't already in this constellation
-	if klass === value
-	  if ((c = constellation) && c != value.constellation)
-	    REVISIT
-	    # value = c.adopt(value)
+	if (c = constellation)
+	  if klass === value		# Right class?
+	    vc = value.respond_to?(:constellation) && value.constellation
+	    if (c != vc)		# Wrong constellation?
+	      # The new object *must* come from our constellation, because it might already exist there.
+	      raise "REVISIT: Can't clone objects from outside this constellation yet"
+	      value.constellation = c
+	    else
+	      # Already right class, in the right cnstellation
+	    end
+	  else
+	    # Wrong class, assume it's a valid constructor arg. Get our constellation to find/make it:
+	    value = c.send(:"#{klass.basename}", *value)
 	  end
 	else
-	  value = (c = constellation) ? c.send(:"#{klass.basename}", *value) : value
+	  # This object's not in a constellation
+	  if klass === value		# Right class?
+	    vc = value.respond_to?(:constellation) && value.constellation
+	    if vc
+	      raise "REVISIT: Assigning to #{self.class.basename}.#{role_name} with constellation=#{c.inspect}: Can't dis-associate object from its constellation #{vc.object_id} yet"
+	    end
+	    # Right class, no constellation, just use it
+	  else
+	    # Wrong class, construct one
+	    value = klass.send(:new, *value)
+	  end
 	end
 	instance_variable_set("@#{role_name}", value)
+	# REVISIT: Make sure that "self" is assigned/added at the other end too.
       end
 
       class_def role_name do

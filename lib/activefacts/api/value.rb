@@ -3,11 +3,13 @@ module ActiveFacts
     include Instance
 
     # Value instance methods:
-    # REVISIT
+    def initialize(*args)
+      super(args)
+    end
 
     # verbalise this Value
-    def verbalise
-      "#{self.class.basename} '#{to_s}'"
+    def verbalise(role_name = nil)
+      "#{role_name || self.class.basename} '#{to_s}'"
     end
 
     module ClassMethods

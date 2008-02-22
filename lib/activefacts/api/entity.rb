@@ -5,6 +5,7 @@ module ActiveFacts
     # Entity instance methods:
 
     def initialize(*args)
+      super(args)
       raise "Wrong number of parameters to #{self.class}.new, " +
 	  "expect (#{self.class.identifying_roles*","}) " +
 	  "got (#{args.map{|a| a.to_s.inspect}*", "})" if args.size != self.class.identifying_roles.size
@@ -16,9 +17,10 @@ module ActiveFacts
 	}
     end
 
-    # verbalise this Value
-    def verbalise
-      "#{self.class.basename}(REVISIT: use role values: #{self.class.identifying_roles*", "})"
+    # verbalise this entity
+    def verbalise(role_name = nil)
+      # REVISIT: Should be able to pass role name to role.verbalise here:
+      "#{role_name || self.class.basename}(#{self.class.identifying_roles.map{|r| send(r).verbalise(r.to_s.camelcase(true)) }*", "})"
     end
 
     module ClassMethods

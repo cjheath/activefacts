@@ -18,22 +18,23 @@ module ActiveFacts
 
     def method_missing(m, *args)
       if c = @vocabulary.const_get(m)
-	# REVISIT: create the constructor method here instead?
+	if args.size == 0
+	  @instances[c].values
+	else
+	  # REVISIT: create the constructor method here instead?
 
-	# If the same object already exists in this constellation, re-use it.
-	key = args.size > 1 ? args : args[0]
-	unless instance = @instances[c][key]
-	  instance = c.send :new, *args
-	  instance.constellation = self
-	  # Register the new object in the hash of similar instances
-	  @instances[c][key] = instance
+	  # If the same object already exists in this constellation, re-use it.
+	  key = args.size > 1 ? args : args[0]
+	  unless instance = @instances[c][key]
+	    instance = c.send :new, self, *args
+	    # Register the new object in the hash of similar instances
+	    #print "Adding new instance "; p instance
+	    instance.constellation = self
+	    @instances[c][key] = instance
+	  end
+	  instance
 	end
-	instance
       end
-    end
-
-    def adopt(obj)
-    #  @instances[obj.class][... REVISIT, need identifying values here ...] = obj
     end
   end
 end

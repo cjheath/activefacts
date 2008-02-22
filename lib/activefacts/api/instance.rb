@@ -1,6 +1,15 @@
 module ActiveFacts
   module Instance
     # Instance methods:
+    def initialize(args = [])
+      if Constellation === (c = args[0])
+	# puts "Making #{self.class.basename} with #{args.size} params, first is Constellation"
+	self.constellation = c
+	args.shift
+      end
+
+      super(*args) if (self.class.superclass != Object)
+    end
 
     # Verbalise this instance
     def verbalise
