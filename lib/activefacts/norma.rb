@@ -367,6 +367,13 @@ module ActiveFacts
 	    @mandatory_constraint_rs_by_id = {}
 	    x_mandatory_constraints.each{|x|
 		    name = x.attributes["Name"]
+
+		    # As of Feb 2008, all NORMA ValueTypes have an implied mandatory constraint.
+		    if x.elements.to_a("orm:ImpliedByObjectType").size > 0
+		      # $stderr.puts "Skipping ImpliedMandatoryConstraint #{name} over #{roles}"
+		      next
+		    end
+
 		    x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
 		    roles = map_roles(x_roles, "mandatory constraint #{name}")
 		    next if !roles
@@ -380,18 +387,18 @@ module ActiveFacts
 		    roles.each{|r| rs << r }
 		    rs = @model.get_role_sequence(rs)
 
-#puts "Mandatory("+roles.map{|r| "#{r.object_type.name} in #{r.fact_type.to_s}" }*", "+")"
+		    # puts "Mandatory #{rs}"
 
 		    @mandatory_constraints_by_rs[rs] = x
 		    @mandatory_constraint_rs_by_id[x.attributes['id']] = rs
-	    }
+		}
 	end
 
 	def read_residual_mandatory_constraints
 	    @mandatory_constraints_by_rs.each { |rs, x|
 		# Create a simply-mandatory PresenceConstraint for each mandatory constraint
 		name = x.attributes["Name"]
-		# puts "Mandatory: #{rs.to_s}"
+		#puts "Residual Mandatory #{name}: #{rs.to_s}"
 
 		pc = PresenceConstraint.new(
 				@model,	    # In Model,
@@ -429,7 +436,7 @@ module ActiveFacts
 		# Get the RoleSequence:
 		x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
 		roles = map_roles(x_roles, "uniqueness constraint #{name}")
-		next if !roles
+		next if !roles || roles.size == 0
 
 		# There is an implicit uniqueness constraint when any object plays a unary. Skip it.
 		if (x_roles.size == 1 &&
