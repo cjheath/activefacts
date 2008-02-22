@@ -1,96 +1,133 @@
 require "activefacts/api"
 
 module CompanyDirector
+  class Date < ::Date		# Import Date into this Vocabulary
+    value_type
+    # injected :all_person_by_birth_date
+    # injected :all_directorship_by_appointment_date
+    # injected :all_attendance
+  end
 
   class Name < String
     value_type :length => 48
-    # role :family_name, :person, 0..1, "family-:name is name of / is called family-"
-    # role :given_name, :person, 0..1, "given-:name is name of / is called given-"
+    # injected :all_person_by_given_name
+    # injected :all_person_by_family_name
   end
 
   class Person
     entity_type :given_name, :family_name
-    # role :given_name, Name, 1, "is called given-"
-    # role :family_name, Name, 1, "is called family-"
-    # role :birth_date, 0..1, Date		# REVISIT: Date doesn't belong to this Vocabulary and isn't a ValueType
-    role :directorship
-    role :attendance
+    role :given_name, Name, :mandatory, "given-:name is name of :person / :person is called given-:name"
+    role :family_name, Name, :mandatory, "family-:name is name of :person / :person is called family-:name"
+    role :birth_date, Date, ":person was born on birth-:date"
+
+    # injected :all_directorship
+    # injected :all_attendance
   end
-  fact Person, :given_name, 1..1, "is called given-", Name, :given_name_of, 0..N
-  fact Person, :family_name, 1..1, "is called family-", Name, :family_name_of, 0..N
-  fact Person, :birth_date, 0..1, "was born on birth-", Date, :birth_date_of, 0..N
+
+#  class Employee < Person
+#  end
 
   class CompanyName < String
     value_type :length => 48
-    role :company, 0..1, "is name of"		# Forward-reference to Company
-						# Can this create the Company.company_name role too?
+    # injected: company
   end
 
   class Company
     entity_type :company_name
-    role :company_name, 1, "is called"		# How is it known that this is the counterpart to CompanyName.company?
-    role :directorship, 1..N			# Where do we squeeze in the mandatory constraint?
-    role :attendance, 0..N
+    role :company_name, :mandatory, 1, "is called / is name of"	# Injects CompanyName.company
+    # injected: all_directorship
+    # injected: all_attendance
   end
 
   class Directorship
-    entity_type :person, :company
-    role :person, 1    # How to encode the role name Director here?
-    role :company, 1
-    role :date_appointed, 1, Date, "began on"
+    entity_type :director, :company 		# All identifying role implicitly mandatory
+    role :director, Person			# injects Person.all_directorship
+    role :company				# injects Company.all_directorship
+    role :appointment_date, Date, "began on"	# injects Date.all_directorship_by_appointment_date
+
     reading ":person directs :company"
     reading ":company is directed by :person"
   end
 
   class Attendance
-    entity_type :person, :company, :date
-    role :person, 1
-    role :company, 1
-    role :date, 1
+    entity_type :person, :company, :date	# All identifying role implicitly mandatory
+    role :attendee, Person			# Injects Person.all_attendance
+    role :company				# Injects Company.all_attendance
+    role :attendance_date, Date			# Injects Date.all_attendance
+
     reading ":person attended board meeting of :company on :date"
     reading ":person attended on :date a board meeting for :company"
   end
 
 end
 
-
 if __FILE__ == $0
+  include ActiveFacts
   include CompanyDirector
 
-  puts "Constructed "+"="*60
+  puts "\n"*4
 
-=begin
-  print "CompanyName.roles: "; p CompanyName.roles
-  print "PersonName.roles: "; p PersonName.roles
-  print "Company.roles: "; p Company.roles
-  print "Person.roles: "; p Person.roles
-  print "Attendance.roles: "; p Attendance.roles
-  print "Directorship.roles: "; p Directorship.roles
+  if true
+    print "CompanyName.roles: "; puts CompanyName.roles.verbalise
+    print "Name.roles: "; puts Name.roles.verbalise
+    print "Company.roles: "; puts Company.roles.verbalise
+    print "Person.roles: "; puts Person.roles.verbalise
+    print "Attendance.roles: "; puts Attendance.roles.verbalise
+    print "Directorship.roles: "; puts Directorship.roles.verbalise
 
-  print "CompanyName.length: "; p CompanyName.length
-  print "PersonName.length: "; p PersonName.length
+    print "CompanyName.length: "; p CompanyName.length
+    print "Name.length: "; p Name.length
 
-  print "Company.verbalise: "; puts Company.verbalise
-  print "CompanyName.verbalise: "; puts CompanyName.verbalise
-  print "CompanyName.new('some company').verbalise: "; puts CompanyName.new('some company').verbalise
-  c = Company.new("bar")
-  c.constellation = 23
-
-  print "Company.new.company_name: "; p c.company_name
-
-  print "Company.new.verbalise: "; puts c.verbalise
-  print "CompanyName.verbalise: "; puts CompanyName.verbalise
-=end
+    print "Company.verbalise: "; puts Company.verbalise
+    print "CompanyName.verbalise: "; puts CompanyName.verbalise
+    puts "Finished concept verbalisation\n\n\n"
+  end
 
   c = ActiveFacts::Constellation.new(CompanyDirector)
-  co = c.Company("Acme, Inc")
-  puts co.verbalise
+  print "Making a Company: "
+  acme = c.Company("Acme, Inc")
+  puts acme.verbalise
+=begin
+    - Make/find Name
+    - Make/find Company
+    - associate Name with Company as .companyName
+    - associate Company with Name
+=end
 
-  p1 = c.Person("Wile E.", "Coyote")
-  puts p1.verbalise
+  print "Making a Name: "
+  given = c.Name("Wile. E.")
+  puts given.verbalise
+=begin
+    - Make/find Name
+=end
 
-  dir1 = c.Directorship(p1, co)
+  print "Making a Person: "
+  coyote = c.Person(given, "Coyote")
+  puts coyote.verbalise
+=begin
+    - Make Name Coyote
+    - Make Person
+    - associate Name "Wile. E" with Person as .givenName
+    - associate Name "Coyote" with Person as .familyName
+    - associate Person with Name "Wile. E." as .givenNameOf
+    - associate Person with Name "Coyote" as .familyNameOf
+=end
+
+  print "Making a Directorship: "
+  dir1 = c.Directorship(coyote, acme)
   puts dir1.verbalise
+=begin
+    - Make Directorship object
+    - associate person with Directorship
+    - associate company with Directorship
+    - associate Directorship with person as .directorOf
+    - associate Directorship with company as .directorOf
+=end
+
+  puts "All Name:\n\t" + c.Name.map{|n| n.verbalise }*"\n\t"
+  puts "All Person:\n\t" + c.Person.map{|p| p.verbalise }*"\n\t"
+  puts "All CompanyName:\n\t" + c.CompanyName.map{|n| n.verbalise }*"\n\t"
+  puts "All Company:\n\t" + c.Company.map{|co| co.verbalise }*"\n\t"
+  puts "All Directorship:\n\t" + c.Directorship.map{|d| d.verbalise }*"\n\t"
 
 end
-
