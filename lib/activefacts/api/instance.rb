@@ -8,6 +8,7 @@ module ActiveFacts
 	args.shift
       end
 
+      # puts "constructing #{self.class.superclass} with #{args.inspect}" if (self.class.superclass != Object)
       super(*args) if (self.class.superclass != Object)
     end
 

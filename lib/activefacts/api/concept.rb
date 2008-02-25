@@ -27,19 +27,20 @@ module ActiveFacts
 	raise "Can't index roles by number"
       when Symbol, String
 	r = @roles[name.to_sym]
-	r.resolve_player(vocabulary) if Symbol === (player = r.player)
+	return nil unless r
+	player = r.player
+	r.resolve_player(vocabulary) if Symbol === player
 	r
       else
 	nil
       end
     end
 
-    # REVISIT: Should this be called fact, or fact_type, or binary_fact_type?
-    def role(*args)
+    def binary(*args)
       role_name, related, mandatory, one_to_one, related_role_name, reading =
-	role_params(args)
+	binary_params(args)
 
-      puts "#{self}.#{role_name} is to #{related.inspect}, #{mandatory ? :mandatory : :optional}, related role is #{related_role_name}, reading=#{reading.inspect}"
+      # puts "#{self}.#{role_name} is to #{related.inspect}, #{mandatory ? :mandatory : :optional}, related role is #{related_role_name}, reading=#{reading.inspect}"
 
       single(role_name, related, related_role_name, one_to_one)
 
@@ -56,7 +57,8 @@ module ActiveFacts
     # "/", separating multiple alternate readings
     # ":concept", indicating that the Concept plays this role
     def reading(*args)
-      puts "#{self.inspect}#reading: #{args.inspect}"
+      # REVISIT: No support for readings yet.
+      # puts "#{self.inspect}#reading: #{args.inspect}"
     end
 
     # Define accessor methods for this role name, which should be assigned an object of the indicated class
@@ -64,7 +66,7 @@ module ActiveFacts
       raise "not sym" unless Symbol === role_name
       roles[role_name] = Role.new(klass, role_name)
 
-      puts "Defining #{basename}.#{role_name} to #{klass.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
+      # puts "Defining #{basename}.#{role_name} to #{klass.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
       class_def "#{role_name}=" do |value|
 	#puts "Assigning #{self}.#{role_name} to #{value}, value will be added/assigned to #{related_role_name}"
 
@@ -114,7 +116,7 @@ module ActiveFacts
       raise "not sym" unless Symbol === role_name
       roles[role_name] = Role.new(klass, role_name)
 
-      puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
+      # puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
       class_def "#{role_name}" do
 	puts "REVISIT: Access to array of #{klass.to_s} from #{role_name}, matching single role is #{single_role_name}"
       end
@@ -143,7 +145,7 @@ module ActiveFacts
     #	  Role player name (not role name)
     #	  Trailing Adjective
     # "_by_<other_role_name>" if other_role_name != this role player's name, and not other_player_this_player
-    def role_params(args)
+    def binary_params(args)
       # Params:
       #   role_name (Symbol)
       #   other player (Symbol or Class)
@@ -189,7 +191,8 @@ module ActiveFacts
       related_name = related_name.to_s.snakecase
 
       # resolve the Symbol to a Class now if possible:
-      related = vocabulary.concept(related) if Symbol === related
+      resolved = vocabulary.concept(related)
+      related = resolved if Symbol === related && resolved
       # puts "related = #{related.inspect}"
 
       if args[0] == :mandatory
@@ -293,7 +296,7 @@ module ActiveFacts
       when Class
 	block.call(concept, *args)	# Execute block in the context of the concept
       when Symbol, String	# Arrange for this to happen later
-	vocabulary.__delay(concept.to_sym, args, block)
+	vocabulary.__delay(concept.to_sym, args, &block)
       else
 	raise "Delayed binding not possible for #{concept.inspect}"
       end
