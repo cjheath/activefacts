@@ -16,9 +16,9 @@ module CompanyDirector
 
   class Person
     entity_type :given_name, :family_name
-    role :given_name, Name, :mandatory, "given-:name is name of :person / :person is called given-:name"
-    role :family_name, Name, :mandatory, "family-:name is name of :person / :person is called family-:name"
-    role :birth_date, Date, ":person was born on birth-:date"
+    binary :given_name, Name, :mandatory, "given-:name is name of :person / :person is called given-:name"
+    binary :family_name, Name, :mandatory, "family-:name is name of :person / :person is called family-:name"
+    binary :birth_date, Date, ":person was born on birth-:date"
 
     # injected :all_directorship
     # injected :all_attendance
@@ -34,16 +34,16 @@ module CompanyDirector
 
   class Company
     entity_type :company_name
-    role :company_name, :mandatory, 1, "is called / is name of"	# Injects CompanyName.company
+    binary :company_name, :mandatory, 1, "is called / is name of"	# Injects CompanyName.company
     # injected: all_directorship
     # injected: all_attendance
   end
 
   class Directorship
     entity_type :director, :company 		# All identifying role implicitly mandatory
-    role :director, Person			# injects Person.all_directorship
-    role :company				# injects Company.all_directorship
-    role :appointment_date, Date, "began on"	# injects Date.all_directorship_by_appointment_date
+    binary :director, Person			# injects Person.all_directorship
+    binary :company				# injects Company.all_directorship
+    binary :appointment_date, Date, "began on"	# injects Date.all_directorship_by_appointment_date
 
     reading ":person directs :company"
     reading ":company is directed by :person"
@@ -51,9 +51,9 @@ module CompanyDirector
 
   class Attendance
     entity_type :person, :company, :date	# All identifying role implicitly mandatory
-    role :attendee, Person			# Injects Person.all_attendance
-    role :company				# Injects Company.all_attendance
-    role :attendance_date, Date			# Injects Date.all_attendance
+    binary :attendee, Person			# Injects Person.all_attendance
+    binary :company				# Injects Company.all_attendance
+    binary :attendance_date, Date			# Injects Date.all_attendance
 
     reading ":person attended board meeting of :company on :date"
     reading ":person attended on :date a board meeting for :company"
@@ -65,9 +65,9 @@ if __FILE__ == $0
   include ActiveFacts
   include CompanyDirector
 
-  puts "\n"*4
+  if false
+    puts "\n"*4
 
-  if true
     print "CompanyName.roles: "; puts CompanyName.roles.verbalise
     print "Name.roles: "; puts Name.roles.verbalise
     print "Company.roles: "; puts Company.roles.verbalise
@@ -84,7 +84,7 @@ if __FILE__ == $0
   end
 
   c = ActiveFacts::Constellation.new(CompanyDirector)
-  print "Making a Company: "
+  print "Making a Company:\n\t"
   acme = c.Company("Acme, Inc")
   puts acme.verbalise
 =begin
@@ -94,14 +94,14 @@ if __FILE__ == $0
     - associate Company with Name
 =end
 
-  print "Making a Name: "
+  print "Making a Name:\n\t"
   given = c.Name("Wile. E.")
   puts given.verbalise
 =begin
     - Make/find Name
 =end
 
-  print "Making a Person: "
+  print "Making a Person:\n\t"
   coyote = c.Person(given, "Coyote")
   puts coyote.verbalise
 =begin
@@ -113,7 +113,7 @@ if __FILE__ == $0
     - associate Person with Name "Coyote" as .familyNameOf
 =end
 
-  print "Making a Directorship: "
+  print "Making a Directorship:\n\t"
   dir1 = c.Directorship(coyote, acme)
   puts dir1.verbalise
 =begin
