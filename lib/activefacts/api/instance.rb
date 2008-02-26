@@ -8,8 +8,11 @@ module ActiveFacts
 	args.shift
       end
 
-      # puts "constructing #{self.class.superclass} with #{args.inspect}" if (self.class.superclass != Object)
-      super(*args) if (self.class.superclass != Object)
+      unless (self.class.respond_to?(:identifying_roles))
+      #if (self.class.superclass != Object)
+	# puts "constructing #{self.class.superclass} with #{args.inspect}"
+	super(*args)
+      end
     end
 
     # Verbalise this instance

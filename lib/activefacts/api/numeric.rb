@@ -2,6 +2,7 @@
 # and can't be sensibly subclassed. Just delegate to an instance var,
 # except for a few things that matter to us, like class().
 require 'facets/basicobject'
+require 'date'
 
 class Int < BasicObject
   def initialize(i)
@@ -9,6 +10,11 @@ class Int < BasicObject
   end
 
   define_method(:class) { __self__.class }
+
+  def send(meth, *a, &b)
+    # Ensure that normal sends go to __self__, not the internal value
+    __self__.send(meth, *a, &b)
+  end
 
   private
   attr_accessor :__value
@@ -27,6 +33,11 @@ class Real < BasicObject
 
   define_method(:class) { __self__.class }
 
+  def send(meth, *a, &b)
+    # Ensure that normal sends go to __self__, not the internal value
+    __self__.send(meth, *a, &b)
+  end
+
   private
   attr_accessor :__value
 
@@ -35,4 +46,9 @@ class Real < BasicObject
     # $stdout.puts "Calling #{@__value}.#{self.class}\##{meth}(#{args.map{|a|a.inspect}*", "}) --> #{r.inspect}"
     # r
   end
+end
+
+# Ensure we don't pass a Constellation to the Date constructor:
+class ::Date
+  def self.__Is_A_Date; end
 end

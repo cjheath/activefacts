@@ -7,7 +7,7 @@ describe "Value Type instances" do
 	end
 	class StringValue < String
 	  value_type
-	  binary :attr	  # REVISIT: role definition is incomplete
+	  binary :attr
 	end
       end
     end
@@ -40,7 +40,7 @@ describe "Value Type instances" do
 
   it "should allow its roles to be assigned" do
     lambda {
-	@string_value.attr = 23	  # REVISIT: No type-checking on roles yet
+	@string_value.attr = 23
       }.should_not raise_error
   end
 

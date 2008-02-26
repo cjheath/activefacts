@@ -32,10 +32,14 @@ module ActiveFacts
       end
 
       # A concept that isn't a ValueType must have an identification scheme,
-      # which is a list of roles it plays:
+      # which is a list of roles it plays. The identification scheme may be
+      # inherited from a superclass.
       def initialise_entity_type(*args)
-	# REVISIT: Process the role names passed now, or later if necessary
-	@identifying_roles = args
+	# puts "Initialising entity type #{self}"
+	@identifying_roles = superclass.identifying_roles if superclass.respond_to?(:identifying_roles)
+	@identifying_roles = args if args.size > 0 || !@identifying_roles
+=begin
+	# REVISIT: Is any processing of the role names needed here?
 	args.each{|role|
 	  if concept = vocabulary.concept[role.to_s.camelcase(true)]
 	    #REVISIT: puts "#{role} identifies existing concept #{concept.name}, good"
@@ -43,8 +47,11 @@ module ActiveFacts
 	    #REVISIT: puts "#{role} identifies no existing concept"
 	  end
 	}
+=end
+      end
 
-	# puts "#{self.inspect}#known_by: #{args.inspect}"
+      def inherited(other)
+	other.entity_type #identifying_roles
       end
 
       # verbalise this concept

@@ -30,21 +30,26 @@ Metadata objects
 Concept:
 	#verbalise() -> Return CQL definition for concept
 	#vocabulary() -> Return the Vocabulary object
-	#role(n) -> Return the nth role, or the role where n is Symbol or String
-	#role() -> Return the role array
-	#single(args) -> Define a role this concept's instance may play once only
-	#multi(args) -> Define a role that may be played more than once
-	#reading(arg) -> Add a reading to this concept
+	#roles(:sym) -> Return the role named :sym
+	#roles() -> Return the role array
+	#binary(args) -> Define a role this concept's instance may play once only
+		The other role player gets a matching role injected whose
+		cardinality is either one or many.
+	#reading(arg) -> Add a reading to this concept (it's an objectified fact type)
+
+Entity:
+	#identifying_roles -> A array of Symbols naming the identifying roles
+
+ValueType:
+	#length(n), #scale(n) -> Get/set length and scale
 
 Vocabulary:
-	#concepts() -> return a hash of all concepts, by Ruby class basename
+	#concept() -> return a hash of all concepts, by Ruby class basename
+	#concept(str) -> return a concept, by Ruby class basename
 	#constraints()
+	#adopt(klass, constellation, value)
+		-> Convert value into an instance of klass in the constellation
 	...
-
-FactType:
-	Non-objectified Fact Types are always 1:N, so are represented by an
-	array sub-class called FactSet. The FactSet is instantiated by each
-	player on the N side, and supports verbalisation, etc.
 
 Instance objects
 ================
@@ -54,24 +59,18 @@ Instance:
 	#class() -> Return the Concept class
 	#query() -> Return the QueryVariable for the role player of the invoked fact type
 	#constellation() -> Return the Constellation this instance belongs to
+	#mutable() -> Return true if the query allows this instance to be modified
 
-	#<role_name>=(v) ->
-	For an FD role, assign the value
-	For a non-FD Role: REVISIT: What to do here, assign an array?
-
-	For a FD Role:
+	For a FD (single-valued) Role:
 		#<role_name>() -> Return the associated Instance
 		#<role_name>=(value) -> Assign the associated Instance.
 
 	For a non-FD Role:
-		#<role_name>() ->
-		FactSetProxy (a proxy to a set of Facts) with a focus
-		on this instance, meaning that "...role_name[n] = value"
-		will assign the other role. If ternary or higher, the
-		fact is always objectified, and the other player is the
-		objectified instance.
+		#<role_name>() -> An array of instances which supports:
+			#verbalise
+			#mutable
 
-	These actions are not supported, but must be:
+	These actions are not supported yet, but we need to find a way to:
 		- access the original role values
 		- detect whether changed from original
 		- revert
@@ -83,25 +82,13 @@ Entity Instance (normal Class):
 	#verbalise() -> Return CQL definition for concept
 		e.g. "Person = entity known by given-Name 'Fred' and family-Name 'Fly'"
 
-FactSetProxy
-	#focus() -> The Instance from which this FactSet was reached
-	#size -> the number of facts in the set
-	#[n] -> the non-focus role player of the nth fact in the set
-	#[n]= -> assign the player of the non-focus role of the nth fact
-	#mutable (or .static?) -> boolean saying whether this set may be changed
-	#add(...) -> to be defined
-	#<role_name> -> return the instance that plays that role
-	#<role_name>= -> assign the role value
-	#delete(n) -> delete this fact instance
-	#verbalise(n) -> verbalise this fact instance preferring this focus
-	#query(n) -> Return the QueryFactType for the invoked fact type
-
 Constellation:
 	#vocabulary() -> Return the Vocabulary this constellation is built from
-	#<concept_name>(values) -> Find or make a new Instance
+	#<concept_name>(values) -> Find or make a new Instance (concept_name is class name)
 	#<concept_name>() -> Return a collection of all Instances of that concept
 	#instances() -> Return a hash by Concept (Ruby class).
 		Each hash contains all instances of that class in this Constellation.
+	#verbalise() -> Return a dump of all instances and all their single-values roles
 
 	Constellation database API:
 	#query() -> Return the Query head node

@@ -75,39 +75,34 @@ module ActiveFacts
 	raise "Role #{role_name} does not resolve to any existing class (found #{klass.inspect} in #{roles.map{|r|r.name}.inspect})" unless Class === klass
 
 	# Create a value instance we can hack if the value isn't already in this constellation
-	if (c = constellation)
-	  if klass === value		# Right class?
-	    vc = value.respond_to?(:constellation) && value.constellation
-	    if (c != vc)		# Wrong constellation?
-	      # The new object *must* come from our constellation, because it might already exist there.
-	      raise "REVISIT: Can't clone objects from outside this constellation yet"
-	      value.constellation = c
-	    else
-	      # Already right class, in the right cnstellation
-	    end
+	old = instance_variable_get("@#{role_name}")
+	return if old == value	  # Occurs during one_to_one assignment, for example
+
+	value = self.class.vocabulary.adopt(klass, constellation, value)
+	return if old == value	  # Occurs when same value is assigned
+
+	instance_variable_set("@#{role_name}", value)
+
+	# De-assign/reemove "self" at the old other end too:
+	if old
+	  if one_to_one
+	    value.send("#{related_role_name}=".to_sym, nil)
 	  else
-	    # Wrong class, assume it's a valid constructor arg. Get our constellation to find/make it:
-	    value = c.send(:"#{klass.basename}", *value)
-	  end
-	else
-	  # This object's not in a constellation
-	  if klass === value		# Right class?
-	    vc = value.respond_to?(:constellation) && value.constellation
-	    if vc
-	      raise "REVISIT: Assigning to #{self.class.basename}.#{role_name} with constellation=#{c.inspect}: Can't dis-associate object from its constellation #{vc.object_id} yet"
-	    end
-	    # Right class, no constellation, just use it
-	  else
-	    # Wrong class, construct one
-	    value = klass.send(:new, *value)
+	    value.send(related_role_name).delete(self)
 	  end
 	end
-	instance_variable_set("@#{role_name}", value)
-	# REVISIT: Make sure that "self" is assigned/added at the other end too.
+
+	# Assign/add "self" at the other end too:
+	if one_to_one
+	  value.send("#{related_role_name}=".to_sym, self)
+	else
+	  array = value.send(related_role_name)
+	  array.replace(array - [old] + [self])
+	  # REVISIT: It's possible that "old" now has no roles except its identifier, and is not independant so can be removed.
+	end
       end
 
       class_def role_name do
-	# REVISIT: Return a FactProxy instead?
 	instance_variable_get("@#{role_name}")
       end
     end
@@ -117,8 +112,15 @@ module ActiveFacts
       roles[role_name] = Role.new(klass, role_name)
 
       # puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
-      class_def "#{role_name}" do
-	puts "REVISIT: Access to array of #{klass.to_s} from #{role_name}, matching single role is #{single_role_name}"
+
+      class_eval do
+#	puts "class_eval is in #{self.to_s} making #{role_name}"
+	define_method "#{role_name}" do
+#	  puts "REVISIT: Access to array of #{klass.to_s} from #{role_name}, matching single role is #{single_role_name}"
+	  role_var = "@#{role_name}"
+	  (r = instance_variable_set(role_var, [])) unless (r = instance_variable_get(role_var))
+	  r
+	end
       end
     end
 
@@ -267,8 +269,10 @@ module ActiveFacts
       end
 =end
     end
+
     def inherited(other)
-      puts "REVISIT: Concept type #{self} was inherited by #{other}"
+      #puts "REVISIT: ValueType #{self} < #{self.superclass} was inherited by #{other}; not implemented"
+      # REVISIT: Do we need to copy the type parameters here?
     end
 
     class Role
