@@ -1,18 +1,12 @@
 require "activefacts/api"
-d = Date
 
 module CompanyDirector
-  class Date < ::Date		# Import Date into this Vocabulary
+  class Date < ::Date				# Import Date into this Vocabulary
     value_type
-    # injected :all_person_by_birth_date
-    # injected :all_directorship_by_appointment_date
-    # injected :all_attendance
   end
 
   class Name < String
     value_type :length => 48
-    # injected :all_person_by_given_name
-    # injected :all_person_by_family_name
   end
 
   class Person
@@ -20,25 +14,19 @@ module CompanyDirector
     binary :given_name, Name, :mandatory, "given-:name is name of :person / :person is called given-:name"
     binary :family_name, Name, :mandatory, "family-:name is name of :person / :person is called family-:name"
     binary :birth_date, Date, ":person was born on birth-:date"
-
-    # injected :all_directorship
-    # injected :all_attendance
   end
 
-  # Will be used for testing subclassing
-#  class Employee < Person
-#  end
+  # Will be used for demonstrating subclassing:
+  #class Employee < Person
+  #end
 
   class CompanyName < String
     value_type :length => 48
-    # injected: company
   end
 
   class Company
     entity_type :company_name
     binary :company_name, :mandatory, 1, "is called / is name of"	# Injects CompanyName.company
-    # injected: all_directorship
-    # injected: all_attendance
   end
 
   class Directorship
@@ -55,12 +43,11 @@ module CompanyDirector
     entity_type :person, :company, :date	# All identifying role implicitly mandatory
     binary :attendee, Person			# Injects Person.all_attendance
     binary :company				# Injects Company.all_attendance
-    binary :attendance_date, Date			# Injects Date.all_attendance
+    binary :attendance_date, Date		# Injects Date.all_attendance
 
     reading ":person attended board meeting of :company on :date"
     reading ":person attended on :date a board meeting for :company"
   end
-
 end
 
 if __FILE__ == $0
@@ -100,6 +87,7 @@ if __FILE__ == $0
   print "Making a Person:\n\t"
   coyote = c.Person(given, "Coyote")
   puts coyote.verbalise
+  raise "mismatch!" unless coyote == c.Person("Wile. E.", "Coyote")
 
   print "Making a Directorship:\n\t"
   dir1 = c.Directorship(coyote, acme)
@@ -114,7 +102,7 @@ if __FILE__ == $0
   puts "#{banner} Whole constellation #{banner}"
   puts c.verbalise
 
-  puts "#{banner} one-many relationships #{banner}"
+  puts "#{banner} many-one relationships #{banner}"
   print "Coyote's directorships:\n\t"
   puts coyote.all_directorship_by_director.map{|d| d.verbalise }*"\n\t"
   print "Acme's directorships:\n\t"
