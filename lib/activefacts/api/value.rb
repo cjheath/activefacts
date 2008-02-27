@@ -20,14 +20,18 @@ module ActiveFacts
 	#raise "value_type args unexpected" if args.size > 0
       end
 
-      class_def :length do |*args|
-	@length = args[0] if args.length > 0
-	@length
+      class_eval do
+	define_method :length do |*args|
+	  @length = args[0] if args.length > 0
+	  @length
+	end
       end
 
-      class_def :scale do |*args|
-	@scale = args[0] if args.length > 0
-	@scale
+      class_eval do
+	define_method :scale do |*args|
+	  @scale = args[0] if args.length > 0
+	  @scale
+	end
       end
 
       # verbalise this ValueType

@@ -69,45 +69,49 @@ module ActiveFacts
       roles[role_name] = Role.new(klass, role_name)
 
       # puts "Defining #{basename}.#{role_name} to #{klass.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
-      class_def "#{role_name}=" do |value|
-	#puts "Assigning #{self}.#{role_name} to #{value}, value will be added/assigned to #{related_role_name}"
+      class_eval do
+	define_method "#{role_name}=" do |value|
+	  #puts "Assigning #{self}.#{role_name} to #{value}, value will be added/assigned to #{related_role_name}"
 
-	# Find what class the value should be:
-	klass = self.class.roles(role_name).resolve_player(self.class.vocabulary)
-	raise "Role #{role_name} does not resolve to any existing class (found #{klass.inspect} in #{roles.map{|r|r.name}.inspect})" unless Class === klass
+	  # Find what class the value should be:
+	  klass = self.class.roles(role_name).resolve_player(self.class.vocabulary)
+	  raise "Role #{role_name} does not resolve to any existing class (found #{klass.inspect} in #{roles.map{|r|r.name}.inspect})" unless Class === klass
 
-	# Create a value instance we can hack if the value isn't already in this constellation
-	role_var = "@#{role_name}"
-	old = instance_variable_defined?(role_var) && instance_variable_get(role_var)
-	return if old == value	  # Occurs during one_to_one assignment, for example
+	  # Create a value instance we can hack if the value isn't already in this constellation
+	  role_var = "@#{role_name}"
+	  old = instance_variable_defined?(role_var) && instance_variable_get(role_var)
+	  return if old == value	  # Occurs during one_to_one assignment, for example
 
-	value = self.class.vocabulary.adopt(klass, constellation, value)
-	return if old == value	  # Occurs when same value is assigned
+	  value = self.class.vocabulary.adopt(klass, constellation, value)
+	  return if old == value	  # Occurs when same value is assigned
 
-	instance_variable_set(role_var, value)
+	  instance_variable_set(role_var, value)
 
-	# De-assign/remove "self" at the old other end too:
-	if old
-	  if one_to_one
-	    value.send("#{related_role_name}=".to_sym, nil)
-	  else
-	    value.send(related_role_name).delete(self)
+	  # De-assign/remove "self" at the old other end too:
+	  if old
+	    if one_to_one
+	      value.send("#{related_role_name}=".to_sym, nil)
+	    else
+	      value.send(related_role_name).delete(self)
+	    end
 	  end
-	end
 
-	# Assign/add "self" at the other end too:
-	if one_to_one
-	  value.send("#{related_role_name}=".to_sym, self)
-	else
-	  array = value.send(related_role_name)
-	  array.replace(array - [old] + [self])
-	  # REVISIT: It's possible that "old" now has no roles except its identifier, and is not independant so can be removed.
+	  # Assign/add "self" at the other end too:
+	  if one_to_one
+	    value.send("#{related_role_name}=".to_sym, self)
+	  else
+	    array = value.send(related_role_name)
+	    array.replace(array - [old] + [self])
+	    # REVISIT: It's possible that "old" now has no roles except its identifier, and is not independant so can be removed.
+	  end
 	end
       end
 
-      class_def role_name do
-	role_var = "@#{role_name}"
-	instance_variable_defined?(role_var) && instance_variable_get(role_var)
+      class_eval do
+	define_method role_name do
+	  role_var = "@#{role_name}"
+	  instance_variable_defined?(role_var) && instance_variable_get(role_var)
+	end
       end
     end
 
