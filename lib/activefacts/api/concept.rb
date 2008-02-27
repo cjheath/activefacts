@@ -16,9 +16,11 @@ module ActiveFacts
 
     # Each Concept maintains a list of the Roles it plays:
     def roles(name = nil)
-      @roles ||= {}
-      def @roles.verbalise
-	keys.sort_by(&:to_s).inspect
+      unless instance_variable_defined? "@roles"
+	@roles = {}	  # Initialize and extend without warnings.
+	def @roles.verbalise
+	  keys.sort_by(&:to_s).inspect
+	end
       end
       case name
       when nil
@@ -75,15 +77,16 @@ module ActiveFacts
 	raise "Role #{role_name} does not resolve to any existing class (found #{klass.inspect} in #{roles.map{|r|r.name}.inspect})" unless Class === klass
 
 	# Create a value instance we can hack if the value isn't already in this constellation
-	old = instance_variable_get("@#{role_name}")
+	role_var = "@#{role_name}"
+	old = instance_variable_defined?(role_var) && instance_variable_get(role_var)
 	return if old == value	  # Occurs during one_to_one assignment, for example
 
 	value = self.class.vocabulary.adopt(klass, constellation, value)
 	return if old == value	  # Occurs when same value is assigned
 
-	instance_variable_set("@#{role_name}", value)
+	instance_variable_set(role_var, value)
 
-	# De-assign/reemove "self" at the old other end too:
+	# De-assign/remove "self" at the old other end too:
 	if old
 	  if one_to_one
 	    value.send("#{related_role_name}=".to_sym, nil)
@@ -103,7 +106,8 @@ module ActiveFacts
       end
 
       class_def role_name do
-	instance_variable_get("@#{role_name}")
+	role_var = "@#{role_name}"
+	instance_variable_defined?(role_var) && instance_variable_get(role_var)
       end
     end
 
@@ -118,7 +122,9 @@ module ActiveFacts
 	define_method "#{role_name}" do
 #	  puts "REVISIT: Access to array of #{klass.to_s} from #{role_name}, matching single role is #{single_role_name}"
 	  role_var = "@#{role_name}"
-	  (r = instance_variable_set(role_var, [])) unless (r = instance_variable_get(role_var))
+	  unless (r = instance_variable_defined?(role_var) && instance_variable_get(role_var))
+	    (r = instance_variable_set(role_var, []))
+	  end
 	  r
 	end
       end

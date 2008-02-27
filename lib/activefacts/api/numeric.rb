@@ -17,8 +17,6 @@ class Int < BasicObject
   end
 
   private
-  attr_accessor :__value
-
   def method_missing(meth, *args, &block)
     r = @__value.send meth, *args, &block
     # $stdout.puts "Calling #{@__value}.#{self.class}\##{meth}(#{args.map{|a|a.inspect}*", "}) --> #{r.inspect}"
@@ -39,8 +37,6 @@ class Real < BasicObject
   end
 
   private
-  attr_accessor :__value
-
   def method_missing(meth, *args, &block)
     r = @__value.send meth, *args, &block
     # $stdout.puts "Calling #{@__value}.#{self.class}\##{meth}(#{args.map{|a|a.inspect}*", "}) --> #{r.inspect}"

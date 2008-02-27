@@ -6,7 +6,7 @@ module ActiveFacts
     def value_type *args, &block
       include ActiveFacts::Value
       # the included method adds the Value::ClassMethods
-      initialise_value_type *args, &block
+      initialise_value_type(*args, &block)
     end
   end
 end
@@ -24,6 +24,6 @@ class Class
   def entity_type *args
     raise "not an entity type" if respond_to? :value_type
     include ActiveFacts::Entity
-    initialise_entity_type *args
+    initialise_entity_type(*args)
   end
 end
