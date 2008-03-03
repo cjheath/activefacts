@@ -81,6 +81,9 @@ RingConstraint is of exactly one RingType;
 Role = entity known by Role_Id:
 	Role has exactly one Role_Id,
 	Role_Id is of at most one Role;
+Role has at most one role-Name,
+	role-Name is name of at least one Role,
+	each role-Name is name of some Role;
 Role is of RingConstraint,
 	RingConstraint has at most one Role;
 other-Role is of RingConstraint,
@@ -116,6 +119,10 @@ Name is of Unit,
 	Unit is called exactly one Name;
 Unit is fundamental;
 
+UnitBasis = entity known by base-Unit and Unit:
+	Unit is derived from base-Unit [acyclic, intransitive];
+UnitBasis has at most one Exponent;
+
 ValueRange = entity known by minimum-Bound and maximum-Bound:
 	ValueRange has at most one minimum-Bound,
 	ValueRange has at most one maximum-Bound;
@@ -127,10 +134,6 @@ AllowedRange = ValueRestriction allows at least one ValueRange,
 	each ValueRestriction allows some ValueRange;
 Role has at most one ValueRestriction,
 	ValueRestriction applies to Role;
-
-BaseUnit = entity known by base-Unit and Unit:
-	Unit is derived from base-Unit [acyclic, intransitive];
-BaseUnit has at most one Exponent;
 
 FrequencyConstraint = subtype of PresenceConstraint;
 
@@ -145,7 +148,7 @@ RoleInSequence has at most one leading-Adjective;
 RoleInSequence has at most one trailing-Adjective;
 
 SetComparisonConstraint = subtype of SetConstraint;
-SetComparisonConstraintCoversRoleSequence = SetComparisonConstraint covers at least one RoleSequence,
+SetComparisonRoles = SetComparisonConstraint covers at least one RoleSequence,
 	each SetComparisonConstraint covers some RoleSequence;
 
 SetEqualityConstraint = subtype of SetComparisonConstraint;
@@ -191,11 +194,6 @@ Population includes RoleValue,
 Population includes Fact,
 	Fact belongs to exactly one Population;
 
-RoleName = subtype of Feature;
-Role has at most one RoleName,
-	RoleName is name of at least one Role,
-	each RoleName is name of some Role;
-
 TypeInheritance = subtype of FactType known by EntityType and super-EntityType:
 	super-EntityType is supertype of EntityType [acyclic],
 	EntityType is subtype of super-EntityType;
@@ -216,9 +214,9 @@ Constraints:
 	MandatoryExclusionConstraint ConceptMayNotBeBothValueTypeAndEntityType over EntityTypeIsASubtypeOfConcept(Concept), ValueTypeIsASubtypeOfConcept(Concept)
 	MandatoryExclusionConstraint ConstraintMustBeOneConcreteType over RingConstraintIsASubtypeOfConstraint(Constraint), SetEqualityConstraintIsASubtypeOfSetComparisonConstraint(SetComparisonConstraint), SetExclusionConstraintIsASubtypeOfSetComparisonConstraint(SetComparisonConstraint), SubsetConstraintIsASubtypeOfSetConstraint(SetConstraint), PresenceConstraintIsASubtypeOfConstraint(Constraint)
 	EachFactTypeHasAtLeastOneRole: in Role, each value (FactType) must occur at least 1 time
-	MandatoryExclusionConstraint ExclusiveOrConstraint1 over UnitIsFundamental(Unit), BaseUnit(Unit)
+	MandatoryExclusionConstraint ExclusiveOrConstraint1 over UnitIsFundamental(Unit), UnitBasis(Unit)
 	ExternalUniquenessConstraint1: each combination(NameIsOfConstraint.Name, VocabularyContainsConstraint.Vocabulary) may occur at most 1 time
-	MandatoryExclusionConstraint FeatureMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfFeature(Feature), ConceptIsASubtypeOfFeature(Feature), RoleNameIsASubtypeOfFeature(Feature), AliasIsASubtypeOfFeature(Feature)
+	MandatoryExclusionConstraint FeatureMustBeVocabularyConceptOrRoleName over VocabularyIsASubtypeOfFeature(Feature), ConceptIsASubtypeOfFeature(Feature), AliasIsASubtypeOfFeature(Feature)
 	OnlyOneSupertypeMayBePrimary: each combination(TypeInheritance.EntityType, TypeInheritanceDefinesPrimarySupertype.TypeInheritance) may occur at most 1 time
 	SubsetConstraint PreferredIdentifierHasMaxFrequency PresenceConstraintHasMaxFrequency(PresenceConstraint) < PresenceConstraintIsPreferredIdentifier(PresenceConstraint)
 	PresenceConstraintMustHaveFrequency: each combination(PresenceConstraintHasMinFrequency.PresenceConstraint, PresenceConstraintHasMaxFrequency.PresenceConstraint, PresenceConstraintIsMandatory.PresenceConstraint) must occur at least 1 time

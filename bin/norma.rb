@@ -14,12 +14,13 @@ require "pp"
 include ActiveFacts
 
 arg = ARGV.shift
-if arg == "-C"
-  require 'activefacts/cqldump'
+generator = "text"
+if arg =~ /^--(.*)/
+  generator = $1
   arg = ARGV.shift
-else
-  require 'activefacts/dump'
 end
+require "activefacts/generate/#{generator}"
+
 model = ActiveFacts::Norma.read(arg)
 
 model.dump

@@ -163,23 +163,6 @@
   </ItemGroup>
   <ItemGroup Condition="Exists('Units.orm')">
   </ItemGroup>
-  <ItemGroup Condition="Exists('Orienteering.orm')">
-    <None Include="Orienteering.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Orienteering.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Orienteering.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Orienteering.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Orienteering.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Orienteering.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('Genealogy-Events.orm')">
     <None Include="Genealogy-Events.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -319,23 +302,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('CompanyDirectorName2.orm')">
-    <None Include="CompanyDirectorName2.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CompanyDirectorName2.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="CompanyDirectorName2.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CompanyDirectorName2.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="CompanyDirectorName2.MySQL.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CompanyDirectorName2.orm</DependentUpon>
-      <ORMGenerator>DDILtoMySQL</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('SubtypePI.orm')">
     <None Include="SubtypePI.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -351,6 +317,40 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SubtypePI.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Orienteering.orm')">
+    <None Include="Orienteering.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orienteering.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Orienteering.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orienteering.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Orienteering.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orienteering.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('CompanyDirectorName2.orm')">
+    <None Include="CompanyDirectorName2.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyDirectorName2.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="CompanyDirectorName2.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyDirectorName2.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="CompanyDirectorName2.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompanyDirectorName2.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

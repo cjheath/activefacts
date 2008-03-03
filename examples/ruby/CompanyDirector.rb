@@ -40,7 +40,7 @@ module CompanyDirector
   end
 
   class Attendance
-    entity_type :person, :company, :date	# All identifying role implicitly mandatory
+    entity_type :person, :company, :attendance_date	# All identifying role implicitly mandatory
     binary :attendee, Person			# Injects Person.all_attendance
     binary :company				# Injects Company.all_attendance
     binary :attendance_date, Date		# Injects Date.all_attendance

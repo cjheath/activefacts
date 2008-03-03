@@ -1,46 +1,33 @@
 # This hack is required because Integer & Float don't support new,
-# and can't be sensibly subclassed. Just delegate to an instance var,
-# except for a few things that matter to us, like class().
-require 'facets/basicobject'
+# and can't be sensibly subclassed. Just delegate to an instance var.
+require 'delegate'
 require 'date'
 
-class Int < BasicObject
-  def initialize(i)
-    @__value = i.to_i
+class Int < SimpleDelegator
+  def initialize(i = nil)
+    __setobj__(i)
   end
 
-  define_method(:class) { __self__.class }
-
-  def send(meth, *a, &b)
-    # Ensure that normal sends go to __self__, not the internal value
-    __self__.send(meth, *a, &b)
+  def hash
+    __getobj__.hash ^ super
   end
 
-  private
-  def method_missing(meth, *args, &block)
-    r = @__value.send meth, *args, &block
-    # $stdout.puts "Calling #{@__value}.#{self.class}\##{meth}(#{args.map{|a|a.inspect}*", "}) --> #{r.inspect}"
-    # r
+  def ==(o)
+    __getobj__.==(o)
   end
 end
 
-class Real < BasicObject
-  def initialize(r)
-    @__value = r.to_f
+class Real < SimpleDelegator
+  def initialize(r = nil)
+    __setobj__(r)
   end
 
-  define_method(:class) { __self__.class }
-
-  def send(meth, *a, &b)
-    # Ensure that normal sends go to __self__, not the internal value
-    __self__.send(meth, *a, &b)
+  def hash
+    __getobj__.hash ^ super
   end
 
-  private
-  def method_missing(meth, *args, &block)
-    r = @__value.send meth, *args, &block
-    # $stdout.puts "Calling #{@__value}.#{self.class}\##{meth}(#{args.map{|a|a.inspect}*", "}) --> #{r.inspect}"
-    # r
+  def ==(o)
+    __getobj__.==(o)
   end
 end
 

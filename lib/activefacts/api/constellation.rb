@@ -72,4 +72,3 @@ module ActiveFacts
     end
   end
 end
-

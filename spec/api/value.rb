@@ -46,7 +46,7 @@ describe "Value Type instances" do
 
   it "should allow its roles to be assigned" do
       @string_value.attr = 23
-      @string_value.attr.should == 23
+      @string_value.attr.should === 23
   end
 
   it "should return the ValueType in response to .class()" do
