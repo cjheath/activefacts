@@ -19,8 +19,8 @@ MapID = AutoCounter();
 MapName = VariableLengthText(80);
 Number = UnsignedInteger(32) restricted to {1..100};
 PersonID = AutoCounter();
+Placing = UnsignedInteger(32);
 PointValue = UnsignedInteger(32);
-Position = UnsignedInteger(32);
 PostCode = UnsignedInteger(32);
 PunchID = AutoCounter();
 Score = SignedInteger(32);
@@ -44,7 +44,7 @@ Entry = entity known by EntryID:
 	Entry has exactly one EntryID,
 	EntryID is of at most one Entry;
 Entry received at most one Score;
-Entry finished in at most one finish-Position;
+Entry finished in at most one finish-Placing;
 
 Event = entity known by EventID:
 	Event has exactly one EventID,
@@ -55,10 +55,14 @@ start-Location is where Event starts,
 	Event starts at exactly one start-Location;
 Event is held on exactly one StartTime;
 EventScoringMethod = ScoringMethod is used for Course of Event;
-ControlValue = ControlNumber for Event has at most one PointValue;
 Event has at most one Number;
 Club runs Event,
 	Event is run by exactly one Club;
+
+EventControl = entity known by ControlNumber and Event:
+	Event includes at least one ControlNumber,
+	each Event includes some ControlNumber;
+EventControl has at most one PointValue;
 
 Map = entity known by MapID:
 	Map has exactly one MapID,
@@ -81,13 +85,14 @@ Person has exactly one GivenName,
 Person is of at most one Gender;
 Person was born in at most one birth-Year;
 Person has at most one PostCode;
-Person is at most one member-of Club;
+Person is member of at most one Club;
 
 Punch = entity known by PunchID:
 	Punch has exactly one PunchID,
 	PunchID is of at most one Punch;
 Visit = Punch was visited by Entry at Time;
-PunchPlacement = Event has Punch at at most one ControlNumber;
+PunchPlacement = Punch is placed at EventControl,
+	some Punch is placed at each EventControl;
 
 Series = entity known by SeriesID:
 	Series has exactly one SeriesID,

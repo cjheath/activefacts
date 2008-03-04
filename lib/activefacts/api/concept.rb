@@ -111,7 +111,7 @@ module ActiveFacts
       end
 
       def multiple(role_name, klass, single_role_name)
-	raise "not sym" unless Symbol === role_name
+	raise "multiple(#{role_name.class} #{role_name.inspect}) - Symbol expected" unless Symbol === role_name
 	roles[role_name] = Role.new(klass, role_name)
 
 	# puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
@@ -176,28 +176,30 @@ module ActiveFacts
 	end
 	# puts "role_name = #{role_name.inspect}"
 
-	# The related class might be forward-referenced, so handle a Symbol instead of a Class.
-	unless related
-	  case related_name = a = args.shift
-	  when Class
-	    related = a
-	    related_name = a.basename
-	  when :mandatory
-	    args.unshift(a)
-	    related_name =
-	    related = role_name
-	  when Symbol
-	    related = a
-	  else
-	    related = role_name
-	  end
+	# The related class might be forward-referenced, so handle a Symbol/String instead of a Class.
+	case related_name = a = args.shift
+	when Class
+	  related = a
+	  related_name = a.basename
+	when :mandatory, Numeric
+	  args.unshift(a)	# Oops, undo.
+	  related_name =
+	  related = role_name
+	when Symbol, String
+	  related = a
+	else
+	  related = role_name
 	end
 	related_name ||= role_name
 	related_name = related_name.to_s.snakecase
 
 	# resolve the Symbol to a Class now if possible:
-	resolved = vocabulary.concept(related)
-	related = resolved if Symbol === related && resolved
+	begin
+	  resolved = vocabulary.concept(related)
+	  related = resolved if resolved
+	rescue
+	  resolved = nil
+	end
 	# puts "related = #{related.inspect}"
 
 	if args[0] == :mandatory
@@ -256,7 +258,7 @@ module ActiveFacts
 	    trailing_adjective.shift if trailing_adjective[0,1] == '_'
 	    puts "Role #{role_name} is #{related_name}-#{trailing_adjective}; store adjectives"
 	  elsif (role_name.downcase != related_name.downcase)
-	    if @vocabulary.concept[role_name.camelcase(true)]
+	    if @vocabulary.concept(role_name.camelcase(true))
 	      raise "Role name #{role_name} may be name of existing concept unless that concept plays that role"
 	    end
 	  end
@@ -293,8 +295,10 @@ module ActiveFacts
 	case concept
 	when Class
 	  block.call(concept, *args)	# Execute block in the context of the concept
-	when Symbol, String	# Arrange for this to happen later
-	  vocabulary.__delay(concept.to_sym, args, &block)
+	when Symbol
+	  vocabulary.__delay(concept.to_s.camelcase(true), args, &block)
+	when String	# Arrange for this to happen later
+	  vocabulary.__delay(concept, args, &block)
 	else
 	  raise "Delayed binding not possible for #{concept.inspect}"
 	end

@@ -42,7 +42,7 @@ module ActiveFacts
 =begin
 	  # REVISIT: Is any processing of the role names needed here?
 	  args.each{|role|
-	    if concept = vocabulary.concept[role.to_s.camelcase(true)]
+	    if concept = vocabulary.concept(role.to_s.camelcase(true))
 	      #REVISIT: puts "#{role} identifies existing concept #{concept.name}, good"
 	    else
 	      #REVISIT: puts "#{role} identifies no existing concept"
@@ -69,7 +69,7 @@ module ActiveFacts
 	unless vocabulary.respond_to? :concept
 	  vocabulary.send :extend, Vocabulary
 	end
-	vocabulary.concept[other.basename] = other
+	vocabulary.add_concept(other)
       end
     end
   end

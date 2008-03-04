@@ -5,10 +5,10 @@ vocabulary Blog;
  */
 AuthorId = AutoCounter();
 CommentId = AutoCounter();
+ContentId = AutoCounter();
 Name = VariableLengthText(64);
+Ordinal = UnsignedInteger(32);
 PostId = AutoCounter();
-SectionId = AutoCounter();
-Sequence = UnsignedInteger(32);
 Style = VariableLengthText(20);
 Text = LargeLengthText();
 TopicId = AutoCounter();
@@ -28,23 +28,19 @@ Comment = entity known by CommentId:
 Author wrote Comment,
 	Comment was written by exactly one Author;
 
+Content = entity known by ContentId:
+	Content has exactly one ContentId,
+	ContentId is of at most one Content;
+Content has exactly one Text,
+	Text is of Content;
+text-Content provides text of at most one Comment,
+	Comment consists of exactly one text-Content;
+Content is of at most one Style;
+
 Post = entity known by PostId:
 	Post has exactly one PostId,
 	PostId is of at most one Post;
 Post was written by exactly one Author;
-ParagraphComment = paragraph-Sequence in Post has Comment,
-	Comment on Post applies to at most one paragraph-Sequence,
-	each Comment on some Post applies to some paragraph-Sequence;
-
-Section = entity known by SectionId:
-	Section has exactly one SectionId,
-	SectionId is of at most one Section;
-Section has exactly one Text,
-	Text is of Section;
-PostSectionSequence = Sequence in Post contains at most one Section;
-text-Section provides text of at most one Comment,
-	Comment consists of exactly one text-Section;
-Section is of at most one Style;
 
 Topic = entity known by TopicId:
 	Topic has exactly one TopicId,
@@ -54,7 +50,13 @@ Topic is called exactly one topic-Name,
 Post belongs to exactly one Topic;
 Topic belongs to at most one parent-Topic [acyclic];
 
+Paragraph = entity known by Ordinal and Post:
+	Post includes Ordinal paragraph;
+Paragraph has Comment,
+	Comment is on exactly one Paragraph;
+Paragraph contains exactly one Content;
+
 /*
 Constraints:
-	MandatoryExclusionConstraint ExclusiveOrConstraint1 over PostSectionSequence(Section), SectionProvidesTextOfComment(Section)
+	InternalUniquenessConstraint7: in ParagraphContainsContent, each value (Content) may occur at most 1 time
  */

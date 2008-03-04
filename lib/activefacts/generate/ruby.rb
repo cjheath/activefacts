@@ -76,64 +76,40 @@ module ActiveFacts
 
       @out.puts "  class #{o.name} < #{ruby_type_name}\n" +
 		"    value_type #{params}\n"
-      dump_functional_roles(o)
+      dump_roles(o)
       @out.puts "  end\n\n"
     end
 
-    def ruby_role_name(role)
-      role.role_name.snakecase.gsub("-",'_')
-    end
-
-    def known_by(roles)
-      roles.map{|role|
-	  ":"+ruby_role_name(role)
-	}*", "
-    end
-
-    def show_role(r)
-      puts "Role player #{r.object_type.name} facttype #{r.fact_type.name} lead_adj #{r.leading_adjective} trail_adj #{r.trailing_adjective} allows #{r.allowed_values.inspect}"
-    end
-
-    def dump_functional_roles(o)
-      o.roles.each {|role|
-	  dump_functional_role(role)
-	}
-    end
-
-    def dump_binary(role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil)
-      # Find whether we need the name of the other role player, and whether it's defined yet:
-      if role_name.camelcase(true) == role_player
-	# Don't use Class name if implied by rolename
-	role_player = nil
-      elsif !@concept_types_dumped[role_player]
-	role_player = '"'+role_player.name+'"'
-      else
-	role_player = role_player.name
+    def dump_role(role)
+      # REVISIT: Handle Unary Roles here
+      if role.fact_type.roles.size != 2
+	$stderr.puts "Ignoring unary role #{role} in #{role.fact_type}" if role.fact_type.roles.size == 1
+	return
       end
 
-      @out.puts "    binary " +
-	      [ ":"+role_name,
-		role_player,
-		one_to_one,
-		readings,
-		other_role_name
-	      ].compact*", "
-    end
-
-    def dump_functional_role(role)
-      # REVISIT: Handle Unary Roles here
-      return unless role.fact_type.roles.size == 2
-
-      return if SubtypeFactType === role.fact_type
+      if SubtypeFactType === role.fact_type
+	# $stderr.puts "Ignoring role #{role} in #{role.fact_type}, subtype fact type"
+	return
+      end
 
       # Find any uniqueness constraint over this role:
       fact_constraints = @set_constraints_by_fact[role.fact_type]
       ucs = fact_constraints.select{|c| PresenceConstraint === c && c.max == 1 }
       # Emit "binary..." only for functional roles here:
-      return unless ucs.find {|c| c.role_sequence == [role] }
+      unless ucs.find {|c| c.role_sequence == [role] }
+	# $stderr.puts "No uniqueness constraint found for #{role} in #{role.fact_type}"
+	return
+      end
 
       other_role_number = role.fact_type.roles[0] == role ? 1 : 0
       other_role = role.fact_type.roles[other_role_number]
+
+      if ucs.find {|c| c.role_sequence == [other_role] } &&
+	  !@concept_types_dumped[other_role.object_type]
+	# $stderr.puts "Will dump 1:1 later for #{role} in #{role.fact_type}"
+	return
+      end
+
       other_role_name = ruby_role_name(other_role)
       other_player = other_role.object_type
 
@@ -141,8 +117,9 @@ module ActiveFacts
       
       # REVISIT: Add readings
       # REVISIT: Add other role name if defined
+      role_name = ruby_role_name(role)
 
-      dump_binary(other_role_name, other_player, one_to_one)
+      dump_binary(other_role_name, other_player, one_to_one, nil, role_name)
     end
 
     def dump_entity_type(o)
@@ -160,10 +137,31 @@ module ActiveFacts
 	      "    entity_type #{known_by(pi.role_sequence)}"
       end
       dump_fact_roles(o.fact_type) if NestedType === o
-      dump_functional_roles(o)
+      dump_roles(o)
       @out.puts \
 	      "  end\n\n"
       @constraints_used[pi] = true
+    end
+
+    def dump_binary(role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil)
+      # Find whether we need the name of the other role player, and whether it's defined yet:
+      if role_name.camelcase(true) == role_player
+	# Don't use Class name if implied by rolename
+	role_player = nil
+      elsif !@concept_types_dumped[role_player]
+	role_player = '"'+role_player.name+'"'
+      else
+	role_player = role_player.name
+      end
+      other_role_name = ":"+other_role_name if other_role_name
+
+      @out.puts "    binary " +
+	      [ ":"+role_name,
+		role_player,
+		one_to_one,
+		readings,
+		other_role_name
+	      ].compact*", "
     end
 
     # Try to dump entity types in order of name, but we need
@@ -299,6 +297,26 @@ module ActiveFacts
       @out.puts "  end\n\n"
 
       @fact_types_dumped[f] = true
+    end
+
+    def ruby_role_name(role)
+      role.role_name.snakecase.gsub("-",'_')
+    end
+
+    def known_by(roles)
+      roles.map{|role|
+	  ":"+ruby_role_name(role)
+	}*", "
+    end
+
+    def show_role(r)
+      puts "Role player #{r.object_type.name} facttype #{r.fact_type.name} lead_adj #{r.leading_adjective} trail_adj #{r.trailing_adjective} allows #{r.allowed_values.inspect}"
+    end
+
+    def dump_roles(o)
+      o.roles.each {|role|
+	  dump_role(role)
+	}
     end
   end
 

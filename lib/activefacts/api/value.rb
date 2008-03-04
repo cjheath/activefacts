@@ -50,7 +50,7 @@ module ActiveFacts
 	unless vocabulary.respond_to? :concept
 	  vocabulary.send :extend, Vocabulary
 	end
-	vocabulary.concept[other.basename] = other
+	vocabulary.add_concept(other)
       end
     end
   end

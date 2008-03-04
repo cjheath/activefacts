@@ -4,27 +4,54 @@ module ActiveFacts
       def concept(name = nil)
 	@concept ||= {}
 	return @concept unless name
+
+	return name if name.is_a? Class	# REVISIT: Should we check it's in the correct vocabulary?
+
+	# puts "Looking up concept #{name} in #{self.name}"
 	camel = name.to_s.camelcase(true)
 	if (c = @concept[camel])
+	  __bind(camel)
 	  return c
 	end
 	begin
 	  return const_get(camel)
 	rescue
+	  #raise "Concept #{name.class} #{name.inspect} not found (as #{camel}) in #{self.name}"
 	  return nil
 	end
       end
 
-      def __delay(concept_sym, args, &block)
-	# puts "Arranging for delayed binding on #{concept_sym}"
+      def add_concept(klass)
+	name = klass.basename
+	# puts "Adding concept #{name} to #{self.name}"
+	@concept ||= {}
+	@concept[klass.basename] = klass
+      end
+
+      def __delay(concept_name, args, &block)
+	# puts "Arranging for delayed binding on #{concept_name.inspect}"
 	@delayed ||= Hash.new { |h,k| h[k] = [] }
-	@delayed[concept_sym] << [args, block]
+	@delayed[concept_name] << [args, block]
+      end
+
+      # __bind raises an error if the named class doesn't exist yet.
+      def __bind(concept_name)
+	concept = const_get(concept_name)
+	if (@delayed && @delayed.include?(concept_name))
+	  $stderr.puts "#{concept_name} was delayed, binding now"
+	  d = @delayed[concept_name]
+	  d.each{|(a,b)|
+	      b.call(concept, *a)
+	    }
+	  @delayed.delete(concept_name)
+	end
       end
 
       def verbalise
 	"Vocabulary #{name}:\n\t" +
 	  @concept.keys.sort.map{|concept|
 	      c = @concept[concept]
+	      __bind(c.basename)
 	      c.verbalise + "\n\t\t// Roles played: " + c.roles.verbalise
 	    }*"\n\t"
       end

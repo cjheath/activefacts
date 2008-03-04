@@ -17,7 +17,7 @@ require 'activefacts/api/numeric'
 
 # Add the methods that convert our classes into Concept types:
 
-ValueClasses = [String, Date, Int, Real]
+ValueClasses = [String, Date, DateTime, Int, Real, AutoCounter]
 ValueClasses.each{|c|
     c.send :extend, ActiveFacts::API::ValueClass
   }
@@ -31,8 +31,13 @@ class Class
 end
 
 # REVISIT: Fix these NORMA types
-class AutoCounter < Int; end
 class Decimal < Int; end
+class SignedInteger < Int; end
 class SignedSmallInteger < Int; end
 class UnsignedInteger < Int; end
 class UnsignedSmallInteger < Int; end
+class LargeLengthText < String; end
+class FixedLengthText < String; end
+class PictureRawData < String; end
+class DateAndTime < DateTime; end
+class Money < Decimal; end

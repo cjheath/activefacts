@@ -35,3 +35,32 @@ end
 class ::Date
   def self.__Is_A_Date; end
 end
+
+# The AutoCounter class is an integer, but only after the value has been established in the database
+class AutoCounter
+  def initialize(i = nil)
+    @value = i
+  end
+
+  def assign(i)
+    raise ArgumentError if @value
+    @value = i.to_i
+  end
+
+  def defined?
+    !@value.nil?
+  end
+
+  def to_s
+    if self.defined?
+      @value.to_s 
+    else
+      "new_#{object_id}"
+    end
+  end
+
+  def self.coerce(i)
+    raise ArgumentError unless @value
+    [ i.to_i, @value ]
+  end
+end

@@ -57,9 +57,9 @@
       <DependentUpon>OilSupplyWithCosts.orm</DependentUpon>
       <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Include="Genealogy-Events._ORMCustomToolReport.cs">
+    <Compile Include="Genealogy._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
-      <DependentUpon>Genealogy-Events.orm</DependentUpon>
+      <DependentUpon>Genealogy.orm</DependentUpon>
     </Compile>
     <Compile Include="Metamodel.CoRef._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -116,9 +116,9 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>WindowInRoomInBldg._ORMCustomToolReport.cs</LastGenOutput>
     </None>
-    <None Include="Genealogy-Events.orm">
+    <None Include="Genealogy.orm">
       <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>Genealogy-Events._ORMCustomToolReport.cs</LastGenOutput>
+      <LastGenOutput>Genealogy._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Metamodel.orm">
       <Generator>ORMCustomTool</Generator>
@@ -162,23 +162,6 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('Units.orm')">
-  </ItemGroup>
-  <ItemGroup Condition="Exists('Genealogy-Events.orm')">
-    <None Include="Genealogy-Events.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Genealogy-Events.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Genealogy-Events.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Genealogy-Events.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Genealogy-Events.MySQL.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Genealogy-Events.orm</DependentUpon>
-      <ORMGenerator>DDILtoMySQL</ORMGenerator>
-    </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('Blog.orm')">
     <None Include="Blog.DCIL.xml">
@@ -350,6 +333,23 @@
     <None Include="CompanyDirectorName2.MySQL.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirectorName2.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Genealogy.orm')">
+    <None Include="Genealogy.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Genealogy.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Genealogy.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy.orm</DependentUpon>
       <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
   </ItemGroup>
