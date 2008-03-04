@@ -87,12 +87,14 @@ module Metamodel
   end
 
   class Bound
-    entity_type :value, :inclusive_bound
+    entity_type :value, :is_inclusive
     binary :value, Value, :bound
+    unary :is_inclusive
   end
 
   class Coefficient
     entity_type :numerator, :denominator
+    unary :is_precise
     binary :numerator, Numerator, :coefficient
     binary :denominator, Denominator, :coefficient
   end
@@ -129,6 +131,8 @@ module Metamodel
     binary :role_sequence, "RoleSequence", :presence_constraint
     binary :max_frequency, Frequency, :presence_constraint
     binary :min_frequency, Frequency, :presence_constraint
+    unary :is_preferred_identifier
+    unary :is_mandatory
   end
 
   class Reading
@@ -183,6 +187,7 @@ module Metamodel
     binary :unit_id, Unit_Id, 1, :unit
     binary :coefficient, Coefficient, :unit
     binary :name, Name, :unit
+    unary :is_fundamental
   end
 
   class UnitBasis
@@ -237,6 +242,7 @@ module Metamodel
   end
 
   class SetExclusionConstraint < SetComparisonConstraint
+    unary :is_mandatory
   end
 
   class Feature
@@ -256,6 +262,8 @@ module Metamodel
   end
 
   class EntityType < Concept
+    unary :is_independent
+    unary :is_personal
     binary :fact_type, FactType, 1, :entity_type
   end
 
@@ -282,6 +290,7 @@ module Metamodel
     entity_type :entity_type, :super_entity_type
     binary :super_entity_type, EntityType
     binary :entity_type, EntityType
+    unary :defines_primary_supertype
   end
 
   class ValueType < Concept

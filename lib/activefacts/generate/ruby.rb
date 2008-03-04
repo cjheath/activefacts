@@ -81,10 +81,11 @@ module ActiveFacts
     end
 
     def dump_role(role)
-      # REVISIT: Handle Unary Roles here
-      if role.fact_type.roles.size != 2
-	$stderr.puts "Ignoring unary role #{role} in #{role.fact_type}" if role.fact_type.roles.size == 1
-	return
+      if role.fact_type.roles.size == 1
+	# Handle Unary Roles here
+	@out.puts "    unary :"+ruby_role_name(role)
+      elsif role.fact_type.roles.size != 2
+	return	# ternaries and higher are always objectified
       end
 
       if SubtypeFactType === role.fact_type
@@ -300,7 +301,11 @@ module ActiveFacts
     end
 
     def ruby_role_name(role)
-      role.role_name.snakecase.gsub("-",'_')
+      if (role.fact_type.roles.size == 1)
+	role.fact_type.readings[0].name.gsub(/ *\{0\} */,'').gsub(' ','_').downcase
+      else
+	role.role_name.snakecase.gsub("-",'_')
+      end
     end
 
     def known_by(roles)

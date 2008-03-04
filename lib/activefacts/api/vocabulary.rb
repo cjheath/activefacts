@@ -38,7 +38,7 @@ module ActiveFacts
       def __bind(concept_name)
 	concept = const_get(concept_name)
 	if (@delayed && @delayed.include?(concept_name))
-	  $stderr.puts "#{concept_name} was delayed, binding now"
+	  # $stderr.puts "#{concept_name} was delayed, binding now"
 	  d = @delayed[concept_name]
 	  d.each{|(a,b)|
 	      b.call(concept, *a)

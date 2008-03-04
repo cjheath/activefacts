@@ -33,6 +33,21 @@ module ActiveFacts
 	end
       end
 
+      def unary(role_name)
+	roles[role_name] = Role.new(TrueClass, role_name)
+	class_eval do
+	  role_var = "@#{role_name}"
+	  define_method "#{role_name}=" do |value|
+	    instance_variable_set(role_var, value ? true : nil)
+	    # REVISIT: Provide a way to find all instances playing/not playing this role
+	    # Analogous to true.all_thing_by_role_name...
+	  end
+	  define_method "#{role_name}" do |value|
+	    instance_variable_get(role_var)
+	  end
+	end
+      end
+
       def binary(*args)
 	role_name, related, mandatory, one_to_one, related_role_name, reading =
 	  binary_params(args)
