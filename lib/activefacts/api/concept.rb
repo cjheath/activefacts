@@ -35,14 +35,16 @@ module ActiveFacts
 
       def unary(role_name)
 	roles[role_name] = Role.new(TrueClass, role_name)
+	# puts "Defining #{basename}.#{role_name} as unary"
 	class_eval do
 	  role_var = "@#{role_name}"
 	  define_method "#{role_name}=" do |value|
+	    #puts "Setting #{self.class.name} #{object_id}.#{role_var} to #{(value ? true : nil).inspect}"
 	    instance_variable_set(role_var, value ? true : nil)
 	    # REVISIT: Provide a way to find all instances playing/not playing this role
 	    # Analogous to true.all_thing_by_role_name...
 	  end
-	  define_method "#{role_name}" do |value|
+	  define_method "#{role_name}" do
 	    instance_variable_get(role_var)
 	  end
 	end
@@ -95,6 +97,7 @@ module ActiveFacts
 	    value = self.class.vocabulary.adopt(klass, constellation, value)
 	    return if old == value	  # Occurs when same value is assigned
 
+	    # puts "Setting binary #{role_var} to #{value.verbalise}"
 	    instance_variable_set(role_var, value)
 
 	    # De-assign/remove "self" at the old other end too:

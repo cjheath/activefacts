@@ -60,7 +60,7 @@ module ActiveFacts
 	    send(concept.to_sym).map{|instance|
 		s = "\t\t" + instance.verbalise
 		if (single_roles.size > 0)
-		  s += ": " +
+		  s += " where " +
 		    single_roles.map{|r|
 			value = instance.send(r)
 			"#{r} = #{value ? value.verbalise : "nil"}"

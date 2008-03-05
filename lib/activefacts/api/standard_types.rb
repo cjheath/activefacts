@@ -22,6 +22,10 @@ ValueClasses.each{|c|
     c.send :extend, ActiveFacts::API::ValueClass
   }
 
+class TrueClass
+  def verbalise; "true"; end
+end
+
 class Class
   def entity_type *args
     raise "not an entity type" if respond_to? :value_type
