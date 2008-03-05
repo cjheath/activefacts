@@ -5,11 +5,15 @@ require 'date'
 
 class Int < SimpleDelegator
   def initialize(i = nil)
-    __setobj__(i)
+    __setobj__(Integer(i))
   end
 
   def hash
     __getobj__.hash ^ super
+  end
+
+  def to_s
+    __getobj__.to_s
   end
 
   def ==(o)
@@ -19,11 +23,15 @@ end
 
 class Real < SimpleDelegator
   def initialize(r = nil)
-    __setobj__(r)
+    __setobj__(Float(r))
   end
 
   def hash
     __getobj__.hash ^ super
+  end
+
+  def to_s
+    __getobj__.to_s
   end
 
   def ==(o)

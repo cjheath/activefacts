@@ -20,7 +20,6 @@ module ActiveFacts
 
       # verbalise this entity
       def verbalise(role_name = nil)
-	# REVISIT: Should be able to pass role name to role.verbalise here:
 	"#{role_name || self.class.basename}(#{self.class.identifying_roles.map{|r| send(r).verbalise(r.to_s.camelcase(true)) }*", "})"
       end
 
@@ -39,16 +38,6 @@ module ActiveFacts
 	  # puts "Initialising entity type #{self}"
 	  @identifying_roles = superclass.identifying_roles if superclass.respond_to?(:identifying_roles)
 	  @identifying_roles = args if args.size > 0 || !@identifying_roles
-=begin
-	  # REVISIT: Is any processing of the role names needed here?
-	  args.each{|role|
-	    if concept = vocabulary.concept(role.to_s.camelcase(true))
-	      #REVISIT: puts "#{role} identifies existing concept #{concept.name}, good"
-	    else
-	      #REVISIT: puts "#{role} identifies no existing concept"
-	    end
-	  }
-=end
 	end
 
 	def inherited(other)

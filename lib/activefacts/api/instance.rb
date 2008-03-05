@@ -19,7 +19,7 @@ module ActiveFacts
       # Verbalise this instance
       def verbalise
 	# This method should always be overridden in subclasses
-	raise "REVISIT: #{self.class} Instance verbalisation needed"
+	raise "#{self.class} Instance verbalisation needed"
       end
 
       attr_accessor :query
@@ -27,7 +27,7 @@ module ActiveFacts
 
       module ClassMethods
 	include Concept
-	# REVISIT: Add Instance class methods here
+	# Add Instance class methods here
       end
 
       def Instance.included other

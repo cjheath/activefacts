@@ -5,7 +5,7 @@ module ActiveFacts
 	@concept ||= {}
 	return @concept unless name
 
-	return name if name.is_a? Class	# REVISIT: Should we check it's in the correct vocabulary?
+	return name if name.is_a? Class
 
 	# puts "Looking up concept #{name} in #{self.name}"
 	camel = name.to_s.camelcase(true)
@@ -64,8 +64,19 @@ module ActiveFacts
 	  if klass === value		# Right class?
 	    vc = value.respond_to?(:constellation) && value.constellation
 	    if (c != vc)		# Wrong constellation?
-	      # The new object *must* come from our constellation, because it might already exist there.
-	      raise "REVISIT: Can't clone objects from outside this constellation yet"
+	      # We need a new object from our constellation, so copy the value.
+	      if klass.respond_to?(:identifying_roles)
+		# Make a new entity having only the identifying roles set.
+		# Someone will complain that this is wrong, and all functional role values should also
+		# be cloned, and I'm listening... but not there yet. Why just those?
+		cloned = c.send(
+		    :"#{klass.basename}",
+		    *klass.identifying_roles.map{|role| value.send(role) }
+		  )
+	      else
+		# Just copy a value:
+		cloned = c.send(:"#{klass.basename}", *value)
+	      end
 	      value.constellation = c
 	    else
 	      # Already right class, in the right cnstellation

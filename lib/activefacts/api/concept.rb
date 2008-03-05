@@ -2,6 +2,23 @@ module ActiveFacts
   module API
     module Vocabulary; end
 
+    # A ValueArray is an array with all mutating methods hidden.
+    # We use these for the "many" side of a 1:many relationship.
+    # Only "replace" and "delete" are actually used (so far!).
+    # Perhaps sort! is innocuous and can remain?
+    class ValueArray < Array
+      [ :"<<", :"[]=", :clear, :collect!, :compact!, :concat, :delete,
+        :delete_at, :delete_if, :fill, :flatten!, :insert, :map!, :pop,
+	:push, :reject!, :replace, :reverse!, :shift, :shuffle!, :slice!,
+	:sort!, :uniq!, :unshift
+      ].each{|s|
+	  begin
+	    alias_method("__#{s}", s)
+	  rescue NameError  # shuffle! is in 1.9 only
+	  end
+	}
+    end
+
     module Concept
       N = 1.0/0	    # Infinity, useful as a cardinality end marker (0..N)
 
@@ -82,18 +99,28 @@ module ActiveFacts
 
 	# puts "Defining #{basename}.#{role_name} to #{klass.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
 	class_eval do
+	  role_var = "@#{role_name}"
+
+	  # Define the getter
+	  define_method role_name do
+	    instance_variable_defined?(role_var) && instance_variable_get(role_var)
+	  end
+
+	  # Define the setter
 	  define_method "#{role_name}=" do |value|
 	    #puts "Assigning #{self}.#{role_name} to #{value}, value will be added/assigned to #{related_role_name}"
 
-	    # Find what class the value should be:
-	    klass = self.class.roles(role_name).resolve_player(self.class.vocabulary)
-	    raise "Role #{role_name} does not resolve to any existing class (found #{klass.inspect} in #{roles.map{|r|r.name}.inspect})" unless Class === klass
+	    unless Class === klass	# klass wasn't bound, find what class the value should be:
+	      unless Class === (klass = self.class.roles(role_name).resolve_player(vocab = self.class.vocabulary))
+		raise "Role #{role_name} does not resolve to any existing class in vocabulary #{vocabulary.name}"
+	      end
+	    end
 
-	    # Create a value instance we can hack if the value isn't already in this constellation
-	    role_var = "@#{role_name}"
+	    # Get old value, and jump out early if it's already set
 	    old = instance_variable_defined?(role_var) && instance_variable_get(role_var)
 	    return if old == value	  # Occurs during one_to_one assignment, for example
 
+	    # Create a value instance we can hack if the value isn't already in this constellation
 	    value = self.class.vocabulary.adopt(klass, constellation, value)
 	    return if old == value	  # Occurs when same value is assigned
 
@@ -105,7 +132,7 @@ module ActiveFacts
 	      if one_to_one
 		value.send("#{related_role_name}=".to_sym, nil)
 	      else
-		value.send(related_role_name).delete(self)
+		value.send(related_role_name).__delete(self)
 	      end
 	    end
 
@@ -114,16 +141,9 @@ module ActiveFacts
 	      value.send("#{related_role_name}=".to_sym, self)
 	    else
 	      array = value.send(related_role_name)
-	      array.replace(array - [old] + [self])
-	      # REVISIT: It's possible that "old" now has no roles except its identifier, and is not independant so can be removed.
+	      array.__replace(array - [old] + [self])
+	      # REVISIT: It's possible that "old" now has no roles except its identifier, and if not independant, can be removed.
 	    end
-	  end
-	end
-
-	class_eval do
-	  define_method role_name do
-	    role_var = "@#{role_name}"
-	    instance_variable_defined?(role_var) && instance_variable_get(role_var)
 	  end
 	end
       end
@@ -135,10 +155,10 @@ module ActiveFacts
 	# puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
 
 	class_eval do
+	  role_var = "@#{role_name}"
 	  define_method "#{role_name}" do
-	    role_var = "@#{role_name}"
 	    unless (r = instance_variable_defined?(role_var) && instance_variable_get(role_var))
-	      (r = instance_variable_set(role_var, []))
+	      (r = instance_variable_set(role_var, ValueArray.new))
 	    end
 	    r
 	  end
@@ -301,8 +321,8 @@ module ActiveFacts
 
 	def resolve_player(vocabulary)
 	  return @player if Class === @player	# Done already
-	  klass = vocabulary.concept(@player)
-	  @player = klass if klass
+	  klass = vocabulary.concept(@player)	# Trigger the binding
+	  @player = klass if klass		# Memoize a successful result
 	  @player
 	end
       end
