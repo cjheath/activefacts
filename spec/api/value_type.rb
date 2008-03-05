@@ -4,15 +4,15 @@ describe "Value Type class definitions" do
       module M1
 	class Name < String
 	  value_type
-	  binary :name
+	  has_one :name
 	end
 	class Year < Int
 	  value_type
-	  binary :name
+	  has_one :name
 	end
 	class Weight < Real
 	  value_type
-	  binary :name
+	  has_one :name
 	end
       end
     end

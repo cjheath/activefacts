@@ -1,4 +1,4 @@
-require 'examples/ruby/Orders'
+require '../examples/ruby/Orders'
 
 include ActiveFacts
 include Orders

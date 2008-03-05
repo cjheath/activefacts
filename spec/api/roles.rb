@@ -6,21 +6,21 @@ describe "Roles" do
 	  value_type
 	end
 	class LegalEntity
-	  entity_type :name
-	  binary :name
+	  identified_by :name
+	  has_one :name
 	end
 	class Contract
-	  entity_type :first, :second
-	  binary :first, LegalEntity
-	  binary :second, LegalEntity
+	  identified_by :first, :second
+	  has_one :first, LegalEntity
+	  has_one :second, LegalEntity
 	end
 	class Person < LegalEntity
-	  # entity_type	  # No identifier needed, inherit from superclass
+	  # identified_by	  # No identifier needed, inherit from superclass
 	  # New identifier:
-	  entity_type :family, :given
-	  binary :family, Name
-	  binary :given, Name
-	  binary :related_to, LegalEntity
+	  identified_by :family, :given
+	  has_one :family, Name
+	  has_one :given, Name
+	  has_one :related_to, LegalEntity
 	end
       end
       # print "concept: "; p M5.concept
@@ -31,7 +31,7 @@ describe "Roles" do
     module M5
       class Existing1 < String
 	value_type
-	binary :name
+	has_one :name
       end
     end
     role = M5::Existing1.roles(:name)
@@ -48,7 +48,7 @@ describe "Roles" do
     module M5
       class Existing2 < String
 	value_type
-	binary :given_name
+	has_one :given_name
       end
     end
     # print "M5::Existing2.roles = "; p M5::Existing2.roles
@@ -70,7 +70,7 @@ describe "Roles" do
     module M5
       class FamilyName < Name
 	value_type
-	binary :patriarch, Person, 1
+	one_to_one :patriarch, Person
       end
     end
     r = M5::FamilyName.roles(:patriarch)

@@ -50,7 +50,7 @@ module ActiveFacts
 	end
       end
 
-      def unary(role_name)
+      def maybe(role_name)
 	roles[role_name] = Role.new(TrueClass, role_name)
 	# puts "Defining #{basename}.#{role_name} as unary"
 	class_eval do
@@ -67,19 +67,28 @@ module ActiveFacts
 	end
       end
 
-      def binary(*args)
-	role_name, related, mandatory, one_to_one, related_role_name, reading =
-	  binary_params(args)
+      def has_one(*args)
+	role_name, related, mandatory, related_role_name, reading =
+	  binary_params(false, args)
+	__binary(false, role_name, related, mandatory, related_role_name, reading)
+      end
 
+      def one_to_one(*args)
+	role_name, related, mandatory, related_role_name, reading =
+	  binary_params(true, args)
+	__binary(true, role_name, related, mandatory, related_role_name, reading)
+      end
+
+      def __binary(one_to_one, role_name, related, mandatory, related_role_name, reading)
 	# puts "#{self}.#{role_name} is to #{related.inspect}, #{mandatory ? :mandatory : :optional}, related role is #{related_role_name}, reading=#{reading.inspect}"
 
-	single(role_name, related, related_role_name, one_to_one)
+	__single(role_name, related, related_role_name, one_to_one)
 
 	when_bound(related, self, role_name, related_role_name) do |target, definer, role_name, related_role_name|
 	  if (one_to_one)
-	    target.single(related_role_name, definer, role_name, one_to_one)
+	    target.__single(related_role_name, definer, role_name, one_to_one)
 	  else
-	    target.multiple(related_role_name, definer, role_name)
+	    target.__multiple(related_role_name, definer, role_name)
 	  end
 	end
       end
@@ -93,7 +102,7 @@ module ActiveFacts
       end
 
       # Define accessor methods for this role name, which should be assigned an object of the indicated class
-      def single(role_name, klass, related_role_name, one_to_one = false)
+      def __single(role_name, klass, related_role_name, one_to_one = false)
 	raise "not sym" unless Symbol === role_name
 	roles[role_name] = Role.new(klass, role_name)
 
@@ -148,8 +157,8 @@ module ActiveFacts
 	end
       end
 
-      def multiple(role_name, klass, single_role_name)
-	raise "multiple(#{role_name.class} #{role_name.inspect}) - Symbol expected" unless Symbol === role_name
+      def __multiple(role_name, klass, single_role_name)
+	raise "__multiple(#{role_name.class} #{role_name.inspect}) - Symbol expected" unless Symbol === role_name
 	roles[role_name] = Role.new(klass, role_name)
 
 	# puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
@@ -174,7 +183,6 @@ module ActiveFacts
       # [ role_name,
       #	related,
       #	mandatory,
-      #	one_to_one,
       #	related_role_name,
       #	reading ]
       #
@@ -188,7 +196,7 @@ module ActiveFacts
       #	  Role player name (not role name)
       #	  Trailing Adjective
       # "_by_<other_role_name>" if other_role_name != this role player's name, and not other_player_this_player
-      def binary_params(args)
+      def binary_params(one_to_one, args)
 	# Params:
 	#   role_name (Symbol)
 	#   other player (Symbol or Class)
@@ -199,7 +207,6 @@ module ActiveFacts
 	role_name = nil
 	related = nil
 	mandatory = false
-	one_to_one = false
 	related_role_name = nil
 	role_player = self.basename.snakecase
 
@@ -245,11 +252,6 @@ module ActiveFacts
 	  args.shift
 	end
 
-	if Numeric === args[0] && args[0] == 1
-	  one_to_one = true
-	  args.shift
-	end
-
 	if Symbol == args[0]
 	  related_role_name = args.shift
 	end
@@ -277,7 +279,6 @@ module ActiveFacts
 	[ role_name,
 	  related,
 	  mandatory,
-	  one_to_one,
 	  related_role_name.to_sym,
 	  reading
 	]

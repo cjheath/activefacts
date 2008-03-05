@@ -41,7 +41,7 @@ module ActiveFacts
 	end
 
 	def inherited(other)
-	  other.entity_type #identifying_roles
+	  other.identified_by #identifying_roles
 	end
 
 	# verbalise this concept

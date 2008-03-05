@@ -83,7 +83,7 @@ module ActiveFacts
     def dump_role(role)
       if role.fact_type.roles.size == 1
 	# Handle Unary Roles here
-	@out.puts "    unary :"+ruby_role_name(role)
+	@out.puts "    maybe :"+ruby_role_name(role)
       elsif role.fact_type.roles.size != 2
 	return	# ternaries and higher are always objectified
       end
@@ -96,7 +96,7 @@ module ActiveFacts
       # Find any uniqueness constraint over this role:
       fact_constraints = @set_constraints_by_fact[role.fact_type]
       ucs = fact_constraints.select{|c| PresenceConstraint === c && c.max == 1 }
-      # Emit "binary..." only for functional roles here:
+      # Emit "has_one/one_to_one..." only for functional roles here:
       unless ucs.find {|c| c.role_sequence == [role] }
 	# $stderr.puts "No uniqueness constraint found for #{role} in #{role.fact_type}"
 	return
@@ -131,11 +131,11 @@ module ActiveFacts
 	# REVISIT: What about additional supertypes?
 	@out.puts \
 	      "  class #{o.name} < #{ o.supertypes[0].name }\n" +
-	  (pi != spi ? "    entity_type #{known_by(pi.role_sequence)}\n" : "")
+	  (pi != spi ? "    identified_by #{known_by(pi.role_sequence)}\n" : "")
       else
 	@out.puts \
 	      "  class #{o.name}\n" +
-	      "    entity_type #{known_by(pi.role_sequence)}"
+	      "    identified_by #{known_by(pi.role_sequence)}"
       end
       dump_fact_roles(o.fact_type) if NestedType === o
       dump_roles(o)
@@ -156,10 +156,9 @@ module ActiveFacts
       end
       other_role_name = ":"+other_role_name if other_role_name
 
-      @out.puts "    binary " +
+      @out.puts "    #{one_to_one ? "one_to_one" : "has_one" } " +
 	      [ ":"+role_name,
 		role_player,
-		one_to_one,
 		readings,
 		other_role_name
 	      ].compact*", "
@@ -293,7 +292,7 @@ module ActiveFacts
       return unless pc		# Omit fact types that aren't implicitly nested
 
       @out.puts "  class #{f.name}\t# Implicitly Objectified Fact Type\n" +
-		"    entity_type #{known_by(pc.role_sequence)}"
+		"    identified_by #{known_by(pc.role_sequence)}"
       dump_fact_roles(f)
       @out.puts "  end\n\n"
 

@@ -15,28 +15,28 @@ module CompanyDirector
   end
 
   class Company
-    entity_type :company_name
-    binary :company_name, CompanyName, 1, :company
+    identified_by :company_name
+    one_to_one :company_name, CompanyName, :company
   end
 
   class Person
-    entity_type :person_name
-    binary :person_name, PersonName, 1, :person
-    binary :birth_date, Date, :person
+    identified_by :person_name
+    one_to_one :person_name, PersonName, :person
+    has_one :birth_date, Date, :person
   end
 
   class Attendance	# Implicitly Objectified Fact Type
-    entity_type :date, :company, :person
-    binary :company, Company
-    binary :date, Date
-    binary :person, Person
+    identified_by :date, :company, :person
+    has_one :company, Company
+    has_one :date, Date
+    has_one :person, Person
   end
 
   class Directorship
-    entity_type :person, :company
-    binary :person, Person
-    binary :company, Company
-    binary :appointment_date, Date, :directorship
+    identified_by :person, :company
+    has_one :person, Person
+    has_one :company, Company
+    has_one :appointment_date, Date, :directorship
   end
 
 end

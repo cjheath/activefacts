@@ -4,18 +4,18 @@ describe "A Constellation instance" do
       module M3
 	class Name < String
 	  value_type
-	  binary :attr, Name
+	  has_one :attr, Name
 	end
 
 	class Named
-	  entity_type :name
-	  binary :name
+	  identified_by :name
+	  has_one :name
 	end
 
 	class Person
-	  entity_type :given_name, :family_name
-	  binary :given_name, :Name
-	  binary :family_name, :Name
+	  identified_by :given_name, :family_name
+	  has_one :given_name, :Name
+	  has_one :family_name, :Name
 	end
       end
     end

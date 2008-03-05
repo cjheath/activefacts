@@ -8,8 +8,8 @@ describe "Entity Type class definitions" do
 	class LegalEntity
 	end
 	class Person < LegalEntity
-	  entity_type :name
-	  binary :name, Name
+	  identified_by :name
+	  has_one :name, Name
 	end
       end
     end
@@ -76,7 +76,7 @@ describe "Entity Type class definitions" do
   it "should fail on a ValueClass" do
     lambda{
       class SomeClass < String
-	entity_type
+	identified_by
       end
     }.should raise_error
   end
@@ -91,8 +91,8 @@ describe "Entity Type class definitions" do
 	  class LegalEntity
 	  end
 	  class Bad
-	    entity_type :name
-	    binary :name, LegalEntity
+	    identified_by :name
+	    has_one :name, LegalEntity
 	  end
 	end
       }.should raise_error

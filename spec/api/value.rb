@@ -7,7 +7,7 @@ describe "Value Type instances" do
 	end
 	class StringValue < String
 	  value_type
-	  binary :attr
+	  has_one :attr
 	end
       end
     end

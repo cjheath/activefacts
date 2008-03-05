@@ -27,7 +27,7 @@ class TrueClass
 end
 
 class Class
-  def entity_type *args
+  def identified_by *args
     raise "not an entity type" if respond_to? :value_type
     include ActiveFacts::API::Entity
     initialise_entity_type(*args)

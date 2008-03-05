@@ -1,4 +1,4 @@
-require 'examples/ruby/CompanyDirectorName'
+require '../examples/ruby/CompanyDirectorName'
 
 include ActiveFacts
 include CompanyDirectorName
