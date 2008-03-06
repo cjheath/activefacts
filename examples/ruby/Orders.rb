@@ -20,21 +20,21 @@ module Orders
 
   class Order
     identified_by :order_i_d
-    one_to_one :order_i_d, OrderID, :order
+    one_to_one :order_i_d
   end
 
   class OrderLine
     identified_by :number, :order
-    has_one :order, Order
-    has_one :number, Number
-    has_one :sk_u, "SKU", :order_line
-    has_one :quantity_number, Number, :order_line
+    has_one :order
+    has_one :number
+    has_one :sk_u, "SKU"
+    has_one :quantity_number, Number
   end
 
   class SKU
     identified_by :skui_d
-    one_to_one :skui_d, SKUID, :sk_u
-    has_one :description, Description, :sk_u
+    one_to_one :skui_d, SKUID
+    has_one :description
   end
 
 end

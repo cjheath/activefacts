@@ -88,95 +88,95 @@ module Metamodel
 
   class Bound
     identified_by :value, :is_inclusive
-    has_one :value, Value, :bound
+    has_one :value
     maybe :is_inclusive
   end
 
   class Coefficient
     identified_by :numerator, :denominator
     maybe :is_precise
-    has_one :numerator, Numerator, :coefficient
-    has_one :denominator, Denominator, :coefficient
+    has_one :numerator
+    has_one :denominator
   end
 
   class Constraint
     identified_by :constraint_id
-    one_to_one :constraint_id, Constraint_Id, :constraint
-    has_one :name, Name, :constraint
-    has_one :enforcement, Enforcement, :constraint
-    has_one :vocabulary, "Vocabulary", :constraint
+    one_to_one :constraint_id, Constraint_Id
+    has_one :name
+    has_one :enforcement
+    has_one :vocabulary
   end
 
   class Fact
     identified_by :fact_id
-    one_to_one :fact_id, Fact_Id, :fact
-    has_one :fact_type, "FactType", :fact
-    has_one :population, "Population", :fact
+    one_to_one :fact_id, Fact_Id
+    has_one :fact_type
+    has_one :population
   end
 
   class FactType
     identified_by :fact_type_id
-    one_to_one :fact_type_id, FactType_Id, :fact_type
+    one_to_one :fact_type_id, FactType_Id
   end
 
   class Instance
     identified_by :instance_id
-    one_to_one :instance_id, Instance_Id, :instance
-    has_one :value, Value, :instance
-    has_one :concept, "Concept", :instance
-    has_one :population, "Population", :instance
+    one_to_one :instance_id, Instance_Id
+    has_one :value
+    has_one :concept
+    has_one :population
   end
 
   class PresenceConstraint < Constraint
-    has_one :role_sequence, "RoleSequence", :presence_constraint
-    has_one :max_frequency, Frequency, :presence_constraint
-    has_one :min_frequency, Frequency, :presence_constraint
+    has_one :role_sequence
+    has_one :max_frequency, Frequency
+    has_one :min_frequency, Frequency
     maybe :is_preferred_identifier
     maybe :is_mandatory
   end
 
   class Reading
     identified_by :ordinal, :fact_type
-    has_one :fact_type, FactType, :reading
-    has_one :reading_text, ReadingText, :reading
-    has_one :role_sequence, "RoleSequence", :reading
-    has_one :ordinal, Ordinal, :reading
+    has_one :fact_type
+    has_one :reading_text
+    has_one :role_sequence
+    has_one :ordinal
   end
 
   class RingConstraint < Constraint
-    has_one :role, "Role", :ring_constraint
-    has_one :other_role, "Role", :ring_constraint
-    has_one :ring_type, RingType, :ring_constraint
+    has_one :role
+    has_one :other_role, "Role"
+    has_one :ring_type
   end
 
   class Role
     identified_by :role_id
-    has_one :concept, "Concept"
-    has_one :fact_type, FactType
-    has_one :role_name, Name, :role
-    has_one :value_restriction, "ValueRestriction", :role
-    one_to_one :role_id, Role_Id, :role
+    has_one :concept
+    has_one :fact_type
+    has_one :role_name, Name
+    has_one :value_restriction
+    one_to_one :role_id, Role_Id
   end
 
   class RoleSequence
     identified_by :role_sequence_id
-    one_to_one :role_sequence_id, RoleSequence_Id, :role_sequence
+    one_to_one :role_sequence_id, RoleSequence_Id
   end
 
   class RoleValue
     identified_by :instance, :fact
-    has_one :population, "Population", :role_value
-    has_one :fact, Fact, :role_value
-    has_one :instance, Instance, :role_value
-    has_one :role, Role, :role_value
+    has_one :population
+    has_one :fact
+    has_one :instance
+    has_one :role
   end
 
   class SetConstraint < Constraint
   end
 
   class SubsetConstraint < SetConstraint
-    has_one :superset_role_sequence, RoleSequence, :subset_constraint
-    has_one :subset_role_sequence, RoleSequence, :subset_constraint
+    has_one :superset_role_sequence, RoleSequence
+    has_one :subset_role_sequence, RoleSequence
   end
 
   class UniquenessConstraint < PresenceConstraint
@@ -184,34 +184,34 @@ module Metamodel
 
   class Unit
     identified_by :unit_id
-    one_to_one :unit_id, Unit_Id, :unit
-    has_one :coefficient, Coefficient, :unit
-    has_one :name, Name, :unit
+    one_to_one :unit_id, Unit_Id
+    has_one :coefficient
+    has_one :name
     maybe :is_fundamental
   end
 
   class UnitBasis
     identified_by :base_unit, :unit
-    has_one :unit, Unit
+    has_one :unit
     has_one :base_unit, Unit
-    has_one :exponent, Exponent, :unit_basis
+    has_one :exponent
   end
 
   class ValueRange
     identified_by :minimum_bound, :maximum_bound
-    has_one :minimum_bound, Bound, :value_range
-    has_one :maximum_bound, Bound, :value_range
+    has_one :minimum_bound, Bound
+    has_one :maximum_bound, Bound
   end
 
   class ValueRestriction
     identified_by :value_restriction_id
-    one_to_one :value_restriction_id, ValueRestriction_Id, :value_restriction
+    one_to_one :value_restriction_id, ValueRestriction_Id
   end
 
   class AllowedRange	# Implicitly Objectified Fact Type
     identified_by :value_range, :value_restriction
-    has_one :value_restriction, ValueRestriction
-    has_one :value_range, ValueRange
+    has_one :value_restriction
+    has_one :value_range
   end
 
   class FrequencyConstraint < PresenceConstraint
@@ -222,11 +222,11 @@ module Metamodel
 
   class RoleRef
     identified_by :role_sequence, :ordinal
-    has_one :role, Role
-    has_one :ordinal, Ordinal
-    has_one :role_sequence, RoleSequence
-    has_one :leading_adjective, Adjective, :role_ref
-    has_one :trailing_adjective, Adjective, :role_ref
+    has_one :role
+    has_one :ordinal
+    has_one :role_sequence
+    has_one :leading_adjective, Adjective
+    has_one :trailing_adjective, Adjective
   end
 
   class SetComparisonConstraint < SetConstraint
@@ -234,8 +234,8 @@ module Metamodel
 
   class SetComparisonRoles	# Implicitly Objectified Fact Type
     identified_by :set_comparison_constraint, :role_sequence
-    has_one :role_sequence, RoleSequence
-    has_one :set_comparison_constraint, SetComparisonConstraint
+    has_one :role_sequence
+    has_one :set_comparison_constraint
   end
 
   class SetEqualityConstraint < SetComparisonConstraint
@@ -247,12 +247,12 @@ module Metamodel
 
   class Feature
     identified_by :name, :vocabulary
-    has_one :name, Name, :feature
-    has_one :vocabulary, "Vocabulary", :feature
+    has_one :name
+    has_one :vocabulary
   end
 
   class Vocabulary < Feature
-    has_one :parent_vocabulary, Vocabulary, :vocabulary
+    has_one :parent_vocabulary, Vocabulary
   end
 
   class Alias < Feature
@@ -264,41 +264,41 @@ module Metamodel
   class EntityType < Concept
     maybe :is_independent
     maybe :is_personal
-    one_to_one :fact_type, FactType, :entity_type
+    one_to_one :fact_type
   end
 
   class Import
     identified_by :imported_vocabulary, :vocabulary
-    has_one :vocabulary, Vocabulary
+    has_one :vocabulary
     has_one :imported_vocabulary, Vocabulary
   end
 
   class Correspondence	# Implicitly Objectified Fact Type
     identified_by :imported_feature, :import
-    has_one :import, Import
+    has_one :import
     has_one :imported_feature, Feature
     has_one :local_feature, Feature
   end
 
   class Population
     identified_by :vocabulary, :name
-    has_one :name, Name, :population
-    has_one :vocabulary, Vocabulary, :population
+    has_one :name
+    has_one :vocabulary
   end
 
   class TypeInheritance < FactType
     identified_by :entity_type, :super_entity_type
     has_one :super_entity_type, EntityType
-    has_one :entity_type, EntityType
+    has_one :entity_type
     maybe :defines_primary_supertype
   end
 
   class ValueType < Concept
-    has_one :value_type, ValueType, :value_type
-    has_one :length, Length, :value_type
-    has_one :scale, Scale, :value_type
-    has_one :value_restriction, ValueRestriction, :value_type
-    has_one :unit, Unit, :value_type
+    has_one :value_type
+    has_one :length
+    has_one :scale
+    has_one :value_restriction
+    has_one :unit
   end
 
 end

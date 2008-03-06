@@ -114,11 +114,12 @@ module ActiveFacts
       other_role_name = ruby_role_name(other_role)
       other_player = other_role.object_type
 
-      one_to_one = ucs.find {|c| c.role_sequence == [other_role] } ? "1" : nil
+      # It's a one_to_one if there's a uniqueness constraing on the other role:
+      one_to_one = ucs.find {|c| c.role_sequence == [other_role] }
       
       # REVISIT: Add readings
-      # REVISIT: Add other role name if defined
-      role_name = ruby_role_name(role)
+
+      role_name = role.role_name != role.object_type.name ? ruby_role_name(role) : nil
 
       dump_binary(other_role_name, other_player, one_to_one, nil, role_name)
     end
@@ -146,7 +147,7 @@ module ActiveFacts
 
     def dump_binary(role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil)
       # Find whether we need the name of the other role player, and whether it's defined yet:
-      if role_name.camelcase(true) == role_player
+      if role_name.camelcase(true) == role_player.name
 	# Don't use Class name if implied by rolename
 	role_player = nil
       elsif !@concept_types_dumped[role_player]
