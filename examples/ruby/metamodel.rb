@@ -6,7 +6,7 @@ module Metamodel
     value_type :length => 64
   end
 
-  class Constraint_Id < AutoCounter
+  class ConstraintId < AutoCounter
     value_type 
   end
 
@@ -22,11 +22,11 @@ module Metamodel
     value_type :length => 32
   end
 
-  class FactType_Id < AutoCounter
+  class FactId < AutoCounter
     value_type 
   end
 
-  class Fact_Id < AutoCounter
+  class FactTypeId < AutoCounter
     value_type 
   end
 
@@ -34,7 +34,7 @@ module Metamodel
     value_type :length => 32
   end
 
-  class Instance_Id < AutoCounter
+  class InstanceId < AutoCounter
     value_type 
   end
 
@@ -62,11 +62,11 @@ module Metamodel
     value_type 
   end
 
-  class RoleSequence_Id < AutoCounter
+  class RoleId < AutoCounter
     value_type 
   end
 
-  class Role_Id < AutoCounter
+  class RoleSequenceId < AutoCounter
     value_type 
   end
 
@@ -74,7 +74,7 @@ module Metamodel
     value_type :length => 32
   end
 
-  class Unit_Id < AutoCounter
+  class UnitId < AutoCounter
     value_type 
   end
 
@@ -82,7 +82,7 @@ module Metamodel
     value_type :length => 256
   end
 
-  class ValueRestriction_Id < AutoCounter
+  class ValueRestrictionId < AutoCounter
     value_type 
   end
 
@@ -101,7 +101,7 @@ module Metamodel
 
   class Constraint
     identified_by :constraint_id
-    one_to_one :constraint_id, Constraint_Id
+    one_to_one :constraint_id
     has_one :name
     has_one :enforcement
     has_one :vocabulary
@@ -109,19 +109,19 @@ module Metamodel
 
   class Fact
     identified_by :fact_id
-    one_to_one :fact_id, Fact_Id
+    one_to_one :fact_id
     has_one :fact_type
     has_one :population
   end
 
   class FactType
     identified_by :fact_type_id
-    one_to_one :fact_type_id, FactType_Id
+    one_to_one :fact_type_id
   end
 
   class Instance
     identified_by :instance_id
-    one_to_one :instance_id, Instance_Id
+    one_to_one :instance_id
     has_one :value
     has_one :concept
     has_one :population
@@ -155,12 +155,12 @@ module Metamodel
     has_one :fact_type
     has_one :role_name, Name
     has_one :value_restriction
-    one_to_one :role_id, Role_Id
+    one_to_one :role_id
   end
 
   class RoleSequence
     identified_by :role_sequence_id
-    one_to_one :role_sequence_id, RoleSequence_Id
+    one_to_one :role_sequence_id
   end
 
   class RoleValue
@@ -184,7 +184,7 @@ module Metamodel
 
   class Unit
     identified_by :unit_id
-    one_to_one :unit_id, Unit_Id
+    one_to_one :unit_id
     has_one :coefficient
     has_one :name
     maybe :is_fundamental
@@ -205,7 +205,7 @@ module Metamodel
 
   class ValueRestriction
     identified_by :value_restriction_id
-    one_to_one :value_restriction_id, ValueRestriction_Id
+    one_to_one :value_restriction_id
   end
 
   class AllowedRange	# Implicitly Objectified Fact Type
