@@ -4,26 +4,26 @@ vocabulary Metamodel;
  * Value Types
  */
 Adjective = VariableLengthText(64);
-Constraint_Id = AutoCounter();
+ConstraintId = AutoCounter();
 Denominator = UnsignedInteger(32);
 Enforcement = VariableLengthText(16);
 Exponent = SignedSmallInteger(32);
-FactType_Id = AutoCounter();
-Fact_Id = AutoCounter();
+FactId = AutoCounter();
+FactTypeId = AutoCounter();
 Frequency = UnsignedInteger(32);
-Instance_Id = AutoCounter();
+InstanceId = AutoCounter();
 Length = UnsignedInteger(32);
 Name = VariableLengthText(64);
 Numerator = Decimal();
 Ordinal = UnsignedSmallInteger(32);
 ReadingText = VariableLengthText(256);
 RingType = VariableLengthText();
-RoleSequence_Id = AutoCounter();
-Role_Id = AutoCounter();
+RoleId = AutoCounter();
+RoleSequenceId = AutoCounter();
 Scale = UnsignedInteger(32);
-Unit_Id = AutoCounter();
+UnitId = AutoCounter();
 Value = VariableLengthText(256);
-ValueRestriction_Id = AutoCounter();
+ValueRestrictionId = AutoCounter();
 
 /*
  * Entity Types
@@ -39,26 +39,26 @@ Coefficient = entity known by Numerator and Denominator:
 	Coefficient has exactly one Denominator;
 Coefficient is precise;
 
-Constraint = entity known by Constraint_Id:
-	Constraint has exactly one Constraint_Id,
-	Constraint_Id is of at most one Constraint;
+Constraint = entity known by ConstraintId:
+	Constraint has exactly one ConstraintId,
+	ConstraintId is of at most one Constraint;
 Name is of Constraint,
 	Constraint is called at most one Name;
 Constraint requires at most one Enforcement,
 	Enforcement applies to Constraint;
 
-Fact = entity known by Fact_Id:
-	Fact has exactly one Fact_Id,
-	Fact_Id is of at most one Fact;
+Fact = entity known by FactId:
+	Fact has exactly one FactId,
+	FactId is of at most one Fact;
 
-FactType = entity known by FactType_Id:
-	FactType has exactly one FactType_Id,
-	FactType_Id is of at most one FactType;
+FactType = entity known by FactTypeId:
+	FactType has exactly one FactTypeId,
+	FactTypeId is of at most one FactType;
 Fact is of exactly one FactType;
 
-Instance = entity known by Instance_Id:
-	Instance has exactly one Instance_Id,
-	Instance_Id is of at most one Instance;
+Instance = entity known by InstanceId:
+	Instance has exactly one InstanceId,
+	InstanceId is of at most one Instance;
 Instance has at most one Value;
 
 PresenceConstraint = subtype of Constraint;
@@ -78,9 +78,9 @@ Reading has exactly one ReadingText;
 RingConstraint = subtype of Constraint;
 RingConstraint is of exactly one RingType;
 
-Role = entity known by Role_Id:
-	Role has exactly one Role_Id,
-	Role_Id is of at most one Role;
+Role = entity known by RoleId:
+	Role has exactly one RoleId,
+	RoleId is of at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role,
 	each role-Name is name of some Role;
@@ -89,9 +89,9 @@ Role is of RingConstraint,
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 
-RoleSequence = entity known by RoleSequence_Id:
-	RoleSequence has exactly one RoleSequence_Id,
-	RoleSequence_Id is of at most one RoleSequence;
+RoleSequence = entity known by RoleSequenceId:
+	RoleSequence has exactly one RoleSequenceId,
+	RoleSequenceId is of at most one RoleSequence;
 Reading is in exactly one RoleSequence,
 	RoleSequence is for Reading;
 PresenceConstraint covers exactly one RoleSequence;
@@ -111,9 +111,9 @@ SubsetConstraint covers exactly one subset-RoleSequence;
 
 UniquenessConstraint = subtype of PresenceConstraint;
 
-Unit = entity known by Unit_Id:
-	Unit has exactly one Unit_Id,
-	Unit_Id is of at most one Unit;
+Unit = entity known by UnitId:
+	Unit has exactly one UnitId,
+	UnitId is of at most one Unit;
 Unit has at most one Coefficient;
 Name is of Unit,
 	Unit is called exactly one Name;
@@ -127,9 +127,9 @@ ValueRange = entity known by minimum-Bound and maximum-Bound:
 	ValueRange has at most one minimum-Bound,
 	ValueRange has at most one maximum-Bound;
 
-ValueRestriction = entity known by ValueRestriction_Id:
-	ValueRestriction has exactly one ValueRestriction_Id,
-	ValueRestriction_Id is of at most one ValueRestriction;
+ValueRestriction = entity known by ValueRestrictionId:
+	ValueRestriction has exactly one ValueRestrictionId,
+	ValueRestrictionId is of at most one ValueRestriction;
 AllowedRange = ValueRestriction allows at least one ValueRange,
 	each ValueRestriction allows some ValueRange;
 Role has at most one ValueRestriction,
@@ -139,13 +139,13 @@ FrequencyConstraint = subtype of PresenceConstraint;
 
 MandatoryConstraint = subtype of PresenceConstraint;
 
-RoleInSequence = entity known by RoleSequence and Ordinal:
+RoleRef = entity known by RoleSequence and Ordinal:
 	Role is in RoleSequence in at most one Ordinal place,
 	RoleSequence includes at most one Role in Ordinal place,
 	each RoleSequence includes some Role in some Ordinal place,
 	Role has Ordinal place in RoleSequence;
-RoleInSequence has at most one leading-Adjective;
-RoleInSequence has at most one trailing-Adjective;
+RoleRef has at most one leading-Adjective;
+RoleRef has at most one trailing-Adjective;
 
 SetComparisonConstraint = subtype of SetConstraint;
 SetComparisonRoles = SetComparisonConstraint covers at least one RoleSequence,

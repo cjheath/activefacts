@@ -1,4 +1,4 @@
-vocabulary CompanyDirector;
+vocabulary CompanyDirectorName;
 
 /*
  * Value Types

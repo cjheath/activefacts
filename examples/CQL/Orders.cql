@@ -1,4 +1,4 @@
-vocabulary Entities;
+vocabulary Orders;
 
 /*
  * Value Types

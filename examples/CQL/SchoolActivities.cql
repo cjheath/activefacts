@@ -17,16 +17,17 @@ Activity = entity known by ActivityName:
 School = entity known by SchoolName:
 	School has exactly one SchoolName,
 	SchoolName is of at most one School;
-SchoolSanctionsActivity = School sanctions Activity;
+SchoolActivity = School sanctions Activity;
 
 Student = entity known by StudentName:
 	Student has exactly one StudentName,
 	StudentName is of at most one Student;
 Student is enrolled in exactly one School;
-StudentParticipation = Student participates in Activity which is sanctioned by at most one School;
+StudentParticipation = Student represents at most one School in Activity,
+	Student participates in Activity which is sanctioned by School;
 
 /*
 Constraints:
 	SubsetConstraint StudentParticipationIsForEnrolledSchool StudentIsEnrolledInSchool(School, Student) < StudentParticipation(School, Student)
-	SubsetConstraint StudentParticipationIsForSchoolSanctionedActivity SchoolSanctionsActivity(School, Activity) < StudentParticipation(School, Activity)
+	SubsetConstraint StudentParticipationIsForSchoolSanctionedActivity SchoolActivity(School, Activity) < StudentParticipation(School, Activity)
  */
