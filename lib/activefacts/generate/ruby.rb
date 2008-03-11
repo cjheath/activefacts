@@ -1,5 +1,5 @@
 #
-# Dump to API module for ActiveFacts models.
+# Dump to API module for ActiveFacts vocabularies.
 #
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
@@ -9,14 +9,14 @@ require 'activefacts/api'
 module ActiveFacts
 
   class RubyGenerator
-    def initialize(model)
-      @model = model
+    def initialize(vocabulary)
+      @vocabulary = vocabulary
     end
 
     def dump(out = $>)
       @out = out
       @out.puts "require 'activefacts/api'\n\n"
-      @out.puts "module #{@model.name}\n\n"
+      @out.puts "module #{@vocabulary.name}\n\n"
 
       build_indices
       @concept_types_dumped = {}
@@ -32,7 +32,7 @@ module ActiveFacts
       @set_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
 #      @ring_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
 
-      @model.constraints.each { |c|
+      @vocabulary.constraints.each { |c|
 	  case c
 	  when SetConstraint
 	    fact_types = c.role_sequence.map(&:fact_type).uniq	# All fact types spanned by this constraint
@@ -50,7 +50,7 @@ module ActiveFacts
     end
 
     def dump_value_types
-      @model.object_types.sort_by{|o| o.name}.each{|o|
+      @vocabulary.concepts.sort_by{|o| o.name}.each{|o|
 	  next if EntityType === o
 	  dump_value_type(o)
 	  @concept_types_dumped[o] = true
@@ -88,7 +88,7 @@ module ActiveFacts
 	return	# ternaries and higher are always objectified
       end
 
-      if SubtypeFactType === role.fact_type
+      if TypeInheritance === role.fact_type
 	# $stderr.puts "Ignoring role #{role} in #{role.fact_type}, subtype fact type"
 	return
       end
@@ -106,20 +106,20 @@ module ActiveFacts
       other_role = role.fact_type.roles[other_role_number]
 
       if ucs.find {|c| c.role_sequence == [other_role] } &&
-	  !@concept_types_dumped[other_role.object_type]
+	  !@concept_types_dumped[other_role.concept]
 	# $stderr.puts "Will dump 1:1 later for #{role} in #{role.fact_type}"
 	return
       end
 
       other_role_name = ruby_role_name(other_role)
-      other_player = other_role.object_type
+      other_player = other_role.concept
 
       # It's a one_to_one if there's a uniqueness constraing on the other role:
       one_to_one = ucs.find {|c| c.role_sequence == [other_role] }
       
       # REVISIT: Add readings
 
-      role_name = role.role_name != role.object_type.name ? ruby_role_name(role) : nil
+      role_name = role.role_name != role.concept.name ? ruby_role_name(role) : nil
 
       dump_binary(other_role_name, other_player, one_to_one, nil, role_name)
     end
@@ -171,7 +171,7 @@ module ActiveFacts
     def dump_entity_types
       # Build hash tables of precursors and followers to use:
       entity_count = 0
-      precursors, followers = *@model.object_types.inject([{},{}]) { |a, o|
+      precursors, followers = *@vocabulary.concepts.inject([{},{}]) { |a, o|
 	  if EntityType === o
 	    entity_count += 1
 	    precursor = a[0]
@@ -180,7 +180,7 @@ module ActiveFacts
 	    pi = o.preferred_identifier
 	    if pi
 	      pi.role_sequence.each{|r|
-		  player = r.object_type
+		  player = r.concept
 		  next unless EntityType === player
 		  # player is a precursor of o
 		  (precursor[o] ||= []) << player if (player != o)
@@ -196,7 +196,7 @@ module ActiveFacts
 	  a
 	}
 
-      sorted = @model.object_types.sort_by{|o| o.name}
+      sorted = @vocabulary.concepts.sort_by{|o| o.name}
       panic = nil
       while entity_count > 0 do
 	count_this_pass = 0
@@ -220,7 +220,7 @@ module ActiveFacts
 	    o.roles.map(&:fact_type).uniq.select{|f|
 		# The fact type hasn't already been dumped but all its role players have
 		!@fact_types_dumped[f] &&
-		!f.roles.detect{|r| !@concept_types_dumped[r.object_type] }
+		!f.roles.detect{|r| !@concept_types_dumped[r.concept] }
 	      }.each{|f|
 		  dump_fact_type(f)
 		}
@@ -254,7 +254,7 @@ module ActiveFacts
 
     # Dump fact types.
     def dump_fact_types
-      @model.fact_types.each{|f|
+      @vocabulary.fact_types.each{|f|
 	  next if @fact_types_dumped[f] || skip_fact_type(f)
 
 	  dump_fact_type(f)
@@ -266,13 +266,13 @@ module ActiveFacts
       # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
       # These will come up as un-handled constraints:
       f.nested_as ||
-	SubtypeFactType === f
+	TypeInheritance === f
     end
 
     def dump_fact_roles(fact)
       fact.roles.each{|role| 
 	  role_name = ruby_role_name(role)
-	  dump_binary(role_name, role.object_type)
+	  dump_binary(role_name, role.concept)
 	}
     end
 
@@ -315,7 +315,7 @@ module ActiveFacts
     end
 
     def show_role(r)
-      puts "Role player #{r.object_type.name} facttype #{r.fact_type.name} lead_adj #{r.leading_adjective} trail_adj #{r.trailing_adjective} allows #{r.allowed_values.inspect}"
+      puts "Role player #{r.concept.name} facttype #{r.fact_type.name} lead_adj #{r.leading_adjective} trail_adj #{r.trailing_adjective} allows #{r.allowed_values.inspect}"
     end
 
     def dump_roles(o)
@@ -325,7 +325,7 @@ module ActiveFacts
     end
   end
 
-  class Model
+  class Vocabulary
     def dump(out = $>)
       RubyGenerator.new(self).dump(out)
     end

@@ -1,5 +1,5 @@
 #
-# Process a NORMA file into an ActiveFacts model
+# Process a NORMA file into an ActiveFacts vocabulary
 #
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
@@ -32,25 +32,25 @@ module ActiveFacts
 		puts "Failure in reading #{@filename}: #{e.inspect}"
 	    end
 
-	    # Find the Model and do some setup:
+	    # Find the Vocabulary and do some setup:
 	    root = doc.elements[1]
 	    if root.expanded_name == "ormRoot:ORM2"
 		x_models = root.elements.to_a("orm:ORMModel")
-		throw "No model found" unless x_models.size == 1
+		throw "No vocabulary found" unless x_models.size == 1
 		@x_model = x_models[0]
 	    elsif root.name == "ORMModel"
 		@x_model = doc.elements[1]
 	    else
 		pp root
-		throw "NORMA model not found in file"
+		throw "NORMA vocabulary not found in file"
 	    end
 
-	    read_model
-	    @model
+	    read_vocabulary
+	    @vocabulary
 	end
 
-	def read_model
-	    @model = Model.new(@x_model.attributes['Name'])
+	def read_vocabulary
+	    @vocabulary = Vocabulary.new(@x_model.attributes['Name'])
 
 	    # Find all elements having an "id" attribute and index them
 	    x_identified = @x_model.elements.to_a("//*[@id]")
@@ -83,7 +83,7 @@ module ActiveFacts
 		name = nil if name.size == 0
 		# puts "EntityType #{name} is #{id}"
 		entity_types <<
-		    @by_id[id] = EntityType.new(@model, name)
+		    @by_id[id] = EntityType.new(@vocabulary, name)
 #		x_pref = x.elements.to_a("orm:PreferredIdentifier")[0]
 #		if x_pref
 #		    pi_id = x_pref.attributes['ref']
@@ -112,14 +112,14 @@ module ActiveFacts
 		type_name.sub!(/Numeric\Z/,'')
 		type_name.sub!(/Temporal\Z/,'')
 		length = 32 if type_name =~ /Integer\Z/ && length.to_i == 0 # Set default integer length
-		data_type = DataType.new(@model, type_name)
+		data_type = DataType.new(@vocabulary, type_name)
 		data_type.length = length
 		data_type.scale = scale
 
 		# puts "ValueType #{name} is #{id}"
 		value_types <<
 		    @by_id[id] =
-		    vt = ValueType.new(@model, name, data_type)
+		    vt = ValueType.new(@vocabulary, name, data_type)
 
 		ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
 		ranges.each{|r|
@@ -144,7 +144,7 @@ module ActiveFacts
 		name = "" if !name || name.size == 0
 		# puts "FactType #{name || id}"
 
-		facts << @by_id[id] = fact_type = FactType.new(@model, name)
+		facts << @by_id[id] = fact_type = FactType.new(@vocabulary, name)
 	    }
 	end
 
@@ -174,11 +174,11 @@ module ActiveFacts
 
 		options = []
 		options << :primary if x.attributes["IsPrimary"] == "true"
-		fact_type = SubtypeFactType.new(name, @model, subtype, supertype, *options)
+		fact_type = TypeInheritance.new(name, @vocabulary, subtype, supertype, *options)
 		facts << @by_id[id] = fact_type
 
 		# Index the new Roles so we can find constraints on them:
-		#puts "SubtypeFactType #{fact_type}"
+		#puts "TypeInheritance #{fact_type}"
 		subtype_role = fact_type.roles[0]
 		@by_id[subtype_role_id] = subtype_role
 		supertype_role = fact_type.roles[1]
@@ -211,7 +211,7 @@ module ActiveFacts
 		    # puts "NestedType #{name} is #{id}, nests #{fact_type.name}"
 		    nested_types <<
 			@by_id[id] =
-			nested_type = NestedType.new(@model, name, fact_type)
+			nested_type = NestedType.new(@vocabulary, name, fact_type)
 		end
 	    }
 	end
@@ -236,9 +236,9 @@ module ActiveFacts
 		    id = x.attributes['id']
 		    ref = x.elements[1].attributes['ref']
 
-		    # Find the object type that plays the role:
-		    object_type = @by_id[ref]
-		    throw "RolePlayer for #{name||ref} was not found" if !object_type
+		    # Find the concept that plays the role:
+		    concept = @by_id[ref]
+		    throw "RolePlayer for #{name||ref} was not found" if !concept
 
 		    # Skip implicit roles added by NORMA to make unaries into binaries.
 		    # This would make constraints over the deleted roles impossible,
@@ -257,15 +257,15 @@ module ActiveFacts
 		      role_name = x.attributes['Name']
 		      other_role.name = role_name if role_name && role_name != ''
 
-		      object_type.delete    # Delete our object for the implicit boolean ValueType
+		      concept.delete    # Delete our object for the implicit boolean ValueType
 		      @by_id.delete(ref)    # and de-index it from our list
 		      next
 		    end
 
-		    #puts "#{@model}, Name=#{x.attributes['Name']}, object_type=#{object_type}"
-		    throw "Role is played by #{object_type.class} not ObjectType" if !(ObjectType === object_type)
+		    #puts "#{@vocabulary}, Name=#{x.attributes['Name']}, concept=#{concept}"
+		    throw "Role is played by #{concept.class} not Concept" if !(Concept === concept)
 
-		    role = @by_id[id] = Role.new(@model, x.attributes['Name'], object_type)
+		    role = @by_id[id] = Role.new(@vocabulary, x.attributes['Name'], concept)
 
 		    x_vr = x.elements.to_a("orm:ValueRestriction")
 		    x_vr.each{|vr|
@@ -302,14 +302,14 @@ module ActiveFacts
 			role = @by_id[ref]
 			role_sequence << role
 		    }
-		    role_sequence = @model.get_role_sequence(role_sequence)
+		    role_sequence = @vocabulary.get_role_sequence(role_sequence)
 
 		    x_readings.each{|x|
 			fact_type.readings << Reading.new(role_sequence, x.text)
 		    }
 		}
 	    }
-	    # @model.fact_types.each{|ft| puts ft }
+	    # @vocabulary.fact_types.each{|ft| puts ft }
 	end
 
 	def map_roles(x_roles, why = nil)
@@ -385,7 +385,7 @@ module ActiveFacts
 
 		    rs = RoleSequence.new
 		    roles.each{|r| rs << r }
-		    rs = @model.get_role_sequence(rs)
+		    rs = @vocabulary.get_role_sequence(rs)
 
 		    # puts "Mandatory #{rs}"
 
@@ -401,7 +401,7 @@ module ActiveFacts
 		#puts "Residual Mandatory #{name}: #{rs.to_s}"
 
 		pc = PresenceConstraint.new(
-				@model,	    # In Model,
+				@vocabulary,	    # In Vocabulary,
 				name,	    # this constraint
 				rs,	    # requires that these Roles
 				true,	    # must occur
@@ -419,7 +419,7 @@ module ActiveFacts
 		x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
 		pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
 
-		# Skip uniqueness constraints on implied object types
+		# Skip uniqueness constraints on implied concepts
 		if x_pi && !pi
 		    puts "Skipping uniqueness constraint #{name}, entity not found"
 		    next
@@ -452,7 +452,7 @@ module ActiveFacts
 
 		rs = RoleSequence.new
 		roles.each{|r| rs << r }
-		rs = @model.get_role_sequence(rs)
+		rs = @vocabulary.get_role_sequence(rs)
 		if (mc = @mandatory_constraints_by_rs[rs])
 		    # Remove absorbed mandatory constraints, leaving residual ones.
 		    # puts "Absorbing MC #{mc.attributes['Name']}"
@@ -466,7 +466,7 @@ module ActiveFacts
 		#    (mc ? " (mandatory)" : "") if pi && !mc
 
 		pc = PresenceConstraint.new(
-				@model,	    # In Model,
+				@vocabulary,	    # In Vocabulary,
 				name,	    # this constraint
 				rs,	    # requires that these Roles
 				mc,	    # must/may occur
@@ -485,7 +485,7 @@ module ActiveFacts
 				@x_by_id[mc_id = m.attributes['ref']]
 		rss = []
 		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
-			rss << @model.get_role_sequence(RoleSequence.new(
+			rss << @vocabulary.get_role_sequence(RoleSequence.new(
 				x_rs.elements.to_a("orm:Role").map{|xr|
 					@by_id[xr.attributes['ref']]
 				    }
@@ -497,7 +497,7 @@ module ActiveFacts
 		    @mandatory_constraint_rs_by_id.delete(mc_id)
 		    @mandatory_constraints_by_rs.delete(mc_rs)
 		end
-		ec = ExclusionConstraint.new(@model, name, rss, x_mandatory ? true : nil)
+		ec = ExclusionConstraint.new(@vocabulary, name, rss, x_mandatory ? true : nil)
 	    }
 	end
 
@@ -507,13 +507,13 @@ module ActiveFacts
 		name = x.attributes["Name"]
 		rss = []
 		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
-			rss << @model.get_role_sequence(RoleSequence.new(
+			rss << @vocabulary.get_role_sequence(RoleSequence.new(
 				x_rs.elements.to_a("orm:Role").map{|xr|
 					@by_id[xr.attributes['ref']]
 				    }
 			    ))
 		    }
-		ec = EqualityConstraint.new(@model, name, rss)
+		ec = EqualityConstraint.new(@vocabulary, name, rss)
 	    }
 	end
 
@@ -523,13 +523,13 @@ module ActiveFacts
 		name = x.attributes["Name"]
 		rss = []
 		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
-			rss << @model.get_role_sequence(RoleSequence.new(
+			rss << @vocabulary.get_role_sequence(RoleSequence.new(
 				x_rs.elements.to_a("orm:Role").map{|xr|
 					@by_id[xr.attributes['ref']]
 				    }
 			    ))
 		    }
-		ec = SubsetConstraint.new(@model, name, *rss)
+		ec = SubsetConstraint.new(@vocabulary, name, *rss)
 	    }
 	end
 
@@ -548,7 +548,7 @@ module ActiveFacts
 		from, to = *x.elements.to_a("orm:RoleSequence/orm:Role").map{|xr|
 				@by_id[xr.attributes['ref']]
 			    }
-		RingConstraint.new(@model, name, type_num, from, to)
+		RingConstraint.new(@vocabulary, name, type_num, from, to)
 	    }
 	end
 
@@ -567,7 +567,7 @@ module ActiveFacts
 	end
 
 	def read_instances
-	    population = Population.new(@model, "sample")
+	    population = Population.new(@vocabulary, "sample")
 
 	    # Value instances first, then entities then facts:
 
@@ -638,7 +638,7 @@ module ActiveFacts
 		preferred_id.role_sequence.map(&:fact_type).uniq.each{|ft|
 		    # puts "\tFor FactType #{ft}"
 		    fact_roles = ft.roles.map{|role|
-			if role.object_type == et
+			if role.concept == et
 			    object = instance
 			else
 			    object = role_instances[role]

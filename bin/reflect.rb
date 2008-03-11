@@ -64,6 +64,6 @@ reflector = ActiveFacts::Reflector.new(
 	logfile ? ("-" == logfile ? $> : File.new(logfile, "w")) : nil
     )
 
-model = reflector.load_schema
+vocabulary = reflector.load_schema
 
-model.dump
+vocabulary.dump

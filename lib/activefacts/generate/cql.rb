@@ -1,7 +1,7 @@
 #
-# Dump to CQL module for ActiveFacts models.
+# Dump to CQL module for ActiveFacts vocabularies.
 #
-# Adds the Model.dump_cql() method.
+# Adds the Vocabulary.dump_cql() method.
 #
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
@@ -9,13 +9,13 @@
 module ActiveFacts
 
   class CQLDumper
-    def initialize(model)
-      @model = model
+    def initialize(vocabulary)
+      @vocabulary = vocabulary
     end
 
     def dump(out = $>)
       @out = out
-      @out.puts "vocabulary #{@model.name};\n\n"
+      @out.puts "vocabulary #{@vocabulary.name};\n\n"
 
       build_indices
       @concept_types_dumped = {}
@@ -30,7 +30,7 @@ module ActiveFacts
       @set_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
       @ring_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
 
-      @model.constraints.each { |c|
+      @vocabulary.constraints.each { |c|
 	  case c
 	  when SetConstraint
 	    fact_types = c.role_sequence.map(&:fact_type).uniq	# All fact types spanned by this constraint
@@ -50,7 +50,7 @@ module ActiveFacts
 
     def dump_value_types
       @out.puts "/*\n * Value Types\n */"
-      @model.object_types.sort_by{|o| o.name}.each{|o|
+      @vocabulary.concepts.sort_by{|o| o.name}.each{|o|
 	  next if EntityType === o
 	  dump_value_type(o)
 	  @concept_types_dumped[o] = true
@@ -188,7 +188,7 @@ module ActiveFacts
       @out.puts "\n/*\n * Entity Types\n */"
       # Build hash tables of precursors and followers to use:
       entity_count = 0
-      precursors, followers = *@model.object_types.inject([{},{}]) { |a, o|
+      precursors, followers = *@vocabulary.concepts.inject([{},{}]) { |a, o|
 	  if EntityType === o
 	    entity_count += 1
 	    precursor = a[0]
@@ -197,7 +197,7 @@ module ActiveFacts
 	    pi = o.preferred_identifier
 	    if pi
 	      pi.role_sequence.each{|r|
-		  player = r.object_type
+		  player = r.concept
 		  next unless EntityType === player
 		  # player is a precursor of o
 		  (precursor[o] ||= []) << player if (player != o)
@@ -213,7 +213,7 @@ module ActiveFacts
 	  a
 	}
 
-      sorted = @model.object_types.sort_by{|o| o.name}
+      sorted = @vocabulary.concepts.sort_by{|o| o.name}
       panic = nil
       while entity_count > 0 do
 	count_this_pass = 0
@@ -236,7 +236,7 @@ module ActiveFacts
 	    o.roles.map(&:fact_type).uniq.select{|f|
 		# The fact type hasn't already been dumped but all its role players have
 		!@fact_types_dumped[f] &&
-		!f.roles.detect{|r| !@concept_types_dumped[r.object_type] }
+		!f.roles.detect{|r| !@concept_types_dumped[r.concept] }
 	      }.each{|f|
 		  dump_fact_type(f)
 		}
@@ -274,7 +274,7 @@ module ActiveFacts
       # These will come up as un-handled constraints:
       f.nested_as ||
 	@fact_set_constraints_exhausted[f] ||
-	SubtypeFactType === f
+	TypeInheritance === f
     end
 
     # Dump one fact type.
@@ -308,7 +308,7 @@ module ActiveFacts
       # REVISIT: Uniqueness on the LHS of a binary can be coded using "distinct"
 
       done_banner = false
-      @model.fact_types.each{|f|
+      @vocabulary.fact_types.each{|f|
 	  next if @fact_types_dumped[f] || skip_fact_type(f)
 
 	  @out.puts "/*\n * Fact Types\n */" unless done_banner
@@ -323,7 +323,7 @@ module ActiveFacts
     end
 
     def dump_fact_instances
-      @model.fact_types.each{|f|
+      @vocabulary.fact_types.each{|f|
 	  # Dump the instances:
 	  f.facts.each{|i|
 	    @out.puts "\t\t"+i.to_s
@@ -333,7 +333,7 @@ module ActiveFacts
 
     def dump_constraints(except = {})
       heading = false
-      @model.constraints.sort_by{|c| c.name}.each{|c|
+      @vocabulary.constraints.sort_by{|c| c.name}.each{|c|
 	  next if except[c]
 
 	  # Skip some PresenceConstraints:
@@ -343,8 +343,8 @@ module ActiveFacts
 	      c.role_sequence.size == c.role_sequence[0].fact_type.roles.size &&	# Same number of roles
 	      c.role_sequence[0].fact_type.roles.all?{|r| c.role_sequence.include? r}	# All present
 
-	    # Skip internal PresenceConstraints over SubtypeFactTypes:
-	    next if SubtypeFactType === c.role_sequence[0].fact_type &&
+	    # Skip internal PresenceConstraints over TypeInheritances:
+	    next if TypeInheritance === c.role_sequence[0].fact_type &&
 	      !c.role_sequence.detect{|r| r.fact_type != c.role_sequence[0].fact_type }
 	  end
 
@@ -355,14 +355,14 @@ module ActiveFacts
 
 	  # Skip presence constraints on value types:
 	  # next if ActiveFacts::PresenceConstraint === c &&
-	  #     ActiveFacts::ValueType === c.object_type
+	  #     ActiveFacts::ValueType === c.concept
 	  @out.puts "\t"+c.to_s
 	}
       @out.puts " */" if heading
     end
   end
 
-  class Model
+  class Vocabulary
     def dump(out = $>)
       CQLDumper.new(self).dump(out)
     end

@@ -13,8 +13,8 @@ module ActiveFacts
     #==============================================================
     # Forward declarations for all Base classes
     #==============================================================
-    class Feature; end	# Belongs to Model, has name
-    class Model < Feature; end
+    class Feature; end	# Belongs to Vocabulary, has name
+    class Vocabulary < Feature; end
     class Session; end	# A connection to a database instance
 
     # Data Types forward declared
@@ -25,13 +25,13 @@ module ActiveFacts
     # Fact Types forward declared
     class Role < Feature; end
     class FactType < Feature; end
-    class SubtypeFactType < FactType; end		# Needed?
+    class TypeInheritance < FactType; end		# Needed?
     class Reading < Feature; end
 
     # Object Types forward declared
-    class ObjectType < Feature; end
-    class ValueType < ObjectType; end
-    class EntityType < ObjectType; end
+    class Concept < Feature; end
+    class ValueType < Concept; end
+    class EntityType < Concept; end
     class NestedType < EntityType; end
 
     # Instances forward declared
@@ -109,18 +109,18 @@ module ActiveFacts
 	end
     end
 
-    # A Feature is a named item in a model
+    # A Feature is a named item in a vocabulary
     class Feature
 	typed_attr "", :name	    # Name, default empty string
-	typed_attr Model, nil, :model   # Parent model or nil
+	typed_attr Vocabulary, nil, :vocabulary   # Parent vocabulary or nil
 
 	def initialize(*args)
-	    @model ||= nil
+	    @vocabulary ||= nil
 	    @name ||= ""
 	    args.delete_if{|a|
 		case a
-		when Model
-		    self.model = a
+		when Vocabulary
+		    self.vocabulary = a
 		when String
 		    self.name = (a && a.size > 0) ? a : ""
 		else
@@ -132,8 +132,8 @@ module ActiveFacts
 	end
     end
 
-    class Model < Feature
-	array_attr ObjectType, :object_types	# Array of ObjectType
+    class Vocabulary < Feature
+	array_attr Concept, :concepts	# Array of Concept
 	array_attr FactType, :fact_types	# Array of FactType
 	array_attr Constraint, :constraints	# Array of Constraint
 	array_attr DataType, :data_types	# Array of DataType
@@ -142,11 +142,11 @@ module ActiveFacts
 	# hash_attr Role, RoleSequence, :role_sequence_by_role # Role->RoleSequence
 
 	def initialize(*args)
-	    super(*args)	    # name and model only
+	    super(*args)	    # name and vocabulary only
 	end
 
 	def to_s
-	    "Model #{@name}"
+	    "Vocabulary #{@name}"
 	end
 
 	def get_role_sequence(rs)
@@ -164,7 +164,7 @@ module ActiveFacts
 
     # A connection to a specified database
     class Session
-	typed_attr Model, :model
+	typed_attr Vocabulary, :vocabulary
     end
 
     class BaseUnit
@@ -244,10 +244,10 @@ module ActiveFacts
 		true
 	    }
 	    super(*args)
-	    model.data_types << self if (model)
+	    vocabulary.data_types << self if (vocabulary)
 
 	    raise "DataType should have name" if !name
-	    raise "DataType #{name} should be part of Model" if !model
+	    raise "DataType #{name} should be part of Vocabulary" if !vocabulary
 	    # REVISIT: We have no built-in types yet:
 	    # puts "DataType #{name} should have base DateType" if !base || base == ""
 	end
@@ -265,9 +265,9 @@ module ActiveFacts
     end
 
     class Role < Feature
-	typed_attr ObjectType, :object_type	# role player
+	typed_attr Concept, :concept	# role player
 	typed_attr FactType, :fact_type		# Fact it's a role of
-	typed_attr DataType, :data_type		# subtype of object_type's DataT
+	typed_attr DataType, :data_type		# subtype of concept's DataT
 	typed_attr String, "", :leading_adjective, :trailing_adjective
 	array_attr FactRole, :fact_roles	# Instances of this Role
 	array_attr :allowed_values do |given|	# Array of AllowedValues
@@ -275,14 +275,14 @@ module ActiveFacts
 		end
 
 	def initialize(*args)
-	    @object_type = nil
+	    @concept = nil
 	    @fact_type = nil
 	    @data_type = nil
 	    args.delete_if{|a|
 		case a
-		when ObjectType
-		    self.object_type = a
-		when FactType, SubtypeFactType
+		when Concept
+		    self.concept = a
+		when FactType, TypeInheritance
 		    self.fact_type = a
 		when DataType	# Used only when Role ValueRestrictions apply
 		    self.data_type = a
@@ -298,11 +298,11 @@ module ActiveFacts
 		true
 	    }
 	    super(*args)
-	    # name ||= @object_type.name
-	    raise "Role must have an ObjectType" unless @object_type
+	    # name ||= @concept.name
+	    raise "Role must have an Concept" unless @concept
 	    #raise "Role must have a FactType" unless @fact_type
 
-	    raise "Role #{self} should be part of Model" if !model
+	    raise "Role #{self} should be part of Vocabulary" if !vocabulary
 	    #puts "Role should have name" if !name
 	    #puts "Role #{name} should have base DateType" if !base || base == ""
 	end
@@ -332,10 +332,10 @@ module ActiveFacts
 	end
 
 	def player_name
-	    if object_type.name && object_type.name != ''
-		object_type.name
+	    if concept.name && concept.name != ''
+		concept.name
 	    else
-		object_type.data_type.name
+		concept.data_type.name
 	    end
 	end
 
@@ -349,11 +349,11 @@ module ActiveFacts
 	end
 
 	def to_s(verbose = false)
-	    player = object_type.name
+	    player = concept.name
 
 	    # For Value Types, just show the Role name (if set) or ValueType name
-	    if (ValueType === object_type)
-		o_n = object_type.name
+	    if (ValueType === concept)
+		o_n = concept.name
 		case
 		when @name && @name != ""
 		    return @name + extra_s(verbose)
@@ -361,7 +361,7 @@ module ActiveFacts
 		    return o_n + extra_s(verbose)
 		else
 		    # Otherwise for Value Types, show the data type, not the value type:
-		    player = object_type.data_type.name
+		    player = concept.data_type.name
 		end
 	    end
 
@@ -389,14 +389,14 @@ module ActiveFacts
 	#attr_accessor :derivation_rule		# DerivationRule is omitted for now
 
 	def initialize(*args)
-	    model = args.detect{|a| Model === a }
+	    vocabulary = args.detect{|a| Vocabulary === a }
 	    @roles ||= RoleSequence.new
 	    args.delete_if{|a|
 		case a
 		when Role
 		    add_role(a)
-		when ObjectType # Shorthand; create a role for ObjectType:
-		    add_role(Role.new(model || a.model, a))
+		when Concept # Shorthand; create a role for Concept:
+		    add_role(Role.new(vocabulary || a.vocabulary, a))
 		else
 		    next
 		end
@@ -404,10 +404,10 @@ module ActiveFacts
 	    }
 	    super(*args)
 	    # @nested_as will get set afterwards if needed
-	    model.fact_types << self if (model)
+	    vocabulary.fact_types << self if (vocabulary)
 	    fact_types = []
 
-	    raise "FactType #{self} should be part of Model" if !model
+	    raise "FactType #{self} should be part of Vocabulary" if !vocabulary
 	end
 
 	def preferred_reading
@@ -418,14 +418,14 @@ module ActiveFacts
 	def add_role(role)
 	    roles << role
 	    role.fact_type = self;
-	    role.object_type.roles << role
+	    role.concept.roles << role
 	end
 
 	def role_by_name(name)
 	    roles.detect{|r| r.name == name } ||    # Find the role directly, or
 	    roles.detect{|r|
-		EntityType === r.object_type &&	# Role is played by an EntityType
-		(pi = r.object_type.preferred_identifier) && # Having a PI
+		EntityType === r.concept &&	# Role is played by an EntityType
+		(pi = r.concept.preferred_identifier) && # Having a PI
 		pi.role_sequence.size == 1 &&	    # With one role
 		pi.role_sequence[0].name == name    # Named appropriately
 	    }
@@ -459,21 +459,21 @@ module ActiveFacts
 	end
     end
 
-    class SubtypeFactType < FactType
+    class TypeInheritance < FactType
 	typed_attr EntityType, :supertype
 	typed_attr EntityType, :subtype
 	attr_accessor :is_primary		# Boolean
 
 	def initialize(*args)
 	    # No Roles passed, just Super, Sub
-	    model = args.detect{|a| Model === a }
+	    vocabulary = args.detect{|a| Vocabulary === a }
 	    @roles = RoleSequence.new
 	    objects = []
 	    args.delete_if{|a|
 		case a
-		when ObjectType
+		when Concept
 		    objects << a
-		    self.roles << (r = Role.new(model, a, self))
+		    self.roles << (r = Role.new(vocabulary, a, self))
 		when Symbol
 		    is_primary = true if a == :primary
 		else
@@ -554,7 +554,7 @@ module ActiveFacts
 		ta = nil if ta == ""
 
 		expanded.gsub!(/\{#{i}\}/) {
-		    player = @role_sequence[i].object_type
+		    player = @role_sequence[i].concept
 		    [
 		      frequencies[i],
 		      la,
@@ -576,7 +576,7 @@ module ActiveFacts
     end
 
     # Object Types
-    class ObjectType < Feature
+    class Concept < Feature
 	array_attr Role, :roles			# All Played Roles
 	array_attr Instance, :instances		# Array of Instance
 	attr_accessor :is_independent  		# Boolean, default false
@@ -584,14 +584,14 @@ module ActiveFacts
 
 	def initialize(*args)
 	    super(*args)
-	    model.object_types << self if (model)
+	    vocabulary.concepts << self if (vocabulary)
 
-	    raise "ObjectType #{self} should be part of Model" if !model
+	    raise "Concept #{self} should be part of Vocabulary" if !vocabulary
 	end
 
 	def delete
 	    @roles && @roles.each(&:delete)
-	    @model.object_types.delete(self) if (@model)
+	    @vocabulary.concepts.delete(self) if (@vocabulary)
 	end
 
 	# All unique fact types in which this object plays a role
@@ -599,10 +599,10 @@ module ActiveFacts
 	    roles.map{|r| r.fact_type }.uniq
 	end
 
-	# All role sequences in the model in which this object plays a role
+	# All role sequences in the vocabulary in which this object plays a role
 	def role_sequences
-	    model.role_sequences.reject{|rs|
-		!rs.detect{|r| r.object_type == self }  # doesn't include this object
+	    vocabulary.role_sequences.reject{|rs|
+		!rs.detect{|r| r.concept == self }  # doesn't include this object
 	    }
 	end
 
@@ -611,7 +611,7 @@ module ActiveFacts
 	end
     end
 
-    class EntityType < ObjectType
+    class EntityType < Concept
 	# These things will go in "derive":
 	#attr_accessor :preferred_identifier	# -> Constraint
 	#attr_accessor :instances		# Array of EntityTypeInstance
@@ -629,7 +629,7 @@ module ActiveFacts
 	def supertypes
 	  roles.select{|r|
 	      f = r.fact_type			# from the fact_types of all our roles
-	      SubtypeFactType === f &&	# Select the SubtypeFactType
+	      TypeInheritance === f &&	# Select the TypeInheritance
 		f.roles.size == 2 &&		# Should always be true
 		f.subtype == self		# Where we're the subtype
 	    }.sort_by{|r|
@@ -647,7 +647,7 @@ module ActiveFacts
 	def subtypes
 	  roles.select{|r|
 	      f = r.fact_type			# from the fact_types of all our roles
-	      SubtypeFactType === f &&	# Select the SubtypeFactType
+	      TypeInheritance === f &&	# Select the TypeInheritance
 		f.roles.size == 2 &&		# Should always be true
 		f.supertype == self		# Where we're the supertype
 	    }.map{|r|
@@ -662,7 +662,7 @@ module ActiveFacts
 	    # A nested type may NOT have a PI that spans both nested and
 	    # non-nested roles (according to Terry H)
 #puts "Find PI for #{self.class.name} #{name}:"
-	    @model.preferred_ids.each{|pi|
+	    @vocabulary.preferred_ids.each{|pi|
 #puts "\tConsidering #{pi.name}:"
 		# Every fact type which this PI spans must have no non-PI roles
 		# except for this object's:
@@ -680,7 +680,7 @@ module ActiveFacts
 		if fact_types.detect{|ft|
 			residual = ft.roles-rs
 			bad = residual.size > 1 ||    # Any residual must be self or a supertype:
-			    (residual.size == 1 && !supertypes_transitive.include?(residual[0].object_type)) ||
+			    (residual.size == 1 && !supertypes_transitive.include?(residual[0].concept)) ||
 			    # Unary fact types have self as the role player *and* the constrained object:
 			    (residual.size == 0 && ft.roles.size != 1)
 #puts "\t\t#{ft.name} residual is #{residual.map(&:to_s)*", "}, supertypes=#{supertypes_transitive.map(&:name)*", "}"
@@ -706,7 +706,7 @@ module ActiveFacts
     end
 
     # define anonymous DataType, instead of supporting ValueRestrictions
-    class ValueType < ObjectType
+    class ValueType < Concept
 	typed_attr DataType, :data_type		# DataType
 
 	def initialize(*args)
@@ -720,13 +720,13 @@ module ActiveFacts
 		end
 		true
 	    }
-	    # REVISIT: If no data_type, look for one by @name in @model,
+	    # REVISIT: If no data_type, look for one by @name in @vocabulary,
 	    # Check for Integer args and make a subtype if needed
 	    super(*args)
 	end
 
 	def supertypes
-	  []  # REVISIT: Stub until new meta-model is implemented
+	  []  # REVISIT: Stub until new meta-vocabulary is implemented
 	end
 
 	def to_s
@@ -759,7 +759,7 @@ module ActiveFacts
 
 	def preferred_identifier	# -> Constraint
 	    candidates =
-		@model.constraints.select{|s|
+		@vocabulary.constraints.select{|s|
 		    PresenceConstraint === s &&	# The constraint must be a PC:
 			# The PC must be mandatory and unique:
 	      # REVISIT: sometimes these aren't marked mandatory, find out why.
@@ -787,8 +787,8 @@ module ActiveFacts
 	array_attr Fact, :facts
 
 	def initialize(*args)
-	    super(*args)			# Handle name, model
-	    @model.populations << self if @model
+	    super(*args)			# Handle name, vocabulary
+	    @vocabulary.populations << self if @vocabulary
 	end
     end
 
@@ -857,7 +857,7 @@ module ActiveFacts
 
     # An Instance, either a Value of a ValueType or an Entity
     class Instance
-	typed_attr ObjectType, :object_type
+	typed_attr Concept, :concept
 	typed_attr nil, :value do |v|
 	    String === v || Integer === v
 	end
@@ -865,8 +865,8 @@ module ActiveFacts
 	def initialize(*args)
 	    args.delete_if{|a|
 		case a
-		when ObjectType
-		    self.object_type = a
+		when Concept
+		    self.concept = a
 		when String, Integer	    # Revisit: DateTime, etc?
 		    self.value = a
 		else
@@ -874,22 +874,22 @@ module ActiveFacts
 		end
 		true
 	    }
-	    raise "Instance lacks object type" \
-		if (!self.object_type)
-	    raise "Instance of ValueType #{@object_type.name} lacks value" \
-		if (!self.value && ValueType === self.object_type)
-	    @object_type.instances << self
+	    raise "New instance lacks concept" \
+		if (!self.concept)
+	    raise "Instance of ValueType #{@concept.name} lacks value" \
+		if (!self.value && ValueType === self.concept)
+	    @concept.instances << self
 	end
 
 	def to_s
-	    case object_type
+	    case concept
 	    when ValueType
 		"'#{value}'"
 	    when EntityType
-		pi = object_type.preferred_identifier
+		pi = concept.preferred_identifier
 		rs = pi.role_sequence	    # Gather PI FactRole values
-		# puts "Instance of #{object_type.name} with PI #{rs}"
-		fact_types = object_type.roles.map{|r|
+		# puts "Instance of #{concept.name} with PI #{rs}"
+		fact_types = concept.roles.map{|r|
 			r.fact_type
 		    }.uniq.select{|ft|
 			(ft.roles-rs).size == 1
@@ -916,7 +916,7 @@ module ActiveFacts
 		    fact_role.instance.to_s
 		}
 
-		"#{object_type.name}(#{role_values * ", "})"
+		"#{concept.name}(#{role_values * ", "})"
 	    end
 	end
     end
@@ -951,11 +951,11 @@ module ActiveFacts
 	end
 
 	def role_names
-	    map{|r| r.name != "" ? r.name : r.object_type.name}
+	    map{|r| r.name != "" ? r.name : r.concept.name}
 	end
 
 	def object_names
-	    map{|r| r.object_type.name}
+	    map{|r| r.concept.name}
 	end
     end
 
@@ -964,7 +964,7 @@ module ActiveFacts
 
 	def initialize(*args)
 	    super(*args)
-	    @model.constraints << self if (@model)
+	    @vocabulary.constraints << self if (@vocabulary)
 	end
     end
 
@@ -972,11 +972,11 @@ module ActiveFacts
 	typed_attr RoleSequence, :role_sequence
 
 	def initialize(*args)
-	    model = args.detect{|a| Model === a }
+	    vocabulary = args.detect{|a| Vocabulary === a }
 	    args.delete_if{|a|
 		case a
 		when RoleSequence, Array
-		    @role_sequence = model.get_role_sequence(a)
+		    @role_sequence = vocabulary.get_role_sequence(a)
 		else
 		    next
 		end
@@ -996,8 +996,8 @@ module ActiveFacts
 	attr_accessor :is_mandatory	# Complement of "zero freq is ok"
 	attr_accessor :is_preferred_id
 
-	def initialize(_model, _name, rs, _mand, _min, _max, _pref = nil)
-	    super(_model, _name, rs)
+	def initialize(_vocabulary, _name, rs, _mand, _min, _max, _pref = nil)
+	    super(_vocabulary, _name, rs)
 	    self.is_mandatory = _mand
 	    self.min = _min
 	    self.max = _max
@@ -1018,10 +1018,10 @@ module ActiveFacts
 	    all_objects = @role_sequence.map{|r|
 		    r.fact_type.roles
 		}.flatten.map{|r|
-		    r.object_type
+		    r.concept
 		}.uniq
 	    # Remove all objects this constraint has roles for:
-	    pi_for = all_objects - @role_sequence.map{|r| r.object_type}
+	    pi_for = all_objects - @role_sequence.map{|r| r.concept}
 #	    if pi_for.size == 0
 #		# When a PC covers all roles of an objectified fact, the above computes an empty set:
 #		return @role_sequence[0].fact_type.nested_as

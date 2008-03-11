@@ -19,7 +19,7 @@ module ActiveFacts
 	class LogNull; def puts(*args); end; end    # A null logger
 	attr_reader :database		    # Name of the database we're reversing
 	attr_reader :connection		    # The ActiveRecord connection
-	attr_reader :model		    # This is what we're building
+	attr_reader :vocabulary		    # This is what we're building
 	attr_reader :entity_types	    # A hash by table name
 	attr_reader :fact_types		    # A hash by table name
 	attr_reader :data_types		    # By name, e.g. "bit", "char(128)"
@@ -45,7 +45,7 @@ module ActiveFacts
 
 	def load_schema
 	    @log.puts "Loading database #{@database}"
-	    @model = Model.new(@database)
+	    @vocabulary = Vocabulary.new(@database)
 
 	    # The process is as follows:
 	    #
@@ -91,7 +91,7 @@ module ActiveFacts
 	    phase1
 	    phase2
 
-	    @model
+	    @vocabulary
 	end
 
 	def phase1
@@ -124,10 +124,10 @@ module ActiveFacts
 	    # Create a NestedType (objectified fact) for each table:
 	    fact_type =
 		@fact_types[table_name] =
-		FactType.new(@model, table_name)
+		FactType.new(@vocabulary, table_name)
 	    entity_type =
 		@entity_types[table_name] =
-		NestedType.new(@model, table_name, fact_type)
+		NestedType.new(@vocabulary, table_name, fact_type)
 
 	    columns.each{|c|
 		add_column_if_simple(entity_type, fact_type, table_name, c, constraints)
@@ -165,7 +165,7 @@ module ActiveFacts
 		" of#{new_type ? " new" : " existing"} #{value_type}"
 
 	    # Add the Role to the fact type:
-	    role = Role.new(@model, c.name, fact_type, value_type)
+	    role = Role.new(@vocabulary, c.name, fact_type, value_type)
 	    @log.puts "\t\t#{role.to_s}"
 	    fact_type.add_role(role)
 
@@ -189,7 +189,7 @@ module ActiveFacts
 
 		rs = RoleSequence.new([role])
 		pc = PresenceConstraint.new(
-			@model,
+			@vocabulary,
 			constraint_name,
 			rs,		    # Fact population of Role
 			!c.null,	    # must/may have
@@ -219,7 +219,7 @@ module ActiveFacts
 		role_name, ref_table = *fk_role_name(fk)
 
 		fact_type.add_role(
-		    role = Role.new(@model, role_name, fact_type, ref_table)
+		    role = Role.new(@vocabulary, role_name, fact_type, ref_table)
 		)
 		@log.puts "\t\t#{role.to_s}"
 	    }
@@ -287,7 +287,7 @@ module ActiveFacts
 		}
 
 		pc = PresenceConstraint.new(
-			@model,
+			@vocabulary,
 			constraint_name,
 			roles,
 			mandatory,
@@ -308,7 +308,7 @@ module ActiveFacts
 	    base_type =
 	    data_type =
 		@data_types[dtname] ||= DataType.new(
-		    @model,
+		    @vocabulary,
 		    dtname
 		)
 
@@ -316,16 +316,16 @@ module ActiveFacts
 		@log.puts "\t\tMaking refined DataType #{vtype}" if !@data_types[vtype]
 		data_type =
 		    @data_types[vtype] ||= DataType.new(
-			@model,
+			@vocabulary,
 			vtype,
 			base_type,
 			*vtparams
 		    )
 	    end
 
-	    # @log.puts "Making ValueType(model, #{name}, #{dtname})"
+	    # @log.puts "Making ValueType(vocabulary, #{name}, #{dtname})"
 	    @value_types[vtype] = ValueType.new(
-		    @model,
+		    @vocabulary,
 		    name,
 		    data_type
 		)

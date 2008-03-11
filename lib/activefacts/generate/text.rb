@@ -1,7 +1,7 @@
 #
-# Dump module for ActiveFacts models.
+# Dump module for ActiveFacts vocabularies.
 #
-# Adds the Model.dump() method.
+# Adds the Vocabulary.dump() method.
 #
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
@@ -22,7 +22,7 @@ module ActiveFacts
 	    return
 
 	    num_fact_roles = f.roles.size
-	    o_fact_roles = f.roles.select{|r| r.object_type == o}
+	    o_fact_roles = f.roles.select{|r| r.concept == o}
 	    nofr = o_fact_roles.size
 	    out.puts "\t\t#{f.name}" +
 		(nofr == 1 ? "" : ", #{o_fact_roles.size} of #{num_fact_roles} roles:") +
@@ -30,10 +30,10 @@ module ActiveFacts
 	end
     end
 
-    class Model
+    class Vocabulary
 	def dump_value_types(out = $>)
 	    out.puts "\n\nAll Value Types:"
-	    object_types.sort_by{|o| o.name}.each{|o|
+	    concepts.sort_by{|o| o.name}.each{|o|
 		    next if EntityType === o
 		    out.puts "\t"+o.to_s+
 			", plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
@@ -43,7 +43,7 @@ module ActiveFacts
 
 	def dump_entity_types(out = $>)
 	    out.puts "All Entity Types:"
-	    object_types.sort_by{|o| o.name}.each{|o|
+	    concepts.sort_by{|o| o.name}.each{|o|
 		    next if !(EntityType === o)	# includes NestedTypes
 		    pi = o.preferred_identifier
 		    out.puts "\t"+o.to_s+" known by #{pi.role_sequence.map(&:name)*", "}, plays #{o.fact_types.size == 0 ? "no roles" : "roles in:"}"
@@ -75,7 +75,7 @@ module ActiveFacts
 	    constraints.each{|c|
 		    # Skip presence constraints on value types:
 		#   next if ActiveFacts::PresenceConstraint === c &&
-		#	    ActiveFacts::ValueType === c.object_type
+		#	    ActiveFacts::ValueType === c.concept
 		    out.puts "\t"+c.to_s
 		}
 	end

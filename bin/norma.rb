@@ -1,5 +1,5 @@
 #
-# Read an ORM2 model from a NORMA file
+# Read an ORM2 Vocabulary from a NORMA file
 #
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
@@ -21,9 +21,9 @@ if arg =~ /^--(.*)/
 end
 require "activefacts/generate/#{generator}"
 
-model = ActiveFacts::Norma.read(arg)
+vocabulary = ActiveFacts::Norma.read(arg)
 
-model.dump
-#model.preferred_ids.each{|c| puts "#{c}" }
-#model.dump_entity_types
-#model.dump_fact_types
+vocabulary.dump
+#vocabulary.preferred_ids.each{|c| puts "#{c}" }
+#vocabulary.dump_entity_types
+#vocabulary.dump_fact_types
