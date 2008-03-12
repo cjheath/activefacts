@@ -8,11 +8,11 @@ MAX=3
 #puts OrderLine.roles.verbalise
 
 c = ActiveFacts::Constellation.new(Orders)
-order = c.Order(c.OrderID(nil))
+order = c.Order(c.OrderID(:new))
 puts order.verbalise
 
 skus = (1..MAX).to_a.map{|i|
-    sku = c.SKU(c.SKUID(nil))
+    sku = c.SKU(c.SKUID(:new))
     sku.description = "Description of SKU #{i}"
     sku
   }
