@@ -13,12 +13,7 @@ module ActiveFacts
 	  __bind(camel)
 	  return c
 	end
-	begin
-	  return const_get(camel)
-	rescue
-	  #raise "Concept #{name.class} #{name.inspect} not found (as #{camel}) in #{self.name}"
-	  return nil
-	end
+	return (const_get(camel) rescue nil)
       end
 
       def add_concept(klass)
@@ -58,12 +53,16 @@ module ActiveFacts
 
       # Create or find an instance of klass in constellation using value to identify it
       def adopt(klass, constellation, value)
-	# puts "Adopting #{value.inspect} as #{klass} in #{constellation.object_id}"
+	# puts "Adopting #{value.respond_to?(:verbalise) ? value.verbalise : value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
+	path = "unknown"
 	# Create a value instance we can hack if the value isn't already in this constellation
 	if (c = constellation)
 	  if klass === value		# Right class?
 	    vc = value.respond_to?(:constellation) && value.constellation
-	    if (c != vc)		# Wrong constellation?
+	    if (c == vc)		# Right constellation?
+	      # Already right class, in the right constellation
+	      path = "right constellation, right class, just use it"
+	    else
 	      # We need a new object from our constellation, so copy the value.
 	      if klass.respond_to?(:identifying_roles)
 		# Make a new entity having only the identifying roles set.
@@ -73,17 +72,19 @@ module ActiveFacts
 		    :"#{klass.basename}",
 		    *klass.identifying_roles.map{|role| value.send(role) }
 		  )
+		path = "wrong constellation, right class, cloned entity"
 	      else
 		# Just copy a value:
 		cloned = c.send(:"#{klass.basename}", *value)
+		path = "wrong constellation, right class, copied value"
 	      end
 	      value.constellation = c
-	    else
-	      # Already right class, in the right cnstellation
 	    end
 	  else
 	    # Wrong class, assume it's a valid constructor arg. Get our constellation to find/make it:
+	    value = [ value ] unless Array === value
 	    value = c.send(:"#{klass.basename}", *value)
+	    path = "right constellation but wrong class, constructed from args"
 	  end
 	else
 	  # This object's not in a constellation
@@ -93,12 +94,14 @@ module ActiveFacts
 	      raise "REVISIT: Assigning to #{self.class.basename}.#{role_name} with constellation=#{c.inspect}: Can't dis-associate object from its constellation #{vc.object_id} yet"
 	    end
 	    # Right class, no constellation, just use it
+	    path = "no constellation, correct class"
 	  else
 	    # Wrong class, construct one
 	    value = klass.send(:new, *value)
+	    path = "no constellation, constructed from wrong class"
 	  end
 	end
-	# puts "Adopted as #{value.inspect}"
+	# print "#{path}"; puts ", adopted as #{value.respond_to?(:verbalise) ? value.verbalise : value.inspect}"
 	value
       end
 

@@ -20,7 +20,8 @@ module ActiveFacts
 
 	  # If the same object already exists in this constellation, re-use it.
 	  key = args.size > 1 ? args : args[0]
-	  instance = @instances[klass][key]
+	  uncommitted = args == [:new]		# Occurs with AutoCounter
+	  instance = uncommitted ? nil : @instances[klass][key]
 	  # puts "Looked for #{klass} using #{key.inspect}, found #{instance.inspect}"
 	  unless instance
 	    #puts "Making new #{klass}(#{args.map(&:inspect)*", "})"
@@ -34,7 +35,7 @@ module ActiveFacts
 	    # Register the new object in the hash of similar instances
 	    # print "Adding new instance #{instance.inspect} by #{key.inspect}"
 	    instance.constellation = self
-	    @instances[klass][key] = instance
+	    @instances[klass][uncommitted ? instance.object_id.to_s : key] = instance
 	  end
 	  instance
 	end
@@ -51,8 +52,10 @@ module ActiveFacts
 	  single_roles, multiple_roles = klass.roles.keys.sort_by(&:to_s).partition{|r| r.to_s !~ /\Aall_/ }
 	  single_roles -= klass.identifying_roles if (klass.respond_to?(:identifying_roles))
 
+	  instances = send(concept.to_sym)
+	  next nil unless instances.size > 0
 	  "\tEvery #{concept}:\n" +
-	    send(concept.to_sym).map{|instance|
+	    instances.map{|instance|
 		s = "\t\t" + instance.verbalise
 		if (single_roles.size > 0)
 		  s += " where " +
@@ -63,7 +66,7 @@ module ActiveFacts
 		end
 		s
 	      } * "\n"
-	}*"\n"
+	}.compact*"\n"
     end
   end
 end

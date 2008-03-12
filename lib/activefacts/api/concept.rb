@@ -2,6 +2,9 @@ module ActiveFacts
   module API
     module Vocabulary; end
 
+    # REVISIT: Perhaps I should use an enumerator here instead,
+    # and just find a way to handle replace and delete?
+    #
     # A ValueArray is an array with all mutating methods hidden.
     # We use these for the "many" side of a 1:many relationship.
     # Only "replace" and "delete" are actually used (so far!).
@@ -20,8 +23,6 @@ module ActiveFacts
     end
 
     module Concept
-      N = 1.0/0	    # Infinity, useful as a cardinality end marker (0..N)
-
       def vocabulary
 	modspace	# The module that contains this concept.
       end
@@ -41,7 +42,10 @@ module ActiveFacts
 	  raise "Can't index roles by number"
 	when Symbol, String
 	  r = @roles[name.to_sym]
-	  return nil unless r
+	  unless r
+	    return nil unless superclass.respond_to?(:roles)
+	    return superclass.roles(name)
+	  end
 	  player = r.player
 	  r.resolve_player(vocabulary) if Symbol === player
 	  r
@@ -82,11 +86,11 @@ module ActiveFacts
       def __binary(one_to_one, role_name, related, mandatory, related_role_name, reading)
 	# puts "#{self}.#{role_name} is to #{related.inspect}, #{mandatory ? :mandatory : :optional}, related role is #{related_role_name}, reading=#{reading.inspect}"
 
-	__single(role_name, related, related_role_name, one_to_one)
+	__single(role_name, related, related_role_name, mandatory, one_to_one)
 
 	when_bound(related, self, role_name, related_role_name) do |target, definer, role_name, related_role_name|
 	  if (one_to_one)
-	    target.__single(related_role_name, definer, role_name, one_to_one)
+	    target.__single(related_role_name, definer, role_name, false, one_to_one)
 	  else
 	    target.__multiple(related_role_name, definer, role_name)
 	  end
@@ -102,9 +106,9 @@ module ActiveFacts
       end
 
       # Define accessor methods for this role name, which should be assigned an object of the indicated class
-      def __single(role_name, klass, related_role_name, one_to_one = false)
+      def __single(role_name, klass, related_role_name, mandatory = false, one_to_one = false)
 	raise "not sym" unless Symbol === role_name
-	roles[role_name] = Role.new(klass, role_name)
+	roles[role_name] = Role.new(klass, role_name, mandatory)
 
 	# puts "Defining #{basename}.#{role_name} to #{klass.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
 	class_eval do
@@ -120,17 +124,19 @@ module ActiveFacts
 	    #puts "Assigning #{self}.#{role_name} to #{value}, value will be added/assigned to #{related_role_name}"
 
 	    unless Class === klass	# klass wasn't bound, find what class the value should be:
-	      unless Class === (klass = self.class.roles(role_name).resolve_player(vocab = self.class.vocabulary))
+	      role = self.class.roles(role_name)
+	      raise "#{role_name} is not a role of #{self.class.name}" unless role
+	      unless Class === (klass = role.resolve_player(vocab = self.class.vocabulary))
 		raise "Role #{role_name} does not resolve to any existing class in vocabulary #{vocabulary.name}"
 	      end
 	    end
 
 	    # Get old value, and jump out early if it's already set
-	    old = instance_variable_defined?(role_var) && instance_variable_get(role_var)
+	    old = instance_variable_defined?(role_var) ? instance_variable_get(role_var) : nil
 	    return if old == value	  # Occurs during one_to_one assignment, for example
 
 	    # Create a value instance we can hack if the value isn't already in this constellation
-	    value = self.class.vocabulary.adopt(klass, constellation, value)
+	    value = self.class.vocabulary.adopt(klass, constellation, value) if value
 	    return if old == value	  # Occurs when same value is assigned
 
 	    # puts "Setting binary #{role_var} to #{value.verbalise}"
@@ -139,19 +145,26 @@ module ActiveFacts
 	    # De-assign/remove "self" at the old other end too:
 	    if old
 	      if one_to_one
-		value.send("#{related_role_name}=".to_sym, nil)
+		old.send("#{related_role_name}=".to_sym, nil)
 	      else
-		value.send(related_role_name).__delete(self)
+		old.send(related_role_name).__delete(self)
 	      end
 	    end
 
 	    # Assign/add "self" at the other end too:
-	    if one_to_one
-	      value.send("#{related_role_name}=".to_sym, self)
-	    else
-	      array = value.send(related_role_name)
-	      array.__replace(array - [old] + [self])
-	      # REVISIT: It's possible that "old" now has no roles except its identifier, and if not independant, can be removed.
+	    if value
+	      if one_to_one
+		value.send("#{related_role_name}=".to_sym, self)
+	      else
+		# puts "Other end's value #{klass.basename}.#{related_role_name} in #{self.class.basename}.#{role_name}= is #{value.class.basename}, expected #{klass.basename}"
+		begin
+		  array = value.send(related_role_name)
+		rescue => e
+		  puts "Error #{e} getting MANY array from #{self.class} for '#{value.inspect}' role #{related_role_name}"
+		end
+		array.__replace(array - [old].compact + [self])
+		# REVISIT: It's possible that "old" now has no roles except its identifier, and if not independant, can be removed.
+	      end
 	    end
 	  end
 	end
@@ -159,7 +172,7 @@ module ActiveFacts
 
       def __multiple(role_name, klass, single_role_name)
 	raise "__multiple(#{role_name.class} #{role_name.inspect}) - Symbol expected" unless Symbol === role_name
-	roles[role_name] = Role.new(klass, role_name)
+	roles[role_name] = Role.new(klass, role_name, false)
 
 	# puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
 
@@ -169,6 +182,7 @@ module ActiveFacts
 	    unless (r = instance_variable_defined?(role_var) && instance_variable_get(role_var))
 	      (r = instance_variable_set(role_var, ValueArray.new))
 	    end
+	    # puts "fetching #{self.class.basename}.#{role_name} array, got #{r.class}, first is #{r[0] ? r[0].verbalise : "nil"}"
 	    r
 	  end
 	end
@@ -201,7 +215,6 @@ module ActiveFacts
 	#   role_name (Symbol)
 	#   other player (Symbol or Class)
 	#   mandatory (:mandatory)
-	#   0/1/N on other end
 	#   other end role name if any (Symbol),
 	#   reading
 	role_name = nil
@@ -239,12 +252,8 @@ module ActiveFacts
 	related_name = related_name.to_s.snakecase
 
 	# resolve the Symbol to a Class now if possible:
-	begin
-	  resolved = vocabulary.concept(related)
-	  related = resolved if resolved
-	rescue
-	  resolved = nil
-	end
+	resolved = vocabulary.concept(related) rescue nil
+	related = resolved if resolved
 	# puts "related = #{related.inspect}"
 
 	if args[0] == :mandatory
@@ -313,11 +322,13 @@ module ActiveFacts
       class Role
 	attr_accessor :name
 	attr_accessor :player		# May be a Symbol, which will be converted to a Class/Concept
+	attr_accessor :mandatory
 	attr_accessor :value_restriction
 
-	def initialize(player, name)
+	def initialize(player, name, mandatory = false)
 	  @player = player
 	  @name = name
+	  @mandatory = mandatory
 	end
 
 	def resolve_player(vocabulary)

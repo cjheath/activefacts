@@ -26,6 +26,10 @@ class TrueClass
   def verbalise; "true"; end
 end
 
+class NilClass
+  def verbalise; "nil"; end
+end
+
 class Class
   def identified_by *args
     raise "not an entity type" if respond_to? :value_type

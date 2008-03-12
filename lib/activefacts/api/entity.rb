@@ -7,12 +7,13 @@ module ActiveFacts
 
       def initialize(*args)
 	super(args)
-	raise "Wrong number of parameters to #{self.class}.new, " +
-	    "expect (#{self.class.identifying_roles*","}) " +
-	    "got (#{args.map{|a| a.to_s.inspect}*", "})" if args.size != self.class.identifying_roles.size
+	klass = self.class
+	raise "Wrong number of parameters to #{klass}.new, " +
+	    "expect (#{klass.identifying_roles*","}) " +
+	    "got (#{args.map{|a| a.to_s.inspect}*", "})" if args.size != klass.identifying_roles.size
 
 	# Assign the identifying roles in order
-	self.class.identifying_roles.zip(args).each{|pair|
+	klass.identifying_roles.zip(args).each{|pair|
 	    role, value = *pair
 	    send("#{role}=", value)
 	  }
@@ -20,7 +21,12 @@ module ActiveFacts
 
       # verbalise this entity
       def verbalise(role_name = nil)
-	"#{role_name || self.class.basename}(#{self.class.identifying_roles.map{|r| send(r).verbalise(r.to_s.camelcase(true)) }*", "})"
+	"#{role_name || self.class.basename}(#{
+	  self.class.identifying_roles.map{|r|
+	      value = send(r)
+	      value ? value.verbalise(r.to_s.camelcase(true)) : "nil"
+	    }*", "
+	})"
       end
 
       module ClassMethods

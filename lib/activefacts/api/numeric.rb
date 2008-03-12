@@ -44,10 +44,13 @@ class ::Date
   def self.__Is_A_Date; end
 end
 
-# The AutoCounter class is an integer, but only after the value has been established in the database
+# The AutoCounter class is an integer, but only after the value
+# has been established in the database.
+# Construct it with the value :new to get an uncommitted value.
 class AutoCounter
-  def initialize(i = nil)
-    @value = i
+  def initialize(i = :new)
+    raise "AutoCounter #{self.class} may not be nil" unless i
+    @value = i == :new ? nil : i
   end
 
   def assign(i)
