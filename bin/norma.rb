@@ -7,7 +7,6 @@
 $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'rubygems'
-require 'active_support'
 require 'activefacts'
 require 'activefacts/norma'
 require "pp"
