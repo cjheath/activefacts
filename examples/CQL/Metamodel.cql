@@ -28,18 +28,18 @@ ValueRestrictionId = AutoCounter();
 /*
  * Entity Types
  */
-Bound = entity known by Value and InclusiveBound:
+Bound = entity identified by Value and InclusiveBound:
 	Bound has exactly one Value,
 	Value is of at least one Bound,
 	each Value is of some Bound,
 	Bound (as InclusiveBound) is inclusive;
 
-Coefficient = entity known by Numerator and Denominator:
+Coefficient = entity identified by Numerator and Denominator:
 	Coefficient has exactly one Numerator,
 	Coefficient has exactly one Denominator;
 Coefficient is precise;
 
-Constraint = entity known by ConstraintId:
+Constraint = entity identified by ConstraintId:
 	Constraint has exactly one ConstraintId,
 	ConstraintId is of at most one Constraint;
 Name is of Constraint,
@@ -47,16 +47,16 @@ Name is of Constraint,
 Constraint requires at most one Enforcement,
 	Enforcement applies to Constraint;
 
-Fact = entity known by FactId:
+Fact = entity identified by FactId:
 	Fact has exactly one FactId,
 	FactId is of at most one Fact;
 
-FactType = entity known by FactTypeId:
+FactType = entity identified by FactTypeId:
 	FactType has exactly one FactTypeId,
 	FactTypeId is of at most one FactType;
 Fact is of exactly one FactType;
 
-Instance = entity known by InstanceId:
+Instance = entity identified by InstanceId:
 	Instance has exactly one InstanceId,
 	InstanceId is of at most one Instance;
 Instance has at most one Value;
@@ -67,7 +67,7 @@ PresenceConstraint has at most one min-Frequency;
 PresenceConstraint is preferred identifier;
 PresenceConstraint is mandatory;
 
-Reading = entity known by Ordinal and FactType:
+Reading = entity identified by Ordinal and FactType:
 	Reading is in at most one Ordinal position,
 	Ordinal reading for fact type is Reading,
 	FactType has at least one Reading,
@@ -78,7 +78,7 @@ Reading has exactly one ReadingText;
 RingConstraint = subtype of Constraint;
 RingConstraint is of exactly one RingType;
 
-Role = entity known by RoleId:
+Role = entity identified by RoleId:
 	Role has exactly one RoleId,
 	RoleId is of at most one Role;
 Role has at most one role-Name,
@@ -89,14 +89,14 @@ Role is of RingConstraint,
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 
-RoleSequence = entity known by RoleSequenceId:
+RoleSequence = entity identified by RoleSequenceId:
 	RoleSequence has exactly one RoleSequenceId,
 	RoleSequenceId is of at most one RoleSequence;
 Reading is in exactly one RoleSequence,
 	RoleSequence is for Reading;
 PresenceConstraint covers exactly one RoleSequence;
 
-RoleValue = entity known by Instance and Fact:
+RoleValue = entity identified by Instance and Fact:
 	Instance plays RoleValue,
 	RoleValue is of exactly one Instance,
 	RoleValue fulfils exactly one Fact,
@@ -111,7 +111,7 @@ SubsetConstraint covers exactly one subset-RoleSequence;
 
 UniquenessConstraint = subtype of PresenceConstraint;
 
-Unit = entity known by UnitId:
+Unit = entity identified by UnitId:
 	Unit has exactly one UnitId,
 	UnitId is of at most one Unit;
 Unit has at most one Coefficient;
@@ -119,15 +119,15 @@ Name is of Unit,
 	Unit is called exactly one Name;
 Unit is fundamental;
 
-UnitBasis = entity known by base-Unit and Unit:
+UnitBasis = entity identified by base-Unit and Unit:
 	Unit is derived from base-Unit [acyclic, intransitive];
 UnitBasis has at most one Exponent;
 
-ValueRange = entity known by minimum-Bound and maximum-Bound:
+ValueRange = entity identified by minimum-Bound and maximum-Bound:
 	ValueRange has at most one minimum-Bound,
 	ValueRange has at most one maximum-Bound;
 
-ValueRestriction = entity known by ValueRestrictionId:
+ValueRestriction = entity identified by ValueRestrictionId:
 	ValueRestriction has exactly one ValueRestrictionId,
 	ValueRestrictionId is of at most one ValueRestriction;
 AllowedRange = ValueRestriction allows at least one ValueRange,
@@ -139,7 +139,7 @@ FrequencyConstraint = subtype of PresenceConstraint;
 
 MandatoryConstraint = subtype of PresenceConstraint;
 
-RoleRef = entity known by RoleSequence and Ordinal:
+RoleRef = entity identified by RoleSequence and Ordinal:
 	Role is in RoleSequence in at most one Ordinal place,
 	RoleSequence includes at most one Role in Ordinal place,
 	each RoleSequence includes some Role in some Ordinal place,
@@ -156,7 +156,7 @@ SetEqualityConstraint = subtype of SetComparisonConstraint;
 SetExclusionConstraint = subtype of SetComparisonConstraint;
 SetExclusionConstraint is mandatory;
 
-Feature = entity known by Name and Vocabulary:
+Feature = entity identified by Name and Vocabulary:
 	Feature is called exactly one Name,
 	Feature belongs to at most one Vocabulary,
 	Vocabulary contains Feature;
@@ -178,11 +178,11 @@ EntityType is personal;
 EntityType nests at most one FactType,
 	FactType is nested as at most one EntityType;
 
-Import = entity known by imported-Vocabulary and Vocabulary:
+Import = entity identified by imported-Vocabulary and Vocabulary:
 	Vocabulary imports imported-Vocabulary [acyclic];
 Correspondence = in Import imported-Feature corresponds to at most one local-Feature;
 
-Population = entity known by Vocabulary and Name:
+Population = entity identified by Vocabulary and Name:
 	Vocabulary includes Population,
 	Population belongs to at most one Vocabulary,
 	Population has exactly one Name,
@@ -194,7 +194,7 @@ Population includes RoleValue,
 Population includes Fact,
 	Fact belongs to exactly one Population;
 
-TypeInheritance = subtype of FactType known by EntityType and super-EntityType:
+TypeInheritance = subtype of FactType identified by EntityType and super-EntityType:
 	super-EntityType is supertype of EntityType [acyclic],
 	EntityType is subtype of super-EntityType;
 TypeInheritance defines primary supertype;

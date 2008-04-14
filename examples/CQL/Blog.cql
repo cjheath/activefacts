@@ -16,19 +16,19 @@ TopicId = AutoCounter();
 /*
  * Entity Types
  */
-Author = entity known by AuthorId:
+Author = entity identified by AuthorId:
 	Author has exactly one AuthorId,
 	AuthorId is of at most one Author;
 Name is of at most one Author,
 	Author is called exactly one Name;
 
-Comment = entity known by CommentId:
+Comment = entity identified by CommentId:
 	Comment has exactly one CommentId,
 	CommentId is of at most one Comment;
 Author wrote Comment,
 	Comment was written by exactly one Author;
 
-Content = entity known by ContentId:
+Content = entity identified by ContentId:
 	Content has exactly one ContentId,
 	ContentId is of at most one Content;
 Content has exactly one Text,
@@ -37,12 +37,12 @@ text-Content provides text of at most one Comment,
 	Comment consists of exactly one text-Content;
 Content is of at most one Style;
 
-Post = entity known by PostId:
+Post = entity identified by PostId:
 	Post has exactly one PostId,
 	PostId is of at most one Post;
 Post was written by exactly one Author;
 
-Topic = entity known by TopicId:
+Topic = entity identified by TopicId:
 	Topic has exactly one TopicId,
 	TopicId is of at most one Topic;
 Topic is called exactly one topic-Name,
@@ -50,7 +50,7 @@ Topic is called exactly one topic-Name,
 Post belongs to exactly one Topic;
 Topic belongs to at most one parent-Topic [acyclic];
 
-Paragraph = entity known by Ordinal and Post:
+Paragraph = entity identified by Ordinal and Post:
 	Post includes Ordinal paragraph;
 Paragraph has Comment,
 	Comment is on exactly one Paragraph;

@@ -187,23 +187,23 @@ describe "Entity Types" do
     [ "a = entity(id) where c;",		# Entity type declaration with reference mode and where
       [["a", [:entity_type, {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
-    [ "a = entity known by b: c;",		# Entity type declaration
+    [ "a = entity identified by b: c;",		# Entity type declaration
       [["a", [:entity_type, {:roles=>["b"]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
-    [ "a = entity known by b where c;",		# Entity type declaration with where
+    [ "a = entity identified by b where c;",		# Entity type declaration with where
       [["a", [:entity_type, {:roles=>["b"]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
-    [ "a = entity known by b and c: d;",	# Entity type declaration with two-part identifier
+    [ "a = entity identified by b and c: d;",	# Entity type declaration with two-part identifier
       [["a", [:entity_type, {:roles=>["b", "c"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
-    [ "a = entity known by b, c: d;",		# Entity type declaration with two-part identifier
+    [ "a = entity identified by b, c: d;",		# Entity type declaration with two-part identifier
       [["a", [:entity_type, {:roles=>["b", "c"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
-    [ "a=b(); c=entity known by a:d;",
+    [ "a=b(); c=entity identified by a:d;",
       [["a", [:data_type, "b", [ false, false ], false, false]],
 	["c", [:entity_type, {:roles=>["a"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
-    [ " a = b ( ) ; c = entity known by a : d ; ",
+    [ " a = b ( ) ; c = entity identified by a : d ; ",
       [["a", [:data_type, "b", [ false, false ], false, false]],
         ["c", [:entity_type, {:roles=>["a"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],

@@ -10,16 +10,16 @@ StudentName = VariableLengthText();
 /*
  * Entity Types
  */
-Activity = entity known by ActivityName:
+Activity = entity identified by ActivityName:
 	Activity has exactly one ActivityName,
 	ActivityName is of at most one Activity;
 
-School = entity known by SchoolName:
+School = entity identified by SchoolName:
 	School has exactly one SchoolName,
 	SchoolName is of at most one School;
 SchoolActivity = School sanctions Activity;
 
-Student = entity known by StudentName:
+Student = entity identified by StudentName:
 	Student has exactly one StudentName,
 	StudentName is of at most one Student;
 Student is enrolled in exactly one School;

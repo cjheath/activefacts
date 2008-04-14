@@ -11,11 +11,11 @@ WindowNumber = UnsignedInteger(32);
 /*
  * Entity Types
  */
-Room = entity known by Building and RoomNumber:
+Room = entity identified by Building and RoomNumber:
 	Room is in exactly one Building,
 	Room has exactly one RoomNumber;
 
-Window = entity known by Room and WallNumber and WindowNumber:
+Window = entity identified by Room and WallNumber and WindowNumber:
 	Window is in exactly one Room,
 	Window is located in exactly one WallNumber,
 	Window has exactly one WindowNumber;

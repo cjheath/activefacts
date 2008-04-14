@@ -122,6 +122,16 @@ module ActiveFacts
 	  ]
 	end
       }
+      /
+      'subtype' S 'of' S id
+      alternate_supertypes:( s ',' s !known_by id s )+
+      known_by?	    # A subtpe may have alternate identification scheme
+      # REVISIT: Decide whether to worry about asserted vs derived subtyping here.
+      {
+	def defined_type
+	  REVISIT!
+	end
+      }
     end
 
     rule fact_type
@@ -142,7 +152,8 @@ module ActiveFacts
     end
 
     rule reference_mode
-      '(' s mode_name:id s ')' s
+      # REVISIT: Adopt ORM2-style reference mode patterns here
+      '(' s '.' s mode_name:id s ')' s
     end
 
     rule returning
@@ -549,7 +560,7 @@ module ActiveFacts
     rule exactly 'exactly' !alphanumeric end
     rule from  'from' !alphanumeric end
     rule includes 'includes' !alphanumeric end
-    rule known 'known' !alphanumeric end 
+    rule known ('known'/'identified') !alphanumeric end 
     rule least 'least' !alphanumeric end
     rule matches 'matches' !alphanumeric end
     rule most 'most' !alphanumeric end

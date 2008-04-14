@@ -8,7 +8,7 @@ PersonName = VariableLengthText();
 /*
  * Entity Types
  */
-Person = entity known by PersonName:
+Person = entity identified by PersonName:
 	Person has exactly one PersonName,
 	PersonName is of at most one Person;
 Person is manager;

@@ -49,6 +49,18 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirectorName2.orm</DependentUpon>
     </Compile>
+    <Compile Include="MultiInheritance._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MultiInheritance.orm</DependentUpon>
+    </Compile>
+    <Compile Include="NestedWithCustomPI._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>NestedWithCustomPI.orm</DependentUpon>
+    </Compile>
+    <Compile Include="TwoValues._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TwoValues.orm</DependentUpon>
+    </Compile>
     <Compile Include="WindowInRoomInBldg._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
@@ -200,9 +212,21 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirectorName2._ORMCustomToolReport.cs</LastGenOutput>
     </None>
+    <None Include="MultiInheritance.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>MultiInheritance._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="NestedWithCustomPI.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>NestedWithCustomPI._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="OilSupplyWithCosts.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>OilSupplyWithCosts._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="TwoValues.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>TwoValues._ORMCustomToolReport.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('SchoolActivities.orm')">
@@ -351,6 +375,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Genealogy.orm</DependentUpon>
       <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('NestedWithCustomPI.orm')">
+    <None Include="NestedWithCustomPI.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>NestedWithCustomPI.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="NestedWithCustomPI.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>NestedWithCustomPI.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="NestedWithCustomPI.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>NestedWithCustomPI.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

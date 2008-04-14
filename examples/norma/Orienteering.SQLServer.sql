@@ -71,9 +71,9 @@ GO
 CREATE TABLE Orienteering.Visit
 (
 	PunchID INTEGER IDENTITY (1, 1) NOT NULL,
-	visitTime DATETIME NOT NULL,
+	"time" DATETIME NOT NULL,
 	entryID INTEGER NOT NULL,
-	CONSTRAINT EntrantVisitedEachControlAtEachTimeOnce PRIMARY KEY(PunchID, entryID, visitTime)
+	CONSTRAINT EntrantVisitedEachControlAtEachTimeOnce PRIMARY KEY(PunchID, entryID, "time")
 )
 GO
 

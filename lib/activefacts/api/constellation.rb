@@ -7,8 +7,17 @@ module ActiveFacts
 
     def initialize(vocabulary, query = nil)
       @vocabulary = vocabulary
-      @query = query
       @instances = Hash.new{|h,k| h[k] = {} }
+      @query = query
+    end
+
+    def inspect
+      "Constellation:#{object_id}"
+    end
+
+    def delete(instance)
+      # REVISIT: Need to search, as key values are gone already. Is there a faster way?
+      @instances[instance.class].delete_if{|k,v| v == instance }
     end
 
     def method_missing(m, *args)
@@ -18,12 +27,21 @@ module ActiveFacts
 	else
 	  # REVISIT: create the constructor method here instead?
 
+	  # REVISIT: Shouldn't determine existence by constructor arguments, but by comparison of the created object's identifying roles.
+
 	  # If the same object already exists in this constellation, re-use it.
-	  key = args.size > 1 ? args : args[0]
-	  uncommitted = args == [:new]		# Occurs with AutoCounter
+	  key = Kernel::Array(args.size > 1 ? args : args[0]).clone
+	  key.pop if Hash === Array(key)[-1]
+
+	  #print "class #{m} key=#{key.inspect} is "
+	  uncommitted = key == [:new]		# Occurs with AutoCounter
 	  instance = uncommitted ? nil : @instances[klass][key]
 	  # puts "Looked for #{klass} using #{key.inspect}, found #{instance.inspect}"
-	  unless instance
+
+	  if instance
+	    #puts "existing"
+	  else
+	    #puts "new"
 	    #puts "Making new #{klass}(#{args.map(&:inspect)*", "})"
 	    args = [self]+args unless klass.respond_to?(:__Is_A_Date)
 	    begin
@@ -51,6 +69,7 @@ module ActiveFacts
 	  # REVISIT: It would be better not to rely on the role name pattern here:
 	  single_roles, multiple_roles = klass.roles.keys.sort_by(&:to_s).partition{|r| r.to_s !~ /\Aall_/ }
 	  single_roles -= klass.identifying_roles if (klass.respond_to?(:identifying_roles))
+	  # REVISIT: Need to include superclass roles also.
 
 	  instances = send(concept.to_sym)
 	  next nil unless instances.size > 0
@@ -58,11 +77,16 @@ module ActiveFacts
 	    instances.map{|instance|
 		s = "\t\t" + instance.verbalise
 		if (single_roles.size > 0)
-		  s += " where " +
-		    single_roles.map{|r|
-			value = instance.send(r)
-			"#{r} = #{value ? value.verbalise : "nil"}"
-		      }*", "
+		  role_values = 
+		    single_roles.map{|role|
+			[ role_name = role.to_s.camelcase(true),
+			  value = instance.send(role)]
+		      }.select{|role_name, value|
+			value
+		      }.map{|role_name, value|
+			"#{role_name} = #{value ? value.verbalise : "nil"}"
+		      }
+		  s += " where " + role_values*", " if role_values.size > 0
 		end
 		s
 	      } * "\n"

@@ -6,4 +6,4 @@
 #
 require 'rubygems'
 require 'chattr'
-require 'activefacts/base'	    # Base ActiveFacts objects
+require 'activefacts/vocabulary'	    # Base ActiveFacts objects

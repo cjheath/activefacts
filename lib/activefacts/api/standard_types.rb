@@ -23,7 +23,7 @@ ValueClasses.each{|c|
   }
 
 class TrueClass
-  def verbalise; "true"; end
+  def verbalise(role_name = nil); role_name ? "#{role_name}: true" : "true"; end
 end
 
 class NilClass

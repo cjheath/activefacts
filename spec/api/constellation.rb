@@ -44,7 +44,7 @@ describe "A Constellation instance" do
 
   it "should index value instances" do
     bar1 = @constellation.Name("baz")
-    @constellation.instances[M3::Name].keys.sort.should == ["baz"]
+    @constellation.instances[M3::Name].keys.sort.should == [["baz"]]
   end
 
   it "should re-use entity instances constructed the same way" do
@@ -57,7 +57,7 @@ describe "A Constellation instance" do
   it "should index entity instances" do
     bar = @constellation.Name("baz")
     bar1 = @constellation.Named(bar)
-    @constellation.instances[M3::Named].keys.sort.should == ["baz"]
+    @constellation.instances[M3::Named].keys.sort.should == [["baz"]]
   end
 
   it "should re-use entity instances constructed the same way with 2-part PI" do

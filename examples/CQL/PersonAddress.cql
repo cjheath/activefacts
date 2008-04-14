@@ -14,21 +14,21 @@ StreetNumber = VariableLengthText(12);
 /*
  * Entity Types
  */
-Family = entity known by FamilyName:
+Family = entity identified by FamilyName:
 	Family has exactly one FamilyName;
 Family has FamilyName;
 
-Person = entity known by Family and GivenNames:
+Person = entity identified by Family and GivenNames:
 	Person has exactly one Family,
 	Family is name of Person,
 	Person has exactly one GivenNames;
 
-Street = entity known by first-StreetLine and second-StreetLine and third-StreetLine:
+Street = entity identified by first-StreetLine and second-StreetLine and third-StreetLine:
 	Street includes exactly one first-StreetLine,
 	Street includes at most one second-StreetLine,
 	Street includes at most one third-StreetLine;
 
-Address = entity known by StreetNumber and Street and City and Postcode:
+Address = entity identified by StreetNumber and Street and City and Postcode:
 	Address is at at most one StreetNumber,
 	Address is at exactly one Street,
 	Address is in exactly one City,

@@ -10,12 +10,11 @@
 # Both these hashes may be looked up by any of the ref="..." values in the file.
 #
 require 'rexml/document'
-require 'activefacts/base'
+require 'activefacts/vocabulary'
 
 module ActiveFacts
 
     class Norma
-
 	def self.read(filename)
 	    Norma.new(filename).read
 	end 
@@ -50,7 +49,8 @@ module ActiveFacts
 	end
 
 	def read_vocabulary
-	    @vocabulary = Vocabulary.new(@x_model.attributes['Name'])
+	    @constellation = Constellation.new(ActiveFacts::Metamodel)
+	    @vocabulary = @constellation.Vocabulary(@x_model.attributes['Name'], nil)
 
 	    # Find all elements having an "id" attribute and index them
 	    x_identified = @x_model.elements.to_a("//*[@id]")
@@ -70,7 +70,8 @@ module ActiveFacts
 	    read_subtypes
 	    read_roles
 	    read_constraints
-	    read_instances
+	    # REVISIT: Skip instance data for now:
+	    #read_instances
 	end
 
 	def read_entity_types
@@ -83,7 +84,7 @@ module ActiveFacts
 		name = nil if name.size == 0
 		# puts "EntityType #{name} is #{id}"
 		entity_types <<
-		    @by_id[id] = EntityType.new(@vocabulary, name)
+		    @by_id[id] = @constellation.EntityType(name, @vocabulary)
 #		x_pref = x.elements.to_a("orm:PreferredIdentifier")[0]
 #		if x_pref
 #		    pi_id = x_pref.attributes['ref']
@@ -103,8 +104,10 @@ module ActiveFacts
 		name = nil if name.size == 0
 
 		cdt = x.elements.to_a('orm:ConceptualDataType')[0]
-		scale = cdt.attributes['Scale'].to_i
-		length = cdt.attributes['Length'].to_i
+		scale = cdt.attributes['Scale']
+		scale = scale != "" && scale.to_i
+		length = cdt.attributes['Length']
+		length = length != "" && length.to_i
 		base_type = @x_by_id[cdt.attributes['ref']]
 		type_name = "#{base_type.name}"
 		type_name.sub!(/^orm:/,'')
@@ -112,25 +115,38 @@ module ActiveFacts
 		type_name.sub!(/Numeric\Z/,'')
 		type_name.sub!(/Temporal\Z/,'')
 		length = 32 if type_name =~ /Integer\Z/ && length.to_i == 0 # Set default integer length
-		data_type = DataType.new(@vocabulary, type_name)
-		data_type.length = length
-		data_type.scale = scale
+		data_type = @constellation.ValueType(type_name, @vocabulary)
 
 		# puts "ValueType #{name} is #{id}"
 		value_types <<
 		    @by_id[id] =
-		    vt = ValueType.new(@vocabulary, name, data_type)
+		    vt = @constellation.ValueType(name, @vocabulary)
+		vt.supertype = data_type
+		vt.length = length if length
+		vt.scale = scale if scale
 
-		ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
-		ranges.each{|r|
-		    min = r.attributes['MinValue']
-		    max = r.attributes['MaxValue']
-		    min = min =~ /[^0-9\.]/ ? min : min.to_i
-		    max = max =~ /[^0-9\.]/ ? max : max.to_i
-		    av = (!max || max == min) ? min : OpenRange.new(min, max)
-		    data_type.allowed_values << av
+		x_ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
+		next if x_ranges.size == 0
+		vt.value_restriction = @constellation.ValueRestriction(:new)
+		x_ranges.each{|x_range|
+		    v_range = value_range(x_range)
+		    ar = @constellation.AllowedRange(v_range, vt.value_restriction)
 		}
 	    }
+	end
+
+	def value_range(x_range)
+	  min = x_range.attributes['MinValue']
+	  max = x_range.attributes['MaxValue']
+	  q = "'"
+	  min = min =~ /[^0-9\.]/ ? q+min+q : min.to_i
+	  max = max =~ /[^0-9\.]/ ? q+max+q : max.to_i
+	  # ValueRange takes a minimum and/or a maximum Bound
+	  # Bound takes a value and inclusive (boolean)
+	  @constellation.ValueRange(
+	      min ? [min.to_s, true] : nil,
+	      max ? [max.to_s, true] : nil
+	    )
 	end
 
 	def read_fact_types
@@ -142,9 +158,10 @@ module ActiveFacts
 		name = x.attributes['Name'] || x.attributes['_Name']
 		name = "<unnamed>" if !name
 		name = "" if !name || name.size == 0
-		# puts "FactType #{name || id}"
+		# Note that the new metamodel doesn't have a name for a facttype unless it's objectified
 
-		facts << @by_id[id] = fact_type = FactType.new(@vocabulary, name)
+		# puts "FactType #{name || id}"
+		facts << @by_id[id] = fact_type = @constellation.FactType(:new)
 	    }
 	end
 
@@ -172,17 +189,20 @@ module ActiveFacts
 		throw "For Subtype fact #{name}, the subtype #{subtype_id} was not found" if !subtype
 	#	puts "#{subtype.name} is a subtype of #{supertype.name}"
 
-		options = []
-		options << :primary if x.attributes["IsPrimary"] == "true"
-		fact_type = TypeInheritance.new(name, @vocabulary, subtype, supertype, *options)
+		fact_type = @constellation.TypeInheritance(subtype, supertype)
+		# REVISIT: API doesn't yet handle subtype with alternate identification schemes, do it manually:
+		fact_type.fact_type_id = :new
+		fact_type.defines_primary_supertype = true if x.attributes["IsPrimary"] == "true"
 		facts << @by_id[id] = fact_type
 
-		# Index the new Roles so we can find constraints on them:
-		#puts "TypeInheritance #{fact_type}"
-		subtype_role = fact_type.roles[0]
-		@by_id[subtype_role_id] = subtype_role
-		supertype_role = fact_type.roles[1]
-		@by_id[supertype_role_id] = supertype_role
+		# Create the new Roles so we can find constraints on them:
+		subtype_role = @by_id[subtype_role_id] = @constellation.Role(:new)
+		subtype_role.concept = subtype
+		subtype_role.fact_type = fact_type
+
+		supertype_role = @by_id[supertype_role_id] = @constellation.Role(:new)
+		supertype_role.concept = supertype
+		supertype_role.fact_type = fact_type
 	    }
 	end
 
@@ -204,14 +224,16 @@ module ActiveFacts
 		fact_type = @by_id[fact_id]
 		throw "Nested fact #{fact_id} not found" if !fact_type
 
-		if is_implied
-		    # puts "Implied type #{name} (#{id}) nests #{fact_type ? fact_type.name : "unknown"}"
-		    @by_id[id] = fact_type
-		else
-		    # puts "NestedType #{name} is #{id}, nests #{fact_type.name}"
+		#if is_implied
+		#    puts "Implied type #{name} (#{id}) nests #{fact_type ? fact_type.fact_type_id : "unknown"}"
+		#    @by_id[id] = fact_type
+		#else
+		begin
+		    #puts "NestedType #{name} is #{id}, nests #{fact_type.fact_type_id}"
 		    nested_types <<
 			@by_id[id] =
-			nested_type = NestedType.new(@vocabulary, name, fact_type)
+			nested_type = @constellation.EntityType(name, @vocabulary)
+		    nested_type.fact_type = fact_type
 		end
 	    }
 	end
@@ -255,7 +277,7 @@ module ActiveFacts
 
 		      # The role name of the ignored role is the one that applies:
 		      role_name = x.attributes['Name']
-		      other_role.name = role_name if role_name && role_name != ''
+		      other_role.role_name = role_name if role_name && role_name != ''
 
 		      concept.delete    # Delete our object for the implicit boolean ValueType
 		      @by_id.delete(ref)    # and de-index it from our list
@@ -263,31 +285,28 @@ module ActiveFacts
 		    end
 
 		    #puts "#{@vocabulary}, Name=#{x.attributes['Name']}, concept=#{concept}"
-		    throw "Role is played by #{concept.class} not Concept" if !(Concept === concept)
+		    throw "Role is played by #{concept.class} not Concept" if !(@constellation.vocabulary.concept(:Concept) === concept)
 
-		    role = @by_id[id] = Role.new(@vocabulary, x.attributes['Name'], concept)
+		    role = @by_id[id] = @constellation.Role(:new)
+		    role.concept = concept
+		    role.fact_type = fact_type
+		    name = x.attributes['Name']
+		    role.role_name = x.attributes['Name'] if name != ""
+		    # puts "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x.attributes['Name']} is played by #{concept.name}, role is #{role.object_id}"
 
 		    x_vr = x.elements.to_a("orm:ValueRestriction")
 		    x_vr.each{|vr|
-			ranges = vr.elements.to_a("orm:RoleValueConstraint/orm:ValueRanges/orm:ValueRange")
-			player = vr.parent.elements.to_a('orm:RolePlayer')[0]
-			playername = @x_by_id[player.attributes['ref']].attributes['Name']
-			rolename = vr.parent.attributes['Name']
-			rolename = playername if !rolename || rolename == ''
-
-			ranges.each{|r|
-			    min = r.attributes['MinValue']
-			    max = r.attributes['MaxValue']
-			    min = min =~ /[^0-9\.]/ ? min : min.to_i
-			    max = max =~ /[^0-9\.]/ ? max : max.to_i
-			    av = (!max || max == min) ? min : OpenRange.new(min,max)
-			    # puts "adding RVR #{av.inspect} to #{role}"
-			    role.allowed_values << av
+			x_ranges = vr.elements.to_a("orm:RoleValueConstraint/orm:ValueRanges/orm:ValueRange")
+			next if x_ranges.size == 0
+			role.value_restriction = @constellation.ValueRestriction(:new)
+			x_ranges.each{|x_range|
+			    v_range = value_range(x_range)
+			    ar = @constellation.AllowedRange(v_range, role.value_restriction)
 			}
 		    }
 
 		    # puts "Adding Role #{role.name} to #{fact_type.name}"
-		    fact_type.add_role(role)
+		    #fact_type.add_role(role)
 		    # puts "\tRole #{role} is #{id}"
 		}
 
@@ -296,128 +315,176 @@ module ActiveFacts
 		    x_role_sequence = x.elements.to_a('orm:RoleSequence/*')
 		    x_readings = x.elements.to_a('orm:Readings/orm:Reading/orm:Data')
 
-		    role_sequence = RoleSequence.new
-		    x_role_sequence.each{|x|
-			ref = x.attributes['ref']
-			role = @by_id[ref]
-			role_sequence << role
-		    }
-		    role_sequence = @vocabulary.get_role_sequence(role_sequence)
+		    # Build an array of the Roles needed:
+		    role_array = x_role_sequence.map{|x| @by_id[x.attributes['ref']] }
 
-		    x_readings.each{|x|
-			fact_type.readings << Reading.new(role_sequence, x.text)
+		    # puts "Reading #{x_readings.map(&:text).inspect}"
+		    role_sequence = get_role_sequence(role_array)
+
+		    #role_sequence.all_role_ref.each_with_index{|rr, i|
+		    #	# REVISIT: rr.leading_adjective = ...; Add adjectives here
+		    #  }
+
+		    x_readings.each_with_index{|x, i|
+			reading = @constellation.Reading(fact_type, fact_type.all_reading.size)
+			reading.role_sequence = role_sequence
+			reading.reading_text = extract_adjectives(x.text, role_sequence)
 		    }
 		}
 	    }
 	    # @vocabulary.fact_types.each{|ft| puts ft }
 	end
 
-	def map_roles(x_roles, why = nil)
-	    ra = x_roles.map{|x|
-		id = x.attributes['ref']
-		role = @by_id[id]
-		if (why && !role)
-		    # We didn't make Implied objects, so some constraints are unconnectable
-		    x_role = @x_by_id[id]
-		    x_player = x_role.elements.to_a('orm:RolePlayer')[0]
-		    x_object = @x_by_id[x_player.attributes['ref']]
-		    x_nests = nil
-		    if (x_object.name.to_s == 'ObjectifiedType')
-			x_nests = x_object.elements.to_a('orm:NestedPredicate')[0]
-			implied = x_nests.attributes['IsImplied']
-			x_fact = @x_by_id[x_nests.attributes['ref']]
-		    end
+	def extract_adjectives(reading_text, role_sequence)
+	    (0...role_sequence.all_role_ref.size).each{|i|
+		role_ref = role_sequence.all_role_ref[i]
+		role = role_ref.role
 
-		    # This might have been a role of an ImpliedFact, which makes it safe to ignore.
-		    next if 'ImpliedFact' == x_role.parent.parent.name
+		word = '\b([A-Za-z][A-Za-z0-9_]*)\b'
+		leading_adjectives = "(?:#{word}- *(?:#{word} +)?)"
+		trailing_adjectives = "(?: +(?:#{word} +) *-#{word}?)"
+		role_with_adjectives_re =
+		    %r| ?#{leading_adjectives}?\{#{i}\}#{trailing_adjectives}? ?|
 
-		    # Talk about why this wasn't found - this shouldn't happen.
-		    if (!x_nests || !implied)
-			puts "="*60
-			puts "Skipping #{why}, #{x_role.name} #{id} not found"
+		reading_text.gsub!(role_with_adjectives_re) {
+		    la1 = ($1 && $1 != "" ? $1 : nil)	# First leading adjective
+		    la2 = ($2 && $2 != "" ? $2 : nil)	# Second leading adjective
+		    ta1 = ($3 && $3 != "" ? $3 : nil)	# First trailing adjective
+		    ta2 = ($4 && $4 != "" ? $4 : nil)	# Second trailing adjective
+		    la = role_ref.leading_adjective = [la1, la2].compact*" "
+		    ta = role_ref.trailing_adjective = [ta1, ta2].compact*" "
+		    #puts "Reading '#{name}' has role #{i} adjectives '#{la}' '#{ta}'" if la != "" || ta != ""
 
-			if (x_nests)
-			    puts "Role is on #{implied ? "implied " : ""}objectification #{x_object}"
-			    puts "which objectifies #{x_fact}"
-			end
-			puts x_object.to_s
-		    end
-		end
-		role
+		    " {#{i}} "
+		}
 	    }
-	    ra.include?(nil) ? nil : RoleSequence.new(ra)
+	    reading_text.sub!(/\A /, '')
+	    reading_text.sub!(/ \Z/, '')
+	    reading_text
+	end
+
+	def get_role_sequence(role_array)
+	  # puts "Getting RoleSequence [#{role_array.map{|r| "#{r.concept.name} (role #{r.object_id})" }*", "}]"
+
+	  # Look for an existing RoleSequence
+	  role_sequence = @constellation.RoleSequence.detect{|c|
+	      #puts "Checking RoleSequence [#{c.all_role_ref.map{|rr| rr.role.concept.name}*", "}]"
+	      role_array == c.all_role_ref.map{|rr| rr.role }
+	    }
+	  # puts "Found matching RoleSequence!" if role_sequence
+	  return role_sequence if role_sequence
+
+	  # Make a new RoleSequence:
+	  role_sequence = @constellation.RoleSequence(:new) unless role_sequence
+	  role_array.each_with_index{|r, i|
+	      role_ref = @constellation.RoleRef(role_sequence, i)
+	      role_ref.role = r
+	    }
+	  role_sequence
+	end
+
+	def map_roles(x_roles, why = nil)
+	  role_array = x_roles.map{|x|
+	      id = x.attributes['ref']
+	      role = @by_id[id]
+	      if (why && !role)
+		  # We didn't make Implied objects, so some constraints are unconnectable
+		  x_role = @x_by_id[id]
+		  x_player = x_role.elements.to_a('orm:RolePlayer')[0]
+		  x_object = @x_by_id[x_player.attributes['ref']]
+		  x_nests = nil
+		  if (x_object.name.to_s == 'ObjectifiedType')
+		      x_nests = x_object.elements.to_a('orm:NestedPredicate')[0]
+		      implied = x_nests.attributes['IsImplied']
+		      x_fact = @x_by_id[x_nests.attributes['ref']]
+		  end
+
+		  # This might have been a role of an ImpliedFact, which makes it safe to ignore.
+		  next if 'ImpliedFact' == x_role.parent.parent.name
+
+		  # Talk about why this wasn't found - this shouldn't happen.
+		  if (!x_nests || !implied)
+		      puts "="*60
+		      puts "Skipping #{why}, #{x_role.name} #{id} not found"
+
+		      if (x_nests)
+			  puts "Role is on #{implied ? "implied " : ""}objectification #{x_object}"
+			  puts "which objectifies #{x_fact}"
+		      end
+		      puts x_object.to_s
+		  end
+	      end
+	      role
+	  }
+	  role_array.include?(nil) ? nil : get_role_sequence(role_array)
 	end
 
 	def read_constraints
-	    @constraints_by_rs = {}
+	  @constraints_by_rs = {}
 
-	    read_mandatory_constraints
-	    read_uniqueness_constraints
-	    read_exclusion_constraints
-	    read_subset_constraints
-	    read_ring_constraints
-	    read_equality_constraints
-	    read_frequency_constraints
-	    read_residual_mandatory_constraints
+	  read_mandatory_constraints
+	  read_uniqueness_constraints
+	  read_exclusion_constraints
+	  read_subset_constraints
+	  read_ring_constraints
+	  read_equality_constraints
+	  read_frequency_constraints
+	  read_residual_mandatory_constraints
 	end
 
 	def read_mandatory_constraints
-	    x_mandatory_constraints = @x_model.elements.to_a("orm:Constraints/orm:MandatoryConstraint")
-	    @mandatory_constraints_by_rs = {}
-	    @mandatory_constraint_rs_by_id = {}
-	    x_mandatory_constraints.each{|x|
-		    name = x.attributes["Name"]
+	  x_mandatory_constraints = @x_model.elements.to_a("orm:Constraints/orm:MandatoryConstraint")
+	  @mandatory_constraints_by_rs = {}
+	  @mandatory_constraint_rs_by_id = {}
+	  x_mandatory_constraints.each{|x|
+	      name = x.attributes["Name"]
 
-		    # As of Feb 2008, all NORMA ValueTypes have an implied mandatory constraint.
-		    if x.elements.to_a("orm:ImpliedByObjectType").size > 0
-		      # $stderr.puts "Skipping ImpliedMandatoryConstraint #{name} over #{roles}"
-		      next
-		    end
+	      # As of Feb 2008, all NORMA ValueTypes have an implied mandatory constraint.
+	      if x.elements.to_a("orm:ImpliedByObjectType").size > 0
+		# $stderr.puts "Skipping ImpliedMandatoryConstraint #{name} over #{roles}"
+		next
+	      end
 
-		    x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
-		    roles = map_roles(x_roles, "mandatory constraint #{name}")
-		    next if !roles
+	      x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
+	      roles = map_roles(x_roles, "mandatory constraint #{name}")
+	      next if !roles
 
-		    # If X-OR mandatory, the Exclusion is accessed by:
-		#    x_exclusion = (ex = x.elements.to_a("orm:ExclusiveOrExclusionConstraint")[0]) &&
-		#		    @x_by_id[ex.attributes['ref']]
-		#    puts "Mandatory #{name}(#{roles}) is paired with exclusive #{x_exclusion.attributes['Name']}" if x_exclusion
+	      # If X-OR mandatory, the Exclusion is accessed by:
+#	      x_exclusion = (ex = x.elements.to_a("orm:ExclusiveOrExclusionConstraint")[0]) &&
+#	  		    @x_by_id[ex.attributes['ref']]
+#	      puts "Mandatory #{name}(#{roles}) is paired with exclusive #{x_exclusion.attributes['Name']}" if x_exclusion
 
-		    rs = RoleSequence.new
-		    roles.each{|r| rs << r }
-		    rs = @vocabulary.get_role_sequence(rs)
-
-		    # puts "Mandatory #{rs}"
-
-		    @mandatory_constraints_by_rs[rs] = x
-		    @mandatory_constraint_rs_by_id[x.attributes['id']] = rs
-		}
+	      @mandatory_constraints_by_rs[roles] = x
+	      @mandatory_constraint_rs_by_id[x.attributes['id']] = roles
+	  }
 	end
 
 	def read_residual_mandatory_constraints
-	    @mandatory_constraints_by_rs.each { |rs, x|
-		# Create a simply-mandatory PresenceConstraint for each mandatory constraint
-		name = x.attributes["Name"]
-		#puts "Residual Mandatory #{name}: #{rs.to_s}"
+	  @mandatory_constraints_by_rs.each { |roles, x|
+	      # Create a simply-mandatory PresenceConstraint for each mandatory constraint
+	      name = x.attributes["Name"]
+	      #puts "Residual Mandatory #{name}: #{roles.to_s}"
 
-		pc = PresenceConstraint.new(
-				@vocabulary,	    # In Vocabulary,
-				name,	    # this constraint
-				rs,	    # requires that these Roles
-				true,	    # must occur
-				1, nil	    # at least once
-			    )
-		(@constraints_by_rs[rs] ||= []) << pc
-	    }
+	      pc = @constellation.PresenceConstraint(:new)
+	      pc.vocabulary = @vocabulary
+	      pc.name = name
+	      pc.role_sequence = roles
+	      pc.is_mandatory = true
+	      pc.min_frequency = 1 
+	      pc.max_frequency = nil
+	      pc.is_preferred_identifier = false
+
+	      (@constraints_by_rs[roles] ||= []) << pc
+	  }
 	end
 
 	def read_uniqueness_constraints
-	    x_uniqueness_constraints = @x_model.elements.to_a("orm:Constraints/orm:UniquenessConstraint")
-	    x_uniqueness_constraints.each{|x|
-		name = x.attributes["Name"]
-		id = x.attributes["id"]
-		x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
-		pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
+	  x_uniqueness_constraints = @x_model.elements.to_a("orm:Constraints/orm:UniquenessConstraint")
+	  x_uniqueness_constraints.each{|x|
+	      name = x.attributes["Name"]
+	      id = x.attributes["id"]
+	      x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
+	      pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
 
 		# Skip uniqueness constraints on implied concepts
 		if x_pi && !pi
@@ -426,17 +493,17 @@ module ActiveFacts
 		end
 
 		# A uniqueness constraint on a fact having an implied objectification isn't preferred:
-		if pi &&
-		    (x_pi_for = @x_by_id[eref]) &&
-		    (np = x_pi_for.elements.to_a('orm:NestedPredicate')[0]) &&
-		    np.attributes['IsImplied']
-			pi = nil
-		end
+#		if pi &&
+#		    (x_pi_for = @x_by_id[eref]) &&
+#		    (np = x_pi_for.elements.to_a('orm:NestedPredicate')[0]) &&
+#		    np.attributes['IsImplied']
+#			pi = nil
+#		end
 
 		# Get the RoleSequence:
 		x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
 		roles = map_roles(x_roles, "uniqueness constraint #{name}")
-		next if !roles || roles.size == 0
+		next if !roles # || roles.size == 0
 
 		# There is an implicit uniqueness constraint when any object plays a unary. Skip it.
 		if (x_roles.size == 1 &&
@@ -450,13 +517,10 @@ module ActiveFacts
 		  next	  # Skip uniqueness constraint over our role in this implicit boolean
 		end
 
-		rs = RoleSequence.new
-		roles.each{|r| rs << r }
-		rs = @vocabulary.get_role_sequence(rs)
-		if (mc = @mandatory_constraints_by_rs[rs])
+		if (mc = @mandatory_constraints_by_rs[roles])
 		    # Remove absorbed mandatory constraints, leaving residual ones.
 		    # puts "Absorbing MC #{mc.attributes['Name']}"
-		    @mandatory_constraints_by_rs.delete(rs)
+		    @mandatory_constraints_by_rs.delete(roles)
 		    @mandatory_constraint_rs_by_id.delete(mc.attributes['id'])
 		end
 
@@ -465,15 +529,19 @@ module ActiveFacts
 		#    (pi ? " (preferred id for #{pi.name})" : "") +
 		#    (mc ? " (mandatory)" : "") if pi && !mc
 
-		pc = PresenceConstraint.new(
-				@vocabulary,	    # In Vocabulary,
-				name,	    # this constraint
-				rs,	    # requires that these Roles
-				mc,	    # must/may occur
-				1, 1,	    # exactly once
-				pi != nil   # which may be a preferred ID
-			    )
-		(@constraints_by_rs[rs] ||= []) << pc
+		pc = @constellation.PresenceConstraint(:new)
+		pc.vocabulary = @vocabulary
+		pc.name = name
+		pc.role_sequence = roles
+		pc.is_mandatory = true if mc
+		pc.min_frequency = mc ? 1 : 0
+		pc.max_frequency = 1 
+		pc.is_preferred_identifier = true if pi
+
+		#puts roles.verbalise
+		#puts pc.verbalise
+
+		(@constraints_by_rs[roles] ||= []) << pc
 	    }
 	end
 
@@ -483,21 +551,29 @@ module ActiveFacts
 		name = x.attributes["Name"]
 		x_mandatory = (m = x.elements.to_a("orm:ExclusiveOrMandatoryConstraint")[0]) &&
 				@x_by_id[mc_id = m.attributes['ref']]
-		rss = []
-		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
-			rss << @vocabulary.get_role_sequence(RoleSequence.new(
-				x_rs.elements.to_a("orm:Role").map{|xr|
-					@by_id[xr.attributes['ref']]
-				    }
-			    ))
-		    }
+		role_sequences = 
+		    x.elements.to_a("orm:RoleSequences/orm:RoleSequence").map{|x_rs|
+			    x_role_refs = x_rs.elements.to_a("orm:Role")
+			    map_roles(
+				x_role_refs , # .map{|xr| @x_by_id[xr.attributes['ref']] },
+				"exclusion constraint #{name}"
+			      )
+			}
 		if x_mandatory
 		    # Remove absorbed mandatory constraints, leaving residual ones.
 		    mc_rs = @mandatory_constraint_rs_by_id[mc_id]
 		    @mandatory_constraint_rs_by_id.delete(mc_id)
 		    @mandatory_constraints_by_rs.delete(mc_rs)
 		end
-		ec = ExclusionConstraint.new(@vocabulary, name, rss, x_mandatory ? true : nil)
+
+		ec = @constellation.SetExclusionConstraint(:new)
+		ec.vocabulary = @vocabulary
+		ec.name = name
+		# ec.enforcement = 
+		role_sequences.each{|rs|
+		    @constellation.SetComparisonRoles(ec, rs)
+		  }
+		ec.is_mandatory = true if x_mandatory
 	    }
 	end
 
@@ -505,15 +581,22 @@ module ActiveFacts
 	    x_equality_constraints = @x_model.elements.to_a("orm:Constraints/orm:EqualityConstraint")
 	    x_equality_constraints.each{|x|
 		name = x.attributes["Name"]
-		rss = []
-		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
-			rss << @vocabulary.get_role_sequence(RoleSequence.new(
-				x_rs.elements.to_a("orm:Role").map{|xr|
-					@by_id[xr.attributes['ref']]
-				    }
-			    ))
-		    }
-		ec = EqualityConstraint.new(@vocabulary, name, rss)
+		role_sequences = 
+		    x.elements.to_a("orm:RoleSequences/orm:RoleSequence").map{|x_rs|
+			    x_role_refs = x_rs.elements.to_a("orm:Role")
+			    map_roles(
+				x_role_refs , # .map{|xr| @x_by_id[xr.attributes['ref']] },
+				"equality constraint #{name}"
+			      )
+			}
+
+		ec = @constellation.SetEqualityConstraint(:new)
+		ec.vocabulary = @vocabulary
+		ec.name = name
+		# ec.enforcement = 
+		role_sequences.each{|rs|
+		    @constellation.SetComparisonRoles(ec, rs)
+		  }
 	    }
 	end
 
@@ -521,15 +604,21 @@ module ActiveFacts
 	    x_subset_constraints = @x_model.elements.to_a("orm:Constraints/orm:SubsetConstraint")
 	    x_subset_constraints.each{|x|
 		name = x.attributes["Name"]
-		rss = []
-		x.elements.to_a("orm:RoleSequences/orm:RoleSequence").each{|x_rs|
-			rss << @vocabulary.get_role_sequence(RoleSequence.new(
-				x_rs.elements.to_a("orm:Role").map{|xr|
-					@by_id[xr.attributes['ref']]
-				    }
-			    ))
-		    }
-		ec = SubsetConstraint.new(@vocabulary, name, *rss)
+		role_sequences = 
+		    x.elements.to_a("orm:RoleSequences/orm:RoleSequence").map{|x_rs|
+			    x_role_refs = x_rs.elements.to_a("orm:Role")
+			    map_roles(
+				x_role_refs , # .map{|xr| @x_by_id[xr.attributes['ref']] },
+				"equality constraint #{name}"
+			      )
+			}
+
+		ec = @constellation.SubsetConstraint(:new)
+		ec.vocabulary = @vocabulary
+		ec.name = name
+		# ec.enforcement = 
+		ec.superset_role_sequence = role_sequences[0]
+		ec.subset_role_sequence = role_sequences[1]
 	    }
 	end
 
@@ -538,17 +627,23 @@ module ActiveFacts
 	    x_ring_constraints.each{|x|
 		name = x.attributes["Name"]
 		type = x.attributes["Type"]
-		begin
-		    # Convert the RingConstraint name to a number:
-		    type_num = eval("::ActiveFacts::RingConstraint::#{type}") 
-		rescue => e
-		    throw "RingConstraint type #{type} isn't known"
-		end
+#		begin
+#		    # Convert the RingConstraint name to a number:
+#		    type_num = eval("::ActiveFacts::RingConstraint::#{type}") 
+#		rescue => e
+#		    throw "RingConstraint type #{type} isn't known"
+#		end
 
 		from, to = *x.elements.to_a("orm:RoleSequence/orm:Role").map{|xr|
 				@by_id[xr.attributes['ref']]
 			    }
-		RingConstraint.new(@vocabulary, name, type_num, from, to)
+		rc = @constellation.RingConstraint(:new)
+		rc.vocabulary = @vocabulary
+		rc.name = name
+		# rc.enforcement = 
+		rc.role = from
+		rc.other_role = to
+		rc.ring_type = type
 	    }
 	end
 

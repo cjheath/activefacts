@@ -18,6 +18,7 @@ module ActiveFacts
 
       def add_concept(klass)
 	name = klass.basename
+	__bind(name)
 	# puts "Adding concept #{name} to #{self.name}"
 	@concept ||= {}
 	@concept[klass.basename] = klass

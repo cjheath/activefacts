@@ -1,6 +1,9 @@
 module ActiveFacts
   module API
     module Instance
+      attr_accessor :constellation
+      attr_accessor :query
+
       # Instance methods:
       def initialize(args = [])
 	if Constellation === (c = args[0])
@@ -22,8 +25,15 @@ module ActiveFacts
 	raise "#{self.class} Instance verbalisation needed"
       end
 
-      attr_accessor :query
-      attr_accessor :constellation
+      # De-assign all functional roles and remove from constellation, if any.
+      def delete
+	# Delete from the constellation first, so it can remember our identifying role values
+	@constellation.delete(self) if @constellation
+	self.class.roles.each{|role_name, role|
+	    next unless role.unary
+	    send "#{role.name}=", nil
+	  }
+      end
 
       module ClassMethods
 	include Concept

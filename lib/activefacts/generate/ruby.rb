@@ -4,148 +4,181 @@
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
 #
-require 'activefacts/api'
+require 'activefacts/generate/ordered'
 
 module ActiveFacts
 
-  class RubyGenerator
-    def initialize(vocabulary)
-      @vocabulary = vocabulary
+  class RubyGenerator < OrderedDumper
+
+    def vocabulary_start(vocabulary)
+      puts "require 'activefacts/api'\n\n"
+      puts "module #{vocabulary.name}\n\n"
     end
 
-    def dump(out = $>)
-      @out = out
-      @out.puts "require 'activefacts/api'\n\n"
-      @out.puts "module #{@vocabulary.name}\n\n"
-
-      build_indices
-      @concept_types_dumped = {}
-      @fact_types_dumped = {}
-      dump_value_types()
-      dump_entity_types()
-      dump_fact_types()
-
-      @out.puts "end"
+    def constraints_dump(constraints_used)
+      # Stub, not needed.
     end
 
-    def build_indices
-      @set_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
-#      @ring_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
-
-      @vocabulary.constraints.each { |c|
-	  case c
-	  when SetConstraint
-	    fact_types = c.role_sequence.map(&:fact_type).uniq	# All fact types spanned by this constraint
-	    if fact_types.size == 1	# There's only one, save it:
-	      # $stderr.puts "Single-fact constraint on #{fact_types[0].name}: #{c.name}"
-	      (@set_constraints_by_fact[fact_types[0]] ||= []) << c
-	    end
-#	  when RingConstraint
-#	    (@ring_constraints_by_fact[c.from_role.fact_type] ||= []) << c
-	  else
-	    #puts "Found unhandled #{c.class} #{c.name}"
-	  end
-	}
-      @constraints_used = {}
+    def vocabulary_end
+      puts "end"
     end
 
-    def dump_value_types
-      @vocabulary.concepts.sort_by{|o| o.name}.each{|o|
-	  next if EntityType === o
-	  dump_value_type(o)
-	  @concept_types_dumped[o] = true
-	}
+    def value_type_banner
     end
 
-    def dump_value_type(o)
-      if o.name == o.data_type.name
+    def value_type_end
+    end
+
+    def value_type_dump(o)
+      return if !o.supertype
+      if o.name == o.supertype.name
 	  # In ActiveFacts, parameterising a ValueType will create a new datatype
 	  # throw Can't handle parameterized value type of same name as its datatype" if ...
       end
 
-      length = (l = o.data_type.length) && l > 0 ? ":length => #{l}" : nil
-      scale = (s = o.data_type.scale) && s > 0 ? ":scale => #{s}" : nil
+      length = (l = o.length) && l > 0 ? ":length => #{l}" : nil
+      scale = (s = o.scale) && s > 0 ? ":scale => #{s}" : nil
       params = [length,scale].compact * ", "
 
       ruby_type_name =
-	case o.data_type.name
+	case o.supertype.name
 	  when "VariableLengthText"; "String"
 	  when "Date"; "::Date"
-	  else o.data_type.name
+	  else o.supertype.name
 	end
 
-      @out.puts "  class #{o.name} < #{ruby_type_name}\n" +
-		"    value_type #{params}\n"
-      dump_roles(o)
-      @out.puts "  end\n\n"
+      puts "  class #{o.name} < #{ruby_type_name}\n" +
+	   "    value_type #{params}\n"
+      puts "    \# REVISIT: #{o.name} has restricted values\n" if o.value_restriction
+      puts "    \# REVISIT: #{o.name} is in units of #{o.unit.name}\n" if o.unit
+      roles_dump(o)
+      puts "  end\n\n"
     end
 
-    def dump_role(role)
-      if role.fact_type.roles.size == 1
+    def roles_dump(o)
+      o.all_role.each {|role|
+	  role_dump(role)
+	}
+    end
+
+    def preferred_role_name(role)
+      # debug "Looking for preferred_role_name of #{describe_fact_type(role.fact_type, role)}"
+      reading = preferred_reading(role.fact_type)
+      preferred_role_ref = reading.role_sequence.all_role_ref.detect{|reading_rr|
+	  reading_rr.role == role
+	}
+
+      # Unaries are a hack, with only one role for what is effectively a binary:
+      if (role.fact_type.all_role.size == 1)
+	return (role.role_name && role.role_name.snakecase) ||
+	  reading.reading_text.gsub(/ *\{0\} */,'').gsub(' ','_').downcase
+      end
+
+      # debug "\tleading_adjective=#{(p=preferred_role_ref).leading_adjective}, role_name=#{role.role_name}, role player=#{role.concept.name}, trailing_adjective=#{p.trailing_adjective}"
+      role_words = []
+      role_words << preferred_role_ref.leading_adjective.gsub(/ /,'_') if preferred_role_ref.leading_adjective != ""
+
+      role_name = role.role_name
+      role_name = nil if role_name == ""
+
+      role_words << (role_name || role.concept.name)
+      role_words << preferred_role_ref.trailing_adjective.gsub(/ /,'_') if preferred_role_ref.trailing_adjective != ""
+      n = role_words.map(&:snakecase)*"_"
+      # debug "\tresult=#{n}"
+      n
+    end
+
+    def role_dump(role)
+      fact_type = role.fact_type
+      if fact_type.all_role.size == 1
 	# Handle Unary Roles here
-	@out.puts "    maybe :"+ruby_role_name(role)
-      elsif role.fact_type.roles.size != 2
+	puts "    maybe :"+preferred_role_name(role)
+	return
+      elsif fact_type.all_role.size != 2
 	return	# ternaries and higher are always objectified
       end
 
-      if TypeInheritance === role.fact_type
-	# $stderr.puts "Ignoring role #{role} in #{role.fact_type}, subtype fact type"
+      # REVISIT: TypeInheritance
+      if TypeInheritance === fact_type
+	# debug "Ignoring role #{role} in #{fact_type}, subtype fact type"
 	return
       end
 
-      # Find any uniqueness constraint over this role:
-      fact_constraints = @set_constraints_by_fact[role.fact_type]
-      ucs = fact_constraints.select{|c| PresenceConstraint === c && c.max == 1 }
-      # Emit "has_one/one_to_one..." only for functional roles here:
-      unless ucs.find {|c| c.role_sequence == [role] }
-	# $stderr.puts "No uniqueness constraint found for #{role} in #{role.fact_type}"
-	return
-      end
-
-      other_role_number = role.fact_type.roles[0] == role ? 1 : 0
-      other_role = role.fact_type.roles[other_role_number]
-
-      if ucs.find {|c| c.role_sequence == [other_role] } &&
-	  !@concept_types_dumped[other_role.concept]
-	# $stderr.puts "Will dump 1:1 later for #{role} in #{role.fact_type}"
-	return
-      end
-
-      other_role_name = ruby_role_name(other_role)
+      other_role_number = fact_type.all_role[0] == role ? 1 : 0
+      other_role = fact_type.all_role[other_role_number]
+      other_role_name = preferred_role_name(other_role)
+      #other_role_name = ruby_role_name(other_role)
       other_player = other_role.concept
 
-      # It's a one_to_one if there's a uniqueness constraing on the other role:
-      one_to_one = ucs.find {|c| c.role_sequence == [other_role] }
-      
+      # Find any uniqueness constraint over this role:
+      fact_constraints = @presence_constraints_by_fact[fact_type]
+      #debug "Considering #{fact_constraints.size} fact constraints over fact role #{role.concept.name}"
+      ucs = fact_constraints.select{|c| PresenceConstraint === c && c.max_frequency == 1 }
+      # Emit "has_one/one_to_one..." only for functional roles here:
+      #debug "Considering #{ucs.size} unique constraints over role #{role.concept.name}"
+      unless ucs.find {|c|
+	    roles = c.role_sequence.all_role_ref.map(&:role)
+	    #debug "Unique constraint over role #{role.concept.name} has roles #{roles.map{|r| describe_fact_type(r.fact_type, r)}*", "}"
+	    roles == [role]
+	}
+	#debug "No uniqueness constraint found for #{role} in #{fact_type}"
+	return
+      end
+
+      if ucs.find {|c| c.role_sequence.all_role_ref.map(&:role) == [other_role] } &&
+	  !@concept_types_dumped[other_role.concept]
+	#debug "Will dump 1:1 later for #{role} in #{fact_type}"
+	return
+      end
+
+      # It's a one_to_one if there's a uniqueness constraint on the other role:
+      one_to_one = ucs.find {|c| c.role_sequence.all_role_ref.map(&:role) == [other_role] }
+
       # REVISIT: Add readings
 
-      role_name = role.role_name != role.concept.name ? ruby_role_name(role) : nil
+      # Find role name from preferred reading:
+      role_name = preferred_role_name(role)
+      role_name = nil if role_name == role.concept.name.snakecase
 
-      dump_binary(other_role_name, other_player, one_to_one, nil, role_name)
+      binary_dump(other_role_name, other_player, one_to_one, nil, role_name)
+      puts "    \# REVISIT: #{other_role_name} has restricted values\n" if role.value_restriction
     end
 
-    def dump_entity_type(o)
-      pi = o.preferred_identifier
+    def subtype_dump(o, supertypes, pi = nil)
+      puts "  class #{o.name} < #{ supertypes[0].name }"
+      puts "    identified_by #{identified_by(o, pi)}" if pi
+      fact_roles_dump(o.fact_type) if o.fact_type
+      roles_dump(o)
+      puts "  end\n\n"
+      @constraints_used[pi] = true if pi
+    end
 
-      if (supertype = o.primary_supertype)
-	spi = o.primary_supertype.preferred_identifier
-	# REVISIT: What about additional supertypes?
-	@out.puts \
-	      "  class #{o.name} < #{ o.supertypes[0].name }\n" +
-	  (pi != spi ? "    identified_by #{known_by(pi.role_sequence)}\n" : "")
-      else
-	@out.puts \
-	      "  class #{o.name}\n" +
-	      "    identified_by #{known_by(pi.role_sequence)}"
-      end
-      dump_fact_roles(o.fact_type) if NestedType === o
-      dump_roles(o)
-      @out.puts \
-	      "  end\n\n"
+    def non_subtype_dump(o, pi)
+      puts "  class #{o.name}"
+      puts "    identified_by #{identified_by(o, pi)}"
+      fact_roles_dump(o.fact_type) if o.fact_type
+      roles_dump(o)
+      puts "  end\n\n"
       @constraints_used[pi] = true
     end
 
-    def dump_binary(role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil)
+    def skip_fact_type(f)
+      # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
+      # These will come up as un-handled constraints:
+      #debug "Skipping objectified fact type #{f.entity_type.name}" if f.entity_type
+      #f.entity_type ||
+	TypeInheritance === f
+    end
+
+    # An objectified fact type has internal roles that are always "has_one":
+    def fact_roles_dump(fact)
+      fact.all_role.each{|role| 
+	  role_name = preferred_role_name(role)
+	  binary_dump(role_name, role.concept)
+	}
+    end
+
+    def binary_dump(role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil)
       # Find whether we need the name of the other role player, and whether it's defined yet:
       if role_name.camelcase(true) == role_player.name
 	# Don't use Class name if implied by rolename
@@ -157,7 +190,7 @@ module ActiveFacts
       end
       other_role_name = ":"+other_role_name if other_role_name
 
-      @out.puts "    #{one_to_one ? "one_to_one" : "has_one" } " +
+      puts "    #{one_to_one ? "one_to_one" : "has_one" } " +
 	      [ ":"+role_name,
 		role_player,
 		readings,
@@ -165,152 +198,44 @@ module ActiveFacts
 	      ].compact*", "
     end
 
-    # Try to dump entity types in order of name, but we need
-    # to dump ETs before they're referenced in preferred ids
-    # if possible (it's not always, there may be loops!)
-    def dump_entity_types
-      # Build hash tables of precursors and followers to use:
-      entity_count = 0
-      precursors, followers = *@vocabulary.concepts.inject([{},{}]) { |a, o|
-	  if EntityType === o
-	    entity_count += 1
-	    precursor = a[0]
-	    follower = a[1]
-	    blocked = false
-	    pi = o.preferred_identifier
-	    if pi
-	      pi.role_sequence.each{|r|
-		  player = r.concept
-		  next unless EntityType === player
-		  # player is a precursor of o
-		  (precursor[o] ||= []) << player if (player != o)
-		  (follower[player] ||= []) << o if (player != o)
-		}
-	    end
-	    # Supertypes are precursors too:
-	    o.subtypes.each{|s|
-		(precursor[s] ||= []) << o
-		(follower[o] ||= []) << s
-	      }
-	  end
-	  a
-	}
-
-      sorted = @vocabulary.concepts.sort_by{|o| o.name}
-      panic = nil
-      while entity_count > 0 do
-	count_this_pass = 0
-	sorted.each{|o|
-	    next unless EntityType === o && !@concept_types_dumped[o]	# Not an ET or already done
-	    # precursors[o] -= [o] if precursors[o]
-
-	    next if (o != panic && (p = precursors[o]) && p.size > 0)	# Not yet, still blocked
-
-	    # We're going to emit o - remove it from precursors of others:
-	    (followers[o]||[]).each{|f|
-		precursors[f] -= [o]
-	      }
-	    entity_count -= 1
-	    count_this_pass += 1
-	    @concept_types_dumped[o] = true
-	    panic = nil
-
-	    dump_entity_type(o)
-
-	    o.roles.map(&:fact_type).uniq.select{|f|
-		# The fact type hasn't already been dumped but all its role players have
-		!@fact_types_dumped[f] &&
-		!f.roles.detect{|r| !@concept_types_dumped[r.concept] }
-	      }.each{|f|
-		  dump_fact_type(f)
-		}
-	  }
-
-	  # Check that we made progress:
-	  if count_this_pass == 0 && entity_count > 0
-	    if panic
-	      # This won't happen again unless the above code is changed to decide it can't dump "panic".
-	      raise "Unresolvable cycle of forward references: " +
-		(bad = sorted.select{|o| EntityType === o && !@concept_types_dumped[o]}).map{|o| o.name }.inspect +
-		":\n\t" + bad.map{|o|
-		  o.name +
-		  ": " +
-		  precursors[o].map{|p| p.name}.uniq.inspect
-		} * "\n\t" + "\n"
-	    else
-	      # Find the object that has the most followers and no fwd-ref'd supertypes:
-	      panic = sorted.
-		select{|o| !@concept_types_dumped[o] }.
-		sort_by{|o|
-		    f = followers[o] || []; 
-		    o.supertypes.detect{|s| !@concept_types_dumped[s] } ? 0 : -f.size
-		  }[0]
-	      # puts "Panic mode, selected #{panic.name} next"
-	    end
-	  end
-
-      end
-    end
-
-    # Dump fact types.
-    def dump_fact_types
-      @vocabulary.fact_types.each{|f|
-	  next if @fact_types_dumped[f] || skip_fact_type(f)
-
-	  dump_fact_type(f)
-	}
-      @constraints_used
-    end
-
-    def skip_fact_type(f)
-      # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
-      # These will come up as un-handled constraints:
-      f.nested_as ||
-	TypeInheritance === f
-    end
-
-    def dump_fact_roles(fact)
-      fact.roles.each{|role| 
-	  role_name = ruby_role_name(role)
-	  dump_binary(role_name, role.concept)
-	}
-    end
-
     # Dump one fact type.
     # Include as many as possible internal constraints in the fact type readings.
-    def dump_fact_type(f)
-      return if skip_fact_type(f)
+    def fact_type_dump(fact_type, name, readings)
+      return if skip_fact_type(fact_type)
 
-      fact_constraints = @set_constraints_by_fact[f]
+      fact_constraints = @presence_constraints_by_fact[fact_type]
 
-      # $stderr.puts "for fact type #{f.to_s}, considering\n\t#{fact_constraints.map(&:to_s)*",\n\t"}"
-      # $stderr.puts "#{f.name} has readings:\n\t#{f.readings.map(&:name)*"\n\t"}"
+      # debug "for fact type #{fact_type.to_s}, considering\n\t#{fact_constraints.map(&:to_s)*",\n\t"}"
+      # debug "#{fact_type.name} has readings:\n\t#{fact_type.readings.map(&:name)*"\n\t"}"
 
       pc = fact_constraints.detect{|c|
 	  PresenceConstraint === c &&
-	  c.role_sequence.size > 1
+	  c.role_sequence.all_role_ref.size > 1
 	}
       return unless pc		# Omit fact types that aren't implicitly nested
 
-      @out.puts "  class #{f.name}\t# Implicitly Objectified Fact Type\n" +
-		"    identified_by #{known_by(pc.role_sequence)}"
-      dump_fact_roles(f)
-      @out.puts "  end\n\n"
+      primary_supertype = fact_type.entity_type && primary_supertype(fact_type.entity_type)
+      # REVISIT: If supertypes(fact_type.entity_type).size > 1, handle additional supertypes
 
-      @fact_types_dumped[f] = true
+      puts "  class #{name}#{primary_supertype ? " < "+primary_supertype.name : ""}\n" +
+		"    identified_by #{identified_by(fact_type.entity_type, pc)}"
+      fact_roles_dump(fact_type)
+      roles_dump(fact_type.entity_type)
+      puts "  end\n\n"
+
+      @fact_types_dumped[fact_type] = true
     end
 
-    def ruby_role_name(role)
-      if (role.fact_type.roles.size == 1)
-	role.fact_type.readings[0].name.gsub(/ *\{0\} */,'').gsub(' ','_').downcase
-      else
-	role.role_name.snakecase.gsub("-",'_')
+    def ruby_role_name(role_name)
+      if Role === role_name
+	role_name = role_name.role_name || role_name.concept.name
       end
+      role_name.snakecase.gsub("-",'_')
     end
 
-    def known_by(roles)
-      roles.map{|role|
-	  ":"+ruby_role_name(role)
+    def identified_by_roles_and_facts(identifying_roles, identifying_facts)
+      identifying_roles.map{|role|
+	  ":"+preferred_role_name(role)
 	}*", "
     end
 
@@ -318,17 +243,41 @@ module ActiveFacts
       puts "Role player #{r.concept.name} facttype #{r.fact_type.name} lead_adj #{r.leading_adjective} trail_adj #{r.trailing_adjective} allows #{r.allowed_values.inspect}"
     end
 
-    def dump_roles(o)
-      o.roles.each {|role|
-	  dump_role(role)
-	}
+    def entity_type_banner
     end
+
+    def entity_type_group_end
+    end
+
+    def expand_reading(reading, frequency_constraints, define_role_names)
+      # debug "Ignoring reading #{reading.reading_text.inspect}"
+    end
+
+    def append_ring_to_reading(reading, ring)
+      # REVISIT: debug "Should override append_ring_to_reading"
+    end
+
+    def fact_type_banner
+    end
+
+    def fact_type_end
+    end
+
+    def constraint_banner
+      # debug "Should override constraint_banner"
+    end
+
+    def constraint_end
+      # debug "Should override constraint_end"
+    end
+
+    def constraint_dump(c)
+      # debug "Should override constraint_dump"
+    end
+
   end
 
-  class Vocabulary
-    def dump(out = $>)
-      RubyGenerator.new(self).dump(out)
-    end
+  def dump(vocabulary, out = $>)
+    RubyGenerator.new(vocabulary).dump(out)
   end
 end
-

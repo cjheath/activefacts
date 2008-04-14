@@ -10,7 +10,7 @@ GivenName = VariableLengthText();
 /*
  * Entity Types
  */
-Entrant = entity known by EntrantID:
+Entrant = entity identified by EntrantID:
 	Entrant has exactly one EntrantID,
 	EntrantID is of at most one Entrant;
 EntrantHasGivenName = Entrant has at least one GivenName,

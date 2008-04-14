@@ -55,7 +55,7 @@ module ActiveFacts
       end
 
       def maybe(role_name)
-	roles[role_name] = Role.new(TrueClass, role_name)
+	roles[role_name] = Role.new(TrueClass, true, role_name)
 	# puts "Defining #{basename}.#{role_name} as unary"
 	class_eval do
 	  role_var = "@#{role_name}"
@@ -108,7 +108,7 @@ module ActiveFacts
       # Define accessor methods for this role name, which should be assigned an object of the indicated class
       def __single(role_name, klass, related_role_name, mandatory = false, one_to_one = false)
 	raise "not sym" unless Symbol === role_name
-	roles[role_name] = Role.new(klass, role_name, mandatory)
+	roles[role_name] = Role.new(klass, true, role_name, mandatory)
 
 	# puts "Defining #{basename}.#{role_name} to #{klass.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
 	class_eval do
@@ -116,7 +116,7 @@ module ActiveFacts
 
 	  # Define the getter
 	  define_method role_name do
-	    instance_variable_defined?(role_var) && instance_variable_get(role_var)
+	    instance_variable_defined?(role_var) ? instance_variable_get(role_var) : nil
 	  end
 
 	  # Define the setter
@@ -170,9 +170,11 @@ module ActiveFacts
 	end
       end
 
+      # REVISIT: Use method_missing to catch all_some_role_by_other_role_and_third_role, to sort_by those roles?
+
       def __multiple(role_name, klass, single_role_name)
 	raise "__multiple(#{role_name.class} #{role_name.inspect}) - Symbol expected" unless Symbol === role_name
-	roles[role_name] = Role.new(klass, role_name, false)
+	roles[role_name] = Role.new(klass, false, role_name, false)
 
 	# puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
 
@@ -321,12 +323,14 @@ module ActiveFacts
 
       class Role
 	attr_accessor :name
+	attr_accessor :unary
 	attr_accessor :player		# May be a Symbol, which will be converted to a Class/Concept
 	attr_accessor :mandatory
 	attr_accessor :value_restriction
 
-	def initialize(player, name, mandatory = false)
+	def initialize(player, unary, name, mandatory = false)
 	  @player = player
+	  @unary = unary
 	  @name = name
 	  @mandatory = mandatory
 	end

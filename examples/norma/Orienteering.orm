@@ -449,7 +449,7 @@
 					<orm:MandatoryConstraint ref="_B69754AC-C445-4950-A573-98CA003405BB" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_0ED6A81E-16CE-48A8-9CB7-FDBFE3199F99" _Name="LocationIsWhereEventStarts">
+			<orm:Fact id="_0ED6A81E-16CE-48A8-9CB7-FDBFE3199F99" _Name="EventStartsAtStartLocation">
 				<orm:FactRoles>
 					<orm:Role id="_527B974E-1DE4-4F3A-9497-A8DACD9A0252" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
 						<orm:RolePlayer ref="_99FD3864-6719-40AF-B468-EBA5C7E6226E" />
@@ -459,17 +459,6 @@
 					</orm:Role>
 				</orm:FactRoles>
 				<orm:ReadingOrders>
-					<orm:ReadingOrder id="_71BF5372-E33D-4FDD-8DFE-A34D9B6936CC">
-						<orm:Readings>
-							<orm:Reading id="_A47E2D75-0644-430C-B84B-2BF74BF2724F">
-								<orm:Data>{0} is where {1} starts</orm:Data>
-							</orm:Reading>
-						</orm:Readings>
-						<orm:RoleSequence>
-							<orm:Role ref="_527B974E-1DE4-4F3A-9497-A8DACD9A0252" />
-							<orm:Role ref="_68F1749A-423C-463F-A5B6-8497FD27DA62" />
-						</orm:RoleSequence>
-					</orm:ReadingOrder>
 					<orm:ReadingOrder id="_A5AEF298-ACAA-4659-B54A-6857BBCC853D">
 						<orm:Readings>
 							<orm:Reading id="_47CDDE18-B245-4E1C-8D40-2ECA7966BC43">
@@ -479,6 +468,17 @@
 						<orm:RoleSequence>
 							<orm:Role ref="_68F1749A-423C-463F-A5B6-8497FD27DA62" />
 							<orm:Role ref="_527B974E-1DE4-4F3A-9497-A8DACD9A0252" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_71BF5372-E33D-4FDD-8DFE-A34D9B6936CC">
+						<orm:Readings>
+							<orm:Reading id="_A47E2D75-0644-430C-B84B-2BF74BF2724F">
+								<orm:Data>{0} is where {1} starts</orm:Data>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_527B974E-1DE4-4F3A-9497-A8DACD9A0252" />
+							<orm:Role ref="_68F1749A-423C-463F-A5B6-8497FD27DA62" />
 						</orm:RoleSequence>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
@@ -828,7 +828,7 @@
 					<orm:Role id="_FA287EAF-E507-4CBB-BA82-1078E98AA25D" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_134737C4-13B0-46CF-BF74-DDF9AD3F9DE3" />
 					</orm:Role>
-					<orm:Role id="_42F73F17-EC01-4503-B13A-756E00CF36B4" _IsMandatory="false" _Multiplicity="Unspecified" Name="VisitTime">
+					<orm:Role id="_42F73F17-EC01-4503-B13A-756E00CF36B4" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_2C8799F1-6FC5-4083-9383-6C2DBEBF41BA" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -3522,7 +3522,7 @@
 					<rcd:Table id="_7696416F-94F7-44AD-9164-7821DD9665A2" Name="Visit">
 						<rcd:Columns>
 							<rcd:Column id="_5653B97A-1535-4C44-A234-A1BCE8D2E265" Name="PunchID" />
-							<rcd:Column id="_6FA1CE86-16D6-4A78-9D41-10F36E5C71A0" Name="visitTime" />
+							<rcd:Column id="_6FA1CE86-16D6-4A78-9D41-10F36E5C71A0" Name="time" />
 							<rcd:Column id="_6B1D12EF-4834-4779-BB58-F574927D4CF4" Name="entryID" />
 						</rcd:Columns>
 						<rcd:Constraints>

@@ -34,19 +34,19 @@ Year = UnsignedInteger(32) restricted to {1900..3000};
 /*
  * Entity Types
  */
-Club = entity known by ClubCode:
+Club = entity identified by ClubCode:
 	Club has exactly one ClubCode,
 	ClubCode is of at most one Club;
 ClubName is name of at most one Club,
 	Club is called exactly one ClubName;
 
-Entry = entity known by EntryID:
+Entry = entity identified by EntryID:
 	Entry has exactly one EntryID,
 	EntryID is of at most one Entry;
 Entry received at most one Score;
 Entry finished in at most one finish-Placing;
 
-Event = entity known by EventID:
+Event = entity identified by EventID:
 	Event has exactly one EventID,
 	EventID is of at most one Event;
 Event is called at most one EventName,
@@ -59,12 +59,12 @@ Event has at most one Number;
 Club runs Event,
 	Event is run by exactly one Club;
 
-EventControl = entity known by ControlNumber and Event:
+EventControl = entity identified by ControlNumber and Event:
 	Event includes at least one ControlNumber,
 	each Event includes some ControlNumber;
 EventControl has at most one PointValue;
 
-Map = entity known by MapID:
+Map = entity identified by MapID:
 	Map has exactly one MapID,
 	MapID is of at most one Map;
 Map is map for Event,
@@ -75,7 +75,7 @@ Club owns Map,
 	Map is owned by exactly one Club;
 Map has at most one Accessibility;
 
-Person = entity known by PersonID:
+Person = entity identified by PersonID:
 	Person has exactly one PersonID,
 	PersonID is of at most one Person;
 Person has exactly one FamilyName,
@@ -87,14 +87,14 @@ Person was born in at most one birth-Year;
 Person has at most one PostCode;
 Person is member of at most one Club;
 
-Punch = entity known by PunchID:
+Punch = entity identified by PunchID:
 	Punch has exactly one PunchID,
 	PunchID is of at most one Punch;
 Visit = Punch was visited by Entry at Time;
 PunchPlacement = Punch is placed at EventControl,
 	some Punch is placed at each EventControl;
 
-Series = entity known by SeriesID:
+Series = entity identified by SeriesID:
 	Series has exactly one SeriesID,
 	SeriesID is of at most one Series;
 Series has exactly one SeriesName,

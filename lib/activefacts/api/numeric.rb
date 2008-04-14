@@ -74,4 +74,8 @@ class AutoCounter
     raise ArgumentError unless @value
     [ i.to_i, @value ]
   end
+
+  def inspect
+    "\#<AutoCounter "+to_s+">"
+  end
 end

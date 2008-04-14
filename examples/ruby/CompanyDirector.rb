@@ -25,18 +25,18 @@ module CompanyDirector
     has_one :birth_date, Date
   end
 
-  class Attendance	# Implicitly Objectified Fact Type
+  class Directorship
+    identified_by :director, :company
+    has_one :director, Person
+    has_one :company
+    has_one :appointment_date, Date
+  end
+
+  class Attendance
     identified_by :date, :company, :person
     has_one :company
     has_one :date
     has_one :person
-  end
-
-  class Directorship
-    identified_by :person, :company
-    has_one :person
-    has_one :company
-    has_one :appointment_date, Date
   end
 
 end

@@ -17,12 +17,21 @@ generator = "text"
 if arg =~ /^--(.*)/
   generator = $1
   arg = ARGV.shift
+else
+  def dump(vocabulary)
+    puts vocabulary.constellation.verbalise
+  end
 end
 require "activefacts/generate/#{generator}"
 
-vocabulary = ActiveFacts::Norma.read(arg)
+begin
+  vocabulary = ActiveFacts::Norma.read(arg)
+rescue => e
+  puts "#{e}:\n\t#{e.backtrace*"\n\t"}"
+end
 
-vocabulary.dump
+dump(vocabulary)
+
 #vocabulary.preferred_ids.each{|c| puts "#{c}" }
 #vocabulary.dump_entity_types
 #vocabulary.dump_fact_types

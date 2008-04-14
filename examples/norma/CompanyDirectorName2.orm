@@ -369,7 +369,7 @@
 			</orm:Fact>
 			<orm:Fact id="_B79E9D5C-1334-4591-824B-F3B6D8EF1E3C" _Name="Attendance">
 				<orm:FactRoles>
-					<orm:Role id="_A5C22F65-F9B5-4581-97BF-D5BA1E2505C1" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
+					<orm:Role id="_A5C22F65-F9B5-4581-97BF-D5BA1E2505C1" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="Attendee">
 						<orm:RolePlayer ref="_4437D4F3-7012-414C-92D8-9AE57B34F5F6" />
 					</orm:Role>
 					<orm:Role id="_AE8C60A2-9394-4335-B066-91234CA67BE8" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
@@ -848,6 +848,9 @@
 					<ormDiagram:ReadingShape id="_2897B854-187D-4DF1-A946-631AABE5C49C" IsExpanded="true" AbsoluteBounds="1.6145832538604736, 3.0065570292249326, 1.2556129693984985, 0.12950302660465241">
 						<ormDiagram:Subject ref="_893246A6-12E6-412B-B97F-4D7E7ACF154E" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_25ED8A31-B716-4F6C-835F-BB24BD568329" IsExpanded="true" AbsoluteBounds="1.8833332538604737, 2.4979166269302375, 0.05, 0.05">
+						<ormDiagram:Subject ref="_A5C22F65-F9B5-4581-97BF-D5BA1E2505C1" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_B79E9D5C-1334-4591-824B-F3B6D8EF1E3C" />
 			</ormDiagram:FactTypeShape>
