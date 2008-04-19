@@ -41,20 +41,19 @@ module ActiveFacts
     def build_indices
       @presence_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
       @ring_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
-      @set_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
 
       @vocabulary.all_constraint.each { |c|
 	  case c
 	  when PresenceConstraint
 	    fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq	# All fact types spanned by this constraint
 	    if fact_types.size == 1	# There's only one, save it:
-	      #debug "Single-fact constraint on #{fact_types[0].fact_type_id}: #{c.name}"
+	      # debug "Single-fact constraint on #{fact_types[0].fact_type_id}: #{c.name}"
 	      (@presence_constraints_by_fact[fact_types[0]] ||= []) << c
 	    end
 	  when RingConstraint
 	    (@ring_constraints_by_fact[c.role.fact_type] ||= []) << c
 	  else
-	    #debug "Found unhandled constraint #{c.class} #{c.name}"
+	    # debug "Found unhandled constraint #{c.class} #{c.name}"
 	  end
 	}
       @constraints_used = {}
@@ -264,22 +263,17 @@ module ActiveFacts
       #p identifying_facts.map{|f| f.preferred_reading }
 
       identifying_roles = role_refs.map(&:role)
-      identified_by_roles_and_facts(identifying_roles, identifying_facts)
+      identified_by_roles_and_facts(identifying_roles, identifying_facts, preferred_readings)
 
       # REVISIT: Consider emitting extra fact types here, instead of in entity_type_dump?
       # Just beware that readings having the same players will be considered to be of the same fact type, even if they're not.
-
-#      " identified by #{ identifying_roles*" and " }:\n\t" +
-#	  identifying_facts.map{|f|
-#	      fact_readings_with_constraints(f)
-#	  }.flatten*",\n\t"
     end
 
     def fact_readings_with_constraints(fact_type)
       define_role_names = true
       fact_constraints = @presence_constraints_by_fact[fact_type]
       used_constraints = []
-      readings = fact_type.all_reading.sort_by{|reading| reading.ordinal}.inject([]){|reading_array, reading|
+      readings = all_reading_by_ordinal(fact_type).inject([]){|reading_array, reading|
 	  # Find all role numbers in order of occurrence in this reading:
 	  role_refs = reading.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
 	  role_numbers = reading.reading_text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
@@ -360,7 +354,7 @@ module ActiveFacts
 
 	  reading_array
 	}
-      #debug "Used #{fact_constraints_used} of #{used_constraints.uniq.size} constraints over #{fact_type.name}"
+      # debug "Used #{fact_constraints_used} of #{used_constraints.uniq.size} constraints over #{fact_type.name}"
       if (fact_constraints-used_constraints).size == 0
 	# We've exhausted the set constraints on this fact type.
 	@fact_set_constraints_exhausted[fact_type] = true
@@ -375,14 +369,18 @@ module ActiveFacts
 	  }
     end
 
+    def all_reading_by_ordinal(fact_type)
+      fact_type.all_reading.sort_by{|reading| reading.ordinal}
+    end
+
     def preferred_reading(fact_type)
-      fact_type.all_reading.sort_by{|reading| reading.ordinal}[0]
+      all_reading_by_ordinal(fact_type)[0]
     end
 
     # An array of self followed by all supertypes in order:
     def supertypes_transitive(o)
 	([o] + o.all_type_inheritance.map{|ti|
-	    #debug ti.class.roles.verbalise; exit
+	    # debug ti.class.roles.verbalise; exit
 	    supertypes_transitive(ti.super_entity_type)
 	  }).flatten.uniq
     end
@@ -434,7 +432,7 @@ module ActiveFacts
 	    subtypes = o.all_type_inheritance_by_super_entity_type
 	    next a if subtypes.size == 0
 	    o.all_type_inheritance_by_super_entity_type.each{|ti|
-		#debug ti.class.roles.verbalise; debug "all_type_inheritance_by_super_entity_type"; exit
+		# debug ti.class.roles.verbalise; debug "all_type_inheritance_by_super_entity_type"; exit
 		s = ti.entity_type
 		(precursor[s] ||= []) << o
 		(follower[o] ||= []) << s
@@ -489,7 +487,7 @@ module ActiveFacts
 
       # debug "for fact type #{fact_type.to_s}, considering\n\t#{fact_constraints.map(&:to_s)*",\n\t"}"
       # debug "#{fact_type.name} has readings:\n\t#{fact_type.readings.map(&:name)*"\n\t"}"
-      #debug "Dumping #{fact_type.fact_type_id} as a fact type"
+      # debug "Dumping #{fact_type.fact_type_id} as a fact type"
 
       # Fact types that aren't nested have no names
       name = fact_type.entity_type && fact_type.entity_type.name
@@ -514,9 +512,9 @@ module ActiveFacts
       @vocabulary.constellation.FactType.each{|fact_type|
 #      @vocabulary.all_feature.each{|f|
 #	  next unless ValueType === f
-#	  #debug "Considering ValueType #{f.name}"
+#	  # debug "Considering ValueType #{f.name}"
 #	  f.all_role.each{|role|
-#	      #debug "\tConsidering Role #{role.verbalise}"
+#	      # debug "\tConsidering Role #{role.verbalise}"
 #	      fact_type = role.fact_type
 	      next if @fact_types_dumped[fact_type] || skip_fact_type(fact_type)
 	      next if fact_type.all_role.detect{|r| EntityType === r.concept }
@@ -534,7 +532,7 @@ module ActiveFacts
 	      role_sequence.
 	      all_role_ref.
 	      sort_by{|role_ref| role_ref.ordinal}.
-	      map{|role_ref| [ role_ref.role.concept.name, role_ref.leading_adjective, role_ref.trailing_adjective ] },
+	      map{|role_ref| [ role_ref.role.concept.name, role_ref.leading_adjective||"", role_ref.trailing_adjective||"" ] },
 	    pr.reading_text
 	  ]
 	}.each{|fact_type|
@@ -556,6 +554,7 @@ module ActiveFacts
       @vocabulary.fact_types.each{|f|
 	  # Dump the instances:
 	  f.facts.each{|i|
+	    raise "REVISIT: Not dumping fact instances"
 	    debug "\t\t"+i.to_s
 	  }
       }

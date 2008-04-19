@@ -341,19 +341,18 @@ module ActiveFacts
 		role = role_ref.role
 
 		word = '\b([A-Za-z][A-Za-z0-9_]*)\b'
-		leading_adjectives = "(?:#{word}- *(?:#{word} +)?)"
-		trailing_adjectives = "(?: +(?:#{word} +) *-#{word}?)"
+		leading_adjectives_re = "(?:#{word}- *(?:#{word} +)?)"
+		trailing_adjectives_re = "(?: +(?:#{word} +) *-#{word}?)"
 		role_with_adjectives_re =
-		    %r| ?#{leading_adjectives}?\{#{i}\}#{trailing_adjectives}? ?|
+		    %r| ?#{leading_adjectives_re}?\{#{i}\}#{trailing_adjectives_re}? ?|
 
 		reading_text.gsub!(role_with_adjectives_re) {
-		    la1 = ($1 && $1 != "" ? $1 : nil)	# First leading adjective
-		    la2 = ($2 && $2 != "" ? $2 : nil)	# Second leading adjective
-		    ta1 = ($3 && $3 != "" ? $3 : nil)	# First trailing adjective
-		    ta2 = ($4 && $4 != "" ? $4 : nil)	# Second trailing adjective
-		    la = role_ref.leading_adjective = [la1, la2].compact*" "
-		    ta = role_ref.trailing_adjective = [ta1, ta2].compact*" "
-		    #puts "Reading '#{name}' has role #{i} adjectives '#{la}' '#{ta}'" if la != "" || ta != ""
+		    la = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\s+\Z/,'')
+		    ta = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\A\s+/,'')
+		    role_ref.leading_adjective = la if la != " "
+		    role_ref.trailing_adjective = ta if ta != " "
+
+		    #puts "Reading '#{reading_text}' has role #{i} adjectives '#{la}' '#{ta}'" if la != "" || ta != ""
 
 		    " {#{i}} "
 		}

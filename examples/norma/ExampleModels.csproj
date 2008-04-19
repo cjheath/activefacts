@@ -61,6 +61,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>TwoValues.orm</DependentUpon>
     </Compile>
+    <Compile Include="Warehousing._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+    </Compile>
     <Compile Include="WindowInRoomInBldg._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
@@ -228,6 +232,10 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>TwoValues._ORMCustomToolReport.cs</LastGenOutput>
     </None>
+    <None Include="Warehousing.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Warehousing._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('SchoolActivities.orm')">
     <None Include="SchoolActivities.DB2.sql">
@@ -391,6 +399,23 @@
     <None Include="NestedWithCustomPI.SQLStandard.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>NestedWithCustomPI.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Warehousing.orm')">
+    <None Include="Warehousing.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Warehousing.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Warehousing.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
