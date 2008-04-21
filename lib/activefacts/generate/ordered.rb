@@ -147,7 +147,10 @@ module ActiveFacts
       @concept_types_dumped[o] = true
       pi = preferred_identifier(o)
 
+      #debug "#{o.name} is a subtype!!!" if o.all_type_inheritance.size > 0
+
       if (supertype = primary_supertype(o))
+	#debug "#{supertype.name} is primary_supertype of #{o.name}"
 	spi = preferred_identifier(supertype)
 	subtype_dump(o, supertypes(o), pi != spi ? pi : nil)
       else

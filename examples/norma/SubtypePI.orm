@@ -50,7 +50,7 @@
 			</orm:ObjectifiedType>
 		</orm:Objects>
 		<orm:Facts>
-			<orm:SubtypeFact id="_5A8B55E1-E12A-4CF7-8E0E-A8F8365D2F96" _Name="CompetitorIsASubtypeOfEntrant" IsPrimary="true">
+			<orm:SubtypeFact id="_5A8B55E1-E12A-4CF7-8E0E-A8F8365D2F96" _Name="CompetitorIsASubtypeOfEntrant" PreferredIdentificationPath="true">
 				<orm:FactRoles>
 					<orm:SubtypeMetaRole id="_B266F924-DCD3-4CBA-8C3C-717B703B9163" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_1768C0DA-8033-4BC8-B97F-9F15E54B2A75" />
@@ -169,7 +169,7 @@
 					<orm:MandatoryConstraint ref="_911AC340-B441-43D3-8B89-D15F7BA652BB" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:SubtypeFact id="_281BE1B4-8FDC-4E9A-BEC5-76EF6FF61B27" _Name="TeamIsASubtypeOfEntrant" IsPrimary="true">
+			<orm:SubtypeFact id="_281BE1B4-8FDC-4E9A-BEC5-76EF6FF61B27" _Name="TeamIsASubtypeOfEntrant" PreferredIdentificationPath="true">
 				<orm:FactRoles>
 					<orm:SubtypeMetaRole id="_EF03825F-F58E-4992-8A98-8E887C2EE73F" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_262EBB04-9D25-455B-A977-496A94B2E56A" />
@@ -371,17 +371,17 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_1BADDD1B-51C5-4773-ABF2-3F5A19827510" />
 			</orm:MandatoryConstraint>
-			<orm:MandatoryConstraint id="_A34E9DEA-71DB-49D4-B0FE-97EFF8F8DFE7" Name="ImpliedMandatoryConstraint2" IsImplied="true">
-				<orm:RoleSequence>
-					<orm:Role id="_36B5666C-AE29-47CA-AA45-D21D866DA8E5" ref="_7CDF7CF7-E34A-462F-A9E7-B0943A6038A7" />
-				</orm:RoleSequence>
-				<orm:ImpliedByObjectType ref="_C11C77B4-AD6B-43F8-8CF8-3AEA4AD2EAA6" />
-			</orm:MandatoryConstraint>
 			<orm:MandatoryConstraint id="_289D800C-F2CF-4884-8BB1-C67B25713DAA" Name="ImpliedMandatoryConstraint3" IsImplied="true">
 				<orm:RoleSequence>
 					<orm:Role id="_1262D568-4D11-48F9-88F1-839065F1E7FB" ref="_4E7787B6-9333-4D52-9979-96C5DB72F48E" />
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_C5242E48-97D5-41AC-ADF0-7269EF0C52EF" />
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_04DAC097-E21F-496B-A292-EC1A1F26FDE3" Name="ImpliedMandatoryConstraint2" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_701FA935-A60F-4D5F-B45D-83D24DC05E34" ref="_7CDF7CF7-E34A-462F-A9E7-B0943A6038A7" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_C11C77B4-AD6B-43F8-8CF8-3AEA4AD2EAA6" />
 			</orm:MandatoryConstraint>
 			<orm:ExclusionConstraint id="_151C2815-792C-412A-8F07-FBD091B92E7E" Name="ExclusiveOrConstraint2">
 				<orm:RoleSequences>

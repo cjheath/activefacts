@@ -178,13 +178,13 @@ end
 
 describe "Entity Types" do
   EntityTypes = [
-    [ "a = entity(id):c;",			# Entity type declaration with reference mode
+    [ "a = entity(.id):c;",			# Entity type declaration with reference mode
       [["a", [:entity_type, {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
-    [ "a = entity ( id ) : c ;",		# Entity type declaration with reference mode, maximal whitespace
+    [ "a = entity ( . id ) : c ;",		# Entity type declaration with reference mode, maximal whitespace
       [["a", [:entity_type, {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
-    [ "a = entity(id) where c;",		# Entity type declaration with reference mode and where
+    [ "a = entity(.id) where c;",		# Entity type declaration with reference mode and where
       [["a", [:entity_type, {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
     [ "a = entity identified by b: c;",		# Entity type declaration
@@ -207,7 +207,7 @@ describe "Entity Types" do
       [["a", [:data_type, "b", [ false, false ], false, false]],
         ["c", [:entity_type, {:roles=>["a"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
-    [ "a=entity(c):maybe d;",
+    [ "a=entity(.c):maybe d;",
       [["a", [:entity_type, {:mode=>"c"}, [[:fact_clause, ["maybe"], [{:words=>["d"]}]]]]]]
     ],
     [ "Director = Person directs company, company is directed by Person;",

@@ -169,6 +169,7 @@ module ActiveFacts
 	    # Handle the subtype fact types:
 	    facts = []
 	    @x_subtypes = @x_model.elements.to_a("orm:Facts/orm:SubtypeFact")
+	    maybe_primary_inheritance = []
 	    @x_subtypes.each{|x|
 		id = x.attributes['id']
 		name = x.attributes['Name'] || x.attributes['_Name']
@@ -187,22 +188,35 @@ module ActiveFacts
 
 		throw "For Subtype fact #{name}, the supertype #{supertype_id} was not found" if !supertype
 		throw "For Subtype fact #{name}, the subtype #{subtype_id} was not found" if !subtype
-	#	puts "#{subtype.name} is a subtype of #{supertype.name}"
+		# $stderr.puts "#{subtype.name} is a subtype of #{supertype.name}"
 
-		fact_type = @constellation.TypeInheritance(subtype, supertype)
-		# REVISIT: API doesn't yet handle subtype with alternate identification schemes, do it manually:
-		fact_type.fact_type_id = :new
-		fact_type.defines_primary_supertype = true if x.attributes["IsPrimary"] == "true"
-		facts << @by_id[id] = fact_type
+		inheritance_fact = @constellation.TypeInheritance(subtype, supertype)
+		inheritance_fact.fact_type_id = :new
+		if x.attributes["IsPrimary"] == "true" or		    # Old way
+		    x.attributes["PreferredIdentificationPath"] == "true"   # Newer
+		  # $stderr.puts "#{supertype.name} is primary supertype of #{subtype.name}"
+		  inheritance_fact.defines_primary_supertype = true
+		else
+		  maybe_primary_inheritance << inheritance_fact
+		end
+		facts << @by_id[id] = inheritance_fact
 
 		# Create the new Roles so we can find constraints on them:
 		subtype_role = @by_id[subtype_role_id] = @constellation.Role(:new)
 		subtype_role.concept = subtype
-		subtype_role.fact_type = fact_type
+		subtype_role.fact_type = inheritance_fact
 
 		supertype_role = @by_id[supertype_role_id] = @constellation.Role(:new)
 		supertype_role.concept = supertype
-		supertype_role.fact_type = fact_type
+		supertype_role.fact_type = inheritance_fact
+	    }
+	    maybe_primary_inheritance.each { |inheritance_fact|
+	      # If this TypeInheritance defines the only supertype of this subtype, it's primary
+	      # REVISIT: What about where A<B, C<B, D<B and D<E... is that even allowed?
+	      # What then is the primary supertype setting for B?
+	      if (inheritance_fact.entity_type.all_type_inheritance.size == 1)
+		  inheritance_fact.defines_primary_supertype = true
+	      end
 	    }
 	end
 

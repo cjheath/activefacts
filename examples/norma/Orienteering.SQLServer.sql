@@ -6,7 +6,7 @@ GO
 
 CREATE TABLE Orienteering.Event
 (
-	EventID INTEGER IDENTITY (1, 1) NOT NULL,
+	eventID INTEGER IDENTITY (1, 1) NOT NULL,
 	startLocation NATIONAL CHARACTER VARYING(200) NOT NULL,
 	startTime DATETIME NOT NULL,
 	mapID INTEGER NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE Orienteering.Event
 	eventName NATIONAL CHARACTER VARYING(50),
 	seriesID INTEGER,
 	CONSTRAINT EventNameIsOfOneEvent UNIQUE(eventName),
-	CONSTRAINT EventIDIsOfOneEvent PRIMARY KEY(EventID),
+	CONSTRAINT EventIDIsOfOneEvent PRIMARY KEY(eventID),
 	CONSTRAINT ExternalUniquenessConstraint1 UNIQUE(seriesID, number)
 )
 GO
@@ -33,70 +33,70 @@ GO
 
 CREATE TABLE Orienteering.Map
 (
-	MapID INTEGER IDENTITY (1, 1) NOT NULL,
+	mapID INTEGER IDENTITY (1, 1) NOT NULL,
 	mapName NATIONAL CHARACTER VARYING(80) NOT NULL,
 	owner NATIONAL CHARACTER VARYING(6) NOT NULL,
-	accessibility NATIONAL CHARACTER(1) CHECK (accessibility BETWEEN 'A' AND 'D'),
+	accessibility NATIONAL CHARACTER(1) CHECK (accessibility BETWEEN N'A' AND N'D'),
 	CONSTRAINT NameIsOfOneMap UNIQUE(mapName),
-	CONSTRAINT InternalUniquenessConstraint26 PRIMARY KEY(MapID)
+	CONSTRAINT InternalUniquenessConstraint26 PRIMARY KEY(mapID)
 )
 GO
 
 
 CREATE TABLE Orienteering.Person
 (
-	PersonID INTEGER IDENTITY (1, 1) NOT NULL,
+	personID INTEGER IDENTITY (1, 1) NOT NULL,
 	familyName NATIONAL CHARACTER VARYING(48) NOT NULL,
 	givenName NATIONAL CHARACTER VARYING(48) NOT NULL,
-	gender NATIONAL CHARACTER(1) CHECK (gender IN ('M', 'F')),
+	gender NATIONAL CHARACTER(1) CHECK (gender IN (N'M', N'F')),
 	birthYear INTEGER CHECK (birthYear >= 0 AND birthYear BETWEEN 1900 AND 3000),
 	postCode INTEGER CHECK (postCode >= 0),
 	clubCode NATIONAL CHARACTER VARYING(6),
 	CONSTRAINT CompetitorHasDistinctName UNIQUE(givenName, familyName),
-	CONSTRAINT InternalUniquenessConstraint3 PRIMARY KEY(PersonID)
+	CONSTRAINT InternalUniquenessConstraint3 PRIMARY KEY(personID)
 )
 GO
 
 
 CREATE TABLE Orienteering.Series
 (
-	SeriesID INTEGER IDENTITY (1, 1) NOT NULL,
+	seriesID INTEGER IDENTITY (1, 1) NOT NULL,
 	name NATIONAL CHARACTER VARYING(40) NOT NULL,
 	CONSTRAINT NameIsOfOneSeries UNIQUE(name),
-	CONSTRAINT InternalUniquenessConstraint18 PRIMARY KEY(SeriesID)
+	CONSTRAINT InternalUniquenessConstraint18 PRIMARY KEY(seriesID)
 )
 GO
 
 
 CREATE TABLE Orienteering.Visit
 (
-	PunchID INTEGER IDENTITY (1, 1) NOT NULL,
+	punchID INTEGER IDENTITY (1, 1) NOT NULL,
 	"time" DATETIME NOT NULL,
 	entryID INTEGER NOT NULL,
-	CONSTRAINT EntrantVisitedEachControlAtEachTimeOnce PRIMARY KEY(PunchID, entryID, "time")
+	CONSTRAINT EntrantVisitedEachControlAtEachTimeOnce PRIMARY KEY(punchID, entryID, "time")
 )
 GO
 
 
 CREATE TABLE Orienteering.Entry
 (
-	EntryID INTEGER IDENTITY (1, 1) NOT NULL,
+	entryID INTEGER IDENTITY (1, 1) NOT NULL,
 	personID INTEGER NOT NULL,
 	eventID INTEGER NOT NULL,
-	entry NATIONAL CHARACTER VARYING(16) CHECK (entry IN ('PW') OR entry BETWEEN 'A' AND 'E') NOT NULL,
+	course NATIONAL CHARACTER VARYING(16) CHECK (course IN (N'PW') OR course BETWEEN N'A' AND N'E') NOT NULL,
 	score INTEGER,
 	finishPlacing INTEGER CHECK (finishPlacing >= 0),
 	CONSTRAINT PersonMayEnterEventOnce UNIQUE(personID, eventID),
-	CONSTRAINT EntryHasOneEntryID PRIMARY KEY(EntryID)
+	CONSTRAINT EntryHasOneEntryID PRIMARY KEY(entryID)
 )
 GO
 
 
 CREATE TABLE Orienteering.EventScoringMethod
 (
-	course NATIONAL CHARACTER VARYING(16) CHECK (course IN ('PW') OR course BETWEEN 'A' AND 'E') NOT NULL,
+	course NATIONAL CHARACTER VARYING(16) CHECK (course IN (N'PW') OR course BETWEEN N'A' AND N'E') NOT NULL,
 	eventID INTEGER NOT NULL,
-	scoringMethod NATIONAL CHARACTER VARYING(32) CHECK (scoringMethod IN ('Score', 'Scatter', 'Special')) NOT NULL,
+	scoringMethod NATIONAL CHARACTER VARYING(32) CHECK (scoringMethod IN (N'Score', N'Scatter', N'Special')) NOT NULL,
 	CONSTRAINT OnlyOneScoringMethodForEachEventAndCourse PRIMARY KEY(course, eventID)
 )
 GO
@@ -104,10 +104,10 @@ GO
 
 CREATE TABLE Orienteering.PunchPlacement
 (
-	PunchID INTEGER IDENTITY (1, 1) NOT NULL,
+	punchID INTEGER IDENTITY (1, 1) NOT NULL,
 	controlNumber INTEGER CHECK (controlNumber >= 0 AND controlNumber BETWEEN 1 AND 1000) NOT NULL,
 	eventID INTEGER NOT NULL,
-	CONSTRAINT InternalUniquenessConstraint31 PRIMARY KEY(controlNumber, PunchID)
+	CONSTRAINT InternalUniquenessConstraint31 PRIMARY KEY(controlNumber, eventID, punchID)
 )
 GO
 
@@ -122,11 +122,11 @@ CREATE TABLE Orienteering.EventControl
 GO
 
 
-ALTER TABLE Orienteering.Event ADD CONSTRAINT Event_FK1 FOREIGN KEY (mapID) REFERENCES Orienteering.Map (MapID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Event ADD CONSTRAINT Event_FK1 FOREIGN KEY (mapID) REFERENCES Orienteering.Map (mapID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Orienteering.Event ADD CONSTRAINT Event_FK2 FOREIGN KEY (seriesID) REFERENCES Orienteering.Series (SeriesID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Event ADD CONSTRAINT Event_FK2 FOREIGN KEY (seriesID) REFERENCES Orienteering.Series (seriesID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
@@ -142,19 +142,19 @@ ALTER TABLE Orienteering.Person ADD CONSTRAINT Person_FK FOREIGN KEY (clubCode) 
 GO
 
 
-ALTER TABLE Orienteering.Visit ADD CONSTRAINT Visit_FK FOREIGN KEY (entryID) REFERENCES Orienteering.Entry (EntryID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Visit ADD CONSTRAINT Visit_FK FOREIGN KEY (entryID) REFERENCES Orienteering.Entry (entryID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Orienteering.Entry ADD CONSTRAINT Entry_FK1 FOREIGN KEY (personID) REFERENCES Orienteering.Person (PersonID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Entry ADD CONSTRAINT Entry_FK1 FOREIGN KEY (personID) REFERENCES Orienteering.Person (personID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Orienteering.Entry ADD CONSTRAINT Entry_FK2 FOREIGN KEY (eventID) REFERENCES Orienteering.Event (EventID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.Entry ADD CONSTRAINT Entry_FK2 FOREIGN KEY (eventID) REFERENCES Orienteering.Event (eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Orienteering.EventScoringMethod ADD CONSTRAINT EventScoringMethod_FK FOREIGN KEY (eventID) REFERENCES Orienteering.Event (EventID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.EventScoringMethod ADD CONSTRAINT EventScoringMethod_FK FOREIGN KEY (eventID) REFERENCES Orienteering.Event (eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
@@ -162,7 +162,7 @@ ALTER TABLE Orienteering.PunchPlacement ADD CONSTRAINT PunchPlacement_FK FOREIGN
 GO
 
 
-ALTER TABLE Orienteering.EventControl ADD CONSTRAINT EventControl_FK FOREIGN KEY (eventID) REFERENCES Orienteering.Event (EventID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.EventControl ADD CONSTRAINT EventControl_FK FOREIGN KEY (eventID) REFERENCES Orienteering.Event (eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
