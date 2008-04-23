@@ -151,8 +151,8 @@ module ActiveFacts
 
       supers = supertypes(o)
       if (supers.size > 0)
-	supertype = primary_supertype(o) || supers[0]
-	#debug "#{supertype.name} is primary_supertype of #{o.name}"
+	supertype = identifying_supertype(o) || supers[0]
+	#debug "#{supertype.name} is identifying_supertype of #{o.name}"
 	spi = preferred_identifier(supertype)
 	subtype_dump(o, supers, pi != spi ? pi : nil)
       else
@@ -242,7 +242,7 @@ module ActiveFacts
       raise "Oops, pi for entity is #{pi.class}" if pi && !(PresenceConstraint === pi)
       # debug "Got PI #{pi.name} for #{o.name}" if pi
 
-      if !pi && (supertype = primary_supertype(o))
+      if !pi && (supertype = identifying_supertype(o))
 	# debug "PI not found for #{o.name}, looking in supertype #{supertype.name}"
 	pi = preferred_identifier(supertype)
       else
@@ -407,10 +407,10 @@ module ActiveFacts
       ")"
     end
 
-    # A subtype does not have a primary_supertype if it defines its own identifier
-    def primary_supertype(o)
+    # A subtype does not have a identifying_supertype if it defines its own identifier
+    def identifying_supertype(o)
       o.all_type_inheritance.detect{|ti|
-	  return ti.super_entity_type if ti.defines_primary_supertype
+	  return ti.super_entity_type if ti.provides_identification
 	}
       return nil
     end

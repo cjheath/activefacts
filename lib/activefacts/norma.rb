@@ -194,7 +194,7 @@ module ActiveFacts
 		if x.attributes["IsPrimary"] == "true" or		    # Old way
 		    x.attributes["PreferredIdentificationPath"] == "true"   # Newer
 		  # $stderr.puts "#{supertype.name} is primary supertype of #{subtype.name}"
-		  inheritance_fact.defines_primary_supertype = true
+		  inheritance_fact.provides_identification = true
 		end
 		facts << @by_id[id] = inheritance_fact
 

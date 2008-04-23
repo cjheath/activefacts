@@ -285,7 +285,7 @@ module ActiveFacts
       identified_by :entity_type, :super_entity_type
       has_one :super_entity_type, EntityType
       has_one :entity_type
-      maybe :defines_primary_supertype
+      maybe :provides_identification
     end
 
     class Population

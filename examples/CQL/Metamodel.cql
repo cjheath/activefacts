@@ -197,7 +197,7 @@ Population includes Fact,
 TypeInheritance = subtype of FactType identified by EntityType and super-EntityType:
 	super-EntityType is supertype of EntityType [acyclic],
 	EntityType is subtype of super-EntityType;
-TypeInheritance defines primary supertype;
+TypeInheritance provides identification;
 
 ValueType = subtype of Concept;
 ValueType is subtype of at most one ValueType [acyclic],

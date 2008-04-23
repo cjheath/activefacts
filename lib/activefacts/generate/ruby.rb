@@ -215,7 +215,7 @@ module ActiveFacts
       return unless pc		# Omit fact types that aren't implicitly nested
 
       supertype = fact_type.entity_type &&
-	  (primary_supertype(fact_type.entity_type) || supertypes(fact_type.entity_type)[0])
+	  (identifying_supertype(fact_type.entity_type) || supertypes(fact_type.entity_type)[0])
 
       # REVISIT: If supertypes(fact_type.entity_type).size > 1, handle additional supertypes
 
