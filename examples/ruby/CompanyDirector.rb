@@ -10,7 +10,7 @@ module CompanyDirector
     value_type 
   end
 
-  class PersonName < String
+  class Name < String
     value_type :length => 48
   end
 
@@ -19,10 +19,18 @@ module CompanyDirector
     one_to_one :company_name
   end
 
+  class Meeting
+    identified_by :date, :company
+    has_one :company
+    has_one :date
+    maybe :is_board_meeting
+  end
+
   class Person
-    identified_by :person_name
-    one_to_one :person_name
+    identified_by :given_name, :family_name
+    has_one :given_name, Name
     has_one :birth_date, Date
+    has_one :family_name, Name
   end
 
   class Directorship
@@ -33,10 +41,9 @@ module CompanyDirector
   end
 
   class Attendance
-    identified_by :date, :company, :person
-    has_one :company
-    has_one :date
-    has_one :person
+    identified_by :meeting, :attendee
+    has_one :attendee, Person
+    has_one :meeting
   end
 
 end

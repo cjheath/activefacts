@@ -149,10 +149,12 @@ module ActiveFacts
 
       #debug "#{o.name} is a subtype!!!" if o.all_type_inheritance.size > 0
 
-      if (supertype = primary_supertype(o))
+      supers = supertypes(o)
+      if (supers.size > 0)
+	supertype = primary_supertype(o) || supers[0]
 	#debug "#{supertype.name} is primary_supertype of #{o.name}"
 	spi = preferred_identifier(supertype)
-	subtype_dump(o, supertypes(o), pi != spi ? pi : nil)
+	subtype_dump(o, supers, pi != spi ? pi : nil)
       else
 	non_subtype_dump(o, pi)
       end
@@ -405,6 +407,7 @@ module ActiveFacts
       ")"
     end
 
+    # A subtype does not have a primary_supertype if it defines its own identifier
     def primary_supertype(o)
       o.all_type_inheritance.detect{|ti|
 	  return ti.super_entity_type if ti.defines_primary_supertype

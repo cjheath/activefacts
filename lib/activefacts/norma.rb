@@ -169,7 +169,6 @@ module ActiveFacts
 	    # Handle the subtype fact types:
 	    facts = []
 	    @x_subtypes = @x_model.elements.to_a("orm:Facts/orm:SubtypeFact")
-	    maybe_primary_inheritance = []
 	    @x_subtypes.each{|x|
 		id = x.attributes['id']
 		name = x.attributes['Name'] || x.attributes['_Name']
@@ -196,8 +195,6 @@ module ActiveFacts
 		    x.attributes["PreferredIdentificationPath"] == "true"   # Newer
 		  # $stderr.puts "#{supertype.name} is primary supertype of #{subtype.name}"
 		  inheritance_fact.defines_primary_supertype = true
-		else
-		  maybe_primary_inheritance << inheritance_fact
 		end
 		facts << @by_id[id] = inheritance_fact
 
@@ -209,14 +206,6 @@ module ActiveFacts
 		supertype_role = @by_id[supertype_role_id] = @constellation.Role(:new)
 		supertype_role.concept = supertype
 		supertype_role.fact_type = inheritance_fact
-	    }
-	    maybe_primary_inheritance.each { |inheritance_fact|
-	      # If this TypeInheritance defines the only supertype of this subtype, it's primary
-	      # REVISIT: What about where A<B, C<B, D<B and D<E... is that even allowed?
-	      # What then is the primary supertype setting for B?
-	      if (inheritance_fact.entity_type.all_type_inheritance.size == 1)
-		  inheritance_fact.defines_primary_supertype = true
-	      end
 	    }
 	end
 

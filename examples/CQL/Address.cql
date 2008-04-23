@@ -1,4 +1,4 @@
-vocabulary PersonAddress;
+vocabulary Address;
 
 /*
  * Value Types

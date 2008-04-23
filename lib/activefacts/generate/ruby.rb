@@ -214,10 +214,12 @@ module ActiveFacts
 	}
       return unless pc		# Omit fact types that aren't implicitly nested
 
-      primary_supertype = fact_type.entity_type && primary_supertype(fact_type.entity_type)
+      supertype = fact_type.entity_type &&
+	  (primary_supertype(fact_type.entity_type) || supertypes(fact_type.entity_type)[0])
+
       # REVISIT: If supertypes(fact_type.entity_type).size > 1, handle additional supertypes
 
-      puts "  class #{name}#{primary_supertype ? " < "+primary_supertype.name : ""}\n" +
+      puts "  class #{name}#{supertype ? " < "+supertype.name : ""}\n" +
 		"    identified_by #{identified_by(fact_type.entity_type, pc)}"
       fact_roles_dump(fact_type)
       roles_dump(fact_type.entity_type)

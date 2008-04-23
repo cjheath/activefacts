@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module PersonAddress
+module Address
 
   class Address_Id < AutoCounter
     value_type 

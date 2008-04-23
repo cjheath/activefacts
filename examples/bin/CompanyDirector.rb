@@ -1,37 +1,14 @@
-require '../examples/ruby/CompanyDirectorName'
+require 'CompanyDirector'
 
 include ActiveFacts
-include CompanyDirectorName
+include CompanyDirector
 
 banner = "="*20
 puts "#{banner} Whole vocabulary #{banner}"
-puts CompanyDirectorName.verbalise
-
-=begin
-print "CompanyName.roles: "
-puts CompanyName.roles.verbalise		# =>
-print "Name.roles: "
-puts Name.roles.verbalise			# =>
-print "Date.roles: "
-puts CompanyDirectorName::Date.roles.verbalise			# =>
-print "Company.roles: "
-puts Company.roles.verbalise			# =>
-print "Person.roles: "
-puts Person.roles.verbalise			# =>
-print "Attendance.roles: "
-puts Attendance.roles.verbalise			# =>
-print "Directorship.roles: "
-puts Directorship.roles.verbalise		# =>
-
-print "Company.verbalise: "
-Company.verbalise				# =>
-print "CompanyName.verbalise: "
-CompanyName.verbalise				# =>
-puts "Finished concept verbalisation\n\n\n"
-=end
+puts CompanyDirector.verbalise
 
 puts "#{banner} Creating a constellation #{banner}"
-c = ActiveFacts::Constellation.new(CompanyDirectorName)
+c = ActiveFacts::Constellation.new(CompanyDirector)
 
 print "Making a Company:\n\t"
 acme = c.Company("Acme, Inc")
@@ -85,7 +62,7 @@ puts c.verbalise
 #==============================================
 puts "#{banner} many-one relationships #{banner}"
 print "Coyote's directorships:\n\t"
-puts coyote.all_directorship.map{|d| d.verbalise }*"\n\t"
+puts coyote.all_directorship_by_director.map{|d| d.verbalise }*"\n\t"
 print "Acme's directorships:\n\t"
 puts acme.all_directorship.map{|d| d.verbalise }*"\n\t"
 
@@ -111,8 +88,8 @@ puts c.Name[0].all_person_by_family_name.map{|d| d.verbalise }*"\n\t"
 print "Person related one-many facts:\n\t"
 c.Person.each{|person|
   print person.verbalise+" attendances:\n\t\t"
-  puts person.all_attendance.map{|d| d.verbalise }*"\n\t\t"
+  puts person.all_attendance_by_attendee.map{|d| d.verbalise }*"\n\t\t"
   print "\t"+person.verbalise+" directorship:\n\t\t"
-  puts person.all_directorship.map{|d| d.verbalise }*"\n\t\t"
+  puts person.all_directorship_by_director.map{|d| d.verbalise }*"\n\t\t"
 }
 
