@@ -56,46 +56,43 @@ I'll use it to introduce the features of the ORM2 visual language.
 <img src="images/CompanyDirector.png"></p>
 </center></p>
 <ul>
-  <li><i>Entity Types</i>: <b>Person</b> and <b>Company</b>,</li>
-
-  <li>Simple identification schemes for each, in the form of a <b>Name</b>, see
-    below for more information,</li>
-
-  <li><i>Objectified</i> or <i>Nested</i> <i>Type:</i> <b>Directorship</b> is a
-    nested type, which is an entity that contains a fact type.</li>
-
-  <li><i>Fact Types</i> have a series of one or more Role boxes; Directorship has
-    two roles (it's a binary fact type), which are <i>played by</i> Person and
-    Company respectively. The Directorship also plays another role in this model,
-    in the fact type that defines on what date the director was appointed.
-    A <i>ternary</i> fact type indicates which people attended board meetings,
-    and on what dates. Finally a fact type records the birth date of each Person.</li>
-
-  <li><i>F</i><i>act Readings</i> in the form of text under each fact type.
-    NORMA can show two readings for a binary fact type, separated by a slash /,
-    and read in the obvious way. If a reading is given for one direction only,
-    and that direction requires a reading order which is reversed from the
-    obvious way, an arrow-head is shown to indicate the reading direction.
-    The reading for birth date shows a hyphen on birth. This indicates that
-    birth is an adjective for Date (similarly for appointment-Date).
-    </li>
-
-  <li><i>Value Type</i>: Date is a value type. Value types have a dashed outline.
-    The PersonName and CompanyName value types that are implicit in the reference
-    modes are hidden, as are the fact types that associate them with their
-    entities, because this pattern is so common.
+  <li><i>Entity Types</i>: <b>Person</b> and <b>Company</b>, and
+    <i>Value Types</i>: Name and Date are value types. Collectively, they're
+    called Concepts. Value types have a dashed outline.
   </li>
 
+  <li>Entity <i>Identification schemes</i>: Person is identified by the pair
+    (given-Name, family-Name), as indicated by the circle with two lines across it.
+    Company is identified using the common <b>.Name</b> reference mode.
+    CompanyName is a value type that is implicit in the reference mode, hidden
+    because it's such a common pattern.
+    </li>
+
+  <li><i>Fact Types</i> define relationships between concepts. They're displayed
+    as a series of one or more <i>Role</i> boxes. For example, the fact type
+    "Person has given-Name" has two roles, played by Person and Name.
+    </li>
+
+  <li><i>Objectified Fact Type:</i> <b>Directorship</b> and <b>Meeting</b> are
+    fact types that are also entities, and thus can play other roles, such as
+    the role of Directorship in "Directorship began on appointment-Date".
+    </li>
+
+  <li><i>Fact Readings</i> are displayed as text under each fact type. A fact
+    type may have many readings, though only the preferred one is shown on the
+    diagram. Binary fact types may display a reading for each direction. An
+    arrow is displayed if a single reading is to be read in the opposite order
+    from the obvious one.
+    </li>
+
   <li><i>Uniqueness constraints</i>: The horizontal lines above the fact types
-    are uniqueness constraints (UC). There are four UCs showing, one that says
-    that a director was appointed on only one date, one that says that a given
-    combination (Person, Company) can only occur once, and one that says that a
-    given person can attend a particular board meeting only once on a given date.
-    A UC covering one role of a binary fact type implies that only one instance of
-    the <i>other</i> role player may occur for a given instance of the player of
-    the covered role.&nbsp; In ORM2, a UC must cover at least N-1 roles of
-    an N-ary fact type; any fewer and the fact type is not <i>elementary</i>.
-    Elementarity is a key reason why semantic modeling is an effective technique.
+    are uniqueness constraints (UC). There are seven UCs showing. A UC covering
+    a single role allows that role's player to occur only once in the population
+    of fact instances. A UC that covers two or more roles allows any combination
+    of those players, but only once for each combination. Every fact type must
+    have at least one UC that covers all, or all-but-one, of its roles.  Any
+    fewer and the fact type is not <i>elementary</i>.  Elementarity is an important
+    reason why semantic modeling is an effective technique.
     </li>
 
   <li><i>Mandatory constraint</i>: The heavy dot on the Company role box of
@@ -104,20 +101,7 @@ I'll use it to introduce the features of the ORM2 visual language.
     constraint may also be shown as a hollow dot, which says <i>should</i>,
     rather than <i>must</i> (the technical terms are <i>deontic</i> rather
     than <i>alethic</i>).</li>
-
-  <li><i>Popular Reference Mode</i>: Two PRMs are shown here as Name in parentheses
-    under the name of an entity type. A PRM like this hides a number of common
-    features: a value type as explained, a fact type, two UCs, and an MC. It's
-    possible in NORMA to expand these to look at or edit them.</li>
 </ul>
-
-<p>Note that ORM2 contains additional symbols that are used when a PI, UC, or MC
-applies to roles of more than one fact type. Such constraints are called <i>external
-constraints.</i> All the constraints on this diagram are <i>internal</i>.</p>
-
-  <!--li><i>Role Names</i>: The &quot;Director was appointed on Date&quot; fact
-    type has non-default role names, bracketed in blue, which override the default of using the
-    names of the role players.</li-->
 
 
 <br clear="all">
@@ -188,10 +172,10 @@ constraint requires that we record only one cause of death.
 
 <br clear="all">
 <h3>
-PersonAddress
+Address
 </h3>
 
-<p align="center"><img src="images/PersonAddress.png"></p>
+<p align="center"><img src="images/Address.png"></p>
 
 <p>By now you're asking how all this mess of detail is going to be turned into a
 usable database design. Before moving on to a larger real-life example, let's
@@ -216,17 +200,17 @@ identifier (for Person, obviously), so it has a double line. A double line is
 also used when showing a internal UC that's a PI.
 </p>
 
-<img src="images/PersonAddressSQL.png" align="left">
+<img src="images/AddressSQL.png" align="left">
 <p>Ok, here goes. How is it that the SQL for this whole detailed diagram
-requires only the single table shown? You can see that Street has exactly three
-StreetLine values allowed, and is identified by the combination, so here
-we can <b>absorb</b> these fact roles into a Street entity, which would be shown
-as an objectified type Street having three fact roles, one for each street line.
-The same principle applies again to Address, except here it absorbs StreetNumber,
-City, Postcode and <b>all three</b> roles of the Street nested type. The same process
-continues with Person, which is finally absorbed to the single table you see
-shown in the SQL code. Note how the respective role names are appended to form
-column names like <b>livesAtAddressStreetLine1</b>.  </p>
+requires only the table shown (and a similar one for Company)? You can see that
+Street has exactly three StreetLine values allowed, and is identified by the
+combination, so here we can <b>absorb</b> these fact roles into a Street entity,
+which would be shown as an objectified type Street having three fact roles, one
+for each street line.  The same principle applies again to Address, except here
+it absorbs StreetNumber, City, Postcode and <b>all three</b> roles of the Street
+nested type. The same process continues with Person, which is finally absorbed
+to the single table you see shown in the SQL code. Note how the respective role
+names are appended to form column names like <b>streetLine1</b>. </p>
 
 <p>Note also that this table doesn't enforce the uniqueness constraint requiring
 that each Address occurs once only. Each Address is identified by its roles, but
@@ -308,6 +292,7 @@ Scoring
 </h3>
 
 <p align="center"><img src="images/Orienteering/Scoring.png"></p>
+<!--
 Just for the sake of completeness, this diagram shows a <i>frequency
 constraint</i>, attached to the placement of a punch at an event.
 This constraint requires that no more than 4 punches be placed at
@@ -316,7 +301,10 @@ added on a non-mandatory role or role sequence, for example we could
 require that at least 2 but no more than 4 punches are placed at
 each control point, and that the recording of these placements is
 not mandatory. If any punch is recorded, the number recorded must
-fall in the required range.  <p>This model also shows the resultant
+fall in the required range.
+-->
+
+<p>This model also shows the resultant
 score for a given Entrant's Entry to a given Event. Normally this
 value will be computed from the times of their visits to punches
 during the event, and according to a scoring method as advised.
@@ -348,7 +336,7 @@ you a flavour of the relational mapping process.
 Relational Schema expressed in pseudo-ORM form
 </h3>
 
-<p align="center"><img src="images/Orienteering/ERAdministration.png"></p>
+<p align="center"><img src="images/Orienteering/OrienteeringER.png"></p>
 
 This diagram was produced in NORMA, but it is not elementary, rather it's a
 representation of just the administration part of the relational schema. I've
