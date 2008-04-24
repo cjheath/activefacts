@@ -136,11 +136,16 @@ module ActiveFacts
 
       # REVISIT: Add readings
 
-      # Find role name from preferred reading:
-      role_name = preferred_role_name(role)
+      # Find role name:
+      role_method = preferred_role_name(role)
+      by = other_role_name != other_player.name.snakecase ? "_by_#{other_role_name}" : ""
+      other_role_method = one_to_one ? role_method : "all_"+role_method
+      other_role_method += by
+
+      role_name = role_method
       role_name = nil if role_name == role.concept.name.snakecase
 
-      binary_dump(other_role_name, other_player, one_to_one, nil, role_name)
+      binary_dump(other_role_name, other_player, one_to_one, nil, role_name, other_role_method)
       puts "    \# REVISIT: #{other_role_name} has restricted values\n" if role.value_restriction
     end
 
@@ -174,28 +179,31 @@ module ActiveFacts
     def fact_roles_dump(fact)
       fact.all_role.each{|role| 
 	  role_name = preferred_role_name(role)
-	  binary_dump(role_name, role.concept)
+	  binary_dump(role_name, role.concept, false, nil, "all_"+role_name)
 	}
     end
 
-    def binary_dump(role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil)
+    def binary_dump(role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil, other_method_name = nil)
       # Find whether we need the name of the other role player, and whether it's defined yet:
       if role_name.camelcase(true) == role_player.name
 	# Don't use Class name if implied by rolename
-	role_player = nil
+	role_reference = nil
       elsif !@concept_types_dumped[role_player]
-	role_player = '"'+role_player.name+'"'
+	role_reference = '"'+role_player.name+'"'
       else
-	role_player = role_player.name
+	role_reference = role_player.name
       end
       other_role_name = ":"+other_role_name if other_role_name
 
-      puts "    #{one_to_one ? "one_to_one" : "has_one" } " +
+      line = "    #{one_to_one ? "one_to_one" : "has_one" } " +
 	      [ ":"+role_name,
-		role_player,
+		role_reference,
 		readings,
 		other_role_name
-	      ].compact*", "
+	      ].compact*", "+"  "
+      line += " "*(48-line.length) if line.length < 48
+      line += "\# See #{role_player.name}.#{other_method_name}" if other_method_name
+      puts line
     end
 
     # Dump one fact type.
