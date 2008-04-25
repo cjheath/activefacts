@@ -4,7 +4,7 @@ module OilSupply
 
   class Month < String
     value_type :length => 3
-    has_one :season
+    has_one :season                             # See Season.all_month
   end
 
   class Product < String
@@ -38,38 +38,38 @@ module OilSupply
 
   class Refinery
     identified_by :refinery_name
-    one_to_one :refinery_name
+    one_to_one :refinery_name                   # See RefineryName.refinery
   end
 
   class TransportRoute
     identified_by :region, :refinery, :transportation
-    has_one :transportation
-    has_one :refinery
-    has_one :region
+    has_one :transportation                     # See Transportation.all_transport_route
+    has_one :refinery                           # See Refinery.all_transport_route
+    has_one :region                             # See Region.all_transport_route
   end
 
   class ProductionCommitment
     identified_by :product, :quantity, :refinery, :month
-    has_one :month
-    has_one :refinery
-    has_one :quantity
-    has_one :product
-  end
-
-  class RegionalDemand
-    identified_by :product, :year, :month, :region
-    has_one :region
-    has_one :quantity
-    has_one :product
-    has_one :month
-    has_one :year
+    has_one :month                              # See Month.all_production_commitment
+    has_one :refinery                           # See Refinery.all_production_commitment
+    has_one :quantity                           # See Quantity.all_production_commitment
+    has_one :product                            # See Product.all_production_commitment
   end
 
   class AcceptableSubstitutes
     identified_by :product, :alternate_product, :season
-    has_one :alternate_product, Product
-    has_one :product
-    has_one :season
+    has_one :alternate_product, Product         # See Product.all_acceptable_substitutes_by_alternate_product
+    has_one :product                            # See Product.all_acceptable_substitutes
+    has_one :season                             # See Season.all_acceptable_substitutes
+  end
+
+  class RegionalDemand
+    identified_by :product, :year, :month, :region
+    has_one :region                             # See Region.all_regional_demand
+    has_one :quantity                           # See Quantity.all_regional_demand
+    has_one :product                            # See Product.all_regional_demand
+    has_one :month                              # See Month.all_regional_demand
+    has_one :year                               # See Year.all_regional_demand
   end
 
 end

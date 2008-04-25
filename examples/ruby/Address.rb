@@ -2,12 +2,12 @@ require 'activefacts/api'
 
 module Address
 
-  class Address_Id < AutoCounter
-    value_type 
-  end
-
   class City < String
     value_type :length => 64
+  end
+
+  class CompanyName < String
+    value_type 
   end
 
   class FamilyName < String
@@ -18,6 +18,10 @@ module Address
     value_type :length => 20
   end
 
+  class Number < String
+    value_type :length => 12
+  end
+
   class Postcode < String
     value_type 
   end
@@ -26,35 +30,37 @@ module Address
     value_type :length => 64
   end
 
-  class StreetNumber < String
-    value_type :length => 12
+  class Company
+    identified_by :company_name
+    one_to_one :company_name                    # See CompanyName.company
+    has_one :address                            # See Address.all_company
   end
 
   class Family
     identified_by :family_name
-    one_to_one :family_name
+    one_to_one :family_name                     # See FamilyName.family
   end
 
   class Person
     identified_by :family, :given_names
-    has_one :family
-    has_one :given_names
-    has_one :address
+    has_one :family                             # See Family.all_person
+    has_one :given_names                        # See GivenNames.all_person
+    has_one :address                            # See Address.all_person
   end
 
   class Street
-    identified_by :first_line, :second_line, :third_line
-    has_one :first_line, StreetLine
-    has_one :second_line, StreetLine
-    has_one :third_line, StreetLine
+    identified_by :first_street_line, :second_street_line, :third_street_line
+    has_one :first_street_line, StreetLine      # See StreetLine.all_street_by_first_street_line
+    has_one :second_street_line, StreetLine     # See StreetLine.all_street_by_second_street_line
+    has_one :third_street_line, StreetLine      # See StreetLine.all_street_by_third_street_line
   end
 
   class Address
     identified_by :street_number, :street, :city, :postcode
-    has_one :street
-    has_one :city
-    has_one :postcode
-    has_one :street_number
+    has_one :street                             # See Street.all_address
+    has_one :city                               # See City.all_address
+    has_one :postcode                           # See Postcode.all_address
+    has_one :street_number, Number              # See Number.all_address_by_street_number
   end
 
 end

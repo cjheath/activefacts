@@ -16,20 +16,20 @@ module SubtypePI
 
   class Entrant
     identified_by :entrant_i_d
-    one_to_one :entrant_i_d
+    one_to_one :entrant_i_d                     # See EntrantID.entrant
   end
 
   class EntrantHasGivenName
     identified_by :given_name, :entrant
-    has_one :entrant
-    has_one :given_name
+    has_one :entrant                            # See Entrant.all_entrant_has_given_name
+    has_one :given_name                         # See GivenName.all_entrant_has_given_name
   end
 
   class Team < Entrant
   end
 
   class Competitor < Entrant
-    has_one :family_name
+    has_one :family_name                        # See FamilyName.all_competitor
   end
 
 end

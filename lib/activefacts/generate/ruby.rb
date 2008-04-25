@@ -179,7 +179,9 @@ module ActiveFacts
     def fact_roles_dump(fact)
       fact.all_role.each{|role| 
 	  role_name = preferred_role_name(role)
-	  binary_dump(role_name, role.concept, false, nil, "all_"+role_name)
+	  by = role_name != role.concept.name.snakecase ? "_by_#{role_name}" : ""
+	  other_role_method = "all_"+fact.entity_type.name.snakecase+by
+	  binary_dump(role_name, role.concept, false, nil, nil, other_role_method)
 	}
     end
 
