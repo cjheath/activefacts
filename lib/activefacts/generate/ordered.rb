@@ -132,7 +132,7 @@ module ActiveFacts
 		select{|o| !@concept_types_dumped[o] }.
 		sort_by{|o|
 		    f = followers[o] || []; 
-		    supertypes(o).detect{|s| !@concept_types_dumped[s] } ? 0 : -f.size
+		    o.supertypes.detect{|s| !@concept_types_dumped[s] } ? 0 : -f.size
 		  }[0]
 	      # debug "Panic mode, selected #{panic.name} next"
 	    end
@@ -145,15 +145,15 @@ module ActiveFacts
 
     def entity_type_dump(o)
       @concept_types_dumped[o] = true
-      pi = preferred_identifier(o)
+      pi = o.preferred_identifier
 
       #debug "#{o.name} is a subtype!!!" if o.all_type_inheritance.size > 0
 
-      supers = supertypes(o)
+      supers = o.supertypes
       if (supers.size > 0)
-	supertype = identifying_supertype(o) || supers[0]
+	supertype = o.identifying_supertype || supers[0]
 	#debug "#{supertype.name} is identifying_supertype of #{o.name}"
-	spi = preferred_identifier(supertype)
+	spi = supertype.preferred_identifier
 	subtype_dump(o, supers, pi != spi ? pi : nil)
       else
 	non_subtype_dump(o, pi)
@@ -161,99 +161,8 @@ module ActiveFacts
       @constraints_used[pi] = true
     end
 
-    def preferred_identifier(o)
-      if o.fact_type
-	# For a nested fact type, the PI is a unique constraint over N or N-1 roles
-	o.fact_type.all_role
-
-	fact_roles = o.fact_type.all_role
-	# debug "Looking for PI on nested fact type #{o.name}"
-	pi = catch :pi do
-	    fact_roles.each{|r|			# Try all roles of the fact type
-		r.all_role_ref.map{|rr|		# All role sequences that reference this role
-		    role_sequence = rr.role_sequence
-
-		    # The role sequence is only interesting if it cover only this fact's roles
-		    next if role_sequence.all_role_ref.size < fact_roles.size-1
-		    next if role_sequence.all_role_ref.size > fact_roles.size
-		    next if role_sequence.all_role_ref.detect{|rsr| !(ft = rsr.role.fact_type) || ft != o.fact_type }
-
-		    # This role sequence is a candidate
-		    pc = role_sequence.all_presence_constraint.detect{|c|
-			c.is_preferred_identifier
-		      }
-		    throw :pi, pc if pc
-		  }
-	      }
-	    throw :pi, nil
-	  end
-	# debug "Got PI #{pi.name} for nested #{o.name}" if pi
-	# debug "Looking for PI on entity that nests this fact" unless pi
-	raise "Oops, pi for nested fact is #{pi.class}" unless !pi || PresenceConstraint === pi
-	return pi if pi
-      end
-
-      # debug "\nLooking for PI for ordinary entity #{o.name} with #{o.all_role.size} roles:"
-      # debug "Roles are in #{o.all_role.map{|r| describe_fact_type(r.fact_type, r)}*", "})"
-      pi = catch :pi do
-	  all_supertypes = supertypes_transitive(o)
-	  # debug "PI roles must be played by one of #{all_supertypes.map(&:name)*", "}" if all_supertypes.size > 1
-	  o.all_role.each{|role|
-	      ftroles = role.fact_type.all_role
-	      next if ftroles.size > 2	# Skip roles in objectified fact types
-
-	      # debug "Considering role in #{describe_fact_type(role.fact_type, role)}"
-
-	      # Find the related role which must be included in any PI:
-	      # Note this works with unary fact types:
-	      pi_role = ftroles.size == 1 || ftroles[1] == role ? ftroles[0] : ftroles[1]
-
-	      next if ftroles.size == 2 && pi_role.concept == o
-	      # debug "\tConsidering #{pi_role.concept.name} as a PI role"
-
-	      # Look in all role sequences that include this related role
-	      pi_role.all_role_ref.each{|rr|
-		  role_sequence = rr.role_sequence  # A role sequence that includes a possible role
-		  # debug "\t\tConsidering role sequence #{describe_role_sequence(role_sequence)}"
-
-		  # All roles in this role_sequence to fact types
-		  # which (apart from that role) only have roles
-		  # played by the original entity type or a supertype.
-		  next if role_sequence.all_role_ref.detect{|rsr|
-		      fact_type_roles = rsr.role.fact_type.all_role
-		      residual_roles = fact_type_roles-[rsr.role]
-		      residual_roles.detect{|rfr|
-			  !all_supertypes.include?(rfr.concept)
-			}
-		    }
-
-		  # Any presence constraint over this role sequence is a candidate
-		  rr.role_sequence.all_presence_constraint.detect{|pc|
-		      # Found it!
-		      if pc.is_preferred_identifier
-			# debug "found PI #{pc.name}, is_preferred_identifier=#{pc.is_preferred_identifier.inspect}, enforcement=#{pc.enforcement}"
-			throw :pi, pc
-		      end
-		    }
-		}
-	    }
-	  throw :pi, nil
-	end
-      raise "Oops, pi for entity is #{pi.class}" if pi && !(PresenceConstraint === pi)
-      # debug "Got PI #{pi.name} for #{o.name}" if pi
-
-      if !pi && (supertype = identifying_supertype(o))
-	# debug "PI not found for #{o.name}, looking in supertype #{supertype.name}"
-	pi = preferred_identifier(supertype)
-      else
-	# debug "No PI found for #{o.name}" if !pi
-      end
-      raise "No PI found for #{o.name}" unless pi
-      pi
-    end
-
     def identified_by(o, pi)
-      # REVISIT: Different adjectives might be used for different readings.
+      # Different adjectives might be used for different readings.
       # Here, we must find the role_ref containing the adjectives that we need for each identifier,
       # which will be attached to the uniqueness constraint on this object in the binary FT that
       # attaches that identifying role.
@@ -262,7 +171,7 @@ module ActiveFacts
       # We need to get the adjectives for the roles from the identifying fact's preferred readings:
       identifying_facts = role_refs.map{|rr| rr.role.fact_type }.uniq
       preferred_readings = identifying_facts.inject({}){|reading_hash, fact_type|
-	  reading_hash[fact_type] = preferred_reading(fact_type)
+	  reading_hash[fact_type] = fact_type.preferred_reading
 	  reading_hash
 	}
       #p identifying_facts.map{|f| f.preferred_reading }
@@ -278,7 +187,7 @@ module ActiveFacts
       define_role_names = true
       fact_constraints = @presence_constraints_by_fact[fact_type]
       used_constraints = []
-      readings = all_reading_by_ordinal(fact_type).inject([]){|reading_array, reading|
+      readings = fact_type.all_reading_by_ordinal.inject([]){|reading_array, reading|
 	  # Find all role numbers in order of occurrence in this reading:
 	  role_refs = reading.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
 	  role_numbers = reading.reading_text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
@@ -367,29 +276,6 @@ module ActiveFacts
       readings
     end
 
-    # An array all direct supertypes
-    def supertypes(o)
-	o.all_type_inheritance.map{|ti|
-	    ti.super_entity_type
-	  }
-    end
-
-    def all_reading_by_ordinal(fact_type)
-      fact_type.all_reading.sort_by{|reading| reading.ordinal}
-    end
-
-    def preferred_reading(fact_type)
-      all_reading_by_ordinal(fact_type)[0]
-    end
-
-    # An array of self followed by all supertypes in order:
-    def supertypes_transitive(o)
-	([o] + o.all_type_inheritance.map{|ti|
-	    # debug ti.class.roles.verbalise; exit
-	    supertypes_transitive(ti.super_entity_type)
-	  }).flatten.uniq
-    end
-
     def describe_fact_type(fact_type, highlight = nil)
       (fact_type.entity_type ? fact_type.entity_type.name : "")+
       describe_roles(fact_type.all_role, highlight)
@@ -407,14 +293,6 @@ module ActiveFacts
       ")"
     end
 
-    # A subtype does not have a identifying_supertype if it defines its own identifier
-    def identifying_supertype(o)
-      o.all_type_inheritance.detect{|ti|
-	  return ti.super_entity_type if ti.provides_identification
-	}
-      return nil
-    end
-
     # This returns an array of two hash tables each keyed by an EntityType.
     # The values of each hash entry are the precursors and followers (respectively) of that entity.
     def build_entity_dependencies
@@ -423,7 +301,7 @@ module ActiveFacts
 	    precursor = a[0]
 	    follower = a[1]
 	    blocked = false
-	    pi = preferred_identifier(o)
+	    pi = o.preferred_identifier
 	    if pi
 	      pi.role_sequence.all_role_ref.each{|rr|
 		  role = rr.role
@@ -481,7 +359,7 @@ module ActiveFacts
       return if skip_fact_type(fact_type)
 
       if (et = fact_type.entity_type) &&
-	  (pi = preferred_identifier(et)) &&
+	  (pi = et.preferred_identifier) &&
 	  pi.role_sequence.all_role_ref[0].role.fact_type != fact_type
 	# debug "Dumping objectified FT #{et.name} as an entity, non-fact PI"
 	entity_type_dump(et)
@@ -534,7 +412,7 @@ module ActiveFacts
       # REVISIT: Find out why some fact types are missed during entity dumping:
       @vocabulary.constellation.FactType.sort_by{|fact_type|
 	  # Any sort key, as long as the result is stable. That means unique too!
-	  [ (pr = preferred_reading(fact_type)).
+	  [ (pr = fact_type.preferred_reading).
 	      role_sequence.
 	      all_role_ref.
 	      sort_by{|role_ref| role_ref.ordinal}.

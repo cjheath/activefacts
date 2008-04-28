@@ -63,7 +63,7 @@ module ActiveFacts
 
     def preferred_role_name(role)
       # debug "Looking for preferred_role_name of #{describe_fact_type(role.fact_type, role)}"
-      reading = preferred_reading(role.fact_type)
+      reading = role.fact_type.preferred_reading
       preferred_role_ref = reading.role_sequence.all_role_ref.detect{|reading_rr|
 	  reading_rr.role == role
 	}
@@ -225,9 +225,9 @@ module ActiveFacts
       return unless pc		# Omit fact types that aren't implicitly nested
 
       supertype = fact_type.entity_type &&
-	  (identifying_supertype(fact_type.entity_type) || supertypes(fact_type.entity_type)[0])
+	  (fact_type.entity_type.identifying_supertype || fact_type.entity_type.supertypes[0])
 
-      # REVISIT: If supertypes(fact_type.entity_type).size > 1, handle additional supertypes
+      # REVISIT: If fact_type.entity_type.supertypes.size > 1, handle additional supertypes
 
       puts "  class #{name}#{supertype ? " < "+supertype.name : ""}\n" +
 		"    identified_by #{identified_by(fact_type.entity_type, pc)}"

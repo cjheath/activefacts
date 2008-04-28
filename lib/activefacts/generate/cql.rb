@@ -126,13 +126,6 @@ module ActiveFacts
 	  }.flatten*",\n\t"
     end
 
-    # An array all direct supertypes
-    def supertypes(o)
-	o.all_type_inheritance.map{|ti|
-	    ti.super_entity_type
-	  }
-    end
-
     def entity_type_banner
       puts "/*\n * Entity Types\n */"
     end
@@ -142,7 +135,7 @@ module ActiveFacts
     end
 
     def subtype_dump(o, supertypes, pi)
-      puts "#{o.name} = subtype of #{ supertypes(o).map(&:name)*", " }" +
+      puts "#{o.name} = subtype of #{ o.supertypes.map(&:name)*", " }" +
 	(pi ? identified_by(o, pi) : "") +
 	";\n"
     end
