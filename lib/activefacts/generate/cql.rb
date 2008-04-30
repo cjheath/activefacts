@@ -106,6 +106,7 @@ module ActiveFacts
 	      reading_rr.role == role
 	    }
 	  role_words = []
+	  # REVISIT: Consider whether NOT to use the adjective if it's a prefix of the role_name
 	  role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
 
 	  role_name = role.role_name

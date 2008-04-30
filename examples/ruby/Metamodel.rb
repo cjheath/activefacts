@@ -182,8 +182,8 @@ module Metamodel
   end
 
   class UnitBasis
-    identified_by :base_unit, :unit
-    has_one :unit                               # See Unit.all_unit_basis
+    identified_by :base_unit, :derived_unit
+    has_one :derived_unit, Unit                 # See Unit.all_unit_basis_by_derived_unit
     has_one :base_unit, Unit                    # See Unit.all_unit_basis_by_base_unit
     has_one :exponent                           # See Exponent.all_unit_basis
   end
@@ -281,9 +281,9 @@ module Metamodel
   end
 
   class TypeInheritance < FactType
-    identified_by :entity_type, :super_entity_type
-    has_one :super_entity_type, EntityType      # See EntityType.all_type_inheritance_by_super_entity_type
-    has_one :entity_type                        # See EntityType.all_type_inheritance
+    identified_by :subtype, :supertype
+    has_one :supertype, EntityType              # See EntityType.all_type_inheritance_by_supertype
+    has_one :subtype, EntityType                # See EntityType.all_type_inheritance_by_subtype
     maybe :provides_identification
   end
 

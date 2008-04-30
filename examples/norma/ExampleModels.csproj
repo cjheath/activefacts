@@ -65,10 +65,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Genealogy.orm</DependentUpon>
     </Compile>
-    <Compile Include="Metamodel.CoRef._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel.CoRef.orm</DependentUpon>
-    </Compile>
     <Compile Include="Metamodel._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Metamodel.orm</DependentUpon>
@@ -182,13 +178,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Blog.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="Exists('Metamodel.orm')">
-    <None Include="Metamodel.CoRef.orm">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel.orm</DependentUpon>
-      <ORMGenerator>CoRefORM</ORMGenerator>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -411,6 +400,8 @@
       <DependentUpon>OilSupplyWithCosts.orm</DependentUpon>
       <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Metamodel.orm')">
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

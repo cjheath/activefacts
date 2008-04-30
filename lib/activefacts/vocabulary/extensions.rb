@@ -103,23 +103,23 @@ module ActiveFacts
 
       # An array all direct supertypes
       def supertypes
-	all_type_inheritance.map{|ti|
-	    ti.super_entity_type
+	all_type_inheritance_by_subtype.map{|ti|
+	    ti.supertype
 	  }
       end
 
       # An array of self followed by all supertypes in order:
       def supertypes_transitive
-	  ([self] + all_type_inheritance.map{|ti|
+	  ([self] + all_type_inheritance_by_subtype.map{|ti|
 	      # debug ti.class.roles.verbalise; exit
-	      ti.super_entity_type.supertypes_transitive
+	      ti.supertype.supertypes_transitive
 	    }).flatten.uniq
       end
 
       # A subtype does not have a identifying_supertype if it defines its own identifier
       def identifying_supertype
-	all_type_inheritance.detect{|ti|
-	    return ti.super_entity_type if ti.provides_identification
+	all_type_inheritance_by_subtype.detect{|ti|
+	    return ti.supertype if ti.provides_identification
 	  }
 	return nil
       end

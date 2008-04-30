@@ -147,7 +147,7 @@ module ActiveFacts
       @concept_types_dumped[o] = true
       pi = o.preferred_identifier
 
-      #debug "#{o.name} is a subtype!!!" if o.all_type_inheritance.size > 0
+      #debug "#{o.name} is a subtype!!!" if o.all_type_inheritance_by_subtype.size > 0
 
       supers = o.supertypes
       if (supers.size > 0)
@@ -313,11 +313,11 @@ module ActiveFacts
 		}
 	    end
 	    # Supertypes are precursors too:
-	    subtypes = o.all_type_inheritance_by_super_entity_type
-	    next a if subtypes.size == 0
-	    o.all_type_inheritance_by_super_entity_type.each{|ti|
-		# debug ti.class.roles.verbalise; debug "all_type_inheritance_by_super_entity_type"; exit
-		s = ti.entity_type
+	    subtyping = o.all_type_inheritance_by_supertype
+	    next a if subtyping.size == 0
+	    subtyping.each{|ti|
+		# debug ti.class.roles.verbalise; debug "all_type_inheritance_by_supertype"; exit
+		s = ti.subtype
 		(precursor[s] ||= []) << o
 		(follower[o] ||= []) << s
 	      }
