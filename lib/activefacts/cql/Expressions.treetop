@@ -1,0 +1,114 @@
+module ActiveFacts
+  module CQL
+    grammar Expressions
+      rule comparison
+        e1:expression s comparator s e2:expression
+        {
+          def body
+            [ comparator.text_value,
+              e1.value,
+              e2.value
+            ]
+          end
+        }
+      end
+
+      rule comparator
+        '<=' / '<' / '=' / '>=' / '>' / matches / includes
+      end
+
+      rule expression
+        sum
+      end
+
+      rule sum
+        t0:term s tail:( o:add_op s t1:term s )*
+        {
+          def value
+            return t0.value if tail.empty?
+            [ :"+",
+              *([t0.value] +
+                tail.elements.map{|e|
+                    e.o.text_value == '-' ? [ :"-", e.t1.value ] : e.t1.value
+                  }
+              )
+            ]
+          end
+        }
+      end
+
+      rule add_op
+        '+' / '-'
+      end
+
+      rule term
+        f0:factor s tail:( o:mul_op s f1:factor s )*
+        {
+          def value
+            return f0.value if tail.empty?
+            [ :"*",
+              *([f0.value] +
+                tail.elements.map{|e|
+                    e.o.text_value != '*' ? [ :"-", e.f1.value ] : e.f1.value
+                  }
+              )
+            ]
+          end
+        }
+      end
+
+      rule factor
+        literal u:unit? s
+            { def value
+                u.empty? ? literal.value : [ literal.value, u.text_value ]
+              end
+            }
+        / derived_variable
+        / '(' s sum s ')' s                   { def value; sum.value; end }
+      end
+
+      rule derived_variable
+        variable s p:function_call*
+        {
+          def value
+            r = variable.value
+            # Apply the function_call operators in order:
+            p.elements.each{|p| r = [ p.value, r ] }
+            r
+          end
+        }
+      end
+
+      rule variable
+        id0:id o0:( !(s 'is' S 'defined' S as ) s id1:id o1:( s id2:id )? )?
+        {
+          def value
+            # Variable names may consist of up to three words:
+            r = [ :variable, id0.text_value ]
+            unless o0.empty?
+              r += [ o0.id1.text_value ]
+              r += [ o0.o1.id2.text_value ] unless o0.o1.empty?
+            end
+            r
+          end
+        }
+      end
+
+      rule function_call
+        '.' s func:id s param_list:( '(' s params:( p0:expression s tail:( ',' s p1:expression s )* )? ')' s )?
+        {
+          def value
+            r = [ :"(", func.text_value ]
+            return r if param_list.empty? || param_list.params.empty?
+            r += [ param_list.params.p0.value ]
+            param_list.params.tail.elements.each{|e|
+                r += [ e.p1.value ]
+              }
+            r
+          end
+        }
+      end
+
+    end
+  end
+end

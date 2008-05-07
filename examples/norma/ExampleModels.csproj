@@ -45,6 +45,14 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirector2.orm</DependentUpon>
     </Compile>
+    <Compile Include="Metamodel._ORMCustomToolReport.cs">
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="MetamodelMappable._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelMappable.orm</DependentUpon>
+    </Compile>
     <Compile Include="MultiInheritance._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>MultiInheritance.orm</DependentUpon>
@@ -64,10 +72,6 @@
     <Compile Include="Genealogy._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Genealogy.orm</DependentUpon>
-    </Compile>
-    <Compile Include="Metamodel._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel.orm</DependentUpon>
     </Compile>
     <Compile Include="ObjectifiedUnary._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -119,10 +123,6 @@
     <None Include="Genealogy.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Genealogy._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
-    <None Include="Metamodel.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>Metamodel._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="ObjectifiedUnary.orm">
       <Generator>ORMCustomTool</Generator>
@@ -188,6 +188,14 @@
     <None Include="CompanyDirector2.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirector2._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Metamodel.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Metamodel._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="MetamodelMappable.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>MetamodelMappable._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="MultiInheritance.orm">
       <Generator>ORMCustomTool</Generator>
@@ -402,6 +410,23 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('Metamodel.orm')">
+  </ItemGroup>
+  <ItemGroup Condition="Exists('MetamodelMappable.orm')">
+    <None Include="MetamodelMappable.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelMappable.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="MetamodelMappable.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelMappable.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="MetamodelMappable.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelMappable.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

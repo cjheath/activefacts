@@ -6,6 +6,9 @@ require 'rubygems'
 require 'pp'
 require 'polyglot'
 require 'treetop'
+require 'activefacts/cql/LexicalRules'
+require 'activefacts/cql/Expressions'
+require 'activefacts/cql/Concepts'
 require 'activefacts/cql/CQLParser'
 
 $debug_indent = 0
@@ -23,9 +26,9 @@ module ActiveFacts
   module CQLHandler
     def initialize_outputs
       @types = {}
-      @role_names = {}	  # Indexed by role name and/or adjectival form
+      @role_names = {}    # Indexed by role name and/or adjectival form
       @fact_types_by_sorted_players = Hash.new {|h, k| h[k] = []}
-      @linking_words = {}	  # For checking forward-references
+      @linking_words = {}         # For checking forward-references
     end
 
     # REVISIT: These can't be used until we've done fact type lookup
@@ -58,8 +61,8 @@ module ActiveFacts
 
       # Index the new fact type by its sorted players list
       players = defined_readings[0][2].map{|w|
-	  Hash === w ? w[:player] : nil
-	}.compact
+          Hash === w ? w[:player] : nil
+        }.compact
       sorted_players = players.sort
 
       @fact_types_by_sorted_players[sorted_players] << fact_type
@@ -79,15 +82,15 @@ module ActiveFacts
     # The load method required by Polyglot:
     def self.load(file)
       debug "Loading #{file}" do
-	parser = ActiveFacts::CQLParser.new
+        parser = ActiveFacts::CQLParser.new
 
-	File.open(file) do |f|
-	  result = parser.parse_all(input = f.read, :definition) { |node|
-	      parser.definition(node)
-	      nil
-	    }
-	  raise parser.failure_reason unless result
-	end
+        File.open(file) do |f|
+          result = parser.parse_all(input = f.read, :definition) { |node|
+              parser.definition(node)
+              nil
+            }
+          raise parser.failure_reason unless result
+        end
       end
     end
 
@@ -95,7 +98,7 @@ module ActiveFacts
       initialize_outputs
     end
 
-    # Repeatedly parse rule_nae until all input is consumed:
+    # Repeatedly parse rule_name until all input is consumed:
     def parse_all(input, rule_name = nil, &block)
       self.root = rule_name if rule_name
 
@@ -103,10 +106,10 @@ module ActiveFacts
       self.consume_all_input = false
       results = []
       begin
-	node = parse(input, :index => @index)
-	return nil unless node
-	node = block.call(node) if block
-	results << node if node
+        node = parse(input, :index => @index)
+        return nil unless node
+        node = block.call(node) if block
+        results << node if node
       end until self.index == @input_length
       results
     end
@@ -116,27 +119,27 @@ module ActiveFacts
       kind, *value = *definition
 
       if name && linking_word?(name)
-	debug "Can't define #{kind} #{name} after it's already been used as a linking word"
-	return
+        debug "Can't define #{kind} #{name} after it's already been used as a linking word"
+        return
       end
 
       debug "Processing #{[kind, name].compact*" "}" do
-	reset_defined_roles
-	case kind
-	when :data_type
-	  data_type(name, value)
-	when :entity_type
-	    entity_type(name, value)
-	when :fact_type
-	  fact_type(name, value)
-	end
+        reset_defined_roles
+        case kind
+        when :data_type
+          data_type(name, value)
+        when :entity_type
+            entity_type(name, value)
+        when :fact_type
+          fact_type(name, value)
+        end
       end
     end
 
     def data_type(name, value)
       debug value.inspect do
-	# REVISIT: Massage/check data type here?
-	define_data_type(name, value)
+        # REVISIT: Massage/check data type here?
+        define_data_type(name, value)
       end
     end
 
@@ -147,7 +150,7 @@ module ActiveFacts
       find_all_defined_roles(clauses)
 
       debug "Entity known by #{identification.inspect}" do
-	clauses.each{|c| clause(c) }
+        clauses.each{|c| clause(c) }
       end
 
       define_entity_type(name, identification, clauses)
@@ -160,7 +163,7 @@ module ActiveFacts
 
       # We have to handle all fact clauses one way, conditions another:
       fact_clauses = defined_readings +
-	clauses.select{|c| c[0] == :fact_clause }
+        clauses.select{|c| c[0] == :fact_clause }
 
       find_all_defined_roles(fact_clauses)
 
@@ -171,15 +174,15 @@ module ActiveFacts
       debug "Defined readings: "+defined_readings.inspect
       players = defined_readings[0][2].map{|w| Hash === w ? w[:player] : nil }.compact.sort
       1.upto(defined_readings.size-1){|i|
-	  these_players = defined_readings[i][2].map{|w| Hash === w ? w[:player] : nil }.compact.sort
-	  if these_players != players
-	    # REVISIT: This will be an exception.
-	    debug "All readings for a new fact type definition must have the same players" do
-	      debug "Role players for first reading are: "+players.inspect
-	      debug "Role players for this reading: "+these_players.inspect
-	    end
-	  end
-	}
+          these_players = defined_readings[i][2].map{|w| Hash === w ? w[:player] : nil }.compact.sort
+          if these_players != players
+            # REVISIT: This will be an exception.
+            debug "All readings for a new fact type definition must have the same players" do
+              debug "Role players for first reading are: "+players.inspect
+              debug "Role players for this reading: "+these_players.inspect
+            end
+          end
+        }
 
       debug "Fact derivation clauses: "+clauses.pretty_inspect if clauses.size > 0
 
@@ -196,38 +199,38 @@ module ActiveFacts
     # any defined adjectival forms into @local_forms (also indexed by word)
     def find_all_defined_roles(fact_clauses)
       debug "Search fact readings for role names:" do
-	fact_clauses.each{|r| find_defined_roles(r[2]) }
-	debug "Role names: "+ @local_roles.inspect if @local_roles.size > 0
+        fact_clauses.each{|r| find_defined_roles(r[2]) }
+        debug "Role names: "+ @local_roles.inspect if @local_roles.size > 0
       end
     end
 
     def find_defined_roles(reading)
       reading.each { |role|
-	  # Index the role_name if any:
-	  role_name = role[:role_name]
-	  @local_roles[role_name] = role if role_name
+          # Index the role_name if any:
+          role_name = role[:role_name]
+          @local_roles[role_name] = role if role_name
 
-	  # Index the adjectival form, if any marked adjectives:
-	  leading_adjective = role[:leading_adjective]
-	  trailing_adjective = role[:trailing_adjective]
-	  next unless leading_adjective || trailing_adjective
+          # Index the adjectival form, if any marked adjectives:
+          leading_adjective = role[:leading_adjective]
+          trailing_adjective = role[:trailing_adjective]
+          next unless leading_adjective || trailing_adjective
 
-	  form = [leading_adjective, role[:words], trailing_adjective].flatten.compact
-	  debug "Adjectival form: "+ form.inspect
-	  @local_forms[form] = true
-	  form.each{|w| (@local_forms_by_word[w] ||= []) << form }
-	}
+          form = [leading_adjective, role[:words], trailing_adjective].flatten.compact
+          debug "Adjectival form: "+ form.inspect
+          @local_forms[form] = true
+          form.each{|w| (@local_forms_by_word[w] ||= []) << form }
+        }
     end
 
     def clause(c)
       case c[0]
       when :fact_clause
-	qualifiers = c[1]
-	roles = c[2]
-	canonicalise_reading(qualifiers, roles)
-	debug "Adjusted Roles: "+roles.inspect
+        qualifiers = c[1]
+        roles = c[2]
+        canonicalise_reading(qualifiers, roles)
+        debug "Adjusted Roles: "+roles.inspect
       else
-	debug "clause #{c.inspect} not handled yet"
+        debug "clause #{c.inspect} not handled yet"
       end
     end
 
@@ -267,62 +270,62 @@ module ActiveFacts
     def canonicalise_reading(qualifiers, roles)
       # Identify all role players and expand the adjectives and linking words:
       roles.replace(roles.inject([]){|new_roles, role|
-	  words = role[:words]
-	  role.delete(:words)
+          words = role[:words]
+          role.delete(:words)
 
-	  # If we have a quantifier or a leading adjective, we handle it differently.
-	  # In this case the leading words up to the player get added to a leading
-	  # adjectives array.
-	  la = role[:leading_adjective]
-	  role[:leading_adjective] = [la] if (la)   # Make it an array
-	  quant = role[:quantifier]
-	  role[:leading_adjective] ||= [] if quant	# Start an empty array
-	  la = role[:leading_adjective]
-	  ta = role[:trailing_adjective]
-	  role[:trailing_adjective] = Array(ta) if ta
+          # If we have a quantifier or a leading adjective, we handle it differently.
+          # In this case the leading words up to the player get added to a leading
+          # adjectives array.
+          la = role[:leading_adjective]
+          role[:leading_adjective] = [la] if (la)   # Make it an array
+          quant = role[:quantifier]
+          role[:leading_adjective] ||= [] if quant      # Start an empty array
+          la = role[:leading_adjective]
+          ta = role[:trailing_adjective]
+          role[:trailing_adjective] = Array(ta) if ta
 
-	  new_role = nil
-	  possible_extra_trailing_adjectives = []
-	  words.each{|w|
-	      local_role = @local_roles && @local_roles[w]
-	      if (local_role || type_by_name(w))
-		# We've found a role player. The quantifier & leading adjectives
-		# go with the first player found, the trailing adjectives, function,
-		# role name, restriction and literal with the last one... sigh.
+          new_role = nil
+          possible_extra_trailing_adjectives = []
+          words.each{|w|
+              local_role = @local_roles && @local_roles[w]
+              if (local_role || type_by_name(w))
+                # We've found a role player. The quantifier & leading adjectives
+                # go with the first player found, the trailing adjectives, function,
+                # role name, restriction and literal with the last one... sigh.
 
-		# Ok, these weren't extra trailing adjectives after all
-		possible_extra_trailing_adjectives.each{|l| new_roles << l }
-		possible_extra_trailing_adjectives = []
+                # Ok, these weren't extra trailing adjectives after all
+                possible_extra_trailing_adjectives.each{|l| new_roles << l }
+                possible_extra_trailing_adjectives = []
 
-		new_role = {:player => w}
-		new_role[:quantifier] = quant if quant
-		new_role[:leading_adjective] = la if la
-		quant = la = nil
-		new_roles << new_role
-		role.delete(:quantifier)
-		role.delete(:leading_adjective)
-	      else
-		if la
-		  la << w		# Extra leading adjective
-		elsif (ta = role[:trailing_adjective]) # Extra trailing adjective
-		  possible_extra_trailing_adjectives << w
-		else
-		  new_roles << w	# Adjective or linking word
-		end
-	      end
-	    }
-	  # Merge remaining parameters into the last role created, if any
-	  if (ta = role[:trailing_adjective]) # Extra trailing adjectives
-	    possible_extra_trailing_adjectives.each{|w|
-		role[:trailing_adjective] = ta.unshift(w)
-	      }
-	  else	# Just linking words
-	    possible_extra_trailing_adjectives.each{|w| new_roles << w }
-	  end
-	  new_role.merge!(role) if new_role
+                new_role = {:player => w}
+                new_role[:quantifier] = quant if quant
+                new_role[:leading_adjective] = la if la
+                quant = la = nil
+                new_roles << new_role
+                role.delete(:quantifier)
+                role.delete(:leading_adjective)
+              else
+                if la
+                  la << w               # Extra leading adjective
+                elsif (ta = role[:trailing_adjective]) # Extra trailing adjective
+                  possible_extra_trailing_adjectives << w
+                else
+                  new_roles << w        # Adjective or linking word
+                end
+              end
+            }
+          # Merge remaining parameters into the last role created, if any
+          if (ta = role[:trailing_adjective]) # Extra trailing adjectives
+            possible_extra_trailing_adjectives.each{|w|
+                role[:trailing_adjective] = ta.unshift(w)
+              }
+          else  # Just linking words
+            possible_extra_trailing_adjectives.each{|w| new_roles << w }
+          end
+          new_role.merge!(role) if new_role
 
-	  new_roles
-	}
+          new_roles
+        }
       )
     end
 
