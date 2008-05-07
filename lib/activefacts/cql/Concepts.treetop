@@ -8,12 +8,12 @@ module ActiveFacts
       end
 
       rule entity_type
-	base_entity_type    # Thing = entity identified by A, B... (or "is defined as" instead of =)
-        / subtype	      # Thing = subtype of A, B ...
-      end
-
-      rule base_entity_type
-        s name:id s ('is' / defined_as entity)
+        s name:id s
+	sup:(
+	  defined_as 'subtype' S 'of' S supertype_list
+	  / defined_as entity
+	  / 'is'  # Semantically, this syntax requires non-nil identification
+	)
 	s identification
 	  entity_conditions
 	s ';' s
@@ -22,28 +22,8 @@ module ActiveFacts
             [ name.text_value,
 	      [
 		:entity_type,
-		nil,
-		identification.empty? ? nil : identification.value,
-		entity_conditions.conditions
-	      ]
-	    ]
-          end
-        }
-      end
-
-      rule subtype
-        s name:id defined_as
-        'subtype' S 'of' S supertype_list
-        identification?        # A subtpe may have alternate identification scheme
-	entity_conditions
-        # REVISIT: Decide whether to worry about asserted vs derived subtyping here.
-        {
-          def value
-            [ name.text_value,
-	      [
-		:entity_type,
-		supertype_list.value,
-		identification.empty? ? nil : identification.value,
+		sup.respond_to?(:supertype_list) ? sup.supertype_list.value : nil,
+		identification.text_value.empty? ? nil : identification.value,
 		entity_conditions.conditions
 	      ]
 	    ]
@@ -53,9 +33,9 @@ module ActiveFacts
 
       rule supertype_list
 	primary:id
-        alternate_supertypes:( s ',' s !identified_by name:id s )+
+        alternate_supertypes:( s ',' s !identified_by name:id s )*
 	{ def value
-	    [primary]+alternate_supertypes.map{|sup| sup.name}
+	    [primary.text_value]+alternate_supertypes.elements.map{|sup| sup.name.text_value}
 	  end
 	}
       end
@@ -64,6 +44,8 @@ module ActiveFacts
         reference_mode	{ def value; {:mode => mode_name.text_value}; end }
 	/
 	identified_by	{ def value; {:roles => role_list.roles }; end }
+	/
+	''
       end
 
       # Identified by roles...

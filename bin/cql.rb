@@ -15,6 +15,7 @@ while line = Readline::readline(statement == "" ? "CQL? " : "CQL+ ", [])
       p result.value
     rescue => e
       puts e
+      puts "\t"+e.backtrace*"\n\t"
     end
     statement = ''
   end
