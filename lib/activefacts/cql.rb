@@ -129,7 +129,8 @@ module ActiveFacts
         when :data_type
           data_type(name, value)
         when :entity_type
-            entity_type(name, value)
+            supertypes = value.shift
+            entity_type(name, supertypes, value)
         when :fact_type
           fact_type(name, value)
         end
@@ -143,7 +144,8 @@ module ActiveFacts
       end
     end
 
-    def entity_type(name, value)
+    def entity_type(name, supertypes, value)
+      #print "entity_type parameters for #{name}: "; p value
       identification, clauses = *value
 
       raise "Entity type clauses must all be fact types" if clauses.detect{|c| c[0] != :fact_clause }

@@ -90,55 +90,55 @@ module ActiveFacts
         '(' s '.' s mode_name:id s ')' s
       end
 
-    rule data_type
-      s name:id defined_as
-      base:id s '(' s params:(length:number s param2:( ',' s scale:number s )? )? ')' s u0:(!restricted u1:unit s)? r:restriction?
-      s ';' s
-      {
-	def defined_type
-	  [
-	    :data_type,
-	    base.text_value,
-	    [ # REVISIT: Maybe it'd be better just to have a list of parameters...
-	      !params.empty? && params.length.value,
-	      !params.empty? && !params.param2.empty? && params.param2.scale.value,
-	    ],
-	    !u0.empty? && u0.u1.text_value,
-	    !r.empty? && r.ranges,
-	  ]
-	end
+      rule data_type
+	s name:id defined_as
+	base:id s '(' s params:(length:number s param2:( ',' s scale:number s )? )? ')' s u0:(!restricted u1:unit s)? r:restriction?
+	s ';' s
+	{
+	  def defined_type
+	    [
+	      :data_type,
+	      base.text_value,
+	      [ # REVISIT: Maybe it'd be better just to have a list of parameters...
+		!params.empty? && params.length.value,
+		!params.empty? && !params.param2.empty? && params.param2.scale.value,
+	      ],
+	      !u0.empty? && u0.u1.text_value,
+	      !r.empty? && r.ranges,
+	    ]
+	  end
 
-	def value
-	  [ name.text_value,
-	    defined_type
-	  ]
-	end
-      }
-    end
+	  def value
+	    [ name.text_value,
+	      defined_type
+	    ]
+	  end
+	}
+      end
 
-    rule unit
-      unit_name:id ('^' '-'? [0-9])?
-    end
+      rule unit
+	unit_name:id ('^' '-'? [0-9])?
+      end
 
-    rule restriction
-      restricted s to s range_list s unit?
-      {
-	def ranges
-	  range_list.ranges
-	end
-      }
-    end
+      rule restriction
+	restricted s to s range_list s unit?
+	{
+	  def ranges
+	    range_list.ranges
+	  end
+	}
+      end
 
-    rule range_list
-      '{' s
-	head:range s tail:( ',' s range )*
-      '}' s
-      {
-	def ranges
-	  [head.value] + tail.elements.map{|e| e.range.value }
-	end
-      }
-    end
+      rule range_list
+	'{' s
+	  head:range s tail:( ',' s range )*
+	'}' s
+	{
+	  def ranges
+	    [head.value] + tail.elements.map{|e| e.range.value }
+	  end
+	}
+      end
 
       rule fact_type
         s opt_name:(name:id defined_as )?
