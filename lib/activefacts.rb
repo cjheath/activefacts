@@ -5,5 +5,4 @@
 # Author: Clifford Heath.
 #
 require 'rubygems'
-require 'chattr'
-require 'activefacts/vocabulary'	    # Base ActiveFacts objects
+require 'activefacts/vocabulary'            # Base ActiveFacts objects
