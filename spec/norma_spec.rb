@@ -17,7 +17,7 @@ describe "Norma Loader" do
   Dir["examples/norma/*.orm"].each do |norma|
   #Dir["examples/norma/Meta*.orm"].each do |norma|
   #Dir["examples/norma/Bl*.orm"].each do |norma|
-    expected_file = norma.sub(%r{/norma/(.*).orm\Z}, '/output/\1.cql')
+    expected_file = norma.sub(%r{/norma/(.*).orm\Z}, '/CQL/\1.cql')
     next unless File.exists? expected_file
 
     it "should load and dump valid CQL for #{norma}" do

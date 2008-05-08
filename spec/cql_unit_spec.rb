@@ -220,6 +220,33 @@ describe "Entity Types" do
     [ "Director is old: Person directs company, Person is of age, age > 60;",
       [[nil, [:fact_type, [[:fact_clause, [], [{:words=>["Director", "is", "old"]}]]], [:fact_clause, [], [{:words=>["Person", "directs", "company"]}]], [:fact_clause, [], [{:words=>["Person", "is", "of", "age"]}]], [">", [:variable, "age"], 60]]]]
     ],
+    [ "Employee is a kind of Person;",
+      [["Employee", [:entity_type, ["Person"], nil, []]]]
+    ],
+    [ "Employee is a subtype of Person;",
+      [["Employee", [:entity_type, ["Person"], nil, []]]]
+    ],
+    [ "Employee = subtype of Person;",
+      [["Employee", [:entity_type, ["Person"], nil, []]]]
+    ],
+    [ "Employee is defined as subtype of Person;",
+      [["Employee", [:entity_type, ["Person"], nil, []]]]
+    ],
+    [ "AustralianEmployee = subtype of Employee, Australian;",
+      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], nil, []]]]
+    ],
+    [ "Employee is a kind of Person identified by EmployeeNumber;",
+      [["Employee", [:entity_type, ["Person"], {:roles=>["EmployeeNumber"]}, []]]]
+    ],
+    [ "Employee = subtype of Person identified by EmployeeNumber;",
+      [["Employee", [:entity_type, ["Person"], {:roles=>["EmployeeNumber"]}, []]]]
+    ],
+    [ "Employee is defined as subtype of Person identified by EmployeeNumber;",
+      [["Employee", [:entity_type, ["Person"], {:roles=>["EmployeeNumber"]}, []]]]
+    ],
+    [ "AustralianEmployee = subtype of Employee, Australian identified by TaxFileNumber;",
+      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], {:roles=>["TaxFileNumber"]}, []]]]
+    ],
   ]
 
   setup do
@@ -234,8 +261,11 @@ describe "Entity Types" do
       puts @parser.failure_reason unless result
 
       result.should_not be_nil
-      result.map{|d| d.value}.should == ast if ast
-      puts result.map{|d| d.value}.inspect unless ast
+      if ast
+        result.map{|d| d.value}.should == ast
+      else
+        puts "\n"+result.map{|d| d.value}.inspect
+      end
     end
   end
 end

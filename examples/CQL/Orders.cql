@@ -14,9 +14,7 @@ SKUID = AutoCounter();
 Order = entity identified by OrderID:
 	Order has exactly one OrderID,
 	OrderID is of at most one Order;
-
-OrderLine = entity identified by Number and Order:
-	Order has line Number;
+OrderLine = Order has line Number;
 OrderLine is for at most one quantity-Number;
 
 SKU = entity identified by SKUID:

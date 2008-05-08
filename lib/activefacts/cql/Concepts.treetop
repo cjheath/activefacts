@@ -2,307 +2,88 @@ module ActiveFacts
   module CQL
     grammar Concepts
       rule concept
-	entity_type
-	/ data_type
+        entity_type
+        / data_type
         / fact_type
       end
 
       rule entity_type
         s name:id s
-	sup:(
-	  defined_as 'subtype' S 'of' S supertype_list
-	  / defined_as entity
-	  / 'is'  # Semantically, this syntax requires non-nil identification
-	)
-	s identification
-	  entity_conditions
-	s ';' s
+        sup:(
+          subtype_prefix supertype_list
+          / ( s '=' s / defined_as ) entity
+          / is  # Semantically, this syntax requires non-nil identification
+        )
+        s identification
+          entity_conditions
+        s ';' s
         {
           def value
             [ name.text_value,
-	      [
-		:entity_type,
-		sup.respond_to?(:supertype_list) ? sup.supertype_list.value : nil,
-		identification.text_value.empty? ? nil : identification.value,
-		entity_conditions.conditions
-	      ]
-	    ]
+              [
+                :entity_type,
+                sup.respond_to?(:supertype_list) ? sup.supertype_list.value : nil,
+                identification.text_value.empty? ? nil : identification.value,
+                entity_conditions.conditions
+              ]
+            ]
           end
         }
       end
 
       rule supertype_list
-	primary:id
+        primary:id
         alternate_supertypes:( s ',' s !identified_by name:id s )*
-	{ def value
-	    [primary.text_value]+alternate_supertypes.elements.map{|sup| sup.name.text_value}
-	  end
-	}
+        { def value
+            [primary.text_value]+alternate_supertypes.elements.map{|sup| sup.name.text_value}
+          end
+        }
       end
 
       rule identification
-        reference_mode	{ def value; {:mode => mode_name.text_value}; end }
-	/
-	identified_by	{ def value; {:roles => role_list.roles }; end }
-	/
-	''
+        identified_by role_list   { def value; {:roles => role_list.roles }; end }
+        /
+        reference_mode  { def value; {:mode => mode_name.text_value}; end }
+        /
+        ''      # REVISIT: Find out why makng identification optional didn't work (for subtypes)
       end
 
       # Identified by roles...
-      rule identified_by
-        identified S by S role_list
+      rule role_list 
+        head:role_player s tail:( ( and S / ',' s ) role:role_player s )*
+        {
+          def roles
+            [head.text_value] + tail.elements.map{|i| i.role.text_value}
+          end
+        }
       end
 
-	  rule role_list 
-	    head:role_player s tail:( ( and S / ',' s ) role:role_player s )*
-	    {
-	      def roles
-		[head.text_value] + tail.elements.map{|i| i.role.text_value}
-	      end
-	    }
-	  end
+          rule role_player
+            id0:role_player_id '-' (s id1:role_player_id ( s id2:role_player_id )? )?
+            /
+            id0:role_player_id (s id1:role_player_id ( s '-' id2:role_player_id / s id2:role_player_id )? )?
+          end
 
-	  rule role_player
-	    id0:role_player_id '-' (s id1:role_player_id ( s id2:role_player_id )? )?
-	    /
-	    id0:role_player_id (s id1:role_player_id ( s '-' id2:role_player_id / s id2:role_player_id )? )?
-	  end
+          rule role_player_id
+            !role_list_sep id
+          end
 
-	  rule role_player_id
-	    !role_list_sep id
-	  end
+          rule role_list_sep
+            (where / and)
+          end
 
-	  rule role_list_sep
-	    (where / and)
-	  end
+          rule reference_mode
+            # REVISIT: Adopt ORM2-style reference mode patterns here
+            '(' s '.' s mode_name:id s ')' s
+          end
 
       rule entity_conditions
         (':' / where)? s c:conditions?
-	{
-	  def conditions
-	    c.empty? ? [] : c.condition_list
-	  end
-	}
-      end
-
-      rule reference_mode
-        # REVISIT: Adopt ORM2-style reference mode patterns here
-        '(' s '.' s mode_name:id s ')' s
-      end
-
-      rule data_type
-	s name:id defined_as
-	base:id s '(' s params:(length:number s param2:( ',' s scale:number s )? )? ')' s u0:(!restricted u1:unit s)? r:restriction?
-	s ';' s
-	{
-	  def defined_type
-	    [
-	      :data_type,
-	      base.text_value,
-	      [ # REVISIT: Maybe it'd be better just to have a list of parameters...
-		!params.empty? && params.length.value,
-		!params.empty? && !params.param2.empty? && params.param2.scale.value,
-	      ],
-	      !u0.empty? && u0.u1.text_value,
-	      !r.empty? && r.ranges,
-	    ]
-	  end
-
-	  def value
-	    [ name.text_value,
-	      defined_type
-	    ]
-	  end
-	}
-      end
-
-      rule unit
-	unit_name:id ('^' '-'? [0-9])?
-      end
-
-      rule restriction
-	restricted s to s range_list s unit?
-	{
-	  def ranges
-	    range_list.ranges
-	  end
-	}
-      end
-
-      rule range_list
-	'{' s
-	  head:range s tail:( ',' s range )*
-	'}' s
-	{
-	  def ranges
-	    [head.value] + tail.elements.map{|e| e.range.value }
-	  end
-	}
-      end
-
-      rule fact_type
-        s opt_name:(name:id defined_as )?
-        f0:fact_clause
-          ftail:( (',' / and ) s f1:fact_clause s )*
-          ctail:( (':' / where) s c:conditions s)?
-          returning_clause?
-	s ';' s
         {
-          def value
-            [ opt_name.elements ? opt_name.name.text_value : nil,
-              defined_type ]
-          end
-          def defined_type
-            r = [
-              :fact_type,
-              [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
-            ]
-            r += ctail.c.condition_list unless ctail.empty?
-            r
+          def conditions
+            c.empty? ? [] : c.condition_list
           end
         }
-      end
-
-      rule returning_clause
-        returning return (',' return)*
-      end
-
-      rule return
-        by order 'REVISIT: return'
-      end
-
-      rule conditions
-        head:condition s tail:( (',' s / and S) next:condition s )*
-        {
-          def condition_list
-            [head.condition] + tail.elements.map{|i| i.next.condition}
-          end
-        }
-      end
-
-      rule condition
-        head:clause s tail:(or S alternate:clause s )*
-        {
-          def condition
-            if tail.elements.size == 0
-              head.clause
-            else
-              [:"||", head.clause] + tail.elements.map{|i| i.alternate.clause}
-            end
-          end
-        }
-      end
-
-      rule clause
-        (fact_clause / comparison)
-        {
-          def clause
-            self.body
-          end
-        }
-      end
-
-      rule fact_clause
-        q:qualifier? s reading s p:post_qualifiers? s
-        {
-          def body
-            [ :fact_clause,
-              (q.empty? ? [] : [ q.text_value ]) +
-                (p.empty? ? [] : p.list),
-              reading.value
-            ]
-          end
-        }
-      end
-
-      rule qualifier
-        ( 'maybe' / 'definitely' ) !alphanumeric
-      end
-
-      rule post_qualifiers
-        '[' s q0:post_qualifier tail:( s ',' s q1:post_qualifier )* s ']' s
-        {
-          def list
-            [q0.text_value] + tail.elements.map{|e| e.q1.text_value}
-          end
-        }
-      end
-
-      rule post_qualifier
-        ('static' / 'transient' / 'intransitive' / 'transitive' / 'acyclic' / 'symmetric' ) !alphanumeric
-      end
-
-      rule reading
-        role+
-        {
-          def value
-            elements.map{|r| r.value}
-          end
-        }
-      end
-
-      # This is the rule that causes most back-tracking. I think you can see why.
-      # When we have an expression, we will come down here perhaps multiple times,
-      # but find no way out as soon as we hit the trailing non_role.
-      rule role
-        q:quantifier?
-        adj0:(!non_role_word a:id '-' s)?
-        player:(!non_role_word p:id !'-' s)+
-        adj1:( '-' a:(!non_role_word a:id s)? )?
-        func:function_call?
-        role_name:( '(' s as S r:id s ')' s )?
-        lr:( literal / restriction )?
-        !non_role
-        {
-          def value
-            r = {}
-            quantifier = !q.empty? && q.value
-            r[:quantifier] = quantifier if quantifier
-            r[:leading_adjective] = adj0.a.text_value unless adj0.empty?
-            r[:words] = player.elements.map{|w| w.p.text_value}
-            r[:trailing_adjective] = adj1.a.a.text_value unless adj1.empty?
-            r[:function] = func.value if !func.empty?
-            r[:role_name] = role_name.r.text_value unless role_name.empty?
-            r[:restriction] = lr.ranges if !lr.empty? && lr.respond_to?(:ranges)
-            r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
-            r
-          end
-        }
-      end
-
-      rule non_role
-        comparator /
-        '||' /
-        add_op /
-        mul_op
-      end
-
-      rule non_role_word
-        quantifier
-        / boolean
-        / restriction
-        / 'if'
-      end
-
-      rule quantifier
-        each S                    { def value; [1, nil]; end }
-        / some S                  { def value; nil; end }
-        / one S                   { def value; [1, 1]; end }
-        / exactly S quantity      { def value; q = quantity.value; [q, q]; end }
-        / at S least S quantity most:( and S at S most S q:quantity )?
-                                  { def value;
-                                      [ quantity.value,
-                                        most.empty? ? nil : most.q.value
-                                      ]
-                                    end
-                                  }
-        / at S most S quantity    { def value; [ nil, quantity.value ]; end }
-        / from s numeric_range s  { def value; numeric_range.value; end }
-      end
-
-      rule quantity
-        one S                     { def value; 1; end }
-        / number s                { def value; number.value; end }
       end
 
     end

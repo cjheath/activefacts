@@ -7,8 +7,11 @@ require 'pp'
 require 'polyglot'
 require 'treetop'
 require 'activefacts/cql/LexicalRules'
+require 'activefacts/cql/Language/English'
 require 'activefacts/cql/Expressions'
 require 'activefacts/cql/Concepts'
+require 'activefacts/cql/DataTypes'
+require 'activefacts/cql/FactTypes'
 require 'activefacts/cql/CQLParser'
 
 $debug_indent = 0

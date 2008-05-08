@@ -7,9 +7,6 @@ ArticleID = SignedInteger(32);
 Tag = VariableLengthText();
 
 /*
- * Entity Types
- */
-/*
  * Fact Types
  */
 Tagging = ArticleID has Tag,

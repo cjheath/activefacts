@@ -24,3 +24,8 @@ Tester = entity identified by Tester_Name:
 BugReport = Tester logged Bug;
 BugReport is logged against exactly one TestCase,
 	TestCase demonstrates BugReport;
+
+/*
+Constraints:
+	REVISIT: Verbalise PresenceConstraint BugMustHaveBugReport min 1 mandatory over (Bug)
+ */

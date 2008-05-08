@@ -17,13 +17,12 @@ Employee = subtype of Person;
 
 Manager = subtype of Person;
 Employee is managed by at most one Manager [acyclic],
-	Manager manages at least one Employee,
-	each Manager manages some Employee;
+	Manager manages at least one Employee;
 Manager is CEO;
 
 CEO = subtype of Manager;
 
 /*
 Constraints:
-	MandatoryExclusionConstraint EmployeeCannotHaveManagerAndBeCEO over EmployeeIsManagedByManager(Employee), ManagerIsCEO(Manager)
+	REVISIT: Verbalise SetExclusionConstraint EmployeeCannotHaveManagerAndBeCEO REVISIT: Unhandled constraint type
  */

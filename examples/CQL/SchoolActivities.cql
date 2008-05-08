@@ -10,9 +10,9 @@ StudentName = VariableLengthText();
 /*
  * Entity Types
  */
-Activity = entity identified by ActivityName:
-	Activity has exactly one ActivityName,
-	ActivityName is of at most one Activity;
+Activity = entity identified by Name:
+	Activity has exactly one ActivityName (as Name),
+	Name is of at most one Activity;
 
 School = entity identified by SchoolName:
 	School has exactly one SchoolName,
@@ -28,6 +28,6 @@ StudentParticipation = Student represents at most one School in Activity,
 
 /*
 Constraints:
-	SubsetConstraint StudentParticipationIsForEnrolledSchool StudentIsEnrolledInSchool(School, Student) < StudentParticipation(School, Student)
-	SubsetConstraint StudentParticipationIsForSchoolSanctionedActivity SchoolActivity(School, Activity) < StudentParticipation(School, Activity)
+	REVISIT: Verbalise SubsetConstraint StudentParticipationIsForEnrolledSchool REVISIT: Unhandled constraint type
+	REVISIT: Verbalise SubsetConstraint StudentParticipationIsForSchoolSanctionedActivity REVISIT: Unhandled constraint type
  */

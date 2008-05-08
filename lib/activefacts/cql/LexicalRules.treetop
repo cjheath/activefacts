@@ -2,188 +2,163 @@ module ActiveFacts
   module CQL
     grammar LexicalRules
 
-      rule defined_as
-        s '=' s / ( s 'is' S 'defined' S as s )
-      end
-
       rule range
-	numeric_range / string_range
+        numeric_range / string_range
       end
 
       rule numeric_range
-	number s tail:( '..' s end:number? s )?
-	{
-	  def value
-	    if !tail.empty?
-	      [ number.value, tail.end.value ]
-	    else
-	      number.value
-	    end
-	  end
-	}
-	/ '..' s number s
-	{
-	  def value
-	    [ nil, number.value ]
-	  end
-	}
+        number s tail:( '..' s end:number? s )?
+        {
+          def value
+            if !tail.empty?
+              [ number.value, tail.end.value ]
+            else
+              number.value
+            end
+          end
+        }
+        / '..' s number s
+        {
+          def value
+            [ nil, number.value ]
+          end
+        }
       end
 
       rule string_range
-	string s tail:( '..' s end:string? s )?
-	{
-	  def value
-	    first = string.value
-	    if !tail.empty?
-	      last = tail.end.value unless tail.empty?
-	      [ first, last ]
-	    else
-	      first
-	    end
-	  end
-	}
-	/ '..' s string s
-	{
-	  def value
-	    [ nil, string.value ]
-	  end
-	}
+        string s tail:( '..' s end:string? s )?
+        {
+          def value
+            first = string.value
+            if !tail.empty?
+              last = tail.end.value unless tail.empty?
+              [ first, last ]
+            else
+              first
+            end
+          end
+        }
+        / '..' s string s
+        {
+          def value
+            [ nil, string.value ]
+          end
+        }
       end
 
       rule literal
-	( boolean
-	/ string
-	/ number
-	) s
-	{
-	  def value
-	    elements[0].value
-	  end
-	}
+        ( boolean
+        / string
+        / number
+        ) s
+        {
+          def value
+            elements[0].value
+          end
+        }
       end
 
       rule boolean
-	( 'true' { def value; true; end }
-	/ 'false' { def value; false; end }
-	) !alphanumeric
-	{
-	  def value; elements[0].value end
-	}
+        ( true { def value; true; end }
+        / false { def value; false; end }
+        ) !alphanumeric
+        {
+          def value; elements[0].value end
+        }
       end
 
       rule string
-	"'" (string_char)* "'"
-	{
-	  def value
-	    eval(text_value.sub(/\A'(.*)'\Z/,'"\1"'))
-	  end
-	}
+        "'" (string_char)* "'"
+        {
+          def value
+            eval(text_value.sub(/\A'(.*)'\Z/,'"\1"'))
+          end
+        }
       end
 
       rule number
-	( real /
-	  fractional_real /
-	  hexnumber /
-	  octalnumber
-	) !alphanumeric
-	{
-	  def value
-	    eval(text_value)
-	  end
-	}
+        ( real /
+          fractional_real /
+          hexnumber /
+          octalnumber
+        ) !alphanumeric
+        {
+          def value
+            eval(text_value)
+          end
+        }
       end
 
       # All purely lexical rules from here down, no-one looks at the structure, just the text_value:
 
       rule string_char
-	( '\\' [befntr\\']
-	/ '\\' [0-7] [0-7] [0-7]
-	/ '\\0'
-	/ '\\x' [0-9A-Fa-f] [0-9A-Fa-f]
-	/ '\\u' [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f]
-	/ (![\'\\\0-\x07\x0A-\x1F] .)
-	)
+        ( '\\' [befntr\\']
+        / '\\' [0-7] [0-7] [0-7]
+        / '\\0'
+        / '\\x' [0-9A-Fa-f] [0-9A-Fa-f]
+        / '\\u' [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f]
+        / (![\'\\\0-\x07\x0A-\x1F] .)
+        )
       end
 
       rule real
-	[-+]? [1-9] [0-9]* fraction? exponent?
+        [-+]? [1-9] [0-9]* fraction? exponent?
       end
 
       rule fractional_real
-	[-+]? '0' fraction exponent?
+        [-+]? '0' fraction exponent?
       end
 
       rule fraction
-	'.' [0-9]+
+        '.' [0-9]+
       end
 
       rule exponent
-	( [Ee] '-'? [0-9]+ )
+        ( [Ee] '-'? [0-9]+ )
       end
 
       rule hexnumber
-	'0x' [0-9A-Fa-f]+
+        '0x' [0-9A-Fa-f]+
       end
 
       rule octalnumber
-	'0' [0-7]*
+        '0' [0-7]*
       end
 
-      rule and 'and' !alphanumeric end
-      rule as 'as' !alphanumeric end
-      rule at 'at' !alphanumeric end
-      rule by 'by' !alphanumeric end 
-      rule each 'each' !alphanumeric end 
-      rule entity 'entity' !alphanumeric end 
-      rule exactly 'exactly' !alphanumeric end
-      rule from  'from' !alphanumeric end
-      rule includes 'includes' !alphanumeric end
-      rule identified ('known'/'identified') !alphanumeric end 
-      rule least 'least' !alphanumeric end
-      rule matches 'matches' !alphanumeric end
-      rule most 'most' !alphanumeric end
-      rule one 'one' !alphanumeric end
-      rule or 'or' !alphanumeric end 
-      rule restricted 'restricted' !alphanumeric end
-      rule returning 'returning' !alphanumeric end
-      rule some 'some' !alphanumeric end
-      rule to 'to' !alphanumeric end
-      rule where 'where' !alphanumeric end 
-
       rule mul_op
-	'/' / '%' / '*'
+        '/' / '%' / '*'
       end
 
       rule id
-	alpha alphanumeric*
+        alpha alphanumeric*
       end
 
       rule alpha
-	[A-Za-z_]
+        [A-Za-z_]
       end
 
       rule alphanumeric
-	alpha / [0-9]
+        alpha / [0-9]
       end
 
-      rule s	# Optional space
-	S?
+      rule s    # Optional space
+        S?
       end
 
-      rule S	# Mandatory space
-	(white / comment_to_eol / comment_c_style)+
+      rule S    # Mandatory space
+        (white / comment_to_eol / comment_c_style)+
       end
 
       rule white
-	[ \t\n\r]+
+        [ \t\n\r]+
       end
 
       rule comment_to_eol
-	'//' (!"\n" .)+
+        '//' (!"\n" .)+
       end
 
       rule comment_c_style
-	'/*' (!'*/' . )* '*/'
+        '/*' (!'*/' . )* '*/'
       end
 
     end

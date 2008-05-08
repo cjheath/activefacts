@@ -1,0 +1,77 @@
+module ActiveFacts
+  module CQL
+    grammar Language
+
+      rule subtype_prefix
+        ( s '=' s / defined_as ) 'subtype' S 'of' S
+        / 'is' s 'a' s ('kind'/'subtype') s 'of' S
+      end
+
+      rule defined_as
+        s 'is' s 'defined' S as s
+      end
+
+      rule identified_by
+        identified s by s
+      end
+
+      rule quantifier
+        each s                    { def value; [1, nil]; end }
+        / some s                  { def value; nil; end }
+        / one s                   { def value; [1, 1]; end }
+        / exactly s quantity      { def value; q = quantity.value; [q, q]; end }
+        / at s least s quantity most:( and s at s most s q:quantity )?
+                                  { def value;
+                                      [ quantity.value,
+                                        most.empty? ? nil : most.q.value
+                                      ]
+                                    end
+                                  }
+        / at s most s quantity    { def value; [ nil, quantity.value ]; end }
+        / from s numeric_range s  { def value; numeric_range.value; end }
+      end
+
+      rule quantity
+        one s                     { def value; 1; end }
+        / number s                { def value; number.value; end }
+      end
+
+      rule acyclic 'acyclic' !alphanumeric end
+      rule alias 'alias' !alphanumeric end 
+      rule and 'and' !alphanumeric end
+      rule as 'as' !alphanumeric end
+      rule at 'at' !alphanumeric end
+      rule by 'by' !alphanumeric end 
+      rule definitely 'definitely' !alphanumeric end
+      rule each 'each' !alphanumeric end 
+      rule entity 'entity' !alphanumeric end 
+      rule exactly 'exactly' !alphanumeric end
+      rule false 'false' !alphanumeric end 
+      rule from  'from' !alphanumeric end
+      rule identified ('known'/'identified') !alphanumeric end 
+      rule if 'if' !alphanumeric end
+      rule import 'import' !alphanumeric end
+      rule includes 'includes' !alphanumeric end
+      rule intransitive 'intransitive' !alphanumeric end
+      rule is 'is' !alphanumeric end 
+      rule least 'least' !alphanumeric end
+      rule matches 'matches' !alphanumeric end
+      rule maybe 'maybe' !alphanumeric end
+      rule most 'most' !alphanumeric end
+      rule one 'one' !alphanumeric end
+      rule or 'or' !alphanumeric end 
+      rule restricted 'restricted' !alphanumeric end
+      rule returning 'returning' !alphanumeric end
+      rule some 'some' !alphanumeric end
+      rule static 'static' !alphanumeric end
+      rule symmetric 'symmetric' !alphanumeric end
+      rule to 'to' !alphanumeric end
+      rule transient 'transient' !alphanumeric end
+      rule transitive 'transitive' !alphanumeric end
+      rule true 'true' !alphanumeric end 
+      rule vocabulary 'vocabulary' !alphanumeric end 
+      rule where 'where' !alphanumeric end 
+
+    end
+  end
+end

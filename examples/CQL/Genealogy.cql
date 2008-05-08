@@ -35,9 +35,9 @@ Event occurred at at most one EventLocation;
 Event is certified by at most one Certificate;
 Event was confirmed by at most one Official;
 
-EventDate = entity identified by Year and Year and Month and Day:
-	EventDate occurred in or after at most one Year,
-	EventDate occurred in or before at most one Year,
+EventDate = entity identified by YearMin and YearMax and Month and Day:
+	EventDate occurred in or after at most one Year (as YearMin),
+	EventDate occurred in or before at most one Year (as YearMax),
 	EventDate occurred in at most one Month,
 	EventDate occurred on at most one Day;
 Event occurred on at most one EventDate;
@@ -78,8 +78,6 @@ Source = entity identified by SourceID:
 Source has exactly one SourceName,
 	SourceName is of at most one Source;
 Participation = Person played Role in Event according to Source,
-	each Person played some Role in some Event according to some Source,
-	some Person played some Role in each Event according to some Source,
 	Person was involved in Event according to Source in Role,
 	Source claims Person played Role in Event;
 
@@ -90,12 +88,12 @@ User provided Source,
 	Source was provided by exactly one User;
 Email is of User,
 	User has at most one Email;
-
-Friend = entity identified by other-User and User:
-	User is friend of other-User [symmetric];
+Friend = User is friend of other-User [symmetric];
 Friend is confirmed;
 
 /*
 Constraints:
-	InclusiveOrConstraint1: each combination(EventDateOccurredInOrAfterYear.EventDate, EventDateOccurredInOrBeforeYear.EventDate, EventDateOccurredInMonth.EventDate, EventDateOccurredOnDay.EventDate) must occur at least 1 time
+	REVISIT: Verbalise PresenceConstraint InclusiveOrConstraint1 min 1 mandatory over (EventDate, EventDate, EventDate, EventDate)
+	REVISIT: Verbalise PresenceConstraint SimpleMandatoryConstraint16 min 1 mandatory over (Person)
+	REVISIT: Verbalise PresenceConstraint SimpleMandatoryConstraint9 min 1 mandatory over (Event)
  */

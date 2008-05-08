@@ -1,4 +1,4 @@
-vocabulary CompanyDirectorName2;
+vocabulary CompanyDirector;
 
 /*
  * Value Types
@@ -20,17 +20,14 @@ Meeting = entity identified by Date and Company:
 Meeting is board meeting;
 
 Person = entity identified by family-Name and given-Name:
-	Person has exactly one family-Name,
+	Person has at most one family-Name,
 	family-Name is of Person,
 	Person has exactly one given-Name,
 	given-Name is of Person;
-Attendance = Person attended Meeting,
-	Meeting was attended by Person;
+Directorship = Person (as director) directs Company,
+	Company is directed by at least one director;
+Attendance = Person (as Attendee) attended Meeting,
+	Meeting was attended by Attendee;
 Person was born on at most one birth-Date;
-
-Directorship = entity identified by Company and Person:
-	Person directs Company,
-	Company is directed by at least one Person,
-	each Company is directed by some Person;
 Directorship began on exactly one appointment-Date;
 

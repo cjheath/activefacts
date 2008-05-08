@@ -1,67 +1,73 @@
 module ActiveFacts
   grammar CQL
     include LexicalRules
+    include Language        # One of the language modules provides this module
     include Expressions
     include Concepts
+    include DataTypes
+    include FactTypes
 
     rule cql_file
       s seq:definition*
       {
-	def definitions
-	  seq.elements.map{|e| e.value }
-	end
-	def inspect
-	  definitions.map{|d|
-	      d.inspect
-	    }*"\n"
-	end
-	def compile
-	  definitions.each{|d|
-	      p d
-	    }
-	end
+        def definitions
+          seq.elements.map{|e|
+              e.value rescue $stderr.puts "Can't call value() on #{e.inspect}"
+            }
+        end
+        def inspect
+          definitions.map{|d|
+              d.inspect
+            }*"\n"
+        end
+        def compile
+          definitions.each{|d|
+              p d
+            }
+        end
       }
     end
 
     # Each definition has a value method that returns an array like
     # either [name, [kind, definition]] or [name, kind]:
     rule definition
-      vocabulary
-      / import
+      vocabulary_definition
+      / import_definition
       / constraint
       / concept
     end
 
-    rule vocabulary
-      'vocabulary' S id s ';' s
+    rule vocabulary_definition
+      vocabulary S id s ';' s
       {
-	def value
-	  puts "vocabulary #{id.text_value}: not implemented"
-	  [ id.text_value, [ :vocabulary ] ]
-	end
+        def value
+          puts "vocabulary #{id.text_value}: not implemented"
+          [ id.text_value, [ :vocabulary ] ]
+        end
       }
     end
 
-    rule import
-      'import' S id alias_list ';' s
+    rule import_definition
+      import S id alias_list ';' s
       {
-	def value
-	  puts "import #{id.text_value}: not implemented"
-	  [ id.text_value, [ :import ] ]
-	end
+        def value
+          puts "import #{id.text_value}: not implemented"
+          [ id.text_value, [ :import ] ]
+        end
       }
     end
 
+    # REVISIT: Need a way to define equivalent readings for fact types here (and in the metamodel)
     rule alias_list
-      ( s ',' s 'alias' S aliased:id S 'as' S alias:id s )*
+      ( s ',' s alias S aliased:id S as S alias:id s )*
     end
 
     rule constraint
       'NOT IMPLEMENTED'
       {
-	def value
-	  [ nil, [ :constaint, "NOT IMPLEMENTED" ] ]
-	end
+        def value
+          [ nil, [ :constaint, "NOT IMPLEMENTED" ] ]
+        end
       }
     end
 

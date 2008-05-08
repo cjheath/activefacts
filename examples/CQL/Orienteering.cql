@@ -40,28 +40,19 @@ Club = entity identified by ClubCode:
 ClubName is name of at most one Club,
 	Club is called exactly one ClubName;
 
-Entry = entity identified by EntryID:
-	Entry has exactly one EntryID,
-	EntryID is of at most one Entry;
-Entry received at most one Score;
-Entry finished in at most one finish-Placing;
-
 Event = entity identified by EventID:
 	Event has exactly one EventID,
 	EventID is of at most one Event;
 Event is called at most one EventName,
 	EventName is name of at most one Event;
-start-Location is where Event starts,
-	Event starts at exactly one start-Location;
+Event starts at exactly one start-Location,
+	Location is where Event starts;
 Event is held on exactly one StartTime;
 EventScoringMethod = ScoringMethod is used for Course of Event;
 Event has at most one Number;
 Club runs Event,
 	Event is run by exactly one Club;
-
-EventControl = entity identified by ControlNumber and Event:
-	Event includes at least one ControlNumber,
-	each Event includes some ControlNumber;
+EventControl = Event includes at least one ControlNumber;
 EventControl has at most one PointValue;
 
 Map = entity identified by MapID:
@@ -71,8 +62,8 @@ Map is map for Event,
 	Event uses exactly one Map;
 Map has exactly one MapName,
 	MapName is of at most one Map;
-Club owns Map,
-	Map is owned by exactly one Club;
+Club (as Owner) owns Map,
+	Map is owned by exactly one Owner;
 Map has at most one Accessibility;
 
 Person = entity identified by PersonID:
@@ -86,27 +77,32 @@ Person is of at most one Gender;
 Person was born in at most one birth-Year;
 Person has at most one PostCode;
 Person is member of at most one Club;
+Entry = entity identified by EntryID:
+	Entry has exactly one EntryID,
+	EntryID is of at most one Entry;
+Entry received at most one Score;
+Entry finished in at most one finish-Placing;
 
 Punch = entity identified by PunchID:
 	Punch has exactly one PunchID,
 	PunchID is of at most one Punch;
 Visit = Punch was visited by Entry at Time;
-PunchPlacement = Punch is placed at EventControl,
-	some Punch is placed at each EventControl;
+PunchPlacement = Punch is placed at EventControl;
 
 Series = entity identified by SeriesID:
 	Series has exactly one SeriesID,
 	SeriesID is of at most one Series;
-Series has exactly one SeriesName,
-	SeriesName is of at most one Series;
+Series has exactly one SeriesName (as Name),
+	Name is of at most one Series;
 Event is in at most one Series;
 
 /*
 Constraints:
-	CompetitorHasDistinctName: each combination(PersonHasGivenName.GivenName, PersonHasFamilyName.FamilyName) may occur at most 1 time
-	EqualityConstraint EqualityConstraint1 between EventIsInSeries(Event), EventHasNumber(Event)
-	EventHasSeriesNumberOrName: each combination(EventIsCalledEventName.Event, EventIsInSeries.Event) must occur at least 1 time
-	ExternalUniquenessConstraint1: each combination(EventIsInSeries.Series, EventHasNumber.Number) may occur at most 1 time
-	OnlyOneScoringMethodForEachEventAndCourse: in EventScoringMethod, each combination (Course, Event) may occur at most 1 time
-	PersonMayEnterEventOnce: in Entry, each combination (Person, Event) may occur at most 1 time
+	REVISIT: Verbalise PresenceConstraint CompetitorHasDistinctName min 0 max 1 over (GivenName, FamilyName)
+	REVISIT: Verbalise SetEqualityConstraint EqualityConstraint1 REVISIT: Unhandled constraint type
+	REVISIT: Verbalise PresenceConstraint EventHasSeriesNumberOrName min 1 mandatory over (Event, Event)
+	REVISIT: Verbalise PresenceConstraint ExternalUniquenessConstraint1 min 0 max 1 over (Series, Number)
+	REVISIT: Verbalise PresenceConstraint OnlyOneScoringMethodForEachEventAndCourse min 0 max 1 over (Course, Event)
+	REVISIT: Verbalise PresenceConstraint PersonMayEnterEventOnce min 0 max 1 over (Person, Event)
+	REVISIT: Verbalise PresenceConstraint SimpleMandatoryConstraint28 min 1 mandatory over (EventControl)
  */

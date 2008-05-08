@@ -1,0 +1,150 @@
+module ActiveFacts
+  module CQL
+    grammar FactTypes
+      rule fact_type
+        s opt_name:(name:id ( s '=' s / defined_as ) )?
+        f0:fact_clause
+          ftail:( (',' / and ) s f1:fact_clause s )*
+          ctail:( (':' / where) s c:conditions s)?
+          returning_clause?
+        s ';' s
+        {
+          def value
+            [ opt_name.elements ? opt_name.name.text_value : nil,
+              defined_type ]
+          end
+          def defined_type
+            r = [
+              :fact_type,
+              [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
+            ]
+            r += ctail.c.condition_list unless ctail.empty?
+            r
+          end
+        }
+      end
+
+      rule returning_clause
+        returning return (',' return)*
+      end
+
+      rule return
+        by order 'REVISIT: return'
+      end
+
+      rule conditions
+        head:condition s tail:( (',' s / and S) next:condition s )*
+        {
+          def condition_list
+            [head.condition] + tail.elements.map{|i| i.next.condition}
+          end
+        }
+      end
+
+      rule condition
+        head:clause s tail:(or S alternate:clause s )*
+        {
+          def condition
+            if tail.elements.size == 0
+              head.clause
+            else
+              [:"||", head.clause] + tail.elements.map{|i| i.alternate.clause}
+            end
+          end
+        }
+      end
+
+      rule clause
+        (fact_clause / comparison)
+        {
+          def clause
+            self.body
+          end
+        }
+      end
+
+      rule fact_clause
+        q:qualifier? s reading s p:post_qualifiers? s
+        {
+          def body
+            [ :fact_clause,
+              (q.empty? ? [] : [ q.text_value ]) +
+                (p.empty? ? [] : p.list),
+              reading.value
+            ]
+          end
+        }
+      end
+
+      rule qualifier
+        ( maybe / definitely ) !alphanumeric
+      end
+
+      rule post_qualifiers
+        '[' s q0:post_qualifier tail:( s ',' s q1:post_qualifier )* s ']' s
+        {
+          def list
+            [q0.text_value] + tail.elements.map{|e| e.q1.text_value}
+          end
+        }
+      end
+
+      rule post_qualifier
+        (static / transient / intransitive / transitive / acyclic / symmetric ) !alphanumeric
+      end
+
+      rule reading
+        role+
+        {
+          def value
+            elements.map{|r| r.value}
+          end
+        }
+      end
+
+      # This is the rule that causes most back-tracking. I think you can see why.
+      # When we have an expression, we will come down here perhaps multiple times,
+      # but find no way out as soon as we hit the trailing non_role.
+      rule role
+        q:quantifier?
+        adj0:(!non_role_word a:id '-' s)?
+        player:(!non_role_word p:id !'-' s)+
+        adj1:( '-' a:(!non_role_word a:id s)? )?
+        func:function_call?
+        role_name:( '(' s as S r:id s ')' s )?
+        lr:( literal / restriction )?
+        !non_role
+        {
+          def value
+            r = {}
+            quantifier = !q.empty? && q.value
+            r[:quantifier] = quantifier if quantifier
+            r[:leading_adjective] = adj0.a.text_value unless adj0.empty?
+            r[:words] = player.elements.map{|w| w.p.text_value}
+            r[:trailing_adjective] = adj1.a.a.text_value unless adj1.empty?
+            r[:function] = func.value if !func.empty?
+            r[:role_name] = role_name.r.text_value unless role_name.empty?
+            r[:restriction] = lr.ranges if !lr.empty? && lr.respond_to?(:ranges)
+            r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
+            r
+          end
+        }
+      end
+
+      rule non_role
+        comparator /
+        '||' /
+        add_op /
+        mul_op
+      end
+
+      rule non_role_word
+        quantifier
+        / boolean
+        / restriction
+        / if
+      end
+
+    end
+  end
+end

@@ -80,7 +80,7 @@ module ActiveFacts
       end
 
       rule variable
-        id0:id o0:( !(s 'is' S 'defined' S as ) s id1:id o1:( s id2:id )? )?
+        id0:id o0:( !defined_as s id1:id o1:( s id2:id )? )?
         {
           def value
             # Variable names may consist of up to three words:
