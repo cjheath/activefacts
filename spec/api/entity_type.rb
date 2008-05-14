@@ -1,16 +1,20 @@
+#
+# ActiveFacts tests: Entity classes in the Runtime API
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#
 describe "Entity Type class definitions" do
   setup do
-    unless Object.const_defined?("M4")	# Is there a way to do once-only setup?
+    unless Object.const_defined?("M4")  # Is there a way to do once-only setup?
       module M4
-	class Name < String
-	  value_type
-	end
-	class LegalEntity
-	end
-	class Person < LegalEntity
-	  identified_by :name
-	  has_one :name, Name
-	end
+        class Name < String
+          value_type
+        end
+        class LegalEntity
+        end
+        class Person < LegalEntity
+          identified_by :name
+          has_one :name, Name
+        end
       end
     end
   end
@@ -76,7 +80,7 @@ describe "Entity Type class definitions" do
   it "should fail on a ValueClass" do
     lambda{
       class SomeClass < String
-	identified_by
+        identified_by
       end
     }.should raise_error
   end
@@ -87,14 +91,14 @@ describe "Entity Type class definitions" do
 
   it "should prevent a role name from matching a concept that exists unless that concept is the player" do
     lambda {
-	module M4
-	  class LegalEntity
-	  end
-	  class Bad
-	    identified_by :name
-	    has_one :name, LegalEntity
-	  end
-	end
+        module M4
+          class LegalEntity
+          end
+          class Bad
+            identified_by :name
+            has_one :name, LegalEntity
+          end
+        end
       }.should raise_error
   end
 end

@@ -1,6 +1,6 @@
 #
 # ActiveFacts CQL loader.
-# Copyright (c) Clifford Heath 2007.
+# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
 #
 require 'rubygems'
 require 'polyglot'
@@ -9,7 +9,6 @@ require 'activefacts/cql/parser'
 module ActiveFacts
   # Extend the generated parser:
   class CQLLoader
-
     # The load method required by Polyglot.
     # The meaning of load will probably be to parse the file, and
     # generate and eval Ruby source code for the implied modules.
@@ -17,6 +16,7 @@ module ActiveFacts
       debug "Loading #{file}" do
         parser = ActiveFacts::CQLParser.new
 
+        result = nil
         File.open(file) do |f|
           result = parser.parse_all(input = f.read, :definition) { |node|
               parser.definition(node)
@@ -24,9 +24,11 @@ module ActiveFacts
             }
           raise parser.failure_reason unless result
         end
+
+        # REVISIT: Nothing is done with results (the loaded parse tree) yet
       end
     end
   end
 
-  Polyglot.register('cql', CQLParser)
+  Polyglot.register('cql', CQLLoader)
 end

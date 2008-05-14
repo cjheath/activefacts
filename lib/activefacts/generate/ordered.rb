@@ -1,8 +1,7 @@
 #
 # Generator superclass for ActiveFacts vocabularies that performs sequencing to avoid forward references.
 #
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
-# Author: Clifford Heath.
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
   class Constellation; end

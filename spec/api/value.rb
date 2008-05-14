@@ -1,14 +1,18 @@
+#
+# ActiveFacts tests: Value instances in the Runtime API
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#
 describe "Value Type instances" do
   setup do
-    unless Object.const_defined?("M2")	# Is there a way to do once-only setup?
+    unless Object.const_defined?("M2")  # Is there a way to do once-only setup?
       module M2
-	class Attr < Int
-	  value_type
-	end
-	class StringValue < String
-	  value_type
-	  has_one :attr
-	end
+        class Attr < Int
+          value_type
+        end
+        class StringValue < String
+          value_type
+          has_one :attr
+        end
       end
     end
     @string_value = M2::StringValue.new("value")
@@ -29,7 +33,7 @@ describe "Value Type instances" do
   it "should respond to query" do
     @string_value.respond_to?(:query).should be_true
     lambda {
-	@string_value.query
+        @string_value.query
       }.should_not raise_error
   end
 
@@ -40,7 +44,7 @@ describe "Value Type instances" do
 
   it "should allow its roles to be assigned" do
     lambda {
-	@string_value.attr = 23
+        @string_value.attr = 23
       }.should_not raise_error
   end
 

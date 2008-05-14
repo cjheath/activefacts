@@ -1,3 +1,7 @@
+#
+# ActiveFacts tests: parse all CQL files
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#
 require 'rubygems'
 require 'stringio'
 require 'activefacts/vocabulary'

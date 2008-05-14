@@ -1,6 +1,6 @@
 #
 # ActiveFacts CQL parser and loader.
-# Copyright (c) Clifford Heath 2007.
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 require 'rubygems'
 require 'treetop'

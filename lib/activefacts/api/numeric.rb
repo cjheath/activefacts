@@ -1,5 +1,10 @@
+#
+# The ActiveFacts Runtime API Numeric hacks to handle immediate types.
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#
 # This hack is required because Integer & Float don't support new,
 # and can't be sensibly subclassed. Just delegate to an instance var.
+#
 require 'delegate'
 require 'date'
 

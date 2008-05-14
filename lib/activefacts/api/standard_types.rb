@@ -1,3 +1,9 @@
+#
+# The ActiveFacts Runtime API Standard types extensions.
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#
+# These extensions add ActiveFacts Concept and Instance behaviour into base Ruby classes.
+#
 require 'date'
 
 module ActiveFacts
@@ -5,9 +11,9 @@ module ActiveFacts
     # Adapter module to add value_type to all potential value classes
     module ValueClass
       def value_type *args, &block
-	include ActiveFacts::API::Value
-	# the included method adds the Value::ClassMethods
-	initialise_value_type(*args, &block)
+        include ActiveFacts::API::Value
+        # the included method adds the Value::ClassMethods
+        initialise_value_type(*args, &block)
       end
     end
   end

@@ -1,109 +1,116 @@
+#
+# The ActiveFacts Runtime API Vocabulary extension module.
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#
+# The methods of this module are extended into any module that contains
+# a Concept class (Entity type or Value type).
+#
 module ActiveFacts
   module API
     module Vocabulary
       def concept(name = nil)
-	@concept ||= {}
-	return @concept unless name
+        @concept ||= {}
+        return @concept unless name
 
-	return name if name.is_a? Class
+        return name if name.is_a? Class
 
-	# puts "Looking up concept #{name} in #{self.name}"
-	camel = name.to_s.camelcase(true)
-	if (c = @concept[camel])
-	  __bind(camel)
-	  return c
-	end
-	return (const_get(camel) rescue nil)
+        # puts "Looking up concept #{name} in #{self.name}"
+        camel = name.to_s.camelcase(true)
+        if (c = @concept[camel])
+          __bind(camel)
+          return c
+        end
+        return (const_get(camel) rescue nil)
       end
 
       def add_concept(klass)
-	name = klass.basename
-	__bind(name)
-	# puts "Adding concept #{name} to #{self.name}"
-	@concept ||= {}
-	@concept[klass.basename] = klass
+        name = klass.basename
+        __bind(name)
+        # puts "Adding concept #{name} to #{self.name}"
+        @concept ||= {}
+        @concept[klass.basename] = klass
       end
 
       def __delay(concept_name, args, &block)
-	# puts "Arranging for delayed binding on #{concept_name.inspect}"
-	@delayed ||= Hash.new { |h,k| h[k] = [] }
-	@delayed[concept_name] << [args, block]
+        # puts "Arranging for delayed binding on #{concept_name.inspect}"
+        @delayed ||= Hash.new { |h,k| h[k] = [] }
+        @delayed[concept_name] << [args, block]
       end
 
       # __bind raises an error if the named class doesn't exist yet.
       def __bind(concept_name)
-	concept = const_get(concept_name)
-	if (@delayed && @delayed.include?(concept_name))
-	  # $stderr.puts "#{concept_name} was delayed, binding now"
-	  d = @delayed[concept_name]
-	  d.each{|(a,b)|
-	      b.call(concept, *a)
-	    }
-	  @delayed.delete(concept_name)
-	end
+        concept = const_get(concept_name)
+        if (@delayed && @delayed.include?(concept_name))
+          # $stderr.puts "#{concept_name} was delayed, binding now"
+          d = @delayed[concept_name]
+          d.each{|(a,b)|
+              b.call(concept, *a)
+            }
+          @delayed.delete(concept_name)
+        end
       end
 
       def verbalise
-	"Vocabulary #{name}:\n\t" +
-	  @concept.keys.sort.map{|concept|
-	      c = @concept[concept]
-	      __bind(c.basename)
-	      c.verbalise + "\n\t\t// Roles played: " + c.roles.verbalise
-	    }*"\n\t"
+        "Vocabulary #{name}:\n\t" +
+          @concept.keys.sort.map{|concept|
+              c = @concept[concept]
+              __bind(c.basename)
+              c.verbalise + "\n\t\t// Roles played: " + c.roles.verbalise
+            }*"\n\t"
       end
 
       # Create or find an instance of klass in constellation using value to identify it
       def adopt(klass, constellation, value)
-	# puts "Adopting #{value.respond_to?(:verbalise) ? value.verbalise : value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
-	path = "unknown"
-	# Create a value instance we can hack if the value isn't already in this constellation
-	if (c = constellation)
-	  if klass === value		# Right class?
-	    vc = value.respond_to?(:constellation) && value.constellation
-	    if (c == vc)		# Right constellation?
-	      # Already right class, in the right constellation
-	      path = "right constellation, right class, just use it"
-	    else
-	      # We need a new object from our constellation, so copy the value.
-	      if klass.respond_to?(:identifying_roles)
-		# Make a new entity having only the identifying roles set.
-		# Someone will complain that this is wrong, and all functional role values should also
-		# be cloned, and I'm listening... but not there yet. Why just those?
-		cloned = c.send(
-		    :"#{klass.basename}",
-		    *klass.identifying_roles.map{|role| value.send(role) }
-		  )
-		path = "wrong constellation, right class, cloned entity"
-	      else
-		# Just copy a value:
-		cloned = c.send(:"#{klass.basename}", *value)
-		path = "wrong constellation, right class, copied value"
-	      end
-	      value.constellation = c
-	    end
-	  else
-	    # Wrong class, assume it's a valid constructor arg. Get our constellation to find/make it:
-	    value = [ value ] unless Array === value
-	    value = c.send(:"#{klass.basename}", *value)
-	    path = "right constellation but wrong class, constructed from args"
-	  end
-	else
-	  # This object's not in a constellation
-	  if klass === value		# Right class?
-	    vc = value.respond_to?(:constellation) && value.constellation
-	    if vc
-	      raise "REVISIT: Assigning to #{self.class.basename}.#{role_name} with constellation=#{c.inspect}: Can't dis-associate object from its constellation #{vc.object_id} yet"
-	    end
-	    # Right class, no constellation, just use it
-	    path = "no constellation, correct class"
-	  else
-	    # Wrong class, construct one
-	    value = klass.send(:new, *value)
-	    path = "no constellation, constructed from wrong class"
-	  end
-	end
-	# print "#{path}"; puts ", adopted as #{value.respond_to?(:verbalise) ? value.verbalise : value.inspect}"
-	value
+        # puts "Adopting #{value.respond_to?(:verbalise) ? value.verbalise : value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
+        path = "unknown"
+        # Create a value instance we can hack if the value isn't already in this constellation
+        if (c = constellation)
+          if klass === value            # Right class?
+            vc = value.respond_to?(:constellation) && value.constellation
+            if (c == vc)                # Right constellation?
+              # Already right class, in the right constellation
+              path = "right constellation, right class, just use it"
+            else
+              # We need a new object from our constellation, so copy the value.
+              if klass.respond_to?(:identifying_roles)
+                # Make a new entity having only the identifying roles set.
+                # Someone will complain that this is wrong, and all functional role values should also
+                # be cloned, and I'm listening... but not there yet. Why just those?
+                cloned = c.send(
+                    :"#{klass.basename}",
+                    *klass.identifying_roles.map{|role| value.send(role) }
+                  )
+                path = "wrong constellation, right class, cloned entity"
+              else
+                # Just copy a value:
+                cloned = c.send(:"#{klass.basename}", *value)
+                path = "wrong constellation, right class, copied value"
+              end
+              value.constellation = c
+            end
+          else
+            # Wrong class, assume it's a valid constructor arg. Get our constellation to find/make it:
+            value = [ value ] unless Array === value
+            value = c.send(:"#{klass.basename}", *value)
+            path = "right constellation but wrong class, constructed from args"
+          end
+        else
+          # This object's not in a constellation
+          if klass === value            # Right class?
+            vc = value.respond_to?(:constellation) && value.constellation
+            if vc
+              raise "REVISIT: Assigning to #{self.class.basename}.#{role_name} with constellation=#{c.inspect}: Can't dis-associate object from its constellation #{vc.object_id} yet"
+            end
+            # Right class, no constellation, just use it
+            path = "no constellation, correct class"
+          else
+            # Wrong class, construct one
+            value = klass.send(:new, *value)
+            path = "no constellation, constructed from wrong class"
+          end
+        end
+        # print "#{path}"; puts ", adopted as #{value.respond_to?(:verbalise) ? value.verbalise : value.inspect}"
+        value
       end
 
     end

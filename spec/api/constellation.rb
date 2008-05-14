@@ -1,22 +1,26 @@
+#
+# ActiveFacts tests: Constellation instances in the Runtime API
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#
 describe "A Constellation instance" do
   setup do
-    unless Object.const_defined?("M3")	# Is there a way to do once-only setup?
+    unless Object.const_defined?("M3")  # Is there a way to do once-only setup?
       module M3
-	class Name < String
-	  value_type
-	  has_one :attr, Name
-	end
+        class Name < String
+          value_type
+          has_one :attr, Name
+        end
 
-	class Named
-	  identified_by :name
-	  has_one :name
-	end
+        class Named
+          identified_by :name
+          has_one :name
+        end
 
-	class Person
-	  identified_by :given_name, :family_name
-	  has_one :given_name, :Name
-	  has_one :family_name, :Name
-	end
+        class Person
+          identified_by :given_name, :family_name
+          has_one :given_name, :Name
+          has_one :family_name, :Name
+        end
       end
     end
     @constellation = ActiveFacts::Constellation.new(M3, 97)   # REVISIT: Use a real Query, not 97
@@ -30,7 +34,7 @@ describe "A Constellation instance" do
   it "should support methods to construct instances of any concept" do
     c = nil
     lambda {
-	c = @constellation.Name("foo")
+        c = @constellation.Name("foo")
       }.should_not raise_error
     c.class.should == M3::Name
     c.constellation.should == @constellation

@@ -2,7 +2,6 @@
 # Read an ORM2 Vocabulary from a NORMA, CQL or other file
 #
 # Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
-# Author: Clifford Heath.
 #
 $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 

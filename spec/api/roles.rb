@@ -1,27 +1,31 @@
+#
+# ActiveFacts tests: Roles of concept classes in the Runtime API
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#
 describe "Roles" do
   setup do
-    unless Object.const_defined?("M5")	# Is there a way to do once-only setup?
+    unless Object.const_defined?("M5")  # Is there a way to do once-only setup?
       module M5
-	class Name < String
-	  value_type
-	end
-	class LegalEntity
-	  identified_by :name
-	  has_one :name
-	end
-	class Contract
-	  identified_by :first, :second
-	  has_one :first, LegalEntity
-	  has_one :second, LegalEntity
-	end
-	class Person < LegalEntity
-	  # identified_by	  # No identifier needed, inherit from superclass
-	  # New identifier:
-	  identified_by :family, :given
-	  has_one :family, Name
-	  has_one :given, Name
-	  has_one :related_to, LegalEntity
-	end
+        class Name < String
+          value_type
+        end
+        class LegalEntity
+          identified_by :name
+          has_one :name
+        end
+        class Contract
+          identified_by :first, :second
+          has_one :first, LegalEntity
+          has_one :second, LegalEntity
+        end
+        class Person < LegalEntity
+          # identified_by         # No identifier needed, inherit from superclass
+          # New identifier:
+          identified_by :family, :given
+          has_one :family, Name
+          has_one :given, Name
+          has_one :related_to, LegalEntity
+        end
       end
       # print "concept: "; p M5.concept
     end
@@ -30,8 +34,8 @@ describe "Roles" do
   it "should associate a role name with a matching existing concept" do
     module M5
       class Existing1 < String
-	value_type
-	has_one :name
+        value_type
+        has_one :name
       end
     end
     role = M5::Existing1.roles(:name)
@@ -47,8 +51,8 @@ describe "Roles" do
   it "should associate a role name with a matching concept after it's created" do
     module M5
       class Existing2 < String
-	value_type
-	has_one :given_name
+        value_type
+        has_one :given_name
       end
     end
     # print "M5::Existing2.roles = "; p M5::Existing2.roles
@@ -57,7 +61,7 @@ describe "Roles" do
     Symbol.should === r.player
     module M5
       class GivenName < String
-	value_type
+        value_type
       end
     end
     # puts "Should resolve now:"
@@ -69,8 +73,8 @@ describe "Roles" do
   it "should handle subtyping a value type" do
     module M5
       class FamilyName < Name
-	value_type
-	one_to_one :patriarch, Person
+        value_type
+        one_to_one :patriarch, Person
       end
     end
     r = M5::FamilyName.roles(:patriarch)

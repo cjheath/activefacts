@@ -1,8 +1,7 @@
 #
-# Process a NORMA file into an ActiveFacts vocabulary
+# Read a NORMA file into an ActiveFacts vocabulary
 #
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
-# Author: Clifford Heath.
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 # This code uses variables prefixed with x_ when they refer to Rexml nodes.
 # Every node having an id="..." is indexed in @x_by_id[] hash before processing.

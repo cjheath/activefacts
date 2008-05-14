@@ -1,3 +1,8 @@
+#
+# Interactive CQL command-line.
+# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
+#
+
 require 'activefacts'
 require 'activefacts/cql/parser'
 require 'readline'

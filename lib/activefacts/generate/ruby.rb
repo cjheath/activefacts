@@ -1,8 +1,6 @@
 #
-# Dump to API module for ActiveFacts vocabularies.
-#
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
-# Author: Clifford Heath.
+# Generate Ruby for the ActiveFacts API from an ActiveFacts vocabulary.
+# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/generate/ordered'
 
