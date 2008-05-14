@@ -16,15 +16,23 @@ require 'activefacts/cql/CQLParser'
 
 $debug_indent = 0
 def debug(arg, &block)
-  puts "  "*$debug_indent + arg
+  puts "  "*$debug_indent + arg if ENV["DEBUG"]
   $debug_indent += 1
-  yield if block
+  r = yield if block
   $debug_indent -= 1
+  r
 end
 
 module ActiveFacts
   # Extend the generated parser:
   class CQLParser
+
+    def initialize
+      @types = {}
+      @role_names = {}    # Indexed by role name and/or adjectival form
+      @fact_types_by_sorted_players = Hash.new {|h, k| h[k] = []}
+      @linking_words = {}         # For checking forward-references
+    end
 
     # Repeatedly parse rule_name until all input is consumed,
     # returning an array of syntax trees for each definition.
@@ -43,7 +51,40 @@ module ActiveFacts
       results
     end
 
-=begin
+    # REVISIT: These can't be used until we've done fact type lookup to detect unmarked adjectives.
+    def linking_word(name)
+      @linking_words[name] = true
+    end
+
+    def linking_word?(name)
+      @linking_words[name]
+    end
+
+    def type_by_name(name)
+      @types[name] # REVISIT: Do we need this: || @role_names[w]
+    end
+
+    def define_fact_type(name, defined_readings, clauses)
+      # REVISIT: Create a name from the whole reading if necessary.
+      fact_type = [:fact_type, name, defined_readings, clauses]
+
+      @types[name] = fact_type if name
+
+      # Index the new fact type by its sorted players list
+      players = defined_readings[0][2].map{|w|
+          Hash === w ? w[:player] : nil
+        }.compact
+      sorted_players = players.sort
+
+      @fact_types_by_sorted_players[sorted_players] << fact_type
+      fact_type
+    end
+
+    def fact_types_by_players(players)
+      debug "Sorted list of fact type players: " + players.sort.inspect
+      @fact_types_by_sorted_players[players.sort]
+    end
+
     def definition(node)
       name, definition = *node.value
       kind, *value = *definition
@@ -56,11 +97,13 @@ module ActiveFacts
       debug "Processing #{[kind, name].compact*" "}" do
         reset_defined_roles
         case kind
+        when :vocabulary
+          [kind, name]
         when :data_type
           data_type(name, value)
         when :entity_type
-            supertypes = value.shift
-            entity_type(name, supertypes, value)
+          supertypes = value.shift
+          entity_type(name, supertypes, value)
         when :fact_type
           fact_type(name, value)
         end
@@ -70,7 +113,7 @@ module ActiveFacts
     def data_type(name, value)
       debug value.inspect do
         # REVISIT: Massage/check data type here?
-        define_data_type(name, value)
+        @types[name] = [:data_type, name, *value]
       end
     end
 
@@ -85,7 +128,7 @@ module ActiveFacts
         clauses.each{|c| clause(c) }
       end
 
-      define_entity_type(name, identification, clauses)
+      @types[name] = [:entity_type, name, supertypes, identification, clauses]
     end
 
     def fact_type(name, value)
@@ -291,7 +334,6 @@ return
       # REVISIT: Incomplete
 
     end
-=end
 
   end
 

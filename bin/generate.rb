@@ -40,4 +40,4 @@ rescue => e
 end
 
 # Generate the output:
-output_klass.new(vocabulary).generate
+output_klass.new(vocabulary).generate if vocabulary

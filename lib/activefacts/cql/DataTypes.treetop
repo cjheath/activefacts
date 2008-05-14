@@ -11,11 +11,11 @@ module ActiveFacts
               :data_type,
               base.text_value,
               [ # REVISIT: Maybe it'd be better just to have a list of parameters...
-                !params.empty? && params.length.value,
-                !params.empty? && !params.param2.empty? && params.param2.scale.value,
+                !params.empty? ? params.length.value : nil,
+                (!params.empty? && !params.param2.empty?) ? params.param2.scale.value : nil,
               ],
-              !u0.empty? && u0.u1.text_value,
-              !r.empty? && r.ranges,
+              !u0.empty? ? u0.u1.text_value : nil,
+              !r.empty? ? r.ranges : [],
             ]
           end
 

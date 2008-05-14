@@ -41,7 +41,6 @@ module ActiveFacts
       vocabulary S id s ';' s
       {
         def value
-          puts "vocabulary #{id.text_value}: not implemented"
           [ id.text_value, [ :vocabulary ] ]
         end
       }

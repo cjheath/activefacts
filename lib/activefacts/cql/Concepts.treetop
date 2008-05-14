@@ -22,7 +22,7 @@ module ActiveFacts
             [ name.text_value,
               [
                 :entity_type,
-                sup.respond_to?(:supertype_list) ? sup.supertype_list.value : nil,
+                sup.respond_to?(:supertype_list) ? sup.supertype_list.value : [],
                 identification.text_value.empty? ? nil : identification.value,
                 entity_conditions.conditions
               ]

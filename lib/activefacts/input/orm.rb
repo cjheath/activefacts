@@ -141,17 +141,17 @@ module ActiveFacts
       end
 
       def value_range(x_range)
-      min = x_range.attributes['MinValue']
-      max = x_range.attributes['MaxValue']
-      q = "'"
-      min = min =~ /[^0-9\.]/ ? q+min+q : min.to_i
-      max = max =~ /[^0-9\.]/ ? q+max+q : max.to_i
-      # ValueRange takes a minimum and/or a maximum Bound
-      # Bound takes a value and inclusive (boolean)
-      @constellation.ValueRange(
-        min ? [min.to_s, true] : nil,
-        max ? [max.to_s, true] : nil
-        )
+        min = x_range.attributes['MinValue']
+        max = x_range.attributes['MaxValue']
+        q = "'"
+        min = min =~ /[^0-9\.]/ ? q+min+q : min.to_i
+        max = max =~ /[^0-9\.]/ ? q+max+q : max.to_i
+        # ValueRange takes a minimum and/or a maximum Bound
+        # Bound takes a value and inclusive (boolean)
+        @constellation.ValueRange(
+          min ? [min.to_s, true] : nil,
+          max ? [max.to_s, true] : nil
+          )
       end
 
       def read_fact_types

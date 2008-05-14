@@ -14,12 +14,11 @@ module ActiveFacts
               defined_type ]
           end
           def defined_type
-            r = [
+            [
               :fact_type,
-              [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
+              [ f0.body, *ftail.elements.map{|e| e.f1.body } ],
+              !ctail.empty? ? ctail.c.condition_list : []
             ]
-            r += ctail.c.condition_list unless ctail.empty?
-            r
           end
         }
       end

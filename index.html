@@ -357,8 +357,8 @@ ActiveFacts
       load a NORMA model using the command:
       </p>
       <pre>
-      ruby -I lib bin/read_norma.rb -C MyModel.orm</pre>
-      read_norma reads a NORMA file and emits CQL.
+      ruby -I lib bin/generate.rb --cql MyModel.orm</pre>
+      read_norma reads a NORMA file and emits CQL (use --ruby to emit Ruby code)
 
       </p><p>
       With the Polyglot gem and the edge version of Treetop (downloaded using
@@ -366,6 +366,7 @@ ActiveFacts
       any useful form.
 
       </p><p>
+      <bold> THIS NEXT PROGRAM DOES NOT WORK AT PRESENT</bold>
       If you also have ActiveRecord, DRYSql (patched with the
       patches provided), and CPK (composite primary keys),
       you can reverse engineer your own schema:
