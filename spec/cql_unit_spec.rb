@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'treetop'
-require 'activefacts/cql'
+require 'activefacts/cql/parser'
 
 describe "Valid Numbers, Strings and Ranges" do
   ValidNumbersEtc = [

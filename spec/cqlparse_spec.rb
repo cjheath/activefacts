@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'stringio'
 require 'activefacts/vocabulary'
-require 'activefacts/cql'
+require 'activefacts/cql/parser'
 require 'activefacts/generate/cql'
 
 describe "CQL Parser" do

@@ -1,6 +1,5 @@
-require 'treetop'
 require 'activefacts'
-require 'activefacts/cql'
+require 'activefacts/cql/parser'
 require 'readline'
 
 parser = ActiveFacts::CQLParser.new
