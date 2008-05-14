@@ -23,66 +23,12 @@ def debug(arg, &block)
 end
 
 module ActiveFacts
-
-  # This module defines the interface to the parser output handler.
-  # To do different things with the output, redefine these methods.
-  module CQLHandler
-    def initialize_outputs
-      @types = {}
-      @role_names = {}    # Indexed by role name and/or adjectival form
-      @fact_types_by_sorted_players = Hash.new {|h, k| h[k] = []}
-      @linking_words = {}         # For checking forward-references
-    end
-
-    # REVISIT: These can't be used until we've done fact type lookup
-    # to detect unmarked adjectives.
-    def linking_word(name)
-      @linking_words[name] = true
-    end
-
-    def linking_word?(name)
-      @linking_words[name]
-    end
-
-    def type_by_name(name)
-      @types[name] # REVISIT: Do we need this: || @role_names[w]
-    end
-
-    def define_data_type(name, value)
-      @types[name] = [:data_type, value]
-    end
-
-    def define_entity_type(name, identification, clauses)
-      @types[name] = [:entity_type, identification, clauses]
-    end
-
-    def define_fact_type(name, defined_readings, clauses)
-      fact_type = [:fact_type, defined_readings, clauses]
-
-      # REVISIT: Create a name from the whole reading if necessary.
-      @types[name] = fact_type if name
-
-      # Index the new fact type by its sorted players list
-      players = defined_readings[0][2].map{|w|
-          Hash === w ? w[:player] : nil
-        }.compact
-      sorted_players = players.sort
-
-      @fact_types_by_sorted_players[sorted_players] << fact_type
-    end
-
-    def fact_types_by_players(players)
-      debug "Sorted list of fact type players: " + players.sort.inspect
-      @fact_types_by_sorted_players[players.sort]
-    end
-
-  end
-
   # Extend the generated parser:
   class CQLParser
-    include CQLHandler
 
-    # The load method required by Polyglot:
+    # The load method required by Polyglot.
+    # The meaning of load will probably be to parse the file, and
+    # generate and eval Ruby source code for the implied modules.
     def self.load(file)
       debug "Loading #{file}" do
         parser = ActiveFacts::CQLParser.new
@@ -97,11 +43,8 @@ module ActiveFacts
       end
     end
 
-    def initialize
-      initialize_outputs
-    end
-
-    # Repeatedly parse rule_name until all input is consumed:
+    # Repeatedly parse rule_name until all input is consumed,
+    # returning an array of syntax trees for each definition.
     def parse_all(input, rule_name = nil, &block)
       self.root = rule_name if rule_name
 
@@ -117,6 +60,7 @@ module ActiveFacts
       results
     end
 
+=begin
     def definition(node)
       name, definition = *node.value
       kind, *value = *definition
@@ -364,7 +308,9 @@ return
       # REVISIT: Incomplete
 
     end
+=end
+
   end
-  
+
   Polyglot.register('cql', CQLParser)
 end

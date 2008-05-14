@@ -23,7 +23,7 @@ module ActiveFacts
       puts *a
     end
 
-    def dump(out = $>)
+    def generate(out = $>)
       @vocabulary = @vocabulary.Vocabulary[0] if ActiveFacts::Constellation === @vocabulary
       @out = out
       vocabulary_start(@vocabulary)

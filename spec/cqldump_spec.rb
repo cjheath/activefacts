@@ -12,12 +12,12 @@ describe "CQL Dumper" do
     @vocabulary = @constellation.Vocabulary("TestVocab", nil)
     @string_type = @constellation.ValueType("String", @vocabulary)
     @integer_type = @constellation.ValueType("Integer", @vocabulary)
-    @dumper = ActiveFacts::CQLDumper.new(@constellation)
+    @dumper = ActiveFacts::Generate::CQL.new(@constellation)
   end
 
   def cql
     output = StringIO.new
-    @dumper.dump(output)
+    @dumper.generate(output)
     output.rewind
     output.read
   end

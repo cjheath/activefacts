@@ -1,15 +1,15 @@
 require 'rubygems'
 require 'stringio'
 require 'activefacts/vocabulary'
-require 'activefacts/norma'
+require 'activefacts/input/orm'
 require 'activefacts/generate/cql'
 
 describe "Norma Loader" do
   # Generate and return the CQL for the given vocabulary
   def cql(vocabulary)
     output = StringIO.new
-    @dumper = ActiveFacts::CQLDumper.new(vocabulary.constellation)
-    @dumper.dump(output)
+    @dumper = ActiveFacts::Generate::CQL.new(vocabulary.constellation)
+    @dumper.generate(output)
     output.rewind
     output.readlines
   end
@@ -21,7 +21,7 @@ describe "Norma Loader" do
     next unless File.exists? expected_file
 
     it "should load and dump valid CQL for #{norma}" do
-      vocabulary = ActiveFacts::Norma.read(norma)
+      vocabulary = ActiveFacts::Input::ORM.readfile(norma)
 
       cql(vocabulary).sort.should == File.open(expected_file) {|f| f.readlines}.sort
     end
