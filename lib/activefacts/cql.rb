@@ -5,6 +5,7 @@
 require 'rubygems'
 require 'polyglot'
 require 'activefacts/cql/parser'
+require 'activefacts/generate/ruby'
 
 module ActiveFacts
   # Extend the generated parser:
@@ -26,6 +27,8 @@ module ActiveFacts
         end
 
         # REVISIT: Nothing is done with results (the loaded parse tree) yet
+        # The parser will produce a vocabulary, which will be generated into
+        # Ruby code and eval'ed.
       end
     end
   end

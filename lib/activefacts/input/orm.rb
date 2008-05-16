@@ -374,7 +374,7 @@ module ActiveFacts
       # puts "Getting RoleSequence [#{role_array.map{|r| "#{r.concept.name} (role #{r.object_id})" }*", "}]"
 
       # Look for an existing RoleSequence
-      role_sequence = @constellation.RoleSequence.detect{|c|
+      role_sequence = @constellation.RoleSequence.values.detect{|c|
         #puts "Checking RoleSequence [#{c.all_role_ref.map{|rr| rr.role.concept.name}*", "}]"
         role_array == c.all_role_ref.map{|rr| rr.role }
         }

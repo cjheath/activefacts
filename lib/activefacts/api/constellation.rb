@@ -39,7 +39,7 @@ module ActiveFacts
     def method_missing(m, *args)
       if klass = @vocabulary.const_get(m)
         if args.size == 0
-          @instances[klass].values
+          @instances[klass]
         else
           # REVISIT: create the constructor method here instead?
 

@@ -66,6 +66,8 @@ module ActiveFacts
         vt.length = length if length
         vt.scale = scale if scale
 
+        # REVISIT: Find and apply the units
+
         if ranges.size != 0
           vt.value_restriction = @constellation.ValueRestriction(:new)
           ranges.each do |range|
@@ -91,6 +93,7 @@ module ActiveFacts
         end
 
         # REVISIT: The identification roles will be defined in the clauses.
+        # Some identifying roles may be played by concepts as yet undefined - arrange for late binding
 
         # REVISIT: Process the entity type clauses (fact type readings)
       end
@@ -102,7 +105,9 @@ module ActiveFacts
         ft.entity_type = @constellation.EntityType(name, @vocabulary) if name
 
         readings.each do |reading|
-          junk, qualifiers, phrases = *reading
+          kind, qualifiers, phrases = *reading
+          player_names = phrases.map{|w| Hash === w ? w[:player] : nil }.compact.sort
+          #p @constellation.EntityType; exit
           print "REVISIT Fact readings: "; p [ qualifiers, phrases ]
         end
 

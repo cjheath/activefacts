@@ -32,8 +32,8 @@ describe "CQL Parser" do
       result.should_not be_nil
 
       # REVISIT: result should be able to derive a vocabulary that we can dump
-      puts "=============================== #{cql_in} ==============================="
-      p result.definitions
+      #puts "=============================== #{cql_in} ==============================="
+      #p result.definitions
 
       # cql(vocabulary).sort.should == File.open(expected_file) {|f| f.readlines}.sort
     end

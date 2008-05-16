@@ -147,14 +147,16 @@ module ActiveFacts
 
       # REVISIT: Check that all defined readings have the same set of players
       debug "Defined readings: "+defined_readings.inspect
-      players = defined_readings[0][2].map{|w| Hash === w ? w[:player] : nil }.compact.sort
+      player_names = defined_readings[0][2].map{|w| Hash === w ? w[:player] : nil }.compact.sort
       1.upto(defined_readings.size-1){|i|
-          these_players = defined_readings[i][2].map{|w| Hash === w ? w[:player] : nil }.compact.sort
-          if these_players != players
+          reading = defined_readings[i]
+          kind, qualifiers, phrases = reading[2]
+          these_player_names = phrases.map{|w| Hash === w ? w[:player] : nil }.compact.sort
+          if these_player_names != player_names
             # REVISIT: This will be an exception.
             debug "All readings for a new fact type definition must have the same players" do
-              debug "Role players for first reading are: "+players.inspect
-              debug "Role players for this reading: "+these_players.inspect
+              debug "Role players for first reading are: "+player_names.inspect
+              debug "Role players for this reading: "+these_player_names.inspect
             end
           end
         }
