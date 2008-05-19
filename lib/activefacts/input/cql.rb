@@ -54,15 +54,19 @@ module ActiveFacts
         @vocabulary
         end
 
-      def value_type(name, base_type, parameters, unit, ranges)
+      def value_type(name, base_type_name, parameters, unit, ranges)
         length, scale = *parameters
 
         # Create the base type:
-        base = base_type == name ? nil : @constellation.ValueType(base_type, @vocabulary)
+        unless base_type = @constellation.ValueType[[@constellation.Name(base_type_name), @vocabulary]]
+          puts "REVISIT: Creating base ValueType #{base_type_name} in #{@vocabulary.inspect}"
+          base_type = @constellation.ValueType(base_type_name, @vocabulary)
+          return if base_type_name == name
+        end
 
         # Create and initialise the ValueType:
         vt = @constellation.ValueType(name, @vocabulary)
-        vt.supertype = base
+        vt.supertype = base_type
         vt.length = length if length
         vt.scale = scale if scale
 
@@ -108,6 +112,16 @@ module ActiveFacts
           kind, qualifiers, phrases = *reading
           player_names = phrases.map{|w| Hash === w ? w[:player] : nil }.compact.sort
           #p @constellation.EntityType; exit
+          puts "Fact type player_names are: "+ player_names.inspect
+          players = player_names.map{|name|
+              name_value = @constellation.Name(name)
+              key = [name_value, @vocabulary]
+              #print "key for feature #{name} is: "; p key
+              # REVISIT: Constellation should index in superclasses so we can use Feature[key]
+              player = @constellation.EntityType[key] || @constellation.ValueType[key]
+              # REVISIT: player might not be found here if it's a rolename defined in another reading of this definition
+            }
+          puts "Fact type players are: "+players.map{|p| p ? p.name : "not found" }*", "
           print "REVISIT Fact readings: "; p [ qualifiers, phrases ]
         end
 

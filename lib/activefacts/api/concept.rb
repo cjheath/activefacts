@@ -6,26 +6,6 @@ module ActiveFacts
   module API
     module Vocabulary; end
 
-    # REVISIT: Perhaps I should use an enumerator here instead,
-    # and just find a way to handle replace and delete?
-    #
-    # A ValueArray is an array with all mutating methods hidden.
-    # We use these for the "many" side of a 1:many relationship.
-    # Only "replace" and "delete" are actually used (so far!).
-    # Perhaps sort! is innocuous and can remain?
-    class ValueArray < Array
-      [ :"<<", :"[]=", :clear, :collect!, :compact!, :concat, :delete,
-        :delete_at, :delete_if, :fill, :flatten!, :insert, :map!, :pop,
-        :push, :reject!, :replace, :reverse!, :shift, :shuffle!, :slice!,
-        :sort!, :uniq!, :unshift
-      ].each{|s|
-          begin
-            alias_method("__#{s}", s)
-          rescue NameError  # shuffle! is in 1.9 only
-          end
-        }
-    end
-
     module Concept
       def vocabulary
         modspace        # The module that contains this concept.
@@ -34,10 +14,7 @@ module ActiveFacts
       # Each Concept maintains a list of the Roles it plays:
       def roles(name = nil)
         unless instance_variable_defined? "@roles"
-          @roles = {}     # Initialize and extend without warnings.
-          def @roles.verbalise
-            keys.sort_by(&:to_s).inspect
-          end
+          @roles = RoleCollection.new     # Initialize and extend without warnings.
         end
         case name
         when nil
@@ -58,6 +35,7 @@ module ActiveFacts
         end
       end
 
+      # Define a unary fact type attached to this concept
       def maybe(role_name)
         roles[role_name] = Role.new(TrueClass, true, role_name)
         # puts "Defining #{basename}.#{role_name} as unary"
@@ -75,63 +53,62 @@ module ActiveFacts
         end
       end
 
+      # Define a binary fact type joning this concept to another,
+      # with a uniqueness constraint only on this concept's role.
       def has_one(*args)
         role_name, related, mandatory, related_role_name, reading =
           binary_params(false, args)
         __binary(false, role_name, related, mandatory, related_role_name, reading)
       end
 
+      # Define a binary fact type joning this concept to another,
+      # with uniqueness constraints in both directions
       def one_to_one(*args)
         role_name, related, mandatory, related_role_name, reading =
           binary_params(true, args)
         __binary(true, role_name, related, mandatory, related_role_name, reading)
       end
 
-      def __binary(one_to_one, role_name, related, mandatory, related_role_name, reading)
-        # puts "#{self}.#{role_name} is to #{related.inspect}, #{mandatory ? :mandatory : :optional}, related role is #{related_role_name}, reading=#{reading.inspect}"
+      # Define accessor methods for this role name, which should be assigned an object of the indicated class
+      # public because it gets used to create the roles in the reverse direction as well
+      def __single(role_name, klass, related_role_name, mandatory = false, one_to_one = false)
+        raise "Role name #{role_name.inspect} must be a symbol" unless Symbol === role_name
+        roles[role_name] = role = Role.new(klass, true, role_name, mandatory)
 
-        __single(role_name, related, related_role_name, mandatory, one_to_one)
+        define_single_role_accessor(role, one_to_one, related_role_name)
+#        if (one_to_one)
+#          define_one_to_one_accessor(role, related_role_name)
+#        else
+#          define_one_to_many_accessor(role, related_role_name)
+#        end
+      end
 
-        when_bound(related, self, role_name, related_role_name) do |target, definer, role_name, related_role_name|
-          if (one_to_one)
-            target.__single(related_role_name, definer, role_name, false, one_to_one)
-          else
-            target.__multiple(related_role_name, definer, role_name)
+      def define_single_role_getter(role)
+        class_eval do
+          role_var = "@#{role.name}"
+
+          # Define the getter
+          define_method role.name do
+            instance_variable_defined?(role_var) ? instance_variable_get(role_var) : nil
           end
         end
       end
 
-      # An objectified fact type supports readings, which may contain:
-      # "/", separating multiple alternate readings
-      # ":concept", indicating that the Concept plays this role
-      def reading(*args)
-        # REVISIT: No support for readings yet.
-        # puts "#{self.inspect}#reading: #{args.inspect}"
-      end
-
-      # Define accessor methods for this role name, which should be assigned an object of the indicated class
-      def __single(role_name, klass, related_role_name, mandatory = false, one_to_one = false)
-        raise "not sym" unless Symbol === role_name
-        roles[role_name] = Role.new(klass, true, role_name, mandatory)
-
-        # puts "Defining #{basename}.#{role_name} to #{klass.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
+      def define_single_role_accessor(role, one_to_one, related_role_name)
+        # puts "Defining #{basename}.#{role.name} to #{role.player.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
+        define_single_role_getter(role)
         class_eval do
-          role_var = "@#{role_name}"
-
-          # Define the getter
-          define_method role_name do
-            instance_variable_defined?(role_var) ? instance_variable_get(role_var) : nil
-          end
+          role_var = "@#{role.name}"
 
           # Define the setter
-          define_method "#{role_name}=" do |value|
-            #puts "Assigning #{self}.#{role_name} to #{value}, value will be added/assigned to #{related_role_name}"
+          define_method "#{role.name}=" do |value|
+            #puts "Assigning #{self}.#{role.name} to #{value}, value will be added/assigned to #{related_role_name}"
 
-            unless Class === klass      # klass wasn't bound, find what class the value should be:
-              role = self.class.roles(role_name)
-              raise "#{role_name} is not a role of #{self.class.name}" unless role
-              unless Class === (klass = role.resolve_player(vocab = self.class.vocabulary))
-                raise "Role #{role_name} does not resolve to any existing class in vocabulary #{vocabulary.name}"
+            unless Class === role.player      # role.player wasn't bound, find what class the value should be:
+              role = self.class.roles(role.name)
+              raise "#{role.name} is not a role of #{self.class.name}" unless role
+              unless Class === (role.player = role.resolve_player(vocab = self.class.vocabulary))
+                raise "Role #{role.name} does not resolve to any existing class in vocabulary #{vocabulary.name}"
               end
             end
 
@@ -140,7 +117,7 @@ module ActiveFacts
             return if old == value        # Occurs during one_to_one assignment, for example
 
             # Create a value instance we can hack if the value isn't already in this constellation
-            value = self.class.vocabulary.adopt(klass, constellation, value) if value
+            value = self.class.vocabulary.adopt(role.player, constellation, value) if value
             return if old == value        # Occurs when same value is assigned
 
             # puts "Setting binary #{role_var} to #{value.verbalise}"
@@ -160,7 +137,7 @@ module ActiveFacts
               if one_to_one
                 value.send("#{related_role_name}=".to_sym, self)
               else
-                # puts "Other end's value #{klass.basename}.#{related_role_name} in #{self.class.basename}.#{role_name}= is #{value.class.basename}, expected #{klass.basename}"
+                # puts "Other end's value #{role.player.basename}.#{related_role_name} in #{self.class.basename}.#{role.name}= is #{value.class.basename}, expected #{role.player.basename}"
                 begin
                   array = value.send(related_role_name)
                 rescue => e
@@ -176,26 +153,46 @@ module ActiveFacts
 
       # REVISIT: Use method_missing to catch all_some_role_by_other_role_and_third_role, to sort_by those roles?
 
+      # public because it gets used to create the roles in the reverse direction as well
       def __multiple(role_name, klass, single_role_name)
         raise "__multiple(#{role_name.class} #{role_name.inspect}) - Symbol expected" unless Symbol === role_name
-        roles[role_name] = Role.new(klass, false, role_name, false)
+        roles[role_name] = role = Role.new(klass, false, role_name, false)
 
-        # puts "Defining #{basename}.#{role_name} to array of #{klass.basename} (via #{single_role_name})"
+        # puts "Defining #{basename}.#{role.name} to array of #{klass.basename} (via #{single_role_name})"
+        define_array_role_accessor(role)
+      end
 
-        class_eval do
-          role_var = "@#{role_name}"
-          define_method "#{role_name}" do
-            unless (r = instance_variable_defined?(role_var) && instance_variable_get(role_var))
-              (r = instance_variable_set(role_var, ValueArray.new))
-            end
-            # puts "fetching #{self.class.basename}.#{role_name} array, got #{r.class}, first is #{r[0] ? r[0].verbalise : "nil"}"
-            r
+      private
+
+      # Shared code for both kinds of binary fact type (has_one and one_to_one)
+      def __binary(one_to_one, role_name, related, mandatory, related_role_name, reading)
+        # puts "#{self}.#{role_name} is to #{related.inspect}, #{mandatory ? :mandatory : :optional}, related role is #{related_role_name}, reading=#{reading.inspect}"
+
+        __single(role_name, related, related_role_name, mandatory, one_to_one)
+
+        # There may be a forward reference here where role_name is a Symbol,
+        # and the block runs later when that Symbol is bound to the concept.
+        when_bound(related, self, role_name, related_role_name) do |target, definer, role_name, related_role_name|
+          if (one_to_one)
+            target.__single(related_role_name, definer, role_name, false, one_to_one)
+          else
+            target.__multiple(related_role_name, definer, role_name)
           end
         end
       end
 
-
-      private
+      def define_array_role_accessor(role)
+        class_eval do
+          role_var = "@#{role.name}"
+          define_method "#{role.name}" do
+            unless (r = instance_variable_defined?(role_var) && instance_variable_get(role_var))
+              (r = instance_variable_set(role_var, RoleValueArray.new))
+            end
+            # puts "fetching #{self.class.basename}.#{role.name} array, got #{r.class}, first is #{r[0] ? r[0].verbalise : "nil"}"
+            r
+          end
+        end
+      end
 
       # Extract the parameters to a role definition and massage them into the right shape.
       #
@@ -323,28 +320,6 @@ module ActiveFacts
       def inherited(other)
         puts "REVISIT: ValueType #{self} < #{self.superclass} was inherited by #{other}; not implemented"
         # Copy the type parameters here, etc?
-      end
-
-      class Role
-        attr_accessor :name
-        attr_accessor :unary
-        attr_accessor :player           # May be a Symbol, which will be converted to a Class/Concept
-        attr_accessor :mandatory
-        attr_accessor :value_restriction
-
-        def initialize(player, unary, name, mandatory = false)
-          @player = player
-          @unary = unary
-          @name = name
-          @mandatory = mandatory
-        end
-
-        def resolve_player(vocabulary)
-          return @player if Class === @player   # Done already
-          klass = vocabulary.concept(@player)   # Trigger the binding
-          @player = klass if klass              # Memoize a successful result
-          @player
-        end
       end
 
       private
