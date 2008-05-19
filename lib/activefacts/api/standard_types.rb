@@ -38,7 +38,7 @@ end
 
 class Class
   def identified_by *args
-    raise "not an entity type" if respond_to? :value_type
+    raise "not an entity type" if respond_to? :value_type  # Don't make a ValueType into an EntityType
     include ActiveFacts::API::Entity
     initialise_entity_type(*args)
   end

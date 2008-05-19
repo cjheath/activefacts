@@ -53,7 +53,7 @@ module ActiveFacts
 
         # Register ourselves with the parent module, which has become a Vocabulary:
         vocabulary = other.modspace
-        unless vocabulary.respond_to? :concept
+        unless vocabulary.respond_to? :concept  # Extend module with Vocabulary if necessary
           vocabulary.send :extend, Vocabulary
         end
         vocabulary.add_concept(other)

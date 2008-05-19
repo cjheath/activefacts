@@ -61,12 +61,12 @@ module ActiveFacts
 
       # Create or find an instance of klass in constellation using value to identify it
       def adopt(klass, constellation, value)
-        # puts "Adopting #{value.respond_to?(:verbalise) ? value.verbalise : value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
+        # puts "Adopting #{ value.verbalise rescue value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
         path = "unknown"
         # Create a value instance we can hack if the value isn't already in this constellation
         if (c = constellation)
           if klass === value            # Right class?
-            vc = value.respond_to?(:constellation) && value.constellation
+            vc = value.constellation rescue nil
             if (c == vc)                # Right constellation?
               # Already right class, in the right constellation
               path = "right constellation, right class, just use it"
@@ -97,8 +97,7 @@ module ActiveFacts
         else
           # This object's not in a constellation
           if klass === value            # Right class?
-            vc = value.respond_to?(:constellation) && value.constellation
-            if vc
+            if vc = value.constellation rescue nil
               raise "REVISIT: Assigning to #{self.class.basename}.#{role_name} with constellation=#{c.inspect}: Can't dis-associate object from its constellation #{vc.object_id} yet"
             end
             # Right class, no constellation, just use it
@@ -109,7 +108,7 @@ module ActiveFacts
             path = "no constellation, constructed from wrong class"
           end
         end
-        # print "#{path}"; puts ", adopted as #{value.respond_to?(:verbalise) ? value.verbalise : value.inspect}"
+        # print "#{path}"; puts ", adopted as #{value.verbalise rescue value.inspect}"
         value
       end
 

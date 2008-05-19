@@ -23,12 +23,10 @@ module ActiveFacts
           raise "Can't index roles by number"
         when Symbol, String
           r = @roles[name.to_sym]
-          unless r
-            return nil unless superclass.respond_to?(:roles)
-            return superclass.roles(name)
-          end
+          return superclass.roles(name) rescue nil unless r
           player = r.player
-          r.resolve_player(vocabulary) if Symbol === player
+          # We don't force the role to be bound yet; it's up to callers to bind it if necessary
+          player = r.resolve_player(vocabulary) rescue player unless Class === player
           r
         else
           nil
@@ -145,6 +143,8 @@ module ActiveFacts
             return if old == value        # Occurs during one_to_one assignment, for example
 
             # Create a value instance we can hack if the value isn't already in this constellation
+            # This throws an exception if the value instance can't be created.
+            # REVISIT: if this object is in a constellation, the value must be also. Perhaps the constellation should be called here?
             value = self.class.vocabulary.adopt(role.player, constellation, value) if value
             return if old == value        # Occurs when same value is assigned
 

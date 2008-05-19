@@ -59,7 +59,7 @@ module ActiveFacts
           else
             #puts "new"
             #puts "Making new #{klass}(#{args.map(&:inspect)*", "})"
-            args = [self]+args unless klass.respond_to?(:__Is_A_Date)
+            args = [self]+args unless klass.respond_to?(:__Is_A_Date) # Date arguments are special, can't add constellation
             begin
               instance = klass.send :new, *args
             rescue ArgumentError => e
