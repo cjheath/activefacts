@@ -76,12 +76,20 @@ module ActiveFacts
         roles[role_name] = role = Role.new(klass, true, role_name, mandatory)
 
         define_single_role_accessor(role, one_to_one, related_role_name)
-#        if (one_to_one)
-#          define_one_to_one_accessor(role, related_role_name)
-#        else
-#          define_one_to_many_accessor(role, related_role_name)
-#        end
       end
+
+      # public because it gets used to create the roles in the reverse direction as well
+      def __multiple(role_name, klass, single_role_name)
+        raise "__multiple(#{role_name.class} #{role_name.inspect}) - Symbol expected" unless Symbol === role_name
+        roles[role_name] = role = Role.new(klass, false, role_name, false)
+
+        # puts "Defining #{basename}.#{role.name} to array of #{klass.basename} (via #{single_role_name})"
+        define_array_role_accessor(role)
+      end
+
+      # REVISIT: Use method_missing to catch all_some_role_by_other_role_and_third_role, to sort_by those roles?
+
+      private
 
       def define_single_role_getter(role)
         class_eval do
@@ -97,6 +105,31 @@ module ActiveFacts
       def define_single_role_accessor(role, one_to_one, related_role_name)
         # puts "Defining #{basename}.#{role.name} to #{role.player.basename} (#{one_to_one ? "assigning" : "populating"} #{related_role_name})"
         define_single_role_getter(role)
+
+        if (one_to_one)
+          # This gets called to assign nil to the related role in the old correspondent:
+          # value is included here so we can check that the correct value is being nullified, if necessary
+          nullify_reference = lambda{|from, role_name, value| from.send("#{role_name}=".to_sym, nil) }
+
+          # This gets called to replace an old single value for a new one in the related role of a new correspondent
+          assign_reference = lambda{|from, role_name, old_value, value| from.send("#{role_name}=".to_sym, value) }
+
+          define_single_role_setter(role, related_role_name, nullify_reference, assign_reference)
+        else
+          # This gets called to delete this object from the role value array in the old correspondent
+          delete_reference = lambda{|from, role_name, value| from.send(role_name).__delete(value) }
+
+          # This gets called to replace an old value by a new one in the related role value array of a new correspondent
+          replace_reference = lambda{|from, role_name, old_value, value| 
+              array = from.send(role_name)
+              array.__replace(array - [old_value].compact + [value])
+            }
+
+          define_single_role_setter(role, related_role_name, delete_reference, replace_reference)
+        end
+      end
+
+      def define_single_role_setter(role, related_role_name, deassign_old, assign_new)
         class_eval do
           role_var = "@#{role.name}"
 
@@ -112,7 +145,7 @@ module ActiveFacts
               end
             end
 
-            # Get old value, and jump out early if it's already set
+            # Get old value, and jump out early if it's unchanged:
             old = instance_variable_defined?(role_var) ? instance_variable_get(role_var) : nil
             return if old == value        # Occurs during one_to_one assignment, for example
 
@@ -124,45 +157,13 @@ module ActiveFacts
             instance_variable_set(role_var, value)
 
             # De-assign/remove "self" at the old other end too:
-            if old
-              if one_to_one
-                old.send("#{related_role_name}=".to_sym, nil)
-              else
-                old.send(related_role_name).__delete(self)
-              end
-            end
+            deassign_old.call(old, related_role_name, self) if old
 
             # Assign/add "self" at the other end too:
-            if value
-              if one_to_one
-                value.send("#{related_role_name}=".to_sym, self)
-              else
-                # puts "Other end's value #{role.player.basename}.#{related_role_name} in #{self.class.basename}.#{role.name}= is #{value.class.basename}, expected #{role.player.basename}"
-                begin
-                  array = value.send(related_role_name)
-                rescue => e
-                  puts "Error #{e} getting MANY array from #{self.class} for '#{value.inspect}' role #{related_role_name}"
-                end
-                array.__replace(array - [old].compact + [self])
-                # REVISIT: It's possible that "old" now has no roles except its identifier, and if not independant, can be removed.
-              end
-            end
+            assign_new.call(value, related_role_name, old, self) if value
           end
         end
       end
-
-      # REVISIT: Use method_missing to catch all_some_role_by_other_role_and_third_role, to sort_by those roles?
-
-      # public because it gets used to create the roles in the reverse direction as well
-      def __multiple(role_name, klass, single_role_name)
-        raise "__multiple(#{role_name.class} #{role_name.inspect}) - Symbol expected" unless Symbol === role_name
-        roles[role_name] = role = Role.new(klass, false, role_name, false)
-
-        # puts "Defining #{basename}.#{role.name} to array of #{klass.basename} (via #{single_role_name})"
-        define_array_role_accessor(role)
-      end
-
-      private
 
       # Shared code for both kinds of binary fact type (has_one and one_to_one)
       def __binary(one_to_one, role_name, related, mandatory, related_role_name, reading)
