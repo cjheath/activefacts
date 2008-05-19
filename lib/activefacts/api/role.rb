@@ -21,8 +21,8 @@ module ActiveFacts
       def resolve_player(vocabulary)
         return @player if Class === @player   # Done already
         klass = vocabulary.concept(@player)   # Trigger the binding
-        @player = klass if klass              # Memoize a successful result
-        @player
+        raise "Cannot resolve role player #{@player.inspect} for role #{name} in vocabulary #{vocabulary.basename}; still forward-declared?" unless klass
+        @player = klass                       # Memoize a successful result
       end
     end
 

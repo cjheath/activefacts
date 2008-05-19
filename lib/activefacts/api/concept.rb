@@ -137,21 +137,18 @@ module ActiveFacts
           define_method "#{role.name}=" do |value|
             #puts "Assigning #{self}.#{role.name} to #{value}, value will be added/assigned to #{related_role_name}"
 
-            unless Class === role.player      # role.player wasn't bound, find what class the value should be:
-              role = self.class.roles(role.name)
-              raise "#{role.name} is not a role of #{self.class.name}" unless role
-              unless Class === (role.player = role.resolve_player(vocab = self.class.vocabulary))
-                raise "Role #{role.name} does not resolve to any existing class in vocabulary #{vocabulary.name}"
-              end
-            end
+            # If role.player isn't bound to a class yet, bind it.
+            role.resolve_player(self.class.vocabulary) unless Class === role.player
 
             # Get old value, and jump out early if it's unchanged:
-            old = instance_variable_defined?(role_var) ? instance_variable_get(role_var) : nil
+            old = instance_variable_get(role_var) rescue nil
             return if old == value        # Occurs during one_to_one assignment, for example
 
             # Create a value instance we can hack if the value isn't already in this constellation
             value = self.class.vocabulary.adopt(role.player, constellation, value) if value
             return if old == value        # Occurs when same value is assigned
+
+            # REVISIT: Defend against changing identifying roles, and decide what to do.
 
             # puts "Setting binary #{role_var} to #{value.verbalise}"
             instance_variable_set(role_var, value)
