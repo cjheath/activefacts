@@ -19,6 +19,8 @@ module ActiveFacts
     attr_reader :vocabulary
     attr_reader :query
     attr_reader :instances      # Can say c.instances[MyClass].each{|k, v| ... }
+                                # Can also say c.MyClass.each{|k, v| ... }
+                                # Create using c.MyClass(identifying_role_value, ...)
                                 # REVISIT: Protect instances from modification?
 
     def initialize(vocabulary, query = nil)

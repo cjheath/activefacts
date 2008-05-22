@@ -6,16 +6,21 @@ module ActiveFacts
 
     class Role
       attr_accessor :name
-      attr_accessor :unary
+      attr_accessor :counterpart      # All roles except unaries have a binary counterpart
       attr_accessor :player           # May be a Symbol, which will be converted to a Class/Concept
       attr_accessor :mandatory
       attr_accessor :value_restriction
 
-      def initialize(player, unary, name, mandatory = false)
+      def initialize(player, counterpart, name, mandatory = false)
         @player = player
-        @unary = unary
+        @counterpart = counterpart
         @name = name
         @mandatory = mandatory
+      end
+
+      def unary?
+        # N.B. A role with a forward reference looks unary until it is resolved.
+        counterpart == nil
       end
 
       def resolve_player(vocabulary)

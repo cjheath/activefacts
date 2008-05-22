@@ -36,7 +36,7 @@ module ActiveFacts
         # Delete from the constellation first, so it can remember our identifying role values
         @constellation.delete(self) if @constellation
         self.class.roles.each{|role_name, role|
-            next unless role.unary
+            #next unless role.unary
             send "#{role.name}=", nil
           }
       end

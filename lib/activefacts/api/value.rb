@@ -46,10 +46,17 @@ module ActiveFacts
           # REVISIT: Add length and scale here, if set
           "#{basename} = #{superclass.name}();"
         end
+
+        def inherited(other)
+          puts "REVISIT: ValueType #{self} < #{self.superclass} was inherited by #{other}; not implemented" #+"from #{caller*"\n\t"}"
+          # Copy the type parameters here, etc?
+        end
       end
 
-      def Value.included other
+      def self.included other
         other.send :extend, ClassMethods
+
+        #puts "ValueType included in #{other.basename} from #{caller*"\n\t"}"
 
         # Register ourselves with the parent module, which has become a Vocabulary:
         vocabulary = other.modspace

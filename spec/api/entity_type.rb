@@ -59,9 +59,7 @@ describe "Entity Type class definitions" do
 
   it "should return the role definition" do
     # Check the role definition may be accessed by passing an index:
-    lambda{
-      role = M4::Person.roles(0)
-    }.should raise_error
+    M4::Person.roles(0).should be_nil
 
     role = M4::Person.roles(:name)
     role.should_not be_nil

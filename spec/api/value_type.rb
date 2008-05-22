@@ -82,9 +82,7 @@ describe "Value Type class definitions" do
 
   it "should return the role definition" do
     # Check the role definition may not be accessed by passing an index:
-    lambda {
-      role = M1::Name.roles(0)
-    }.should raise_error
+    M1::Name.roles(0).should be_nil
 
     @classes.zip(@attrs).each { |pair|
         klass, attr = *pair

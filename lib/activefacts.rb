@@ -5,4 +5,4 @@
 # Author: Clifford Heath.
 #
 require 'rubygems'
-require 'activefacts/vocabulary'            # Base ActiveFacts objects
+require 'activefacts/api'
