@@ -18,6 +18,7 @@ describe "Norma Loader" do
     output.readlines
   end
 
+  #Dir["examples/norma/[AC]*.orm"].each do |norma|
   Dir["examples/norma/*.orm"].each do |norma|
   #Dir["examples/norma/Meta*.orm"].each do |norma|
   #Dir["examples/norma/Bl*.orm"].each do |norma|

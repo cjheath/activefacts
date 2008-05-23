@@ -2,6 +2,7 @@
 # Generate Ruby for the ActiveFacts API from an ActiveFacts vocabulary.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+require 'activefacts/vocabulary'
 require 'activefacts/generate/ordered'
 
 module ActiveFacts
