@@ -14,6 +14,8 @@ require 'spec/rake/spectask'
 #task :default => [ :test, :rdoc, :packaging, :package ]
 task :default => [ :rdoc, :packaging, :package ]
 
+task :spec => :test
+
 rst = Spec::Rake::SpecTask.new(:test) do |t|
     t.ruby_opts = ['-I', "lib"]
     t.spec_files = FileList['spec/**/*_spec.rb']

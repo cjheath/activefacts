@@ -8,14 +8,16 @@ module ActiveFacts
       attr_accessor :name
       attr_accessor :counterpart      # All roles except unaries have a binary counterpart
       attr_accessor :player           # May be a Symbol, which will be converted to a Class/Concept
+      attr_accessor :unique
       attr_accessor :mandatory
       attr_accessor :value_restriction
 
-      def initialize(player, counterpart, name, mandatory = false)
+      def initialize(player, counterpart, name, mandatory = false, unique = true)
         @player = player
         @counterpart = counterpart
         @name = name
         @mandatory = mandatory
+        @unique = unique
       end
 
       def unary?
