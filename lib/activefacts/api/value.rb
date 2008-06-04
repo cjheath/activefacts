@@ -19,6 +19,11 @@ module ActiveFacts
         "#{role_name || self.class.basename} '#{to_s}'"
       end
 
+      # A value is its own key
+      def identifying_role_values
+        self
+      end
+
       module ClassMethods
         include Instance::ClassMethods
 
@@ -47,9 +52,41 @@ module ActiveFacts
           "#{basename} = #{superclass.name}();"
         end
 
+        def identifying_role_values(*args)
+          # If the single arg is the correct class or a subclass, use it directly
+          #puts "#{basename}.identifying_role_values#{args.inspect}"
+          return args[0] if (args.size == 1 and self.class === args[0])   # No secondary supertypes allowed for value types
+          new(*args)
+        end
+
+        def assert_instance(constellation, args)
+          # Build the key for this instance from the args
+          # The key of an instance is the value or array of keys of the identifying values.
+          # The key values aren't necessarily present in the constellation, even after this.
+          key = identifying_role_values(*args)
+          #puts "#{klass} key is #{key.inspect}"
+
+          # Find and return an existing instance matching this key
+          instances = constellation.instances[self]   # All instances of this class in this constellation
+          instance = instances[key]
+          # DEBUG: puts "assert #{self.basename} #{key.inspect} #{instance ? "exists" : "new"}"
+          return instance, key if instance      # A matching instance of this class
+
+          instance = new(*args)
+          key = instance.identifying_role_values
+          # REVISIT: Replace with proper indexing:
+          instance.constellation = constellation
+          # DEBUG: puts "indexing value #{instance.class.basename} on #{key.inspect}" if key == :new or key == [:new] or key == [[:new]]
+          instances[key] = instance
+          return instance, key
+        end
+
         def inherited(other)
-          puts "REVISIT: ValueType #{self} < #{self.superclass} was inherited by #{other}; not implemented" #+"from #{caller*"\n\t"}"
+          #puts "REVISIT: ValueType #{self} < #{self.superclass} was inherited by #{other}; not implemented" #+"from #{caller*"\n\t"}"
           # Copy the type parameters here, etc?
+          other.send :realise_supertypes, self
+          vocabulary.add_concept(other)
+          super
         end
       end
 

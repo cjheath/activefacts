@@ -13,16 +13,24 @@ class Int < SimpleDelegator
     __setobj__(Integer(i))
   end
 
-  def hash
-    __getobj__.hash ^ super
-  end
-
   def to_s
     __getobj__.to_s
   end
 
+  def hash
+    __getobj__.hash ^ self.class.hash
+  end
+
+  def eql?(o)
+    self.class == o.class and __getobj__.eql?(Integer(o))
+  end
+
   def ==(o)
     __getobj__.==(o)
+  end
+
+  def inspect
+    "#{self.class.basename}:#{__getobj__.inspect}"
   end
 end
 
@@ -32,15 +40,23 @@ class Real < SimpleDelegator
   end
 
   def hash
-    __getobj__.hash ^ super
+    __getobj__.hash ^ self.class.hash
   end
 
   def to_s
     __getobj__.to_s
   end
 
+  def eql?(o)
+    self.class == o.class and __getobj__.eql?(Float(o))
+  end
+
   def ==(o)
     __getobj__.==(o)
+  end
+
+  def inspect
+    "#{self.class.basename}:#{__getobj__.inspect}"
   end
 end
 
@@ -54,7 +70,8 @@ end
 # Construct it with the value :new to get an uncommitted value.
 class AutoCounter
   def initialize(i = :new)
-    raise "AutoCounter #{self.class} may not be nil" unless i
+    raise "AutoCounter #{self.class} may not be #{i.inspect}" unless i == :new or Integer === i
+    # puts "new AutoCounter #{self.class} from\n\t#{caller.select{|s| s !~ %r{rspec}}*"\n\t"}"
     @value = i == :new ? nil : i
   end
 
@@ -82,5 +99,26 @@ class AutoCounter
 
   def inspect
     "\#<AutoCounter "+to_s+">"
+  end
+
+  def hash
+    to_s.hash ^ self.class.hash
+  end
+
+  def eql?(o)
+    self.class == o.class and to_s.eql?(o.to_s)
+  end
+
+  def self.inherited(other)
+    def other.identifying_role_values(*args)
+      return nil if args == [:new]  # A new object has no identifying_role_values
+      return new(*args)
+    end
+    super
+  end
+
+private
+  def clone
+    raise "Not allowed to clone AutoCounters"
   end
 end

@@ -8,16 +8,9 @@ module ActiveFacts
   module API
     module Instance
       attr_accessor :constellation
-      attr_accessor :query
 
       # Instance methods:
       def initialize(args = [])
-        if Constellation === (c = args[0])
-          # puts "Making #{self.class.basename} with #{args.size} params, first is Constellation"
-          self.constellation = c
-          args.shift
-        end
-
         unless (self.class.respond_to?(:identifying_roles))
         #if (self.class.superclass != Object)
           # puts "constructing #{self.class.superclass} with #{args.inspect}"

@@ -18,10 +18,10 @@ describe "Norma Loader" do
     output.readlines
   end
 
+  #Dir["examples/norma/Bl*.orm"].each do |norma|
+  #Dir["examples/norma/Meta*.orm"].each do |norma|
   #Dir["examples/norma/[AC]*.orm"].each do |norma|
   Dir["examples/norma/*.orm"].each do |norma|
-  #Dir["examples/norma/Meta*.orm"].each do |norma|
-  #Dir["examples/norma/Bl*.orm"].each do |norma|
     expected_file = norma.sub(%r{/norma/(.*).orm\Z}, '/CQL/\1.cql')
     next unless File.exists? expected_file
 

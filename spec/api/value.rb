@@ -30,13 +30,6 @@ describe "Value Type instances" do
     @string_value.respond_to?(:constellation).should be_true
   end
 
-  it "should respond to query" do
-    @string_value.respond_to?(:query).should be_true
-    lambda {
-        @string_value.query
-      }.should_not raise_error
-  end
-
   it "should respond to its roles" do
     @string_value.respond_to?(:attr).should be_true
     @string_value.respond_to?(:"attr=").should be_true

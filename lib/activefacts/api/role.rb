@@ -31,6 +31,25 @@ module ActiveFacts
         raise "Cannot resolve role player #{@player.inspect} for role #{name} in vocabulary #{vocabulary.basename}; still forward-declared?" unless klass
         @player = klass                       # Memoize a successful result
       end
+
+      def adapt(constellation, value)
+        # If the value is a compatible class, use it (if in another constellation, clone it),
+        # else create a compatible object using the value as constructor parameters.
+        if @player === value  # REVISIT: may be a non-primary subtype of player
+          # Check that the value is in a compatible constellation, clone if not:
+          if constellation && (vc = value.constellation) && vc != constellation
+            value = value.clone   # REVISIT: There's sure to be things we should reset/clone here, like non-identifying roles
+          end
+          value.constellation = constellation if constellation
+        else
+          if constellation
+            value = constellation.send(@player.basename.to_sym, *value)
+          else
+            value = @player.new(*value)
+          end
+        end
+        value
+      end
     end
 
     # Every Concept has a Role collection

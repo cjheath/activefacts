@@ -17,16 +17,14 @@
 module ActiveFacts
   class Constellation
     attr_reader :vocabulary
-    attr_reader :query
     attr_reader :instances      # Can say c.instances[MyClass].each{|k, v| ... }
                                 # Can also say c.MyClass.each{|k, v| ... }
                                 # Create using c.MyClass(identifying_role_value, ...)
                                 # REVISIT: Protect instances from modification?
 
-    def initialize(vocabulary, query = nil)
+    def initialize(vocabulary)
       @vocabulary = vocabulary
       @instances = Hash.new{|h,k| h[k] = {} }
-      @query = query
     end
 
     def inspect
@@ -41,38 +39,12 @@ module ActiveFacts
     def method_missing(m, *args)
       if klass = @vocabulary.const_get(m)
         if args.size == 0
+          # Return the collection of all instances of this class in the constellation:
           @instances[klass]
         else
-          # REVISIT: create the constructor method here instead?
-
-          # REVISIT: Shouldn't determine existence by constructor arguments, but by comparison of the created object's identifying roles.
-
-          # If the same object already exists in this constellation, re-use it.
-          key = Kernel::Array(args.size > 1 ? args : args[0]).clone
-          key.pop if Hash === Array(key)[-1]
-
-          #print "class #{m} key=#{key.inspect} is "
-          uncommitted = key == [:new]           # Occurs with AutoCounter
-          instance = uncommitted ? nil : @instances[klass][key]
-          # puts "Looked for #{klass} using #{key.inspect}, found #{instance.inspect}"
-
-          if instance
-            #puts "existing"
-          else
-            #puts "new"
-            #puts "Making new #{klass}(#{args.map(&:inspect)*", "})"
-            args = [self]+args unless klass.respond_to?(:__Is_A_Date) # Date arguments are special, can't add constellation
-            begin
-              instance = klass.send :new, *args
-            rescue ArgumentError => e
-              raise "Can't instantiate #{klass} using #{args.map(&:class)*", "}: #{e}"
-            end
-
-            # Register the new object in the hash of similar instances
-            # print "Adding new instance #{instance.inspect} by #{key.inspect}"
-            instance.constellation = self
-            @instances[klass][uncommitted ? instance.object_id.to_s : key] = instance
-          end
+          # Assert a new ground fact (concept instance) of the specified class, identified by args:
+          # REVISIT: create a constructor method here instead?
+          instance, key = klass.assert_instance(self, args)
           instance
         end
       end
@@ -92,7 +64,7 @@ module ActiveFacts
           instances = send(concept.to_sym)
           next nil unless instances.size > 0
           "\tEvery #{concept}:\n" +
-            instances.map{|instance|
+            instances.map{|key, instance|
                 s = "\t\t" + instance.verbalise
                 if (single_roles.size > 0)
                   role_values = 

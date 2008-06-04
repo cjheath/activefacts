@@ -81,11 +81,13 @@ module ActiveFacts
         role_name = nil if role_name == ""
 
         # REVISIT: Consider whether NOT to use the adjective if it's a prefix of the role_name
-        role_words << preferred_role_ref.leading_adjective.gsub(/ /,'_') if preferred_role_ref.leading_adjective != "" and !role.role_name
+        la = preferred_role_ref.leading_adjective
+        role_words << la.gsub(/ /,'_') if la && la != "" and !role.role_name
 
         role_words << (role_name || role.concept.name)
         # REVISIT: Same when trailing_adjective is a suffix of the role_name
-        role_words << preferred_role_ref.trailing_adjective.gsub(/ /,'_') if preferred_role_ref.trailing_adjective != "" and !role_name
+        ta = preferred_role_ref.trailing_adjective
+        role_words << ta.gsub(/ /,'_') if ta && ta != "" and !role_name
         n = role_words.map(&:snakecase)*"_"
         # debug "\tresult=#{n}"
         n

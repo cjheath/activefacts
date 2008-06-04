@@ -88,11 +88,14 @@ describe "Roles" do
     bloggs = c.LegalEntity("Bloggs")
     acme = c.LegalEntity("Acme, Inc")
     contract = c.Contract("Bloggs", acme)
+    #contract = c.Contract("Bloggs", "Acme, Inc")
     contract.first.should == bloggs
-  end
+    contract.second.should == acme
+    end
 
   it "should append the player into the respective role array in the matching concept" do
-    le = M5::LegalEntity.new("Foo")
+    foo = M5::Name.new("Foo")
+    le = M5::LegalEntity.new(foo)
     le.respond_to?(:name).should be_true
     name = le.name
     name.respond_to?(:all_legal_entity).should be_true

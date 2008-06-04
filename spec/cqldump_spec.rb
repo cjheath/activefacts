@@ -28,6 +28,10 @@ describe "CQL Dumper" do
 
   it "should dump a String ValueType" do
     vt = @constellation.ValueType("Name", @vocabulary, :supertype => @string_type, :length => 20)
+    vt.supertype = @string_type
+    vt.length = 20
+    #p vt.class.roles.keys.sort_by{|s| s.to_s}
+    #p vt.supertype
     cql.should == <<END
 vocabulary TestVocab;
 

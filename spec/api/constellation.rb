@@ -23,12 +23,11 @@ describe "A Constellation instance" do
         end
       end
     end
-    @constellation = ActiveFacts::Constellation.new(M3, 97)   # REVISIT: Use a real Query, not 97
+    @constellation = ActiveFacts::Constellation.new(M3)   # REVISIT: Use a real Query, not 97
   end
 
   it "should support fetching its vocabulary and query" do
     @constellation.vocabulary.should == M3
-    @constellation.query.should == 97
   end
 
   it "should support methods to construct instances of any concept" do
@@ -48,7 +47,7 @@ describe "A Constellation instance" do
 
   it "should index value instances" do
     bar1 = @constellation.Name("baz")
-    @constellation.instances[M3::Name].keys.sort.should == [["baz"]]
+    @constellation.instances[M3::Name].keys.sort.should == ["baz"]
   end
 
   it "should re-use entity instances constructed the same way" do

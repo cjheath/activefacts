@@ -20,13 +20,13 @@ module ActiveFacts
         when nil
           @roles
         when Symbol, String
-          r = @roles[name.to_sym]
+          role = @roles[name.to_sym]
           # REVISIT: Search other supertypes as well:
-          return superclass.roles(name) rescue nil unless r
-          player = r.player
-          # We don't force the role to be bound yet; it's up to callers to bind it if necessary
-          player = r.resolve_player(vocabulary) rescue player unless Class === player
-          r
+          role = superclass.roles(name) rescue nil unless role
+          raise "Role #{basename}.#{name} is not defined" unless role
+          # Bind the role if possible, but don't require it:
+          role.resolve_player(vocabulary) rescue nil unless Class === role.player
+          role
         else
           nil
         end
@@ -56,7 +56,9 @@ module ActiveFacts
       def supertypes(*concepts)
         class_eval do
           @supertypes ||= []
+          all_supertypes = supertypes_transitive
           concepts.each do |concept|
+            next if all_supertypes.include? concept
             case concept
             when Class
               @supertypes << concept
@@ -69,14 +71,31 @@ module ActiveFacts
             # Realise the roles (create accessors) of this supertype.
             # REVISIT: The existing accessors at the other end will need to allow this class as role player
             # REVISIT: Need to check all superclass roles recursively, unless we hit a common supertype
-            realise_roles(concept)
+            #puts "Realising concept #{concept.name} in #{basename}"
+            realise_supertypes(concept, all_supertypes)
           end
-          [superclass, *@supertypes]
+          [(superclass.vocabulary && superclass rescue nil), *@supertypes].compact
+        end
+      end
+
+      # All concept supertypes, transitively.
+      def supertypes_transitive
+        class_eval do
+          supertypes = []
+          supertypes << superclass if Module === (superclass.vocabulary rescue nil)
+          supertypes += (@supertypes ||= [])
+          supertypes.inject([]) {|a, t|
+              next if a.include?(t)
+              a += [t]
+              a += t.supertypes_transitive rescue []
+            }.uniq
         end
       end
 
       # Every new role added or inherited comes through here:
       def realise_role(role)
+        #puts "Realising role #{role.player.basename rescue role.player}.#{role.name} in #{basename}"
+
         if (!role.counterpart)
           # Unary role
           define_unary_role_accessor(role)
@@ -90,6 +109,19 @@ module ActiveFacts
       # REVISIT: Use method_missing to catch all_some_role_by_other_role_and_third_role, to sort_by those roles?
 
       private
+
+      def realise_supertypes(concept, all_supertypes = nil)
+        all_supertypes ||= supertypes_transitive
+        s = concept.supertypes
+        #puts "realising #{concept.basename} supertypes #{s.inspect} of #{basename}"
+        s.each {|t|
+            next if all_supertypes.include? t
+            realise_supertypes(t, all_supertypes)
+            all_supertypes << t
+          }
+        #puts "Realising roles of #{concept.basename} in #{basename}"
+        realise_roles(concept)
+      end
 
       # Realise all the roles of a concept on this concept, used when a supertype is added:
       def realise_roles(concept)
@@ -171,7 +203,6 @@ module ActiveFacts
         class_eval do
           define_method "#{role.name}=" do |value|
             role_var = "@#{role.name}"
-            #puts "Assigning #{self}.#{role.name} to #{value}, value will be added/assigned to #{role.counterpart.name}"
 
             # If role.player isn't bound to a class yet, bind it.
             role.resolve_player(self.class.vocabulary) unless Class === role.player
@@ -180,11 +211,10 @@ module ActiveFacts
             old = instance_variable_get(role_var) rescue nil
             return if old == value        # Occurs during one_to_one assignment, for example
 
-            # Create a value instance we can hack if the value isn't already in this constellation
-            # This throws an exception if the value instance can't be created.
-            # REVISIT: if this object is in a constellation, the value must be also. Perhaps the constellation should be called here?
-            value = self.class.vocabulary.adopt(role.player, constellation, value) if value
+            value = role.adapt(constellation, value) if value
             return if old == value        # Occurs when same value is assigned
+
+            # DEBUG: puts "assign #{self.class.basename}.#{role.name} <-> #{value.inspect}.#{role.counterpart.name}#{old ? " (was #{old.inspect})" : ""}"
 
             # REVISIT: Defend against changing identifying roles, and decide what to do.
 

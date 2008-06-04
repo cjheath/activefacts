@@ -146,11 +146,10 @@ module ActiveFacts
         q = "'"
         min = min =~ /[^0-9\.]/ ? q+min+q : min.to_i
         max = max =~ /[^0-9\.]/ ? q+max+q : max.to_i
-        # ValueRange takes a minimum and/or a maximum Bound
-        # Bound takes a value and inclusive (boolean)
+        # ValueRange takes a minimum and/or a maximum Bound, each takes value and whether inclusive
         @constellation.ValueRange(
-          min ? [min.to_s, true] : nil,
-          max ? [max.to_s, true] : nil
+            min ? [min.to_s, true] : nil,
+            max ? [max.to_s, true] : nil
           )
       end
 
@@ -275,30 +274,31 @@ module ActiveFacts
             # so as a SPECIAL CASE we index the unary role by the id of the
             # implicit role. That means care is needed when handling unary FTs.
             if (ox = @x_by_id[ref]) && ox.attributes['IsImplicitBooleanValue']
-            x_other_role = x.parent.elements.to_a('orm:Role').reject{|x_role|
-              x_role == x
-              }[0]
-            other_role_id = x_other_role.attributes["id"]
-            other_role = @by_id[other_role_id]
-            # puts "Indexing unary FT role #{other_role_id} by implicit boolean role #{id}"
-            @by_id[id] = other_role
+              x_other_role = x.parent.elements.to_a('orm:Role').reject{|x_role|
+                  x_role == x
+                }[0]
+              other_role_id = x_other_role.attributes["id"]
+              other_role = @by_id[other_role_id]
+              # puts "Indexing unary FT role #{other_role_id} by implicit boolean role #{id}"
+              @by_id[id] = other_role
 
-            # The role name of the ignored role is the one that applies:
-            role_name = x.attributes['Name']
-            other_role.role_name = role_name if role_name && role_name != ''
+              # The role name of the ignored role is the one that applies:
+              role_name = x.attributes['Name']
+              other_role.role_name = role_name if role_name && role_name != ''
 
-            concept.delete    # Delete our object for the implicit boolean ValueType
-            @by_id.delete(ref)    # and de-index it from our list
-            next
+              concept.delete    # Delete our object for the implicit boolean ValueType
+              @by_id.delete(ref)    # and de-index it from our list
+              next
             end
 
             #puts "#{@vocabulary}, Name=#{x.attributes['Name']}, concept=#{concept}"
             throw "Role is played by #{concept.class} not Concept" if !(@constellation.vocabulary.concept(:Concept) === concept)
 
+            name = x.attributes['Name']
+            #puts "Creating role #{name} of #{fact_type.fact_type_id} played by #{concept.name}"
             role = @by_id[id] = @constellation.Role(:new)
             role.concept = concept
             role.fact_type = fact_type
-            name = x.attributes['Name']
             role.role_name = x.attributes['Name'] if name != ""
             # puts "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x.attributes['Name']} is played by #{concept.name}, role is #{role.object_id}"
 
@@ -355,10 +355,12 @@ module ActiveFacts
             %r| ?#{leading_adjectives_re}?\{#{i}\}#{trailing_adjectives_re}? ?|
 
           reading_text.gsub!(role_with_adjectives_re) {
-            la = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\s+\Z/,'')
-            ta = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\A\s+/,'')
-            role_ref.leading_adjective = la if la != " "
-            role_ref.trailing_adjective = ta if ta != " "
+            la = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\s+\Z/,'').strip
+            ta = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\A\s+/,'').strip
+            #puts "Setting leading adj #{la.inspect} from #{reading_text.inspect} for #{role_ref.role.concept.name}" if la != ""
+            # REVISIT: Dunno what's up here, but removing the "if" test makes this chuck exceptions:
+            role_ref.leading_adjective = la if la != ""
+            role_ref.trailing_adjective = ta if ta != ""
 
             #puts "Reading '#{reading_text}' has role #{i} adjectives '#{la}' '#{ta}'" if la != "" || ta != ""
 
@@ -371,185 +373,186 @@ module ActiveFacts
       end
 
       def get_role_sequence(role_array)
-      # puts "Getting RoleSequence [#{role_array.map{|r| "#{r.concept.name} (role #{r.object_id})" }*", "}]"
+        # puts "Getting RoleSequence [#{role_array.map{|r| "#{r.concept.name} (role #{r.object_id})" }*", "}]"
 
-      # Look for an existing RoleSequence
-      role_sequence = @constellation.RoleSequence.values.detect{|c|
-        #puts "Checking RoleSequence [#{c.all_role_ref.map{|rr| rr.role.concept.name}*", "}]"
-        role_array == c.all_role_ref.map{|rr| rr.role }
-        }
-      # puts "Found matching RoleSequence!" if role_sequence
-      return role_sequence if role_sequence
+        # Look for an existing RoleSequence
+        # REVISIT: This searches all role sequences. Perhaps we could narrow it down first instead?
+        role_sequence = @constellation.RoleSequence.values.detect{|c|
+          #puts "Checking RoleSequence [#{c.all_role_ref.map{|rr| rr.role.concept.name}*", "}]"
+          role_array == c.all_role_ref.map{|rr| rr.role }
+          }
+        # puts "Found matching RoleSequence!" if role_sequence
+        return role_sequence if role_sequence
 
-      # Make a new RoleSequence:
-      role_sequence = @constellation.RoleSequence(:new) unless role_sequence
-      role_array.each_with_index{|r, i|
-        role_ref = @constellation.RoleRef(role_sequence, i)
-        role_ref.role = r
-        }
-      role_sequence
+        # Make a new RoleSequence:
+        role_sequence = @constellation.RoleSequence(:new) unless role_sequence
+        role_array.each_with_index{|r, i|
+          role_ref = @constellation.RoleRef(role_sequence, i)
+          role_ref.role = r
+          }
+        role_sequence
       end
 
       def map_roles(x_roles, why = nil)
-      role_array = x_roles.map{|x|
-        id = x.attributes['ref']
-        role = @by_id[id]
-        if (why && !role)
-          # We didn't make Implied objects, so some constraints are unconnectable
-          x_role = @x_by_id[id]
-          x_player = x_role.elements.to_a('orm:RolePlayer')[0]
-          x_object = @x_by_id[x_player.attributes['ref']]
-          x_nests = nil
-          if (x_object.name.to_s == 'ObjectifiedType')
-            x_nests = x_object.elements.to_a('orm:NestedPredicate')[0]
-            implied = x_nests.attributes['IsImplied']
-            x_fact = @x_by_id[x_nests.attributes['ref']]
-          end
-
-          # This might have been a role of an ImpliedFact, which makes it safe to ignore.
-          next if 'ImpliedFact' == x_role.parent.parent.name
-
-          # Talk about why this wasn't found - this shouldn't happen.
-          if (!x_nests || !implied)
-            puts "="*60
-            puts "Skipping #{why}, #{x_role.name} #{id} not found"
-
-            if (x_nests)
-              puts "Role is on #{implied ? "implied " : ""}objectification #{x_object}"
-              puts "which objectifies #{x_fact}"
+        role_array = x_roles.map{|x|
+          id = x.attributes['ref']
+          role = @by_id[id]
+          if (why && !role)
+            # We didn't make Implied objects, so some constraints are unconnectable
+            x_role = @x_by_id[id]
+            x_player = x_role.elements.to_a('orm:RolePlayer')[0]
+            x_object = @x_by_id[x_player.attributes['ref']]
+            x_nests = nil
+            if (x_object.name.to_s == 'ObjectifiedType')
+              x_nests = x_object.elements.to_a('orm:NestedPredicate')[0]
+              implied = x_nests.attributes['IsImplied']
+              x_fact = @x_by_id[x_nests.attributes['ref']]
             end
-            puts x_object.to_s
+
+            # This might have been a role of an ImpliedFact, which makes it safe to ignore.
+            next if 'ImpliedFact' == x_role.parent.parent.name
+
+            # Talk about why this wasn't found - this shouldn't happen.
+            if (!x_nests || !implied)
+              #puts "="*60
+              puts "Skipping #{why}, #{x_role.name} #{id} not found"
+
+              if (x_nests)
+                puts "Role is on #{implied ? "implied " : ""}objectification #{x_object}"
+                puts "which objectifies #{x_fact}"
+              end
+              puts x_object.to_s
+            end
           end
-        end
-        role
-      }
-      role_array.include?(nil) ? nil : get_role_sequence(role_array)
+          role
+        }
+        role_array.include?(nil) ? nil : get_role_sequence(role_array)
       end
 
       def read_constraints
-      @constraints_by_rs = {}
+        @constraints_by_rs = {}
 
-      read_mandatory_constraints
-      read_uniqueness_constraints
-      read_exclusion_constraints
-      read_subset_constraints
-      read_ring_constraints
-      read_equality_constraints
-      read_frequency_constraints
-      read_residual_mandatory_constraints
+        read_mandatory_constraints
+        read_uniqueness_constraints
+        read_exclusion_constraints
+        read_subset_constraints
+        read_ring_constraints
+        read_equality_constraints
+        read_frequency_constraints
+        read_residual_mandatory_constraints
       end
 
       def read_mandatory_constraints
-      x_mandatory_constraints = @x_model.elements.to_a("orm:Constraints/orm:MandatoryConstraint")
-      @mandatory_constraints_by_rs = {}
-      @mandatory_constraint_rs_by_id = {}
-      x_mandatory_constraints.each{|x|
-        name = x.attributes["Name"]
+        x_mandatory_constraints = @x_model.elements.to_a("orm:Constraints/orm:MandatoryConstraint")
+        @mandatory_constraints_by_rs = {}
+        @mandatory_constraint_rs_by_id = {}
+        x_mandatory_constraints.each{|x|
+          name = x.attributes["Name"]
 
-        # As of Feb 2008, all NORMA ValueTypes have an implied mandatory constraint.
-        if x.elements.to_a("orm:ImpliedByObjectType").size > 0
-          # $stderr.puts "Skipping ImpliedMandatoryConstraint #{name} over #{roles}"
-          next
-        end
-
-        x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
-        roles = map_roles(x_roles, "mandatory constraint #{name}")
-        next if !roles
-
-        # If X-OR mandatory, the Exclusion is accessed by:
-  #       x_exclusion = (ex = x.elements.to_a("orm:ExclusiveOrExclusionConstraint")[0]) &&
-  #             @x_by_id[ex.attributes['ref']]
-  #       puts "Mandatory #{name}(#{roles}) is paired with exclusive #{x_exclusion.attributes['Name']}" if x_exclusion
-
-        @mandatory_constraints_by_rs[roles] = x
-        @mandatory_constraint_rs_by_id[x.attributes['id']] = roles
-      }
-      end
-
-      def read_residual_mandatory_constraints
-      @mandatory_constraints_by_rs.each { |roles, x|
-        # Create a simply-mandatory PresenceConstraint for each mandatory constraint
-        name = x.attributes["Name"]
-        #puts "Residual Mandatory #{name}: #{roles.to_s}"
-
-        pc = @constellation.PresenceConstraint(:new)
-        pc.vocabulary = @vocabulary
-        pc.name = name
-        pc.role_sequence = roles
-        pc.is_mandatory = true
-        pc.min_frequency = 1 
-        pc.max_frequency = nil
-        pc.is_preferred_identifier = false
-
-        (@constraints_by_rs[roles] ||= []) << pc
-      }
-      end
-
-      def read_uniqueness_constraints
-      x_uniqueness_constraints = @x_model.elements.to_a("orm:Constraints/orm:UniquenessConstraint")
-      x_uniqueness_constraints.each{|x|
-        name = x.attributes["Name"]
-        id = x.attributes["id"]
-        x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
-        pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
-
-          # Skip uniqueness constraints on implied concepts
-          if x_pi && !pi
-            puts "Skipping uniqueness constraint #{name}, entity not found"
+          # As of Feb 2008, all NORMA ValueTypes have an implied mandatory constraint.
+          if x.elements.to_a("orm:ImpliedByObjectType").size > 0
+            # $stderr.puts "Skipping ImpliedMandatoryConstraint #{name} over #{roles}"
             next
           end
 
-          # A uniqueness constraint on a fact having an implied objectification isn't preferred:
-  #       if pi &&
-  #         (x_pi_for = @x_by_id[eref]) &&
-  #         (np = x_pi_for.elements.to_a('orm:NestedPredicate')[0]) &&
-  #         np.attributes['IsImplied']
-  #           pi = nil
-  #       end
-
-          # Get the RoleSequence:
           x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
-          roles = map_roles(x_roles, "uniqueness constraint #{name}")
-          next if !roles # || roles.size == 0
+          roles = map_roles(x_roles, "mandatory constraint #{name}")
+          next if !roles
 
-          # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
-          if (x_roles.size == 1 &&
-            (id = x_roles[0].attributes['ref']) &&
-            (x_role = @x_by_id[id]) &&
-            x_role.parent.elements.size == 2 &&
-            (sibling = x_role.parent.elements[2]) &&
-            (ib_id = sibling.elements[1].attributes['ref']) &&
-            (ib = @x_by_id[ib_id]) &&
-            ib.attributes['IsImplicitBooleanValue'])
-          next  # Skip uniqueness constraint over our role in this implicit boolean
-          end
+          # If X-OR mandatory, the Exclusion is accessed by:
+    #       x_exclusion = (ex = x.elements.to_a("orm:ExclusiveOrExclusionConstraint")[0]) &&
+    #             @x_by_id[ex.attributes['ref']]
+    #       puts "Mandatory #{name}(#{roles}) is paired with exclusive #{x_exclusion.attributes['Name']}" if x_exclusion
 
-          if (mc = @mandatory_constraints_by_rs[roles])
-            # Remove absorbed mandatory constraints, leaving residual ones.
-            # puts "Absorbing MC #{mc.attributes['Name']}"
-            @mandatory_constraints_by_rs.delete(roles)
-            @mandatory_constraint_rs_by_id.delete(mc.attributes['id'])
-          end
+          @mandatory_constraints_by_rs[roles] = x
+          @mandatory_constraint_rs_by_id[x.attributes['id']] = roles
+        }
+      end
 
-          # A UC that spans more than one Role of a fact will be a Preferred Id for the implied object
-          #puts "Unique" + rs.to_s +
-          #    (pi ? " (preferred id for #{pi.name})" : "") +
-          #    (mc ? " (mandatory)" : "") if pi && !mc
+      def read_residual_mandatory_constraints
+        @mandatory_constraints_by_rs.each { |roles, x|
+          # Create a simply-mandatory PresenceConstraint for each mandatory constraint
+          name = x.attributes["Name"]
+          #puts "Residual Mandatory #{name}: #{roles.to_s}"
 
           pc = @constellation.PresenceConstraint(:new)
           pc.vocabulary = @vocabulary
           pc.name = name
           pc.role_sequence = roles
-          pc.is_mandatory = true if mc
-          pc.min_frequency = mc ? 1 : 0
-          pc.max_frequency = 1 
-          pc.is_preferred_identifier = true if pi
-
-          #puts roles.verbalise
-          #puts pc.verbalise
+          pc.is_mandatory = true
+          pc.min_frequency = 1 
+          pc.max_frequency = nil
+          pc.is_preferred_identifier = false
 
           (@constraints_by_rs[roles] ||= []) << pc
         }
+      end
+
+      def read_uniqueness_constraints
+        x_uniqueness_constraints = @x_model.elements.to_a("orm:Constraints/orm:UniquenessConstraint")
+        x_uniqueness_constraints.each{|x|
+          name = x.attributes["Name"]
+          id = x.attributes["id"]
+          x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
+          pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
+
+            # Skip uniqueness constraints on implied concepts
+            if x_pi && !pi
+              puts "Skipping uniqueness constraint #{name}, entity not found"
+              next
+            end
+
+            # A uniqueness constraint on a fact having an implied objectification isn't preferred:
+    #       if pi &&
+    #         (x_pi_for = @x_by_id[eref]) &&
+    #         (np = x_pi_for.elements.to_a('orm:NestedPredicate')[0]) &&
+    #         np.attributes['IsImplied']
+    #           pi = nil
+    #       end
+
+            # Get the RoleSequence:
+            x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
+            roles = map_roles(x_roles, "uniqueness constraint #{name}")
+            next if !roles # || roles.size == 0
+
+            # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
+            if (x_roles.size == 1 &&
+              (id = x_roles[0].attributes['ref']) &&
+              (x_role = @x_by_id[id]) &&
+              x_role.parent.elements.size == 2 &&
+              (sibling = x_role.parent.elements[2]) &&
+              (ib_id = sibling.elements[1].attributes['ref']) &&
+              (ib = @x_by_id[ib_id]) &&
+              ib.attributes['IsImplicitBooleanValue'])
+            next  # Skip uniqueness constraint over our role in this implicit boolean
+            end
+
+            if (mc = @mandatory_constraints_by_rs[roles])
+              # Remove absorbed mandatory constraints, leaving residual ones.
+              # puts "Absorbing MC #{mc.attributes['Name']}"
+              @mandatory_constraints_by_rs.delete(roles)
+              @mandatory_constraint_rs_by_id.delete(mc.attributes['id'])
+            end
+
+            # A UC that spans more than one Role of a fact will be a Preferred Id for the implied object
+            #puts "Unique" + rs.to_s +
+            #    (pi ? " (preferred id for #{pi.name})" : "") +
+            #    (mc ? " (mandatory)" : "") if pi && !mc
+
+            pc = @constellation.PresenceConstraint(:new)
+            pc.vocabulary = @vocabulary
+            pc.name = name
+            pc.role_sequence = roles
+            pc.is_mandatory = true if mc
+            pc.min_frequency = mc ? 1 : 0
+            pc.max_frequency = 1 
+            pc.is_preferred_identifier = true if pi
+
+            #puts roles.verbalise
+            #puts pc.verbalise
+
+            (@constraints_by_rs[roles] ||= []) << pc
+          }
       end
 
       def read_exclusion_constraints
@@ -657,15 +660,6 @@ module ActiveFacts
       def read_frequency_constraints
         x_frequency_constraints = @x_model.elements.to_a("orm:Constraints/orm:FrequencyConstraint")
         # REVISIT: FrequencyConstraints not handled yet
-      end
-
-      def show_constraints_by_role_sequence
-        @constraints_by_rs.each_pair{|rs, ca|
-          next if ca.size == 1
-          puts "Constraints paired:"
-          pp rs.to_s
-          pp ca.map{|c| c.name }
-        }
       end
 
       def read_instances

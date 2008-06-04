@@ -50,6 +50,10 @@ module ActiveFacts
         end
       end
 
+#      def inspect
+#        "#<Vocabulary #{basename}>"
+#      end
+
       def verbalise
         "Vocabulary #{name}:\n\t" +
           @concept.keys.sort.map{|concept|
@@ -61,7 +65,8 @@ module ActiveFacts
 
       # Create or find an instance of klass in constellation using value to identify it
       def adopt(klass, constellation, value)
-        # puts "Adopting #{ value.verbalise rescue value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
+        puts "Adopting #{ value.verbalise rescue value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
+
         path = "unknown"
         # Create a value instance we can hack if the value isn't already in this constellation
         if (c = constellation)
