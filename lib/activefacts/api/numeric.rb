@@ -60,9 +60,18 @@ class Real < SimpleDelegator
   end
 end
 
-# Ensure we don't pass a Constellation to the Date constructor:
+# A Date can be constructed from any Date subclass
 class ::Date
-  def self.__Is_A_Date; end
+  class << self; alias_method :old_new, :new end
+  def self.new(*a, &b)
+    #puts "Constructing date with #{a.inspect} from #{caller*"\n\t"}"
+    if (a.size == 1 && Date === a[0])
+      a = a[0]
+      civil(a.year, a.month, a.day, a.start)
+    else
+      civil(*a, &b)
+    end
+  end
 end
 
 # The AutoCounter class is an integer, but only after the value

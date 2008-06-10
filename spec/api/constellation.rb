@@ -4,30 +4,29 @@
 #
 describe "A Constellation instance" do
   setup do
-    unless Object.const_defined?("M3")  # Is there a way to do once-only setup?
-      module M3
-        class Name < String
-          value_type
-          has_one :attr, Name
-        end
+    Object.send :remove_const, :Mod if Object.const_defined?("Mod")
+    module Mod
+      class Name < String
+        value_type
+        has_one :attr, Name
+      end
 
-        class Named
-          identified_by :name
-          has_one :name
-        end
+      class Named
+        identified_by :name
+        has_one :name
+      end
 
-        class Person
-          identified_by :given_name, :family_name
-          has_one :given_name, :Name
-          has_one :family_name, :Name
-        end
+      class Person
+        identified_by :given_name, :family_name
+        has_one :given_name, :Name
+        has_one :family_name, :Name
       end
     end
-    @constellation = ActiveFacts::Constellation.new(M3)   # REVISIT: Use a real Query, not 97
+    @constellation = ActiveFacts::Constellation.new(Mod)   # REVISIT: Use a real Query, not 97
   end
 
   it "should support fetching its vocabulary and query" do
-    @constellation.vocabulary.should == M3
+    @constellation.vocabulary.should == Mod
   end
 
   it "should support methods to construct instances of any concept" do
@@ -35,7 +34,7 @@ describe "A Constellation instance" do
     lambda {
         c = @constellation.Name("foo")
       }.should_not raise_error
-    c.class.should == M3::Name
+    c.class.should == Mod::Name
     c.constellation.should == @constellation
   end
 
@@ -47,7 +46,7 @@ describe "A Constellation instance" do
 
   it "should index value instances" do
     bar1 = @constellation.Name("baz")
-    @constellation.instances[M3::Name].keys.sort.should == ["baz"]
+    @constellation.instances[Mod::Name].keys.sort.should == ["baz"]
   end
 
   it "should re-use entity instances constructed the same way" do
@@ -60,7 +59,7 @@ describe "A Constellation instance" do
   it "should index entity instances" do
     bar = @constellation.Name("baz")
     bar1 = @constellation.Named(bar)
-    @constellation.instances[M3::Named].keys.sort.should == [["baz"]]
+    @constellation.instances[Mod::Named].keys.sort.should == [["baz"]]
   end
 
   it "should re-use entity instances constructed the same way with 2-part PI" do
@@ -75,7 +74,7 @@ describe "A Constellation instance" do
     given = @constellation.Name("Fred")
     family = @constellation.Name("Fly")
     bar1 = @constellation.Person(given, family)
-    @constellation.instances[M3::Person].keys.sort.should == [["Fred","Fly"]]
+    @constellation.instances[Mod::Person].keys.sort.should == [["Fred","Fly"]]
   end
 
 end

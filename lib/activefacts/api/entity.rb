@@ -25,6 +25,9 @@ module ActiveFacts
           args.push value
         end
 
+        # If one arg is expected but more are passed, they might be the args for the object that plays the identifying role:
+        args = [args] if klass.identifying_roles.size == 1 && args.size > 1
+
         # This should now only occur when there are too many args passed:
         raise "Wrong number of parameters to #{klass}.new, " +
             "expect (#{klass.identifying_roles*","}) " +

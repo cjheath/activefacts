@@ -4,24 +4,23 @@
 #
 describe "Value Type class definitions" do
   setup do
-    unless Object.const_defined?("M1")  # Is there a way to do once-only setup?
-      module M1
-        class Name < String
-          value_type
-          has_one :name
-        end
-        class Year < Int
-          value_type
-          has_one :name
-        end
-        class Weight < Real
-          value_type
-          has_one :name
-        end
+    Object.send :remove_const, :Mod if Object.const_defined?("Mod")
+    module Mod
+      class Name < String
+        value_type
+        has_one :name
+      end
+      class Year < Int
+        value_type
+        has_one :name
+      end
+      class Weight < Real
+        value_type
+        has_one :name
       end
     end
 
-    @classes = [M1::Name, M1::Year,M1::Weight]
+    @classes = [Mod::Name, Mod::Year,Mod::Weight]
     @attrs = [:name, :name, :name]
 
   end
@@ -55,7 +54,7 @@ describe "Value Type class definitions" do
   it "should return the parent module as the vocabulary" do
     @classes.each { |klass|
         vocabulary = klass.vocabulary
-        vocabulary.should == M1
+        vocabulary.should == Mod
       }
   end
 
@@ -74,15 +73,15 @@ describe "Value Type class definitions" do
   end
 
   it "should contain only the added role definitions" do
-    M1::Name.roles.size.should == 4
-    (@classes-[M1::Name]).each { |klass|
+    Mod::Name.roles.size.should == 4
+    (@classes-[Mod::Name]).each { |klass|
         klass.roles.size.should == 1
       }
   end
 
   it "should return the role definition" do
     # Check the role definition may not be accessed by passing an index:
-    M1::Name.roles(0).should be_nil
+    Mod::Name.roles(0).should be_nil
 
     @classes.zip(@attrs).each { |pair|
         klass, attr = *pair
