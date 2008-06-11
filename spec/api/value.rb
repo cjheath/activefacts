@@ -15,6 +15,9 @@ describe "Value Type instances" do
       class DateValue < Date
         value_type
       end
+      class DateTimeValue < DateTime
+        value_type
+      end
       class AutoCounterValue < AutoCounter
         value_type
       end
@@ -28,6 +31,7 @@ describe "Value Type instances" do
         has_one :int_value
         has_one :real_value
         has_one :date_value
+        has_one :date_time_value
         has_one :auto_counter_value
         has_one :string_value
       end
@@ -37,6 +41,7 @@ describe "Value Type instances" do
         has_one :int_value
         has_one :real_value
         has_one :date_value
+        has_one :date_time_value
         has_one :auto_counter_value
         has_one :string_value
       end
@@ -46,6 +51,17 @@ describe "Value Type instances" do
         has_one :int_value
         has_one :real_value
         has_one :date_value
+        has_one :date_time_value
+        has_one :auto_counter_value
+        has_one :string_value
+      end
+
+      class TestByDateTime
+        identified_by :date_time_value
+        has_one :int_value
+        has_one :real_value
+        has_one :date_value
+        has_one :date_time_value
         has_one :auto_counter_value
         has_one :string_value
       end
@@ -55,6 +71,7 @@ describe "Value Type instances" do
         has_one :int_value
         has_one :real_value
         has_one :date_value
+        has_one :date_time_value
         has_one :auto_counter_value
         has_one :string_value
       end
@@ -64,6 +81,7 @@ describe "Value Type instances" do
         has_one :int_value
         has_one :real_value
         has_one :date_value
+        has_one :date_time_value
         has_one :auto_counter_value
         has_one :string_value
       end
@@ -72,6 +90,7 @@ describe "Value Type instances" do
     @int_value = Mod::IntValue.new(1)
     @real_value = Mod::RealValue.new(1.0)
     @date_value = Mod::DateValue.new(2008, 04, 20)
+    @date_time_value = Mod::DateTimeValue.new(2008, 04, 20, 10, 28, 14)
 
     @auto_counter_value = Mod::AutoCounterValue.new(1)
     @auto_counter_value_new = Mod::AutoCounterValue.new(:new)
@@ -80,17 +99,19 @@ describe "Value Type instances" do
     @test_by_real = Mod::TestByReal.new(2.0)
     #@test_by_date = Mod::TestByDate.new(2008,04,28)
     @test_by_date = Mod::TestByDate.new(Date.new(2008,04,28))
+    @test_by_date_time = Mod::TestByDateTime.new(2008,04,28,10,28,15)
+    #@test_by_date_time = Mod::TestByDateTime.new(DateTime.new(2008,04,28,10,28,15))
     @test_by_auto_counter = Mod::TestByAutoCounter.new(2)
     @test_by_auto_counter_new = Mod::TestByAutoCounter.new(:new)
     @test_by_string = Mod::TestByString.new("two")
 
     # These arrays get zipped together in various ways. Keep them aligned.
-    @value_types = [ Mod::IntValue, Mod::RealValue, Mod::AutoCounterValue, Mod::AutoCounterValue, Mod::StringValue, Mod::DateValue ]
-    @values = [ @int_value, @real_value, @auto_counter_value, @auto_counter_value_new, @string_value, @date_value ]
-    @entity_types = [ Mod::TestByInt, Mod::TestByReal, Mod::TestByAutoCounter, Mod::TestByString, Mod::TestByDate ]
-    @entities = [ @test_by_int, @test_by_real, @test_by_auto_counter, @test_by_string, @test_by_date, @test_by_auto_counter_new ]
-    @roles = [ :int_value, :real_value, :date_value, :auto_counter_value, :string_value ]
-    @role_values = [ 3, 3.0, Date.new(2008, 4, 21), :new, "three" ]
+    @value_types = [ Mod::IntValue, Mod::RealValue, Mod::AutoCounterValue, Mod::AutoCounterValue, Mod::StringValue, Mod::DateValue, Mod::DateTimeValue ]
+    @values = [ @int_value, @real_value, @auto_counter_value, @auto_counter_value_new, @string_value, @date_value, @date_time_value ]
+    @entity_types = [ Mod::TestByInt, Mod::TestByReal, Mod::TestByAutoCounter, Mod::TestByString, Mod::TestByDate, Mod::TestByDateTime ]
+    @entities = [ @test_by_int, @test_by_real, @test_by_auto_counter, @test_by_string, @test_by_date, @test_by_date_time, @test_by_auto_counter_new ]
+    @roles = [ :int_value, :real_value, :date_value, :date_time_value, :auto_counter_value, :string_value ]
+    @role_values = [ 3, 3.0, Date.new(2008,4,21), DateTime.new(2008,4,21,10,28,16), :new, "three" ]
   end
 
   it "All value types should respond to verbalise" do

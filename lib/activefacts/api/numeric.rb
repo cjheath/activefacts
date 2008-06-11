@@ -74,6 +74,26 @@ class ::Date
   end
 end
 
+# A DateTime can be constructed from any Date or DateTime subclass
+class ::DateTime
+  class << self; alias_method :old_new, :new end
+  def self.new(*a, &b)
+    #puts "Constructing DateTime with #{a.inspect} from #{caller*"\n\t"}"
+    if (a.size == 1)
+      a = a[0]
+      if (DateTime === a)
+        civil(a.year, a.month, a.day, a.hour, a.min, a.sec, a.start)
+      elsif (Date === a)
+        civil(a.year, a.month, a.day, a.start)
+      else
+        civil(*a, &b)
+      end
+    else
+      civil(*a, &b)
+    end
+  end
+end
+
 # The AutoCounter class is an integer, but only after the value
 # has been established in the database.
 # Construct it with the value :new to get an uncommitted value.
