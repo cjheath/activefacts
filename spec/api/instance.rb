@@ -163,7 +163,7 @@ describe "An instance of every type of Concept" do
         @test_sub_by_int, @test_sub_by_real, @test_sub_by_auto_counter, @test_sub_by_auto_counter_new,
         @test_sub_by_string, @test_sub_by_date, @test_sub_by_date_time,
       ]
-    @roles = [
+    @test_role_names = [
         :int_value, :real_value, :auto_counter_value, :auto_counter_value,
         :string_value, :date_value, :date_time_value,
         :int_sub_value, :real_sub_value, :auto_counter_sub_value, :auto_counter_sub_value,
@@ -241,11 +241,11 @@ describe "An instance of every type of Concept" do
 
   it "should respond to all its roles" do
     @entities.each do |entity|
-      @roles.each do |role|
-        entity.respond_to?(role).should be_true
-        entity.respond_to?(:"#{role}=").should be_true
-        entity.respond_to?(:"one_#{role}").should be_true
-        entity.respond_to?(:"one_#{role}=").should be_true
+      @test_role_names.each do |role_name|
+        entity.respond_to?(role_name).should be_true
+        entity.respond_to?(:"#{role_name}=").should be_true
+        entity.respond_to?(:"one_#{role_name}").should be_true
+        entity.respond_to?(:"one_#{role_name}=").should be_true
       end
     end
   end
@@ -289,72 +289,98 @@ describe "An instance of every type of Concept" do
 
   it "that are entities should not allow its identifying roles to be assigned" do
     pending
-    @entities.zip(@roles, @role_values).each do |entity, role, value|
+    @entities.zip(@test_role_names, @role_values).each do |entity, role_name, value|
       lambda {
-          entity.send(:"#{role}=", value)
+          entity.send(:"#{role_name}=", value)
         }.should raise_error
     end
   end
 
   it "should allow its non-identifying roles to be assigned values" do
-    @entities.zip(@roles).each do |entity, identifying_role|
-      @roles.zip(@role_values).each do |role, value|
-        next if role == identifying_role
+    @entities.zip(@test_role_names).each do |entity, identifying_role|
+      @test_role_names.zip(@role_values).each do |role_name, value|
+        next if role_name == identifying_role
         lambda {
-            entity.send(:"#{role}=", value)
+            entity.send(:"#{role_name}=", value)
           }.should_not raise_error
         lambda {
-            entity.send(:"one_#{role}=", value)
+            entity.send(:"one_#{role_name}=", value)
           }.should_not raise_error
       end
     end
   end
 
   it "should allow its non-identifying roles to be assigned instances" do
-    @entities.zip(@roles).each do |entity, identifying_role|
-      @roles.zip(@value_types, @role_values).each do |role, klass, value|
+    @entities.zip(@test_role_names).each do |entity, identifying_role|
+      @test_role_names.zip(@value_types, @role_values).each do |role_name, klass, value|
         next unless value
-        next if role == identifying_role
+        next if role_name == identifying_role
         instance = klass.new(value)
         lambda {
-            entity.send(:"#{role}=", instance)
+            entity.send(:"#{role_name}=", instance)
           }.should_not raise_error
-        entity.send(role).class.should == klass
+        entity.send(role_name).class.should == klass
         lambda {
-            entity.send(:"one_#{role}=", instance)
+            entity.send(:"one_#{role_name}=", instance)
           }.should_not raise_error
-        entity.send(:"one_#{role}").class.should == klass
+        entity.send(:"one_#{role_name}").class.should == klass
       end
     end
   end
 
   it "should allow its non-identifying roles to be assigned instances of value subtypes, retaining the subtype" do
-    @entities.zip(@roles).each do |entity, identifying_role|
-      @roles.zip(@subtype_role_instances).each do |role, instance|
+    @entities.zip(@test_role_names).each do |entity, identifying_role|
+      @test_role_names.zip(@subtype_role_instances).each do |role_name, instance|
         next unless instance
-        next if role == identifying_role
+        next if role_name == identifying_role
         lambda {
-            entity.send(:"#{role}=", instance)
+            entity.send(:"#{role_name}=", instance)
           }.should_not raise_error
-        entity.send(role).class.should == instance.class
+        entity.send(role_name).class.should == instance.class
         lambda {
-            entity.send(:"one_#{role}=", instance)
+            entity.send(:"one_#{role_name}=", instance)
           }.should_not raise_error
-        entity.send(:"one_#{role}").class.should == instance.class
+        entity.send(:"one_#{role_name}").class.should == instance.class
+      end
+    end
+  end
+
+  it "should add to has_one's conterpart role when non-identifying roles are assigned values" do
+    @entities.zip(@test_role_names).each do |entity, identifying_role|
+      @test_role_names.zip(@role_values).each do |role_name, value|
+        next if role_name == identifying_role or !value
+
+        # Test the has_one role:
+        role = entity.class.roles(role_name)
+        old_counterpart = entity.send(:"#{role_name}")
+        entity.send(:"#{role_name}=", value)
+        counterpart = entity.send(:"#{role_name}")
+        old_counterpart.should_not == counterpart
+        counterpart.send(role.counterpart.name).should be_include(entity)
+        old_counterpart.send(role.counterpart.name).should_not be_include(entity) if old_counterpart
+
+        # Test the one_to_one role:
+        role = entity.class.roles(:"one_#{role_name}")
+        old_counterpart = entity.send(:"one_#{role_name}")
+        entity.send(:"one_#{role_name}=", value)
+        counterpart = entity.send(:"one_#{role_name}")
+        old_counterpart.should_not == counterpart   # Make sure we changed it!
+        counterpart.send(role.counterpart.name).should == entity
+        old_counterpart.send(role.counterpart.name).should be_nil if old_counterpart
       end
     end
   end
 
   it "should allow its non-identifying roles to be assigned nil" do
-    @entities.zip(@roles).each do |entity, identifying_role|
-      @roles.zip(@role_values).each do |role, value|
-        next if role == identifying_role
-        entity.send(:"#{role}=", value)
+    @entities.zip(@test_role_names).each do |entity, identifying_role|
+      @test_role_names.zip(@role_values).each do |role_name, value|
+        next if role_name == identifying_role
+        entity.send(:"#{role_name}=", value)
         lambda {
-            entity.send(:"#{role}=", nil)
+            entity.send(:"#{role_name}=", nil)
           }.should_not raise_error
         lambda {
-            entity.send(:"one_#{role}=", nil)
+            entity.send(:"one_#{role_name}=", nil)
           }.should_not raise_error
       end
     end
