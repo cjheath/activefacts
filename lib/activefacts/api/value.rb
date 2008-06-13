@@ -49,7 +49,8 @@ module ActiveFacts
         # verbalise this ValueType
         def verbalise
           # REVISIT: Add length and scale here, if set
-          "#{basename} = #{superclass.name}();"
+          # REVISIT: Set vocabulary name of superclass if not same as this
+          "#{basename} = #{superclass.basename}();"
         end
 
         def identifying_role_values(*args)
