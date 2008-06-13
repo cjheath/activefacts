@@ -65,7 +65,11 @@ describe "An instance of every type of Concept" do
           class TestSubBy#{base_type.name} < TestBy#{base_type.name}
             # Entity subtypes, inherit identification and all roles
           end
-        }
+
+          class TestBy#{base_type.name}Entity
+            identified_by :test_by_#{base_type.name.snakecase}
+            one_to_one :test_by_#{base_type.name.snakecase}
+          end}
       end
     end
 
@@ -96,14 +100,14 @@ describe "An instance of every type of Concept" do
     @date_sub_value = Mod::DateSubValue.new(2008, 04, 25)
     @date_time_sub_value = Mod::DateTimeSubValue.new(2008, 04, 26, 10, 28, 14)
 
-    # Entities identified by Value Type and SubType instances
+    # Entities identified by Value Type, SubType and Entity-by-value-type instances
     @test_by_int = Mod::TestByInt.new(2)
     @test_by_real = Mod::TestByReal.new(2.0)
     @test_by_auto_counter = Mod::TestByAutoCounter.new(2)
     @test_by_auto_counter_new = Mod::TestByAutoCounter.new(:new)
     @test_by_string = Mod::TestByString.new("two")
-    #@test_by_date = Mod::TestByDate.new(2008,04,28)
     @test_by_date = Mod::TestByDate.new(Date.new(2008,04,28))
+    #@test_by_date = Mod::TestByDate.new(2008,04,28)
     @test_by_date_time = Mod::TestByDateTime.new(2008,04,28,10,28,15)
     #@test_by_date_time = Mod::TestByDateTime.new(DateTime.new(2008,04,28,10,28,15))
 
@@ -114,6 +118,14 @@ describe "An instance of every type of Concept" do
     @test_by_string_sub = Mod::TestByStringSub.new("six")
     @test_by_date_sub = Mod::TestByDateSub.new(Date.new(2008,04,27))
     @test_by_date_time_sub = Mod::TestByDateTimeSub.new(2008,04,29,10,28,15)
+
+    @test_by_int_entity = Mod::TestByIntEntity.new(@test_by_int)
+    @test_by_real_entity = Mod::TestByRealEntity.new(@test_by_real)
+    @test_by_auto_counter_entity = Mod::TestByAutoCounterEntity.new(@test_by_auto_counter)
+    @test_by_auto_counter_new_entity = Mod::TestByAutoCounterEntity.new(@test_by_auto_counter_new)
+    @test_by_string_entity = Mod::TestByStringEntity.new(@test_by_string)
+    @test_by_date_entity = Mod::TestByDateEntity.new(@test_by_date)
+    @test_by_date_time_entity = Mod::TestByDateTimeEntity.new(@test_by_date_time)
 
     # Entity subtypes
     @test_sub_by_int = Mod::TestSubByInt.new(2)
@@ -162,6 +174,19 @@ describe "An instance of every type of Concept" do
         @test_by_string_sub, @test_by_date_sub, @test_by_date_time_sub,
         @test_sub_by_int, @test_sub_by_real, @test_sub_by_auto_counter, @test_sub_by_auto_counter_new,
         @test_sub_by_string, @test_sub_by_date, @test_sub_by_date_time,
+      ]
+    @entities_by_entity = [
+        @test_by_int_entity,
+        @test_by_real_entity,
+        @test_by_auto_counter_entity,
+        @test_by_auto_counter_new_entity,
+        @test_by_string_entity,
+        @test_by_date_entity,
+        @test_by_date_time_entity,
+      ]
+    @entities_by_entity_types = [
+        Mod::TestByIntEntity, Mod::TestByRealEntity, Mod::TestByAutoCounterEntity, Mod::TestByAutoCounterEntity,
+        Mod::TestByStringEntity, Mod::TestByDateEntity, Mod::TestByDateTimeEntity,
       ]
     @test_role_names = [
         :int_value, :real_value, :auto_counter_value, :auto_counter_value,
@@ -219,7 +244,7 @@ describe "An instance of every type of Concept" do
   end
 
   it "if an entity, should respond to verbalise" do
-    @entities.each do |entity|
+    (@entities+@entities_by_entity).each do |entity|
       #puts entity.verbalise
       entity.respond_to?(:verbalise).should be_true
       verbalisation = entity.verbalise
@@ -234,7 +259,7 @@ describe "An instance of every type of Concept" do
   end
 
   it "should respond to constellation" do
-    (@value_instances+@entities).each do |instance|
+    (@value_instances+@entities+@entities_by_entity).each do |instance|
       instance.respond_to?(:constellation).should be_true
     end
   end
@@ -248,19 +273,28 @@ describe "An instance of every type of Concept" do
         entity.respond_to?(:"one_#{role_name}=").should be_true
       end
     end
+    @entities_by_entity.each do |entity|
+      role = entity.class.roles(entity.class.identifying_roles[0])
+      role_name = role.name
+      entity.respond_to?(role_name).should be_true
+      entity.respond_to?(:"#{role_name}=").should be_true
+    end
   end
 
   it "should return the Concept in response to .class()" do
     @value_types.zip(@value_instances).each do |concept, instance|
       instance.class.should == concept
     end
-    @entity_types.zip((@entities)).each do |concept, instance|
+    @entity_types.zip(@entities).each do |concept, instance|
+      instance.class.should == concept
+      end
+    @entities_by_entity_types.zip(@entities_by_entity).each do |concept, instance|
       instance.class.should == concept
     end
   end
 
   it "should return the module in response to .vocabulary()" do
-    (@value_types+@entity_types).zip((@value_instances+@entities)).each do |concept, instance|
+    (@value_types+@entity_types).zip((@value_instances+@entities+@entities_by_entity)).each do |concept, instance|
       instance.class.vocabulary.should == Mod
     end
   end
@@ -292,6 +326,13 @@ describe "An instance of every type of Concept" do
     @entities.zip(@test_role_names, @role_values).each do |entity, role_name, value|
       lambda {
           entity.send(:"#{role_name}=", value)
+        }.should raise_error
+    end
+    @entities_by_entity.each do |entity|
+      role = entity.class.roles(entity.class.identifying_roles[0])
+      role_name = role.name
+      lambda {
+          entity.send(:"#{role_name}=", nil)
         }.should raise_error
     end
   end
