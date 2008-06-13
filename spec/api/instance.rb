@@ -4,250 +4,69 @@
 #
 require "ruby-debug"
 
-describe "Concept instances" do
+describe "An instance of every type of Concept" do
   setup do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
     module Mod
-      class IntValue < Int
-        value_type
+      # These are the bas value types we're going to test:
+      @base_types = [
+          Int, Real, AutoCounter, String, Date, DateTime
+        ]
+
+      # Construct the names of the roles they play:
+      @base_type_roles = @base_types.map do |t|
+        t.name.snakecase
       end
-      class RealValue < Real
-        value_type
-      end
-      class AutoCounterValue < AutoCounter
-        value_type
-      end
-      class StringValue < String
-        value_type
-        has_one :int_value
-      end
-      class DateValue < Date
-        value_type
-      end
-      class DateTimeValue < DateTime
-        value_type
+      @role_names = @base_type_roles.inject([]) {|a, t|
+          a << :"#{t}_value"
+        } +
+        @base_type_roles.inject([]) {|a, t|
+          a << :"#{t}_sub_value"
+        }
+
+      # Create a value type and a subtype of that value type for each base type:
+      @base_types.each do |base_type|
+        eval %Q{
+          class #{base_type.name}Value < #{base_type.name}
+            value_type
+          end
+
+          class #{base_type.name}SubValue < #{base_type.name}Value
+            # Note no new "value_type" is required here, it comes through inheritance
+          end
+        }
       end
 
-      # Note no new "value_type" is required here, it comes through inheritance
-      class IntSubValue < IntValue
-      end
-      class RealSubValue < RealValue
-      end
-      class AutoCounterSubValue < AutoCounterValue
-      end
-      class StringSubValue < StringValue
-      end
-      class DateSubValue < DateValue
-      end
-      class DateTimeSubValue < DateTimeValue
-      end
+      # Create a TestByX, TestByXSub, and TestSubByX class for all base types X
+      # Each class has a has_one and a one_to_one for all roles.
+      # and is identified by the has_one :x role
+      @base_types.each do |base_type|
+        eval %Q{
+          class TestBy#{base_type.name}
+            identified_by :#{base_type.name.snakecase}_value#{
+              @role_names.map do |role_name|
+                %Q{
+            has_one :#{role_name}
+            one_to_one :one_#{role_name}, #{role_name.to_s.camelcase(true)}}
+              end*""
+            }
+          end
 
-      class TestByInt
-        identified_by :int_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
+          class TestBy#{base_type.name}Sub
+            identified_by :#{base_type.name.snakecase}_sub_value#{
+              @role_names.map do |role_name|
+                %Q{
+            has_one :#{role_name}
+            one_to_one :one_#{role_name}, #{role_name.to_s.camelcase(true)}}
+              end*""
+            }
+          end
 
-      class TestByReal
-        identified_by :real_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
+          class TestSubBy#{base_type.name} < TestBy#{base_type.name}
+            # Entity subtypes, inherit identification and all roles
+          end
+        }
       end
-
-      class TestByAutoCounter
-        identified_by :auto_counter_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByString
-        identified_by :string_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByDate
-        identified_by :date_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByDateTime
-        identified_by :date_time_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByIntSub
-        identified_by :int_sub_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByRealSub
-        identified_by :real_sub_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByAutoCounterSub
-        identified_by :auto_counter_sub_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByStringSub
-        identified_by :string_sub_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByDateSub
-        identified_by :date_sub_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      class TestByDateTimeSub
-        identified_by :date_time_sub_value
-        has_one :int_value
-        has_one :real_value
-        has_one :date_value
-        has_one :date_time_value
-        has_one :auto_counter_value
-        has_one :string_value
-        has_one :int_sub_value
-        has_one :real_sub_value
-        has_one :date_sub_value
-        has_one :date_time_sub_value
-        has_one :auto_counter_sub_value
-        has_one :string_sub_value
-      end
-
-      # Entity subtypes, inherit identification and all roles
-      class TestSubByInt < TestByInt
-      end
-      class TestSubByReal < TestByReal
-      end
-      class TestSubByAutoCounter < TestByAutoCounter
-      end
-      class TestSubByString < TestByString
-      end
-      class TestSubByDate < TestByDate
-      end
-      class TestSubByDateTime < TestByDateTime
-      end
-
     end
 
     # Simple Values
@@ -362,7 +181,7 @@ describe "Concept instances" do
       ]
   end
 
-  it "All value types should verbalise" do
+  it "if a value type, should verbalise" do
     @value_types.each do |value_type|
       #puts "#{value_type} verbalises as #{value_type.verbalise}"
       value_type.respond_to?(:verbalise).should be_true
@@ -372,7 +191,7 @@ describe "Concept instances" do
     end
   end
 
-  it "identifying an entity type should verbalise" do
+  it "if an entity type, should verbalise" do
     @entity_types.each do |entity_type|
       #puts entity_type.verbalise
       entity_type.respond_to?(:verbalise).should be_true
@@ -390,7 +209,7 @@ describe "Concept instances" do
     end
   end
 
-  it "All types of values should respond to verbalise" do
+  it "if a value, should verbalise" do
     @value_instances.each do |value|
       #puts value.verbalise
       value.respond_to?(:verbalise).should be_true
@@ -399,7 +218,7 @@ describe "Concept instances" do
     end
   end
 
-  it "Entity types identified by all types of value role should respond to verbalise" do
+  it "if an entity, should respond to verbalise" do
     @entities.each do |entity|
       #puts entity.verbalise
       entity.respond_to?(:verbalise).should be_true
@@ -414,17 +233,19 @@ describe "Concept instances" do
     end
   end
 
-  it "All types of value and entity should respond to constellation" do
+  it "should respond to constellation" do
     (@value_instances+@entities).each do |instance|
       instance.respond_to?(:constellation).should be_true
     end
   end
 
-  it "Each entity should respond to all its roles" do
+  it "should respond to all its roles" do
     @entities.each do |entity|
       @roles.each do |role|
         entity.respond_to?(role).should be_true
         entity.respond_to?(:"#{role}=").should be_true
+        entity.respond_to?(:"one_#{role}").should be_true
+        entity.respond_to?(:"one_#{role}=").should be_true
       end
     end
   end
@@ -466,12 +287,24 @@ describe "Concept instances" do
     end
   end
 
+  it "that are entities should not allow its identifying roles to be assigned" do
+    pending
+    @entities.zip(@roles, @role_values).each do |entity, role, value|
+      lambda {
+          entity.send(:"#{role}=", value)
+        }.should raise_error
+    end
+  end
+
   it "should allow its non-identifying roles to be assigned values" do
     @entities.zip(@roles).each do |entity, identifying_role|
       @roles.zip(@role_values).each do |role, value|
         next if role == identifying_role
         lambda {
             entity.send(:"#{role}=", value)
+          }.should_not raise_error
+        lambda {
+            entity.send(:"one_#{role}=", value)
           }.should_not raise_error
       end
     end
@@ -487,6 +320,10 @@ describe "Concept instances" do
             entity.send(:"#{role}=", instance)
           }.should_not raise_error
         entity.send(role).class.should == klass
+        lambda {
+            entity.send(:"one_#{role}=", instance)
+          }.should_not raise_error
+        entity.send(:"one_#{role}").class.should == klass
       end
     end
   end
@@ -500,6 +337,10 @@ describe "Concept instances" do
             entity.send(:"#{role}=", instance)
           }.should_not raise_error
         entity.send(role).class.should == instance.class
+        lambda {
+            entity.send(:"one_#{role}=", instance)
+          }.should_not raise_error
+        entity.send(:"one_#{role}").class.should == instance.class
       end
     end
   end
@@ -512,16 +353,10 @@ describe "Concept instances" do
         lambda {
             entity.send(:"#{role}=", nil)
           }.should_not raise_error
+        lambda {
+            entity.send(:"one_#{role}=", nil)
+          }.should_not raise_error
       end
-    end
-  end
-
-  it "should not allow its identifying roles to be assigned" do
-    pending
-    @entities.zip(@roles, @role_values).each do |entity, role, value|
-      lambda {
-          entity.send(:"#{role}=", value)
-        }.should raise_error
     end
   end
 

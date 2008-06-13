@@ -8,7 +8,7 @@ require 'activefacts/api'
 
 require base+'api/constellation'
 require base+'api/entity_type'
-require base+'api/value'
+require base+'api/instance'
 require base+'api/autocounter'
 require base+'api/value_type'
 require base+'api/roles'
