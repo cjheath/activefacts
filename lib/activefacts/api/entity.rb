@@ -164,9 +164,27 @@ module ActiveFacts
 
           # Make the new entity instance a member of this constellation:
           instance.constellation = constellation
-          #puts "Indexed new #{basename} using #{key.inspect} on #{constellation.object_id}"
-          # DEBUG: puts "indexing entity #{instance.class.basename} on #{key.inspect}"
+          return *index_instance(instance, key, ir)
+        end
+
+        def index_instance(instance, key = nil, key_roles = nil)
+          # Derive a new key if we didn't receive one or if the roles are different:
+          unless key && key_roles && key_roles == identifying_roles
+            key = (key_roles = identifying_roles).map do |role_name|
+              instance.send role_name
+            end
+          end
+
+          # Index the instance for this class in the constellation
+          instances = instance.constellation.instances[self]
           instances[key] = instance
+          # DEBUG: puts "indexing entity #{basename} using #{key.inspect} in #{constellation.object_id}"
+
+          # Index the instance for each supertype:
+          supertypes.each do |supertype|
+            supertype.index_instance(instance, key, key_roles)
+          end
+
           return instance, key
         end
 
@@ -176,7 +194,8 @@ module ActiveFacts
         def initialise_entity_type(*args)
           #puts "Initialising entity type #{self} using #{args.inspect}"
           @identifying_roles = superclass.identifying_roles if superclass.respond_to?(:identifying_roles)
-          # REVISIT: identifying_roles here are the symbols passed in, not the Role objects we should use:
+          # REVISIT: @identifying_roles here are the symbols passed in, not the Role objects we should use.
+          # We'd need late binding to use Role objects...
           @identifying_roles = args if args.size > 0 || !@identifying_roles
         end
 

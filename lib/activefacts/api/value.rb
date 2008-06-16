@@ -74,11 +74,22 @@ module ActiveFacts
           return instance, key if instance      # A matching instance of this class
 
           instance = new(*args)
-          key = instance.identifying_role_values
-          # REVISIT: Replace with proper indexing:
+
           instance.constellation = constellation
-          # DEBUG: puts "indexing value #{instance.class.basename} on #{key.inspect}" if key == :new or key == [:new] or key == [[:new]]
+          return *index_instance(instance)
+        end
+
+        def index_instance(instance, key = nil)
+          instances = instance.constellation.instances[self]
+          key = instance.identifying_role_values
           instances[key] = instance
+          # DEBUG: puts "indexing value #{basename} using #{key.inspect} in #{constellation.object_id}"
+
+          # Index the instance for each supertype:
+          supertypes.each do |supertype|
+            supertype.index_instance(instance, key)
+          end
+
           return instance, key
         end
 

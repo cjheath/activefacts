@@ -20,9 +20,13 @@ module ActiveFacts
         when nil
           @roles
         when Symbol, String
-          role = @roles[name.to_sym]
-          # REVISIT: Search other supertypes as well:
-          role = superclass.roles(name) rescue nil unless role
+          # Search this class then all supertypes:
+          unless role = @roles[name.to_sym]
+            role = supertypes.each do |supertype|
+                r = supertype.roles(name) rescue nil
+                break r if r
+              end
+          end
           raise "Role #{basename}.#{name} is not defined" unless role
           # Bind the role if possible, but don't require it:
           role.resolve_player(vocabulary) rescue nil unless Class === role.player
@@ -63,6 +67,7 @@ module ActiveFacts
             when Class
               @supertypes << concept
             when Symbol
+              # No late binding here:
               @supertypes << (concept = vocabulary.const_get(concept.to_s.camelcase))
             else
               raise "Illegal supertype #{concept.inspect} for #{self.class.basename}"
