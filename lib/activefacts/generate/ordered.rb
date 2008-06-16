@@ -62,7 +62,7 @@ module ActiveFacts
     def value_types_dump
       done_banner = false
       @vocabulary.all_feature.sort_by{|o| o.name}.each{|o|
-          next if EntityType === o
+          next unless ValueType === o
 
           value_type_banner unless done_banner
           done_banner = true
@@ -170,7 +170,8 @@ module ActiveFacts
       # We need to get the adjectives for the roles from the identifying fact's preferred readings:
       identifying_facts = role_refs.map{|rr| rr.role.fact_type }.uniq
       preferred_readings = identifying_facts.inject({}){|reading_hash, fact_type|
-          reading_hash[fact_type] = fact_type.preferred_reading
+          pr = fact_type.preferred_reading
+          reading_hash[fact_type] = pr
           reading_hash
         }
       #p identifying_facts.map{|f| f.preferred_reading }
@@ -399,6 +400,7 @@ module ActiveFacts
 #         f.all_role.each{|role|
 #             # debug "\tConsidering Role #{role.verbalise}"
 #             fact_type = role.fact_type
+              next if TypeInheritance === fact_type
               next if @fact_types_dumped[fact_type] || skip_fact_type(fact_type)
               next if fact_type.all_role.detect{|r| EntityType === r.concept }
 
@@ -409,7 +411,7 @@ module ActiveFacts
         }
 
       # REVISIT: Find out why some fact types are missed during entity dumping:
-      @vocabulary.constellation.FactType.values.sort_by{|fact_type|
+      @vocabulary.constellation.FactType.values.select{|fact_type| !(TypeInheritance === fact_type)}.sort_by{|fact_type|
           # Any sort key, as long as the result is stable. That means unique too!
           [ (pr = fact_type.preferred_reading).
               role_sequence.
