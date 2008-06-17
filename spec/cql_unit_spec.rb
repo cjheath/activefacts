@@ -190,24 +190,24 @@ describe "Entity Types" do
       [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
     [ "a = entity identified by b: c;",         # Entity type declaration
-      [["a", [:entity_type, [], {:roles=>["b"]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
     [ "a = entity identified by b where c;",            # Entity type declaration with where
-      [["a", [:entity_type, [], {:roles=>["b"]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
     [ "a = entity identified by b and c: d;",   # Entity type declaration with two-part identifier
-      [["a", [:entity_type, [], {:roles=>["b", "c"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
     [ "a = entity identified by b, c: d;",              # Entity type declaration with two-part identifier
-      [["a", [:entity_type, [], {:roles=>["b", "c"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
     [ "a=b(); c=entity identified by a:d;",
       [["a", [:data_type, "b", [ nil, nil ], nil, []]],
-        ["c", [:entity_type, [], {:roles=>["a"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
+        ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
     [ " a = b ( ) ; c = entity identified by a : d ; ",
       [["a", [:data_type, "b", [ nil, nil ], nil, []]],
-        ["c", [:entity_type, [], {:roles=>["a"]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
+        ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
     [ "a=entity(.c):maybe d;",
       [["a", [:entity_type, [], {:mode=>"c"}, [[:fact_clause, ["maybe"], [{:words=>["d"]}]]]]]]
@@ -225,31 +225,31 @@ describe "Entity Types" do
       [[nil, [:fact_type, [[:fact_clause, [], [{:words=>["Director", "is", "old"]}]]], [[:fact_clause, [], [{:words=>["Person", "directs", "company"]}]], [:fact_clause, [], [{:words=>["Person", "is", "of", "age"]}]], [">", [:variable, "age"], 60]]]]]
     ],
     [ "Employee is a kind of Person;",
-      [["Employee", [:entity_type, ["Person"], nil, []]]]
+      [["Employee", [:entity_type, ["Person"], nil, nil]]]
     ],
     [ "Employee is a subtype of Person;",
-      [["Employee", [:entity_type, ["Person"], nil, []]]]
+      [["Employee", [:entity_type, ["Person"], nil, nil]]]
     ],
     [ "Employee = subtype of Person;",
-      [["Employee", [:entity_type, ["Person"], nil, []]]]
+      [["Employee", [:entity_type, ["Person"], nil, nil]]]
     ],
     [ "Employee is defined as subtype of Person;",
-      [["Employee", [:entity_type, ["Person"], nil, []]]]
+      [["Employee", [:entity_type, ["Person"], nil, nil]]]
     ],
     [ "AustralianEmployee = subtype of Employee, Australian;",
-      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], nil, []]]]
+      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], nil, nil]]]
     ],
     [ "Employee is a kind of Person identified by EmployeeNumber;",
-      [["Employee", [:entity_type, ["Person"], {:roles=>["EmployeeNumber"]}, []]]]
+      [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
     ],
     [ "Employee = subtype of Person identified by EmployeeNumber;",
-      [["Employee", [:entity_type, ["Person"], {:roles=>["EmployeeNumber"]}, []]]]
+      [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
     ],
     [ "Employee is defined as subtype of Person identified by EmployeeNumber;",
-      [["Employee", [:entity_type, ["Person"], {:roles=>["EmployeeNumber"]}, []]]]
+      [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
     ],
     [ "AustralianEmployee = subtype of Employee, Australian identified by TaxFileNumber;",
-      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], {:roles=>["TaxFileNumber"]}, []]]]
+      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], {:roles=>[["TaxFileNumber"]]}, nil]]]
     ],
   ]
 

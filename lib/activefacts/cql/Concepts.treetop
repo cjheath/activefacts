@@ -15,7 +15,7 @@ module ActiveFacts
           / is  # Semantically, this syntax requires non-nil identification
         )
         s identification
-          entity_conditions
+          ec:entity_conditions?
         s ';' s
         {
           def value
@@ -24,7 +24,7 @@ module ActiveFacts
                 :entity_type,
                 sup.respond_to?(:supertype_list) ? sup.supertype_list.value : [],
                 identification.text_value.empty? ? nil : identification.value,
-                entity_conditions.conditions
+                ec.empty? ? nil : ec.conditions
               ]
             ]
           end
@@ -53,15 +53,31 @@ module ActiveFacts
         head:role_player s tail:( ( and S / ',' s ) role:role_player s )*
         {
           def roles
-            [head.text_value] + tail.elements.map{|i| i.role.text_value}
+            [head.value] + tail.elements.map{|i| i.role.value}
           end
         }
       end
 
+          # We can't tell which word is an adjective and which is a concept here.
+          # The concept might be forward-referenced, but not if adjectives are used.
           rule role_player
-            id0:role_player_id '-' (s id1:role_player_id ( s id2:role_player_id )? )?
+            id0:role_player_id '-' tail:(s id1:role_player_id last:( s id2:role_player_id )? )?
+            {
+              def value
+                [ id0.text_value,
+                  tail.empty? ? nil : tail.id1.text_value,
+                  tail.empty? || tail.last.empty? ? nil : tail.last.id2.text_value ].compact
+              end
+            }
             /
-            id0:role_player_id (s id1:role_player_id ( s '-' id2:role_player_id / s id2:role_player_id )? )?
+            id0:role_player_id tail:(s id1:role_player_id last:( s '-' id2:role_player_id / s id2:role_player_id )? )?
+            {
+              def value
+                [ id0.text_value,
+                  tail.empty? ? nil : tail.id1.text_value,
+                  tail.empty? || tail.last.empty? ? nil : tail.last.id2.text_value ].compact
+              end
+            }
           end
 
           rule role_player_id
@@ -78,7 +94,7 @@ module ActiveFacts
           end
 
       rule entity_conditions
-        (':' / where)? s c:conditions?
+        (':' / where) s c:conditions?
         {
           def conditions
             c.empty? ? [] : c.condition_list

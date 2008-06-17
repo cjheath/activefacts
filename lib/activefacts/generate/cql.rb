@@ -50,8 +50,9 @@ module ActiveFacts
                   # REVISIT: Need to display as string or numeric according to type here...
                   min = ar.value_range.minimum_bound
                   max = ar.value_range.maximum_bound
+
                   (min ? min.value : "") +
-                  (min.value != max.value ? (".." + (max ? max.value : "")) : "")
+                  (min.value != (max&&max.value) ? (".." + (max ? max.value : "")) : "")
                 }*", "
             }}" : ""
           };"

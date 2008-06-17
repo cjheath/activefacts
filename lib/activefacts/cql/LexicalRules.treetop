@@ -11,7 +11,8 @@ module ActiveFacts
         {
           def value
             if !tail.empty?
-              [ number.value, tail.end.value ]
+              last = tail.end.value unless tail.end.empty?
+              [ number.value, last ]
             else
               number.value
             end
@@ -28,10 +29,11 @@ module ActiveFacts
       rule string_range
         string s tail:( '..' s end:string? s )?
         {
+          # Ranges require the original text of the string, not the content:
           def value
-            first = string.value
+            first = string.text_value
             if !tail.empty?
-              last = tail.end.value unless tail.empty?
+              last = tail.end.text_value unless tail.end.empty?
               [ first, last ]
             else
               first
@@ -71,6 +73,7 @@ module ActiveFacts
         "'" (string_char)* "'"
         {
           def value
+            text_value
             eval(text_value.sub(/\A'(.*)'\Z/,'"\1"'))
           end
         }

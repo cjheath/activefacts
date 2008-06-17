@@ -42,6 +42,8 @@ module ActiveFacts
           end
           value.constellation = constellation if constellation
         else
+          value = [value] unless Array === value
+          raise "No parameters were provided to identify an #{@player.basename} instance" if value == []
           if constellation
             value = constellation.send(@player.basename.to_sym, *value)
           else

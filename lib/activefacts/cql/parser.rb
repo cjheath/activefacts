@@ -94,6 +94,9 @@ module ActiveFacts
         return
       end
 
+      #puts 'v'*20
+      #p value
+      #puts '^'*20
       debug "Processing #{[kind, name].compact*" "}" do
         reset_defined_roles
         case kind
@@ -120,6 +123,15 @@ module ActiveFacts
     def entity_type(name, supertypes, value)
       #print "entity_type parameters for #{name}: "; p value
       identification, clauses = *value
+
+      @local_roles[name] = true
+      if identification and id_roles = identification[:roles]
+        id_roles.each do |id_role|
+          # REVISIT: Separate the role player from the adjectives in the id_role
+          @local_roles
+          @local_forms
+        end
+      end
 
       raise "Entity type clauses must all be fact types" if clauses.detect{|c| c[0] != :fact_clause }
       find_all_defined_roles(clauses)
@@ -247,6 +259,8 @@ module ActiveFacts
     def canonicalise_reading(qualifiers, roles)
       # Identify all role players and expand the adjectives and linking words:
       roles.replace(roles.inject([]){|new_roles, role|
+          #puts "Processing role #{role.inspect}"
+
           words = role[:words]
           role.delete(:words)
 
@@ -265,6 +279,7 @@ module ActiveFacts
           possible_extra_trailing_adjectives = []
           words.each{|w|
               local_role = @local_roles && @local_roles[w]
+              # REVISIT: Case in point: In the clauses of an entity definition, the entity name is a local role
               if (local_role || type_by_name(w))
                 # We've found a role player. The quantifier & leading adjectives
                 # go with the first player found, the trailing adjectives, function,
@@ -291,6 +306,8 @@ module ActiveFacts
                 end
               end
             }
+          raise "Role player #{la[-1]} for '#{la*" "}' not found" if (la)
+
           # Merge remaining parameters into the last role created, if any
           if (ta = role[:trailing_adjective]) # Extra trailing adjectives
             possible_extra_trailing_adjectives.each{|w|
