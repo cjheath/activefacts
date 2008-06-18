@@ -4,8 +4,11 @@
 #
 require 'rubygems'
 require 'stringio'
+require 'activefacts/support'
 require 'activefacts/vocabulary'
 require 'activefacts/generate/cql'
+
+include ActiveFacts
 
 describe "CQL Dumper" do
   def self.hide(*a,&b)

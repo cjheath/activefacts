@@ -5,8 +5,11 @@
 require 'rubygems'
 require 'stringio'
 require 'activefacts/vocabulary'
+require 'activefacts/support'
 require 'activefacts/input/orm'
 require 'activefacts/generate/cql'
+
+include ActiveFacts
 
 describe "Norma Loader" do
   # Generate and return the CQL for the given vocabulary

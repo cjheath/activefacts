@@ -140,8 +140,8 @@ module ActiveFacts
                   player_name = role_phrase[:player]
                   player = @constellation.Concept[[player_name, @vocabulary.identifying_role_values]]
 
-                  # REVISIT: This prevents forward referencing. We'll need to create an abstract Concept here, and replace it with the concrete concept later:
-                  raise "Concept #{player_name} not found" unless player
+                  # Handle a forward-referenced entity type as an identifying role:
+                  player = @constellation.EntityType(player_name, @vocabulary) unless player
 
                   role = @constellation.Role(:new, :fact_type => fact_type, :concept => player)
                   role_name = role_phrase[:role_name]

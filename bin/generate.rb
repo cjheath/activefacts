@@ -8,16 +8,8 @@ $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 require 'rubygems'
 require 'activefacts'
 require 'activefacts/vocabulary'
+require 'activefacts/support'
 include ActiveFacts
-
-$debug_indent = 0
-def debug(arg, &block)
-  puts "  "*$debug_indent + arg if ENV["DEBUG"]
-  $debug_indent += 1
-  r = yield if block
-  $debug_indent -= 1
-  r
-end
 
 arg = ARGV.shift
 

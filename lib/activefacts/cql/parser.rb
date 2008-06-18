@@ -115,19 +115,33 @@ module ActiveFacts
       #print "entity_type parameters for #{name}: "; p value
       identification, clauses = *value
 
+      # The entity is a local role:
       @local_roles[name] = true
-      if identification and id_roles = identification[:roles]
-        id_roles.each do |id_role|
-          # REVISIT: Separate the role player from the adjectives in the id_role
-          @local_roles
-          @local_forms
-        end
-      end
 
       clauses ||= []
 
       raise "Entity type clauses must all be fact types" if clauses.detect{|c| c[0] != :fact_clause }
       find_all_defined_roles(clauses)
+
+      if identification and id_roles = identification[:roles]
+        debug "Checking for forward-referenced identifying roles" do
+          id_roles.each do |id_role|
+            debug id_role.inspect
+
+            # REVISIT: Separate the role player from the adjectives in the id_role
+            # @local_roles, @local_forms
+
+            if id_role.size == 1
+              w = id_role[0]
+              unless (@local_roles[w] or type_by_name(w))
+                debug "Forward referenced Entity Type #{w}"
+                # Treat it like a local role
+                @local_roles[w] = true
+              end
+            end
+          end
+        end
+      end
 
       debug "Entity known by #{identification.inspect}" do
         clauses.each{|c| clause(c) }
@@ -252,7 +266,7 @@ module ActiveFacts
     def canonicalise_reading(qualifiers, roles)
       # Identify all role players and expand the adjectives and linking words:
       roles.replace(roles.inject([]){|new_roles, role|
-          #puts "Processing role #{role.inspect}"
+          debug "Processing role #{role.inspect}"
 
           words = role[:words]
           role.delete(:words)
@@ -271,7 +285,7 @@ module ActiveFacts
           new_role = nil
           possible_extra_trailing_adjectives = []
           words.each{|w|
-              local_role = @local_roles && @local_roles[w]
+              local_role = @local_roles[w]
               # REVISIT: Case in point: In the clauses of an entity definition, the entity name is a local role
               if (local_role || type_by_name(w))
                 # We've found a role player. The quantifier & leading adjectives
