@@ -14,15 +14,6 @@ require 'activefacts/cql/DataTypes'
 require 'activefacts/cql/FactTypes'
 require 'activefacts/cql/CQLParser'
 
-$debug_indent = 0
-def debug(arg, &block)
-  puts "  "*$debug_indent + arg if ENV["DEBUG"]
-  $debug_indent += 1
-  r = yield if block
-  $debug_indent -= 1
-  r
-end
-
 module ActiveFacts
   # Extend the generated parser:
   class CQLParser
@@ -132,6 +123,8 @@ module ActiveFacts
           @local_forms
         end
       end
+
+      clauses ||= []
 
       raise "Entity type clauses must all be fact types" if clauses.detect{|c| c[0] != :fact_clause }
       find_all_defined_roles(clauses)

@@ -41,6 +41,7 @@ module ActiveFacts
             kind, *value = @parser.definition(node)
             #print "Parsed '#{node.text_value}'"
             #print " to "; p value
+            raise "Definitions must be in a vocabulary" if kind != :vocabulary and !@vocabulary
             case kind
             when :vocabulary
               @vocabulary = @constellation.Vocabulary(value[0], nil)
@@ -56,7 +57,7 @@ module ActiveFacts
 
             nil
           }
-        raise parser.failure_reason unless result
+        raise @parser.failure_reason unless result
         @vocabulary
       end
 
@@ -65,7 +66,7 @@ module ActiveFacts
 
         # Create the base type:
         unless base_type = @constellation.ValueType[[@constellation.Name(base_type_name), @vocabulary]]
-          puts "REVISIT: Creating base ValueType #{base_type_name} in #{@vocabulary.inspect}"
+          #puts "REVISIT: Creating base ValueType #{base_type_name} in #{@vocabulary.inspect}"
           base_type = @constellation.ValueType(base_type_name, @vocabulary)
           return if base_type_name == name
         end
@@ -93,152 +94,167 @@ module ActiveFacts
 
       def entity_type(name, supertypes, identification, clauses)
         #puts "Entity Type #{name}, supertypes #{supertypes.inspect}, id #{identification.inspect}, clauses = #{clauses.inspect}"
-        puts "Defining Entity Type #{name}"
+        debug "Defining Entity Type #{name}" do
+          # Assert the entity:
+          # REVISIT: If this entity was forward referenced, this new object subsumes its roles
+          et = @constellation.EntityType(name, @vocabulary)
 
-        # Assert the entity:
-        # REVISIT: If this entity was forward referenced, this new object subsumes its roles
-        et = @constellation.EntityType(name, @vocabulary)
-
-        # Set up its supertypes:
-        supertypes.each do |supertype|
-          puts "\tsupertype #{supertype}"
-          supertype = @constellation.EntityType(supertype, @vocabulary)
-          inheritance_fact = @constellation.TypeInheritance(et, supertype)
-          inheritance_fact.provides_identification = true if !identification && supertype == supertypes[0]
-        end
-
-        # Process the entity type clauses (fact type readings)
-        defined_facts_by_role_players = {}
-        identifying_roles = []  # In whatever order they're constructed
-        clauses.each do |clause|
-          type, qualifiers, phrases = *clause
-          print "\tclause: "; p clause
-          role_phrases = phrases.map do |phrase|
-            Hash === phrase ? phrase : nil
-          end.compact
-          print "\t\tRoles(#{role_phrases.size}): "; p role_phrases
-
-          player_names = role_phrases.map do |role_phrase|
-            role_phrase[:player]
+          # Set up its supertypes:
+          supertypes.each do |supertype_name|
+            debug "Supertype #{supertype_name}"
+            supertype = @constellation.EntityType(supertype_name, @vocabulary)
+            inheritance_fact = @constellation.TypeInheritance(et, supertype, :fact_type_id => :new)
+            if !identification && supertype_name == supertypes[0]
+              inheritance_fact.provides_identification = true
+            end
           end
-          
-          # Look for an existing fact type involving these players, or make one:
-          fact_type = defined_facts_by_role_players[player_names.sort]
-          is_new_fact_type = false
-          unless fact_type
-            is_new_fact_type = true
-            defined_facts_by_role_players[player_names.sort] =
-              fact_type = @constellation.FactType(:new)
 
-            # Add the FactType's Roles:
-            non_player_roles = []
-            role_phrases.each do |role_phrase|
+          # Process the entity type clauses (fact type readings)
+          defined_facts_by_role_players = {}
+          identifying_roles = []  # In whatever order they're constructed
+          clauses.each do |clause|
+            type, qualifiers, phrases = *clause
+            debug "Clause: #{clause.inspect}"
+            role_phrases = phrases.map do |phrase|
+              Hash === phrase ? phrase : nil
+            end.compact
+            debug "Roles(#{role_phrases.size}): #{role_phrases.inspect}"
+
+            player_names = role_phrases.map do |role_phrase|
+              role_phrase[:player]
+            end
+            
+            # Look for an existing fact type involving these players, or make one:
+            fact_type = defined_facts_by_role_players[player_names.sort]
+            is_new_fact_type = false
+            unless fact_type
+              is_new_fact_type = true
+              debug "Making new fact type for (#{player_names.sort*", "})" do
+                fact_type = @constellation.FactType(:new)
+                defined_facts_by_role_players[player_names.sort] = fact_type
+
+                # Add the FactType's Roles:
+                player_role = nil
+                non_player_roles = []
+                role_phrases.each do |role_phrase|
+                  player_name = role_phrase[:player]
+                  player = @constellation.Concept[[player_name, @vocabulary.identifying_role_values]]
+
+                  # REVISIT: This prevents forward referencing. We'll need to create an abstract Concept here, and replace it with the concrete concept later:
+                  raise "Concept #{player_name} not found" unless player
+
+                  role = @constellation.Role(:new, :fact_type => fact_type, :concept => player)
+                  role_name = role_phrase[:role_name]
+                  role.role_name = role_name if role_name
+
+                  debug "Added #{role.verbalise} #{role.class.roles.keys.map{|k|"#{k} => "+role.send(k).verbalise}*", "}"
+
+                  if player == et
+                    player_role = role
+                  else
+                    non_player_roles << role
+                  end
+
+                  # REVISIT: Create PresenceConstraints here when role_phrase[:quantifier] is set
+                end
+
+                if non_player_roles.size == role_phrases.size-1
+                  raise "#{name} cannot be identified by a role in a non-binary fact type" if non_player_roles.size > 1
+                  # N.B. We append player_role here for a unary fact type, a special case
+                  identifying_roles << (non_player_roles[0] || player_role)
+                else non_player_roles.size == role_phrases.size
+                  raise "Irrelevant fact in identification of '#{name}'"
+                end
+              end
+
+            end
+
+            # Create the role references and role sequence:
+            # REVISIT: Find an existing RoleSequence if sequence and adjectives match, don't make a new one:
+            role_sequence = @constellation.RoleSequence(:new)
+            role_phrases.each_with_index do |role_phrase, index|
               player_name = role_phrase[:player]
-              player = @constellation.Concept[[player_name, @vocabulary.identifying_role_values]]
+              leading_adjective = role_phrase[:leading_adjective]
+              leading_adjective = leading_adjective*" " if leading_adjective
+              trailing_adjective = role_phrase[:trailing_adjective]
+              trailing_adjective = trailing_adjective*" " if trailing_adjective
 
-              # REVISIT: This prevents forward referencing. We'll need to create an abstract Concept here, and replace it with the concrete concept later:
-              raise "Concept #{player_name} not found" unless player
+              # REVISIT: This doesn't cope when player_name is a role name.
+              # However I think that should be resolved in the CQLParser, since it
+              # builds a list of all role names defined in this definition, and can
+              # traverse it to assign actual player names on the references.
 
-              role = @constellation.Role(:new, :fact_type => fact_type, :concept => player)
-              role_name = role_phrase[:role_name]
-              role.role_name = role_name if role_name
+              roles = fact_type.all_role.select{|r| r.concept.name == player_name }
+              if roles.size > 1 && !is_new_fact_type
+                # The same player plays more than one role in this fact type.
+                # Match them up with an existing role by adjectives on a role
+                # in any role sequence (except this) of a reading of that fact type.
+                role = nil
+                role_refs = fact_type.all_reading.map{|reading|
+                    reading.role_sequence.all_role_ref
+                  }.flatten.select{|rr|
+                    rr.role.concept.name == player_name
+                  }
+                role_refs.each{|rr|
+                    break (role = rr.role) if leading_adjective == rr.leading_adjective && trailing_adjective == rr.trailing_adjective
+                  }
+                raise "Role '#{[leading_adjective, player_name, trailing_adjective].compact*" "}' doesn't match any existing role" unless role
+              else
+                role = roles[0]
+              end
 
-              non_player_roles << role unless player == et
-
-              # REVISIT: Create PresenceConstraints here when role_phrase[:quantifier] is set
+              role_ref = @constellation.RoleRef(role_sequence, index, :role => role)
+              role_ref.leading_adjective = leading_adjective if leading_adjective
+              role_ref.trailing_adjective = trailing_adjective if trailing_adjective
             end
 
-            if non_player_roles.size == role_phrases.size-1
-              raise "#{name} cannot be identified by a role in a non-binary fact type" if non_player_roles.size > 1
-              identifying_roles << non_player_roles[0]
-            else non_player_roles.size == role_phrases.size
-              raise "Irrelevant fact in identification of '#{name}'"
-            end
-
+            # Add the reading:
+            ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
+            reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
+            role_num = -1
+            reading.reading_text = phrases.map {|phrase|
+                Hash === phrase ? "{#{role_num += 1}}" : phrase
+              }*" "
           end
 
-          # Create the role references and role sequence:
-          # REVISIT: Find an existing RoleSequence if sequence and adjectives match, don't make a new one:
-          role_sequence = @constellation.RoleSequence(:new)
-          role_phrases.each_with_index do |role_phrase, index|
-            player_name = role_phrase[:player]
-            leading_adjective = role_phrase[:leading_adjective]
-            leading_adjective = leading_adjective*" " if leading_adjective
-            trailing_adjective = role_phrase[:trailing_adjective]
-            trailing_adjective = trailing_adjective*" " if trailing_adjective
+          # The identifying roles must have been defined in the clauses.
+          # Some identifying roles may be played by concepts as yet undefined - create abstract Features
+          if identification
+            debug "Handling identification" do
+              if id_role_names = identification[:roles]  # A list of identifying roles
+                id_role_names.each do |id_role_name|
+                  # Each identifying role is an array of words (adjectives and concept names)
+                  debug "Identifying role: #{id_role_name.inspect}"
+                end
 
-            # REVISIT: This doesn't cope when player_name is a role name.
-            # However I think that should be resolved in the CQLParser, since it
-            # builds a list of all role names defined in this definition, and can
-            # traverse it to assign actual player names on the references.
+                # Add a unique constraint over all identifying roles
+                pc = @constellation.PresenceConstraint(
+                    :new,
+                    :vocabulary => @vocabulary,
+                    :name => "#{name}PK",            # Is this a useful name?
+                    :role_sequence => @constellation.RoleSequence(:new),
+                    :is_preferred_identifier => true,
+                    :max_frequency => 1              # Unique
+                    #:is_mandatory => true,
+                    #:min_frequency => 1,
+                  )
+                # REVISIT: Need to sort the identifying_roles to match the identification parameter array
 
-            roles = fact_type.all_role.select{|r| r.concept.name == player_name }
-            if roles.size > 1 && !is_new_fact_type
-              # The same player plays more than one role in this fact type.
-              # Match them up with an existing role by adjectives on a role
-              # in any role sequence (except this) of a reading of that fact type.
-              role = nil
-              role_refs = fact_type.all_reading.map{|reading|
-                  reading.role_sequence.all_role_ref
-                }.flatten.select{|rr|
-                  rr.role.concept.name == player_name
-                }
-              role_refs.each{|rr|
-                  break (role = rr.role) if leading_adjective == rr.leading_adjective && trailing_adjective == rr.trailing_adjective
-                }
-              raise "Role '#{[leading_adjective, player_name, trailing_adjective].compact*" "}' doesn't match any existing role" unless role
-            else
-              role = roles[0]
+                debug "Adding PK using #{identifying_roles.map{|r| r.concept.name}.inspect}"
+                identifying_roles.each_with_index do |identifying_role, index|
+                  @constellation.RoleRef(pc.role_sequence, index, :role => identifying_role)
+                end
+
+              elsif identification[:mode]
+                mode = identification[:mode]        # An identification mode
+                raise "Identification modes aren't yet implemented"
+              end
             end
-
-            role_ref = @constellation.RoleRef(role_sequence, index, :role => role)
-            role_ref.leading_adjective = leading_adjective if leading_adjective
-            role_ref.trailing_adjective = trailing_adjective if trailing_adjective
+          else
+            # identification must be inherited.
+            debug "Identification is inherited"
           end
-
-          # Add the reading:
-          ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
-          reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
-          role_num = -1
-          reading.reading_text = phrases.map {|phrase|
-              Hash === phrase ? "{#{role_num += 1}}" : phrase
-            }*" "
         end
-
-        # The identifying roles must have been defined in the clauses.
-        # Some identifying roles may be played by concepts as yet undefined - create abstract Features
-        if identification
-          if id_role_names = identification[:roles]  # A list of identifying roles
-            id_role_names.each do |id_role_name|
-              # Each identifying role is an array of words (adjectives and concept names)
-              print "identifying_role: "; p id_role_name
-            end
-
-            # Add a unique constraint over all identifying roles
-            pc = @constellation.PresenceConstraint(
-                :new,
-                :vocabulary => @vocabulary,
-                :name => "#{name}PK",            # Is this a useful name?
-                :role_sequence => @constellation.RoleSequence(:new),
-                :is_preferred_identifier => true,
-                :max_frequency => 1              # Unique
-                #:is_mandatory => true,
-                #:min_frequency => 1,
-              )
-            # REVISIT: Need to sort the identifying_roles to match the identification parameter array
-            puts "\tAdding PK using #{identifying_roles.map{|r| r.concept.name}.inspect}"
-            identifying_roles.each_with_index do |identifying_role, index|
-              @constellation.RoleRef(pc.role_sequence, index, :role => identifying_role)
-            end
-
-          elsif identification[:mode]
-            mode = identification[:mode]        # An identification mode
-            raise "Identification modes aren't yet implemented"
-          end
-        else
-          # identification must be inherited.
-        end
-
       end
 
       def fact_type(name, readings, clauses) 

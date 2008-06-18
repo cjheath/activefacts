@@ -3,6 +3,7 @@
 #
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+
 module ActiveFacts
   class Constellation; end
 
@@ -15,11 +16,6 @@ module ActiveFacts
 
     def puts(*a)
       @out.puts *a
-    end
-
-    def debug(*a)
-      #$stderr.puts *a
-      puts *a
     end
 
     def generate(out = $>)

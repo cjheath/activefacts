@@ -80,6 +80,10 @@ module ActiveFacts
           rescue NameError  # shuffle! is in 1.9 only
           end
         }
+
+      def verbalise
+        "["+map{|e| e.verbalise}*", "+"]"
+      end
     end
 
   end
