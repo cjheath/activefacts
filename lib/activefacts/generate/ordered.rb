@@ -443,7 +443,7 @@ module ActiveFacts
 
     def constraints_dump(except = {})
       heading = false
-      @vocabulary.all_constraint.sort_by{|c| c.name}.each{|c|
+      @vocabulary.all_constraint.sort_by{|c| c.name || ""}.each{|c|
           next if except[c]
 
           # Skip some PresenceConstraints:

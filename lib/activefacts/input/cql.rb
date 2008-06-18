@@ -154,8 +154,6 @@ module ActiveFacts
                   else
                     non_player_roles << role
                   end
-
-                  # REVISIT: Create PresenceConstraints here when role_phrase[:quantifier] is set
                 end
 
                 if non_player_roles.size == role_phrases.size-1
@@ -166,12 +164,13 @@ module ActiveFacts
                   raise "Irrelevant fact in identification of '#{name}'"
                 end
               end
-
             end
+            # End of the entity fact types
 
-            # Create the role references and role sequence:
+            # Create the role references and a role sequence:
             # REVISIT: Find an existing RoleSequence if sequence and adjectives match, don't make a new one:
             role_sequence = @constellation.RoleSequence(:new)
+            roles = []
             role_phrases.each_with_index do |role_phrase, index|
               player_name = role_phrase[:player]
               leading_adjective = role_phrase[:leading_adjective]
@@ -184,8 +183,8 @@ module ActiveFacts
               # builds a list of all role names defined in this definition, and can
               # traverse it to assign actual player names on the references.
 
-              roles = fact_type.all_role.select{|r| r.concept.name == player_name }
-              if roles.size > 1 && !is_new_fact_type
+              candidate_roles = fact_type.all_role.select{|r| r.concept.name == player_name }
+              if candidate_roles.size > 1 && !is_new_fact_type
                 # The same player plays more than one role in this fact type.
                 # Match them up with an existing role by adjectives on a role
                 # in any role sequence (except this) of a reading of that fact type.
@@ -200,13 +199,16 @@ module ActiveFacts
                   }
                 raise "Role '#{[leading_adjective, player_name, trailing_adjective].compact*" "}' doesn't match any existing role" unless role
               else
-                role = roles[0]
+                role = candidate_roles[0]
               end
+              roles << role
 
               role_ref = @constellation.RoleRef(role_sequence, index, :role => role)
               role_ref.leading_adjective = leading_adjective if leading_adjective
               role_ref.trailing_adjective = trailing_adjective if trailing_adjective
             end
+
+            create_embedded_presence_constraints(fact_type, role_phrases, roles)
 
             # Add the reading:
             ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
@@ -217,8 +219,8 @@ module ActiveFacts
               }*" "
           end
 
-          # The identifying roles must have been defined in the clauses.
-          # Some identifying roles may be played by concepts as yet undefined - create abstract Features
+          # Finally, create the identifying uniqueness constraint, or mark it as preferred
+          # if it's already been created. The identifying roles have been defined already.
           if identification
             debug "Handling identification" do
               if id_role_names = identification[:roles]  # A list of identifying roles
@@ -227,22 +229,31 @@ module ActiveFacts
                   debug "Identifying role: #{id_role_name.inspect}"
                 end
 
-                # Add a unique constraint over all identifying roles
-                pc = @constellation.PresenceConstraint(
-                    :new,
-                    :vocabulary => @vocabulary,
-                    :name => "#{name}PK",            # Is this a useful name?
-                    :role_sequence => @constellation.RoleSequence(:new),
-                    :is_preferred_identifier => true,
-                    :max_frequency => 1              # Unique
-                    #:is_mandatory => true,
-                    #:min_frequency => 1,
-                  )
-                # REVISIT: Need to sort the identifying_roles to match the identification parameter array
+                pc = find_pc_over_roles(identifying_roles)
+                if (pc)
+                  debug "Existing PC is now PK #{pc.verbalise} #{pc.class.roles.keys.map{|k|"#{k} => "+pc.send(k).verbalise}*", "}"
+                  pc.is_preferred_identifier = true
+                  pc.name = "#{name}PK" unless pc.name
+                else
+                  debug "Adding PK using #{identifying_roles.map{|r| r.concept.name}.inspect}"
 
-                debug "Adding PK using #{identifying_roles.map{|r| r.concept.name}.inspect}"
-                identifying_roles.each_with_index do |identifying_role, index|
-                  @constellation.RoleRef(pc.role_sequence, index, :role => identifying_role)
+                  role_sequence = @constellation.RoleSequence(:new)
+                  # REVISIT: Need to sort the identifying_roles to match the identification parameter array
+                  identifying_roles.each_with_index do |identifying_role, index|
+                    @constellation.RoleRef(role_sequence, index, :role => identifying_role)
+                  end
+
+                  # Add a unique constraint over all identifying roles
+                  pc = @constellation.PresenceConstraint(
+                      :new,
+                      :vocabulary => @vocabulary,
+                      :name => "#{name}PK",            # Is this a useful name?
+                      :role_sequence => role_sequence,
+                      :is_preferred_identifier => true,
+                      :max_frequency => 1              # Unique
+                      #:is_mandatory => true,
+                      #:min_frequency => 1,
+                    )
                 end
 
               elsif identification[:mode]
@@ -255,6 +266,49 @@ module ActiveFacts
             debug "Identification is inherited"
           end
         end
+      end
+
+      # For each fact reading there may be embedded mandatory, uniqueness or frequency constraints:
+      def create_embedded_presence_constraints(fact_type, role_phrases, roles)
+        role_phrases.zip(roles).each_with_index do |role_pair, index|
+          role_phrase, role = *role_pair
+
+          next unless quantifier = role_phrase[:quantifier]
+
+          debug "Processing embedded constraint #{quantifier.inspect} on #{role.concept.name} in #{fact_type.describe}" do
+            constrained_roles = roles.clone
+            constrained_roles.delete_at(index)
+            constraint = find_pc_over_roles(constrained_roles)
+            if constraint
+              debug "Setting max frequency to #{quantifier[1]} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
+              constraint.max_frequency = quantifier[1]
+            else
+              role_sequence = @constellation.RoleSequence(:new)
+              constrained_roles.each_with_index do |constrained_role, i|
+                role_ref = @constellation.RoleRef(role_sequence, i, :role => constrained_role)
+              end
+              constraint = @constellation.PresenceConstraint(
+                  :new,
+                  :vocabulary => @vocabulary,
+                  :role_sequence => role_sequence,
+                  :is_mandatory => quantifier[0] && quantifier[0] > 0,
+                  :max_frequency => quantifier[1],
+                  :min_frequency => quantifier[0]
+                )
+              debug "Made new UC/FC=#{quantifier.inspect} constraint #{constraint.object_id} over #{role_sequence.describe} in #{fact_type.describe}"
+            end
+          end
+        end
+      end
+
+      def find_pc_over_roles(roles)
+        @constellation.Role(roles[0]).all_role_ref.each do |role_ref|
+          next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
+          pc = role_ref.role_sequence.all_presence_constraint[0]
+          #puts "Existing PresenceConstraint matches those roles!" if pc
+          return pc if pc
+        end
+        nil
       end
 
       def fact_type(name, readings, clauses) 

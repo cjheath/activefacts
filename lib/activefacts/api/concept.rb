@@ -22,9 +22,12 @@ module ActiveFacts
         when Symbol, String
           # Search this class then all supertypes:
           unless role = @roles[name.to_sym]
-            role = supertypes.each do |supertype|
+            role = nil
+            supertypes.each do |supertype|
                 r = supertype.roles(name) rescue nil
-                break r if r
+                next unless r
+                role = r
+                break
               end
           end
           raise "Role #{basename}.#{name} is not defined" unless role
