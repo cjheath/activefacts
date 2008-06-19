@@ -121,9 +121,9 @@ module ActiveFacts
             debug "Roles(#{role_phrases.size}): #{role_phrases.inspect}"
 
             player_names = role_phrases.map do |role_phrase|
-              role_phrase[:player]
+              [role_phrase[:leading_adjective], role_phrase[:player], role_phrase[:trailing_adjective]].flatten.compact
             end
-            
+
             # Look for an existing fact type involving these players, or make one:
             fact_type = defined_facts_by_role_players[player_names.sort]
             is_new_fact_type = false
@@ -159,11 +159,14 @@ module ActiveFacts
                 if non_player_roles.size == role_phrases.size-1
                   raise "#{name} cannot be identified by a role in a non-binary fact type" if non_player_roles.size > 1
                   # N.B. We append player_role here for a unary fact type, a special case
-                  identifying_roles << (non_player_roles[0] || player_role)
+                  identifying_role = (non_player_roles[0] || player_role)
+                  identifying_roles << identifying_role
                 else non_player_roles.size == role_phrases.size
                   raise "Irrelevant fact in identification of '#{name}'"
                 end
               end
+            else
+              debug "Proceeding with existing fact type for (#{player_names.sort*", "})"
             end
             # End of the entity fact types
 
