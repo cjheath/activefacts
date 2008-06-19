@@ -99,7 +99,7 @@ module ActiveFacts
           supertypes = value.shift
           entity_type(name, supertypes, value)
         when :fact_type
-          fact_type(name, value)
+          f = fact_type(name, value)
         end
       end
     end
@@ -164,8 +164,10 @@ module ActiveFacts
       # Process all fact invocations in both the defined_readings and the clauses:
       fact_clauses.each{|r| clause(r) }
 
-      # REVISIT: Check that all defined readings have the same set of players
       debug "Defined readings: "+defined_readings.inspect
+=begin
+      # REVISIT: Check that all defined readings have the same set of players
+      # This check is too strong, and is done in the backend now.
       player_names = defined_readings[0][2].map{|w| Hash === w ? w[:player] : nil }.compact.sort
       1.upto(defined_readings.size-1){|i|
           reading = defined_readings[i]
@@ -179,6 +181,7 @@ module ActiveFacts
             end
           end
         }
+=end
 
       debug "Fact derivation clauses: "+clauses.pretty_inspect if clauses.size > 0
 
