@@ -28,6 +28,8 @@ module ActiveFacts
 
     class RoleSequence
       def describe
+#        fact_types = all_role_ref.map(&:role).map(&:fact_type).uniq
+#        fact_types.size.to_s+" FTs, "+
         "("+
         all_role_ref.map{|role_ref| role_ref.role.concept.name }*", "+
         ")"

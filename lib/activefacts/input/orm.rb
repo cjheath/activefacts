@@ -496,63 +496,64 @@ module ActiveFacts
           x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
           pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
 
-            # Skip uniqueness constraints on implied concepts
-            if x_pi && !pi
-              puts "Skipping uniqueness constraint #{name}, entity not found"
-              next
-            end
+          # Skip uniqueness constraints on implied concepts
+          if x_pi && !pi
+            puts "Skipping uniqueness constraint #{name}, entity not found"
+            next
+          end
 
-            # A uniqueness constraint on a fact having an implied objectification isn't preferred:
-    #       if pi &&
-    #         (x_pi_for = @x_by_id[eref]) &&
-    #         (np = x_pi_for.elements.to_a('orm:NestedPredicate')[0]) &&
-    #         np.attributes['IsImplied']
-    #           pi = nil
-    #       end
+          # A uniqueness constraint on a fact having an implied objectification isn't preferred:
+  #       if pi &&
+  #         (x_pi_for = @x_by_id[eref]) &&
+  #         (np = x_pi_for.elements.to_a('orm:NestedPredicate')[0]) &&
+  #         np.attributes['IsImplied']
+  #           pi = nil
+  #       end
 
-            # Get the RoleSequence:
-            x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
-            roles = map_roles(x_roles, "uniqueness constraint #{name}")
-            next if !roles # || roles.size == 0
+          # Get the RoleSequence:
+          x_roles = x.elements.to_a("orm:RoleSequence/orm:Role")
+          next if x_roles.size == 0
+          roles = map_roles(x_roles, "uniqueness constraint #{name}")
+          next if !roles
 
-            # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
-            if (x_roles.size == 1 &&
-              (id = x_roles[0].attributes['ref']) &&
-              (x_role = @x_by_id[id]) &&
-              x_role.parent.elements.size == 2 &&
-              (sibling = x_role.parent.elements[2]) &&
-              (ib_id = sibling.elements[1].attributes['ref']) &&
-              (ib = @x_by_id[ib_id]) &&
-              ib.attributes['IsImplicitBooleanValue'])
-            next  # Skip uniqueness constraint over our role in this implicit boolean
-            end
+          # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
+          if (x_roles.size == 1 &&
+            (id = x_roles[0].attributes['ref']) &&
+            (x_role = @x_by_id[id]) &&
+            x_role.parent.elements.size == 2 &&
+            (sibling = x_role.parent.elements[2]) &&
+            (ib_id = sibling.elements[1].attributes['ref']) &&
+            (ib = @x_by_id[ib_id]) &&
+            ib.attributes['IsImplicitBooleanValue'])
+          next  # Skip uniqueness constraint over our role in this implicit boolean
+          end
 
-            if (mc = @mandatory_constraints_by_rs[roles])
-              # Remove absorbed mandatory constraints, leaving residual ones.
-              # puts "Absorbing MC #{mc.attributes['Name']}"
-              @mandatory_constraints_by_rs.delete(roles)
-              @mandatory_constraint_rs_by_id.delete(mc.attributes['id'])
-            end
+          if (mc = @mandatory_constraints_by_rs[roles])
+            # Remove absorbed mandatory constraints, leaving residual ones.
+            # puts "Absorbing MC #{mc.attributes['Name']}"
+            @mandatory_constraints_by_rs.delete(roles)
+            @mandatory_constraint_rs_by_id.delete(mc.attributes['id'])
+          end
 
-            # A UC that spans more than one Role of a fact will be a Preferred Id for the implied object
-            #puts "Unique" + rs.to_s +
-            #    (pi ? " (preferred id for #{pi.name})" : "") +
-            #    (mc ? " (mandatory)" : "") if pi && !mc
+          # A UC that spans more than one Role of a fact will be a Preferred Id for the implied object
+          #puts "Unique" + rs.to_s +
+          #    (pi ? " (preferred id for #{pi.name})" : "") +
+          #    (mc ? " (mandatory)" : "") if pi && !mc
 
-            pc = @constellation.PresenceConstraint(:new)
-            pc.vocabulary = @vocabulary
-            pc.name = name
-            pc.role_sequence = roles
-            pc.is_mandatory = true if mc
-            pc.min_frequency = mc ? 1 : 0
-            pc.max_frequency = 1 
-            pc.is_preferred_identifier = true if pi
+          pc = @constellation.PresenceConstraint(:new)
+          pc.vocabulary = @vocabulary
+          pc.name = name
+          pc.role_sequence = roles
+          pc.is_mandatory = true if mc
+          pc.min_frequency = mc ? 1 : 0
+          pc.max_frequency = 1 
+          pc.is_preferred_identifier = true if pi
 
-            #puts roles.verbalise
-            #puts pc.verbalise
+          #puts roles.verbalise
+          #puts pc.verbalise
 
-            (@constraints_by_rs[roles] ||= []) << pc
-          }
+          (@constraints_by_rs[roles] ||= []) << pc
+        }
       end
 
       def read_exclusion_constraints

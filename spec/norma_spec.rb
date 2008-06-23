@@ -28,10 +28,16 @@ describe "Norma Loader" do
     expected_file = norma.sub(%r{/norma/(.*).orm\Z}, '/CQL/\1.cql')
     next unless File.exists? expected_file
 
+    actual_file = norma.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.cql')
+
     it "should load and dump valid CQL for #{norma}" do
       vocabulary = ActiveFacts::Input::ORM.readfile(norma)
 
-      cql(vocabulary).sort.should == File.open(expected_file) {|f| f.readlines}.sort
+      cql = cql(vocabulary)
+      # Save the actual file:
+      File.open(actual_file, "w") { |f| f.write cql*"" }
+
+      cql.should == File.open(expected_file) {|f| f.readlines}
     end
   end
 end

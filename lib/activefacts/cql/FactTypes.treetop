@@ -2,7 +2,7 @@ module ActiveFacts
   module CQL
     grammar FactTypes
       rule fact_type
-        s opt_name:(name:id ( s '=' s / defined_as ) )?
+        s opt_name:(name:id ( s '=' s / defined_as / is s where ) )?
         f0:fact_clause
           ftail:( (',' / and ) s f1:fact_clause s )*
           ctail:( (':' / where) s c:conditions s)?

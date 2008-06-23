@@ -389,21 +389,23 @@ module ActiveFacts
       # Iterate over all fact types of all value types, looking for these strays.
 
       done_banner = false
-      @vocabulary.constellation.FactType.each{|fact_id, fact_type|
-#      @vocabulary.all_feature.each{|f|
-#         next unless ValueType === f
-#         # debug "Considering ValueType #{f.name}"
-#         f.all_role.each{|role|
-#             # debug "\tConsidering Role #{role.verbalise}"
-#             fact_type = role.fact_type
-              next if TypeInheritance === fact_type
-              next if @fact_types_dumped[fact_type] || skip_fact_type(fact_type)
-              next if fact_type.all_role.detect{|r| EntityType === r.concept }
+      fact_collection = @vocabulary.constellation.FactType
+      fact_collection.keys.select{|fact_id|
+              fact_type = fact_collection[fact_id]
+              !(TypeInheritance === fact_type) and
+              !@fact_types_dumped[fact_type] and
+              !skip_fact_type(fact_type) and
+              !fact_type.all_role.detect{|r| EntityType === r.concept }
+          }.sort_by{|fact_id|
+              fact_type = fact_collection[fact_id]
+              (fact_type.entity_type ? [fact_type.entity_type.name] : nil) ||
+                  fact_type.all_role.map{|role| role.concept.name }
+          }.each{|fact_id|
+              fact_type = fact_collection[fact_id]
 
               fact_type_banner unless done_banner
               done_banner = true
               fact_type_dump_with_dependents(fact_type)
-#           }
         }
 
       # REVISIT: Find out why some fact types are missed during entity dumping:

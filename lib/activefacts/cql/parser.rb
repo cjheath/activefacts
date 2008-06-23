@@ -203,6 +203,7 @@ module ActiveFacts
       end
     end
 
+    # Populate the @local_roles and @local_forms for this reading
     def find_defined_roles(reading)
       reading.each { |role|
           # Index the role_name if any:
@@ -235,24 +236,25 @@ module ActiveFacts
 
     # A reading consists of an array of roles, of which each is a hash which
     # may have the following keys:
-    #   :quantifier
-    #   :leading_adjective
-    #   :words
-    #   :trailing_adjective
+    #   :quantifier (an array of two elements, each either a number of nil)
+    #   :leading_adjective (a word that we know to be the first adjective)
+    #   :words (words including the role player and possibly some adjectives)
+    #   :trailing_adjective (a word that we know to be a trailing adjective)
     #   :function
-    #   :role_name
-    #   :restriction
-    #   :literal
+    #   :role_name (from "(as xyz)")
+    #   :restriction (from "restricted to {a-b,c}..."
+    #   :literal (the lexical representation of a value)
     #
     # The interesting one here is :words, which might contain:
     # - linking words (e.g. "has", "is" "of"),
     # - adjectives
     # - role players (either type names, or role names from "(as role_name)").
-    # We must sift these three classes of words. In the case of both adjectives
-    # and role names, these might be defined in this query or in the fact types
-    # that are being invoked.
+    #
+    # We must sift these three classes of words. Adjectives and role names might
+    # be defined either in this query or in the fact types that are being invoked.
+    # If it's in this query, it might be this clause (reading) or another one.
     # 
-    # Role names cannot conflict with type names in the name space of this
+    # Role names must not conflict with role players in the name space of this
     # declaration. We must first have enumerated any locally-defined role names.
     # While doing that, we enumerated any adjectival forms defined in this
     # query as well. These have both happened before we come here. The results
@@ -268,19 +270,21 @@ module ActiveFacts
     #
     def canonicalise_reading(qualifiers, roles)
       # Identify all role players and expand the adjectives and linking words:
-      roles.replace(roles.inject([]){|new_roles, role|
+      replacement_roles =
+        roles.inject([]){|new_roles, role|
           debug "Processing role #{role.inspect}"
 
           words = role[:words]
           role.delete(:words)
 
-          # If we have a quantifier or a leading adjective, we handle it differently.
-          # In this case the leading words up to the player get added to a leading
-          # adjectives array.
+          # A quantifier or a leading adjective comes before the :words,
+          # so leading words before the role player must also be leading
+          # adjectives. The existence of role[:leading_adjective] indicates
+          # that this should happen.
           la = role[:leading_adjective]
-          role[:leading_adjective] = [la] if (la)   # Make it an array
+          role[:leading_adjective] = Array(la) if (la)   # Make it an array
           quant = role[:quantifier]
-          role[:leading_adjective] ||= [] if quant      # Start an empty array
+          role[:leading_adjective] ||= [] if quant  # Start an empty array
           la = role[:leading_adjective]
           ta = role[:trailing_adjective]
           role[:trailing_adjective] = Array(ta) if ta
@@ -295,9 +299,15 @@ module ActiveFacts
                 # go with the first player found, the trailing adjectives, function,
                 # role name, restriction and literal with the last one... sigh.
 
-                # Ok, these weren't extra trailing adjectives after all
-                possible_extra_trailing_adjectives.each{|l| new_roles << l }
+                # Any possible extra trailing adjectives weren't actually, so emit them as linking words
+                new_roles.concat possible_extra_trailing_adjectives
                 possible_extra_trailing_adjectives = []
+
+                # REVISIT: Deal with the following:
+                #   :function
+                #   :role_name (from "(as xyz)")
+                #   :restriction (from "restricted to {a-b,c}..."
+                #   :literal (the lexical representation of a value)
 
                 new_role = {:player => w}
                 new_role[:quantifier] = quant if quant
@@ -306,7 +316,7 @@ module ActiveFacts
                 new_roles << new_role
                 role.delete(:quantifier)
                 role.delete(:leading_adjective)
-              else
+              else        # Not a role player
                 if la
                   la << w               # Extra leading adjective
                 elsif (ta = role[:trailing_adjective]) # Extra trailing adjective
@@ -316,8 +326,6 @@ module ActiveFacts
                 end
               end
             }
-          raise "Role player #{la[-1]} for '#{la*" "}' not found" if (la)
-
           # Merge remaining parameters into the last role created, if any
           if (ta = role[:trailing_adjective]) # Extra trailing adjectives
             possible_extra_trailing_adjectives.each{|w|
@@ -328,9 +336,11 @@ module ActiveFacts
           end
           new_role.merge!(role) if new_role
 
+          raise "Role player #{la[-1]} for '#{la*" "}' not found" if (la)
+
           new_roles
         }
-      )
+      roles.replace(replacement_roles)
     end
 
     #

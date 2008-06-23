@@ -19,8 +19,8 @@ describe "CQL Parser" do
   end
 
   #Dir["examples/CQL/Bl*.cql"].each do |cql_in|
-  Dir["examples/CQL/Metamodel.cql"].each do |cql_in|
-  #Dir["examples/CQL/*.cql"].each do |cql_in|
+  #Dir["examples/CQL/Metamodel.cql"].each do |cql_in|
+  Dir["examples/CQL/*.cql"].each do |cql_in|
     expected_file = cql_in.sub(%r{/CQL/(.*).cql\Z}, '/CQL/\1.cql')
     next unless File.exists? expected_file
 

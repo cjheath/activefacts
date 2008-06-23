@@ -12,7 +12,7 @@ module ActiveFacts
         sup:(
           subtype_prefix supertype_list
           / ( s '=' s / defined_as ) entity
-          / is  # Semantically, this syntax requires non-nil identification
+          / is s ( identified_by / '(') # Semantically, this syntax requires non-nil identification
         )
         s identification
           ec:entity_conditions?
@@ -45,7 +45,7 @@ module ActiveFacts
         /
         reference_mode  { def value; {:mode => mode_name.text_value}; end }
         /
-        ''      # REVISIT: Find out why makng identification optional didn't work (for subtypes)
+        ''      # REVISIT: Find out why making identification optional didn't work (for subtypes)
       end
 
       # Identified by roles...

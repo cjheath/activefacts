@@ -44,7 +44,7 @@ module ActiveFacts
 
                   #" restricted to {#{(allowed_values.map{|r| r.inspect}*", ").gsub('"',"'")}}")
 
-        puts "#{o.name} = #{o.supertype.name}#{ parameters }#{
+        puts "#{o.name} is defined as #{o.supertype.name}#{ parameters }#{
             o.value_restriction ? " restricted to {#{
               o.value_restriction.all_allowed_range.map{|ar|
                   # REVISIT: Need to display as string or numeric according to type here...
@@ -139,13 +139,13 @@ module ActiveFacts
       end
 
       def subtype_dump(o, supertypes, pi)
-        puts "#{o.name} = subtype of #{ o.supertypes.map(&:name)*", " }" +
+        puts "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " }" +
           (pi ? identified_by(o, pi) : "") +
           ";\n"
       end
 
       def non_subtype_dump(o, pi)
-        puts "#{o.name} = entity" +
+        puts "#{o.name} is" +
           identified_by(o, pi) +
           ";\n"
       end
@@ -176,7 +176,7 @@ module ActiveFacts
       end
 
       def fact_type_dump(fact_type, name, constrained_fact_readings)
-        puts((name ? name+" = " : "") +
+        puts((name ? name+" is where\n\t" : "") +
             constrained_fact_readings*",\n\t" +
             ";"
           )
@@ -205,7 +205,7 @@ module ActiveFacts
             (c.min_frequency ? "min #{c.min_frequency} " : "") +
             (c.max_frequency ? "max #{c.max_frequency} " : "") +
             (c.is_mandatory ? "mandatory " : "")+
-            "over "+role_sequence_names(c.role_sequence)
+            "over "+c.role_sequence.describe
           #when RingConstraint
           #when SetConstraint
           #when SubsetConstraint
