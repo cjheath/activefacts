@@ -3,22 +3,26 @@ vocabulary SubtypePI;
 /*
  * Value Types
  */
-EntrantID = AutoCounter();
-FamilyName = VariableLengthText();
-GivenName = VariableLengthText();
+EntrantID is defined as AutoCounter();
+FamilyName is defined as VariableLengthText();
+GivenName is defined as VariableLengthText();
+TeamID is defined as AutoCounter();
 
 /*
  * Entity Types
  */
-Entrant = entity identified by EntrantID:
+Entrant is identified by EntrantID:
 	Entrant has exactly one EntrantID,
 	EntrantID is of at most one Entrant;
-EntrantHasGivenName = Entrant has at least one GivenName,
+EntrantHasGivenName is where
+	Entrant has at least one GivenName,
 	GivenName is of Entrant;
 
-Team = subtype of Entrant;
+Team is a kind of Entrant identified by TeamID:
+	Team has exactly one TeamID,
+	TeamID is of at most one Team;
 
-Competitor = subtype of Entrant;
+Competitor is a kind of Entrant;
 Competitor has exactly one FamilyName;
 
 /*

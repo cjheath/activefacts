@@ -3,21 +3,22 @@ vocabulary Orders;
 /*
  * Value Types
  */
-Description = VariableLengthText(120);
-Number = UnsignedInteger(32);
-OrderID = AutoCounter();
-SKUID = AutoCounter();
+Description is defined as VariableLengthText(120);
+Number is defined as UnsignedInteger(32);
+OrderID is defined as AutoCounter();
+SKUID is defined as AutoCounter();
 
 /*
  * Entity Types
  */
-Order = entity identified by OrderID:
+Order is identified by OrderID:
 	Order has exactly one OrderID,
 	OrderID is of at most one Order;
-OrderLine = Order has line Number;
+OrderLine is where
+	Order has line Number;
 OrderLine is for at most one quantity-Number;
 
-SKU = entity identified by SKUID:
+SKU is identified by SKUID:
 	SKU has exactly one SKUID,
 	SKUID is of at most one SKU;
 OrderLine is for at most one SKU;

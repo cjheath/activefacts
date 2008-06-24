@@ -40,6 +40,17 @@
 						</orm:ValueRanges>
 					</orm:ValueConstraint>
 				</orm:ValueRestriction>
+				<orm:Instances>
+					<orm:ValueTypeInstance id="_20C35E9B-C930-4FA3-9F82-F2C1290012BE">
+						<orm:Value>Rail</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_4A9D6A6F-4510-44E6-B30E-BCDFA149F82E">
+						<orm:Value>Road</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_2A412CA6-78E6-4C16-B8FF-352325B2DBED">
+						<orm:Value>Sea</orm:Value>
+					</orm:ValueTypeInstance>
+				</orm:Instances>
 			</orm:ValueType>
 			<orm:EntityType id="_1B0862C1-8C10-4545-968D-DE6F87785FED" Name="Refinery" _ReferenceMode="Name">
 				<orm:PlayedRoles>
@@ -48,6 +59,23 @@
 					<orm:Role ref="_0C199902-6257-4D78-A418-7D05E5FA8B5C" />
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_4E5FEB63-B6E8-4142-904F-14CAB5F404C1" />
+				<orm:Instances>
+					<orm:EntityTypeInstance id="_210AA372-636B-4DCC-A515-4D8BCA1A7843">
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance ref="_7106CB4C-1E0C-47AA-8B4C-894821F1675E" />
+						</orm:RoleInstances>
+					</orm:EntityTypeInstance>
+					<orm:EntityTypeInstance id="_5D3F4889-EE74-4624-8BBE-4BB9D4DD6C3F">
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance ref="_E17C7B60-4AD1-45A2-8BA7-7BA65A110AD4" />
+						</orm:RoleInstances>
+					</orm:EntityTypeInstance>
+					<orm:EntityTypeInstance id="_419378DD-51B5-4801-9F8A-DE2A62C24B31">
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance ref="_565D49E7-00BD-4435-AD36-4770A08EB7DC" />
+						</orm:RoleInstances>
+					</orm:EntityTypeInstance>
+				</orm:Instances>
 			</orm:EntityType>
 			<orm:ValueType id="_407948D2-73D0-4D6E-8E0A-B38EAA06447B" Name="Region">
 				<orm:PlayedRoles>
@@ -55,6 +83,20 @@
 					<orm:Role ref="_17D7B6F7-4B5E-444B-B839-48F2C194E43B" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_A1E5171C-FB3F-4299-9FC6-8E15AD5632FA" ref="_934D0409-6FFB-4BCA-BAD4-77AA14C466B8" Scale="0" Length="80" />
+				<orm:Instances>
+					<orm:ValueTypeInstance id="_9FAC2611-B959-4DEF-BA1C-D0316BC1FE05">
+						<orm:Value>Melbourne Metro</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_D1DB1FE1-B292-4FA7-ACC5-14B7BE258778">
+						<orm:Value>Woolongong</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_30A7FC08-E4BE-4750-A89B-1EE3717A5438">
+						<orm:Value>Sydney Central</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_AB73BEF7-2DA3-4F13-9651-FFEDB7DF2B7F">
+						<orm:Value>NSW North Coast</orm:Value>
+					</orm:ValueTypeInstance>
+				</orm:Instances>
 			</orm:ValueType>
 			<orm:ObjectifiedType id="_C878B756-DF3F-4D4B-80D3-2701240F1A45" Name="TransportRoute" _ReferenceMode="">
 				<orm:PlayedRoles>
@@ -108,6 +150,17 @@
 					<orm:Role ref="_343CACDB-6F2C-4DC1-A55F-80652B3E52D8" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_08495256-34B1-490A-8B33-C4EFF3879D5E" ref="_934D0409-6FFB-4BCA-BAD4-77AA14C466B8" Scale="0" Length="80" />
+				<orm:Instances>
+					<orm:ValueTypeInstance id="_1D07F4E5-D07C-47FC-A95D-599C303531AA">
+						<orm:Value>Altona</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_02D1B1D1-2F38-4502-A334-AC4F261C8A90">
+						<orm:Value>Shell Harbour</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_DB0B37CD-975F-4EFF-9BBA-6A19CB34F964">
+						<orm:Value>Newport</orm:Value>
+					</orm:ValueTypeInstance>
+				</orm:Instances>
 			</orm:ValueType>
 			<orm:ObjectifiedType id="_46299C4A-9F69-4F4F-85D7-43B33DAAE15D" Name="AcceptableSubstitutes" _ReferenceMode="">
 				<orm:PlayedRoles>
@@ -124,6 +177,14 @@
 					<orm:Role ref="_C8F325FF-D931-4A90-9D01-562FDB892121" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_40E0F280-E1AE-4C95-88D5-1C2ACD5AC7A2" ref="_108766F5-BE19-4A1A-BC20-F7F02C89CDA3" Scale="0" Length="0" />
+				<orm:Instances>
+					<orm:ValueTypeInstance id="_B389F192-ABC9-485F-A658-63CEC47196A3">
+						<orm:Value>10</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_31261CB9-6EE6-459E-B048-9DAA17ECC3CF">
+						<orm:Value>8</orm:Value>
+					</orm:ValueTypeInstance>
+				</orm:Instances>
 			</orm:ValueType>
 			<orm:EntityType id="_0542D7A4-AC6E-4BED-B5B0-242C74EB0D3B" Name="SupplyPeriod" _ReferenceMode="">
 				<orm:PlayedRoles>
@@ -178,15 +239,31 @@
 				<orm:FactRoles>
 					<orm:Role id="_B2681E73-13DF-49E7-8A35-39A1D2FF1B6A" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_149E788B-81B7-48FF-A081-BE4178E4147B" />
+						<orm:RoleInstances>
+							<orm:FactTypeRoleInstance id="_4CDE8294-F7BF-48F2-89D5-7D9A170ADFC9" ref="_20C35E9B-C930-4FA3-9F82-F2C1290012BE" />
+							<orm:FactTypeRoleInstance id="_1A122103-363E-4735-BFF4-0D801DE965EA" ref="_4A9D6A6F-4510-44E6-B30E-BCDFA149F82E" />
+						</orm:RoleInstances>
 					</orm:Role>
 					<orm:Role id="_C8F325FF-D931-4A90-9D01-562FDB892121" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_1C145D4D-F6A3-455A-B103-6FB654F45671" />
+						<orm:RoleInstances>
+							<orm:FactTypeRoleInstance id="_95821BE4-E003-49E8-AB39-82974EDC1B03" ref="_B389F192-ABC9-485F-A658-63CEC47196A3" />
+							<orm:FactTypeRoleInstance id="_2F7BA664-26F6-460F-89CC-A04E4B79BFFB" ref="_31261CB9-6EE6-459E-B048-9DAA17ECC3CF" />
+						</orm:RoleInstances>
 					</orm:Role>
 					<orm:Role id="_E15056F5-DAA6-4DA0-9618-A7484473FD2C" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_1B0862C1-8C10-4545-968D-DE6F87785FED" />
+						<orm:RoleInstances>
+							<orm:FactTypeRoleInstance id="_8B4DCF13-19D9-4F82-B78F-1422B1FB4E09" ref="_210AA372-636B-4DCC-A515-4D8BCA1A7843" />
+							<orm:FactTypeRoleInstance id="_B18E6805-F684-498D-8C8E-E51A850CC5B3" ref="_419378DD-51B5-4801-9F8A-DE2A62C24B31" />
+						</orm:RoleInstances>
 					</orm:Role>
 					<orm:Role id="_511FBFE1-3B82-4EC9-A633-E8662E4E198E" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_407948D2-73D0-4D6E-8E0A-B38EAA06447B" />
+						<orm:RoleInstances>
+							<orm:FactTypeRoleInstance id="_222E7CB8-18B1-4E31-A3EB-31B963C4AAF3" ref="_9FAC2611-B959-4DEF-BA1C-D0316BC1FE05" />
+							<orm:FactTypeRoleInstance id="_1DB9F352-0EAE-4B66-86A0-F28C02BC0DC7" ref="_9FAC2611-B959-4DEF-BA1C-D0316BC1FE05" />
+						</orm:RoleInstances>
 					</orm:Role>
 				</orm:FactRoles>
 				<orm:ReadingOrders>
@@ -220,6 +297,24 @@
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_6F178121-A862-4836-8409-0E230260420A" />
 				</orm:InternalConstraints>
+				<orm:Instances>
+					<orm:FactTypeInstance id="_9BED9381-5A9C-484D-A06B-0766D2B892C5">
+						<orm:RoleInstances>
+							<orm:FactTypeRoleInstance ref="_4CDE8294-F7BF-48F2-89D5-7D9A170ADFC9" />
+							<orm:FactTypeRoleInstance ref="_95821BE4-E003-49E8-AB39-82974EDC1B03" />
+							<orm:FactTypeRoleInstance ref="_8B4DCF13-19D9-4F82-B78F-1422B1FB4E09" />
+							<orm:FactTypeRoleInstance ref="_222E7CB8-18B1-4E31-A3EB-31B963C4AAF3" />
+						</orm:RoleInstances>
+					</orm:FactTypeInstance>
+					<orm:FactTypeInstance id="_144EF3A0-FFAD-4831-A5BE-DA757B6B2469">
+						<orm:RoleInstances>
+							<orm:FactTypeRoleInstance ref="_1A122103-363E-4735-BFF4-0D801DE965EA" />
+							<orm:FactTypeRoleInstance ref="_2F7BA664-26F6-460F-89CC-A04E4B79BFFB" />
+							<orm:FactTypeRoleInstance ref="_B18E6805-F684-498D-8C8E-E51A850CC5B3" />
+							<orm:FactTypeRoleInstance ref="_1DB9F352-0EAE-4B66-86A0-F28C02BC0DC7" />
+						</orm:RoleInstances>
+					</orm:FactTypeInstance>
+				</orm:Instances>
 			</orm:Fact>
 			<orm:ImpliedFact id="_FE6E3167-8A5C-40CC-9C8A-0935537F54DE" _Name="TransportMethodIsInvolvedInTransportRoute">
 				<orm:FactRoles>
@@ -729,6 +824,11 @@
 					</orm:Role>
 					<orm:Role id="_343CACDB-6F2C-4DC1-A55F-80652B3E52D8" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
 						<orm:RolePlayer ref="_75CF9EFE-9ACF-4C9B-9B57-A3B033E4C1EB" />
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance id="_7106CB4C-1E0C-47AA-8B4C-894821F1675E" ref="_1D07F4E5-D07C-47FC-A95D-599C303531AA" />
+							<orm:EntityTypeRoleInstance id="_E17C7B60-4AD1-45A2-8BA7-7BA65A110AD4" ref="_02D1B1D1-2F38-4502-A334-AC4F261C8A90" />
+							<orm:EntityTypeRoleInstance id="_565D49E7-00BD-4435-AD36-4770A08EB7DC" ref="_DB0B37CD-975F-4EFF-9BBA-6A19CB34F964" />
+						</orm:RoleInstances>
 					</orm:Role>
 				</orm:FactRoles>
 				<orm:ReadingOrders>
@@ -1382,6 +1482,28 @@
 			<orm:MoneyNumericDataType id="_108766F5-BE19-4A1A-BC20-F7F02C89CDA3" />
 			<orm:SignedIntegerNumericDataType id="_953960D0-6CA7-4D07-819E-993D885E3F41" />
 		</orm:DataTypes>
+		<orm:ModelErrors>
+			<orm:PopulationMandatoryError id="_B98589E5-082C-4AB1-83CF-F8AB26DB76FA" Name="'Refinery' instance 'Shell Harbour' in model 'OilSupply' must participate in FactType 'TransportRoute' or FactType 'ProductionCommitment'.">
+				<orm:MandatoryConstraint ref="_FF6B8133-B8D6-446E-A5E7-F8549F5D46D0" />
+				<orm:ObjectTypeInstance ref="_5D3F4889-EE74-4624-8BBE-4BB9D4DD6C3F" />
+			</orm:PopulationMandatoryError>
+			<orm:PopulationMandatoryError id="_5B1A592C-9AB2-4E5D-AC8E-404B956AE793" Name="'Region' instance 'Woolongong' in model 'OilSupply' must participate in FactType 'TransportRoute' or FactType 'RegionalDemand'.">
+				<orm:MandatoryConstraint ref="_CDB0EDCA-98A2-4BBA-B205-9CE5629847EF" />
+				<orm:ObjectTypeInstance ref="_D1DB1FE1-B292-4FA7-ACC5-14B7BE258778" />
+			</orm:PopulationMandatoryError>
+			<orm:PopulationMandatoryError id="_0F71E16A-6CA2-4652-B398-B90446FAC720" Name="'Region' instance 'Sydney Central' in model 'OilSupply' must participate in FactType 'TransportRoute' or FactType 'RegionalDemand'.">
+				<orm:MandatoryConstraint ref="_CDB0EDCA-98A2-4BBA-B205-9CE5629847EF" />
+				<orm:ObjectTypeInstance ref="_30A7FC08-E4BE-4750-A89B-1EE3717A5438" />
+			</orm:PopulationMandatoryError>
+			<orm:PopulationMandatoryError id="_F1923E22-8946-4951-8C72-F1525A8C9063" Name="'Region' instance 'NSW North Coast' in model 'OilSupply' must participate in FactType 'TransportRoute' or FactType 'RegionalDemand'.">
+				<orm:MandatoryConstraint ref="_CDB0EDCA-98A2-4BBA-B205-9CE5629847EF" />
+				<orm:ObjectTypeInstance ref="_AB73BEF7-2DA3-4F13-9651-FFEDB7DF2B7F" />
+			</orm:PopulationMandatoryError>
+			<orm:PopulationMandatoryError id="_855C6988-2F20-4552-8A9E-5B691B7C307A" Name="'TransportMethod' instance 'Sea' in model 'OilSupply' must participate in FactType 'TransportRoute'.">
+				<orm:MandatoryConstraint ref="_2BD2FA08-B630-4AD3-BEFF-425C53E9205A" />
+				<orm:ObjectTypeInstance ref="_2A412CA6-78E6-4C16-B8FF-352325B2DBED" />
+			</orm:PopulationMandatoryError>
+		</orm:ModelErrors>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_BDAA5463-8C17-4676-9507-565307EBDD9D" FormatString="{1}" ReferenceModeType="General" />
 			<orm:ReferenceModeKind id="_59E77E57-70EF-4249-8140-6433EC601E90" FormatString="{0}{1}" ReferenceModeType="Popular" />

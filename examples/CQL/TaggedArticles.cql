@@ -3,12 +3,13 @@ vocabulary TaggedArticles;
 /*
  * Value Types
  */
-ArticleID = SignedInteger(32);
-Tag = VariableLengthText();
+ArticleID is defined as SignedInteger(32);
+Tag is defined as VariableLengthText();
 
 /*
  * Fact Types
  */
-Tagging = ArticleID has Tag,
+Tagging is where
+	ArticleID has Tag,
 	Tag applies to ArticleID;
 
