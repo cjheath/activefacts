@@ -11,6 +11,11 @@ module ActiveFacts
   module Input
     class CQL
       include ActiveFacts::Metamodel
+      RingTypes = %w{acyclic intransitive symmetric asymmetric transitive antisymmetric irreflexive reflexive}
+      RingPairs = {
+          :intransitive => [:acyclic, :asymmetric, :symmetric],
+          :irreflexive => [:symmetric]
+        }
 
       # Open the specified file and read it:
       def self.readfile(filename)
@@ -427,6 +432,8 @@ module ActiveFacts
                   create_embedded_presence_constraints(fact_type, role_phrases, roles)
               end
 
+              process_qualifiers(role_sequence, qualifiers)
+
               # Save the first role sequence to be used for a default PresenceConstraint
               first_role_sequence = role_sequence if fact_type.all_reading.size == 0
 
@@ -450,6 +457,43 @@ module ActiveFacts
             # REVISIT: Process the fact derivation clauses, if any
           end
         end
+      end
+
+      def process_qualifiers(role_sequence, qualifiers)
+        return unless qualifiers.size > 0
+        qualifiers.sort!
+
+        # Process the ring constraints:
+        ring_constraints, qualifiers = qualifiers.partition{|q| RingTypes.include?(q) }
+        unless ring_constraints.empty?
+          dups = role_sequence.all_role_ref.map{|rr| rr.role.concept}.duplicates
+          raise "ring constraint (#{ring_constraints*" "}) is ambiguous over roles of #{dups.map(&:name)*", "}" if dups.size > 1
+          roles = role_sequence.all_role_ref.map(&:role).select{|role| role.concept == dups[0]}
+
+          # Ensure that the keys in RingPairs follow others:
+          ring_constraints = ring_constraints.partition{|rc| !RingPairs.keys.include?(rc.downcase.to_sym) }.flatten
+
+          if ring_constraints.size > 1 and !RingPairs[ring_constraints[-1].to_sym].include?(ring_constraints[0].to_sym)
+            raise "incompatible ring constraint types (#{ring_constraints*", "})"
+          end
+          ring_type = ring_constraints.map{|c| c.capitalize}*""
+
+          ring = @constellation.RingConstraint(
+              :new,
+              :vocabulary => @vocabulary,
+          #   :name => name,              # REVISIT: Create a name for Ring Constraints?
+              :role => roles[0],
+              :other_role => roles[1],
+              :ring_type => ring_type
+            )
+
+          debug "Added #{ring.verbalise} #{ring.class.roles.keys.map{|k|"#{k} => "+ring.send(k).verbalise}*", "}"
+        end
+
+        return unless qualifiers.size > 0
+
+        # Process the remaining qualifiers:
+        puts "REVISIT: Qualifiers #{qualifiers.inspect} over #{dups.map(&:name).inspect}"
       end
 
     end

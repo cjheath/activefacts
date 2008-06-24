@@ -8,3 +8,9 @@ module ActiveFacts
     r
   end
 end
+
+class Array
+  def duplicates
+    inject({}){|h,e| h[e]||=0; h[e] += 1; h}.reject{|k,v| v == 1}.keys
+  end
+end
