@@ -37,7 +37,8 @@ raise "Expected #{input_handler} to define #{input_class}" unless input_klass
 begin
   vocabulary = input_klass.readfile(arg)
 rescue => e
-  puts "#{e}:\n\t#{e.backtrace*"\n\t"}"
+  puts "#{e.message}"
+  #puts "#{e}:\n\t#{e.backtrace*"\n\t"}"
 end
 
 # Generate the output:
