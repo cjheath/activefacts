@@ -12,7 +12,7 @@ module ActiveFacts
         sup:(
           subtype_prefix supertype_list
           / ( s '=' s / defined_as ) entity
-          / is s ( identified_by / '(') # Semantically, this syntax requires non-nil identification
+          / is s &( identified_by / '(') # Semantically, this syntax requires non-nil identification
         )
         s identification
           ec:entity_conditions?

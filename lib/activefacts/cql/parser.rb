@@ -337,7 +337,9 @@ module ActiveFacts
           end
           new_role.merge!(role) if new_role
 
-          raise "Role player #{la[-1]} for '#{la*" "}' not found" if (la)
+          if (la)
+            raise "Role player #{la[-1]} for '#{la*" "}' not found"
+          end
 
           new_roles
         }
