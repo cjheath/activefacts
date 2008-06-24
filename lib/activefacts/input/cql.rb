@@ -17,6 +17,8 @@ module ActiveFacts
         File.open(filename) {|file|
           self.read(file, filename)
         }
+      rescue => e
+        raise "In #{filename} #{e.message.strip}"
       end
 
       # Read the specified input stream:
@@ -37,26 +39,33 @@ module ActiveFacts
 
         # The syntax tree created from each parsed CQL statement gets passed to the block.
         # parse_all returns an array of the block's non-nil return values.
-        result = @parser.parse_all(@file, :definition) { |node|
-            kind, *value = @parser.definition(node)
-            #print "Parsed '#{node.text_value}'"
-            #print " to "; p value
-            raise "Definitions must be in a vocabulary" if kind != :vocabulary and !@vocabulary
-            case kind
-            when :vocabulary
-              @vocabulary = @constellation.Vocabulary(value[0], nil)
-            when :data_type
-              value_type *value
-            when :entity_type
-              entity_type *value
-            when :fact_type
-              fact_type *value
-            else
-              print "="*20+" unhandled declaration type: "; p kind
+        result = @parser.parse_all(@file, :definition) do |node|
+            begin
+              kind, *value = @parser.definition(node)
+              #print "Parsed '#{node.text_value}'"
+              #print " to "; p value
+              raise "Definitions must be in a vocabulary" if kind != :vocabulary and !@vocabulary
+              case kind
+              when :vocabulary
+                @vocabulary = @constellation.Vocabulary(value[0], nil)
+              when :data_type
+                value_type *value
+              when :entity_type
+                entity_type *value
+              when :fact_type
+                fact_type *value
+              else
+                print "="*20+" unhandled declaration type: "; p kind
+              end
+            rescue => e
+              start_line = @file.line_of(node.interval.first)
+              end_line = @file.line_of(node.interval.last-1)
+              lines = start_line != end_line ? "s #{start_line}-#{end_line}" : " #{start_line.to_s}"
+              raise "at line#{lines} #{e.message.strip}"
             end
 
             nil
-          }
+          end
         raise @parser.failure_reason unless result
         @vocabulary
       end

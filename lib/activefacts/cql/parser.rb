@@ -85,23 +85,24 @@ module ActiveFacts
         return
       end
 
-      #puts 'v'*20
-      #p value
-      #puts '^'*20
-      debug "Processing #{[kind, name].compact*" "}" do
-        reset_defined_roles
-        case kind
-        when :vocabulary
-          [kind, name]
-        when :data_type
-          data_type(name, value)
-        when :entity_type
-          supertypes = value.shift
-          entity_type(name, supertypes, value)
-        when :fact_type
-          f = fact_type(name, value)
+      begin
+        debug "Processing #{[kind, name].compact*" "}" do
+          reset_defined_roles
+          case kind
+          when :vocabulary
+            [kind, name]
+          when :data_type
+            data_type(name, value)
+          when :entity_type
+            supertypes = value.shift
+            entity_type(name, supertypes, value)
+          when :fact_type
+            f = fact_type(name, value)
+          end
         end
       end
+    rescue => e
+      raise "in #{kind.to_s.camelcase(true)} definition, #{e.message}:\n\t#{node.text_value}"
     end
 
     def data_type(name, value)
