@@ -3,27 +3,32 @@ vocabulary OrienteeringER;
 /*
  * Value Types
  */
-Accessibility = FixedLengthText();
-ClubName = VariableLengthText();
-Code = FixedLengthText();
-Control = UnsignedInteger(32);
-Course = FixedLengthText();
-Date = DateAndTime();
-EventName = VariableLengthText();
-ID = AutoCounter();
-Location = VariableLengthText();
-Name = VariableLengthText();
-Number = SignedInteger(32);
-PointValue = UnsignedInteger(32);
-SeriesName = VariableLengthText();
+Accessibility is defined as FixedLengthText();
+ClubName is defined as VariableLengthText();
+Code is defined as FixedLengthText();
+Control is defined as UnsignedInteger(32);
+Course is defined as FixedLengthText();
+Date is defined as DateAndTime();
+EventName is defined as VariableLengthText();
+ID is defined as AutoCounter();
+Location is defined as VariableLengthText();
+Name is defined as VariableLengthText();
+Number is defined as SignedInteger(32);
+PointValue is defined as UnsignedInteger(32);
+SeriesName is defined as VariableLengthText();
 
 /*
  * Fact Types
  */
-Club = Code is of the club called at most one ClubName,
+Club is where
+	Code is of the club called at most one ClubName,
 	the club called ClubName has at most one Code;
-SeriesEvent = SeriesName includes event-Number,
-	event Number is in SeriesName;
-EventCourse = Course is available at Event,
+EventControl is where
+	Event includes Control which is worth at most one PointValue;
+EventCourse is where
+	Course is available at Event,
 	Event offers Course;
-EventControl = Event includes Control which is worth at most one PointValue;
+SeriesEvent is where
+	SeriesName includes event-Number,
+	event Number is in SeriesName;
+

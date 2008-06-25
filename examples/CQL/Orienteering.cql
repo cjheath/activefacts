@@ -40,12 +40,6 @@ Club is identified by ClubCode:
 ClubName is name of at most one Club,
 	Club is called exactly one ClubName;
 
-Entry is identified by EntryID:
-	Entry has exactly one EntryID,
-	EntryID is of at most one Entry;
-Entry received at most one Score;
-Entry finished in at most one finish-Placing;
-
 Event is identified by EventID:
 	Event has exactly one EventID,
 	EventID is of at most one Event;
@@ -85,6 +79,11 @@ Person is of at most one Gender;
 Person was born in at most one birth-Year;
 Person has at most one PostCode;
 Person is member of at most one Club;
+Entry is identified by EntryID:
+	Entry has exactly one EntryID,
+	EntryID is of at most one Entry;
+Entry received at most one Score;
+Entry finished in at most one finish-Placing;
 
 Punch is identified by PunchID:
 	Punch has exactly one PunchID,

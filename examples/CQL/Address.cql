@@ -20,7 +20,6 @@ Company is identified by CompanyName:
 
 Family is identified by FamilyName:
 	Family has exactly one FamilyName;
-Family has FamilyName;
 
 Person is identified by Family and GivenNames:
 	Person is of exactly one Family,

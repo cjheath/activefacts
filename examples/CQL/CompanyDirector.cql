@@ -4,7 +4,6 @@ vocabulary CompanyDirector;
  * Value Types
  */
 CompanyName is defined as VariableLengthText(48);
-Date is defined as Date();
 Name is defined as VariableLengthText(48);
 
 /*

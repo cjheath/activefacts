@@ -38,6 +38,7 @@ describe "Norma Loader" do
       File.open(actual_file, "w") { |f| f.write cql*"" }
 
       cql.should == File.open(expected_file) {|f| f.readlines}
+      File.delete(actual_file)
     end
   end
 end

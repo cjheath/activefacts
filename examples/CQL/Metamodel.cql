@@ -87,7 +87,6 @@ RoleValue is identified by Instance and Fact:
 	Instance plays RoleValue,
 	RoleValue is of exactly one Instance,
 	RoleValue fulfils exactly one Fact;
-RoleValue fulfils Fact;
 
 SetConstraint is a kind of Constraint;
 

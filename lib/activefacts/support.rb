@@ -10,7 +10,13 @@ module ActiveFacts
 end
 
 class Array
-  def duplicates
-    inject({}){|h,e| h[e]||=0; h[e] += 1; h}.reject{|k,v| v == 1}.keys
+  def duplicates(&b)
+    inject({}) do |h,e|
+      h[e] ||= 0
+      h[e] += 1
+      h
+    end.reject do |k,v|
+      v == 1
+    end.keys
   end
 end

@@ -79,15 +79,18 @@ module ActiveFacts
         length, scale = *parameters
 
         # Create the base type:
-        unless base_type = @constellation.ValueType[[@constellation.Name(base_type_name), @vocabulary]]
-          #puts "REVISIT: Creating base ValueType #{base_type_name} in #{@vocabulary.inspect}"
-          base_type = @constellation.ValueType(base_type_name, @vocabulary)
-          return if base_type_name == name
+        base_type = nil
+        if (base_type_name != name)
+          unless base_type = @constellation.ValueType[[@constellation.Name(base_type_name), @vocabulary]]
+            #puts "REVISIT: Creating base ValueType #{base_type_name} in #{@vocabulary.inspect}"
+            base_type = @constellation.ValueType(base_type_name, @vocabulary)
+            return if base_type_name == name
+          end
         end
 
         # Create and initialise the ValueType:
         vt = @constellation.ValueType(name, @vocabulary)
-        vt.supertype = base_type
+        vt.supertype = base_type if base_type
         vt.length = length if length
         vt.scale = scale if scale
 

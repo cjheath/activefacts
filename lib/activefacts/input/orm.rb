@@ -120,7 +120,7 @@ module ActiveFacts
           type_name.sub!(/Numeric\Z/,'')
           type_name.sub!(/Temporal\Z/,'')
           length = 32 if type_name =~ /Integer\Z/ && length.to_i == 0 # Set default integer length
-          data_type = @constellation.ValueType(type_name, @vocabulary)
+          data_type = type_name != name ? @constellation.ValueType(type_name, @vocabulary) : nil
 
           # puts "ValueType #{name} is #{id}"
           value_types <<
