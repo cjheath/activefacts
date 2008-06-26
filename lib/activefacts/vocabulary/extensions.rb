@@ -148,6 +148,20 @@ module ActiveFacts
             if (supertype = identifying_supertype)
               debug "PI not found for #{name}, looking in supertype #{supertype.name}"
               pi = supertype.preferred_identifier
+            elsif fact_type
+              fact_type.all_role.each{|role|
+                role.all_role_ref.each{|role_ref|
+                  # Discount role sequences that contain roles not in this fact type:
+                  next if role_ref.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type != fact_type }
+                  role_ref.role_sequence.all_presence_constraint.each{|pc|
+                    next unless pc.is_preferred_identifier and pc.max_frequency == 1
+                    pi = pc
+                    break
+                  }
+                  break if pi
+                }
+                break if pi
+              }
             else
               debug "No PI found for #{name}"
             end
