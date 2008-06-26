@@ -169,7 +169,7 @@ RoleRef has at most one trailing-Adjective;
 Instance is of exactly one Concept;
 
 EntityType is a kind of Concept;
-TypeInheritance is where
+TypeInheritance is a kind of FactType where
 	EntityType (as Subtype) is subtype of super-EntityType (as Supertype) [acyclic],
 	Supertype is supertype of sub-Subtype;
 EntityType is independent;
