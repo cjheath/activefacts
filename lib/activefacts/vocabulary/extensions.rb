@@ -24,6 +24,17 @@ module ActiveFacts
       def describe(highlight = nil)
         concept.name + (self == highlight ? "*" : "")
       end
+
+      # Is there are internal uniqueness constraint on this role only?
+      def unique
+        all_role_ref.detect{|rr|
+          rs = rr.role_sequence
+          rs.all_role_ref.size == 1 and
+          rs.all_presence_constraint.detect{|pc|
+            pc.max_frequency == 1
+          }
+        }
+      end
     end
 
     class RoleSequence

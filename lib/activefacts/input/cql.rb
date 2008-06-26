@@ -246,11 +246,11 @@ module ActiveFacts
 
                 pc = find_pc_over_roles(identifying_roles)
                 if (pc)
-                  debug "Existing PC is now PK #{pc.verbalise} #{pc.class.roles.keys.map{|k|"#{k} => "+pc.send(k).verbalise}*", "}"
+                  debug "Existing PC #{pc.verbalise} is now PK for #{name} #{pc.class.roles.keys.map{|k|"#{k} => "+pc.send(k).verbalise}*", "}"
                   pc.is_preferred_identifier = true
                   pc.name = "#{name}PK" unless pc.name
                 else
-                  debug "Adding PK using #{identifying_roles.map{|r| r.concept.name}.inspect}"
+                  debug "Adding PK for #{name} using #{identifying_roles.map{|r| r.concept.name}.inspect}"
 
                   role_sequence = @constellation.RoleSequence(:new)
                   # REVISIT: Need to sort the identifying_roles to match the identification parameter array
@@ -312,7 +312,7 @@ module ActiveFacts
                   :min_frequency => quantifier[0]
                 )
               embedded_presence_constraints << constraint
-              debug "Made new UC/FC=#{quantifier.inspect} constraint #{constraint.object_id} over #{role_sequence.describe} in #{fact_type.describe}"
+              debug "Made new PC min=#{quantifier[0].inspect} max=#{quantifier[1].inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
             end
           end
         end
@@ -442,23 +442,26 @@ module ActiveFacts
 
               add_reading(fact_type, role_sequence, phrases)
             end
-
-            # Add the identifying PresenceConstraint for this fact type:
-            if embedded_presence_constraints.empty?
-              identifier = @constellation.PresenceConstraint(
-                  :new,
-                  :vocabulary => @vocabulary,
-                  :name => "#{name}PK",            # Is this a useful name?
-                  :role_sequence => first_role_sequence,
-                  :is_preferred_identifier => true,
-                  :max_frequency => 1              # Unique
-                )
-            else
-              embedded_presence_constraints[0].is_preferred_identifier = true
-            end
-
-            # REVISIT: Process the fact derivation clauses, if any
           end
+
+          # Add the identifying PresenceConstraint for this fact type:
+          if fact_type.all_role.size == 1
+            # All is well
+          elsif embedded_presence_constraints.empty?
+            identifier = @constellation.PresenceConstraint(
+                :new,
+                :vocabulary => @vocabulary,
+                :name => "#{name}PK",            # Is this a useful name?
+                :role_sequence => first_role_sequence,
+                :is_preferred_identifier => true,
+                :max_frequency => 1              # Unique
+              )
+            debug "Made default fact type identifier #{identifier.object_id} over #{first_role_sequence.describe} in #{fact_type.describe}"
+          else
+            embedded_presence_constraints[0].is_preferred_identifier = true
+          end
+
+          # REVISIT: Process the fact derivation clauses, if any
         end
       end
 
