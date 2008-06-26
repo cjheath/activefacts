@@ -474,6 +474,19 @@ module ActiveFacts
         end
       end
 
+      def is_supertype(sup, sub)
+        # puts "Deciding whether #{sup.name} < #{sub.name}"
+        return true if sup == sub
+        sup.all_type_inheritance_by_supertype.each {|ti|
+            return true if is_supertype(ti.subtype, sub)
+          }
+        false
+      end
+
+      def supertypes(o)
+        ([o] + o.all_type_inheritance_by_subtype.map{|ti| supertypes(ti.supertype)}.flatten).uniq
+      end
+
       def process_qualifiers(role_sequence, qualifiers)
         return unless qualifiers.size > 0
         qualifiers.sort!
@@ -481,11 +494,26 @@ module ActiveFacts
         # Process the ring constraints:
         ring_constraints, qualifiers = qualifiers.partition{|q| RingTypes.include?(q) }
         unless ring_constraints.empty?
-          # REVISIT: A Ring may be over a supertype/subtype pair, and this won't find that.
-          dups = role_sequence.all_role_ref.map{|rr| rr.role.concept}.duplicates
-
-          raise "ring constraint (#{ring_constraints*" "}) is ambiguous over roles of #{dups.map(&:name)*", "}" if dups.size > 1
-          roles = role_sequence.all_role_ref.map(&:role).select{|role| role.concept == dups[0]}
+          # A Ring may be over a supertype/subtype pair, and this won't find that.
+          role_refs = role_sequence.all_role_ref
+          role_pairs = []
+          player_supertypes_by_role = role_refs.map{|rr|
+              concept = rr.role.concept
+              EntityType === concept ? supertypes(concept) : [concept]
+            }
+          role_refs.each_with_index{|rr1, i|
+            player1 = rr1.role.concept
+            (i+1...role_refs.size).each{|j|
+              rr2 = role_refs[j]
+              player2 = rr2.role.concept
+              if player_supertypes_by_role[i] - player_supertypes_by_role[j] != player_supertypes_by_role[i]
+                role_pairs << [rr1.role, rr2.role]
+              end
+            }
+          }
+          raise "ring constraint (#{ring_constraints*" "}) role pair not found" if role_pairs.size == 0
+          raise "ring constraint (#{ring_constraints*" "}) is ambiguous over roles of #{role_pairs.map{|rp| rp.map{|r| r.concept.name}}.inspect}" if role_pairs.size > 1
+          roles = role_pairs[0]
 
           # Ensure that the keys in RingPairs follow others:
           ring_constraints = ring_constraints.partition{|rc| !RingPairs.keys.include?(rc.downcase.to_sym) }.flatten
@@ -510,7 +538,7 @@ module ActiveFacts
         return unless qualifiers.size > 0
 
         # Process the remaining qualifiers:
-        puts "REVISIT: Qualifiers #{qualifiers.inspect} over #{dups.map(&:name).inspect}"
+        puts "REVISIT: Qualifiers #{qualifiers.inspect} over #{role_sequence.describe}"
       end
 
     end

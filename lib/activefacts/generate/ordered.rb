@@ -454,6 +454,12 @@ module ActiveFacts
           if PresenceConstraint === c
             # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
             role_refs = c.role_sequence.all_role_ref
+            if role_refs.size == 0
+              constraint_banner unless heading
+              heading = true
+              puts "PresenceConstraint without roles!" 
+              next
+            end
             fact_type0 = role_refs[0].role.fact_type
             next if c.max_frequency == 1 &&         # Uniqueness
               role_refs.size == fact_type0.all_role.size &&     # Same number of roles

@@ -35,9 +35,9 @@ Event occurred at at most one EventLocation;
 Event is certified by at most one Certificate;
 Event was confirmed by at most one Official;
 
-EventDate is identified by YearMin and YearMax and Month and Day:
-	EventDate occurred in or after at most one Year (as YearMin),
-	EventDate occurred in or before at most one Year (as YearMax),
+EventDate is identified by min-Year and max-Year and Month and Day:
+	EventDate occurred in or after at most one min-Year,
+	EventDate occurred in or before at most one max-Year,
 	EventDate occurred in at most one Month,
 	EventDate occurred on at most one Day;
 Event occurred on at most one EventDate;
