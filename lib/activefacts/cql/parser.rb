@@ -55,6 +55,11 @@ module ActiveFacts
       @types[name] # REVISIT: Do we need this: || @role_names[w]
     end
 
+    # REVISIT: Need to handle standard types better here:
+    def standard_type(name)
+      %w{Date DateAndTime}.include?(name)
+    end
+
     def define_fact_type(name, defined_readings, clauses)
       # REVISIT: Create a name from the whole reading if necessary.
       fact_type = [:fact_type, name, defined_readings, clauses]
@@ -295,7 +300,7 @@ module ActiveFacts
           words.each{|w|
               local_role = @local_roles[w]
               # REVISIT: Case in point: In the clauses of an entity definition, the entity name is a local role
-              if (local_role || type_by_name(w))
+              if (local_role || type_by_name(w) || standard_type(w))
                 # We've found a role player. The quantifier & leading adjectives
                 # go with the first player found, the trailing adjectives, function,
                 # role name, restriction and literal with the last one... sigh.

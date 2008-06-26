@@ -113,7 +113,7 @@ module ActiveFacts
         #puts "Entity Type #{name}, supertypes #{supertypes.inspect}, id #{identification.inspect}, clauses = #{clauses.inspect}"
         debug "Defining Entity Type #{name}" do
           # Assert the entity:
-          # REVISIT: If this entity was forward referenced, this new object subsumes its roles
+          # If this entity was forward referenced, this new object subsumes its roles
           et = @constellation.EntityType(name, @vocabulary)
 
           # Set up its supertypes:
@@ -156,6 +156,11 @@ module ActiveFacts
                 role_phrases.each do |role_phrase|
                   player_name = role_phrase[:player]
                   player = @constellation.Concept[[player_name, @vocabulary.identifying_role_values]]
+
+                  # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
+                  if !player && %w{Date DateAndTime}.include?(player_name)
+                    player = @constellation.ValueType(player_name, @vocabulary.identifying_role_values)
+                  end
 
                   # Handle a forward-referenced entity type as an identifying role:
                   player = @constellation.EntityType(player_name, @vocabulary) unless player
@@ -386,6 +391,10 @@ module ActiveFacts
                 debug "Processing phrase '#{role_phrase.inspect}' form '#{player_form.inspect}' #{role_name.inspect}"
 
                 player = @constellation.Concept[[player_name, @vocabulary.identifying_role_values]]
+                # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
+                if !player && %w{Date DateAndTime}.include?(player_name)
+                  player = @constellation.ValueType(player_name, @vocabulary.identifying_role_values)
+                end
                 if (!first_role_sequence)           # First reading
                   raise "Concept '#{player_name}' is not yet defined" unless player
                   # Assert this role of the fact type:
@@ -472,7 +481,9 @@ module ActiveFacts
         # Process the ring constraints:
         ring_constraints, qualifiers = qualifiers.partition{|q| RingTypes.include?(q) }
         unless ring_constraints.empty?
+          # REVISIT: A Ring may be over a supertype/subtype pair, and this won't find that.
           dups = role_sequence.all_role_ref.map{|rr| rr.role.concept}.duplicates
+
           raise "ring constraint (#{ring_constraints*" "}) is ambiguous over roles of #{dups.map(&:name)*", "}" if dups.size > 1
           roles = role_sequence.all_role_ref.map(&:role).select{|role| role.concept == dups[0]}
 
