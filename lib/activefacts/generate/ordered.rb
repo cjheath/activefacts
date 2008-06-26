@@ -18,6 +18,10 @@ module ActiveFacts
       @out.puts *a
     end
 
+    def print(*a)
+      @out.print *a
+    end
+
     def generate(out = $>)
       @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
       @out = out

@@ -176,10 +176,14 @@ module ActiveFacts
       end
 
       def fact_type_dump(fact_type, name, constrained_fact_readings)
-        puts((name ? name+" is where\n\t" : "") +
-            constrained_fact_readings*",\n\t" +
-            ";"
-          )
+
+        if (o = fact_type.entity_type) and !o.all_type_inheritance_by_subtype.empty?
+          print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " } where\n\t"
+        else
+          print(name ? name+" is where\n\t" : "")
+        end
+
+        puts(constrained_fact_readings*",\n\t" + ";")
       end
 
       def fact_type_banner
