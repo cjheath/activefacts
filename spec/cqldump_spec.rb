@@ -41,7 +41,7 @@ vocabulary TestVocab;
 /*
  * Value Types
  */
-Name = String(20);
+Name is defined as String(20);
 
 END
   end
@@ -54,7 +54,7 @@ vocabulary TestVocab;
 /*
  * Value Types
  */
-Count = Integer(32);
+Count is defined as Integer(32);
 
 END
   end
@@ -131,8 +131,8 @@ vocabulary TestVocab;
 /*
  * Value Types
  */
-Count = Integer(32);
-Name = String(20);
+Count is defined as Integer(32);
+Name is defined as String(20);
 
 /*
  * Fact Types
@@ -154,12 +154,12 @@ vocabulary TestVocab;
 /*
  * Value Types
  */
-Name = String(20);
+Name is defined as String(20);
 
 /*
  * Entity Types
  */
-Company = entity identified by Name:
+Company is identified by Name:
 	Company is called Name;
 
 END
