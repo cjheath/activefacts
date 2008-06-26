@@ -86,6 +86,7 @@ module ActiveFacts
         x_entity_types.each{|x|
           id = x.attributes['id']
           name = x.attributes['Name'] || ""
+          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           # puts "EntityType #{name} is #{id}"
           entity_types <<
@@ -106,6 +107,7 @@ module ActiveFacts
         x_value_types.each{|x|
           id = x.attributes['id']
           name = x.attributes['Name'] || ""
+          name.gsub!(/\s/,'')
           name = nil if name.size == 0
 
           cdt = x.elements.to_a('orm:ConceptualDataType')[0]
@@ -161,6 +163,7 @@ module ActiveFacts
           id = x.attributes['id']
           name = x.attributes['Name'] || x.attributes['_Name']
           name = "<unnamed>" if !name
+          name.gsub!(/\s/,'')
           name = "" if !name || name.size == 0
           # Note that the new metamodel doesn't have a name for a facttype unless it's objectified
 
@@ -175,7 +178,8 @@ module ActiveFacts
         @x_subtypes = @x_model.elements.to_a("orm:Facts/orm:SubtypeFact")
         @x_subtypes.each{|x|
           id = x.attributes['id']
-          name = x.attributes['Name'] || x.attributes['_Name']
+          name = x.attributes['Name'] || x.attributes['_Name'] || ''
+          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           # puts "FactType #{name || id}"
 
@@ -222,6 +226,7 @@ module ActiveFacts
         x_nested_types.each{|x|
           id = x.attributes['id']
           name = x.attributes['Name'] || ""
+          name.gsub!(/\s/,'')
           name = nil if name.size == 0
 
           x_fact_type = x.elements.to_a('orm:NestedPredicate')[0]
@@ -249,7 +254,8 @@ module ActiveFacts
         @x_facts.each{|x|
           id = x.attributes['id']
           fact_type = @by_id[id]
-          fact_name = x.attributes['Name'] || x.attributes['_Name']
+          fact_name = x.attributes['Name'] || x.attributes['_Name'] || ''
+          fact_name.gsub!(/\s/,'')
           fact_name = nil if fact_name == ''
 
           x_fact_roles = x.elements.to_a('orm:FactRoles/*')
@@ -258,6 +264,7 @@ module ActiveFacts
           # Deal with FactRoles (Roles):
           x_fact_roles.each{|x|
             name = x.attributes['Name'] || ""
+            name.gsub!(/\s/,'')
             name = nil if name.size == 0
 
             # _IsMandatory = x.attributes['_IsMandatory']
@@ -294,12 +301,15 @@ module ActiveFacts
             #puts "#{@vocabulary}, Name=#{x.attributes['Name']}, concept=#{concept}"
             throw "Role is played by #{concept.class} not Concept" if !(@constellation.vocabulary.concept(:Concept) === concept)
 
-            name = x.attributes['Name']
+            name = x.attributes['Name'] || ''
+            name.gsub!(/\s/,'')
+            name = nil if name.size == 0
             #puts "Creating role #{name} of #{fact_type.fact_type_id} played by #{concept.name}"
+
             role = @by_id[id] = @constellation.Role(:new)
             role.concept = concept
             role.fact_type = fact_type
-            role.role_name = x.attributes['Name'] if name != ""
+            role.role_name = name if name
             # puts "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x.attributes['Name']} is played by #{concept.name}, role is #{role.object_id}"
 
             x_vr = x.elements.to_a("orm:ValueRestriction")
@@ -447,7 +457,9 @@ module ActiveFacts
         @mandatory_constraints_by_rs = {}
         @mandatory_constraint_rs_by_id = {}
         x_mandatory_constraints.each{|x|
-          name = x.attributes["Name"]
+          name = x.attributes["Name"] || ''
+          name.gsub!(/\s/,'')
+          name = nil if name.size == 0
 
           # As of Feb 2008, all NORMA ValueTypes have an implied mandatory constraint.
           if x.elements.to_a("orm:ImpliedByObjectType").size > 0
@@ -472,7 +484,9 @@ module ActiveFacts
       def read_residual_mandatory_constraints
         @mandatory_constraints_by_rs.each { |roles, x|
           # Create a simply-mandatory PresenceConstraint for each mandatory constraint
-          name = x.attributes["Name"]
+          name = x.attributes["Name"] || ''
+          name.gsub!(/\s/,'')
+          name = nil if name.size == 0
           #puts "Residual Mandatory #{name}: #{roles.to_s}"
 
           pc = @constellation.PresenceConstraint(:new)
@@ -491,7 +505,9 @@ module ActiveFacts
       def read_uniqueness_constraints
         x_uniqueness_constraints = @x_model.elements.to_a("orm:Constraints/orm:UniquenessConstraint")
         x_uniqueness_constraints.each{|x|
-          name = x.attributes["Name"]
+          name = x.attributes["Name"] || ''
+          name.gsub!(/\s/,'')
+          name = nil if name.size == 0
           id = x.attributes["id"]
           x_pi = x.elements.to_a("orm:PreferredIdentifierFor")[0]
           pi = x_pi ? @by_id[eref = x_pi.attributes['ref']] : nil
@@ -559,7 +575,9 @@ module ActiveFacts
       def read_exclusion_constraints
         x_exclusion_constraints = @x_model.elements.to_a("orm:Constraints/orm:ExclusionConstraint")
         x_exclusion_constraints.each{|x|
-          name = x.attributes["Name"]
+          name = x.attributes["Name"] || ''
+          name.gsub!(/\s/,'')
+          name = nil if name.size == 0
           x_mandatory = (m = x.elements.to_a("orm:ExclusiveOrMandatoryConstraint")[0]) &&
                   @x_by_id[mc_id = m.attributes['ref']]
           role_sequences = 
@@ -591,7 +609,9 @@ module ActiveFacts
       def read_equality_constraints
         x_equality_constraints = @x_model.elements.to_a("orm:Constraints/orm:EqualityConstraint")
         x_equality_constraints.each{|x|
-          name = x.attributes["Name"]
+          name = x.attributes["Name"] || ''
+          name.gsub!(/\s/,'')
+          name = nil if name.size == 0
           role_sequences = 
             x.elements.to_a("orm:RoleSequences/orm:RoleSequence").map{|x_rs|
                 x_role_refs = x_rs.elements.to_a("orm:Role")
@@ -614,7 +634,9 @@ module ActiveFacts
       def read_subset_constraints
         x_subset_constraints = @x_model.elements.to_a("orm:Constraints/orm:SubsetConstraint")
         x_subset_constraints.each{|x|
-          name = x.attributes["Name"]
+          name = x.attributes["Name"] || ''
+          name.gsub!(/\s/,'')
+          name = nil if name.size == 0
           role_sequences = 
             x.elements.to_a("orm:RoleSequences/orm:RoleSequence").map{|x_rs|
                 x_role_refs = x_rs.elements.to_a("orm:Role")
@@ -636,7 +658,9 @@ module ActiveFacts
       def read_ring_constraints
         x_ring_constraints = @x_model.elements.to_a("orm:Constraints/orm:RingConstraint")
         x_ring_constraints.each{|x|
-          name = x.attributes["Name"]
+          name = x.attributes["Name"] || ''
+          name.gsub!(/\s/,'')
+          name = nil if name.size == 0
           type = x.attributes["Type"]
   #       begin
   #         # Convert the RingConstraint name to a number:
@@ -675,7 +699,9 @@ module ActiveFacts
           # Get details of the ValueType:
           xvt = v.parent.parent.parent
           vt_id = xvt.attributes['id']
-          vtname = xvt.attributes['Name']
+          vtname = xvt.attributes['Name'] || ''
+          vtname.gsub!(/\s/,'')
+          vtname = nil if name.size == 0
           vt = @by_id[vt_id]
           throw "ValueType #{vtname} not found" unless vt
 
@@ -698,7 +724,9 @@ module ActiveFacts
           xet = v.parent.parent
           et_id = xet.attributes['id']
           if (et_id != last_et_id)
-            etname = xet.attributes['Name']
+            etname = xet.attributes['Name'] || ''
+            etname.gsub!(/\s/,'')
+            etname = nil if name.size == 0
             last_et = et = @by_id[et_id]
             last_et_id = et_id
             throw "EntityType #{etname} not found" unless et
