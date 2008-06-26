@@ -10,9 +10,9 @@ StudentName is defined as VariableLengthText();
 /*
  * Entity Types
  */
-Activity is identified by Name:
-	Activity has exactly one ActivityName (as Name),
-	Name is of at most one Activity;
+Activity is identified by ActivityName:
+	Activity has exactly one ActivityName,
+	ActivityName is of at most one Activity;
 
 School is identified by SchoolName:
 	School has exactly one SchoolName,
