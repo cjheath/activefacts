@@ -215,7 +215,7 @@ module ActiveFacts
 
       # Dump one fact type.
       # Include as many as possible internal constraints in the fact type readings.
-      def fact_type_dump(fact_type, name, readings)
+      def fact_type_dump(fact_type, name)
         return if skip_fact_type(fact_type)
 
         fact_constraints = @presence_constraints_by_fact[fact_type]

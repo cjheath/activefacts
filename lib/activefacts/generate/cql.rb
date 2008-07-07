@@ -138,16 +138,23 @@ module ActiveFacts
         puts "\n"
       end
 
+      def fact_readings(fact_type)
+        constrained_fact_readings = fact_readings_with_constraints(fact_type)
+        constrained_fact_readings*",\n\t"
+      end
+
       def subtype_dump(o, supertypes, pi)
-        puts "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " }" +
-          (pi ? identified_by(o, pi) : "") +
-          ";\n"
+        print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " }"
+        print identified_by(o, pi) if pi
+        # If there's a preferred_identifier for this subtype, identifying readings were emitted
+        print((pi ? "," : " where") + "\n\t" + fact_readings(o.fact_type)) if o.fact_type
+        puts ";\n"
       end
 
       def non_subtype_dump(o, pi)
-        puts "#{o.name} is" +
-          identified_by(o, pi) +
-          ";\n"
+        print "#{o.name} is" + identified_by(o, pi)
+        print(",\n\t"+ fact_readings(o.fact_type)) if o.fact_type
+        puts ";\n"
       end
 
       # Dump all fact types for which all precursors (of which "o" is one) have been emitted:
@@ -175,15 +182,18 @@ module ActiveFacts
           TypeInheritance === f
       end
 
-      def fact_type_dump(fact_type, name, constrained_fact_readings)
+      def fact_type_dump(fact_type, name)
+        # REVISIT: Handle alternate identification of objectified fact type
 
-        if (o = fact_type.entity_type) and !o.all_type_inheritance_by_subtype.empty?
-          print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " } where\n\t"
-        else
-          print(name ? name+" is where\n\t" : "")
+        if (o = fact_type.entity_type)
+          if !o.all_type_inheritance_by_subtype.empty?
+            print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " } where\n\t"
+          else
+            print(name ? name+" is where\n\t" : "")
+          end
         end
 
-        puts(constrained_fact_readings*",\n\t" + ";")
+        puts(fact_readings(fact_type)+";")
       end
 
       def fact_type_banner

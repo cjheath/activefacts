@@ -6,6 +6,7 @@
 $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'rubygems'
+require 'ruby-debug'
 require 'activefacts'
 require 'activefacts/vocabulary'
 require 'activefacts/support'

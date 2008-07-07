@@ -120,11 +120,10 @@ module ActiveFacts
     def entity_type(name, supertypes, value)
       #print "entity_type parameters for #{name}: "; p value
       identification, clauses = *value
-
-      # The entity is a local role:
-      @local_roles[name] = true
-
       clauses ||= []
+
+      # The entity is treated as a local role:
+      @local_roles[name] = true
 
       raise "Entity type clauses must all be fact types" if clauses.detect{|c| c[0] != :fact_clause }
       find_all_defined_roles(clauses)
@@ -158,8 +157,6 @@ module ActiveFacts
 
     def fact_type(name, value)
       defined_readings, *clauses = value
-      #p defined_readings
-      #p clauses
 
       # We have to handle all fact clauses one way, conditions another:
       fact_clauses = defined_readings +
@@ -170,25 +167,7 @@ module ActiveFacts
       # Process all fact invocations in both the defined_readings and the clauses:
       fact_clauses.each{|r| clause(r) }
 
-      debug "Defined readings: "+defined_readings.inspect
-=begin
-      # REVISIT: Check that all defined readings have the same set of players
-      # This check is too strong, and is done in the backend now.
-      player_names = defined_readings[0][2].map{|w| Hash === w ? w[:player] : nil }.compact.sort
-      1.upto(defined_readings.size-1){|i|
-          reading = defined_readings[i]
-          kind, qualifiers, phrases = reading[2]
-          these_player_names = phrases.map{|w| Hash === w ? w[:player] : nil }.compact.sort
-          if these_player_names != player_names
-            # REVISIT: This will be an exception.
-            debug "All readings for a new fact type definition must have the same players" do
-              debug "Role players for first reading are: "+player_names.inspect
-              debug "Role players for this reading: "+these_player_names.inspect
-            end
-          end
-        }
-=end
-
+      #debug "Defined readings: "+defined_readings.inspect
       debug "Fact derivation clauses: "+clauses.pretty_inspect if clauses.size > 0
 
       define_fact_type(name, defined_readings, clauses)
@@ -201,31 +180,30 @@ module ActiveFacts
     end
 
     # Extract any role names into @local_roles and
-    # any defined adjectival forms into @local_forms (also indexed by word)
+    # any defined adjectival forms into @local_forms
+    # (also indexed by word as @local_forms)
     def find_all_defined_roles(fact_clauses)
       debug "Search fact readings for role names:" do
-        fact_clauses.each{|r| find_defined_roles(r[2]) }
+        fact_clauses.each do |r|
+          reading = r[2]
+          reading.each do |role|
+            # Index the role_name if any:
+            role_name = role[:role_name]
+            @local_roles[role_name] = role if role_name
+
+            # Index the adjectival form, if any marked adjectives:
+            leading_adjective = role[:leading_adjective]
+            trailing_adjective = role[:trailing_adjective]
+            next unless leading_adjective || trailing_adjective
+
+            form = [leading_adjective, role[:words], trailing_adjective].flatten.compact
+            debug "Adjectival form: "+ form.inspect
+            @local_forms[form] = true
+            form.each{|w| (@local_forms_by_word[w] ||= []) << form }
+          end
+        end
         debug "Role names: "+ @local_roles.inspect if @local_roles.size > 0
       end
-    end
-
-    # Populate the @local_roles and @local_forms for this reading
-    def find_defined_roles(reading)
-      reading.each { |role|
-          # Index the role_name if any:
-          role_name = role[:role_name]
-          @local_roles[role_name] = role if role_name
-
-          # Index the adjectival form, if any marked adjectives:
-          leading_adjective = role[:leading_adjective]
-          trailing_adjective = role[:trailing_adjective]
-          next unless leading_adjective || trailing_adjective
-
-          form = [leading_adjective, role[:words], trailing_adjective].flatten.compact
-          debug "Adjectival form: "+ form.inspect
-          @local_forms[form] = true
-          form.each{|w| (@local_forms_by_word[w] ||= []) << form }
-        }
     end
 
     def clause(c)
@@ -305,7 +283,8 @@ module ActiveFacts
                 # go with the first player found, the trailing adjectives, function,
                 # role name, restriction and literal with the last one... sigh.
 
-                # Any possible extra trailing adjectives weren't actually, so emit them as linking words
+                # Any possible extra trailing adjectives on the previous role
+                # turned out to actually be just linking words, so emit them:
                 new_roles.concat possible_extra_trailing_adjectives
                 possible_extra_trailing_adjectives = []
 

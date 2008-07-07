@@ -378,7 +378,7 @@ module ActiveFacts
       # Fact types that aren't nested have no names
       name = fact_type.entity_type && fact_type.entity_type.name
 
-      fact_type_dump(fact_type, name, fact_readings_with_constraints(fact_type))
+      fact_type_dump(fact_type, name)
 
       # REVISIT: Go through the residual constraints and re-process appropriate readings to show them
 
@@ -537,7 +537,7 @@ module ActiveFacts
       debug "Should override fact_type_end"
     end
 
-    def fact_type_dump(fact_type, name, readings)
+    def fact_type_dump(fact_type, name)
       debug "Should override fact_type_dump"
     end
 

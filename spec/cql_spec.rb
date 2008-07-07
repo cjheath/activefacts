@@ -30,7 +30,7 @@ describe "CQL Loader" do
 
   #Dir["examples/CQL/Bl*.cql"].each do |cql_file|
   #Dir["examples/CQL/Meta*.cql"].each do |cql_file|
-  #Dir["examples/CQL/[AC]*.cql"].each do |cql_file|
+  #Dir["examples/CQL/[ACG]*.cql"].each do |cql_file|
   Dir["examples/CQL/*.cql"].each do |cql_file|
     actual_file = cql_file.sub(%r{examples/CQL/}, 'spec/actual/')
 

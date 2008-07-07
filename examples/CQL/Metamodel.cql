@@ -150,7 +150,8 @@ Alias is a kind of Feature;
 Concept is a kind of Feature;
 Role is identified by RoleId:
 	Role has exactly one RoleId,
-	RoleId is of at most one Role;
+	RoleId is of at most one Role,
+	Concept plays role in FactType;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
 Role has at most one role-ValueRestriction,

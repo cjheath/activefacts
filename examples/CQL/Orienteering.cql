@@ -81,7 +81,8 @@ Person has at most one PostCode;
 Person is member of at most one Club;
 Entry is identified by EntryID:
 	Entry has exactly one EntryID,
-	EntryID is of at most one Entry;
+	EntryID is of at most one Entry,
+	Person entered at most one Course of Event;
 Entry received at most one Score;
 Entry finished in at most one finish-Placing;
 
@@ -107,6 +108,5 @@ Constraints:
 	REVISIT: Verbalise PresenceConstraint EventHasSeriesNumberOrName min 1 mandatory over (Event, Event)
 	REVISIT: Verbalise PresenceConstraint ExternalUniquenessConstraint1 min 0 max 1 over (Series, Number)
 	REVISIT: Verbalise PresenceConstraint OnlyOneScoringMethodForEachEventAndCourse min 0 max 1 over (Course, Event)
-	REVISIT: Verbalise PresenceConstraint PersonMayEnterEventOnce min 0 max 1 over (Person, Event)
 	REVISIT: Verbalise PresenceConstraint SimpleMandatoryConstraint28 min 1 mandatory over (EventControl)
  */
