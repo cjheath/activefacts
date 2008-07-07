@@ -16,7 +16,12 @@ while line = Readline::readline(statement == "" ? "CQL? " : "CQL+ ", [])
     begin
       parser.root = :definition
       result = parser.parse(statement)
-      p result.value
+      if result
+        #p result.value
+        p parser.definition(result)
+      else
+        p parser.failure_reason
+      end
     rescue => e
       puts e
       puts "\t"+e.backtrace*"\n\t"

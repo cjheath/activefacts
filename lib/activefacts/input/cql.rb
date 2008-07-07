@@ -10,7 +10,9 @@ require 'ruby-debug'
 module ActiveFacts
   module Input
     class CQL
+      include ActiveFacts
       include ActiveFacts::Metamodel
+
       RingTypes = %w{acyclic intransitive symmetric asymmetric transitive antisymmetric irreflexive reflexive}
       RingPairs = {
           :intransitive => [:acyclic, :asymmetric, :symmetric],

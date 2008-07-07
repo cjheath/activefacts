@@ -48,6 +48,7 @@ module ActiveFacts
     end
 
     class EntityType
+      include ActiveFacts
       def preferred_identifier
         if fact_type
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles

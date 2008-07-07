@@ -9,8 +9,6 @@ require 'rubygems'
 require 'ruby-debug'
 require 'activefacts'
 require 'activefacts/vocabulary'
-require 'activefacts/support'
-include ActiveFacts
 
 arg = ARGV.shift
 

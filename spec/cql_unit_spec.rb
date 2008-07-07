@@ -4,6 +4,8 @@
 #
 require 'rubygems'
 require 'treetop'
+require 'activefacts/support'
+require 'activefacts/api/support'
 require 'activefacts/cql/parser'
 
 describe "Valid Numbers, Strings and Ranges" do
@@ -179,7 +181,7 @@ describe "Data Types" do
 end
 
 describe "Entity Types" do
-  EntityTypes = [
+  EntityTypes_RefMode = [
     [ "a = entity(.id):c;",                     # Entity type declaration with reference mode
       [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
@@ -189,41 +191,47 @@ describe "Entity Types" do
     [ "a = entity(.id) where c;",               # Entity type declaration with reference mode and where
       [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
-    [ "a = entity identified by b: c;",         # Entity type declaration
+  ]
+
+  EntityTypes_Simple = [
+    [ "a = entity identified by b: c;",         # Entity type declaration, old syntax
       [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
-    [ "a = entity identified by b where c;",            # Entity type declaration with where
+    [ "a is identified by b: c;",               # Entity type declaration
       [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
     ],
-    [ "a = entity identified by b and c: d;",   # Entity type declaration with two-part identifier
+    [ "a is identified by b where c;",            # Entity type declaration with where
+      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+    ],
+    [ "a is identified by b and c: d;",   # Entity type declaration with two-part identifier
       [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
-    [ "a = entity identified by b, c: d;",              # Entity type declaration with two-part identifier
+    [ "a is identified by b, c: d;",              # Entity type declaration with two-part identifier
       [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
-    [ "a=b(); c=entity identified by a:d;",
+    [ "a=b(); c is identified by a:d;",
       [["a", [:data_type, "b", [ nil, nil ], nil, []]],
         ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
-    [ " a = b ( ) ; c = entity identified by a : d ; ",
+    [ " a = b ( ) ; c is identified by a : d ; ",
       [["a", [:data_type, "b", [ nil, nil ], nil, []]],
         ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
     ],
     [ "a=entity(.c):maybe d;",
       [["a", [:entity_type, [], {:mode=>"c"}, [[:fact_clause, ["maybe"], [{:words=>["d"]}]]]]]]
     ],
-    [ "Director = Person directs company, company is directed by Person;",
-      [["Director", [:fact_type, [[:fact_clause, [], [{:words=>["Person", "directs", "company"]}]], [:fact_clause, [], [{:words=>["company", "is", "directed", "by", "Person"]}]]], []]]]
-    ],
-    [ "a: maybe a has completely- green b -totally [transitive, acyclic], b -c = 2;",
-      [[nil, [:fact_type, [[:fact_clause, [], [{:words=>["a"]}]]], [[:fact_clause, ["maybe", "transitive", "acyclic"], [{:words=>["a", "has"]}, {:words=>["green", "b"], :leading_adjective=>"completely", :trailing_adjective=>"totally"}]], ["=", [:+, [:variable, "b"], [:-, [:variable, "c"]]], 2]]]]]
+  ]
+
+  EntityTypes_Objectified = [
+    [ "Director = Person directs Company, Company is directed by Person;",
+      [["Director", [:fact_type, [[:fact_clause, [], [{:words=>["Person", "directs", "Company"]}]], [:fact_clause, [], [{:words=>["Company", "is", "directed", "by", "Person"]}]]], []]]]
     ],
     [ "Director: Person directs company;",
       [[nil, [:fact_type, [[:fact_clause, [], [{:words=>["Director"]}]]], [[:fact_clause, [], [{:words=>["Person", "directs", "company"]}]]]]]]
     ],
-    [ "Director is old: Person directs company, Person is of age, age > 60;",
-      [[nil, [:fact_type, [[:fact_clause, [], [{:words=>["Director", "is", "old"]}]]], [[:fact_clause, [], [{:words=>["Person", "directs", "company"]}]], [:fact_clause, [], [{:words=>["Person", "is", "of", "age"]}]], [">", [:variable, "age"], 60]]]]]
-    ],
+  ]
+
+  EntityTypes_Subtypes = [
     [ "Employee is a kind of Person;",
       [["Employee", [:entity_type, ["Person"], nil, nil]]]
     ],
@@ -253,6 +261,12 @@ describe "Entity Types" do
     ],
   ]
 
+  EntityTypes =
+    EntityTypes_RefMode +
+    EntityTypes_Simple +
+    EntityTypes_Objectified +
+    EntityTypes_Subtypes
+
   setup do
     @parser = ActiveFacts::CQLParser.new
   end
@@ -276,18 +290,27 @@ end
 
 describe "Fact Types" do
   FactTypes = [
+    [ "Director is old: Person directs company, Person is of age, age > 60;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["Director", "is", "old"]}]]], [[:fact_clause, [], [{:words=>["Person", "directs", "company"]}]], [:fact_clause, [], [{:words=>["Person", "is", "of", "age"]}]], [">", [:variable, "age"], 60]]]]
+    ],
+    [ "a: maybe a has completely- green b -totally [transitive, acyclic], b -c = 2;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["a"]}]]], [[:fact_clause, ["maybe", "transitive", "acyclic"], [{:words=>["a", "has"]}, {:words=>["green", "b"], :leading_adjective=>"completely", :trailing_adjective=>"totally"}]], ["=", [:+, [:variable, "b"], [:-, [:variable, "c"]]], 2]]]]
+    ],
     [ "Person is independent: Person has taxable- Income, taxable Income >= 20000 dollars;",
-      [[nil, [:fact_type, [[:fact_clause, [], [{:words=>["Person", "is", "independent"]}]]], [[:fact_clause, [], [{:words=>["Person", "has"]}, {:leading_adjective=>"taxable", :words=>["Income"]}]], [">=", [:variable, "taxable", "Income"], [20000, "dollars"]]]]]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["Person", "is", "independent"]}]]], [[:fact_clause, [], [{:words=>["Person", "has"]}, {:leading_adjective=>"taxable", :words=>["Income"]}]], [">=", [:variable, "taxable", "Income"], [20000, "dollars"]]]]]
     ],
     [ "Window requires toughening: Window has width-mm, Window has height-mm, width mm * height mm >= 10 foot^2;",
-      [[nil, [:fact_type, [[:fact_clause, [], [{:words=>["Window", "requires", "toughening"]}]]], [[:fact_clause, [], [{:words=>["Window", "has"]}, {:leading_adjective=>"width", :words=>["mm"]}]], [:fact_clause, [], [{:words=>["Window", "has"]}, {:leading_adjective=>"height", :words=>["mm"]}]], [">=", [:*, [:variable, "width", "mm"], [:variable, "height", "mm"]], [10, "foot^2"]]]]]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["Window", "requires", "toughening"]}]]], [[:fact_clause, [], [{:words=>["Window", "has"]}, {:leading_adjective=>"width", :words=>["mm"]}]], [:fact_clause, [], [{:words=>["Window", "has"]}, {:leading_adjective=>"height", :words=>["mm"]}]], [">=", [:*, [:variable, "width", "mm"], [:variable, "height", "mm"]], [10, "foot^2"]]]]]
     ],
     # REVISIT: Test all quantifiers
     # REVISIT: Test all post-qualifiers
     # REVISIT: Test functions
-    [ "AnnualIncome = Person has total- Income in Year: Person has total- Income.sum(), Income was earned in current- time.Year;",
-      [["AnnualIncome", [:fact_type, [[:fact_clause, [], [{:words=>["Person", "has"]}, {:leading_adjective=>"total", :words=>["Income", "in", "Year"]}]]], [[:fact_clause, [], [{:words=>["Person", "has"]}, {:function=>[:"(", "sum"], :leading_adjective=>"total", :words=>["Income"]}]], [:fact_clause, [], [{:words=>["Income", "was", "earned", "in"]}, {:function=>[:"(", "Year"], :leading_adjective=>"current", :words=>["time"]}]]]]]]
+    [ "AnnualIncome is where Person has total- Income in Year: Person has total- Income.sum(), Income was earned in current- time.Year() (as Year);",
+      ["AnnualIncome", [:fact_type, [[:fact_clause, [], [{:words=>["Person", "has"]}, {:leading_adjective=>"total", :words=>["Income", "in", "Year"]}]]], [[:fact_clause, [], [{:words=>["Person", "has"]}, {:function=>[:"(", "sum"], :leading_adjective=>"total", :words=>["Income"]}]], [:fact_clause, [], [{:words=>["Income", "was", "earned", "in"]}, {:function=>[:"(", "Year"], :words=>["time"], :role_name=>"Year", :leading_adjective=>"current"}]]]]]
     ],
+    [ "a is interesting : b- c -d has e- f -g;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["a", "is", "interesting"]}]]], [[:fact_clause, [], [{:trailing_adjective=>"d", :words=>["c"], :leading_adjective=>"b"}, {:words=>["has"]}, {:trailing_adjective=>"g", :words=>["f"], :leading_adjective=>"e"}]]]]]
+    ]
   ]
 
   setup do
@@ -295,15 +318,22 @@ describe "Fact Types" do
   end
 
   FactTypes.each do |c|
-    source, ast = *c
+    source, ast, definition = *c
     it "should parse #{source.inspect}" do
-      result = @parser.parse_all(source, :definition)
+      definitions = @parser.parse_all(source, :definition)
 
-      #REVISIT: @parser.failure_reason.should be_nil
+      puts @parser.failure_reason unless definitions
 
-      result.should_not be_nil
+      definitions.should_not be_nil
+      result = definitions[-1]
 
-      result.map{|d| d.value}.should == ast if ast
+      if (definition)
+        result.definition.should == definition
+      else
+        #p @parser.definition(result)
+      end
+
+      result.value.should == ast if ast
       puts result.map{|d| d.value}.inspect unless ast
     end
   end

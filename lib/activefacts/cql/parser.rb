@@ -17,6 +17,7 @@ require 'activefacts/cql/CQLParser'
 module ActiveFacts
   # Extend the generated parser:
   class CQLParser
+    include ActiveFacts
 
     def initialize
       @types = {}
@@ -168,7 +169,7 @@ module ActiveFacts
       fact_clauses.each{|r| clause(r) }
 
       #debug "Defined readings: "+defined_readings.inspect
-      debug "Fact derivation clauses: "+clauses.pretty_inspect if clauses.size > 0
+      debug "Fact derivation clauses: "+clauses.inspect if clauses.size > 0
 
       define_fact_type(name, defined_readings, clauses)
     end
@@ -322,7 +323,7 @@ module ActiveFacts
           new_role.merge!(role) if new_role
 
           if (la)
-            raise "Role player #{la[-1]} for '#{la*" "}' not found"
+            raise "Role player #{la[-1]} for '#{la*" "}' not found" + " in #{role.inspect}"
           end
 
           new_roles
