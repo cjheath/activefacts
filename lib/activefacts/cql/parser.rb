@@ -277,31 +277,19 @@ module ActiveFacts
           new_role = nil
           possible_extra_trailing_adjectives = []
           words.each{|w|
-              local_role = @local_roles[w]
-              # REVISIT: Case in point: In the clauses of an entity definition, the entity name is a local role
-              if (local_role || type_by_name(w) || standard_type(w))
-                # We've found a role player. The quantifier & leading adjectives
-                # go with the first player found, the trailing adjectives, function,
-                # role name, restriction and literal with the last one... sigh.
+              if (is_role_player(w))
+                # The quantifier & leading adjectives go with the first player found,
+                # the trailing adjectives, function, role name, restriction and literal
+                # with the last one.
 
                 # Any possible extra trailing adjectives on the previous role
                 # turned out to actually be just linking words, so emit them:
                 new_roles.concat possible_extra_trailing_adjectives
                 possible_extra_trailing_adjectives = []
 
-                # REVISIT: Deal with the following:
-                #   :function
-                #   :role_name (from "(as xyz)")
-                #   :restriction (from "restricted to {a-b,c}..."
-                #   :literal (the lexical representation of a value)
-
-                new_role = {:player => w}
-                new_role[:quantifier] = quant if quant
-                new_role[:leading_adjective] = la if la
+                new_role = canonicalise_role(w, role, la, quant)
                 quant = la = nil
                 new_roles << new_role
-                role.delete(:quantifier)
-                role.delete(:leading_adjective)
               else        # Not a role player
                 if la
                   la << w               # Extra leading adjective
@@ -320,15 +308,36 @@ module ActiveFacts
           else  # Just linking words
             possible_extra_trailing_adjectives.each{|w| new_roles << w }
           end
+          # Anything left in the old role gets moved to the last new one, if any:
           new_role.merge!(role) if new_role
 
           if (la)
-            raise "Role player #{la[-1]} for '#{la*" "}' not found" + " in #{role.inspect}"
+            raise "Role player #{la[-1]} for '#{la*" "}' not found" # + " in #{role.inspect}"
           end
 
           new_roles
         }
       roles.replace(replacement_roles)
+    end
+
+    def is_role_player(player_name)
+      @local_roles[player_name] || type_by_name(player_name) || standard_type(player_name)
+    end
+
+    def canonicalise_role(player_name, role, leading_adjectives, quantifier)
+
+      # REVISIT: Deal with the following:
+      #   :function
+      #   :role_name (from "(as xyz)")
+      #   :restriction (from "restricted to {a-b,c}..."
+      #   :literal (the lexical representation of a value)
+
+      new_role = {:player => player_name}
+      new_role[:quantifier] = quantifier if quantifier
+      new_role[:leading_adjective] = leading_adjectives if leading_adjectives
+      role.delete(:quantifier)
+      role.delete(:leading_adjective)
+      new_role
     end
 
     #

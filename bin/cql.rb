@@ -17,8 +17,8 @@ while line = Readline::readline(statement == "" ? "CQL? " : "CQL+ ", [])
       parser.root = :definition
       result = parser.parse(statement)
       if result
-        #p result.value
-        p parser.definition(result)
+        p result.value
+        #p parser.definition(result)
       else
         p parser.failure_reason
       end

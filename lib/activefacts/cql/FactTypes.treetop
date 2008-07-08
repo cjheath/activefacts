@@ -76,7 +76,7 @@ module ActiveFacts
       end
 
       rule qualifier
-        ( maybe / definitely ) !alphanumeric
+        maybe / definitely
       end
 
       rule post_qualifiers
@@ -89,7 +89,7 @@ module ActiveFacts
       end
 
       rule post_qualifier
-        (static / transient / intransitive / transitive / acyclic / symmetric ) !alphanumeric
+        static / transient / intransitive / transitive / acyclic / symmetric
       end
 
       rule reading
@@ -106,9 +106,9 @@ module ActiveFacts
       # but find no way out as soon as we hit the trailing non_role.
       rule role
         q:quantifier?
-        adj0:(!non_role_word a:id '-' s)?
-        player:(!non_role_word p:id !'-' s)+
-        adj1:( '-' a:(!non_role_word a:id s)? )?
+        adj0:(a:role_word '-' s)?
+        player:(p:role_word !'-' s)+
+        adj1:( '-' a:(a:role_word s)? )?
         func:function_call?
         role_name:( '(' s as S r:id s ')' s )?
         lr:( literal / restriction )?
@@ -135,6 +135,10 @@ module ActiveFacts
         '||' /
         add_op /
         mul_op
+      end
+
+      rule role_word
+	!non_role_word id
       end
 
       rule non_role_word
