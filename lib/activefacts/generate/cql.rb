@@ -85,6 +85,7 @@ module ActiveFacts
             }
         }
         expanded.gsub!(/ *- */, '-')      # Remove spaces around adjectives
+        #debug "Expanded '#{expanded}' using #{frequency_constraints.inspect}"
         expanded
       end
 

@@ -37,7 +37,7 @@ begin
   vocabulary = input_klass.readfile(arg)
 rescue => e
   puts "#{e.message}"
-  #puts "#{e}:\n\t#{e.backtrace*"\n\t"}"
+  puts "#{e}:\n\t#{e.backtrace*"\n\t"}" if debug
 end
 
 # Generate the output:

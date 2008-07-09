@@ -189,87 +189,88 @@ module ActiveFacts
       define_role_names = true
       fact_constraints = @presence_constraints_by_fact[fact_type]
       used_constraints = []
-      readings = fact_type.all_reading_by_ordinal.inject([]){|reading_array, reading|
-          # Find all role numbers in order of occurrence in this reading:
-          role_refs = reading.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
-          role_numbers = reading.reading_text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
-          roles = role_numbers.map{|m| role_refs[m].role }
-          # debug "Considering #{reading.reading_text} having #{role_numbers.inspect}"
+      readings = fact_type.all_reading_by_ordinal.inject([]) do |reading_array, reading|
+        # Find all role numbers in order of occurrence in this reading:
+        role_refs = reading.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
+        role_numbers = reading.reading_text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
+        roles = role_numbers.map{|m| role_refs[m].role }
+        # debug "Considering #{reading.reading_text} having #{role_numbers.inspect}"
 
-          # Find the constraints that constrain frequency over each role we can verbalise:
-          frequency_constraints = []
-          role_mandatory_but_not_unique = []
-          roles.each {|role|
-              # Find a mandatory constraint that's *not* unique; this will need an extra reading
-              role_is_first_in = fact_type.all_reading.detect{|r|
-                  role == r.role_sequence.all_role_ref.sort_by{|role_ref|
-                      role_ref.ordinal
-                    }[0].role
+        # Find the constraints that constrain frequency over each role we can verbalise:
+        frequency_constraints = []
+        role_mandatory_but_not_unique = []
+        roles.each do |role|
+          # Find a mandatory constraint that's *not* unique; this will need an extra reading
+          role_is_first_in = fact_type.all_reading.detect{|r|
+              role == r.role_sequence.all_role_ref.sort_by{|role_ref|
+                  role_ref.ordinal
+                }[0].role
+            }
+
+          role_mandatory_but_not_unique <<
+            (
+              (!role_is_first_in || role_is_first_in == reading) &&
+              fact_constraints.find{|c|
+                  PresenceConstraint === c &&
+                  c.is_mandatory &&
+                  (!c.max_frequency || c.max_frequency > 1) &&
+                  c.role_sequence == [role] &&
+                  !@constraints_used[c]     # Already verbalised
                 }
+            )
 
-              role_mandatory_but_not_unique <<
-                (
-                  (!role_is_first_in || role_is_first_in == reading) &&
-                  fact_constraints.find{|c|
-                      PresenceConstraint === c &&
-                      c.is_mandatory &&
-                      (!c.max_frequency || c.max_frequency > 1) &&
-                      c.role_sequence == [role] &&
-                      !@constraints_used[c]     # Already verbalised
-                    }
-                )
+          if (role != roles[0])   # First role of the reading?
+            # REVISIT: With a ternary, doing this on other than the last role can be ambiguous,
+            # in case both the 2nd and 3rd roles have frequencies. Think some more!
 
-              if (role != roles[0])   # First role of the reading?
-                # REVISIT: With a ternary, doing this on other than the last role can be ambiguous,
-                # in case both the 2nd and 3rd roles have frequencies. Think some more!
-
-                constraint = fact_constraints.find{|c|  # Find a UC that spans all other Roles
-                    # internal uniqueness constraints span all roles but one, the residual:
-                    PresenceConstraint === c &&
-                      !@constraints_used[c] &&  # Already verbalised
-                      roles-c.role_sequence.all_role_ref.map(&:role) == [role]
-                  }
-                # Index the frequency implied by the constraint under the role position in the reading
-                if constraint     # Mark this constraint as "verbalised" so we don't do it again:
-                  @constraints_used[constraint] = true
-                  used_constraints << constraint
-                end
-                frequency_constraints << constraint
-              else
-                frequency_constraints << nil
-              end
-            }
-
-          reading_array << expand_reading(reading, frequency_constraints, define_role_names)
-
-          if (ft_rings = @ring_constraints_by_fact[fact_type]) &&
-             (ring = ft_rings.detect{|rc| !@constraints_used[rc]})
-            @constraints_used[ring] = true
-            used_constraints << ring
-            append_ring_to_reading(reading_array[-1], ring)
+            constraint = fact_constraints.find{|c|  # Find a UC that spans all other Roles
+                # internal uniqueness constraints span all roles but one, the residual:
+                PresenceConstraint === c &&
+                  !@constraints_used[c] &&  # Already verbalised
+                  roles-c.role_sequence.all_role_ref.map(&:role) == [role]
+              }
+            # Index the frequency implied by the constraint under the role position in the reading
+            if constraint     # Mark this constraint as "verbalised" so we don't do it again:
+              @constraints_used[constraint] = true
+              used_constraints << constraint
+            end
+            frequency_constraints << constraint
+          else
+            frequency_constraints << nil
           end
+        end
 
-          define_role_names = false     # No need to define role names in subsequent readings
+        reading_array << expand_reading(reading, frequency_constraints, define_role_names)
 
-          # REVISIT: This section doesn't seem to be firing:
-          # If the first Role is mandatory but not unique, and we haven't absorbed this
-          # mandation into a uniqueness constraint, we need to re-iterate this reading by
-          # saying "each X has some Y for some Z"
-          role_mandatory_but_not_unique.each_with_index{|mc, i|
-              next unless mc
-              frequencies = [ "some" ]*i + [ "each" ] + [ "some" ]*(roles.size-i-1)
-              raise "REVISIT: Not yet reimplemented"
-              reading_array << reading.expand(frequencies, false)
+        if (ft_rings = @ring_constraints_by_fact[fact_type]) &&
+           (ring = ft_rings.detect{|rc| !@constraints_used[rc]})
+          @constraints_used[ring] = true
+          used_constraints << ring
+          append_ring_to_reading(reading_array[-1], ring)
+        end
 
-              # REVISIT: If min > 1 (a frequency constraint), this constraint isn't fully verbalised
+        define_role_names = false     # No need to define role names in subsequent readings
+
+        # REVISIT: This section doesn't seem to be firing:
+        # If the first Role is mandatory but not unique, and we haven't absorbed this
+        # mandation into a uniqueness constraint, we need to re-iterate this reading by
+        # saying "each X has some Y for some Z"
+        role_mandatory_but_not_unique.each_with_index{|mc, i|
+            next unless mc
+            frequencies = [ "some" ]*i + [ "each" ] + [ "some" ]*(roles.size-i-1)
+            raise "REVISIT: Not yet reimplemented"
+            reading_array << reading.expand(frequencies, false)
+
+            # REVISIT: If min > 1 (a frequency constraint), this constraint isn't fully verbalised
 #             if first_role_mandatory.min == 1
-                @constraints_used[mc] = true
-                used_constraints << mc
+              @constraints_used[mc] = true
+              used_constraints << mc
 #             end
-            }
+          }
 
-          reading_array
-        }
+        reading_array
+      end
+
       # debug "Used #{fact_constraints_used} of #{used_constraints.uniq.size} constraints over #{fact_type.name}"
       if (fact_constraints-used_constraints).size == 0
         # We've exhausted the set constraints on this fact type.

@@ -93,12 +93,16 @@ module ActiveFacts
       end
 
       rule reading
-        role+
+        roles:role+ &reading_end
         {
           def value
-            elements.map{|r| r.value}
+            roles.elements.map{|r| r.value}
           end
         }
+      end
+
+      rule reading_end
+	(s ( ':' / '[' / ',' / ';' / or / and / returning ) )
       end
 
       # This is the rule that causes most back-tracking. I think you can see why.
@@ -107,7 +111,7 @@ module ActiveFacts
       rule role
         q:quantifier?
         adj0:(a:role_word '-' s)?
-        player:(p:role_word !'-' s)+
+        player:role_word !'-' s?
         adj1:( '-' a:(a:role_word s)? )?
         func:function_call?
         role_name:( '(' s as S r:id s ')' s )?
@@ -116,15 +120,19 @@ module ActiveFacts
         {
           def value
             r = {}
-            quantifier = !q.empty? && q.value
+            quantifier = !q.empty? && q.value	# "some" quantifier has nil value
+
             r[:quantifier] = quantifier if quantifier
             r[:leading_adjective] = adj0.a.text_value unless adj0.empty?
-            r[:words] = player.elements.map{|w| w.p.text_value}
+
+            r[:player] = player.text_value
+
             r[:trailing_adjective] = adj1.a.a.text_value unless adj1.empty?
             r[:function] = func.value if !func.empty?
             r[:role_name] = role_name.r.text_value unless role_name.empty?
             r[:restriction] = lr.ranges if !lr.empty? && lr.respond_to?(:ranges)
             r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
+
             r
           end
         }

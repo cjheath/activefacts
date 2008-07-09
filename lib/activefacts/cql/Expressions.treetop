@@ -14,7 +14,9 @@ module ActiveFacts
       end
 
       rule comparator
-        '<=' / '<' / '=' / '>=' / '>' / matches / includes
+        '<=' / '<' / '=' / '>=' / '>'
+	# REVISIT: These words occur in readings, find alternates:
+	# / matches / includes
       end
 
       rule expression
@@ -80,15 +82,12 @@ module ActiveFacts
       end
 
       rule variable
-        id0:id o0:( !defined_as s id1:id o1:( s id2:id )? )?
+        id0:id o0:( !defined_as s id1:id )?
         {
           def value
-            # Variable names may consist of up to three words:
+            # Variable names may consist of one or two words (optional adjective and a noun):
             r = [ :variable, id0.text_value ]
-            unless o0.empty?
-              r += [ o0.id1.text_value ]
-              r += [ o0.o1.id2.text_value ] unless o0.o1.empty?
-            end
+	    r += [ o0.id1.text_value ] unless o0.empty?
             r
           end
         }

@@ -183,51 +183,51 @@ end
 describe "Entity Types" do
   EntityTypes_RefMode = [
     [ "a = entity(.id):c;",                     # Entity type declaration with reference mode
-      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:player=>"c"}]]]]]]
     ],
     [ "a = entity ( . id ) : c ;",              # Entity type declaration with reference mode, maximal whitespace
-      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:player=>"c"}]]]]]]
     ],
     [ "a = entity(.id) where c;",               # Entity type declaration with reference mode and where
-      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:player=>"c"}]]]]]]
     ],
   ]
 
   EntityTypes_Simple = [
     [ "a = entity identified by b: c;",         # Entity type declaration, old syntax
-      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:player=>"c"}]]]]]]
     ],
     [ "a is identified by b: c;",               # Entity type declaration
-      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:player=>"c"}]]]]]]
     ],
     [ "a is identified by b where c;",            # Entity type declaration with where
-      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:words=>["c"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:player=>"c"}]]]]]]
     ],
     [ "a is identified by b and c: d;",   # Entity type declaration with two-part identifier
-      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:player=>"d"}]]]]]]
     ],
     [ "a is identified by b, c: d;",              # Entity type declaration with two-part identifier
-      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:player=>"d"}]]]]]]
     ],
     [ "a=b(); c is identified by a:d;",
       [["a", [:data_type, "b", [ nil, nil ], nil, []]],
-        ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
+        ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:player=>"d"}]]]]]]
     ],
     [ " a = b ( ) ; c is identified by a : d ; ",
       [["a", [:data_type, "b", [ nil, nil ], nil, []]],
-        ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:words=>["d"]}]]]]]]
+        ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:player=>"d"}]]]]]]
     ],
     [ "a=entity(.c):maybe d;",
-      [["a", [:entity_type, [], {:mode=>"c"}, [[:fact_clause, ["maybe"], [{:words=>["d"]}]]]]]]
+      [["a", [:entity_type, [], {:mode=>"c"}, [[:fact_clause, ["maybe"], [{:player=>"d"}]]]]]]
     ],
   ]
 
   EntityTypes_Objectified = [
     [ "Director = Person directs Company, Company is directed by Person;",
-      [["Director", [:fact_type, [[:fact_clause, [], [{:words=>["Person", "directs", "Company"]}]], [:fact_clause, [], [{:words=>["Company", "is", "directed", "by", "Person"]}]]], []]]]
+      [["Director", [:fact_type, [[:fact_clause, [], [{:player=>"Person"}, {:player=>"directs"}, {:player=>"Company"}]], [:fact_clause, [], [{:player=>"Company"}, {:player=>"is"}, {:player=>"directed"}, {:player=>"by"}, {:player=>"Person"}]]], []]]]
     ],
     [ "Director: Person directs company;",
-      [[nil, [:fact_type, [[:fact_clause, [], [{:words=>["Director"]}]]], [[:fact_clause, [], [{:words=>["Person", "directs", "company"]}]]]]]]
+      [[nil, [:fact_type, [[:fact_clause, [], [{:player=>"Director"}]]], [[:fact_clause, [], [{:player=>"Person"}, {:player=>"directs"}, {:player=>"company"}]]]]]]
     ],
   ]
 
@@ -291,25 +291,25 @@ end
 describe "Fact Types" do
   FactTypes = [
     [ "Director is old: Person directs company, Person is of age, age > 60;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["Director", "is", "old"]}]]], [[:fact_clause, [], [{:words=>["Person", "directs", "company"]}]], [:fact_clause, [], [{:words=>["Person", "is", "of", "age"]}]], [">", [:variable, "age"], 60]]]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:player=>"Director"}, {:player=>"is"}, {:player=>"old"}]]], [[:fact_clause, [], [{:player=>"Person"}, {:player=>"directs"}, {:player=>"company"}]], [:fact_clause, [], [{:player=>"Person"}, {:player=>"is"}, {:player=>"of"}, {:player=>"age"}]], [">", [:variable, "age"], 60]]]]
     ],
     [ "a: maybe a has completely- green b -totally [transitive, acyclic], b -c = 2;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["a"]}]]], [[:fact_clause, ["maybe", "transitive", "acyclic"], [{:words=>["a", "has"]}, {:words=>["green", "b"], :leading_adjective=>"completely", :trailing_adjective=>"totally"}]], ["=", [:+, [:variable, "b"], [:-, [:variable, "c"]]], 2]]]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:player=>"a"}]]], [[:fact_clause, ["maybe", "transitive", "acyclic"], [{:player=>"a"}, {:player=>"has"}, {:player=>"green", :leading_adjective=>"completely"}, {:player=>"b", :trailing_adjective=>"totally"}]], ["=", [:+, [:variable, "b"], [:-, [:variable, "c"]]], 2]]]]
     ],
     [ "Person is independent: Person has taxable- Income, taxable Income >= 20000 dollars;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["Person", "is", "independent"]}]]], [[:fact_clause, [], [{:words=>["Person", "has"]}, {:leading_adjective=>"taxable", :words=>["Income"]}]], [">=", [:variable, "taxable", "Income"], [20000, "dollars"]]]]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:player=>"Person"}, {:player=>"is"}, {:player=>"independent"}]]], [[:fact_clause, [], [{:player=>"Person"}, {:player=>"has"}, {:leading_adjective=>"taxable", :player=>"Income"}]], [">=", [:variable, "taxable", "Income"], [20000, "dollars"]]]]]
     ],
     [ "Window requires toughening: Window has width-mm, Window has height-mm, width mm * height mm >= 10 foot^2;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["Window", "requires", "toughening"]}]]], [[:fact_clause, [], [{:words=>["Window", "has"]}, {:leading_adjective=>"width", :words=>["mm"]}]], [:fact_clause, [], [{:words=>["Window", "has"]}, {:leading_adjective=>"height", :words=>["mm"]}]], [">=", [:*, [:variable, "width", "mm"], [:variable, "height", "mm"]], [10, "foot^2"]]]]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:player=>"Window"}, {:player=>"requires"}, {:player=>"toughening"}]]], [[:fact_clause, [], [{:player=>"Window"}, {:player=>"has"}, {:leading_adjective=>"width", :player=>"mm"}]], [:fact_clause, [], [{:player=>"Window"}, {:player=>"has"}, {:leading_adjective=>"height", :player=>"mm"}]], [">=", [:*, [:variable, "width", "mm"], [:variable, "height", "mm"]], [10, "foot^2"]]]]]
     ],
     # REVISIT: Test all quantifiers
     # REVISIT: Test all post-qualifiers
     # REVISIT: Test functions
     [ "AnnualIncome is where Person has total- Income in Year: Person has total- Income.sum(), Income was earned in current- time.Year() (as Year);",
-      ["AnnualIncome", [:fact_type, [[:fact_clause, [], [{:words=>["Person", "has"]}, {:leading_adjective=>"total", :words=>["Income", "in", "Year"]}]]], [[:fact_clause, [], [{:words=>["Person", "has"]}, {:function=>[:"(", "sum"], :leading_adjective=>"total", :words=>["Income"]}]], [:fact_clause, [], [{:words=>["Income", "was", "earned", "in"]}, {:function=>[:"(", "Year"], :words=>["time"], :role_name=>"Year", :leading_adjective=>"current"}]]]]]
+      ["AnnualIncome", [:fact_type, [[:fact_clause, [], [{:player=>"Person"}, {:player=>"has"}, {:leading_adjective=>"total", :player=>"Income"}, {:player=>"in"}, {:player=>"Year"}]]], [[:fact_clause, [], [{:player=>"Person"}, {:player=>"has"}, {:function=>[:"(", "sum"], :leading_adjective=>"total", :player=>"Income"}]], [:fact_clause, [], [{:player=>"Income"}, {:player=>"was"}, {:player=>"earned"}, {:player=>"in"}, {:function=>[:"(", "Year"], :player=>"time", :role_name=>"Year", :leading_adjective=>"current"}]]]]]
     ],
     [ "a is interesting : b- c -d has e- f -g;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:words=>["a", "is", "interesting"]}]]], [[:fact_clause, [], [{:trailing_adjective=>"d", :words=>["c"], :leading_adjective=>"b"}, {:words=>["has"]}, {:trailing_adjective=>"g", :words=>["f"], :leading_adjective=>"e"}]]]]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:player=>"a"}, {:player=>"is"}, {:player=>"interesting"}]]], [[:fact_clause, [], [{:trailing_adjective=>"d", :player=>"c", :leading_adjective=>"b"}, {:player=>"has"}, {:trailing_adjective=>"g", :player=>"f", :leading_adjective=>"e"}]]]]]
     ]
   ]
 
