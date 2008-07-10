@@ -63,6 +63,8 @@ module ActiveFacts
       done_banner = false
       @vocabulary.all_feature.sort_by{|o| o.name}.each{|o|
           next unless ValueType === o
+          # Skip the valuetypes created for unary roles. REVISIT: Should be done in the orm loader!
+          next if o.supertype && o.supertype.name == 'TrueOrFalseLogical' and o.all_role.size == 0
 
           value_type_banner unless done_banner
           done_banner = true

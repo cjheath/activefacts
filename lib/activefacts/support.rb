@@ -16,7 +16,7 @@
     enabled = $debug_keys[control] || $debug_indent > 0
 
     # Emit the message if enabled or a parent is:
-    puts "#"+"  "*$debug_indent + args.join(' ') if args.size > 0 && enabled
+    puts "# "+"  "*$debug_indent + args.join(' ') if args.size > 0 && enabled
 
     if block
       $debug_indent += 1 if enabled

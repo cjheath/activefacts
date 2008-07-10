@@ -24,17 +24,17 @@ module Orders
   end
 
   class OrderLine
-    identified_by :number, :order
-    has_one :order                              # See Order.all_order_line
+    identified_by :order, :number
     has_one :number                             # See Number.all_order_line
-    has_one :sk_u, "SKU"                        # See SKU.all_order_line
+    has_one :order                              # See Order.all_order_line
     has_one :quantity_number, Number            # See Number.all_order_line_by_quantity_number
+    has_one :sk_u, "SKU"                        # See SKU.all_order_line
   end
 
   class SKU
     identified_by :skui_d
-    one_to_one :skui_d, SKUID                   # See SKUID.sk_u
     has_one :description                        # See Description.all_sk_u
+    one_to_one :skui_d, SKUID                   # See SKUID.sk_u
   end
 
 end

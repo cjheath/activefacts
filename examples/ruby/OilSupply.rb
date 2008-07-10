@@ -42,18 +42,18 @@ module OilSupply
   end
 
   class TransportRoute
-    identified_by :region, :refinery, :transportation
-    has_one :transportation                     # See Transportation.all_transport_route
+    identified_by :transportation, :refinery, :region
     has_one :refinery                           # See Refinery.all_transport_route
     has_one :region                             # See Region.all_transport_route
+    has_one :transportation                     # See Transportation.all_transport_route
   end
 
   class ProductionCommitment
-    identified_by :product, :quantity, :refinery, :month
+    identified_by :refinery, :month, :product, :quantity
     has_one :month                              # See Month.all_production_commitment
-    has_one :refinery                           # See Refinery.all_production_commitment
-    has_one :quantity                           # See Quantity.all_production_commitment
     has_one :product                            # See Product.all_production_commitment
+    has_one :quantity                           # See Quantity.all_production_commitment
+    has_one :refinery                           # See Refinery.all_production_commitment
   end
 
   class AcceptableSubstitutes
@@ -64,11 +64,11 @@ module OilSupply
   end
 
   class RegionalDemand
-    identified_by :product, :year, :month, :region
-    has_one :region                             # See Region.all_regional_demand
-    has_one :quantity                           # See Quantity.all_regional_demand
-    has_one :product                            # See Product.all_regional_demand
+    identified_by :region, :month, :year, :product
     has_one :month                              # See Month.all_regional_demand
+    has_one :product                            # See Product.all_regional_demand
+    has_one :quantity                           # See Quantity.all_regional_demand
+    has_one :region                             # See Region.all_regional_demand
     has_one :year                               # See Year.all_regional_demand
   end
 

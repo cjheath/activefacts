@@ -57,12 +57,19 @@ module ActiveFacts
       end
 
       def roles_dump(o)
-        o.all_role.each {|role|
+        #puts "Sorting roles of #{o.name}:"
+        o.all_role.
+          sort_by{|role|
+            other_role = role.fact_type.all_role[role.fact_type.all_role[0] != role ? 0 : -1]
+            other_role ? preferred_role_name(other_role) : ""
+            #puts "\t#{role.fact_type.describe(other_role)} by #{p}"
+          }.each{|role| 
             role_dump(role)
           }
       end
 
       def preferred_role_name(role)
+        return "" if TypeInheritance === role.fact_type
         # debug "Looking for preferred_role_name of #{describe_fact_type(role.fact_type, role)}"
         reading = role.fact_type.preferred_reading
         preferred_role_ref = reading.role_sequence.all_role_ref.detect{|reading_rr|
@@ -182,9 +189,12 @@ module ActiveFacts
 
       # An objectified fact type has internal roles that are always "has_one":
       def fact_roles_dump(fact)
-        fact.all_role.each{|role| 
+        fact.all_role.sort_by{|role|
+            preferred_role_name(role)
+          }.each{|role| 
             role_name = preferred_role_name(role)
             by = role_name != role.concept.name.snakecase ? "_by_#{role_name}" : ""
+            raise "Fact #{fact.describe} type is not objectified" unless fact.entity_type
             other_role_method = "all_"+fact.entity_type.name.snakecase+by
             binary_dump(role_name, role.concept, false, nil, nil, other_role_method)
           }

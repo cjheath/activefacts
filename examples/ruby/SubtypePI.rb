@@ -14,6 +14,10 @@ module SubtypePI
     value_type 
   end
 
+  class TeamID < AutoCounter
+    value_type 
+  end
+
   class Entrant
     identified_by :entrant_i_d
     one_to_one :entrant_i_d                     # See EntrantID.entrant
@@ -26,6 +30,8 @@ module SubtypePI
   end
 
   class Team < Entrant
+    identified_by :team_i_d
+    one_to_one :team_i_d                        # See TeamID.team
   end
 
   class Competitor < Entrant

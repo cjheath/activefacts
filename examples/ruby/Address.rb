@@ -32,8 +32,8 @@ module Address
 
   class Company
     identified_by :company_name
-    one_to_one :company_name                    # See CompanyName.company
     has_one :address                            # See Address.all_company
+    one_to_one :company_name                    # See CompanyName.company
   end
 
   class Family
@@ -43,9 +43,9 @@ module Address
 
   class Person
     identified_by :family, :given_names
+    has_one :address                            # See Address.all_person
     has_one :family                             # See Family.all_person
     has_one :given_names                        # See GivenNames.all_person
-    has_one :address                            # See Address.all_person
   end
 
   class Street
@@ -57,9 +57,9 @@ module Address
 
   class Address
     identified_by :street_number, :street, :city, :postcode
-    has_one :street                             # See Street.all_address
     has_one :city                               # See City.all_address
     has_one :postcode                           # See Postcode.all_address
+    has_one :street                             # See Street.all_address
     has_one :street_number, Number              # See Number.all_address_by_street_number
   end
 

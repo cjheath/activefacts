@@ -30,9 +30,9 @@ module BugTesting
   end
 
   class BugReport
-    identified_by :bug, :tester
-    has_one :tester                             # See Tester.all_bug_report
+    identified_by :tester, :bug
     has_one :bug                                # See Bug.all_bug_report
+    has_one :tester                             # See Tester.all_bug_report
     has_one :test_case                          # See TestCase.all_bug_report
   end
 

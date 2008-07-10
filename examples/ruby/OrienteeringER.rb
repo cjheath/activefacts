@@ -57,20 +57,21 @@ module OrienteeringER
 
   class SeriesEvent
     identified_by :event_number, :series_name
-    has_one :series_name                        # See SeriesName.all_series_event
     has_one :event_number, Number               # See Number.all_series_event_by_event_number
+    has_one :series_name                        # See SeriesName.all_series_event
   end
 
   class EventCourse
     identified_by :event, :course
-    has_one :event                              # See Event.all_event_course
     has_one :course                             # See Course.all_event_course
+    has_one :event                              # See Event.all_event_course
   end
 
   class EventControl
     identified_by :event, :control
-    has_one :point_value                        # See PointValue.all_event_control
     has_one :control                            # See Control.all_event_control
     has_one :event                              # See Event.all_event_control
+    has_one :point_value                        # See PointValue.all_event_control
   end
 
+end

@@ -102,22 +102,22 @@ CREATE TABLE Orienteering.EventScoringMethod
 GO
 
 
-CREATE TABLE Orienteering.PunchPlacement
-(
-	punchID INTEGER IDENTITY (1, 1) NOT NULL,
-	controlNumber INTEGER CHECK (controlNumber >= 0 AND controlNumber BETWEEN 1 AND 1000) NOT NULL,
-	eventID INTEGER NOT NULL,
-	CONSTRAINT InternalUniquenessConstraint31 PRIMARY KEY(controlNumber, eventID, punchID)
-)
-GO
-
-
 CREATE TABLE Orienteering.EventControl
 (
 	controlNumber INTEGER CHECK (controlNumber >= 0 AND controlNumber BETWEEN 1 AND 1000) NOT NULL,
 	eventID INTEGER NOT NULL,
 	pointValue INTEGER CHECK (pointValue >= 0),
 	CONSTRAINT InternalUniquenessConstraint10 PRIMARY KEY(controlNumber, eventID)
+)
+GO
+
+
+CREATE TABLE Orienteering.PunchIsPlacedAtEventControl
+(
+	punchID INTEGER IDENTITY (1, 1) NOT NULL,
+	controlNumber INTEGER CHECK (controlNumber >= 0 AND controlNumber BETWEEN 1 AND 1000) NOT NULL,
+	eventID INTEGER NOT NULL,
+	CONSTRAINT InternalUniquenessConstraint19 PRIMARY KEY(punchID, controlNumber, eventID)
 )
 GO
 
@@ -158,11 +158,11 @@ ALTER TABLE Orienteering.EventScoringMethod ADD CONSTRAINT EventScoringMethod_FK
 GO
 
 
-ALTER TABLE Orienteering.PunchPlacement ADD CONSTRAINT PunchPlacement_FK FOREIGN KEY (controlNumber, eventID) REFERENCES Orienteering.EventControl (controlNumber, eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.EventControl ADD CONSTRAINT EventControl_FK FOREIGN KEY (eventID) REFERENCES Orienteering.Event (eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 
-ALTER TABLE Orienteering.EventControl ADD CONSTRAINT EventControl_FK FOREIGN KEY (eventID) REFERENCES Orienteering.Event (eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.PunchIsPlacedAtEventControl ADD CONSTRAINT PunchIsPlacedAtEventControl_FK FOREIGN KEY (controlNumber, eventID) REFERENCES Orienteering.EventControl (controlNumber, eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 

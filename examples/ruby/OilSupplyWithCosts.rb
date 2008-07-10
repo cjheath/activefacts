@@ -47,33 +47,33 @@ module OilSupply
   end
 
   class TransportRoute
-    identified_by :region, :refinery, :transport_method
-    has_one :transport_method                   # See TransportMethod.all_transport_route
+    identified_by :transport_method, :refinery, :region
     has_one :cost                               # See Cost.all_transport_route
     has_one :refinery                           # See Refinery.all_transport_route
     has_one :region                             # See Region.all_transport_route
+    has_one :transport_method                   # See TransportMethod.all_transport_route
   end
 
   class SupplyPeriod
     identified_by :month, :year
-    has_one :year                               # See Year.all_supply_period
     has_one :month                              # See Month.all_supply_period
+    has_one :year                               # See Year.all_supply_period
   end
 
   class ProductionCommitment
-    identified_by :product, :quantity, :refinery, :supply_period
-    has_one :supply_period                      # See SupplyPeriod.all_production_commitment
-    has_one :refinery                           # See Refinery.all_production_commitment
-    has_one :quantity                           # See Quantity.all_production_commitment
+    identified_by :refinery, :quantity, :product, :supply_period
     has_one :cost                               # See Cost.all_production_commitment
     has_one :product                            # See Product.all_production_commitment
+    has_one :quantity                           # See Quantity.all_production_commitment
+    has_one :refinery                           # See Refinery.all_production_commitment
+    has_one :supply_period                      # See SupplyPeriod.all_production_commitment
   end
 
   class RegionalDemand
-    identified_by :product, :supply_period, :region
-    has_one :region                             # See Region.all_regional_demand
-    has_one :quantity                           # See Quantity.all_regional_demand
+    identified_by :region, :product, :supply_period
     has_one :product                            # See Product.all_regional_demand
+    has_one :quantity                           # See Quantity.all_regional_demand
+    has_one :region                             # See Region.all_regional_demand
     has_one :supply_period                      # See SupplyPeriod.all_regional_demand
   end
 

@@ -59,11 +59,11 @@ module Warehousing
 
   class DispatchItem
     identified_by :dispatch_item_i_d
-    has_one :product                            # See Product.all_dispatch_item
-    has_one :transfer_request                   # See TransferRequest.all_dispatch_item
-    has_one :sales_order_item                   # See SalesOrderItem.all_dispatch_item
-    one_to_one :dispatch_item_i_d               # See DispatchItemID.dispatch_item
     has_one :dispatch                           # See Dispatch.all_dispatch_item
+    one_to_one :dispatch_item_i_d               # See DispatchItemID.dispatch_item
+    has_one :product                            # See Product.all_dispatch_item
+    has_one :sales_order_item                   # See SalesOrderItem.all_dispatch_item
+    has_one :transfer_request                   # See TransferRequest.all_dispatch_item
   end
 
   class Party
@@ -78,8 +78,8 @@ module Warehousing
 
   class PurchaseOrder
     identified_by :purchase_order_i_d
-    has_one :supplier                           # See Supplier.all_purchase_order
     one_to_one :purchase_order_i_d              # See PurchaseOrderID.purchase_order
+    has_one :supplier                           # See Supplier.all_purchase_order
     has_one :warehouse                          # See Warehouse.all_purchase_order
   end
 
@@ -96,17 +96,18 @@ module Warehousing
 
   class ReceivedItem
     identified_by :received_item_i_d
-    has_one :purchase_order_item                # See PurchaseOrderItem.all_received_item
-    has_one :transfer_request                   # See TransferRequest.all_received_item
     has_one :product                            # See Product.all_received_item
-    one_to_one :received_item_i_d               # See ReceivedItemID.received_item
+    has_one :purchase_order_item                # See PurchaseOrderItem.all_received_item
     has_one :receipt                            # See Receipt.all_received_item
+    one_to_one :received_item_i_d               # See ReceivedItemID.received_item
+    has_one :transfer_request                   # See TransferRequest.all_received_item
   end
 
   class SalesOrder
     identified_by :sales_order_i_d
-    one_to_one :sales_order_i_d                 # See SalesOrderID.sales_order
     has_one :customer                           # See Customer.all_sales_order
+    one_to_one :sales_order_i_d                 # See SalesOrderID.sales_order
+    has_one :warehouse                          # See Warehouse.all_sales_order
   end
 
   class SalesOrderItem
@@ -115,10 +116,10 @@ module Warehousing
     has_one :sales_order                        # See SalesOrder.all_sales_order_item
   end
 
-  class DirectOrderMatch
-    identified_by :sales_order_item, :purchase_order_item
-    has_one :purchase_order_item                # See PurchaseOrderItem.all_direct_order_match
-    has_one :sales_order_item                   # See SalesOrderItem.all_direct_order_match
+  class PurchaseOrderItemMatchesSalesOrderItem
+    identified_by :purchase_order_item, :sales_order_item
+    has_one :purchase_order_item                # See PurchaseOrderItem.all_purchase_order_item_matches_sales_order_item
+    has_one :sales_order_item                   # See SalesOrderItem.all_purchase_order_item_matches_sales_order_item
   end
 
   class Supplier < Party
@@ -133,15 +134,14 @@ module Warehousing
 
   class Warehouse
     identified_by :warehouse_i_d
-    one_to_one :warehouse_i_d                   # See WarehouseID.warehouse
-    has_one :sales_order                        # See SalesOrder.all_warehouse
     has_one :bin                                # See Bin.all_warehouse
+    one_to_one :warehouse_i_d                   # See WarehouseID.warehouse
   end
 
   class StockedProduct
-    identified_by :product, :warehouse
-    has_one :warehouse                          # See Warehouse.all_stocked_product
+    identified_by :warehouse, :product
     has_one :product                            # See Product.all_stocked_product
+    has_one :warehouse                          # See Warehouse.all_stocked_product
   end
 
   class Customer < Party

@@ -46,28 +46,28 @@ module Blog
 
   class Comment
     identified_by :comment_id
-    one_to_one :comment_id                      # See CommentId.comment
     has_one :author                             # See Author.all_comment
+    one_to_one :comment_id                      # See CommentId.comment
     has_one :paragraph                          # See Paragraph.all_comment
   end
 
   class Content
     identified_by :content_id
-    has_one :text                               # See Text.all_content
-    one_to_one :content_id                      # See ContentId.content
     one_to_one :comment                         # See Comment.content
+    one_to_one :content_id                      # See ContentId.content
     has_one :style                              # See Style.all_content
+    has_one :text                               # See Text.all_content
   end
 
   class Post
     identified_by :post_id
+    has_one :author                             # See Author.all_post
     one_to_one :post_id                         # See PostId.post
     has_one :topic                              # See Topic.all_post
-    has_one :author                             # See Author.all_post
   end
 
   class Paragraph
-    identified_by :ordinal, :post
+    identified_by :post, :ordinal
     has_one :ordinal                            # See Ordinal.all_paragraph
     has_one :post                               # See Post.all_paragraph
     one_to_one :content                         # See Content.paragraph
@@ -75,9 +75,9 @@ module Blog
 
   class Topic
     identified_by :topic_id
+    has_one :parent_topic, Topic                # See Topic.all_topic_by_parent_topic
     one_to_one :topic_id                        # See TopicId.topic
     one_to_one :topic_name, Name                # See Name.topic_by_topic_name
-    has_one :parent_topic, Topic                # See Topic.all_topic_by_parent_topic
   end
 
 end

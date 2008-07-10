@@ -29,7 +29,7 @@
 					<orm:Role ref="_E77959B4-EFC8-49CD-914E-A5B268B4B164" />
 					<orm:Role ref="_D11680C9-C1C3-40BA-9539-82661CD83CFB" />
 				</orm:PlayedRoles>
-				<orm:PreferredIdentifier ref="_D95863DE-71D7-470D-B982-8F19BA3E0544" />
+				<orm:PreferredIdentifier ref="_2FB61792-008E-41C3-B8CC-34CBE79869A6" />
 				<orm:NestedPredicate id="_077EF6DF-A360-4896-8E16-7273628B5C88" ref="_A0C2DA30-C5E1-406D-BDF2-F2E7A0E44F32" />
 			</orm:ObjectifiedType>
 			<orm:EntityType id="_7E17B965-EFCB-48CF-BB5A-BA459F4010A9" Name="SKU" _ReferenceMode="ID">
@@ -116,7 +116,7 @@
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
-					<orm:UniquenessConstraint ref="_D95863DE-71D7-470D-B982-8F19BA3E0544" />
+					<orm:UniquenessConstraint ref="_2FB61792-008E-41C3-B8CC-34CBE79869A6" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:ImpliedFact id="_9F8AAC3D-1CC2-4170-A7F9-303BA2A0A1CA" _Name="OrderIsInvolvedInOrderLine">
@@ -352,13 +352,6 @@
 					<orm:Role id="_9628A5D7-4278-4C0E-9BC9-257063135CA5" ref="_D53C10BF-DDBB-4F8D-8312-75462B6BD002" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_D95863DE-71D7-470D-B982-8F19BA3E0544" Name="OrderLineNumber" IsInternal="true">
-				<orm:RoleSequence>
-					<orm:Role id="_21CE64B8-55C9-47BA-BA75-74796CF3C283" ref="_8BBF8F7B-0D5C-4885-8F60-CFB5FC396993" />
-					<orm:Role id="_D97E4619-61B0-44B0-A1A2-F6B0855F8099" ref="_9CC68654-5FF1-424B-AF82-272F0F394D9E" />
-				</orm:RoleSequence>
-				<orm:PreferredIdentifierFor ref="_25B8BC44-0DDD-427E-8BDA-928CE5378C80" />
-			</orm:UniquenessConstraint>
 			<orm:UniquenessConstraint id="_B944EFB0-AB2F-4393-9FDA-A1623E442642" Name="InternalUniquenessConstraint6" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_0AEC0C22-2BD3-422F-8472-AC803A0E731B" ref="_689AE8AD-DB66-4443-A6F7-1D2C6029F6D5" />
@@ -409,13 +402,6 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_57D52E06-F756-44A4-A3BD-5FE272C0160F" />
 			</orm:MandatoryConstraint>
-			<orm:MandatoryConstraint id="_116C82DB-9A0B-4255-89F9-8FF616A723AC" Name="ImpliedMandatoryConstraint4" IsImplied="true">
-				<orm:RoleSequence>
-					<orm:Role id="_2EBD794A-F908-4D4A-AF99-A7F6B6A0A039" ref="_E77959B4-EFC8-49CD-914E-A5B268B4B164" />
-					<orm:Role id="_2795F1F0-8B18-44FB-B2EC-99A98795A50B" ref="_D11680C9-C1C3-40BA-9539-82661CD83CFB" />
-				</orm:RoleSequence>
-				<orm:ImpliedByObjectType ref="_25B8BC44-0DDD-427E-8BDA-928CE5378C80" />
-			</orm:MandatoryConstraint>
 			<orm:MandatoryConstraint id="_9A061A17-756F-4687-B676-1D4C16CD889A" Name="ImpliedMandatoryConstraint5" IsImplied="true">
 				<orm:RoleSequence>
 					<orm:Role id="_5FB74734-527F-4837-80BC-77D99D7AFF46" ref="_1A8059F3-6E48-4063-9AF0-93EA88C1D315" />
@@ -435,6 +421,13 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_C2D5EEF8-FA5F-4A78-A6E7-9A458C9133F9" />
 			</orm:MandatoryConstraint>
+			<orm:UniquenessConstraint id="_2FB61792-008E-41C3-B8CC-34CBE79869A6" Name="InternalUniquenessConstraint5" IsInternal="true">
+				<orm:RoleSequence>
+					<orm:Role id="_D19410C9-80CB-4483-BBE3-A763BAFCE292" ref="_9CC68654-5FF1-424B-AF82-272F0F394D9E" />
+					<orm:Role id="_095D0BD4-C4E5-4CCA-97C3-04713D484C36" ref="_8BBF8F7B-0D5C-4885-8F60-CFB5FC396993" />
+				</orm:RoleSequence>
+				<orm:PreferredIdentifierFor ref="_25B8BC44-0DDD-427E-8BDA-928CE5378C80" />
+			</orm:UniquenessConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:VariableLengthTextDataType id="_28CA7C5D-9AAC-4B66-8CFF-C9B8B8A829FC" />

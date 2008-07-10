@@ -8,8 +8,8 @@ module EmployeeManagerCEO
 
   class Person
     identified_by :person_name
-    one_to_one :person_name                     # See PersonName.person
     maybe :is_manager
+    one_to_one :person_name                     # See PersonName.person
   end
 
   class Employee < Person

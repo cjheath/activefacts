@@ -86,7 +86,7 @@ Warehouse is identified by WarehouseID:
 	Warehouse has exactly one WarehouseID,
 	WarehouseID is of at most one Warehouse;
 PurchaseOrder is to at most one Warehouse;
-SalesOrder is from Warehouse;
+SalesOrder is from at most one Warehouse;
 StockedProduct is where
 	Warehouse contains Product;
 Warehouse contains exactly one Bin;
@@ -96,14 +96,13 @@ StockedProduct is in Bin,
 	Bin contains at most one StockedProduct;
 
 Customer is a kind of Party;
-Customer made SalesOrder;
+Customer made SalesOrder,
+	SalesOrder was made by exactly one Customer;
 
 /*
 Constraints:
 	REVISIT: Verbalise SetExclusionConstraint ExclusiveOrConstraint1 REVISIT: Unhandled constraint type
 	REVISIT: Verbalise SetExclusionConstraint ExclusiveOrConstraint2 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise PresenceConstraint InternalUniquenessConstraint16 min 1 max 1 mandatory over (SalesOrder)
-	REVISIT: Verbalise PresenceConstraint InternalUniquenessConstraint22 min 0 max 1 over (Warehouse)
 	REVISIT: Verbalise PresenceConstraint InternalUniquenessConstraint49 min 0 max 1 over (ReceivedItem)
 	REVISIT: Verbalise PresenceConstraint InternalUniquenessConstraint52 min 0 max 1 over (DispatchItem)
  */

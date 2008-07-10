@@ -144,7 +144,7 @@ module ActiveFacts
           @roles_by_form = {}  # Build a hash of allowed forms on first reading (check against it on subsequent ones)
           @roles_by_role_name = {}  # Build a hash of defined role_names
           @role_name_definitions = {}
-          # REVISIT: This doesn't allow identification by roles with adjectives (see the i[0]):
+          # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
           @allowed_forward = identification ? identification[:roles].inject({}){|h, i| h[i[0]] = true; h} : {}
           clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
             fact_type = nil
@@ -171,6 +171,7 @@ module ActiveFacts
               # This situation occurs when an objectified fact type has an entity identifier
               raise "Entity type #{name} may only objectify a single fact type" if entity_type.fact_type
 
+# REVISIT: I suspect problems here... chase down Metamodel TypeInheritance
               # Associate the fact type with this entity
               entity_type.fact_type = fact_type
               fact_type_identification(fact_type, name, false)
@@ -311,10 +312,9 @@ module ActiveFacts
                 raise "Concept '#{player_name}' is not yet defined" unless player
 
                 # Assert this role of the fact type:
-                debug "Concept #{player.name} found, creating role"
                 role = @constellation.Role(:new, :fact_type => fact_type, :concept => player)
                 role.role_name = role_name if role_name
-                debug "Role is: "+role.describe
+                debug "Concept #{player.name} found, created role #{role.describe}"
                 @roles_by_form[player_form] = role
               else                                # Subsequent readings
                 role = @roles_by_form[player_form] || @roles_by_role_name[player_name]

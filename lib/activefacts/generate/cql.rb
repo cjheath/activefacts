@@ -33,8 +33,6 @@ module ActiveFacts
             # In ActiveFacts, parameterising a ValueType will create a new datatype
             # throw Can't handle parameterized value type of same name as its datatype" if ...
         end
-        # Skip the valuetypes created for unary roles:
-        return if o.supertype.name == 'TrueOrFalseLogical' and o.all_role.size == 0
 
         parameters =
           [ o.length != 0 || o.scale != 0 ? o.length : nil,

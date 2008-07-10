@@ -96,7 +96,7 @@ module ActiveFacts
 
                   # Find the related role which must be included in any PI:
                   # Note this works with unary fact types:
-                  pi_role = ftroles.size == 1 || ftroles[1] == role ? ftroles[0] : ftroles[1]
+                  pi_role = ftroles[ftroles[0] != role ? 0 : -1]
 
                   next if ftroles.size == 2 && pi_role.concept == self
                   debug "  Considering #{pi_role.concept.name} as a PI role"
