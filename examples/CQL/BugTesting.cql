@@ -28,5 +28,5 @@ BugReport is logged against exactly one TestCase,
 
 /*
 Constraints:
-	REVISIT: Verbalise PresenceConstraint BugMustHaveBugReport min 1 mandatory over (Bug)
+	REVISIT: each (Bug) occurs at least one time in 'Tester logged Bug'
  */

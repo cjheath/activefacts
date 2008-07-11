@@ -24,5 +24,5 @@ CEO is a kind of Manager;
 
 /*
 Constraints:
-	REVISIT: Verbalise SetExclusionConstraint EmployeeCannotHaveManagerAndBeCEO REVISIT: Unhandled constraint type
+	REVISIT: mandatory exclusion over (Employee) in 'Employee is managed by Manager', (Manager) in 'Manager is CEO'
  */

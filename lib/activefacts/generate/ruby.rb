@@ -276,10 +276,6 @@ module ActiveFacts
       def entity_type_group_end
       end
 
-      def expand_reading(reading, frequency_constraints, define_role_names)
-        # debug "Ignoring reading #{reading.reading_text.inspect}"
-      end
-
       def append_ring_to_reading(reading, ring)
         # REVISIT: debug "Should override append_ring_to_reading"
       end

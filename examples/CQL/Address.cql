@@ -42,6 +42,6 @@ Company has head office at at most one Address;
 
 /*
 Constraints:
-	REVISIT: Verbalise SubsetConstraint SubsetConstraint1 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise SubsetConstraint SubsetConstraint2 REVISIT: Unhandled constraint type
+	REVISIT: 'Street includes third-StreetLine' only if 'Street includes second-StreetLine'
+	REVISIT: 'Street includes second-StreetLine' only if 'Street includes first-StreetLine'
  */

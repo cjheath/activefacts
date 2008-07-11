@@ -27,6 +27,6 @@ Competitor has exactly one FamilyName;
 
 /*
 Constraints:
-	REVISIT: Verbalise SetExclusionConstraint ExclusiveOrConstraint2 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise PresenceConstraint FamilyAndGivenNamesAreUnique min 0 max 1 over (FamilyName, GivenName)
+	REVISIT: mandatory exclusion over (Entrant) in 'Competitor is a kind of Entrant', (Entrant) in 'Team is a kind of Entrant'
+	REVISIT: at most one UNKNOWN exists for each 'Competitor has FamilyName', 'Entrant has GivenName'
  */

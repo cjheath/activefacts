@@ -29,7 +29,8 @@ Dispatch is identified by DispatchID:
 DispatchItem is identified by DispatchItemID:
 	DispatchItem has exactly one DispatchItemID,
 	DispatchItemID is of at most one DispatchItem;
-Dispatch is of at least one DispatchItem;
+Dispatch is of at least one DispatchItem,
+	DispatchItem is for at most one Dispatch;
 
 Party is identified by PartyID:
 	Party has exactly one PartyID,
@@ -58,7 +59,8 @@ ReceivedItem is identified by ReceivedItemID:
 	ReceivedItemID is of at most one ReceivedItem;
 ReceivedItem is for at most one PurchaseOrderItem;
 ReceivedItem is exactly one Product;
-Receipt is of at least one ReceivedItem;
+Receipt is of at least one ReceivedItem,
+	ReceivedItem has at most one Receipt;
 
 SalesOrder is identified by SalesOrderID:
 	SalesOrder has exactly one SalesOrderID,
@@ -101,8 +103,6 @@ Customer made SalesOrder,
 
 /*
 Constraints:
-	REVISIT: Verbalise SetExclusionConstraint ExclusiveOrConstraint1 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise SetExclusionConstraint ExclusiveOrConstraint2 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise PresenceConstraint InternalUniquenessConstraint49 min 0 max 1 over (ReceivedItem)
-	REVISIT: Verbalise PresenceConstraint InternalUniquenessConstraint52 min 0 max 1 over (DispatchItem)
+	REVISIT: mandatory exclusion over (ReceivedItem) in 'ReceivedItem is for PurchaseOrderItem', (ReceivedItem) in 'ReceivedItem is for TransferRequest'
+	REVISIT: mandatory exclusion over (DispatchItem) in 'DispatchItem is for TransferRequest', (DispatchItem) in 'DispatchItem is for SalesOrderItem'
  */

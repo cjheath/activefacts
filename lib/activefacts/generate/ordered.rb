@@ -242,7 +242,7 @@ module ActiveFacts
           end
         end
 
-        reading_array << expand_reading(reading, frequency_constraints, define_role_names)
+        reading_array << reading.expand(frequency_constraints, define_role_names)
 
         if (ft_rings = @ring_constraints_by_fact[fact_type]) &&
            (ring = ft_rings.detect{|rc| !@constraints_used[rc]})
@@ -522,10 +522,6 @@ module ActiveFacts
 
     def subtype_dump(o, supertypes, pi = nil)
       debug "Should override subtype_dump"
-    end
-
-    def expand_reading(reading, frequency_constraints, define_role_names)
-      debug "Should override expand_reading"
     end
 
     def append_ring_to_reading(reading, ring)

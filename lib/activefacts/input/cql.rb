@@ -270,12 +270,15 @@ module ActiveFacts
           # Extract the phrases that contain role players:
           role_phrases = phrases.map do |phrase|
             player_name = phrase[:player]
+            # REVISIT: Attempt to prevent invoking the same role twice.
             concept_by_name(player_name) ? phrase : nil
           end.compact
           debug "Role phrases(#{role_phrases.size}): #{role_phrases.inspect}"
 
           if (fact_type && fact_type.all_reading.size > 0 && role_phrases.size != fact_type.all_role.size)
-            raise "Not all roles found for non-initial reading of #{fact_type.describe}"
+            raise "#{
+                role_phrases.size > fact_type.all_role.size ? "Too many" : "Not all"
+              } roles found for non-initial reading of #{fact_type.describe}"
           end
 
           # Extract the names of the role players from the role_phrases
@@ -375,6 +378,7 @@ module ActiveFacts
               :is_preferred_identifier => prefer,
               :max_frequency => 1              # Unique
             )
+          raise "'#{fact_type.default_reading}': non-unary fact types having no uniqueness constraints must be objectified (named)" unless fact_type.entity_type
           debug "Made default fact type identifier #{identifier.object_id} over #{first_role_sequence.describe} in #{fact_type.describe}"
         elsif prefer
           #debug "Made fact type identifier #{identifier.object_id} preferred over #{@embedded_presence_constraints[0].role_sequence.describe} in #{fact_type.describe}"
@@ -467,6 +471,7 @@ module ActiveFacts
             player_name = phrase[:player]
             concept_by_name(player_name) ? "{#{role_num += 1}}" : player_name
           }*" "
+        raise "Wrong number of players (#{role_num+1}) found in reading #{reading.reading_text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
         debug "Added reading #{reading.reading_text}"
       end
 

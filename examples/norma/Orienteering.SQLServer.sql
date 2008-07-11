@@ -112,7 +112,7 @@ CREATE TABLE Orienteering.EventControl
 GO
 
 
-CREATE TABLE Orienteering.PunchIsPlacedAtEventControl
+CREATE TABLE Orienteering.PunchPlacement
 (
 	punchID INTEGER IDENTITY (1, 1) NOT NULL,
 	controlNumber INTEGER CHECK (controlNumber >= 0 AND controlNumber BETWEEN 1 AND 1000) NOT NULL,
@@ -162,7 +162,7 @@ ALTER TABLE Orienteering.EventControl ADD CONSTRAINT EventControl_FK FOREIGN KEY
 GO
 
 
-ALTER TABLE Orienteering.PunchIsPlacedAtEventControl ADD CONSTRAINT PunchIsPlacedAtEventControl_FK FOREIGN KEY (controlNumber, eventID) REFERENCES Orienteering.EventControl (controlNumber, eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
+ALTER TABLE Orienteering.PunchPlacement ADD CONSTRAINT PunchPlacement_FK FOREIGN KEY (controlNumber, eventID) REFERENCES Orienteering.EventControl (controlNumber, eventID) ON DELETE NO ACTION ON UPDATE NO ACTION
 GO
 
 

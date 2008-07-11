@@ -363,7 +363,7 @@
 				<orm:PreferredIdentifier ref="_429D6AB7-2FC2-4400-9950-1D0EA48A28A0" />
 				<orm:NestedPredicate id="_4B3A4F48-9823-4CA6-ADE4-C46C897C4993" ref="_100BAEF2-8518-4FD7-8B08-A90F1EDC754E" />
 			</orm:ObjectifiedType>
-			<orm:ObjectifiedType id="_47697E6E-D725-4CDD-BC4A-C921C9746C67" Name="PunchIsPlacedAtEventControl" IsIndependent="true" _ReferenceMode="">
+			<orm:ObjectifiedType id="_47697E6E-D725-4CDD-BC4A-C921C9746C67" Name="PunchPlacement" IsIndependent="true" _ReferenceMode="">
 				<orm:PlayedRoles>
 					<orm:Role ref="_D119ED52-ECC3-474D-BEBF-BB1D5A4E886B" />
 					<orm:Role ref="_D6FE5444-2DB8-4008-A8ED-E88A48BBADA5" />
@@ -1803,7 +1803,7 @@
 					<orm:MandatoryConstraint ref="_6A473C68-8062-40DE-8F4B-9A95FFA1FC78" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_16DC9CAF-3D97-48A7-9E61-F393FABF09DC" _Name="PunchIsPlacedAtEventControl">
+			<orm:Fact id="_16DC9CAF-3D97-48A7-9E61-F393FABF09DC" _Name="PunchPlacement">
 				<orm:FactRoles>
 					<orm:Role id="_38831B4F-464B-4361-8078-1F35FC3C0B6D" _IsMandatory="false" _Multiplicity="OneToMany" Name="">
 						<orm:RolePlayer ref="_4125FB17-D112-463F-8255-887A562B6022" />
@@ -1934,7 +1934,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_4B3A4F48-9823-4CA6-ADE4-C46C897C4993" />
 			</orm:ImpliedFact>
-			<orm:ImpliedFact id="_43FA5557-2EF1-4429-8F38-F746F565E4CE" _Name="PunchIsInvolvedInPunchIsPlacedAtEventControl">
+			<orm:ImpliedFact id="_43FA5557-2EF1-4429-8F38-F746F565E4CE" _Name="PunchIsInvolvedInPunchPlacement">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_A435F62A-B192-499B-AFB0-350263EE7A08">
 						<orm:Role ref="_38831B4F-464B-4361-8078-1F35FC3C0B6D" />
@@ -1973,7 +1973,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_03A18A5C-ABC4-4716-9353-EDDF97DEBE99" />
 			</orm:ImpliedFact>
-			<orm:ImpliedFact id="_10FE8464-0346-4EF9-802D-65F19CAD6555" _Name="EventControlIsInvolvedInPunchIsPlacedAtEventControl">
+			<orm:ImpliedFact id="_10FE8464-0346-4EF9-802D-65F19CAD6555" _Name="EventControlIsInvolvedInPunchPlacement">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_27B8B1D3-CA3A-452C-9D55-5BC6BEAC7F23">
 						<orm:Role ref="_8390DBFC-7629-4B43-8C5F-2FEFC74CF3C2" />
@@ -3362,7 +3362,7 @@
 					<oial:associationChild ref="_8A6D09B6-AC31-4837-A193-E9BBDF3076C0" />
 				</oial:association>
 			</oial:conceptType>
-			<oial:conceptType id="_1466A910-F608-4012-962F-855757AE1D90" name="PunchIsPlacedAtEventControl">
+			<oial:conceptType id="_1466A910-F608-4012-962F-855757AE1D90" name="PunchPlacement">
 				<oial:children>
 					<oial:informationType id="_7D55F167-9639-4F20-9709-B3F6B71979B8" ref="_CAA57FBC-391F-491D-AE60-E10A781C8536" isMandatory="true" name="Punch" />
 					<oial:relatedConceptType id="_58A32EF0-D62C-43F7-8BEF-061303430E58" ref="_ABF310CE-5472-4262-AE28-7A3AD5206BF0" isMandatory="true" name="PunchIsPlacedAtEventControl" oppositeName="EventControl" />
@@ -3633,14 +3633,14 @@
 							</rcd:UniquenessConstraint>
 						</rcd:Constraints>
 					</rcd:Table>
-					<rcd:Table id="_6C3BCFE3-A551-4043-9279-048FA416E8BE" Name="PunchIsPlacedAtEventControl">
+					<rcd:Table id="_6C3BCFE3-A551-4043-9279-048FA416E8BE" Name="PunchPlacement">
 						<rcd:Columns>
 							<rcd:Column id="_658850E4-0DD7-465A-B755-BB6B0DFB3D17" Name="punchID" />
 							<rcd:Column id="_13E7ECAF-DE5C-4C2F-B77F-23A4E0C85946" Name="controlNumber" />
 							<rcd:Column id="_6F899694-53B1-48B8-8BE0-80C69AF0A0A4" Name="eventID" />
 						</rcd:Columns>
 						<rcd:Constraints>
-							<rcd:ReferenceConstraint id="_7E75DA56-59BC-4825-BF59-F8D3AF602A53" Name="PunchIsPlacedAtEventControl_FK">
+							<rcd:ReferenceConstraint id="_7E75DA56-59BC-4825-BF59-F8D3AF602A53" Name="PunchPlacement_FK">
 								<rcd:TargetTable ref="_A68F6144-631C-4108-B276-779D3A577AFC" />
 								<rcd:TargetUniquenessConstraint ref="_773BDCE3-3A80-4621-9B81-93C279E52C8A" />
 								<rcd:ColumnReferences>

@@ -172,7 +172,7 @@ Instance is of exactly one Concept;
 EntityType is a kind of Concept;
 TypeInheritance is a kind of FactType where
 	EntityType (as Subtype) is subtype of super-EntityType (as Supertype) [acyclic],
-	Supertype is supertype of sub-Subtype;
+	Supertype is supertype of Subtype;
 EntityType is independent;
 EntityType is personal;
 EntityType nests at most one FactType,
@@ -192,8 +192,8 @@ Population includes Fact,
 	Fact belongs to exactly one Population;
 
 ValueType is a kind of Concept;
-ValueType is subtype of at most one ValueType (as supertype) [acyclic],
-	supertype is supertype of ValueType;
+ValueType is subtype of at most one ValueType (as Supertype) [acyclic],
+	Supertype is supertype of ValueType;
 ValueType has at most one Length,
 	Length is of ValueType;
 ValueType has at most one Scale,
@@ -203,19 +203,19 @@ ValueType is of at most one Unit;
 
 /*
 Constraints:
-	REVISIT: Verbalise SetExclusionConstraint ConceptMayNotBeBothValueTypeAndEntityType REVISIT: Unhandled constraint type
-	REVISIT: Verbalise SetExclusionConstraint ConstraintMustBeOneConcreteType REVISIT: Unhandled constraint type
-	REVISIT: Verbalise PresenceConstraint EachFactHasAtLeastOneRoleValue min 1 mandatory over (Fact)
-	REVISIT: Verbalise PresenceConstraint EachFactTypeHasAtLeastOneRole min 1 mandatory over (FactType)
-	REVISIT: Verbalise PresenceConstraint EachRoleSequenceHasAtLeastOneRole min 1 mandatory over (RoleSequence)
-	REVISIT: Verbalise SetEqualityConstraint EqualityConstraint1 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise SetEqualityConstraint EqualityConstraint2 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise SetExclusionConstraint ExclusiveOrConstraint1 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise PresenceConstraint ExternalUniquenessConstraint1 min 0 max 1 over (Name, Vocabulary)
-	REVISIT: Verbalise SetExclusionConstraint FeatureMustBeVocabularyConceptOrRoleName REVISIT: Unhandled constraint type
-	REVISIT: Verbalise PresenceConstraint OnlyOneSupertypeMayBePrimary min 0 max 1 over (EntityType, TypeInheritance)
-	REVISIT: Verbalise SubsetConstraint PreferredIdentifierHasMaxFrequency REVISIT: Unhandled constraint type
-	REVISIT: Verbalise PresenceConstraint PresenceConstraintMustHaveFrequency min 1 mandatory over (PresenceConstraint, PresenceConstraint, PresenceConstraint)
-	REVISIT: Verbalise PresenceConstraint ValueRangeMustHaveAtLeastOneBound min 1 mandatory over (ValueRange, ValueRange)
-	REVISIT: Verbalise SubsetConstraint ValueTypeWithLengthMayHaveScale REVISIT: Unhandled constraint type
+	REVISIT: mandatory exclusion over (Concept) in 'EntityType is a kind of Concept', (Concept) in 'ValueType is a kind of Concept'
+	REVISIT: mandatory exclusion over (Constraint) in 'RingConstraint is a kind of Constraint', (SetComparisonConstraint) in 'SetEqualityConstraint is a kind of SetComparisonConstraint', (SetComparisonConstraint) in 'SetExclusionConstraint is a kind of SetComparisonConstraint', (SetConstraint) in 'SubsetConstraint is a kind of SetConstraint', (Constraint) in 'PresenceConstraint is a kind of Constraint'
+	REVISIT: each (Fact) occurs at least one time in 'RoleValue fulfils Fact'
+	REVISIT: each (FactType) occurs at least one time in 'Concept plays role in FactType'
+	REVISIT: each (RoleSequence) occurs at least one time in 'Role is in RoleSequence in Ordinal place'
+	REVISIT: equality over (Vocabulary) in 'Vocabulary imports imported-Vocabulary', (Feature) in 'in Import imported-Feature corresponds to local-Feature'
+	REVISIT: equality over (Vocabulary) in 'Vocabulary imports imported-Vocabulary', (Feature) in 'in Import imported-Feature corresponds to local-Feature'
+	REVISIT: mandatory exclusion over (Unit) in 'Unit is fundamental', (Unit) in 'DerivedUnit is derived from BaseUnit'
+	REVISIT: at most one Constraint exists for each 'Name is of Constraint', 'Vocabulary contains Constraint'
+	REVISIT: mandatory exclusion over (Feature) in 'Vocabulary is a kind of Feature', (Feature) in 'Concept is a kind of Feature', (Feature) in 'Alias is a kind of Feature'
+	REVISIT: at most one UNKNOWN exists for each 'Subtype is subtype of Supertype', 'TypeInheritance provides identification'
+	REVISIT: 'PresenceConstraint is preferred identifier' only if 'PresenceConstraint has max-Frequency'
+	REVISIT: PresenceConstraint must play at least one of 'PresenceConstraint has min-Frequency', 'PresenceConstraint has max-Frequency', 'PresenceConstraint is mandatory'
+	REVISIT: ValueRange must play at least one of 'ValueRange has minimum-Bound', 'ValueRange has maximum-Bound'
+	REVISIT: 'ValueType has Scale' only if 'ValueType has Length'
  */

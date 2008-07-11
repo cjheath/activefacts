@@ -59,5 +59,5 @@ Topic belongs to at most one parent-Topic [acyclic];
 
 /*
 Constraints:
-	REVISIT: Verbalise SetExclusionConstraint ContentCannotBeOfParagraphAndComment REVISIT: Unhandled constraint type
+	REVISIT: mandatory exclusion over (Content) in 'Content provides text of Comment', (Content) in 'Paragraph contains Content'
  */

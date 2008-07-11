@@ -103,10 +103,10 @@ Event is in at most one Series;
 
 /*
 Constraints:
-	REVISIT: Verbalise PresenceConstraint CompetitorHasDistinctName min 0 max 1 over (GivenName, FamilyName)
-	REVISIT: Verbalise SetEqualityConstraint EqualityConstraint1 REVISIT: Unhandled constraint type
-	REVISIT: Verbalise PresenceConstraint EventHasSeriesNumberOrName min 1 mandatory over (Event, Event)
-	REVISIT: Verbalise PresenceConstraint ExternalUniquenessConstraint1 min 0 max 1 over (Series, Number)
-	REVISIT: Verbalise PresenceConstraint OnlyOneScoringMethodForEachEventAndCourse min 0 max 1 over (Course, Event)
-	REVISIT: Verbalise PresenceConstraint SimpleMandatoryConstraint28 min 1 mandatory over (EventControl)
+	REVISIT: at most one Person exists for each 'Person has GivenName', 'Person has FamilyName'
+	REVISIT: equality over (Event) in 'Event is in Series', (Event) in 'Event has Number'
+	REVISIT: Event must play at least one of 'Event is called EventName', 'Event is in Series'
+	REVISIT: at most one Event exists for each 'Event is in Series', 'Event has Number'
+	REVISIT: each (Course, Event) occurs at most one time in 'ScoringMethod is used for Course of Event'
+	REVISIT: each (EventControl) occurs at least one time in 'Punch is placed at EventControl'
  */

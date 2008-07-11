@@ -18,6 +18,16 @@ module ActiveFacts
         (entity_type ? entity_type.name : "")+
         '('+all_role.map{|role| role.describe(highlight) }*", "+')'
       end
+
+      def default_reading
+        all_reading[0].expand
+      end
+    end
+
+    class TypeInheritance
+      def default_reading
+        "#{subtype.name} is a kind of #{supertype.name}"
+      end
     end
 
     class Role
@@ -42,7 +52,7 @@ module ActiveFacts
 #        fact_types = all_role_ref.map(&:role).map(&:fact_type).uniq
 #        fact_types.size.to_s+" FTs, "+
         "("+
-        all_role_ref.map{|role_ref| role_ref.role.concept.name }*", "+
+        all_role_ref.map{|rr| [ rr.leading_adjective, rr.role.concept.name, rr.trailing_adjective ].compact*" " }*", "+
         ")"
       end
     end
@@ -198,6 +208,55 @@ module ActiveFacts
           }
         debug "Failed to find identifying supertype of #{name}"
         return nil
+      end
+    end
+
+    class Reading
+      def expand(frequency_constraints = [], define_role_names = false)
+        expanded = "#{reading_text}"
+        role_refs = role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
+        (0...role_refs.size).each{|i|
+            role_ref = role_refs[i]
+            role = role_ref.role
+            la = "#{role_ref.leading_adjective}"
+            la.sub!(/(.\b|.\Z)/, '\1-')
+            la = nil if la == ""
+            ta = "#{role_ref.trailing_adjective}"
+            ta.sub!(/(\b.|\A.)/, '-\1')
+            ta = nil if ta == ""
+
+            expanded.gsub!(/\{#{i}\}/) {
+                player = role_refs[i].role.concept
+                role_name = role.role_name
+                role_name = nil if role_name == ""
+                if role_name && !define_role_names
+                  la = ta = nil   # When using role names, don't add adjectives
+                end
+                fc = frequency_constraints[i]
+                [
+                  fc ? fc.frequency : nil,
+                  la,
+                  !define_role_names && role_name ? role_name : player.name,
+                  ta,
+                  define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil
+                ].compact*" "
+            }
+        }
+        expanded.gsub!(/ *- */, '-')      # Remove spaces around adjectives
+        #debug "Expanded '#{expanded}' using #{frequency_constraints.inspect}"
+        expanded
+      end
+    end
+
+    class PresenceConstraint
+      def frequency
+        min = min_frequency
+        max = max_frequency
+        [
+            ((min && min > 0 && min != max) ? "at least #{min == 1 ? "one" : min.to_s}" : nil),
+            ((max && min != max) ? "at most #{max == 1 ? "one" : max.to_s}" : nil),
+            ((max && min == max) ? "exactly #{max == 1 ? "one" : max.to_s}" : nil)
+        ].compact * " and"
       end
     end
 

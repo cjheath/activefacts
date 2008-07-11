@@ -30,6 +30,6 @@ StudentParticipation is where
 
 /*
 Constraints:
-	REVISIT: Verbalise SubsetConstraint StudentParticipationIsForEnrolledSchool REVISIT: Unhandled constraint type
-	REVISIT: Verbalise SubsetConstraint StudentParticipationIsForSchoolSanctionedActivity REVISIT: Unhandled constraint type
+	REVISIT: 'Student represents School in Activity' only if 'Student is enrolled in School'
+	REVISIT: 'Student represents School in Activity' only if 'School sanctions Activity'
  */

@@ -56,48 +56,6 @@ module ActiveFacts
           };"
       end
 
-      def expand_reading(reading, frequency_constraints, define_role_names)
-        expanded = "#{reading.reading_text}"
-        role_refs = reading.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
-        (0...role_refs.size).each{|i|
-            role_ref = role_refs[i]
-            role = role_ref.role
-            la = "#{role_ref.leading_adjective}"
-            la.sub!(/(.\b|.\Z)/, '\1-')
-            la = nil if la == ""
-            ta = "#{role_ref.trailing_adjective}"
-            ta.sub!(/(\b.|\A.)/, '-\1')
-            ta = nil if ta == ""
-
-            expanded.gsub!(/\{#{i}\}/) {
-                player = role_refs[i].role.concept
-                role_name = role.role_name
-                role_name = nil if role_name == ""
-                [
-                  presence_constraint_frequency(frequency_constraints[i]),
-                  la,
-                  !define_role_names && role_name ? role_name : player.name,
-                  ta,
-                  define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil
-                ].compact*" "
-            }
-        }
-        expanded.gsub!(/ *- */, '-')      # Remove spaces around adjectives
-        #debug "Expanded '#{expanded}' using #{frequency_constraints.inspect}"
-        expanded
-      end
-
-      def presence_constraint_frequency(constraint)
-        return nil unless constraint
-        min = constraint.min_frequency
-        max = constraint.max_frequency
-        [
-            ((min && min > 0 && min != max) ? "at least #{min == 1 ? "one" : min.to_s}" : nil),
-            ((max && min != max) ? "at most #{max == 1 ? "one" : max.to_s}" : nil),
-            ((max && min == max) ? "exactly #{max == 1 ? "one" : max.to_s}" : nil)
-        ].compact * " and"
-      end
-
       def append_ring_to_reading(reading, ring)
         reading << " [#{(ring.ring_type.scan(/[A-Z][a-z]*/)*", ").downcase}]"
       end
@@ -211,21 +169,76 @@ module ActiveFacts
         puts " */"
       end
 
+      # Of the players of a set of roles, return the one that's a subclass of (or same as) all others, else nil
+      def roleplayer_subclass(roles)
+        roles[1..-1].inject(roles[0].concept){|subclass, role|
+          next nil unless subclass and EntityType === role.concept
+          role.concept.supertypes_transitive.include?(subclass) ? role.concept : nil
+        }
+      end
+
       def constraint_dump(c)
-        puts "\tREVISIT: Verbalise #{c.class.basename} #{c.name} " + 
+        puts "\tREVISIT: " +
           case c
           when PresenceConstraint
-            (c.min_frequency ? "min #{c.min_frequency} " : "") +
-            (c.max_frequency ? "max #{c.max_frequency} " : "") +
-            (c.is_mandatory ? "mandatory " : "")+
-            "over "+c.role_sequence.describe
-          #when RingConstraint
-          #when SetConstraint
-          #when SubsetConstraint
-          #when SetEqualityConstraint
-          #when SetExclusionConstraint
+            roles = c.role_sequence.all_role_ref.map{|rr| rr.role }
+            if (roles.map{|r| r.fact_type}.uniq.size == 1)
+              # All roles pertain to one fact type, an internal constraint:
+              "each #{c.role_sequence.describe} occurs #{c.frequency} time"+
+              #c.frequency + ' ' + c.role_sequence.describe +
+              " in '#{c.role_sequence.all_role_ref[0].role.fact_type.default_reading}'"
+            else
+              # More than one fact type involved, an external constraint.
+              # Either all roles must be played by the same concept (or a supertype) [not uniqueness!],
+              # or all facts are binary and the counterparts of the roles are.
+              if (player = roleplayer_subclass(roles))
+                "#{player.name} must play #{c.frequency} of "
+              else
+                counterparts = roles.map{|r|
+                    r.fact_type.all_role[r.fact_type.all_role[0] != r ? 0 : -1]
+                  }
+                player = roleplayer_subclass(counterparts)
+                "#{c.frequency} #{player ? player.name : "UNKNOWN" } exists for each "
+              end +
+              "#{
+                  c.role_sequence.all_role_ref.map{|rr|
+                    "'#{rr.role.fact_type.default_reading}'"
+                  }*", "
+                }"
+            end
+          when RingConstraint
+            "#{c.ring_type} ring over #{c.role.fact_type.default_reading}"
+          when SetExclusionConstraint, SetEqualityConstraint
+            # REVISIT exclusion: every <player-list> must<?> either reading1, reading2, ...
+            (SetExclusionConstraint === c ? (c.is_mandatory ? "mandatory " : "")+"exclusion" : "equality") +
+            " over #{
+                c.all_set_comparison_roles.map{|scr|
+                  scr.role_sequence.describe +
+                    (scr.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq.size == 1 ?
+                      " in '#{scr.role_sequence.all_role_ref[0].role.fact_type.default_reading}'" : "")
+                }*", "
+              }"
+          when SubsetConstraint
+            # If the role players are identical and not duplicated, we can simply say "reading1 only if reading2"
+            subset_players = c.subset_role_sequence.all_role_ref.map{|rr| rr.role.concept}
+            superset_players = c.superset_role_sequence.all_role_ref.map{|rr| rr.role.concept}
+            if subset_players == superset_players && subset_players.uniq == subset_players
+              "'#{c.subset_role_sequence.all_role_ref[0].role.fact_type.default_reading}'" +
+              " only if " +
+              "'#{c.superset_role_sequence.all_role_ref[0].role.fact_type.default_reading}'"
+            else
+              "#{c.subset_role_sequence.describe
+                }" +
+                (c.subset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq.size == 1 ?
+                  " in '#{c.subset_role_sequence.all_role_ref[0].role.fact_type.default_reading}'" : "")+
+                " is a subset of #{
+                  c.superset_role_sequence.describe
+                }" +
+                (c.superset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq.size == 1 ?
+                  " in '#{c.superset_role_sequence.all_role_ref[0].role.fact_type.default_reading}'" : "")
+            end
           else
-            "REVISIT: Unhandled constraint type"
+            "#{c.class.basename} #{c.name}: unhandled constraint type"
           end
       end
 
