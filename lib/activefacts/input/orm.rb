@@ -651,8 +651,8 @@ module ActiveFacts
           ec.vocabulary = @vocabulary
           ec.name = name
           # ec.enforcement = 
-          ec.superset_role_sequence = role_sequences[0]
-          ec.subset_role_sequence = role_sequences[1]
+          ec.subset_role_sequence = role_sequences[0]
+          ec.superset_role_sequence = role_sequences[1]
         }
       end
 
