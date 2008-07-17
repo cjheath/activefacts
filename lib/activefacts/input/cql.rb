@@ -588,6 +588,9 @@ module ActiveFacts
                 # Adjectives defined on the binding must be matched unless loose binding is allowed.
                 loose_ok = loose_binding_except and !loose_binding_except[binding.concept.name]
 
+                # Don't allow binding a new role name to an existing one:
+                next if role_name and binding.role_name and role_name != binding.role_name
+
                 quality = 0
                 if binding.leading_adjective != leading_adjective
                   next if binding.leading_adjective && leading_adjective  # Both set, but different
@@ -601,6 +604,8 @@ module ActiveFacts
                   quality += 1
                 end
 
+                quality += 1 unless binding.role_name   # A role name that was not matched... better if there wasn't one
+
                 if (quality > matched_adjectives || !best_match)
                   best_match = binding       # A better match than we had before
                   matched_adjectives = quality
@@ -612,21 +617,10 @@ module ActiveFacts
                 # We've found the best existing definition
 
                 # Indicate which speculative adjectives were used so the clauses can be deleted:
-                leading_adjective.replace("") if binding.leading_adjective and leading_adjective and leading_speculative
-                trailing_adjective.replace("") if binding.trailing_adjective and trailing_adjective and trailing_speculative
+                leading_adjective.replace("") if best_match.leading_adjective and leading_adjective and leading_speculative
+                trailing_adjective.replace("") if best_match.trailing_adjective and trailing_adjective and trailing_speculative
 
-                #puts "Matched #{binding.leading_adjective.inspect}-#{w}-#{binding.trailing_adjective} with #{leading_adjective.inspect}-#{w}-#{trailing_adjective}"
-
-                # Add a role name definition for an existing binding, if necessary and allowed:
-                if role_name && binding.role_name != role_name
-                  raise "may not add role name to a simple concept without adjectives" unless binding.leading_adjective || binding.trailing_adjective
-                  raise "may not redefine role-name from #{binding.role_name} to #{role_name}" if binding.role_name
-                  raise "may not redefine existing concept '#{role_name}' as a role name" if concept(role_name)
-                  @role_names[role_name] = binding
-                  binding.role_name = role_name
-                end
-
-                return binding.concept, binding
+                return best_match.concept, best_match
               end
 
               # No existing defined binding. Look up an existing concept of this name:

@@ -192,7 +192,7 @@ Population includes Fact,
 	Fact belongs to exactly one Population;
 
 ValueType is a kind of Concept;
-ValueType is subtype of at most one ValueType (as Supertype) [acyclic],
+ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 	Supertype is supertype of ValueType;
 ValueType has at most one Length,
 	Length is of ValueType;

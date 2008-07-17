@@ -46,6 +46,4 @@ describe "CQL Loader" do
       File.delete(actual_file)  # It succeeded, we don't need the file.
     end
   end
-
-  it "should handle role names in identifiers, with and without adjectives and duplicate role players"
 end

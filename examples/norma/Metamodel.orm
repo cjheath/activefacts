@@ -783,7 +783,7 @@
 					<orm:UniquenessConstraint ref="_88D57536-63AB-4BA3-9BF9-9BF7D05B272B" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_EE302B14-1697-497C-99B0-E6B4AA283D22" _Name="ValueTypeIsSubtypeOfValueType">
+			<orm:Fact id="_EE302B14-1697-497C-99B0-E6B4AA283D22" _Name="ValueTypeIsSubtypeOfSuperValueType">
 				<orm:FactRoles>
 					<orm:Role id="_B53452F3-E13D-4FAA-9D2F-0C0F9711FD3C" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_BA7240DD-B074-4AF0-BBEE-B9205DC3CF85" />
@@ -796,7 +796,7 @@
 					<orm:ReadingOrder id="_DD6AB15C-92B3-4A1B-86EE-DE71C8894FE1">
 						<orm:Readings>
 							<orm:Reading id="_23972315-EE7B-4395-9A0E-5A7FE2D9F59C">
-								<orm:Data>{0} is subtype of {1}</orm:Data>
+								<orm:Data>{0} is subtype of super- {1}</orm:Data>
 							</orm:Reading>
 						</orm:Readings>
 						<orm:RoleSequence>
@@ -5478,7 +5478,7 @@
 			</ormDiagram:RingConstraintShape>
 			<ormDiagram:FactTypeShape id="_9FD95E8C-1CB6-400A-B7A6-511B20A51926" IsExpanded="true" AbsoluteBounds="1.3011506455764157, 3.783038968310009, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_EE79568F-D3D4-4201-817D-7D5581A18ED5" IsExpanded="true" AbsoluteBounds="0.88448397890974917, 4.10209603727137, 1.3493697643280029, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_EE79568F-D3D4-4201-817D-7D5581A18ED5" IsExpanded="true" AbsoluteBounds="0.88448397890974917, 4.10209603727137, 1.6616390943527222, 0.12950302660465241">
 						<ormDiagram:Subject ref="_DD6AB15C-92B3-4A1B-86EE-DE71C8894FE1" />
 					</ormDiagram:ReadingShape>
 					<ormDiagram:RoleNameShape id="_30798C41-5D00-42AD-80EC-BC37EC62ED03" IsExpanded="true" AbsoluteBounds="1.1011506455764157, 3.5830389683100088, 0.05, 0.05">
