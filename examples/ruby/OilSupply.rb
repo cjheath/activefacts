@@ -41,19 +41,19 @@ module OilSupply
     one_to_one :refinery_name                   # See RefineryName.refinery
   end
 
-  class TransportRoute
-    identified_by :transportation, :refinery, :region
-    has_one :refinery                           # See Refinery.all_transport_route
-    has_one :region                             # See Region.all_transport_route
-    has_one :transportation                     # See Transportation.all_transport_route
-  end
-
   class ProductionCommitment
     identified_by :refinery, :month, :product, :quantity
     has_one :month                              # See Month.all_production_commitment
     has_one :product                            # See Product.all_production_commitment
     has_one :quantity                           # See Quantity.all_production_commitment
     has_one :refinery                           # See Refinery.all_production_commitment
+  end
+
+  class TransportRoute
+    identified_by :transportation, :refinery, :region
+    has_one :refinery                           # See Refinery.all_transport_route
+    has_one :region                             # See Region.all_transport_route
+    has_one :transportation                     # See Transportation.all_transport_route
   end
 
   class AcceptableSubstitutes

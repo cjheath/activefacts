@@ -31,18 +31,18 @@ Author wrote Comment,
 Content is identified by ContentId:
 	Content has exactly one ContentId,
 	ContentId is of at most one Content;
-Content has exactly one Text,
-	Text is of Content;
 Content provides text of at most one Comment,
 	Comment consists of exactly one text-Content;
 Content is of at most one Style;
+Content has exactly one Text,
+	Text is of Content;
 
 Post is identified by PostId:
 	Post has exactly one PostId,
 	PostId is of at most one Post;
+Post was written by exactly one Author;
 Paragraph is where
 	Post includes Ordinal paragraph;
-Post was written by exactly one Author;
 Paragraph has Comment,
 	Comment is on exactly one Paragraph;
 Paragraph contains exactly one Content,
@@ -51,11 +51,11 @@ Paragraph contains exactly one Content,
 Topic is identified by TopicId:
 	Topic has exactly one TopicId,
 	TopicId is of at most one Topic;
-Topic is called exactly one topic-Name,
-	Name is of at most one Topic;
 Post belongs to exactly one Topic,
 	Topic contains Post;
 Topic belongs to at most one parent-Topic [acyclic];
+Topic is called exactly one topic-Name,
+	Name is of at most one Topic;
 
 /*
 Constraints:

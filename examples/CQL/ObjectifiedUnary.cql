@@ -12,4 +12,3 @@ PersonName is defined as VariableLengthText(40);
 Person is identified by PersonName:
 	Person has exactly one PersonName,
 	PersonName is of at most one Person;
-

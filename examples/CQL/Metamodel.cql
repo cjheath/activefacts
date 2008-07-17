@@ -41,10 +41,10 @@ Coefficient is precise;
 Constraint is identified by ConstraintId:
 	Constraint has exactly one ConstraintId,
 	ConstraintId is of at most one Constraint;
-Name is of Constraint,
-	Constraint is called at most one Name;
 Constraint requires at most one Enforcement,
 	Enforcement applies to Constraint;
+Name is of Constraint,
+	Constraint is called at most one Name;
 
 Fact is identified by FactId:
 	Fact has exactly one FactId,
@@ -63,8 +63,8 @@ Instance has at most one Value;
 PresenceConstraint is a kind of Constraint;
 PresenceConstraint has at most one max-Frequency;
 PresenceConstraint has at most one min-Frequency;
-PresenceConstraint is preferred identifier;
 PresenceConstraint is mandatory;
+PresenceConstraint is preferred identifier;
 
 Reading is identified by FactType and Ordinal:
 	FactType has at least one Reading,
@@ -79,9 +79,9 @@ RingConstraint is of exactly one RingType;
 RoleSequence is identified by RoleSequenceId:
 	RoleSequence has exactly one RoleSequenceId,
 	RoleSequenceId is of at most one RoleSequence;
+PresenceConstraint covers exactly one RoleSequence;
 Reading is in exactly one RoleSequence,
 	RoleSequence is for Reading;
-PresenceConstraint covers exactly one RoleSequence;
 
 RoleValue is identified by Instance and Fact:
 	Instance plays RoleValue,
@@ -91,20 +91,20 @@ RoleValue is identified by Instance and Fact:
 SetConstraint is a kind of Constraint;
 
 SubsetConstraint is a kind of SetConstraint;
-SubsetConstraint covers exactly one superset-RoleSequence;
 SubsetConstraint covers exactly one subset-RoleSequence;
+SubsetConstraint covers exactly one superset-RoleSequence;
 
 UniquenessConstraint is a kind of PresenceConstraint;
 
 Unit is identified by UnitId:
 	Unit has exactly one UnitId,
 	UnitId is of at most one Unit;
-UnitBasis is where
-	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];
-Unit has at most one Coefficient;
 Name is of Unit,
 	Unit is called exactly one Name;
+Unit has at most one Coefficient;
 Unit is fundamental;
+UnitBasis is where
+	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];
 UnitBasis has at most one Exponent;
 
 ValueRange is identified by minimum-Bound and maximum-Bound:
@@ -136,47 +136,47 @@ Feature is identified by Name and Vocabulary:
 	Vocabulary contains Feature;
 
 Vocabulary is a kind of Feature;
+Vocabulary contains Constraint,
+	Constraint belongs to at most one Vocabulary;
 Vocabulary extends at most one parent-Vocabulary [acyclic, intransitive],
 	parent-Vocabulary contains Vocabulary;
 Import is where
 	Vocabulary imports imported-Vocabulary [acyclic];
-Vocabulary contains Constraint,
-	Constraint belongs to at most one Vocabulary;
 Correspondence is where
 	in Import imported-Feature corresponds to at most one local-Feature;
 
 Alias is a kind of Feature;
 
 Concept is a kind of Feature;
+Instance is of exactly one Concept;
 Role is identified by RoleId:
 	Role has exactly one RoleId,
 	RoleId is of at most one Role,
 	Concept plays role in FactType;
+Role is of RingConstraint,
+	RingConstraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
 Role has at most one role-ValueRestriction,
 	ValueRestriction applies to Role;
-Role is of RingConstraint,
-	RingConstraint has at most one Role;
+RoleValue is of exactly one Role;
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 RoleRef is where
 	Role is in RoleSequence in at most one Ordinal place,
 	RoleSequence includes at most one Role in Ordinal place,
 	Role has Ordinal place in RoleSequence;
-RoleValue is of exactly one Role;
 RoleRef has at most one leading-Adjective;
 RoleRef has at most one trailing-Adjective;
-Instance is of exactly one Concept;
 
 EntityType is a kind of Concept;
+EntityType nests at most one FactType,
+	FactType is nested as at most one EntityType;
+EntityType is independent;
+EntityType is personal;
 TypeInheritance is a kind of FactType where
 	EntityType (as Subtype) is subtype of super-EntityType (as Supertype) [acyclic],
 	Supertype is supertype of Subtype;
-EntityType is independent;
-EntityType is personal;
-EntityType nests at most one FactType,
-	FactType is nested as at most one EntityType;
 TypeInheritance provides identification;
 
 Population is identified by Vocabulary and Name:
@@ -184,22 +184,22 @@ Population is identified by Vocabulary and Name:
 	Population belongs to at most one Vocabulary,
 	Population has exactly one Name,
 	Name is of Population;
+Population includes Fact,
+	Fact belongs to exactly one Population;
 Population includes Instance,
 	Instance belongs to exactly one Population;
 Population includes RoleValue,
 	RoleValue belongs to exactly one Population;
-Population includes Fact,
-	Fact belongs to exactly one Population;
 
 ValueType is a kind of Concept;
-ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
-	Supertype is supertype of ValueType;
 ValueType has at most one Length,
 	Length is of ValueType;
 ValueType has at most one Scale,
 	Scale is of ValueType;
-ValueType has at most one ValueRestriction;
 ValueType is of at most one Unit;
+ValueType has at most one ValueRestriction;
+ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
+	Supertype is supertype of ValueType;
 
 /*
 Constraints:

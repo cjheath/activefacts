@@ -340,12 +340,14 @@ module ActiveFacts
             # The fact type hasn't already been dumped but all its role players have
             !@fact_types_dumped[fact_type] &&
               !fact_type.all_role.detect{|r| !@concept_types_dumped[r.concept] }
+          }.sort_by{|fact_type|
+            fact_type_key(fact_type)
           }.each{|fact_type|
-              fact_type_dump_with_dependents(fact_type)
-              # Objectified Fact Types may release additional fact types
-              roles += fact_type.entity_type.all_role if fact_type.entity_type
-              progress = true
-            }
+            fact_type_dump_with_dependents(fact_type)
+            # Objectified Fact Types may release additional fact types
+            roles += fact_type.entity_type.all_role if fact_type.entity_type
+            progress = true
+          }
       end while progress
     end
 
@@ -389,11 +391,29 @@ module ActiveFacts
       @concept_types_dumped[fact_type.entity_type] = true if fact_type.entity_type
     end
 
+    # Arrange for objectified fact types to appear in order of name, after other fact types.
+    # Facts are ordered alphabetically by the names of their role players,
+    # then by preferred_reading (subtyping fact types have no preferred_reading).
+    def fact_type_key(fact_type)
+      role_names =
+        if (pr = fact_type.preferred_reading)
+          pr.role_sequence.
+            all_role_ref.
+            sort_by{|role_ref| role_ref.ordinal}.
+            map{|role_ref| [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-" } +
+            [pr.reading_text]
+        else
+          fact_type.all_role.map{|role| role.concept.name }
+        end
+
+      (fact_type.entity_type ? [fact_type.entity_type.name] : [""]) + role_names
+    end
+
     # Dump fact types.
     def fact_types_dump
       # REVISIT: Uniqueness on the LHS of a binary can be coded using "distinct"
 
-      # The only fact types tht can be remaining are those involving only value types,
+      # The only fact types that can be remaining are those involving only value types,
       # since we dumped every fact type as soon as all relevant entities were dumped.
       # Iterate over all fact types of all value types, looking for these strays.
 
@@ -407,8 +427,7 @@ module ActiveFacts
               !fact_type.all_role.detect{|r| EntityType === r.concept }
           }.sort_by{|fact_id|
               fact_type = fact_collection[fact_id]
-              (fact_type.entity_type ? [fact_type.entity_type.name] : nil) ||
-                  fact_type.all_role.map{|role| role.concept.name }
+              fact_type_key(fact_type)
           }.each{|fact_id|
               fact_type = fact_collection[fact_id]
 
@@ -418,15 +437,10 @@ module ActiveFacts
         }
 
       # REVISIT: Find out why some fact types are missed during entity dumping:
-      @vocabulary.constellation.FactType.values.select{|fact_type| !(TypeInheritance === fact_type)}.sort_by{|fact_type|
-          # Any sort key, as long as the result is stable. That means unique too!
-          [ (pr = fact_type.preferred_reading).
-              role_sequence.
-              all_role_ref.
-              sort_by{|role_ref| role_ref.ordinal}.
-              map{|role_ref| [ role_ref.role.concept.name, role_ref.leading_adjective||"", role_ref.trailing_adjective||"" ] },
-            pr.reading_text
-          ]
+      @vocabulary.constellation.FactType.values.select{|fact_type|
+          !(TypeInheritance === fact_type)
+        }.sort_by{|fact_type|
+          fact_type_key(fact_type)
         }.each{|fact_type|
           next if @fact_types_dumped[fact_type]
           # debug "Not dumped #{fact_type.verbalise}(#{fact_type.all_role.map{|r| r.concept.name}*", "})"

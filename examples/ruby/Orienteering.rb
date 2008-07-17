@@ -135,18 +135,18 @@ module Orienteering
     has_one :start_time                         # See StartTime.all_event
   end
 
-  class EventScoringMethod
-    identified_by :course, :event
-    has_one :course                             # See Course.all_event_scoring_method
-    has_one :event                              # See Event.all_event_scoring_method
-    has_one :scoring_method                     # See ScoringMethod.all_event_scoring_method
-  end
-
   class EventControl
     identified_by :control_number, :event
     has_one :control_number                     # See ControlNumber.all_event_control
     has_one :event                              # See Event.all_event_control
     has_one :point_value                        # See PointValue.all_event_control
+  end
+
+  class EventScoringMethod
+    identified_by :course, :event
+    has_one :course                             # See Course.all_event_scoring_method
+    has_one :event                              # See Event.all_event_scoring_method
+    has_one :scoring_method                     # See ScoringMethod.all_event_scoring_method
   end
 
   class Map
@@ -183,17 +183,17 @@ module Orienteering
     one_to_one :punch_i_d                       # See PunchID.punch
   end
 
+  class PunchPlacement
+    identified_by :punch, :event_control
+    has_one :event_control                      # See EventControl.all_punch_placement
+    has_one :punch                              # See Punch.all_punch_placement
+  end
+
   class Visit
     identified_by :punch, :entry, :time
     has_one :entry                              # See Entry.all_visit
     has_one :punch                              # See Punch.all_visit
     has_one :time                               # See Time.all_visit
-  end
-
-  class PunchPlacement
-    identified_by :punch, :event_control
-    has_one :event_control                      # See EventControl.all_punch_placement
-    has_one :punch                              # See Punch.all_punch_placement
   end
 
   class Series

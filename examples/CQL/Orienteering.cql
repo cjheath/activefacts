@@ -43,42 +43,42 @@ ClubName is name of at most one Club,
 Event is identified by EventID:
 	Event has exactly one EventID,
 	EventID is of at most one Event;
-Event is called at most one EventName,
-	EventName is name of at most one Event;
-Event starts at exactly one start-Location,
-	Location is where Event starts;
-Event is held on exactly one StartTime;
-EventScoringMethod is where
-	ScoringMethod is used for Course of Event;
-Event has at most one Number;
 Club runs Event,
 	Event is run by exactly one Club;
+Event is called at most one EventName,
+	EventName is name of at most one Event;
+Event has at most one Number;
+Event is held on exactly one StartTime;
+Event starts at exactly one start-Location,
+	Location is where Event starts;
 EventControl is where
 	Event includes at least one ControlNumber;
+EventScoringMethod is where
+	ScoringMethod is used for Course of Event;
 EventControl has at most one PointValue;
 
 Map is identified by MapID:
 	Map has exactly one MapID,
 	MapID is of at most one Map;
+Club (as Owner) owns Map,
+	Map is owned by exactly one Owner;
+Map has at most one Accessibility;
 Map is map for Event,
 	Event uses exactly one Map;
 Map has exactly one MapName,
 	MapName is of at most one Map;
-Club (as Owner) owns Map,
-	Map is owned by exactly one Owner;
-Map has at most one Accessibility;
 
 Person is identified by PersonID:
 	Person has exactly one PersonID,
 	PersonID is of at most one Person;
+Person is member of at most one Club;
 Person has exactly one FamilyName,
 	FamilyName is of Person;
+Person is of at most one Gender;
 Person has exactly one GivenName,
 	GivenName is name of Person;
-Person is of at most one Gender;
-Person was born in at most one birth-Year;
 Person has at most one PostCode;
-Person is member of at most one Club;
+Person was born in at most one birth-Year;
 Entry is identified by EntryID:
 	Entry has exactly one EntryID,
 	EntryID is of at most one Entry,
@@ -89,17 +89,17 @@ Entry finished in at most one finish-Placing;
 Punch is identified by PunchID:
 	Punch has exactly one PunchID,
 	PunchID is of at most one Punch;
-Visit is where
-	Punch was visited by Entry at Time;
 PunchPlacement is where
 	Punch is placed at EventControl;
+Visit is where
+	Punch was visited by Entry at Time;
 
 Series is identified by SeriesID:
 	Series has exactly one SeriesID,
 	SeriesID is of at most one Series;
+Event is in at most one Series;
 Series has exactly one SeriesName (as Name),
 	Name is of at most one Series;
-Event is in at most one Series;
 
 /*
 Constraints:

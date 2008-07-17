@@ -23,12 +23,12 @@ Person is identified by family-Name and given-Name:
 	family-Name is of Person,
 	Person has exactly one given-Name,
 	given-Name is of Person;
-Directorship is where
-	Person (as director) directs Company,
-	Company is directed by at least one director;
+Person was born on at most one birth-Date;
 Attendance is where
 	Person (as Attendee) attended Meeting,
 	Meeting was attended by Attendee;
-Person was born on at most one birth-Date;
+Directorship is where
+	Person (as director) directs Company,
+	Company is directed by at least one director;
 Directorship began on exactly one appointment-Date;
 

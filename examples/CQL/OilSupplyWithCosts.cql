@@ -34,8 +34,8 @@ RegionalDemand is where
 /*
  * Fact Types
  */
+Month is in exactly one Season;
 AcceptableSubstitutes is where
 	Product may be substituted by alternate-Product in Season [acyclic, intransitive],
 	alternate-Product is an acceptable substitute for Product in Season;
-Month is in exactly one Season;
 

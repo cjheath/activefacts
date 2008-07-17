@@ -57,10 +57,10 @@ Receipt is identified by ReceiptID:
 ReceivedItem is identified by ReceivedItemID:
 	ReceivedItem has exactly one ReceivedItemID,
 	ReceivedItemID is of at most one ReceivedItem;
-ReceivedItem is for at most one PurchaseOrderItem;
-ReceivedItem is exactly one Product;
 Receipt is of at least one ReceivedItem,
 	ReceivedItem has at most one Receipt;
+ReceivedItem is exactly one Product;
+ReceivedItem is for at most one PurchaseOrderItem;
 
 SalesOrder is identified by SalesOrderID:
 	SalesOrder has exactly one SalesOrderID,
@@ -70,9 +70,9 @@ SalesOrderItem is identified by SalesOrder and Product:
 	SalesOrder includes SalesOrderItem,
 	SalesOrderItem is part of exactly one SalesOrder,
 	SalesOrderItem is for exactly one Product;
+DispatchItem is for at most one SalesOrderItem;
 DirectOrderMatch is where
 	PurchaseOrderItem matches SalesOrderItem;
-DispatchItem is for at most one SalesOrderItem;
 
 Supplier is a kind of Party;
 PurchaseOrder is to exactly one Supplier,
@@ -81,19 +81,19 @@ PurchaseOrder is to exactly one Supplier,
 TransferRequest is identified by TransferRequestID:
 	TransferRequest has exactly one TransferRequestID,
 	TransferRequestID is of at most one TransferRequest;
-ReceivedItem is for at most one TransferRequest;
 DispatchItem is for at most one TransferRequest;
+ReceivedItem is for at most one TransferRequest;
 
 Warehouse is identified by WarehouseID:
 	Warehouse has exactly one WarehouseID,
 	WarehouseID is of at most one Warehouse;
 PurchaseOrder is to at most one Warehouse;
 SalesOrder is from at most one Warehouse;
-StockedProduct is where
-	Warehouse contains Product;
-Warehouse contains exactly one Bin;
 TransferRequest is from at most one Warehouse;
 TransferRequest is to at most one Warehouse;
+Warehouse contains exactly one Bin;
+StockedProduct is where
+	Warehouse contains Product;
 StockedProduct is in Bin,
 	Bin contains at most one StockedProduct;
 

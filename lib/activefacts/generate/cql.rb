@@ -118,24 +118,6 @@ module ActiveFacts
         puts ";\n"
       end
 
-      # Dump all fact types for which all precursors (of which "o" is one) have been emitted:
-      def released_fact_types_dump(o)
-        roles = o.all_role
-        begin
-          progress = false
-          roles.map(&:fact_type).uniq.select{|fact_type|
-              # The fact type hasn't already been dumped but all its role players have
-              !@fact_types_dumped[fact_type] &&
-                !fact_type.all_role.detect{|r| !@concept_types_dumped[r.concept] }
-            }.each{|fact_type|
-                fact_type_dump_with_dependents(fact_type)
-                # Objectified Fact Types may release additional fact types
-                roles += fact_type.entity_type.all_role if fact_type.entity_type
-                progress = true
-              }
-        end while progress
-      end
-
       def skip_fact_type(f)
         # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
         # These will come up as un-handled constraints:

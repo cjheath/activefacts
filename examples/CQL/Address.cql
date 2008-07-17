@@ -37,8 +37,8 @@ Address is identified by street-Number and Street and City and Postcode:
 	Address is in exactly one City,
 	Address is in at most one Postcode,
 	Postcode is of Address;
-Person lives at at most one Address;
 Company has head office at at most one Address;
+Person lives at at most one Address;
 
 /*
 Constraints:

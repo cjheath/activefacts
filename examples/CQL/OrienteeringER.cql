@@ -26,13 +26,13 @@ Club is where
 SeriesEvent is where
 	SeriesName includes event-Number,
 	event Number is in SeriesName;
+Event is where
+	event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location;
+EventControl is where
+	Event includes Control which is worth at most one PointValue;
 EventCourse is where
 	Course is available at Event,
 	Event offers Course;
-EventControl is where
-	Event includes Control which is worth at most one PointValue;
-Event is where
-	event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location;
 Map is where
 	map Name (as MapName) belongs to Club and has Accessibility;
 
