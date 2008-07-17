@@ -116,10 +116,10 @@ module Warehousing
     has_one :sales_order                        # See SalesOrder.all_sales_order_item
   end
 
-  class PurchaseOrderItemMatchesSalesOrderItem
+  class DirectOrderMatch
     identified_by :purchase_order_item, :sales_order_item
-    has_one :purchase_order_item                # See PurchaseOrderItem.all_purchase_order_item_matches_sales_order_item
-    has_one :sales_order_item                   # See SalesOrderItem.all_purchase_order_item_matches_sales_order_item
+    has_one :purchase_order_item                # See PurchaseOrderItem.all_direct_order_match
+    has_one :sales_order_item                   # See SalesOrderItem.all_direct_order_match
   end
 
   class Supplier < Party

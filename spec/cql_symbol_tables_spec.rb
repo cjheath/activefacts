@@ -13,7 +13,7 @@ describe "CQL Symbol table" do
   # A Form here is a form of reference to a concept, being a name and optional adjectives, possibly designated by a role name:
   # Struct.new("Form", :concept, :name, :leading_adjective, :trailing_adjective, :role_name)
   # def initialize(constellation, vocabulary)
-  # def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, speculative_adjectives = false)
+  # def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, leading_speculative = false, trailing_speculative = false)
 
   setup do
     include ActiveFacts::Input::CQL
@@ -128,7 +128,6 @@ describe "CQL Symbol table" do
     lambda{player, bound = @symbols.bind("GivenName", nil, nil, "SomeName")}.should raise_error
   end
 
-  # def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, speculative_adjectives = false)
   Predefined = [
     [ "Name",   "Given",  nil,      nil,          true  ],
     [ "Nom",    nil,      "Donné",  nil,          true  ],
@@ -231,15 +230,17 @@ describe "CQL Symbol table" do
 
   it "should bind to an existing player using a speculative leading adjective" do
     concept, = @symbols.bind("Name", "Given", nil, nil, true)
-    player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true)
+    player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true, true)
     player.should == concept
+    bound.leading_adjective.should == "Given"
+    bound.trailing_adjective.should be_nil
     l.should be_empty
     t.should == "Donné"
   end
 
   it "should bind to an existing player using a speculative trailing adjective" do
     concept, = @symbols.bind("Name", nil, "Donné", nil, true)
-    player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true)
+    player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true, true)
     player.should == concept
     l.should == "Given"
     t.should be_empty
@@ -247,7 +248,7 @@ describe "CQL Symbol table" do
 
   it "should bind to an existing player using a speculative leading and trailing adjective" do
     concept, = @symbols.bind("Name", "Given", "Donné", nil, true)
-    player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true)
+    player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true, true)
     player.should == concept
     l.should be_empty
     t.should be_empty

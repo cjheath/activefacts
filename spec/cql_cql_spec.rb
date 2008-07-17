@@ -34,7 +34,7 @@ describe "CQL Loader" do
   Dir["examples/CQL/*.cql"].each do |cql_file|
     actual_file = cql_file.sub(%r{examples/CQL/}, 'spec/actual/')
 
-    it "should load and dump valid CQL for #{cql_file}" do
+    it "should load CQL and dump valid CQL for #{cql_file}" do
       vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
 
       # Build and save the actual file:

@@ -190,10 +190,10 @@ module Orienteering
     has_one :time                               # See Time.all_visit
   end
 
-  class PunchIsPlacedAtEventControl
+  class PunchPlacement
     identified_by :punch, :event_control
-    has_one :event_control                      # See EventControl.all_punch_is_placed_at_event_control
-    has_one :punch                              # See Punch.all_punch_is_placed_at_event_control
+    has_one :event_control                      # See EventControl.all_punch_placement
+    has_one :punch                              # See Punch.all_punch_placement
   end
 
   class Series

@@ -119,7 +119,7 @@ module ActiveFacts
         #puts "Entity Type #{name}, supertypes #{supertypes.inspect}, id #{identification.inspect}, clauses = #{clauses.inspect}"
         debug :entity, "Defining Entity Type #{name}" do
           # Assert the entity:
-          # If this entity was forward referenced, this new object subsumes its roles
+          # If this entity was forward referenced, this won't be a new object, and will subsume its roles
           entity_type = @constellation.EntityType(name, @vocabulary)
 
           # Set up its supertypes:
@@ -132,6 +132,14 @@ module ActiveFacts
             end
           end
 
+          # The first step is to find all role references and definitions in the clauses
+          # Each reading in the array returned here is also an array of items.
+          # Each item is either a string (linking word) or a Form (see below).
+          # REVISIT: I still need to represent the quantifier, function, restriction and literal that might accompany each phrase.
+          @symbols = SymbolTable.new(@constellation, @vocabulary)
+          @symbols.bind_roles(clauses, identification)
+#          puts "="*30+" Bound Clauses:"; pp clauses
+
           # Use a two-pass algorithm for entity fact types...
           # First sort all readings according to what fact they belong to,
           # then process each fact type using code for normal fact type processing.
@@ -143,11 +151,10 @@ module ActiveFacts
           # Process the entity type clauses (fact type readings)
           identifying_roles = []  # In whatever order they're constructed
 
-          @roles_by_form = {}  # Build a hash of allowed forms on first reading (check against it on subsequent ones)
-          @roles_by_role_name = {}  # Build a hash of defined role_names
-          @role_name_definitions = {}
           # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
           @allowed_forward = identification ? identification[:roles].inject({}){|h, i| h[i[0]] = true; h} : {}
+          @roles_by_form = {}  # Build a hash of allowed forms on first reading (check against it on subsequent ones)
+
           clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
             fact_type = nil
             @embedded_presence_constraints = []
@@ -161,8 +168,10 @@ module ActiveFacts
               end
             end
 
-            # Find the role that this entity type plays in the fact type:
-            if player_role = fact_type.all_role.detect{|role| role.concept == entity_type }
+            # Find the role that this entity type plays in the fact type, if any:
+            player_roles = fact_type.all_role.select{|role| role.concept == entity_type }
+            raise "#{role.concept.name} may only play one role in each identifying fact type" if player_roles.size > 1
+            if player_role = player_roles[0]
               non_player_roles = fact_type.all_role-[player_role]
 
               raise "#{name} cannot be identified by a role in a non-binary fact type" if non_player_roles.size > 1
@@ -173,9 +182,6 @@ module ActiveFacts
               # This situation occurs when an objectified fact type has an entity identifier
               raise "Entity type #{name} may only objectify a single fact type" if entity_type.fact_type
 
-# REVISIT: I suspect problems here... chase down Metamodel TypeInheritance
-              # Associate the fact type with this entity
-              #puts "============= Associating entity #{entity_type.name} to nominalize fact type #{fact_type.default_reading} ======================"
               entity_type.fact_type = fact_type
               fact_type_identification(fact_type, name, false)
             else
@@ -189,11 +195,9 @@ module ActiveFacts
           if identification
             debug :identification, "Handling identification" do
               if id_role_names = identification[:roles]  # A list of identifying roles
-                id_role_names.each do |id_role_name|
-                  # Each identifying role is an array of words (adjectives and concept names)
-                  debug "Identifying role: #{id_role_name.inspect}"
-                end
+                debug "Identifying roles: #{id_role_names.inspect}"
 
+                # Find a uniqueness constraint as PI, or make one
                 pc = find_pc_over_roles(identifying_roles)
                 if (pc)
                   debug "Existing PC #{pc.verbalise} is now PK for #{name} #{pc.class.roles.keys.map{|k|"#{k} => "+pc.send(k).verbalise}*", "}"
@@ -236,11 +240,21 @@ module ActiveFacts
       def fact_type(name, readings, clauses) 
         debug "Processing readings for fact type" do
           fact_type = nil
+
           @embedded_presence_constraints = []
-          @roles_by_form = {}  # Build a hash of allowed forms on first reading (check against it on subsequent ones)
-          @roles_by_role_name = {}  # Build a hash of defined role_names
-          @role_name_definitions = {}
-          @allowed_forward = {}
+          @roles_by_form = {}   # Build a hash of allowed forms on first reading (check against it on subsequent ones)
+          @allowed_forward = {} # No roles may be forward-referenced
+
+          #
+          # The first step is to find all role references and definitions in the reading clauses.
+          # This also:
+          # * deletes any adjectives that were used but not hyphenated
+          # * changes linking word phrases into simple Strings
+          # * adds a :role key to each bound role
+          #
+          @symbols = SymbolTable.new(@constellation, @vocabulary)
+          @symbols.bind_roles(readings)
+
           readings.each do |reading|
             kind, qualifiers, phrases = *reading
 
@@ -263,102 +277,55 @@ module ActiveFacts
       end
 
       def process_fact_clause(fact_type, qualifiers, phrases)
-        debug "="*80
         debug :reading, "Processing reading #{phrases.inspect}" do
-          # Index the role name definitions:
-          phrases.each do |phrase|
-            next unless role_name = phrase[:role_name]
-            @role_name_definitions[role_name] = phrase
+          role_phrases = phrases.select do |phrase|
+            Hash === phrase && phrase[:role]
           end
-          debug "Role names are: #{@role_name_definitions.inspect}"
 
-          # Extract the phrases that contain role players:
-          role_phrases = phrases.map do |phrase|
-            player_name = phrase[:player]
-            # REVISIT: Attempt to prevent invoking the same role twice.
-            # REVISIT: if this phrase has adjectives, is a role_name allowed here? (I think not)
-            concept_by_name(player_name) ? phrase : nil
-          end.compact
-          debug "Role phrases(#{role_phrases.size}): #{role_phrases.inspect}"
-
+          # All readings for a fact type must have the same number of roles.
+          # This might be relaxed later for fact clauses, where readings might
+          # be concatenated if the adjacent items are the same concept.
           if (fact_type && fact_type.all_reading.size > 0 && role_phrases.size != fact_type.all_role.size)
             raise "#{
                 role_phrases.size > fact_type.all_role.size ? "Too many" : "Not all"
               } roles found for non-initial reading of #{fact_type.describe}"
           end
 
-          # Extract the names of the role players from the role_phrases
-          player_names = role_phrases.map do |role_phrase|
-            role_phrase[:player]
-          end
-
-          # Extract the adjectival forms used with each player:
-          player_forms = role_phrases.map do |role_phrase|
-            [role_phrase[:leading_adjective], role_phrase[:player], role_phrase[:trailing_adjective]]
-          end
-
-          # REVISIT: If the first reading is a re-iteration of an existing fact type, use the existing one
+          # REVISIT: If the first reading is a re-iteration of an existing fact type, find and use the existing fact type
+          # This will require loading the @roles_by_form using a SymbolTable
 
           fact_type ||= @constellation.FactType(:new)
 
           # Create the roles on the first reading, or look them up on subsequent readings.
           # If the player occurs twice, we must find one with matching adjectives.
 
-          duplicate_player_names = player_names.inject({}){|h,e| h[e]||=0; h[e] += 1; h}.reject{|k,v| v == 1}.keys
-
-          players = []        # Concept objects by position in this reading
-          roles = []          # Roles objects by position in this reading
           role_sequence = @constellation.RoleSequence(:new)   # RoleSequence for RoleRefs of this reading
-          player_names.each_with_index do |player_name, index|
-            role_phrase = role_phrases[index]   # The input phrase object from the parser
-            player_form = player_forms[index]   # The adjectival form for this phrase
+          roles = []
+          role_phrases.each_with_index do |role_phrase, index|
+            form = role_phrase[:role]
             role_name = role_phrase[:role_name]
-
-            debug "Processing phrase #{index} '#{role_phrase.inspect}' form '#{player_form.inspect}' #{role_name.inspect}" do
-              player = concept_by_name(player_name)
-              leading_adjective = role_phrase[:leading_adjective]
-              trailing_adjective = role_phrase[:trailing_adjective]
-
-              if (fact_type.all_reading.size == 0)           # First reading
-                raise "Concept '#{player_name}' is not yet defined" unless player
-
-                # Assert this role of the fact type:
-                role = @constellation.Role(:new, :fact_type => fact_type, :concept => player)
-                role.role_name = role_name if role_name
-                debug "Concept #{player.name} found, created role #{role.describe} by form #{player_form.inspect}"
-                @roles_by_form[player_form] = role unless role_name
-              else                                # Subsequent readings
-                #debug "Looking for role #{player_form.inspect} in forms #{@roles_by_form.inspect} and role_names #{@roles_by_role_name.inspect}"
-                role = @roles_by_form[player_form] || @roles_by_role_name[player_name]
-                if !role
-                  # Ensure that there is no ambiguity with players and adjectives.
-                  # A player that occurs more than once in the same reading must
-                  # have the same adjectives in all readings.
-                  # REVISIT: Possibly relax this if the other duplicates are all matched exactly.
-                  if duplicate_player_names.include?(player_name)    # a duplicated player?
-                    debug "Duplicate player using an unknown adjectival form"
-                    raise "Role '#{player_form.compact*'-'}' is ambiguous amongst #{@roles_by_form.keys.map{|k| k.compact*"-"}*", "}}"
-                  else
-                    # Second try; just match the player
-                    debug "Looking for #{player_name.inspect} in #{roles.map(&:concept).map(&:name).inspect}"
-                    role = fact_type.all_role.detect{|r| r.concept == player }
-                    raise "Role '#{player_form.compact*' '}' doesn't exist in primary reading" unless role
-                  end
-                  player = role.concept
-                else
-                  debug "Got role #{role.role_id} by form #{@roles_by_form[player_form].inspect} || #{@roles_by_role_name[player_name].inspect}"
-                end
-              end
-              players << player
-              roles << role
-              @roles_by_role_name[role_name] = role if role_name
-
-              # Create the RoleRefs for the RoleSequence
-
-              role_ref = @constellation.RoleRef(role_sequence, index, :role => roles[index])
-              role_ref.leading_adjective = leading_adjective if leading_adjective
-              role_ref.trailing_adjective = trailing_adjective if trailing_adjective
+            player = form.concept
+            if (fact_type.all_reading.size == 0)           # First reading
+              # Assert this role of the fact type:
+              role = @constellation.Role(:new, :fact_type => fact_type, :concept => player)
+              role.role_name = role_name if role_name
+              debug "Concept #{player.name} found, created role #{role.describe} by form #{form.inspect}"
+              @roles_by_form[form] = role
+            else                                # Subsequent readings
+              #debug "Looking for role #{form.inspect} in forms #{@roles_by_form.inspect}"
+              role = @roles_by_form[form]
+              raise "Role #{form.inspect} not found in prior readings" if !role
+              player = role.concept
             end
+            roles << role
+
+            # Create the RoleRefs for the RoleSequence
+
+            role_ref = @constellation.RoleRef(role_sequence, index, :role => roles[index])
+            leading_adjective = role_phrase[:leading_adjective]
+            role_ref.leading_adjective = leading_adjective if leading_adjective
+            trailing_adjective = role_phrase[:trailing_adjective]
+            role_ref.trailing_adjective = trailing_adjective if trailing_adjective
           end
 
           # Create any embedded constraints:
@@ -402,21 +369,16 @@ module ActiveFacts
           type, qualifiers, phrases = *clause
 
           debug "Clause: #{clause.inspect}"
-          role_phrases = phrases.map do |phrase|
-            concept_by_name(phrase[:player]) ? phrase : nil
+          roles = phrases.map do |phrase|
+            Hash === phrase ? phrase[:role] : nil
           end.compact
-          debug "Role phrases(#{role_phrases.size}): #{role_phrases.inspect}"
-
-          player_forms = role_phrases.map do |role_phrase|
-            [role_phrase[:leading_adjective], role_phrase[:player], role_phrase[:trailing_adjective]].compact
-          end
 
           # Look for an existing clause group involving these players, or make one:
-          clause_group = clause_group_by_role_players[player_forms.sort]
+          clause_group = clause_group_by_role_players[key = roles.sort]
           if clause_group     # Another clause for an existing clause group
             clause_group << clause
           else                # A new clause group
-            clause_groups << clause_group_by_role_players[player_forms.sort] = [clause]
+            clause_groups << (clause_group_by_role_players[key] = [clause])
           end
           clause_groups
         end
@@ -446,7 +408,7 @@ module ActiveFacts
                   :new,
                   :vocabulary => @vocabulary,
                   :role_sequence => role_sequence,
-                  :is_mandatory => quantifier[0] && quantifier[0] > 0,
+                  :is_mandatory => quantifier[0] && quantifier[0] > 0,  # REVISIT: Check "maybe" qualifier?
                   :max_frequency => quantifier[1],
                   :min_frequency => quantifier[0]
                 )
@@ -457,62 +419,6 @@ module ActiveFacts
         end
         @embedded_presence_constraints ||= []
         @embedded_presence_constraints += embedded_presence_constraints
-      end
-
-      def find_pc_over_roles(roles)
-        return nil if roles.size == 0 # Safeguard; this would create a Role with a nil role_id
-        @constellation.Role(roles[0]).all_role_ref.each do |role_ref|
-          next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
-          pc = role_ref.role_sequence.all_presence_constraint[0]
-          #puts "Existing PresenceConstraint matches those roles!" if pc
-          return pc if pc
-        end
-        nil
-      end
-
-      def add_reading(fact_type, role_sequence, phrases)
-        ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
-        reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
-        role_num = -1
-        reading.reading_text = phrases.map {|phrase|
-            player_name = phrase[:player]
-            concept_by_name(player_name) ? "{#{role_num += 1}}" : player_name
-          }*" "
-        raise "Wrong number of players (#{role_num+1}) found in reading #{reading.reading_text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
-        debug "Added reading #{reading.reading_text}"
-      end
-
-=begin
-      def is_supertype(sup, sub)
-        # puts "Deciding whether #{sup.name} < #{sub.name}"
-        return true if sup == sub
-        sup.all_type_inheritance_by_supertype.each {|ti|
-            return true if is_supertype(ti.subtype, sub)
-          }
-        false
-      end
-=end
-
-      # Return an array of this entity type and all its supertypes, transitively:
-      def supertypes(o)
-        ([o] + o.all_type_inheritance_by_subtype.map{|ti| supertypes(ti.supertype)}.flatten).uniq
-      end
-
-      def concept_by_name(name)
-        if (d = @role_name_definitions[name])
-          name = d[:player]
-        end
-        player = @constellation.Concept[[name, @vocabulary.identifying_role_values]]
-
-        # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
-        if !player && %w{Date DateAndTime}.include?(name)
-          player = @constellation.ValueType(name, @vocabulary.identifying_role_values)
-        end
-
-        if (!player && @allowed_forward[name])
-          player = @constellation.EntityType(name, @vocabulary)
-        end
-        player
       end
 
       def process_qualifiers(role_sequence, qualifiers)
@@ -569,9 +475,71 @@ module ActiveFacts
         puts "REVISIT: Qualifiers #{qualifiers.inspect} over #{role_sequence.describe}"
       end
 
+      def find_pc_over_roles(roles)
+        return nil if roles.size == 0 # Safeguard; this would create a Role with a nil role_id
+        @constellation.Role(roles[0]).all_role_ref.each do |role_ref|
+          next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
+          pc = role_ref.role_sequence.all_presence_constraint[0]
+          #puts "Existing PresenceConstraint matches those roles!" if pc
+          return pc if pc
+        end
+        nil
+      end
+
+      def add_reading(fact_type, role_sequence, phrases)
+        ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
+        reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
+        role_num = -1
+        reading.reading_text = phrases.map {|phrase|
+            Hash === phrase ? "{#{role_num += 1}}" : phrase
+          }*" "
+        raise "Wrong number of players (#{role_num+1}) found in reading #{reading.reading_text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
+        debug "Added reading #{reading.reading_text}"
+      end
+
+=begin
+      def is_supertype(sup, sub)
+        # puts "Deciding whether #{sup.name} < #{sub.name}"
+        return true if sup == sub
+        sup.all_type_inheritance_by_supertype.each {|ti|
+            return true if is_supertype(ti.subtype, sub)
+          }
+        false
+      end
+=end
+
+      # Return an array of this entity type and all its supertypes, transitively:
+      def supertypes(o)
+        ([o] + o.all_type_inheritance_by_subtype.map{|ti| supertypes(ti.supertype)}.flatten).uniq
+      end
+
+      def concept_by_name(name)
+        player = @constellation.Concept[[name, @vocabulary.identifying_role_values]]
+
+        # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
+        if !player && %w{Date DateAndTime}.include?(name)
+          player = @constellation.ValueType(name, @vocabulary.identifying_role_values)
+        end
+
+        if (!player && @allowed_forward[name])
+          player = @constellation.EntityType(name, @vocabulary)
+        end
+        player
+      end
+
       class SymbolTable
         # A Form here is a form of reference to a concept, being a name and optional adjectives, possibly designated by a role name:
         Form = Struct.new("Form", :concept, :name, :leading_adjective, :trailing_adjective, :role_name)
+        class Form
+          def inspect
+            "Form(#{concept.class.basename} #{concept.name}, #{[leading_adjective, name, trailing_adjective].compact*"-"}#{role_name ? " (as #{role_name})" : ""})"
+          end
+
+          # Any ordering works to allow a hash to be keyed by a set (unordered array) of Forms:
+          def <=>(other)
+            object_id <=> other.object_id
+          end
+        end
 
         def initialize(constellation, vocabulary)
           @constellation = constellation
@@ -585,8 +553,8 @@ module ActiveFacts
         # In either case a word is expected to be a defined concept or role name.
         # If a role_name is provided here, that's a *definition* and will only be accepted if legal
         # If allowed_forward is true, words is a single word and is not defined, create a forward Entity
-        # If speculative_adjectives is true, the adjectives may not apply. If they do apply, use them.
-        def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, speculative_adjectives = false)
+        # If leading_speculative or trailing_speculative is true, the adjectives may not apply. If they do apply, use them.
+        def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, leading_speculative = false, trailing_speculative = false)
           words = Array(words)
           if (words.size > 2 or words.size == 2 && (leading_adjective or trailing_adjective or allowed_forward))
             raise "role has too many adjectives '#{[leading_adjective, words, trailing_adjective].flatten.compact*" "}'"
@@ -596,40 +564,59 @@ module ActiveFacts
           form = @role_names[words[0]]
           if form && words.size == 1   # If ok, this is it.
             raise "May not use existing role name '#{words[0]}' to define a new role name" if role_name
-            raise "May not use existing role name '#{words[0]}' with adjectives" if leading_adjective || trailing_adjective
+            if (leading_adjective && !leading_speculative) || (trailing_adjective && !trailing_speculative)
+              raise "May not use existing role name '#{words[0]}' with adjectives"
+            end
             return form.concept, form
           end
 
           # Look for an existing definition
           # If we have more than one word that might be the concept name, find which it is:
           words.each do |w|
-              # Check existing defined forms for this name:
+              # Find the existing defined form that matches this one:
               forms = @forms_by_concept[w]
+              best_match = nil
+              matched_adjectives = 0
               forms.each do |form|
-                # Passed-in adjectives must match unless speculative.
                 # Adjectives defined on the form must be matched.
-                if form.leading_adjective == leading_adjective || (speculative_adjectives and form.leading_adjective == nil) and
-                    form.trailing_adjective == trailing_adjective || (speculative_adjectives and form.trailing_adjective == nil)
-                  # We've found an existing definition
-                  #puts "Matched #{form.leading_adjective.inspect}-#{w}-#{form.trailing_adjective} with #{leading_adjective.inspect}-#{w}-#{trailing_adjective}"
-                  leading_adjective.replace("") if speculative_adjectives and form.leading_adjective
-                  trailing_adjective.replace("") if speculative_adjectives and form.trailing_adjective
+                next if (!leading_speculative || form.leading_adjective) and form.leading_adjective != leading_adjective
+                next if (!trailing_speculative || form.trailing_adjective) and form.trailing_adjective != trailing_adjective
 
-                  # Add a role name definition for an existing form, if necessary and allowed:
-                  if role_name && form.role_name != role_name
-                    raise "may not add role name to a simple concept without adjectives" unless form.leading_adjective || form.trailing_adjective
-                    raise "may not redefine role-name from #{form.role_name} to #{role_name}" if form.role_name
-                    raise "may not redefine existing concept '#{role_name}' as a role name" if concept(role_name)
-                    @role_names[role_name] = form
-                    form.role_name = role_name
+                if leading_speculative || trailing_speculative
+                  quality = (leading_speculative && leading_adjective ? 1 : 0) +
+                            (trailing_speculative && trailing_adjective ? 1 : 0)
+                  if (quality > matched_adjectives || !best_match)
+                    best_match = form       # A better match than we had before
+                    matched_adjectives = quality
                   end
-
-                  # REVISIT: We have no way here of indicating whether speculative adjectives were used; perhaps we need to adj.replace('')?
-                  return form.concept, form
+                else
+                  best_match = form
+                  break
                 end
               end
 
-              # Look up an existing concept of this name:
+              if best_match
+                # We've found the best existing definition
+
+                # Indicate which speculative adjectives were used so the clauses can be deleted:
+                leading_adjective.replace("") if form.leading_adjective and leading_adjective and leading_speculative
+                trailing_adjective.replace("") if form.trailing_adjective and trailing_adjective and trailing_speculative
+
+                #puts "Matched #{form.leading_adjective.inspect}-#{w}-#{form.trailing_adjective} with #{leading_adjective.inspect}-#{w}-#{trailing_adjective}"
+
+                # Add a role name definition for an existing form, if necessary and allowed:
+                if role_name && form.role_name != role_name
+                  raise "may not add role name to a simple concept without adjectives" unless form.leading_adjective || form.trailing_adjective
+                  raise "may not redefine role-name from #{form.role_name} to #{role_name}" if form.role_name
+                  raise "may not redefine existing concept '#{role_name}' as a role name" if concept(role_name)
+                  @role_names[role_name] = form
+                  form.role_name = role_name
+                end
+
+                return form.concept, form
+              end
+
+              # No existing defined form. Look up an existing concept of this name:
               player = concept(w, allowed_forward)
               next unless player
 
@@ -646,8 +633,8 @@ module ActiveFacts
               form = Form.new(
                   player,
                   w,
-                  leading_adjective || leading_word,
-                  trailing_adjective || trailing_word,
+                  (!leading_speculative && leading_adjective) || leading_word,
+                  (!trailing_speculative && trailing_adjective) || trailing_word,
                   role_name
                 )
               @forms_by_concept[form.name] << form
@@ -674,6 +661,69 @@ module ActiveFacts
           end
 
           player
+        end
+
+        def bind_roles(clauses, identification = nil)
+          debug "DEFINITION"
+          clauses.each do |clause|
+            type, qualifiers, phrases = *clause
+            debug "CLAUSE"
+            phrase_numbers_used_speculatively = []
+            phrases.each_with_index do |phrase, index|
+              la = phrase[:leading_adjective]
+              player_name = phrase[:word]
+              ta = phrase[:trailing_adjective]
+              role_name = phrase[:role_name]
+
+              # We use the preceeding and following phrases speculatively if they're simple words:
+              preceeding_phrase = nil
+              following_phrase = nil
+              if !la && (preceeding_phrase = phrases[index-1])
+                preceeding_phrase = nil unless String === preceeding_phrase || preceeding_phrase.keys == [:word]
+                la = preceeding_phrase[:word] if Hash === preceeding_phrase
+              end
+              if !ta && (following_phrase = phrases[index+1])
+                following_phrase = nil unless following_phrase.keys == [:word]
+                ta = following_phrase[:word] if following_phrase
+              end
+
+              # If the identification includes this player name as a single word, it's allowed to be forward referenced:
+              allowed_forward = identification && identification[:roles].detect do |role_words|
+                  role_words.size == 1 && role_words[0] == player_name
+                end
+
+              debug "BIND: #{[player_name, la, ta, role_name, allowed_forward, !!preceeding_phrase, !!following_phrase].inspect}"
+              player, binding = bind(player_name, la, ta, role_name, allowed_forward, !!preceeding_phrase, !!following_phrase)
+
+              # Arrange to delete the speculative adjectives that were used:
+              if preceeding_phrase && preceeding_phrase[:word] == ""
+                debug "CONSUMED speculative leading_adjective"
+                # The numbers are adjusted to allow for prior deletions.
+                phrase_numbers_used_speculatively << index-1-phrase_numbers_used_speculatively.size
+              end
+              if following_phrase && following_phrase[:word] == ""
+                debug "CONSUMED speculative trailing_adjective"
+                phrase_numbers_used_speculatively << index+1-phrase_numbers_used_speculatively.size
+              end
+
+              if player
+                # Replace the words used to identify the role by a reference to the role itself,
+                # leaving :quantifier, :function, :restriction and :literal intact
+                phrase[:role] = binding
+                binding
+              else
+                raise "Internal error; role #{phrase.inspect} not matched" unless phrase.keys == [:word]
+                # Just a linking word
+                phrases[index] = phrase[:word]
+              end
+              debug "PHRASE: #{phrase.inspect}" + " -> " + (player ? player.name+", "+binding.inspect : phrase[:word].inspect)
+
+            end
+            phrase_numbers_used_speculatively.each do |index|
+              phrases.delete_at(index)
+            end
+            debug "READING: #{phrases.inspect}"
+          end
         end
       end # of SymbolTable class
 

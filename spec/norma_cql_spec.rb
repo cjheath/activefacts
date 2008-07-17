@@ -30,7 +30,7 @@ describe "Norma Loader" do
 
     actual_file = norma.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.cql')
 
-    it "should load and dump valid CQL for #{norma}" do
+    it "should load ORM and dump valid CQL for #{norma}" do
       vocabulary = ActiveFacts::Input::ORM.readfile(norma)
 
       cql = cql(vocabulary)

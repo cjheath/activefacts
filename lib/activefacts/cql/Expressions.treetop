@@ -15,8 +15,8 @@ module ActiveFacts
 
       rule comparator
         '<=' / '<' / '=' / '>=' / '>'
-	# REVISIT: These words occur in readings, find alternates:
-	# / matches / includes
+        # REVISIT: These words occur in readings, find alternates:
+        # / matches / includes
       end
 
       rule expression
@@ -87,7 +87,7 @@ module ActiveFacts
           def value
             # Variable names may consist of one or two words (optional adjective and a noun):
             r = [ :variable, id0.text_value ]
-	    r += [ o0.id1.text_value ] unless o0.empty?
+            r += [ o0.id1.text_value ] unless o0.empty?
             r
           end
         }

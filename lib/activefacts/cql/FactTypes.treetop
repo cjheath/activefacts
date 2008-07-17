@@ -102,7 +102,7 @@ module ActiveFacts
       end
 
       rule reading_end
-	(s ( ':' / '[' / ',' / ';' / or / and / returning ) )
+        (s ( ':' / '[' / ',' / ';' / or / and / returning ) )
       end
 
       # This is the rule that causes most back-tracking. I think you can see why.
@@ -120,12 +120,12 @@ module ActiveFacts
         {
           def value
             r = {}
-            quantifier = !q.empty? && q.value	# "some" quantifier has nil value
+            quantifier = !q.empty? && q.value   # "some" quantifier has nil value
 
             r[:quantifier] = quantifier if quantifier
             r[:leading_adjective] = adj0.a.text_value unless adj0.empty?
 
-            r[:player] = player.text_value
+            r[:word] = player.text_value
 
             r[:trailing_adjective] = adj1.a.a.text_value unless adj1.empty?
             r[:function] = func.value if !func.empty?
@@ -146,7 +146,7 @@ module ActiveFacts
       end
 
       rule role_word
-	!non_role_word id
+        !non_role_word id
       end
 
       rule non_role_word
