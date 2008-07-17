@@ -132,24 +132,20 @@ module ActiveFacts
             end
           end
 
+          # Use a two-pass algorithm for entity fact types...
           # The first step is to find all role references and definitions in the clauses
           # Each reading in the array returned here is also an array of items.
           # Each item is either a string (linking word) or a Form (see below).
           # REVISIT: I still need to represent the quantifier, function, restriction and literal that might accompany each phrase.
           @symbols = SymbolTable.new(@constellation, @vocabulary)
           @symbols.bind_roles(clauses, identification)
-#          puts "="*30+" Bound Clauses:"; pp clauses
 
-          # Use a two-pass algorithm for entity fact types...
-          # First sort all readings according to what fact they belong to,
-          # then process each fact type using code for normal fact type processing.
-          # That way if we find only one fact type here with none of the players being the
+          # Next arrange the readings according to what fact they belong to,
+          # then process each fact type using normal fact type processing.
+          # That way if we find a fact type here having none of the players being the
           # entity type, we know it's an objectified fact type. The CQL syntax might make
           # us come here with such a case when the fact type is a subtype of some entity type,
           # such as occurs in the Metamodel with TypeInheritance.
-
-          # Process the entity type clauses (fact type readings)
-          identifying_roles = []  # In whatever order they're constructed
 
           # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
           @allowed_forward = identification ? identification[:roles].inject({}){|h, i| h[i[0]] = true; h} : {}
@@ -175,9 +171,6 @@ module ActiveFacts
               non_player_roles = fact_type.all_role-[player_role]
 
               raise "#{name} cannot be identified by a role in a non-binary fact type" if non_player_roles.size > 1
-              # N.B. Append player_role here for a unary fact type, a special case
-              identifying_role = (non_player_roles[0] || player_role)
-              identifying_roles << identifying_role
             elsif identification
               # This situation occurs when an objectified fact type has an entity identifier
               raise "Entity type #{name} may only objectify a single fact type" if entity_type.fact_type
@@ -196,6 +189,15 @@ module ActiveFacts
             debug :identification, "Handling identification" do
               if id_role_names = identification[:roles]  # A list of identifying roles
                 debug "Identifying roles: #{id_role_names.inspect}"
+
+                # Pick out the identifying_roles in the order they were declared,
+                # not the order the fact tyoes were defined:
+                identifying_roles = id_role_names.map do |names|
+                  player, binding = @symbols.bind(names)
+                  role = @roles_by_form[binding] 
+                  raise "identifying role #{names*"-"} not found in fact types for #{name}" unless role
+                  role
+                end
 
                 # Find a uniqueness constraint as PI, or make one
                 pc = find_pc_over_roles(identifying_roles)
@@ -663,7 +665,7 @@ module ActiveFacts
           player
         end
 
-        def bind_roles(clauses, identification = nil)
+        def bind_roles(clauses, identification = nil, loose_match_except = nil)
           debug "DEFINITION"
           clauses.each do |clause|
             type, qualifiers, phrases = *clause

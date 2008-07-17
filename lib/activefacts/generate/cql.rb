@@ -67,15 +67,19 @@ module ActiveFacts
               }
             role_words = []
             # REVISIT: Consider whether NOT to use the adjective if it's a prefix of the role_name
-            role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
 
             role_name = role.role_name
             role_name = nil if role_name == ""
             # debug "concept.name=#{preferred_role_ref.role.concept.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
 
-            role_words << (role_name || preferred_role_ref.role.concept.name)
-            role_words << preferred_role_ref.trailing_adjective if preferred_role_ref.trailing_adjective != ""
-            role_words.compact*"-"
+            if (role_name)
+              role_name
+            else
+              role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
+              role_words << preferred_role_ref.role.concept.name
+              role_words << preferred_role_ref.trailing_adjective if preferred_role_ref.trailing_adjective != ""
+              role_words.compact*"-"
+            end
           }
 
         # REVISIT: Consider emitting extra fact types here, instead of in entity_type_dump?

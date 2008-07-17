@@ -21,17 +21,17 @@ describe "Norma Loader" do
     output.readlines
   end
 
-  #Dir["examples/norma/Bl*.orm"].each do |norma|
-  #Dir["examples/norma/Meta*.orm"].each do |norma|
-  #Dir["examples/norma/[AC]*.orm"].each do |norma|
-  Dir["examples/norma/*.orm"].each do |norma|
-    expected_file = norma.sub(%r{/norma/(.*).orm\Z}, '/CQL/\1.cql')
+  #Dir["examples/norma/Bl*.orm"].each do |orm_file|
+  #Dir["examples/norma/Meta*.orm"].each do |orm_file|
+  #Dir["examples/norma/[AC]*.orm"].each do |orm_file|
+  Dir["examples/norma/*.orm"].each do |orm_file|
+    expected_file = orm_file.sub(%r{/norma/(.*).orm\Z}, '/CQL/\1.cql')
     next unless File.exists? expected_file
 
-    actual_file = norma.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.cql')
+    actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.cql')
 
-    it "should load ORM and dump valid CQL for #{norma}" do
-      vocabulary = ActiveFacts::Input::ORM.readfile(norma)
+    it "should load ORM and dump valid CQL for #{orm_file}" do
+      vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
 
       cql = cql(vocabulary)
       # Save the actual file:

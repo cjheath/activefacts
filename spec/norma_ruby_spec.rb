@@ -28,16 +28,16 @@ describe "NORMA Loader with Ruby output" do
     output.read
   end
 
-  #Dir["examples/norma/Bl*.orm"].each do |norma|
-  #Dir["examples/norma/Meta*.orm"].each do |norma|
-  #Dir["examples/norma/[ACG]*.orm"].each do |norma|
-  Dir["examples/norma/*.orm"].each do |norma|
-    expected_file = norma.sub(%r{examples/norma/(.*).orm\Z}, 'examples/ruby/\1.rb')
-    actual_file = norma.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.rb')
+  #Dir["examples/norma/Bl*.orm"].each do |orm_file|
+  #Dir["examples/norma/Meta*.orm"].each do |orm_file|
+  #Dir["examples/norma/[ACG]*.orm"].each do |orm_file|
+  Dir["examples/norma/*.orm"].each do |orm_file|
+    expected_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'examples/ruby/\1.rb')
+    actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.rb')
     next unless File.exists? expected_file
 
-    it "should load ORM and dump valid Ruby for #{norma}" do
-      vocabulary = ActiveFacts::Input::ORM.readfile(norma)
+    it "should load ORM and dump valid Ruby for #{orm_file}" do
+      vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
 
       # Build and save the actual file:
       ruby_text = ruby(vocabulary)
