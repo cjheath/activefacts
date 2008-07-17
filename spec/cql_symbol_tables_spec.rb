@@ -141,9 +141,10 @@ describe "CQL Symbol table" do
     player.should == concept
   end
 
-  it "should disallow adding a role name to simple player without adjectives" do
-    concept, = @symbols.bind("Name", nil, nil, nil, true)
-    lambda{player, bound = @symbols.bind("Name", nil, nil, "SomeAdj")}.should raise_error
+  it "should create new binding with a role name rather than binding to existing simple player without adjectives" do
+    concept, bare = @symbols.bind("Name", nil, nil, nil, true)
+    player, bound = @symbols.bind("Name", nil, nil, "SomeAdj")
+    bare.should_not == bound
   end
 
   it "should disallow adding a role name which is the name of an existing concept" do
@@ -152,8 +153,9 @@ describe "CQL Symbol table" do
   end
 
   it "should disallow adding a role name to a role player that already has one" do
-    concept, = @symbols.bind("Name", "Given", nil, "GivenName", true)
-    lambda{player, bound = @symbols.bind("Name", "Given", nil, "FirstName")}.should raise_error
+    concept, first = @symbols.bind("Name", "Given", nil, "GivenName", true)
+    player, bound = @symbols.bind("Name", "Given", nil, "FirstName")
+    first.should_not == bound
   end
 
   it "should bind to an existing player without adjectives" do

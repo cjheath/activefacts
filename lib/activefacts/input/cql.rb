@@ -589,7 +589,7 @@ module ActiveFacts
                 loose_ok = loose_binding_except and !loose_binding_except[binding.concept.name]
 
                 # Don't allow binding a new role name to an existing one:
-                next if role_name and binding.role_name and role_name != binding.role_name
+                next if role_name and role_name != binding.role_name
 
                 quality = 0
                 if binding.leading_adjective != leading_adjective
@@ -636,6 +636,8 @@ module ActiveFacts
                 raise "ambiguous concept reference #{words*" '"}'" if concept(trailing_word)
               end
               leading_word = words[0] if w != words[0]
+
+              raise "may not redefine existing concept '#{role_name}' as a role name" if role_name and concept(role_name)
 
               binding = Binding.new(
                   player,
