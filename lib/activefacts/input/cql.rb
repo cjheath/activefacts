@@ -134,11 +134,11 @@ module ActiveFacts
 
           # Use a two-pass algorithm for entity fact types...
           # The first step is to find all role references and definitions in the clauses
-          # Each reading in the array returned here is also an array of items.
-          # Each item is either a string (linking word) or a Form (see below).
-          # REVISIT: I still need to represent the quantifier, function, restriction and literal that might accompany each phrase.
+          # After bind_roles, each item in the phrase array of each clause is either:
+          # * a string, which is a linking word, or
+          # * the phrase hash augmented with a :binding=>Binding
           @symbols = SymbolTable.new(@constellation, @vocabulary)
-          @symbols.bind_roles(clauses, identification)
+          @symbols.bind_roles(clauses, identification ? identification[:roles] : nil)
 
           # Next arrange the readings according to what fact they belong to,
           # then process each fact type using normal fact type processing.
@@ -149,7 +149,7 @@ module ActiveFacts
 
           # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
           @allowed_forward = identification ? identification[:roles].inject({}){|h, i| h[i[0]] = true; h} : {}
-          @roles_by_form = {}  # Build a hash of allowed forms on first reading (check against it on subsequent ones)
+          @roles_by_binding = {}  # Build a hash of allowed bindings on first reading (check against it on subsequent ones)
 
           clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
             fact_type = nil
@@ -194,7 +194,7 @@ module ActiveFacts
                 # not the order the fact tyoes were defined:
                 identifying_roles = id_role_names.map do |names|
                   player, binding = @symbols.bind(names)
-                  role = @roles_by_form[binding] 
+                  role = @roles_by_binding[binding] 
                   raise "identifying role #{names*"-"} not found in fact types for #{name}" unless role
                   role
                 end
@@ -244,7 +244,7 @@ module ActiveFacts
           fact_type = nil
 
           @embedded_presence_constraints = []
-          @roles_by_form = {}   # Build a hash of allowed forms on first reading (check against it on subsequent ones)
+          @roles_by_binding = {}   # Build a hash of allowed bindings on first reading (check against it on subsequent ones)
           @allowed_forward = {} # No roles may be forward-referenced
 
           #
@@ -252,7 +252,7 @@ module ActiveFacts
           # This also:
           # * deletes any adjectives that were used but not hyphenated
           # * changes linking word phrases into simple Strings
-          # * adds a :role key to each bound role
+          # * adds a :binding key to each bound role
           #
           @symbols = SymbolTable.new(@constellation, @vocabulary)
           @symbols.bind_roles(readings)
@@ -281,7 +281,7 @@ module ActiveFacts
       def process_fact_clause(fact_type, qualifiers, phrases)
         debug :reading, "Processing reading #{phrases.inspect}" do
           role_phrases = phrases.select do |phrase|
-            Hash === phrase && phrase[:role]
+            Hash === phrase && phrase[:binding]
           end
 
           # All readings for a fact type must have the same number of roles.
@@ -294,7 +294,7 @@ module ActiveFacts
           end
 
           # REVISIT: If the first reading is a re-iteration of an existing fact type, find and use the existing fact type
-          # This will require loading the @roles_by_form using a SymbolTable
+          # This will require loading the @roles_by_binding using a SymbolTable
 
           fact_type ||= @constellation.FactType(:new)
 
@@ -304,19 +304,19 @@ module ActiveFacts
           role_sequence = @constellation.RoleSequence(:new)   # RoleSequence for RoleRefs of this reading
           roles = []
           role_phrases.each_with_index do |role_phrase, index|
-            form = role_phrase[:role]
+            binding = role_phrase[:binding]
             role_name = role_phrase[:role_name]
-            player = form.concept
+            player = binding.concept
             if (fact_type.all_reading.size == 0)           # First reading
               # Assert this role of the fact type:
               role = @constellation.Role(:new, :fact_type => fact_type, :concept => player)
               role.role_name = role_name if role_name
-              debug "Concept #{player.name} found, created role #{role.describe} by form #{form.inspect}"
-              @roles_by_form[form] = role
+              debug "Concept #{player.name} found, created role #{role.describe} by binding #{binding.inspect}"
+              @roles_by_binding[binding] = role
             else                                # Subsequent readings
-              #debug "Looking for role #{form.inspect} in forms #{@roles_by_form.inspect}"
-              role = @roles_by_form[form]
-              raise "Role #{form.inspect} not found in prior readings" if !role
+              #debug "Looking for role #{binding.inspect} in bindings #{@roles_by_binding.inspect}"
+              role = @roles_by_binding[binding]
+              raise "Role #{binding.inspect} not found in prior readings" if !role
               player = role.concept
             end
             roles << role
@@ -372,7 +372,7 @@ module ActiveFacts
 
           debug "Clause: #{clause.inspect}"
           roles = phrases.map do |phrase|
-            Hash === phrase ? phrase[:role] : nil
+            Hash === phrase ? phrase[:binding] : nil
           end.compact
 
           # Look for an existing clause group involving these players, or make one:
@@ -530,14 +530,14 @@ module ActiveFacts
       end
 
       class SymbolTable
-        # A Form here is a form of reference to a concept, being a name and optional adjectives, possibly designated by a role name:
-        Form = Struct.new("Form", :concept, :name, :leading_adjective, :trailing_adjective, :role_name)
-        class Form
+        # A Binding here is a form of reference to a concept, being a name and optional adjectives, possibly designated by a role name:
+        Binding = Struct.new("Binding", :concept, :name, :leading_adjective, :trailing_adjective, :role_name)
+        class Binding
           def inspect
-            "Form(#{concept.class.basename} #{concept.name}, #{[leading_adjective, name, trailing_adjective].compact*"-"}#{role_name ? " (as #{role_name})" : ""})"
+            "Binding(#{concept.class.basename} #{concept.name}, #{[leading_adjective, name, trailing_adjective].compact*"-"}#{role_name ? " (as #{role_name})" : ""})"
           end
 
-          # Any ordering works to allow a hash to be keyed by a set (unordered array) of Forms:
+          # Any ordering works to allow a hash to be keyed by a set (unordered array) of Bindings:
           def <=>(other)
             object_id <=> other.object_id
           end
@@ -546,54 +546,65 @@ module ActiveFacts
         def initialize(constellation, vocabulary)
           @constellation = constellation
           @vocabulary = vocabulary
-          @forms_by_concept = Hash.new {|h, k| h[k] = [] }  # Indexed by Form#name, maybe multiple entries for each name
+          @bindings_by_concept = Hash.new {|h, k| h[k] = [] }  # Indexed by Binding#name, maybe multiple entries for each name
           @role_names = {}
         end
 
+        #
         # This method is the guts of role matching.
         # "words" may be a single word (and then the adjectives may also be used) or two words.
         # In either case a word is expected to be a defined concept or role name.
         # If a role_name is provided here, that's a *definition* and will only be accepted if legal
         # If allowed_forward is true, words is a single word and is not defined, create a forward Entity
         # If leading_speculative or trailing_speculative is true, the adjectives may not apply. If they do apply, use them.
-        def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, leading_speculative = false, trailing_speculative = false)
+        # If loose_binding_except is true, it's a hash containing names that may *not* be loose-bound... else none may.
+        #
+        # Loose binding is when a word without an adjective matches a role with, or vice verse.
+        #
+        def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, leading_speculative = false, trailing_speculative = false, loose_binding_except = nil)
           words = Array(words)
           if (words.size > 2 or words.size == 2 && (leading_adjective or trailing_adjective or allowed_forward))
             raise "role has too many adjectives '#{[leading_adjective, words, trailing_adjective].flatten.compact*" "}'"
           end
 
           # Check for use of a role name, valid if they haven't used any adjectives or tried to define a role_name:
-          form = @role_names[words[0]]
-          if form && words.size == 1   # If ok, this is it.
+          binding = @role_names[words[0]]
+          if binding && words.size == 1   # If ok, this is it.
             raise "May not use existing role name '#{words[0]}' to define a new role name" if role_name
             if (leading_adjective && !leading_speculative) || (trailing_adjective && !trailing_speculative)
               raise "May not use existing role name '#{words[0]}' with adjectives"
             end
-            return form.concept, form
+            return binding.concept, binding
           end
 
           # Look for an existing definition
           # If we have more than one word that might be the concept name, find which it is:
           words.each do |w|
-              # Find the existing defined form that matches this one:
-              forms = @forms_by_concept[w]
+              # Find the existing defined binding that matches this one:
+              bindings = @bindings_by_concept[w]
               best_match = nil
               matched_adjectives = 0
-              forms.each do |form|
-                # Adjectives defined on the form must be matched.
-                next if (!leading_speculative || form.leading_adjective) and form.leading_adjective != leading_adjective
-                next if (!trailing_speculative || form.trailing_adjective) and form.trailing_adjective != trailing_adjective
+              bindings.each do |binding|
+                # Adjectives defined on the binding must be matched unless loose binding is allowed.
+                loose_ok = loose_binding_except and !loose_binding_except[binding.concept.name]
 
-                if leading_speculative || trailing_speculative
-                  quality = (leading_speculative && leading_adjective ? 1 : 0) +
-                            (trailing_speculative && trailing_adjective ? 1 : 0)
-                  if (quality > matched_adjectives || !best_match)
-                    best_match = form       # A better match than we had before
-                    matched_adjectives = quality
-                  end
-                else
-                  best_match = form
-                  break
+                quality = 0
+                if binding.leading_adjective != leading_adjective
+                  next if binding.leading_adjective && leading_adjective  # Both set, but different
+                  next if !loose_ok && (!leading_speculative || !leading_adjective)
+                  quality += 1
+                end
+
+                if binding.trailing_adjective != trailing_adjective
+                  next if binding.trailing_adjective && trailing_adjective  # Both set, but different
+                  next if !loose_ok && (!trailing_speculative || !trailing_adjective)
+                  quality += 1
+                end
+
+                if (quality > matched_adjectives || !best_match)
+                  best_match = binding       # A better match than we had before
+                  matched_adjectives = quality
+                  break unless loose_ok || leading_speculative || trailing_speculative
                 end
               end
 
@@ -601,28 +612,28 @@ module ActiveFacts
                 # We've found the best existing definition
 
                 # Indicate which speculative adjectives were used so the clauses can be deleted:
-                leading_adjective.replace("") if form.leading_adjective and leading_adjective and leading_speculative
-                trailing_adjective.replace("") if form.trailing_adjective and trailing_adjective and trailing_speculative
+                leading_adjective.replace("") if binding.leading_adjective and leading_adjective and leading_speculative
+                trailing_adjective.replace("") if binding.trailing_adjective and trailing_adjective and trailing_speculative
 
-                #puts "Matched #{form.leading_adjective.inspect}-#{w}-#{form.trailing_adjective} with #{leading_adjective.inspect}-#{w}-#{trailing_adjective}"
+                #puts "Matched #{binding.leading_adjective.inspect}-#{w}-#{binding.trailing_adjective} with #{leading_adjective.inspect}-#{w}-#{trailing_adjective}"
 
-                # Add a role name definition for an existing form, if necessary and allowed:
-                if role_name && form.role_name != role_name
-                  raise "may not add role name to a simple concept without adjectives" unless form.leading_adjective || form.trailing_adjective
-                  raise "may not redefine role-name from #{form.role_name} to #{role_name}" if form.role_name
+                # Add a role name definition for an existing binding, if necessary and allowed:
+                if role_name && binding.role_name != role_name
+                  raise "may not add role name to a simple concept without adjectives" unless binding.leading_adjective || binding.trailing_adjective
+                  raise "may not redefine role-name from #{binding.role_name} to #{role_name}" if binding.role_name
                   raise "may not redefine existing concept '#{role_name}' as a role name" if concept(role_name)
-                  @role_names[role_name] = form
-                  form.role_name = role_name
+                  @role_names[role_name] = binding
+                  binding.role_name = role_name
                 end
 
-                return form.concept, form
+                return binding.concept, binding
               end
 
-              # No existing defined form. Look up an existing concept of this name:
+              # No existing defined binding. Look up an existing concept of this name:
               player = concept(w, allowed_forward)
               next unless player
 
-              # Found a new form for this player, save it.
+              # Found a new binding for this player, save it.
 
               # Check that a trailing adjective isn't an existing role name or concept:
               trailing_word = words[1] if w == words[0]
@@ -632,16 +643,16 @@ module ActiveFacts
               end
               leading_word = words[0] if w != words[0]
 
-              form = Form.new(
+              binding = Binding.new(
                   player,
                   w,
                   (!leading_speculative && leading_adjective) || leading_word,
                   (!trailing_speculative && trailing_adjective) || trailing_word,
                   role_name
                 )
-              @forms_by_concept[form.name] << form
-              @role_names[form.role_name] = form if role_name
-              return form.concept, form
+              @bindings_by_concept[binding.name] << binding
+              @role_names[binding.role_name] = binding if role_name
+              return binding.concept, binding
             end
 
             # Not found.
@@ -665,12 +676,16 @@ module ActiveFacts
           player
         end
 
-        def bind_roles(clauses, identification = nil, loose_match_except = nil)
-          debug "DEFINITION"
+        def bind_roles(clauses, identification = [])
+          debug :bind, "Binding a definition"
+          # Loose binding is never allowed for single-word identifying roles:
+          identification ||= []
+          disallow_loose_binding = identification.select{|id| id.size == 1}.flatten.uniq.inject({}) { |h, v| h[v] = true; h }
           clauses.each do |clause|
             type, qualifiers, phrases = *clause
-            debug "CLAUSE"
+            debug :bind, "Binding a clause"
             phrase_numbers_used_speculatively = []
+            disallow_loose_binding_this_clause = disallow_loose_binding.clone
             phrases.each_with_index do |phrase, index|
               la = phrase[:leading_adjective]
               player_name = phrase[:word]
@@ -680,7 +695,7 @@ module ActiveFacts
               # We use the preceeding and following phrases speculatively if they're simple words:
               preceeding_phrase = nil
               following_phrase = nil
-              if !la && (preceeding_phrase = phrases[index-1])
+              if !la && index > 0 && (preceeding_phrase = phrases[index-1])
                 preceeding_phrase = nil unless String === preceeding_phrase || preceeding_phrase.keys == [:word]
                 la = preceeding_phrase[:word] if Hash === preceeding_phrase
               end
@@ -690,41 +705,49 @@ module ActiveFacts
               end
 
               # If the identification includes this player name as a single word, it's allowed to be forward referenced:
-              allowed_forward = identification && identification[:roles].detect do |role_words|
-                  role_words.size == 1 && role_words[0] == player_name
-                end
+              allowed_forward = identification.detect do |role_words|
+                role_words.size == 1 && role_words[0] == player_name
+              end
 
-              debug "BIND: #{[player_name, la, ta, role_name, allowed_forward, !!preceeding_phrase, !!following_phrase].inspect}"
-              player, binding = bind(player_name, la, ta, role_name, allowed_forward, !!preceeding_phrase, !!following_phrase)
+              debug :bind, "Binding a role: #{[player_name, la, ta, role_name, allowed_forward, !!preceeding_phrase, !!following_phrase].inspect}"
+              player, binding = bind(
+                  player_name,
+                  la, ta,
+                  role_name,
+                  allowed_forward,
+                  !!preceeding_phrase, !!following_phrase,
+                  clause == clauses[0] ? nil : disallow_loose_binding_this_clause  # Never allow loose binding on the first clause
+                )
+              disallow_loose_binding_this_clause[player.name] = true if player
 
               # Arrange to delete the speculative adjectives that were used:
               if preceeding_phrase && preceeding_phrase[:word] == ""
-                debug "CONSUMED speculative leading_adjective"
+                debug :bind, "binding consumed a speculative leading_adjective #{la}"
                 # The numbers are adjusted to allow for prior deletions.
                 phrase_numbers_used_speculatively << index-1-phrase_numbers_used_speculatively.size
               end
               if following_phrase && following_phrase[:word] == ""
-                debug "CONSUMED speculative trailing_adjective"
+                debug :bind, "binding consumed a speculative trailing_adjective #{ta}"
                 phrase_numbers_used_speculatively << index+1-phrase_numbers_used_speculatively.size
               end
 
               if player
                 # Replace the words used to identify the role by a reference to the role itself,
                 # leaving :quantifier, :function, :restriction and :literal intact
-                phrase[:role] = binding
+                phrase[:binding] = binding
                 binding
               else
                 raise "Internal error; role #{phrase.inspect} not matched" unless phrase.keys == [:word]
                 # Just a linking word
                 phrases[index] = phrase[:word]
               end
-              debug "PHRASE: #{phrase.inspect}" + " -> " + (player ? player.name+", "+binding.inspect : phrase[:word].inspect)
+              debug :bind, "Bound phrase: #{phrase.inspect}" + " -> " + (player ? player.name+", "+binding.inspect : phrase[:word].inspect)
 
             end
             phrase_numbers_used_speculatively.each do |index|
               phrases.delete_at(index)
             end
-            debug "READING: #{phrases.inspect}"
+            debug :bind, "Bound clause: #{phrases.inspect}"
           end
         end
       end # of SymbolTable class
