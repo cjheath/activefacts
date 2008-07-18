@@ -10,15 +10,15 @@ Tester_Name is defined as VariableLengthText();
 /*
  * Entity Types
  */
-Bug is identified by Bug_Nr:
+Bug is identified by Bug_Nr where
 	Bug has exactly one Bug_Nr,
 	Bug_Nr is of at most one Bug;
 
-TestCase is identified by TestCase_Id:
+TestCase is identified by TestCase_Id where
 	TestCase has exactly one TestCase_Id,
 	TestCase_Id is of at most one TestCase;
 
-Tester is identified by Tester_Name:
+Tester is identified by Tester_Name where
 	Tester has exactly one Tester_Name,
 	Tester_Name is of at most one Tester;
 BugReport is where

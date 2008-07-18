@@ -34,13 +34,13 @@ Year is defined as UnsignedInteger(32) restricted to {1900..3000};
 /*
  * Entity Types
  */
-Club is identified by ClubCode:
+Club is identified by ClubCode where
 	Club has exactly one ClubCode,
 	ClubCode is of at most one Club;
 ClubName is name of at most one Club,
 	Club is called exactly one ClubName;
 
-Event is identified by EventID:
+Event is identified by EventID where
 	Event has exactly one EventID,
 	EventID is of at most one Event;
 Club runs Event,
@@ -57,7 +57,7 @@ EventScoringMethod is where
 	ScoringMethod is used for Course of Event;
 EventControl has at most one PointValue;
 
-Map is identified by MapID:
+Map is identified by MapID where
 	Map has exactly one MapID,
 	MapID is of at most one Map;
 Club (as Owner) owns Map,
@@ -68,7 +68,7 @@ Map is map for Event,
 Map has exactly one MapName,
 	MapName is of at most one Map;
 
-Person is identified by PersonID:
+Person is identified by PersonID where
 	Person has exactly one PersonID,
 	PersonID is of at most one Person;
 Person is member of at most one Club;
@@ -79,14 +79,14 @@ Person has exactly one GivenName,
 	GivenName is name of Person;
 Person has at most one PostCode;
 Person was born in at most one birth-Year;
-Entry is identified by EntryID:
+Entry is identified by EntryID where
 	Entry has exactly one EntryID,
 	EntryID is of at most one Entry,
 	Person entered at most one Course of Event;
 Entry received at most one Score;
 Entry finished in at most one finish-Placing;
 
-Punch is identified by PunchID:
+Punch is identified by PunchID where
 	Punch has exactly one PunchID,
 	PunchID is of at most one Punch;
 PunchPlacement is where
@@ -94,7 +94,7 @@ PunchPlacement is where
 Visit is where
 	Punch was visited by Entry at Time;
 
-Series is identified by SeriesID:
+Series is identified by SeriesID where
 	Series has exactly one SeriesID,
 	SeriesID is of at most one Series;
 Event is in at most one Series;

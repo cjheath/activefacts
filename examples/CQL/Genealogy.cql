@@ -28,28 +28,28 @@ Year is defined as UnsignedInteger(32);
 /*
  * Entity Types
  */
-Event is identified by EventID:
+Event is identified by EventID where
 	Event has exactly one EventID,
 	EventID is of at most one Event;
 Event is certified by at most one Certificate;
 Event occurred at at most one EventLocation;
 Event was confirmed by at most one Official;
 
-EventDate is identified by min-Year and max-Year and Month and Day:
+EventDate is identified by min-Year and max-Year and Month and Day where
 	EventDate occurred in or after at most one min-Year,
 	EventDate occurred in or before at most one max-Year,
 	EventDate occurred in at most one Month,
 	EventDate occurred on at most one Day;
 Event occurred on at most one EventDate;
 
-EventType is identified by EventTypeID:
+EventType is identified by EventTypeID where
 	EventType has exactly one EventTypeID,
 	EventTypeID is of at most one EventType;
 Event is of at most one EventType;
 EventType is called exactly one EventTypeName,
 	EventTypeName is name of at most one EventType;
 
-Person is identified by PersonID:
+Person is identified by PersonID where
 	Person has exactly one PersonID,
 	PersonID is of at most one Person;
 Address is of Person,
@@ -66,13 +66,13 @@ given-Name is name of Person,
 preferred-Picture is of Person,
 	Person has at most one preferred-Picture;
 
-Role is identified by RoleID:
+Role is identified by RoleID where
 	Role has exactly one RoleID,
 	RoleID is of at most one Role;
 Role is called exactly one EventRoleName,
 	EventRoleName is name of exactly one Role;
 
-Source is identified by SourceID:
+Source is identified by SourceID where
 	Source has exactly one SourceID,
 	SourceID is of at most one Source;
 Source has exactly one SourceName,
@@ -82,7 +82,7 @@ Participation is where
 	Person was involved in Event according to Source in Role,
 	Source claims Person played Role in Event;
 
-User is identified by UserID:
+User is identified by UserID where
 	User has exactly one UserID,
 	UserID is of at most one User;
 Email is of User,

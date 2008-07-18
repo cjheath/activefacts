@@ -28,17 +28,17 @@ ValueRestrictionId is defined as AutoCounter();
 /*
  * Entity Types
  */
-Bound is identified by Value and Bound:
+Bound is identified by Value and Bound where
 	Bound has exactly one Value,
 	Value is of at least one Bound,
 	Bound is inclusive;
 
-Coefficient is identified by Numerator and Denominator:
+Coefficient is identified by Numerator and Denominator where
 	Coefficient has exactly one Numerator,
 	Coefficient has exactly one Denominator;
 Coefficient is precise;
 
-Constraint is identified by ConstraintId:
+Constraint is identified by ConstraintId where
 	Constraint has exactly one ConstraintId,
 	ConstraintId is of at most one Constraint;
 Constraint requires at most one Enforcement,
@@ -46,16 +46,16 @@ Constraint requires at most one Enforcement,
 Name is of Constraint,
 	Constraint is called at most one Name;
 
-Fact is identified by FactId:
+Fact is identified by FactId where
 	Fact has exactly one FactId,
 	FactId is of at most one Fact;
 
-FactType is identified by FactTypeId:
+FactType is identified by FactTypeId where
 	FactType has exactly one FactTypeId,
 	FactTypeId is of at most one FactType;
 Fact is of exactly one FactType;
 
-Instance is identified by InstanceId:
+Instance is identified by InstanceId where
 	Instance has exactly one InstanceId,
 	InstanceId is of at most one Instance;
 Instance has at most one Value;
@@ -66,7 +66,7 @@ PresenceConstraint has at most one min-Frequency;
 PresenceConstraint is mandatory;
 PresenceConstraint is preferred identifier;
 
-Reading is identified by FactType and Ordinal:
+Reading is identified by FactType and Ordinal where
 	FactType has at least one Reading,
 	Reading is for exactly one FactType,
 	Reading is in at most one Ordinal position,
@@ -76,14 +76,14 @@ Reading has exactly one ReadingText;
 RingConstraint is a kind of Constraint;
 RingConstraint is of exactly one RingType;
 
-RoleSequence is identified by RoleSequenceId:
+RoleSequence is identified by RoleSequenceId where
 	RoleSequence has exactly one RoleSequenceId,
 	RoleSequenceId is of at most one RoleSequence;
 PresenceConstraint covers exactly one RoleSequence;
 Reading is in exactly one RoleSequence,
 	RoleSequence is for Reading;
 
-RoleValue is identified by Instance and Fact:
+RoleValue is identified by Instance and Fact where
 	Instance plays RoleValue,
 	RoleValue is of exactly one Instance,
 	RoleValue fulfils exactly one Fact;
@@ -96,7 +96,7 @@ SubsetConstraint covers exactly one superset-RoleSequence;
 
 UniquenessConstraint is a kind of PresenceConstraint;
 
-Unit is identified by UnitId:
+Unit is identified by UnitId where
 	Unit has exactly one UnitId,
 	UnitId is of at most one Unit;
 Name is of Unit,
@@ -107,11 +107,11 @@ UnitBasis is where
 	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];
 UnitBasis has at most one Exponent;
 
-ValueRange is identified by minimum-Bound and maximum-Bound:
+ValueRange is identified by minimum-Bound and maximum-Bound where
 	ValueRange has at most one minimum-Bound,
 	ValueRange has at most one maximum-Bound;
 
-ValueRestriction is identified by ValueRestrictionId:
+ValueRestriction is identified by ValueRestrictionId where
 	ValueRestriction has exactly one ValueRestrictionId,
 	ValueRestrictionId is of at most one ValueRestriction;
 AllowedRange is where
@@ -130,7 +130,7 @@ SetEqualityConstraint is a kind of SetComparisonConstraint;
 SetExclusionConstraint is a kind of SetComparisonConstraint;
 SetExclusionConstraint is mandatory;
 
-Feature is identified by Name and Vocabulary:
+Feature is identified by Name and Vocabulary where
 	Feature is called exactly one Name,
 	Feature belongs to at most one Vocabulary,
 	Vocabulary contains Feature;
@@ -149,7 +149,7 @@ Alias is a kind of Feature;
 
 Concept is a kind of Feature;
 Instance is of exactly one Concept;
-Role is identified by RoleId:
+Role is identified by RoleId where
 	Role has exactly one RoleId,
 	RoleId is of at most one Role,
 	Concept plays role in FactType;
@@ -174,14 +174,12 @@ EntityType nests at most one FactType,
 	FactType is nested as at most one EntityType;
 EntityType is independent;
 EntityType is personal;
-TypeInheritance is a kind of FactType identified by Subtype and Supertype:
+TypeInheritance is a kind of FactType identified by Subtype and Supertype where
 	EntityType (as Subtype) is subtype of super-EntityType (as Supertype) [acyclic],
-	Supertype is supertype of Subtype where
-	EntityType (as Subtype) is subtype of super-EntityType (as Supertype),
 	Supertype is supertype of Subtype;
 TypeInheritance provides identification;
 
-Population is identified by Vocabulary and Name:
+Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
 	Population belongs to at most one Vocabulary,
 	Population has exactly one Name,

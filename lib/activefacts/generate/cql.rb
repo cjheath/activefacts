@@ -85,10 +85,13 @@ module ActiveFacts
         # REVISIT: Consider emitting extra fact types here, instead of in entity_type_dump?
         # Just beware that readings having the same players will be considered to be of the same fact type, even if they're not.
 
-        " identified by #{ identifying_role_names*" and " }:\n\t" +
+        identifying_facts.each{|f| @fact_types_dumped[f] = true }
+        @identifying_fact_text = 
             identifying_facts.map{|f|
                 fact_readings_with_constraints(f)
             }.flatten*",\n\t"
+
+        " identified by #{ identifying_role_names*" and " }"
       end
 
       def entity_type_banner
@@ -106,7 +109,10 @@ module ActiveFacts
 
       def subtype_dump(o, supertypes, pi)
         print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " }"
-        print identified_by(o, pi) if pi
+        if pi
+          print identified_by(o, pi)
+          print " where\n\t"+@identifying_fact_text
+        end
         # If there's a preferred_identifier for this subtype, identifying readings were emitted
         print((pi ? "," : " where") + "\n\t" + fact_readings(o.fact_type)) if o.fact_type
         puts ";\n"
@@ -114,6 +120,7 @@ module ActiveFacts
 
       def non_subtype_dump(o, pi)
         print "#{o.name} is" + identified_by(o, pi)
+        print " where\n\t"+@identifying_fact_text
         print(",\n\t"+ fact_readings(o.fact_type)) if o.fact_type
         puts ";\n"
       end
@@ -127,6 +134,7 @@ module ActiveFacts
 
       def fact_type_dump(fact_type, name)
 
+        @identifying_fact_text = nil
         if (o = fact_type.entity_type)
           print "#{o.name} is"
           if !o.all_type_inheritance_by_subtype.empty?
@@ -143,7 +151,11 @@ module ActiveFacts
           print " where\n\t"
         end
 
-        puts(fact_readings(fact_type)+";")
+        if @identifying_fact_text
+          puts @identifying_fact_text+";\n"
+        else
+          puts(fact_readings(fact_type)+";")
+        end
       end
 
       def fact_type_banner

@@ -16,14 +16,14 @@ Year is defined as SignedInteger(32);
 /*
  * Entity Types
  */
-Refinery is identified by RefineryName:
+Refinery is identified by RefineryName where
 	Refinery has exactly one RefineryName,
 	RefineryName is of at most one Refinery;
 TransportRoute is where
 	TransportMethod transportation is available from Refinery to Region at at most one Cost per kL,
 	TransportMethod transportation is available to Region from Refinery at Cost per kL;
 
-SupplyPeriod is identified by Month and Year:
+SupplyPeriod is identified by Month and Year where
 	SupplyPeriod is in exactly one Month,
 	SupplyPeriod is in exactly one Year;
 ProductionCommitment is where

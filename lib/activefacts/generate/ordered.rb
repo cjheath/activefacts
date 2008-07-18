@@ -180,7 +180,7 @@ module ActiveFacts
 
       identifying_roles = role_refs.map(&:role)
       identification = identified_by_roles_and_facts(identifying_roles, identifying_facts, preferred_readings)
-      identifying_facts.each{|f| @fact_types_dumped[f] = true }
+      #identifying_facts.each{|f| @fact_types_dumped[f] = true }
 
       identification
     end

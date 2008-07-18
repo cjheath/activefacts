@@ -18,43 +18,43 @@ WarehouseID is defined as AutoCounter();
 /*
  * Entity Types
  */
-Bin is identified by BinID:
+Bin is identified by BinID where
 	Bin has exactly one BinID,
 	BinID is of at most one Bin;
 
-Dispatch is identified by DispatchID:
+Dispatch is identified by DispatchID where
 	Dispatch has exactly one DispatchID,
 	DispatchID is of at most one Dispatch;
 
-DispatchItem is identified by DispatchItemID:
+DispatchItem is identified by DispatchItemID where
 	DispatchItem has exactly one DispatchItemID,
 	DispatchItemID is of at most one DispatchItem;
 Dispatch is of at least one DispatchItem,
 	DispatchItem is for at most one Dispatch;
 
-Party is identified by PartyID:
+Party is identified by PartyID where
 	Party has exactly one PartyID,
 	PartyID is of at most one Party;
 
-Product is identified by ProductID:
+Product is identified by ProductID where
 	Product has exactly one ProductID,
 	ProductID is of at most one Product;
 DispatchItem is exactly one Product;
 
-PurchaseOrder is identified by PurchaseOrderID:
+PurchaseOrder is identified by PurchaseOrderID where
 	PurchaseOrder has exactly one PurchaseOrderID,
 	PurchaseOrderID is of at most one PurchaseOrder;
 
-PurchaseOrderItem is identified by PurchaseOrder and Product:
+PurchaseOrderItem is identified by PurchaseOrder and Product where
 	PurchaseOrder includes PurchaseOrderItem,
 	PurchaseOrderItem is part of exactly one PurchaseOrder,
 	PurchaseOrderItem is for exactly one Product;
 
-Receipt is identified by ReceiptID:
+Receipt is identified by ReceiptID where
 	Receipt has exactly one ReceiptID,
 	ReceiptID is of at most one Receipt;
 
-ReceivedItem is identified by ReceivedItemID:
+ReceivedItem is identified by ReceivedItemID where
 	ReceivedItem has exactly one ReceivedItemID,
 	ReceivedItemID is of at most one ReceivedItem;
 Receipt is of at least one ReceivedItem,
@@ -62,11 +62,11 @@ Receipt is of at least one ReceivedItem,
 ReceivedItem is exactly one Product;
 ReceivedItem is for at most one PurchaseOrderItem;
 
-SalesOrder is identified by SalesOrderID:
+SalesOrder is identified by SalesOrderID where
 	SalesOrder has exactly one SalesOrderID,
 	SalesOrderID is of at most one SalesOrder;
 
-SalesOrderItem is identified by SalesOrder and Product:
+SalesOrderItem is identified by SalesOrder and Product where
 	SalesOrder includes SalesOrderItem,
 	SalesOrderItem is part of exactly one SalesOrder,
 	SalesOrderItem is for exactly one Product;
@@ -78,13 +78,13 @@ Supplier is a kind of Party;
 PurchaseOrder is to exactly one Supplier,
 	Supplier supplies PurchaseOrder;
 
-TransferRequest is identified by TransferRequestID:
+TransferRequest is identified by TransferRequestID where
 	TransferRequest has exactly one TransferRequestID,
 	TransferRequestID is of at most one TransferRequest;
 DispatchItem is for at most one TransferRequest;
 ReceivedItem is for at most one TransferRequest;
 
-Warehouse is identified by WarehouseID:
+Warehouse is identified by WarehouseID where
 	Warehouse has exactly one WarehouseID,
 	WarehouseID is of at most one Warehouse;
 PurchaseOrder is to at most one Warehouse;

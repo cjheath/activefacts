@@ -14,24 +14,24 @@ StreetLine is defined as VariableLengthText(64);
 /*
  * Entity Types
  */
-Company is identified by CompanyName:
+Company is identified by CompanyName where
 	Company has exactly one CompanyName,
 	CompanyName is of at most one Company;
 
-Family is identified by FamilyName:
+Family is identified by FamilyName where
 	Family has exactly one FamilyName;
 
-Person is identified by Family and GivenNames:
+Person is identified by Family and GivenNames where
 	Person is of exactly one Family,
 	Family includes Person,
 	Person has exactly one GivenNames;
 
-Street is identified by first-StreetLine and second-StreetLine and third-StreetLine:
+Street is identified by first-StreetLine and second-StreetLine and third-StreetLine where
 	Street includes exactly one first-StreetLine,
 	Street includes at most one second-StreetLine,
 	Street includes at most one third-StreetLine;
 
-Address is identified by street-Number and Street and City and Postcode:
+Address is identified by street-Number and Street and City and Postcode where
 	Address is at at most one street-Number,
 	Address is at exactly one Street,
 	Address is in exactly one City,
