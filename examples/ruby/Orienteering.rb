@@ -136,7 +136,7 @@ module Orienteering
   end
 
   class EventControl
-    identified_by :control_number, :event
+    identified_by :event, :control_number
     has_one :control_number                     # See ControlNumber.all_event_control
     has_one :event                              # See Event.all_event_control
     has_one :point_value                        # See PointValue.all_event_control

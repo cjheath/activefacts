@@ -182,8 +182,6 @@ module ActiveFacts
       identification = identified_by_roles_and_facts(identifying_roles, identifying_facts, preferred_readings)
       identifying_facts.each{|f| @fact_types_dumped[f] = true }
 
-      # REVISIT: Consider emitting extra fact types here, instead of in entity_type_dump?
-      # Just beware that readings having the same players will be considered to be of the same fact type, even if they're not.
       identification
     end
 

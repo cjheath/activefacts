@@ -126,14 +126,21 @@ module ActiveFacts
       end
 
       def fact_type_dump(fact_type, name)
-        # REVISIT: Handle alternate identification of objectified fact type
 
         if (o = fact_type.entity_type)
+          print "#{o.name} is"
           if !o.all_type_inheritance_by_subtype.empty?
-            print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " } where\n\t"
-          else
-            print(name ? name+" is where\n\t" : "")
+            print " a kind of #{ o.supertypes.map(&:name)*", " }"
           end
+
+          # Alternate identification of objectified fact type?
+          primary_supertype = o.supertypes[0]
+          pi = fact_type.entity_type.preferred_identifier
+          if pi && primary_supertype && primary_supertype.preferred_identifier != pi
+            print identified_by(o, pi)
+          end
+
+          print " where\n\t"
         end
 
         puts(fact_readings(fact_type)+";")

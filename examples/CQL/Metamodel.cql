@@ -174,8 +174,10 @@ EntityType nests at most one FactType,
 	FactType is nested as at most one EntityType;
 EntityType is independent;
 EntityType is personal;
-TypeInheritance is a kind of FactType where
+TypeInheritance is a kind of FactType identified by Subtype and Supertype:
 	EntityType (as Subtype) is subtype of super-EntityType (as Supertype) [acyclic],
+	Supertype is supertype of Subtype where
+	EntityType (as Subtype) is subtype of super-EntityType (as Supertype),
 	Supertype is supertype of Subtype;
 TypeInheritance provides identification;
 

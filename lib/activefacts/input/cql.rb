@@ -344,7 +344,7 @@ module ActiveFacts
       end
 
       def fact_type_identification(fact_type, name, prefer)
-        if @embedded_presence_constraints.empty?
+        if !@embedded_presence_constraints.detect{|pc| pc.max_frequency == 1}
           first_role_sequence = fact_type.all_reading[0].role_sequence
           identifier = @constellation.PresenceConstraint(
               :new,

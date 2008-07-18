@@ -55,10 +55,27 @@ module OrienteeringER
     value_type 
   end
 
+  class Club
+    identified_by :code
+    has_one :club_name                          # See ClubName.all_club
+    has_one :code                               # See Code.all_club
+  end
+
   class SeriesEvent
-    identified_by :event_number, :series_name
+    identified_by :series_name, :event_number
     has_one :event_number, Number               # See Number.all_series_event_by_event_number
     has_one :series_name                        # See SeriesName.all_series_event
+  end
+
+  class Event
+    identified_by :event_i_d
+    has_one :club                               # See Club.all_event
+    has_one :date                               # See Date.all_event
+    has_one :event_i_d, ID                      # See ID.all_event_by_event_i_d
+    has_one :event_name                         # See EventName.all_event
+    has_one :location                           # See Location.all_event
+    has_one :map                                # See Map.all_event
+    has_one :series_event                       # See SeriesEvent.all_event
   end
 
   class EventControl
@@ -69,9 +86,16 @@ module OrienteeringER
   end
 
   class EventCourse
-    identified_by :event, :course
+    identified_by :course, :event
     has_one :course                             # See Course.all_event_course
     has_one :event                              # See Event.all_event_course
+  end
+
+  class Map
+    identified_by :map_name
+    has_one :accessibility                      # See Accessibility.all_map
+    has_one :club                               # See Club.all_map
+    has_one :map_name, Name                     # See Name.all_map_by_map_name
   end
 
 end

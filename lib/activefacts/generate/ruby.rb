@@ -226,28 +226,20 @@ module ActiveFacts
       # Dump one fact type.
       # Include as many as possible internal constraints in the fact type readings.
       def fact_type_dump(fact_type, name)
-        return if skip_fact_type(fact_type)
+        return if skip_fact_type(fact_type) || !(o = fact_type.entity_type)
 
-        fact_constraints = @presence_constraints_by_fact[fact_type]
+        primary_supertype = o && (o.identifying_supertype || o.supertypes[0])
+        secondary_supertypes = o.supertypes-[primary_supertype]
 
-        # debug "for fact type #{fact_type.to_s}, considering\n\t#{fact_constraints.map(&:to_s)*",\n\t"}"
-        # debug "#{fact_type.name} has readings:\n\t#{fact_type.readings.map(&:name)*"\n\t"}"
+        # Get the preferred identifier, but don't emit it unless it's different from the primary supertype's:
+        pi = o.preferred_identifier
+        pi = nil if pi && primary_supertype && primary_supertype.preferred_identifier == pi
 
-        pc = fact_constraints.detect{|c|
-            PresenceConstraint === c &&
-            c.role_sequence.all_role_ref.size > 1
-          }
-        return unless pc          # Omit fact types that aren't implicitly nested
-
-        supertype = fact_type.entity_type &&
-            (fact_type.entity_type.identifying_supertype || fact_type.entity_type.supertypes[0])
-
-        # REVISIT: If fact_type.entity_type.supertypes.size > 1, handle additional supertypes
-
-        puts "  class #{name}#{supertype ? " < "+supertype.name : ""}\n" +
-                  "    identified_by #{identified_by(fact_type.entity_type, pc)}"
+        puts "  class #{name}#{primary_supertype ? " < "+primary_supertype.name : ""}\n" +
+                  secondary_supertypes.map{|sst| "    supertype :#{sst.name}"}*"\n" +
+                  (pi ? "    identified_by #{identified_by(o, pi)}" : "")
         fact_roles_dump(fact_type)
-        roles_dump(fact_type.entity_type)
+        roles_dump(o)
         puts "  end\n\n"
 
         @fact_types_dumped[fact_type] = true

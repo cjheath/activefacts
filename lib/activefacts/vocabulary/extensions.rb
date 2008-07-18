@@ -61,22 +61,23 @@ module ActiveFacts
       include ActiveFacts
       def preferred_identifier
         if fact_type
+
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles
           fact_roles = fact_type.all_role
           debug "Looking for PI on nested fact type #{name}" do
             pi = catch :pi do
-                fact_roles.each{|r|                       # Try all roles of the fact type
+                fact_roles[0,2].each{|r|                  # Try the first two roles of the fact type, that's enough
                     r.all_role_ref.map{|rr|               # All role sequences that reference this role
                         role_sequence = rr.role_sequence
 
                         # The role sequence is only interesting if it cover only this fact's roles
-                        next if role_sequence.all_role_ref.size < fact_roles.size-1
-                        next if role_sequence.all_role_ref.size > fact_roles.size
-                        next if role_sequence.all_role_ref.detect{|rsr| !(ft = rsr.role.fact_type) || ft != fact_type }
+                        next if role_sequence.all_role_ref.size < fact_roles.size-1 # Not enough roles
+                        next if role_sequence.all_role_ref.size > fact_roles.size   # Too many roles
+                        next if role_sequence.all_role_ref.detect{|rsr| ft = rsr.role.fact_type; ft != fact_type }
 
                         # This role sequence is a candidate
                         pc = role_sequence.all_presence_constraint.detect{|c|
-                            c.is_preferred_identifier
+                            c.max_frequency == 1 && c.is_preferred_identifier
                           }
                         throw :pi, pc if pc
                       }
