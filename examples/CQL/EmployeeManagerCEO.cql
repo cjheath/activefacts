@@ -11,11 +11,11 @@ PersonName is defined as VariableLengthText();
 Person is identified by PersonName where
 	Person has exactly one PersonName,
 	PersonName is of at most one Person;
-Person is manager;
 
 Employee is a kind of Person;
+Employee is manager;
 
-Manager is a kind of Person;
+Manager is a kind of Employee;
 Employee is managed by at most one Manager [acyclic],
 	Manager manages at least one Employee;
 Manager is CEO;
