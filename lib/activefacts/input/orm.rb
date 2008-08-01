@@ -215,6 +215,19 @@ module ActiveFacts
           supertype_role = @by_id[supertype_role_id] = @constellation.Role(:new)
           supertype_role.concept = supertype
           supertype_role.fact_type = inheritance_fact
+
+          # Create readings, so constraints can be verbalised for example:
+          rs = @constellation.RoleSequence(:new)
+          @constellation.RoleRef(rs, 0).role = subtype_role
+          @constellation.RoleRef(rs, 1).role = supertype_role
+
+#          reading = @constellation.Reading(inheritance_fact, 0)
+#          reading.reading_text = "{1} is {0}"
+#          reading.role_sequence = rs
+
+          reading = @constellation.Reading(inheritance_fact, 0)
+          reading.reading_text = "{0} is a subtype of {1}"
+          reading.role_sequence = rs
         }
       end
 

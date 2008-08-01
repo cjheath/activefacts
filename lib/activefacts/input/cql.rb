@@ -64,8 +64,10 @@ module ActiveFacts
                 entity_type *value
               when :fact_type
                 fact_type *value
+              when :constraint
+                $stderr.puts "REVISIT: external constraints aren't yet handled"
               else
-                print "="*20+" unhandled declaration type: "; p kind
+                print "="*20+" unhandled declaration type: "; p kind, value
               end
             rescue => e
               puts e.message+"\n\t"+e.backtrace*"\n\t" if debug :exception

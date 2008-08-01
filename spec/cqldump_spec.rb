@@ -159,7 +159,7 @@ Name is defined as String(20);
 /*
  * Entity Types
  */
-Company is identified by Name:
+Company is identified by Name where
 	Company is called Name;
 
 END

@@ -26,7 +26,13 @@ Competitor is a kind of Entrant;
 Competitor has exactly one FamilyName;
 
 /*
-Constraints:
-	REVISIT: mandatory exclusion over (Entrant) in 'Competitor is a kind of Entrant', (Entrant) in 'Team is a kind of Entrant'
-	REVISIT: at most one UNKNOWN exists for each 'Competitor has FamilyName', 'Entrant has GivenName'
+ * Constraints:
+
+for each Entrant exactly one of these holds:
+	Competitor is a subtype of Entrant,
+	Team is a subtype of Entrant;
+each FamilyName, GivenName occurs at most one time in
+	Competitor has FamilyName,
+	Entrant has GivenName;
+
  */

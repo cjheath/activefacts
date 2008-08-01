@@ -37,11 +37,19 @@ Map is where
 	map Name (as MapName) belongs to Club and has Accessibility;
 
 /*
-Constraints:
-	REVISIT: each (ID) occurs exactly one time in 'event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location'
-	REVISIT: each (EventName) occurs at most one time in 'event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location'
-	REVISIT: each (SeriesEvent) occurs at most one time in 'event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location'
-	REVISIT: each (Name) occurs at most one time in 'map MapName belongs to Club and has Accessibility'
-	REVISIT: each (Club) occurs at least one time in 'event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location'
-	REVISIT: each (Event) occurs at least one time in 'Event includes Control which is worth PointValue'
+ * Constraints:
+
+each ID occurs exactly one time in
+	event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location;
+each EventName occurs at most one time in
+	event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location;
+each SeriesEvent occurs at most one time in
+	event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location;
+each Name occurs at most one time in
+	map Name belongs to Club and has Accessibility;
+each Club occurs at least one time in
+	event-ID may be SeriesEvent and is called EventName and is run by Club using Map on Date at Location;
+each Event occurs at least one time in
+	Event includes Control which is worth PointValue;
+
  */

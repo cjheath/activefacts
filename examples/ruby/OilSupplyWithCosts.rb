@@ -6,13 +6,12 @@ module OilSupply
     value_type 
   end
 
-  class Month < String
-    value_type :length => 3
-    has_one :season                             # See Season.all_month
+  class MonthCode < FixedLengthText
+    value_type 
   end
 
-  class Product < String
-    value_type :length => 80
+  class ProductName < String
+    value_type 
   end
 
   class Quantity < UnsignedInteger
@@ -23,8 +22,8 @@ module OilSupply
     value_type :length => 80
   end
 
-  class Region < String
-    value_type :length => 80
+  class RegionName < String
+    value_type 
   end
 
   class Season < String
@@ -37,8 +36,26 @@ module OilSupply
     # REVISIT: TransportMethod has restricted values
   end
 
-  class Year < SignedInteger
+  class YearNr < SignedInteger
     value_type :length => 32
+  end
+
+  class Month
+    identified_by :month_code
+    one_to_one :month_code                      # See MonthCode.month
+    has_one :season                             # See Season.all_month
+  end
+
+  class Product
+    identified_by :product_name
+    one_to_one :product_name                    # See ProductName.product
+  end
+
+  class AcceptableSubstitutes
+    identified_by :product, :alternate_product, :season
+    has_one :alternate_product, Product         # See Product.all_acceptable_substitutes_by_alternate_product
+    has_one :product                            # See Product.all_acceptable_substitutes
+    has_one :season                             # See Season.all_acceptable_substitutes
   end
 
   class Refinery
@@ -46,12 +63,22 @@ module OilSupply
     one_to_one :refinery_name                   # See RefineryName.refinery
   end
 
+  class Region
+    identified_by :region_name
+    one_to_one :region_name                     # See RegionName.region
+  end
+
   class TransportRoute
     identified_by :transport_method, :refinery, :region
-    has_one :cost                               # See Cost.all_transport_route
     has_one :refinery                           # See Refinery.all_transport_route
     has_one :region                             # See Region.all_transport_route
     has_one :transport_method                   # See TransportMethod.all_transport_route
+    has_one :cost                               # See Cost.all_transport_route
+  end
+
+  class Year
+    identified_by :year_nr
+    one_to_one :year_nr                         # See YearNr.year
   end
 
   class SupplyPeriod
@@ -60,28 +87,21 @@ module OilSupply
     has_one :year                               # See Year.all_supply_period
   end
 
-  class ProductionCommitment
-    identified_by :refinery, :quantity, :product, :supply_period
-    has_one :cost                               # See Cost.all_production_commitment
-    has_one :product                            # See Product.all_production_commitment
-    has_one :quantity                           # See Quantity.all_production_commitment
-    has_one :refinery                           # See Refinery.all_production_commitment
-    has_one :supply_period                      # See SupplyPeriod.all_production_commitment
+  class ProductionForecast
+    identified_by :refinery, :product, :supply_period
+    has_one :product                            # See Product.all_production_forecast
+    has_one :refinery                           # See Refinery.all_production_forecast
+    has_one :supply_period                      # See SupplyPeriod.all_production_forecast
+    has_one :cost                               # See Cost.all_production_forecast
+    has_one :quantity                           # See Quantity.all_production_forecast
   end
 
   class RegionalDemand
     identified_by :region, :product, :supply_period
     has_one :product                            # See Product.all_regional_demand
-    has_one :quantity                           # See Quantity.all_regional_demand
     has_one :region                             # See Region.all_regional_demand
     has_one :supply_period                      # See SupplyPeriod.all_regional_demand
-  end
-
-  class AcceptableSubstitutes
-    identified_by :product, :alternate_product, :season
-    has_one :alternate_product, Product         # See Product.all_acceptable_substitutes_by_alternate_product
-    has_one :product                            # See Product.all_acceptable_substitutes
-    has_one :season                             # See Season.all_acceptable_substitutes
+    has_one :quantity                           # See Quantity.all_regional_demand
   end
 
 end

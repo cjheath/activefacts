@@ -94,8 +94,16 @@ Friend is where
 Friend is confirmed;
 
 /*
-Constraints:
-	REVISIT: EventDate must play at least one of 'EventDate occurred in or after min-Year', 'EventDate occurred in or before max-Year', 'EventDate occurred in Month', 'EventDate occurred on Day'
-	REVISIT: each (Person) occurs at least one time in 'Person played Role in Event according to Source'
-	REVISIT: each (Event) occurs at least one time in 'Person played Role in Event according to Source'
+ * Constraints:
+
+each EventDate occurs at least one time in
+	EventDate occurred in or after min-Year,
+	EventDate occurred in or before max-Year,
+	EventDate occurred in Month,
+	EventDate occurred on Day;
+each Person occurs at least one time in
+	Person played Role in Event according to Source;
+each Event occurs at least one time in
+	Person played Role in Event according to Source;
+
  */

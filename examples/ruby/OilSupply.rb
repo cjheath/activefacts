@@ -42,7 +42,7 @@ module OilSupply
   end
 
   class ProductionCommitment
-    identified_by :refinery, :month, :product, :quantity
+    identified_by :product, :month, :refinery
     has_one :month                              # See Month.all_production_commitment
     has_one :product                            # See Product.all_production_commitment
     has_one :quantity                           # See Quantity.all_production_commitment

@@ -27,6 +27,9 @@ BugReport is logged against exactly one TestCase,
 	TestCase demonstrates BugReport;
 
 /*
-Constraints:
-	REVISIT: each (Bug) occurs at least one time in 'Tester logged Bug'
+ * Constraints:
+
+each Bug occurs at least one time in
+	Tester logged Bug;
+
  */

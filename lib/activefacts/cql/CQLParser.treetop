@@ -62,11 +62,19 @@ module ActiveFacts
     end
 
     rule constraint
-      'NOT IMPLEMENTED'
+      (
+	( 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
+	/ 'each' s role_list s 'occurs' s quantifier s 'time' s 'in' s
+	)
+	reading ( s ',' s reading )*
+#	/
+#	s reading s 'only' s 'if' s reading
+      )
+      s ';' s
       {
-        def value
-          [ nil, [ :constaint, "NOT IMPLEMENTED" ] ]
-        end
+	def value
+	  [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]
+	end
       }
     end
 

@@ -45,6 +45,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirector2.orm</DependentUpon>
     </Compile>
+    <Compile Include="Insurance._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Insurance.orm</DependentUpon>
+    </Compile>
     <Compile Include="Metamodel._ORMCustomToolReport.cs">
       <DependentUpon>Metamodel.orm</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -192,6 +196,10 @@
     <None Include="CompanyDirector2.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirector2._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Insurance.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Insurance._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Metamodel.orm">
       <Generator>ORMCustomTool</Generator>
@@ -433,6 +441,23 @@
     <None Include="MetamodelMappable.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>MetamodelMappable.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Insurance.orm')">
+    <None Include="Insurance.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Insurance.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Insurance.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Insurance.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Insurance.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Insurance.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>

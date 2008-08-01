@@ -41,7 +41,11 @@ Company has head office at at most one Address;
 Person lives at at most one Address;
 
 /*
-Constraints:
-	REVISIT: 'Street includes third-StreetLine' only if 'Street includes second-StreetLine'
-	REVISIT: 'Street includes second-StreetLine' only if 'Street includes first-StreetLine'
+ * Constraints:
+
+Street includes third-StreetLine
+	only if Street includes second-StreetLine;
+Street includes second-StreetLine
+	only if Street includes first-StreetLine;
+
  */

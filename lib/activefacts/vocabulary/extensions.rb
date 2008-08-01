@@ -19,14 +19,8 @@ module ActiveFacts
         '('+all_role.map{|role| role.describe(highlight) }*", "+')'
       end
 
-      def default_reading
-        all_reading[0].expand
-      end
-    end
-
-    class TypeInheritance
-      def default_reading
-        "#{subtype.name} is a kind of #{supertype.name}"
+      def default_reading(frequency_constraints = [], define_role_names = false)
+        preferred_reading.expand(frequency_constraints, define_role_names)
       end
     end
 
@@ -213,6 +207,14 @@ module ActiveFacts
     end
 
     class Reading
+      # The frequency_constraints array here, if supplied, may provide for each role either:
+      # * a PresenceConstraint to be verbalised against the relevant role, or
+      # * a String, used as a definite or indefinite article on the relevant role, or
+      # * an array containing two strings (an article and a super-type name)
+      # The order in the array is the same as the reading's role-sequence.
+      # REVISIT: This should probably be changed to be the fact role sequence.
+      #
+      # define_role_names here is false (use defined names), true (define names) or nil (neither)
       def expand(frequency_constraints = [], define_role_names = false)
         expanded = "#{reading_text}"
         role_refs = role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
@@ -230,14 +232,20 @@ module ActiveFacts
                 player = role_refs[i].role.concept
                 role_name = role.role_name
                 role_name = nil if role_name == ""
-                if role_name && !define_role_names
+                if role_name && define_role_names == false
                   la = ta = nil   # When using role names, don't add adjectives
                 end
                 fc = frequency_constraints[i]
+                fc = fc.frequency if fc && PresenceConstraint === fc
+                if Array === fc
+                  fc, player_name = *fc
+                else
+                  player_name = player.name
+                end
                 [
-                  fc ? fc.frequency : nil,
+                  fc ? fc : nil,
                   la,
-                  !define_role_names && role_name ? role_name : player.name,
+                  define_role_names == false && role_name ? role_name : player_name,
                   ta,
                   define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil
                 ].compact*" "

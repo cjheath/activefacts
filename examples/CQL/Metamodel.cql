@@ -86,7 +86,8 @@ Reading is in exactly one RoleSequence,
 RoleValue is identified by Instance and Fact where
 	Instance plays RoleValue,
 	RoleValue is of exactly one Instance,
-	RoleValue fulfils exactly one Fact;
+	RoleValue fulfils exactly one Fact,
+	Fact includes at least one RoleValue;
 
 SetConstraint is a kind of Constraint;
 
@@ -152,7 +153,8 @@ Instance is of exactly one Concept;
 Role is identified by RoleId where
 	Role has exactly one RoleId,
 	RoleId is of at most one Role,
-	Concept plays role in FactType;
+	Concept plays role in FactType,
+	FactType has role played by at least one Concept;
 Role is of RingConstraint,
 	RingConstraint has at most one Role;
 Role has at most one role-Name,
@@ -202,20 +204,48 @@ ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 	Supertype is supertype of ValueType;
 
 /*
-Constraints:
-	REVISIT: mandatory exclusion over (Concept) in 'EntityType is a kind of Concept', (Concept) in 'ValueType is a kind of Concept'
-	REVISIT: mandatory exclusion over (Constraint) in 'RingConstraint is a kind of Constraint', (SetComparisonConstraint) in 'SetEqualityConstraint is a kind of SetComparisonConstraint', (SetComparisonConstraint) in 'SetExclusionConstraint is a kind of SetComparisonConstraint', (SetConstraint) in 'SubsetConstraint is a kind of SetConstraint', (Constraint) in 'PresenceConstraint is a kind of Constraint'
-	REVISIT: each (Fact) occurs at least one time in 'RoleValue fulfils Fact'
-	REVISIT: each (FactType) occurs at least one time in 'Concept plays role in FactType'
-	REVISIT: each (RoleSequence) occurs at least one time in 'Role is in RoleSequence in Ordinal place'
-	REVISIT: equality over (Vocabulary) in 'Vocabulary imports imported-Vocabulary', (Feature) in 'in Import imported-Feature corresponds to local-Feature'
-	REVISIT: equality over (Vocabulary) in 'Vocabulary imports imported-Vocabulary', (Feature) in 'in Import imported-Feature corresponds to local-Feature'
-	REVISIT: mandatory exclusion over (Unit) in 'Unit is fundamental', (Unit) in 'DerivedUnit is derived from BaseUnit'
-	REVISIT: at most one Constraint exists for each 'Name is of Constraint', 'Vocabulary contains Constraint'
-	REVISIT: mandatory exclusion over (Feature) in 'Vocabulary is a kind of Feature', (Feature) in 'Concept is a kind of Feature', (Feature) in 'Alias is a kind of Feature'
-	REVISIT: at most one UNKNOWN exists for each 'Subtype is subtype of Supertype', 'TypeInheritance provides identification'
-	REVISIT: 'PresenceConstraint is preferred identifier' only if 'PresenceConstraint has max-Frequency'
-	REVISIT: PresenceConstraint must play at least one of 'PresenceConstraint has min-Frequency', 'PresenceConstraint has max-Frequency', 'PresenceConstraint is mandatory'
-	REVISIT: ValueRange must play at least one of 'ValueRange has minimum-Bound', 'ValueRange has maximum-Bound'
-	REVISIT: 'ValueType has Scale' only if 'ValueType has Length'
+ * Constraints:
+
+for each Concept exactly one of these holds:
+	EntityType is a subtype of Concept,
+	ValueType is a subtype of Concept;
+for each Constraint exactly one of these holds:
+	some RingConstraint is a subtype of that Constraint,
+	some SetEqualityConstraint is a subtype of that Constraint,
+	some SetExclusionConstraint is a subtype of that Constraint,
+	some SubsetConstraint is a subtype of that Constraint,
+	some PresenceConstraint is a subtype of that Constraint;
+each RoleSequence occurs at least one time in
+	Role is in RoleSequence in Ordinal place;
+for each RoleValue, Concept either all or none of these holds:
+	Instance plays RoleValue and Instance is of Concept,
+	RoleValue is of Role and Concept plays role in FactType;
+for each RoleValue, FactType either all or none of these holds:
+	RoleValue fulfils Fact and Fact is of FactType,
+	RoleValue is of Role and Concept plays role in FactType;
+for each Unit exactly one of these holds:
+	Unit is fundamental,
+	that Unit is derived from some base-Unit;
+each Name, Vocabulary occurs at most one time in
+	Name is of Constraint,
+	Vocabulary contains Constraint;
+for each Feature exactly one of these holds:
+	Vocabulary is a subtype of Feature,
+	Concept is a subtype of Feature,
+	Alias is a subtype of Feature;
+each EntityType, TypeInheritance occurs at most one time in
+	EntityType is subtype of super-EntityType,
+	TypeInheritance provides identification;
+PresenceConstraint is preferred identifier
+	only if PresenceConstraint has max-Frequency;
+each PresenceConstraint occurs at least one time in
+	PresenceConstraint has min-Frequency,
+	PresenceConstraint has max-Frequency,
+	PresenceConstraint is mandatory;
+each ValueRange occurs at least one time in
+	ValueRange has minimum-Bound,
+	ValueRange has maximum-Bound;
+ValueType has Scale
+	only if ValueType has Length;
+
  */

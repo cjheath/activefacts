@@ -18,11 +18,15 @@ Employee is manager;
 Manager is a kind of Employee;
 Employee is managed by at most one Manager [acyclic],
 	Manager manages at least one Employee;
-Manager is CEO;
+Manager is_CEO;
 
 CEO is a kind of Manager;
 
 /*
-Constraints:
-	REVISIT: mandatory exclusion over (Employee) in 'Employee is managed by Manager', (Manager) in 'Manager is CEO'
+ * Constraints:
+
+for each Employee exactly one of these holds:
+	that Employee is managed by some Manager,
+	that Employee is_CEO;
+
  */

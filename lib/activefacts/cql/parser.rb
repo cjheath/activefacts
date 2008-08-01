@@ -37,8 +37,8 @@ module ActiveFacts
     end
 
     def definition(node)
-      name, definition = *node.value
-      kind, *value = *definition
+      name, ast = *node.value
+      kind, *value = *ast
 
       begin
         debug "Processing #{[kind, name].compact*" "}" do
@@ -52,6 +52,8 @@ module ActiveFacts
             entity_type(name, supertypes, value)
           when :fact_type
             f = fact_type(name, value)
+          when :constraint
+            ast
           end
         end
       end

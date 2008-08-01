@@ -81,11 +81,11 @@ module ActiveFacts
           end
 
           rule role_player_id
-            !role_list_sep id
+            !(role_list_sep / quantifier) id
           end
 
           rule role_list_sep
-            (where / and)
+            (where / and / 'occurs')
           end
 
           rule reference_mode

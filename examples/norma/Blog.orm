@@ -763,7 +763,7 @@
 					<orm:MandatoryConstraint ref="_3DF2378B-CA37-49A1-B625-81BDFAAFFBA4" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_4136AE76-B41C-4392-B753-1E1B428B173D" _Name="ParagraphContainsContent">
+			<orm:Fact id="_4136AE76-B41C-4392-B753-1E1B428B173D" _Name="ContentIsOfParagraph">
 				<orm:FactRoles>
 					<orm:Role id="_488EE590-C8E1-4947-97B2-B3ECCA857545" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_D5168AEA-CC20-4164-AA34-6BA33194CF78" />
@@ -773,17 +773,6 @@
 					</orm:Role>
 				</orm:FactRoles>
 				<orm:ReadingOrders>
-					<orm:ReadingOrder id="_B4215628-6A55-4D9B-AD2A-48C9EBD88553">
-						<orm:Readings>
-							<orm:Reading id="_BF39C6C8-C8B3-47A7-8C3D-F327654D4E8F">
-								<orm:Data>{0} contains {1}</orm:Data>
-							</orm:Reading>
-						</orm:Readings>
-						<orm:RoleSequence>
-							<orm:Role ref="_488EE590-C8E1-4947-97B2-B3ECCA857545" />
-							<orm:Role ref="_4586D3E9-2FA8-4F10-B5D1-ABFA3580671F" />
-						</orm:RoleSequence>
-					</orm:ReadingOrder>
 					<orm:ReadingOrder id="_BCC5E33C-2B2F-4099-A34F-84B3FDB86BDB">
 						<orm:Readings>
 							<orm:Reading id="_6737CB2B-3047-4D3A-AF21-BBEDF3051236">
@@ -793,6 +782,17 @@
 						<orm:RoleSequence>
 							<orm:Role ref="_4586D3E9-2FA8-4F10-B5D1-ABFA3580671F" />
 							<orm:Role ref="_488EE590-C8E1-4947-97B2-B3ECCA857545" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_B4215628-6A55-4D9B-AD2A-48C9EBD88553">
+						<orm:Readings>
+							<orm:Reading id="_BF39C6C8-C8B3-47A7-8C3D-F327654D4E8F">
+								<orm:Data>{0} contains {1}</orm:Data>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_488EE590-C8E1-4947-97B2-B3ECCA857545" />
+							<orm:Role ref="_4586D3E9-2FA8-4F10-B5D1-ABFA3580671F" />
 						</orm:RoleSequence>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
@@ -1515,10 +1515,10 @@
 		<ormtooial:FactTypeMapsTowardsRole id="_BD8704FB-E85E-4139-B7DF-9D2B697D54B5" FactType="_5E5F35CA-A7E1-4925-86ED-E4A04B7DD385" TowardsRole="_4FCA3CB7-75E2-41B6-A3DF-62194F84A4DB" Depth="Deep" UniquenessPattern="OneToOne" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_98A4B095-C336-4F6A-A439-F7ACECA5A50C" FactType="_77F5B22A-7967-4EFC-80DF-0DC830781929" TowardsRole="_BCE55134-9974-4C8A-BF76-7EE4E3FF8068" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_6F3EF4B5-4856-4F78-94FF-FB308D44D7AD" FactType="_3A5220D8-FBA1-44F8-A6F2-18F5473BA69A" TowardsRole="_AC9140C7-1301-45F4-A62C-6B6E41C1144A" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_0388FD69-E09A-4FC4-BB24-FC0D409DD154" FactType="_4136AE76-B41C-4392-B753-1E1B428B173D" TowardsRole="_4586D3E9-2FA8-4F10-B5D1-ABFA3580671F" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_57970DC1-E625-4C80-8DDD-31288D4830DD" FactType="_EFA87A89-6ECE-4FCF-9120-250FC627ACF7" TowardsRole="_373B60CA-9DC8-4FA3-80C1-C573449E5CC1" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_0F60E59C-11E5-4B50-94C8-9CF1E06A82E1" FactType="_3DB8E804-409D-4553-95D1-0952A64FD998" TowardsRole="_85CE6E36-CD45-4234-A7D6-F2F03FF6C963" Depth="Deep" UniquenessPattern="OneToOne" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_AED90482-B2F9-4162-BC0A-A88006A9149B" FactType="_9C06FEA6-20B3-42A9-BA14-24B0D4F7EE5B" TowardsRole="_A0422243-FA8A-408E-8696-AC71B30EEB3E" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_0388FD69-E09A-4FC4-BB24-FC0D409DD154" FactType="_4136AE76-B41C-4392-B753-1E1B428B173D" TowardsRole="_4586D3E9-2FA8-4F10-B5D1-ABFA3580671F" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_4524B635-17F9-4BB1-AC5C-0C423962DF74" FactType="_C14976F2-10FD-4A91-A319-C9D2AEC48675" TowardsRole="_8FD0299A-B34A-4553-8FDA-D93AC8FB2C33" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_F7EC76F1-191F-41B3-B36C-B59339EE6CC8" FactType="_60AF5E9D-11C4-4486-A211-CF74EC41D05A" TowardsRole="_B44E65B0-4425-4586-A906-436315643648" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_1DCD452D-7E37-487B-94ED-9F9E6574105E" FactType="_4CEE2926-18EE-4B83-B4F8-AC785023EB0B" TowardsRole="_988A5ADF-4714-45A8-BF68-7A441AB4F268" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="BothRolesMandatory" />

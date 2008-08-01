@@ -29,7 +29,11 @@ StudentParticipation is where
 	Student participates in Activity which is sanctioned by School;
 
 /*
-Constraints:
-	REVISIT: 'Student represents School in Activity' only if 'Student is enrolled in School'
-	REVISIT: 'Student represents School in Activity' only if 'School sanctions Activity'
+ * Constraints:
+
+Student represents School in Activity
+	only if Student is enrolled in School;
+Student represents School in Activity
+	only if School sanctions Activity;
+
  */

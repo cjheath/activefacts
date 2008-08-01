@@ -19,7 +19,7 @@ Refinery is identified by RefineryName where
 	Refinery has exactly one RefineryName,
 	RefineryName is of at most one Refinery;
 ProductionCommitment is where
-	Refinery has committed by Month to produce Product in Quantity,
+	Refinery has committed by Month to produce Product in at most one Quantity,
 	in Month Refinery has committed to produce Quantity of Product;
 TransportRoute is where
 	Transportation is available from Refinery to Region,

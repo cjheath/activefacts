@@ -102,7 +102,13 @@ Customer made SalesOrder,
 	SalesOrder was made by exactly one Customer;
 
 /*
-Constraints:
-	REVISIT: mandatory exclusion over (ReceivedItem) in 'ReceivedItem is for PurchaseOrderItem', (ReceivedItem) in 'ReceivedItem is for TransferRequest'
-	REVISIT: mandatory exclusion over (DispatchItem) in 'DispatchItem is for TransferRequest', (DispatchItem) in 'DispatchItem is for SalesOrderItem'
+ * Constraints:
+
+for each ReceivedItem exactly one of these holds:
+	ReceivedItem is for PurchaseOrderItem,
+	ReceivedItem is for TransferRequest;
+for each DispatchItem exactly one of these holds:
+	DispatchItem is for TransferRequest,
+	DispatchItem is for SalesOrderItem;
+
  */

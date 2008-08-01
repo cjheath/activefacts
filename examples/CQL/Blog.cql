@@ -43,10 +43,10 @@ Post is identified by PostId where
 Post was written by exactly one Author;
 Paragraph is where
 	Post includes Ordinal paragraph;
+Content is of at most one Paragraph,
+	Paragraph contains exactly one Content;
 Paragraph has Comment,
 	Comment is on exactly one Paragraph;
-Paragraph contains exactly one Content,
-	Content is of at most one Paragraph;
 
 Topic is identified by TopicId where
 	Topic has exactly one TopicId,
@@ -58,6 +58,10 @@ Topic is called exactly one topic-Name,
 	Name is of at most one Topic;
 
 /*
-Constraints:
-	REVISIT: mandatory exclusion over (Content) in 'Content provides text of Comment', (Content) in 'Paragraph contains Content'
+ * Constraints:
+
+for each Content exactly one of these holds:
+	Content provides text of Comment,
+	Content is of Paragraph;
+
  */

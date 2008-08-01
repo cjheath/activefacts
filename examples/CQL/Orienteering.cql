@@ -102,11 +102,24 @@ Series has exactly one SeriesName (as Name),
 	Name is of at most one Series;
 
 /*
-Constraints:
-	REVISIT: at most one Person exists for each 'Person has GivenName', 'Person has FamilyName'
-	REVISIT: equality over (Event) in 'Event is in Series', (Event) in 'Event has Number'
-	REVISIT: Event must play at least one of 'Event is called EventName', 'Event is in Series'
-	REVISIT: at most one Event exists for each 'Event is in Series', 'Event has Number'
-	REVISIT: each (Course, Event) occurs at most one time in 'ScoringMethod is used for Course of Event'
-	REVISIT: each (EventControl) occurs at least one time in 'Punch is placed at EventControl'
+ * Constraints:
+
+each GivenName, FamilyName occurs at most one time in
+	Person has GivenName,
+	Person has FamilyName;
+Event is in Series
+	if and only if
+	Event has Number;
+each Event occurs at least one time in
+	Event is called EventName,
+	Event is in Series;
+each Series, Number occurs at most one time in
+	Event is in Series,
+	Event has Number;
+each Course, Event occurs at most one time in
+	ScoringMethod is used for Course of Event,
+	ScoringMethod is used for Course of Event;
+each EventControl occurs at least one time in
+	Punch is placed at EventControl;
+
  */
