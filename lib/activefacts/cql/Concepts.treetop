@@ -4,48 +4,50 @@ module ActiveFacts
       rule concept
         entity_type
         / data_type
-        / fact_type
+        / named_fact_type
+        / anonymous_fact_type
       end
 
       rule entity_type
         s name:id s
-        sup:(
-          subtype_prefix supertype_list
-          / ( s '=' s / defined_as ) entity
-          / is s &( identified_by / '(') # Semantically, this syntax requires non-nil identification
-        )
-        s identification
-          ec:entity_conditions?
-        s ';' s
+        sup:(basetype / subtype)
+        ec:entity_conditions?
+        ';' s
         {
           def value
-            [ name.text_value,
-              [
-                :entity_type,
-                sup.respond_to?(:supertype_list) ? sup.supertype_list.value : [],
-                identification.text_value.empty? ? nil : identification.value,
-                ec.empty? ? nil : ec.conditions
-              ]
-            ]
+            [ name.text_value, [ :entity_type, sup.supers, sup.identifier, ec.empty? ? nil : ec.conditions ] ]
           end
         }
       end
 
+      rule subtype
+        subtype_prefix supertype_list ident:identification?
+        {
+          def supers; supertype_list.value; end
+          def identifier; ident.empty? ? nil : ident.value; end
+        }
+      end
+
       rule supertype_list
-        primary:id
-        alternate_supertypes:( s ',' s !identified_by name:id s )*
+        primary:id s
+        alternate_supertypes:( ',' s !identified_by name:id s )*
         { def value
             [primary.text_value]+alternate_supertypes.elements.map{|sup| sup.name.text_value}
           end
         }
       end
 
+      rule basetype
+        is s identification
+        { def supers; [] end
+          def identifier; identification.value; end
+        }
+      end
+
       rule identification
         identified_by role_list   { def value; {:roles => role_list.roles }; end }
-        /
-        reference_mode  { def value; {:mode => mode_name.text_value}; end }
-        /
-        ''      # REVISIT: Find out why making identification optional didn't work (for subtypes)
+#        /
+#        reference_mode  { def value; {:mode => mode_name.text_value}; end }
       end
 
       # Identified by roles...
@@ -60,6 +62,7 @@ module ActiveFacts
 
           # We can't tell which word is an adjective and which is a concept here.
           # The concept might be forward-referenced, but not if adjectives are used.
+          # REVISIT: This accepts double-adjective expressions (three words) but they don't work elsewhere
           rule role_player
             id0:role_player_id '-' tail:(s id1:role_player_id last:( s id2:role_player_id )? )?
             {

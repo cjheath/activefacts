@@ -36,8 +36,8 @@ Event occurred at at most one EventLocation;
 Event was confirmed by at most one Official;
 
 EventDate is identified by min-Year and max-Year and Month and Day where
-	EventDate occurred in or after at most one min-Year,
-	EventDate occurred in or before at most one max-Year,
+	EventDate wasnt before at most one min-Year,
+	EventDate wasnt after at most one max-Year,
 	EventDate occurred in at most one Month,
 	EventDate occurred on at most one Day;
 Event occurred on at most one EventDate;
@@ -95,15 +95,13 @@ Friend is confirmed;
 
 /*
  * Constraints:
-
+ */
 each EventDate occurs at least one time in
-	EventDate occurred in or after min-Year,
-	EventDate occurred in or before max-Year,
+	EventDate wasnt before min-Year,
+	EventDate wasnt after max-Year,
 	EventDate occurred in Month,
 	EventDate occurred on Day;
 each Person occurs at least one time in
 	Person played Role in Event according to Source;
 each Event occurs at least one time in
 	Person played Role in Event according to Source;
-
- */

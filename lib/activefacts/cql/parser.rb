@@ -41,7 +41,7 @@ module ActiveFacts
       kind, *value = *ast
 
       begin
-        debug "Processing #{[kind, name].compact*" "}" do
+        debug "Processing definition #{[kind, name].compact*" "}" do
           case kind
           when :vocabulary
             [kind, name]

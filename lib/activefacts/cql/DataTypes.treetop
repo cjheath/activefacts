@@ -2,18 +2,19 @@ module ActiveFacts
   module CQL
     grammar DataTypes
       rule data_type
-        s name:id ( s '=' s / defined_as )
-        base:id s '(' s params:(length:number s param2:( ',' s scale:number s )? )? ')' s u0:(!restricted u1:unit s)? r:restriction?
+        s name:id
+        ( s '=' s / defined_as )
+        base:id s
+        '(' s tpl:type_parameter_list? ')' s
+        u0:(!restricted u1:unit s)?
+        r:restriction?
         s ';' s
         {
           def defined_type
             [
               :data_type,
               base.text_value,
-              [ # REVISIT: Maybe it'd be better just to have a list of parameters...
-                !params.empty? ? params.length.value : nil,
-                (!params.empty? && !params.param2.empty?) ? params.param2.scale.value : nil,
-              ],
+              tpl.empty? ? [] : tpl.value,
               !u0.empty? ? u0.u1.text_value : nil,
               !r.empty? ? r.ranges : [],
             ]
@@ -23,6 +24,15 @@ module ActiveFacts
             [ name.text_value,
               defined_type
             ]
+          end
+        }
+      end
+
+      rule type_parameter_list
+        head:number s tail:( ',' s number s )*
+        {
+          def value
+            [head.value] + tail.elements.map{|i| i.number.value}
           end
         }
       end

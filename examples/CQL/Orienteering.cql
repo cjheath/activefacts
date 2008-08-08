@@ -103,7 +103,7 @@ Series has exactly one SeriesName (as Name),
 
 /*
  * Constraints:
-
+ */
 each GivenName, FamilyName occurs at most one time in
 	Person has GivenName,
 	Person has FamilyName;
@@ -121,5 +121,3 @@ each Course, Event occurs at most one time in
 	ScoringMethod is used for Course of Event;
 each EventControl occurs at least one time in
 	Punch is placed at EventControl;
-
- */

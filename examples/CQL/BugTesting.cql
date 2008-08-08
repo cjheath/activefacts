@@ -28,8 +28,6 @@ BugReport is logged against exactly one TestCase,
 
 /*
  * Constraints:
-
+ */
 each Bug occurs at least one time in
 	Tester logged Bug;
-
- */

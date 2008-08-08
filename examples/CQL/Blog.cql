@@ -59,9 +59,7 @@ Topic is called exactly one topic-Name,
 
 /*
  * Constraints:
-
+ */
 for each Content exactly one of these holds:
 	Content provides text of Comment,
 	Content is of Paragraph;
-
- */

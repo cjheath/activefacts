@@ -521,7 +521,7 @@ module ActiveFacts
         player = @constellation.Concept[[name, @vocabulary.identifying_role_values]]
 
         # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
-        if !player && %w{Date DateAndTime}.include?(name)
+        if !player && %w{Date DateAndTime Time}.include?(name)
           player = @constellation.ValueType(name, @vocabulary.identifying_role_values)
         end
 
@@ -663,7 +663,7 @@ module ActiveFacts
           player = @constellation.Concept[[name, virv = @vocabulary.identifying_role_values]]
 
           # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
-          if !player && %w{Date DateAndTime}.include?(name)
+          if !player && %w{Date DateAndTime Time}.include?(name)
             player = @constellation.ValueType(name, virv)
           end
 

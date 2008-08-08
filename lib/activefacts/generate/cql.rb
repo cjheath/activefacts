@@ -167,11 +167,10 @@ module ActiveFacts
       end
 
       def constraint_banner
-        puts "/*\n * Constraints:\n\n"
+        puts "/*\n * Constraints:\n */"
       end
 
       def constraint_end
-        puts "\n */"
       end
 
       # Of the players of a set of roles, return the one that's a subclass of (or same as) all others, else nil

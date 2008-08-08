@@ -29,6 +29,7 @@ module ActiveFacts
                                   }
         / at s most s quantity    { def value; [ nil, quantity.value ]; end }
         / from s numeric_range s  { def value; numeric_range.value; end }
+        / either_all_or_none s    { def value; [ -1, 1 ]; end }
       end
 
       rule quantity
@@ -38,12 +39,14 @@ module ActiveFacts
 
       rule acyclic 'acyclic' !alphanumeric end
       rule alias 'alias' !alphanumeric end 
+      rule all 'all' !alphanumeric end
       rule and 'and' !alphanumeric end
       rule as 'as' !alphanumeric end
       rule at 'at' !alphanumeric end
       rule by 'by' !alphanumeric end 
       rule definitely 'definitely' !alphanumeric end
       rule each 'each' !alphanumeric end 
+      rule either 'either' !alphanumeric end 
       rule entity 'entity' !alphanumeric end 
       rule exactly 'exactly' !alphanumeric end
       rule false 'false' !alphanumeric end 
@@ -58,7 +61,10 @@ module ActiveFacts
       rule matches 'matches' !alphanumeric end
       rule maybe 'maybe' !alphanumeric end
       rule most 'most' !alphanumeric end
+      rule none 'none' !alphanumeric end
+      rule either_all_or_none either s all s or s none end
       rule one 'one' !alphanumeric end
+      rule only 'only' !alphanumeric end
       rule or 'or' !alphanumeric end 
       rule restricted 'restricted' !alphanumeric end
       rule returning 'returning' !alphanumeric end

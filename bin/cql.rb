@@ -8,16 +8,24 @@ require 'activefacts/cql/parser'
 require 'readline'
 
 parser = ActiveFacts::CQLParser.new
+parser.root = :definition
 statement = ""
 while line = Readline::readline(statement == "" ? "CQL? " : "CQL+ ", [])
-  # If after stripping string literals the line contains a ';', it's the last line of the command:
   statement << line
-  if line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
+  if line =~ %r{\A/}
+    # meta-command, modify the parser call
+    case (words = line.split).shift
+    when "/root"
+      parser.root = words[0] && words[0].to_sym || :definition
+    else
+      puts "Unknown metacommand #{line}, dod you mean /root <rule>?"
+    end
+  elsif line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
+    # After stripping string literals the line contains a ';', it's the last line of the command:
     begin
-      parser.root = :definition
       result = parser.parse(statement)
       if result
-        p result.value
+        p result.value rescue p result  # In case the root is changed and there's no value()
         #p parser.definition(result)
       else
         p parser.failure_reason

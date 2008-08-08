@@ -30,10 +30,8 @@ StudentParticipation is where
 
 /*
  * Constraints:
-
+ */
 Student represents School in Activity
 	only if Student is enrolled in School;
 Student represents School in Activity
 	only if School sanctions Activity;
-
- */

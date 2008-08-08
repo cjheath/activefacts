@@ -23,7 +23,7 @@ require 'activefacts/api/numeric'
 
 # Add the methods that convert our classes into Concept types:
 
-ValueClasses = [String, Date, DateTime, Int, Real, AutoCounter]
+ValueClasses = [String, Date, DateTime, Time, Int, Real, AutoCounter]
 ValueClasses.each{|c|
     c.send :extend, ActiveFacts::API::ValueClass
   }

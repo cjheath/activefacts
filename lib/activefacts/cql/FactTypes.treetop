@@ -1,8 +1,19 @@
 module ActiveFacts
   module CQL
     grammar FactTypes
-      rule fact_type
-        s opt_name:(name:id ( s '=' s / defined_as / s is s where ) )?
+      rule named_fact_type
+        s name:id ( s '=' s / defined_as / s is s where )
+        anonymous_fact_type
+        {
+          def value
+            f = anonymous_fact_type.value
+            f[0] = name.text_value
+            f
+          end
+        }
+      end
+
+      rule anonymous_fact_type
         f0:fact_clause
           ftail:( (',' / and ) s f1:fact_clause s )*
           ctail:( (':' / where) s c:conditions s)?
@@ -10,14 +21,13 @@ module ActiveFacts
         s ';' s
         {
           def value
-            [ opt_name.elements ? opt_name.name.text_value : nil,
-              defined_type ]
-          end
-          def defined_type
             [
-              :fact_type,
-              [ f0.body, *ftail.elements.map{|e| e.f1.body } ],
-              !ctail.empty? ? ctail.c.condition_list : []
+              nil,    # Anonymous fact type
+              [
+                :fact_type,
+                [ f0.body, *ftail.elements.map{|e| e.f1.body } ],
+                !ctail.empty? ? ctail.c.condition_list : []
+              ]
             ]
           end
         }
@@ -35,20 +45,21 @@ module ActiveFacts
         head:condition s tail:( (',' s / and S) next:condition s )*
         {
           def condition_list
-            [head.condition] + tail.elements.map{|i| i.next.condition}
+            [head.value] + tail.elements.map{|i| i.next.value}
           end
         }
       end
 
       rule condition
-        head:clause s tail:(or S alternate:clause s )*
+        head:clause s
+#        tail:(or S alternate:clause s )*
         {
-          def condition
-            if tail.elements.size == 0
+          def value
+#            if tail.elements.size == 0
               head.clause
-            else
-              [:"||", head.clause] + tail.elements.map{|i| i.alternate.clause}
-            end
+#            else
+#              [:"||", head.clause] + tail.elements.map{|i| i.alternate.clause}
+#            end
           end
         }
       end
@@ -93,16 +104,12 @@ module ActiveFacts
       end
 
       rule reading
-        roles:role+ &reading_end
+        role+
         {
           def value
-            roles.elements.map{|r| r.value}
+            elements.map{|r| r.value}
           end
         }
-      end
-
-      rule reading_end
-        (s ( ':' / '[' / ',' / ';' / or / and / returning ) )
       end
 
       # This is the rule that causes most back-tracking. I think you can see why.
@@ -139,10 +146,10 @@ module ActiveFacts
       end
 
       rule non_role
-        comparator /
-        '||' /
-        add_op /
-        mul_op
+        # Any of these is illegal in or following a reading:
+        comparator
+        / add_op
+        / mul_op
       end
 
       rule role_word
@@ -150,10 +157,13 @@ module ActiveFacts
       end
 
       rule non_role_word
-        quantifier
-        / boolean
-        / restriction
+        # These words are illegal in (but maybe ok following) a reading where a role word is expected:
+        and
         / if
+        / only
+        / or
+        / quantifier
+        / restriction
       end
 
     end

@@ -205,7 +205,7 @@ ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 
 /*
  * Constraints:
-
+ */
 for each Concept exactly one of these holds:
 	EntityType is a subtype of Concept,
 	ValueType is a subtype of Concept;
@@ -247,5 +247,3 @@ each ValueRange occurs at least one time in
 	ValueRange has maximum-Bound;
 ValueType has Scale
 	only if ValueType has Length;
-
- */

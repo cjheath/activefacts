@@ -15,20 +15,10 @@ module ActiveFacts
               e.value rescue $stderr.puts "Can't call value() on #{e.inspect}"
             }
         end
-        def inspect
-          definitions.map{|d|
-              d.inspect
-            }*"\n"
-        end
-        def compile
-          definitions.each{|d|
-              p d
-            }
-        end
       }
     end
 
-    # Each definition has a value method that returns an array like
+    # Each definition has a value() method that returns an array like
     # either [name, [kind, definition]] or [name, kind]:
     rule definition
       vocabulary_definition
@@ -51,31 +41,58 @@ module ActiveFacts
       {
         def value
           puts "import #{id.text_value}: not implemented"
-          [ id.text_value, [ :import ] ]
+          [ id.text_value, [ :import ], alias_list.value ]
         end
       }
     end
 
     # REVISIT: Need a way to define equivalent readings for fact types here (and in the metamodel)
     rule alias_list
-      ( s ',' s alias S aliased:id S as S alias:id s )*
+      ( s ',' s alias S aliase_from:id S as S alias_to:id s )*
+      {
+        def value
+          elements.inject({}){|h, e| h[e.aliase_from.text_value] = e.alias_to; h }
+        end
+      }
     end
 
     rule constraint
-      (
-	( 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
-	/ 'each' s role_list s 'occurs' s quantifier s 'time' s 'in' s
-	)
-	reading ( s ',' s reading )*
-#	/
-#	s reading s 'only' s 'if' s reading
-      )
-      s ';' s
-      {
-	def value
-	  [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]
-	end
-      }
+      subset_constraint /
+      equality_constraint /
+      for_each_constraint /
+      each_constraint
+    end
+
+    rule for_each_constraint
+      'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
+      readings_list s
+      ';' s
+      { def value; [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]; end }
+    end
+
+    rule each_constraint
+      'each' s role_list s 'occurs' s quantifier s 'time' s 'in' s
+      readings_list s
+      ';' s
+      { def value; [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]; end }
+    end
+
+    rule subset_constraint
+      reading s only s if s reading s ';' s
+      { def value; [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]; end }
+    end
+
+    rule equality_constraint
+      reading s if s and s only s if s reading s ';' s
+      { def value; [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]; end }
+    end
+
+    rule readings_list
+      readings ( ',' s readings )*
+    end
+
+    rule readings
+      reading s ( and s reading s )*
     end
 
   end
