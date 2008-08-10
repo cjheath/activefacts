@@ -65,7 +65,7 @@ module ActiveFacts
               when :fact_type
                 fact_type *value
               when :constraint
-                $stderr.puts "REVISIT: external constraints aren't yet handled"
+                $stderr.puts "REVISIT: external #{value[0]} constraints aren't yet handled:\n\t"+value[1..-1].map{|a| a.inspect }*"\n\t"
               else
                 print "="*20+" unhandled declaration type: "; p kind, value
               end

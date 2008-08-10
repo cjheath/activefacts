@@ -189,7 +189,7 @@ module ActiveFacts
         players = c.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
 
         puts \
-          "each #{players*", "} occurs #{c.frequency} time in\n\t"+
+          "each #{players.size > 1 ? "combination " : ""}#{players*", "} occurs #{c.frequency} time in\n\t"+
           "#{c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type.default_reading([], nil)}*",\n\t"}" +
             ";"
 

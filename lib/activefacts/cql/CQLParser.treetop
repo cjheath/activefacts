@@ -59,40 +59,53 @@ module ActiveFacts
     rule constraint
       subset_constraint /
       equality_constraint /
-      for_each_constraint /
-      each_constraint
+      set_constraint /
+      presence_constraint
+      # REVISIT: / value_constraint
     end
 
-    rule for_each_constraint
+    # set (exclusion, mandatory exclusion, complex equality) constraint
+    rule set_constraint
       'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
       readings_list s
       ';' s
-      { def value; [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]; end }
+      { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, *readings_list.value ] ]; end }
     end
 
-    rule each_constraint
-      'each' s role_list s 'occurs' s quantifier s 'time' s 'in' s
+    # presence constraint:
+    rule presence_constraint
+      'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s 'in' s
       readings_list s
       ';' s
-      { def value; [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]; end }
+      { def value; [ nil, [ :constraint, :presence, role_list.roles, quantifier.value, readings_list.value ] ]; end }
     end
 
     rule subset_constraint
-      reading s only s if s reading s ';' s
-      { def value; [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]; end }
+      reading s only s if s r2:reading s ';' s
+      { def value; [ nil, [ :constraint, :subset, reading.value, r2.value ] ]; end }
     end
 
     rule equality_constraint
-      reading s if s and s only s if s reading s ';' s
-      { def value; [ nil, [ :constraint, "NOT IMPLEMENTED" ] ]; end }
+      reading s if s and s only s if s r2:reading s ';' s
+      { def value; [ nil, [ :constraint, :set, [reading.value], [r2.value] ] ]; end }
     end
 
     rule readings_list
-      readings ( ',' s readings )*
+      readings tail:( ',' s readings )*
+      {
+        def value
+          [readings.value]+tail.elements.map{|e| e.readings.value }
+        end
+      }
     end
 
     rule readings
-      reading s ( and s reading s )*
+      reading s tail:( and s reading s )*
+      {
+        def value
+          [reading.value]+tail.elements.map{|e| e.reading.value }
+        end
+      }
     end
 
   end
