@@ -92,20 +92,12 @@ module ActiveFacts
 
     rule readings_list
       readings tail:( ',' s readings )*
-      {
-        def value
-          [readings.value]+tail.elements.map{|e| e.readings.value }
-        end
-      }
+      { def value; [readings.value]+tail.elements.map{|e| e.readings.value }; end }
     end
 
     rule readings
       reading s tail:( and s reading s )*
-      {
-        def value
-          [reading.value]+tail.elements.map{|e| e.reading.value }
-        end
-      }
+      { def value; [reading.value]+tail.elements.map{|e| e.reading.value }; end }
     end
 
   end

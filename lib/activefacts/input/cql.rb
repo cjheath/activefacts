@@ -136,7 +136,7 @@ module ActiveFacts
 
           # Use a two-pass algorithm for entity fact types...
           # The first step is to find all role references and definitions in the clauses
-          # After bind_roles, each item in the phrase array of each clause is either:
+          # After bind_roles, each item in the reading part of each clause is either:
           # * a string, which is a linking word, or
           # * the phrase hash augmented with a :binding=>Binding
           @symbols = SymbolTable.new(@constellation, @vocabulary)
@@ -158,9 +158,9 @@ module ActiveFacts
             @embedded_presence_constraints = []
             debug "New Fact Type for entity #{name}" do
               clauses_for_fact_type.each do |clause|
-                type, qualifiers, phrases = *clause
+                type, qualifiers, reading = *clause
                 debug :reading, "Clause: #{clause.inspect}" do
-                  f = process_fact_clause(fact_type, qualifiers, phrases)
+                  f = process_fact_clause(fact_type, qualifiers, reading)
                   fact_type ||= f
                 end
               end
@@ -241,8 +241,8 @@ module ActiveFacts
         end
       end
 
-      def fact_type(name, readings, clauses) 
-        debug "Processing readings for fact type" do
+      def fact_type(name, clauses, conditions) 
+        debug "Processing clauses for fact type" do
           fact_type = nil
 
           @embedded_presence_constraints = []
@@ -253,16 +253,16 @@ module ActiveFacts
           # The first step is to find all role references and definitions in the reading clauses.
           # This also:
           # * deletes any adjectives that were used but not hyphenated
-          # * changes linking word phrases into simple Strings
+          # * changes each linking word phrase into a simple String
           # * adds a :binding key to each bound role
           #
           @symbols = SymbolTable.new(@constellation, @vocabulary)
-          @symbols.bind_roles(readings)
+          @symbols.bind_roles(clauses)
 
-          readings.each do |reading|
-            kind, qualifiers, phrases = *reading
+          clauses.each do |clause|
+            kind, qualifiers, reading = *clause
 
-            fact_type = process_fact_clause(fact_type, qualifiers, phrases)
+            fact_type = process_fact_clause(fact_type, qualifiers, reading)
           end
 
           # The fact type has a name iff it's objectified as an entity type
@@ -276,13 +276,13 @@ module ActiveFacts
             fact_type_identification(fact_type, name, true)
           end
 
-          # REVISIT: Process the fact derivation clauses, if any
+          # REVISIT: Process the fact derivation conditions, if any
         end
       end
 
-      def process_fact_clause(fact_type, qualifiers, phrases)
-        debug :reading, "Processing reading #{phrases.inspect}" do
-          role_phrases = phrases.select do |phrase|
+      def process_fact_clause(fact_type, qualifiers, reading)
+        debug :reading, "Processing reading #{reading.inspect}" do
+          role_phrases = reading.select do |phrase|
             Hash === phrase && phrase[:binding]
           end
 
@@ -340,7 +340,7 @@ module ActiveFacts
           process_qualifiers(role_sequence, qualifiers)
 
           # Save the first role sequence to be used for a default PresenceConstraint
-          add_reading(fact_type, role_sequence, phrases)
+          add_reading(fact_type, role_sequence, reading)
         end
         fact_type
       end
@@ -370,10 +370,10 @@ module ActiveFacts
       def clauses_by_fact_type(clauses)
         clause_group_by_role_players = {}
         clauses.inject([]) do |clause_groups, clause|
-          type, qualifiers, phrases = *clause
+          type, qualifiers, reading = *clause
 
           debug "Clause: #{clause.inspect}"
-          roles = phrases.map do |phrase|
+          roles = reading.map do |phrase|
             Hash === phrase ? phrase[:binding] : nil
           end.compact
 
@@ -490,15 +490,15 @@ module ActiveFacts
         nil
       end
 
-      def add_reading(fact_type, role_sequence, phrases)
+      def add_reading(fact_type, role_sequence, reading)
         ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
-        reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
+        defined_reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
         role_num = -1
-        reading.reading_text = phrases.map {|phrase|
+        defined_reading.reading_text = reading.map {|phrase|
             Hash === phrase ? "{#{role_num += 1}}" : phrase
           }*" "
-        raise "Wrong number of players (#{role_num+1}) found in reading #{reading.reading_text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
-        debug "Added reading #{reading.reading_text}"
+        raise "Wrong number of players (#{role_num+1}) found in reading #{defined_reading.reading_text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
+        debug "Added reading #{defined_reading.reading_text}"
       end
 
 =begin
@@ -680,24 +680,24 @@ module ActiveFacts
           identification ||= []
           disallow_loose_binding = identification.select{|id| id.size == 1}.flatten.uniq.inject({}) { |h, v| h[v] = true; h }
           clauses.each do |clause|
-            type, qualifiers, phrases = *clause
+            type, qualifiers, reading = *clause
             debug :bind, "Binding a clause"
             phrase_numbers_used_speculatively = []
             disallow_loose_binding_this_clause = disallow_loose_binding.clone
-            phrases.each_with_index do |phrase, index|
+            reading.each_with_index do |phrase, index|
               la = phrase[:leading_adjective]
               player_name = phrase[:word]
               ta = phrase[:trailing_adjective]
               role_name = phrase[:role_name]
 
-              # We use the preceeding and following phrases speculatively if they're simple words:
+              # We use the preceeding phrase and/or following phrase speculatively if they're simple words:
               preceeding_phrase = nil
               following_phrase = nil
-              if !la && index > 0 && (preceeding_phrase = phrases[index-1])
+              if !la && index > 0 && (preceeding_phrase = reading[index-1])
                 preceeding_phrase = nil unless String === preceeding_phrase || preceeding_phrase.keys == [:word]
                 la = preceeding_phrase[:word] if Hash === preceeding_phrase
               end
-              if !ta && (following_phrase = phrases[index+1])
+              if !ta && (following_phrase = reading[index+1])
                 following_phrase = nil unless following_phrase.keys == [:word]
                 ta = following_phrase[:word] if following_phrase
               end
@@ -737,15 +737,15 @@ module ActiveFacts
               else
                 raise "Internal error; role #{phrase.inspect} not matched" unless phrase.keys == [:word]
                 # Just a linking word
-                phrases[index] = phrase[:word]
+                reading[index] = phrase[:word]
               end
               debug :bind, "Bound phrase: #{phrase.inspect}" + " -> " + (player ? player.name+", "+binding.inspect : phrase[:word].inspect)
 
             end
             phrase_numbers_used_speculatively.each do |index|
-              phrases.delete_at(index)
+              reading.delete_at(index)
             end
-            debug :bind, "Bound clause: #{phrases.inspect}"
+            debug :bind, "Bound clause: #{reading.inspect}"
           end
         end
       end # of SymbolTable class
