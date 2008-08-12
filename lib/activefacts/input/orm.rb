@@ -208,13 +208,8 @@ module ActiveFacts
           facts << @by_id[id] = inheritance_fact
 
           # Create the new Roles so we can find constraints on them:
-          subtype_role = @by_id[subtype_role_id] = @constellation.Role(:new)
-          subtype_role.concept = subtype
-          subtype_role.fact_type = inheritance_fact
-
-          supertype_role = @by_id[supertype_role_id] = @constellation.Role(:new)
-          supertype_role.concept = supertype
-          supertype_role.fact_type = inheritance_fact
+          subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, subtype)
+          supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, supertype)
 
           # Create readings, so constraints can be verbalised for example:
           rs = @constellation.RoleSequence(:new)
@@ -318,11 +313,9 @@ module ActiveFacts
             name = x.attributes['Name'] || ''
             name.gsub!(/\s/,'')
             name = nil if name.size == 0
-            #puts "Creating role #{name} of #{fact_type.fact_type_id} played by #{concept.name}"
+            #puts "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.fact_type_id} played by #{concept.name}"
 
-            role = @by_id[id] = @constellation.Role(:new)
-            role.concept = concept
-            role.fact_type = fact_type
+            role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, concept)
             role.role_name = name if name
             # puts "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x.attributes['Name']} is played by #{concept.name}, role is #{role.object_id}"
 
@@ -330,10 +323,10 @@ module ActiveFacts
             x_vr.each{|vr|
               x_ranges = vr.elements.to_a("orm:RoleValueConstraint/orm:ValueRanges/orm:ValueRange")
               next if x_ranges.size == 0
-              role.value_restriction = @constellation.ValueRestriction(:new)
+              role.role_value_restriction = @constellation.ValueRestriction(:new)
               x_ranges.each{|x_range|
                 v_range = value_range(x_range)
-                ar = @constellation.AllowedRange(v_range, role.value_restriction)
+                ar = @constellation.AllowedRange(v_range, role.role_value_restriction)
               }
             }
 

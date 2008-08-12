@@ -24,7 +24,7 @@ CEO is a kind of Manager;
 
 /*
  * Constraints:
- */
 for each Employee exactly one of these holds:
 	that Employee is managed by some Manager,
 	that Employee is_CEO;
+ */

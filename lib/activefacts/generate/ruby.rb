@@ -158,7 +158,7 @@ module ActiveFacts
         role_name = nil if role_name == role.concept.name.snakecase
 
         binary_dump(other_role_name, other_player, one_to_one, nil, role_name, other_role_method)
-        puts "    \# REVISIT: #{other_role_name} has restricted values\n" if role.value_restriction
+        puts "    \# REVISIT: #{other_role_name} has restricted values\n" if role.role_value_restriction
       end
 
       def subtype_dump(o, supertypes, pi = nil)

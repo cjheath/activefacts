@@ -42,8 +42,8 @@ Person lives at at most one Address;
 
 /*
  * Constraints:
- */
 Street includes third-StreetLine
 	only if Street includes second-StreetLine;
 Street includes second-StreetLine
 	only if Street includes first-StreetLine;
+ */

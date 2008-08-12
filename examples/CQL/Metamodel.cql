@@ -18,7 +18,6 @@ Numerator is defined as Decimal();
 Ordinal is defined as UnsignedSmallInteger(32);
 ReadingText is defined as VariableLengthText(256);
 RingType is defined as VariableLengthText();
-RoleId is defined as AutoCounter();
 RoleSequenceId is defined as AutoCounter();
 Scale is defined as UnsignedInteger(32);
 UnitId is defined as AutoCounter();
@@ -150,11 +149,10 @@ Alias is a kind of Feature;
 
 Concept is a kind of Feature;
 Instance is of exactly one Concept;
-Role is identified by RoleId where
-	Role has exactly one RoleId,
-	RoleId is of at most one Role,
-	Concept plays role in FactType,
-	FactType has role played by at least one Concept;
+Role is where
+	FactType has Ordinal role played by Concept,
+	Concept plays role in FactType in Ordinal place,
+	Concept plays Ordinal role in FactType;
 Role is of RingConstraint,
 	RingConstraint has at most one Role;
 Role has at most one role-Name,
@@ -205,7 +203,6 @@ ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 
 /*
  * Constraints:
- */
 for each Concept exactly one of these holds:
 	EntityType is a subtype of Concept,
 	ValueType is a subtype of Concept;
@@ -219,21 +216,21 @@ each RoleSequence occurs at least one time in
 	Role is in RoleSequence in Ordinal place;
 for each RoleValue, Concept either all or none of these holds:
 	Instance plays RoleValue and Instance is of Concept,
-	RoleValue is of Role and Concept plays role in FactType;
+	RoleValue is of Role and FactType has Ordinal role played by Concept;
 for each RoleValue, FactType either all or none of these holds:
 	RoleValue fulfils Fact and Fact is of FactType,
-	RoleValue is of Role and Concept plays role in FactType;
+	RoleValue is of Role and FactType has Ordinal role played by Concept;
 for each Unit exactly one of these holds:
 	Unit is fundamental,
 	that Unit is derived from some base-Unit;
-each Name, Vocabulary occurs at most one time in
+each combination Name, Vocabulary occurs at most one time in
 	Name is of Constraint,
 	Vocabulary contains Constraint;
 for each Feature exactly one of these holds:
 	Vocabulary is a subtype of Feature,
 	Concept is a subtype of Feature,
 	Alias is a subtype of Feature;
-each EntityType, TypeInheritance occurs at most one time in
+each combination EntityType, TypeInheritance occurs at most one time in
 	EntityType is subtype of super-EntityType,
 	TypeInheritance provides identification;
 PresenceConstraint is preferred identifier
@@ -242,8 +239,11 @@ each PresenceConstraint occurs at least one time in
 	PresenceConstraint has min-Frequency,
 	PresenceConstraint has max-Frequency,
 	PresenceConstraint is mandatory;
+each FactType occurs at least one time in
+	FactType has Ordinal role played by Concept;
 each ValueRange occurs at least one time in
 	ValueRange has minimum-Bound,
 	ValueRange has maximum-Bound;
 ValueType has Scale
 	only if ValueType has Length;
+ */

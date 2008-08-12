@@ -311,7 +311,7 @@ module ActiveFacts
             player = binding.concept
             if (fact_type.all_reading.size == 0)           # First reading
               # Assert this role of the fact type:
-              role = @constellation.Role(:new, :fact_type => fact_type, :concept => player)
+              role = @constellation.Role(fact_type, fact_type.all_role.size, player)
               role.role_name = role_name if role_name
               debug "Concept #{player.name} found, created role #{role.describe} by binding #{binding.inspect}"
               @roles_by_binding[binding] = role
@@ -480,8 +480,8 @@ module ActiveFacts
       end
 
       def find_pc_over_roles(roles)
-        return nil if roles.size == 0 # Safeguard; this would create a Role with a nil role_id
-        @constellation.Role(roles[0]).all_role_ref.each do |role_ref|
+        return nil if roles.size == 0 # Safeguard; this would chuck an exception otherwise
+        roles[0].all_role_ref.each do |role_ref|
           next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
           pc = role_ref.role_sequence.all_presence_constraint[0]
           #puts "Existing PresenceConstraint matches those roles!" if pc

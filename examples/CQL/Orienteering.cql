@@ -103,8 +103,7 @@ Series has exactly one SeriesName (as Name),
 
 /*
  * Constraints:
- */
-each GivenName, FamilyName occurs at most one time in
+each combination GivenName, FamilyName occurs at most one time in
 	Person has GivenName,
 	Person has FamilyName;
 Event is in Series
@@ -113,11 +112,12 @@ Event is in Series
 each Event occurs at least one time in
 	Event is called EventName,
 	Event is in Series;
-each Series, Number occurs at most one time in
+each combination Series, Number occurs at most one time in
 	Event is in Series,
 	Event has Number;
-each Course, Event occurs at most one time in
+each combination Course, Event occurs at most one time in
 	ScoringMethod is used for Course of Event,
 	ScoringMethod is used for Course of Event;
 each EventControl occurs at least one time in
 	Punch is placed at EventControl;
+ */

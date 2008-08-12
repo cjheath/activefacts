@@ -63,10 +63,6 @@ module ActiveFacts
       value_type 
     end
 
-    class RoleId < AutoCounter
-      value_type 
-    end
-
     class RoleSequenceId < AutoCounter
       value_type 
     end
@@ -258,12 +254,12 @@ module ActiveFacts
     end
 
     class Role
-      identified_by :role_id
+      identified_by :fact_type, :ordinal, :concept
       has_one :concept                            # See Concept.all_role
       has_one :fact_type                          # See FactType.all_role
+      has_one :ordinal                            # See Ordinal.all_role
       has_one :role_name, Name                    # See Name.all_role_by_role_name
-      has_one :value_restriction                  # See ValueRestriction.all_role
-      one_to_one :role_id                         # See RoleId.role
+      has_one :role_value_restriction, ValueRestriction  # See ValueRestriction.all_role_by_role_value_restriction
     end
 
     class RoleRef

@@ -38,7 +38,6 @@ Map is where
 
 /*
  * Constraints:
- */
 each ID occurs exactly one time in
 	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
 each EventName occurs at most one time in
@@ -51,3 +50,4 @@ each Club occurs at least one time in
 	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
 each Event occurs at least one time in
 	Event includes Control which is worth PointValue;
+ */
