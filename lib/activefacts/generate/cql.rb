@@ -279,13 +279,15 @@ module ActiveFacts
         end
         #puts "#{c.class.basename} has players #{players.map{|p| p.name}*", "}"
 
-        if (SetEqualityConstraint === c && player_count == 1 && role_seq_count == 2)
+        if (SetEqualityConstraint === c &&
+#          player_count == 1 &&
+          role_seq_count == 2)
           print "some " if players_differ[0]
           # some A relates some B IF AND ONLY IF that A relates some C
           puts \
-            scrs[0].role_sequence.all_role_ref[0].role.fact_type.default_reading([], nil) +
+            scrs[0].role_sequence.all_role_ref.map{|rr| rr.role.fact_type.default_reading([], nil) }*" and " +
             "\n\tif and only if\n\t" +
-            scrs[1].role_sequence.all_role_ref[0].role.fact_type.default_reading([], nil) +
+            scrs[1].role_sequence.all_role_ref.map{|rr| rr.role.fact_type.default_reading([], nil) }*" and " +
             ";"
           return
         end

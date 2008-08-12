@@ -86,8 +86,8 @@ module ActiveFacts
     end
 
     rule equality_constraint
-      reading s if s and s only s if s r2:reading s ';' s
-      { def value; [ nil, [ :constraint, :set, [reading.value], [r2.value] ] ]; end }
+      readings s if s and s only s if s r2:readings s ';' s
+      { def value; [ nil, [ :constraint, :set, [readings.value], [r2.value] ] ]; end }
     end
 
     rule readings_list
