@@ -17,10 +17,13 @@ while line = Readline::readline(statement == "" ? "CQL? " : "CQL+ ", [])
     case (words = line.split).shift
     when "/root"
       parser.root = words[0] && words[0].to_sym || :definition
+      puts "ok"
     else
-      puts "Unknown metacommand #{line}, dod you mean /root <rule>?"
+      puts "Unknown metacommand #{line}, did you mean /root <rule>?"
     end
-  elsif line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
+    statement = ''
+  elsif parser.root != :definition or
+      line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
     # After stripping string literals the line contains a ';', it's the last line of the command:
     begin
       result = parser.parse(statement)
