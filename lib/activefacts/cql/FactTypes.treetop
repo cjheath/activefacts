@@ -65,7 +65,7 @@ module ActiveFacts
       end
 
       rule clause
-        (fact_clause / comparison)
+        (comparison / fact_clause)
         {
           def clause
             self.body
