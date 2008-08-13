@@ -270,8 +270,8 @@ module ActiveFacts
           fact_type.entity_type = @constellation.EntityType(name, @vocabulary) if name
 
           # Add the identifying PresenceConstraint for this fact type:
-          if fact_type.all_role.size == 1
-            # All is well, unaries don't need an identifying PC even if objectified
+          if fact_type.all_role.size == 1 && !fact_type.entity_type
+            # All is well, unaries don't need an identifying PC unless objectified
           else
             fact_type_identification(fact_type, name, true)
           end
