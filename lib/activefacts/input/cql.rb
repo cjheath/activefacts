@@ -65,7 +65,7 @@ module ActiveFacts
               when :fact_type
                 fact_type *value
               when :constraint
-                $stderr.puts "REVISIT: external #{value[0]} constraints aren't yet handled:\n\t"+value[1..-1].map{|a| a.inspect }*"\n\t"
+                constraint *value
               else
                 print "="*20+" unhandled declaration type: "; p kind, value
               end
@@ -140,7 +140,7 @@ module ActiveFacts
           # * a string, which is a linking word, or
           # * the phrase hash augmented with a :binding=>Binding
           @symbols = SymbolTable.new(@constellation, @vocabulary)
-          @symbols.bind_roles(clauses, identification ? identification[:roles] : nil)
+          @symbols.bind_roles_in_clauses(clauses, identification ? identification[:roles] : nil)
 
           # Next arrange the readings according to what fact they belong to,
           # then process each fact type using normal fact type processing.
@@ -160,7 +160,7 @@ module ActiveFacts
               clauses_for_fact_type.each do |clause|
                 type, qualifiers, reading = *clause
                 debug :reading, "Clause: #{clause.inspect}" do
-                  f = process_fact_clause(fact_type, qualifiers, reading)
+                  f = bind_fact_reading(fact_type, qualifiers, reading)
                   fact_type ||= f
                 end
               end
@@ -257,12 +257,12 @@ module ActiveFacts
           # * adds a :binding key to each bound role
           #
           @symbols = SymbolTable.new(@constellation, @vocabulary)
-          @symbols.bind_roles(clauses)
+          @symbols.bind_roles_in_clauses(clauses)
 
           clauses.each do |clause|
             kind, qualifiers, reading = *clause
 
-            fact_type = process_fact_clause(fact_type, qualifiers, reading)
+            fact_type = bind_fact_reading(fact_type, qualifiers, reading)
           end
 
           # The fact type has a name iff it's objectified as an entity type
@@ -280,7 +280,126 @@ module ActiveFacts
         end
       end
 
-      def process_fact_clause(fact_type, qualifiers, reading)
+      def constraint *value
+        case value[0]
+        when :presence
+          presence_constraint value[1], value[2], value[3]
+        else
+          $stderr.puts "REVISIT: external #{value[0]} constraints aren't yet handled:\n\t"+value[1..-1].map{|a| a.inspect }*"\n\t"
+        end
+      end
+
+      def presence_constraint(constrained_role_names, quantifier, readings)
+        readings = readings.map{|r| r[0] }    # REVISIT: Join presence constraints not supported yet
+        #p readings
+
+        @embedded_presence_constraints = []
+        @roles_by_binding = {}   # Build a hash of allowed bindings on first reading (check against it on subsequent ones)
+        @allowed_forward = {} # No roles may be forward-referenced
+        @symbols = SymbolTable.new(@constellation, @vocabulary)
+
+        # Find players for all constrained_role_names. These may use leading or trailing adjective forms...
+        constrained_players = []
+        constrained_bindings = []
+        constrained_role_names.each do |role_name|
+          player, binding = @symbols.bind(role_name)
+          constrained_players << player
+          constrained_bindings << binding
+        end
+        #puts "Constrained bindings are #{constrained_bindings.inspect}"
+        #puts "Constrained bindings object_id's are #{constrained_bindings.map{|b|b.object_id.to_s}*","}"
+
+        # Find players for all the concepts in all readings:
+        @symbols.bind_roles_in_readings(readings)
+
+        constrained_roles = []
+        unmatched_roles = constrained_role_names.clone
+        readings.each do |reading|
+          # puts reading.inspect
+
+          # If this succeeds, the reading found matches the roles in our phrases
+          existing_reading = existing_fact_reading(reading)
+          raise "Fact type reading not found for #{reading.inspect}" unless existing_reading
+
+          # Look for the constrained role(s); the bindings will be the same
+          matched_bindings = reading.select{|p| Hash === p}.map{|p| p[:binding]}
+          #puts "matched_bindings = #{matched_bindings.inspect}"
+          #puts "matched_bindings object_id's are #{matched_bindings.map{|b|b.object_id.to_s}*","}}"
+          matched_bindings.each_with_index{|b, pos|
+            i = constrained_bindings.index(b)
+            next unless i
+            unmatched_roles[i] = nil
+            #puts "found #{constrained_bindings[i].inspect} found as #{b.inspect} in position #{i.inspect}"
+            role = existing_reading.role_sequence.all_role_ref[pos].role
+            constrained_roles << role unless constrained_roles.include?(role)
+          }
+        end
+
+        # Check that all constrained roles were matched at least once:
+        unmatched_roles.compact!
+        raise "Constrained roles #{unmatched_roles.map{|ur| ur*"-"}*", "} not found in fact types" if unmatched_roles.size != 0
+
+        rs = @constellation.RoleSequence(:new)
+        #puts "constrained_roles: #{constrained_roles.map{|r| r.concept.name}.inspect}"
+        constrained_roles.each_with_index do |role, index|
+          raise "Constrained role #{constrained_role_names[index]} not found" unless role
+          rr = @constellation.RoleRef(rs, index)
+          rr.role = role
+        end
+        #puts "New external PresenceConstraint with quantifier = #{quantifier.inspect} over #{rs.describe}"
+        @constellation.PresenceConstraint(
+            :new,
+            :name => '',
+            :enforcement => '',
+            :vocabulary => @vocabulary,
+            :role_sequence => rs,
+            :min_frequency => quantifier[0],
+            :max_frequency => quantifier[1],
+            :is_preferred_identifier => false,
+            :is_mandatory => quantifier[0] && quantifier[0] > 0
+          )
+      end
+
+      def existing_fact_reading(reading)
+        players = reading.select{|p| Hash === p}.map{|p| p[:binding].concept }
+        players[0].all_role.each do |role|
+          # Does this fact type have the right number of roles?
+          next if role.fact_type.all_role.size != players.size
+
+          # Does this fact type include the correct other players?
+          next if role.fact_type.all_role.detect{|r| !players.include?(r.concept)}
+
+          # Oooh, a real candidate. Check the reading words.
+          debug "Considering "+role.fact_type.describe do
+            next unless role.fact_type.all_reading.detect do |candidate_reading|
+              debug "Considering reading"+candidate_reading.reading_text do
+                to_match = reading.clone
+                candidate_reading.words_and_role_refs.each do |wrr|
+                  if (RoleRef === wrr)
+                    break unless Hash === to_match.first
+                    break unless binding = to_match[0][:binding]
+                    break unless binding.concept == wrr.role.concept
+                    break if wrr.leading_adjective && binding.leading_adjective != wrr.leading_adjective
+                    break if wrr.trailing_adjective && binding.trailing_adjective != wrr.trailing_adjective
+
+                    # All matched.
+                    to_match.shift
+                  else
+                    break unless String === to_match[0]
+                    break unless to_match[0] == wrr
+                    to_match.shift
+                  end
+                end
+                debug "Reading match was #{to_match.size == 0 ? "ok" : "bad"}"
+                return candidate_reading if to_match.size == 0
+              end
+            end
+          end
+        end
+        nil
+      end
+
+      def bind_fact_reading(fact_type, qualifiers, reading)
         debug :reading, "Processing reading #{reading.inspect}" do
           role_phrases = reading.select do |phrase|
             Hash === phrase && phrase[:binding]
@@ -356,6 +475,7 @@ module ActiveFacts
               :is_preferred_identifier => prefer,
               :max_frequency => 1              # Unique
             )
+          # REVISIT: The UC might be provided later as an external constraint, relax this rule:
           raise "'#{fact_type.default_reading}': non-unary fact types having no uniqueness constraints must be objectified (named)" unless fact_type.entity_type
           debug "Made default fact type identifier #{identifier.object_id} over #{first_role_sequence.describe} in #{fact_type.describe}"
         elsif prefer
@@ -674,16 +794,29 @@ module ActiveFacts
           player
         end
 
-        def bind_roles(clauses, identification = [])
-          debug :bind, "Binding a definition"
-          # Loose binding is never allowed for single-word identifying roles:
+        def bind_roles_in_clauses(clauses, identification = [])
           identification ||= []
-          disallow_loose_binding = identification.select{|id| id.size == 1}.flatten.uniq.inject({}) { |h, v| h[v] = true; h }
-          clauses.each do |clause|
-            type, qualifiers, reading = *clause
-            debug :bind, "Binding a clause"
+          bind_roles_in_readings(
+              clauses.map{|clause| clause[2]},    # Extract the readings
+              single_word_identifiers = identification.map{|i| i.size == 1 ? i[0] : nil}.compact.uniq
+            )
+        end
+
+        #
+        # Walk through all phrases of all readings identifying role players.
+        # Each role player phrase gets a :binding key added to it.
+        #
+        # Any adjectives that the parser didn't recognise are merged with their players here,
+        # as long as they're indicated as adjectives of that player somewhere in the readings.
+        #
+        # Other words are turned from phrases (hashes) into simple strings.
+        #
+        def bind_roles_in_readings(readings, allowed_forwards = [])
+          disallow_loose_binding = allowed_forwards.inject({}) { |h, v| h[v] = true; h }
+          readings.each do |reading|
+            debug :bind, "Binding a reading"
             phrase_numbers_used_speculatively = []
-            disallow_loose_binding_this_clause = disallow_loose_binding.clone
+            disallow_loose_binding_this_reading = disallow_loose_binding.clone
             reading.each_with_index do |phrase, index|
               la = phrase[:leading_adjective]
               player_name = phrase[:word]
@@ -703,9 +836,7 @@ module ActiveFacts
               end
 
               # If the identification includes this player name as a single word, it's allowed to be forward referenced:
-              allowed_forward = identification.detect do |role_words|
-                role_words.size == 1 && role_words[0] == player_name
-              end
+              allowed_forward = allowed_forwards.include?(player_name)
 
               debug :bind, "Binding a role: #{[player_name, la, ta, role_name, allowed_forward, !!preceeding_phrase, !!following_phrase].inspect}"
               player, binding = bind(
@@ -714,9 +845,9 @@ module ActiveFacts
                   role_name,
                   allowed_forward,
                   !!preceeding_phrase, !!following_phrase,
-                  clause == clauses[0] ? nil : disallow_loose_binding_this_clause  # Never allow loose binding on the first clause
+                  reading == readings[0] ? nil : disallow_loose_binding_this_reading  # Never allow loose binding on the first reading
                 )
-              disallow_loose_binding_this_clause[player.name] = true if player
+              disallow_loose_binding_this_reading[player.name] = true if player
 
               # Arrange to delete the speculative adjectives that were used:
               if preceeding_phrase && preceeding_phrase[:word] == ""
@@ -745,7 +876,7 @@ module ActiveFacts
             phrase_numbers_used_speculatively.each do |index|
               reading.delete_at(index)
             end
-            debug :bind, "Bound clause: #{reading.inspect}"
+            debug :bind, "Bound reading: #{reading.inspect}"
           end
         end
       end # of SymbolTable class

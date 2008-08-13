@@ -116,7 +116,6 @@ each combination Series, Number occurs at most one time in
 	Event is in Series,
 	Event has Number;
 each combination Course, Event occurs at most one time in
-	ScoringMethod is used for Course of Event,
 	ScoringMethod is used for Course of Event;
 each EventControl occurs at least one time in
 	Punch is placed at EventControl;

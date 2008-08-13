@@ -41,12 +41,18 @@ module ActiveFacts
       end
     end
 
+    class RoleRef
+      def describe
+        "#{[leading_adjective, role.concept.name, trailing_adjective].compact*"-"} in #{role_sequence.describe}"
+      end
+    end
+
     class RoleSequence
       def describe
 #        fact_types = all_role_ref.map(&:role).map(&:fact_type).uniq
 #        fact_types.size.to_s+" FTs, "+
         "("+
-        all_role_ref.map{|rr| [ rr.leading_adjective, rr.role.concept.name, rr.trailing_adjective ].compact*" " }*", "+
+        all_role_ref.map{|rr| [ rr.leading_adjective, rr.role.concept.name, rr.trailing_adjective ].compact*"-" }*", "+
         ")"
       end
     end
@@ -254,6 +260,19 @@ module ActiveFacts
         expanded.gsub!(/ *- */, '-')      # Remove spaces around adjectives
         #debug "Expanded '#{expanded}' using #{frequency_constraints.inspect}"
         expanded
+      end
+
+      def words_and_role_refs
+        reading_text.
+        scan(/(?: |\{[0-9]+\}|[^{} ]+)/).   # split up the text into words
+        reject{|s| s==' '}.                 # Remove white space
+        map do |frag|                       # and go through the bits
+          if frag =~ /\{([0-9]+)\}/
+            role_sequence.all_role_ref[$1.to_i]
+          else
+            frag
+          end
+        end
       end
     end
 
