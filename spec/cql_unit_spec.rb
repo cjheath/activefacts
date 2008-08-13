@@ -37,6 +37,7 @@ describe "Valid Numbers, Strings and Ranges" do
     "a=b(0xFace8);",                            # Hexadecimal integer
     "a=b(0,1);",                                # Two parameters
     "a=b( 0 , 1 );",
+    "a=b(0,1,2) ;",                             # Three parameters now allowed
 
     # Reals
     "a=b(1.0);",
@@ -127,7 +128,6 @@ describe "Invalid Numbers and Strings" do
     "a=b(-0xFace);",                            # Invalid negative hexadecimal
     "a=b(.0);",                                 # Invalid real
     "a=b(0.);",                                 # Invalid real
-    "a=b(0,1,2) ;",                             # Invalid; only two parameters allowed
     "b() inch ^2 ; ",                           # Illegal whitespace around unit exponent
     "b() inch^ 2 ; ",                           # Illegal whitespace around unit exponent
     "b() restricted to { '\\7a' };",            # String with bad octal escape
@@ -182,6 +182,7 @@ end
 
 describe "Entity Types" do
   EntityTypes_RefMode = [
+=begin
     [ "a = entity(.id):c;",                     # Entity type declaration with reference mode
       [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
@@ -191,12 +192,10 @@ describe "Entity Types" do
     [ "a = entity(.id) where c;",               # Entity type declaration with reference mode and where
       [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
+=end
   ]
 
   EntityTypes_Simple = [
-    [ "a = entity identified by b: c;",         # Entity type declaration, old syntax
-      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
-    ],
     [ "a is identified by b: c;",               # Entity type declaration
       [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
@@ -210,15 +209,15 @@ describe "Entity Types" do
       [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
     [ "a=b(); c is identified by a:d;",
-      [["a", [:data_type, "b", [ nil, nil ], nil, []]],
+      [["a", [:data_type, "b", [], nil, []]],
         ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
     [ " a = b ( ) ; c is identified by a : d ; ",
-      [["a", [:data_type, "b", [ nil, nil ], nil, []]],
+      [["a", [:data_type, "b", [ ], nil, []]],
         ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
-    [ "a=entity(.c):maybe d;",
-      [["a", [:entity_type, [], {:mode=>"c"}, [[:fact_clause, ["maybe"], [{:word=>"d"}]]]]]]
+    [ "a is identified by c:maybe d;",
+      [["a", [:entity_type, [], {:roles=>[["c"]]}, [[:fact_clause, ["maybe"], [{:word=>"d"}]]]]]]
     ],
   ]
 

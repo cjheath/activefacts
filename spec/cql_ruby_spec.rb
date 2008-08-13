@@ -34,6 +34,7 @@ describe "CQL Loader with Ruby output" do
   Dir["examples/CQL/*.cql"].each do |cql_file|
     expected_file = cql_file.sub(%r{/CQL/(.*).cql\Z}, '/ruby/\1.rb')
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'spec/actual/\1.rb')
+    next unless File.exists? expected_file
 
     it "should load CQL and dump valid Ruby for #{cql_file}" do
       vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)

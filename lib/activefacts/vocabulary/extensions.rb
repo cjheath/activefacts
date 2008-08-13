@@ -94,8 +94,8 @@ module ActiveFacts
                   next unless role.unique || fact_type
                   ftroles = role.fact_type.all_role
 
-                  # Skip roles in ternary and higher fact types, they're objectified
-                  next if ftroles.size > 2
+                  # Skip roles in ternary and higher fact types, they're objectified, and in unaries, they can't identify us.
+                  next if ftroles.size != 2
 
                   debug "Considering role in #{role.fact_type.describe(role)}"
 

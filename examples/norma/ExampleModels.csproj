@@ -45,6 +45,14 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirector2.orm</DependentUpon>
     </Compile>
+    <Compile Include="DeathAsBinary._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DeathAsBinary.orm</DependentUpon>
+    </Compile>
+    <Compile Include="DeathOfSubtype._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DeathOfSubtype.orm</DependentUpon>
+    </Compile>
     <Compile Include="Insurance._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Insurance.orm</DependentUpon>
@@ -81,9 +89,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Genealogy.orm</DependentUpon>
     </Compile>
-    <Compile Include="ObjectifiedUnary._ORMCustomToolReport.cs">
+    <Compile Include="DeathAsUnary._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
-      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
+      <DependentUpon>DeathAsUnary.orm</DependentUpon>
     </Compile>
     <Compile Include="OilSupply._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -132,9 +140,9 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Genealogy._ORMCustomToolReport.cs</LastGenOutput>
     </None>
-    <None Include="ObjectifiedUnary.orm">
+    <None Include="DeathAsUnary.orm">
       <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>ObjectifiedUnary._ORMCustomToolReport.cs</LastGenOutput>
+      <LastGenOutput>DeathAsUnary._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="OilSupply.orm">
       <Generator>ORMCustomTool</Generator>
@@ -196,6 +204,14 @@
     <None Include="CompanyDirector2.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirector2._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="DeathAsBinary.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>DeathAsBinary._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="DeathOfSubtype.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>DeathOfSubtype._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Insurance.orm">
       <Generator>ORMCustomTool</Generator>
@@ -340,23 +356,6 @@
       <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('ObjectifiedUnary.orm')">
-    <None Include="ObjectifiedUnary.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="ObjectifiedUnary.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="ObjectifiedUnary.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('CompanyDirector.orm')">
     <None Include="CompanyDirector.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -458,6 +457,23 @@
     <None Include="Insurance.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>Insurance.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('ObjectifiedUnary.orm')">
+    <None Include="ObjectifiedUnary.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="ObjectifiedUnary.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="ObjectifiedUnary.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ObjectifiedUnary.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>

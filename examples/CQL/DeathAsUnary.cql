@@ -1,4 +1,4 @@
-vocabulary ObjectifiedUnary;
+vocabulary DeathAsUnary;
 
 /*
  * Value Types
@@ -12,3 +12,7 @@ PersonName is defined as VariableLengthText(40);
 Person is identified by PersonName where
 	Person has exactly one PersonName,
 	PersonName is of at most one Person;
+Death is where
+	Person is dead;
+Death was due to at most one CauseOfDeath;
+

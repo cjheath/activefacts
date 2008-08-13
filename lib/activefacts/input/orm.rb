@@ -541,14 +541,14 @@ module ActiveFacts
 
           # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
           if (x_roles.size == 1 &&
-            (id = x_roles[0].attributes['ref']) &&
-            (x_role = @x_by_id[id]) &&
-            x_role.parent.elements.size == 2 &&
-            (sibling = x_role.parent.elements[2]) &&
-            (ib_id = sibling.elements[1].attributes['ref']) &&
-            (ib = @x_by_id[ib_id]) &&
-            ib.attributes['IsImplicitBooleanValue'])
-          next  # Skip uniqueness constraint over our role in this implicit boolean
+              (id = x_roles[0].attributes['ref']) &&
+              (x_role = @x_by_id[id]) &&
+              x_role.parent.elements.size == 2 &&
+              (sibling = x_role.parent.elements[2]) &&
+              (ib_id = sibling.elements[1].attributes['ref']) &&
+              (ib = @x_by_id[ib_id]) &&
+              ib.attributes['IsImplicitBooleanValue'])
+            unary_identifier = true
           end
 
           if (mc = @mandatory_constraints_by_rs[roles])
@@ -570,7 +570,8 @@ module ActiveFacts
           pc.is_mandatory = true if mc
           pc.min_frequency = mc ? 1 : 0
           pc.max_frequency = 1 
-          pc.is_preferred_identifier = true if pi
+          pc.is_preferred_identifier = true if pi || unary_identifier
+          #puts "#{name} covers #{roles.describe} has min=#{pc.min_frequency}, max=1, preferred=#{pc.is_preferred_identifier.inspect}" if emit_special_debug
 
           #puts roles.verbalise
           #puts pc.verbalise

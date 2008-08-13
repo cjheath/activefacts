@@ -214,11 +214,11 @@ for each Constraint exactly one of these holds:
 	some PresenceConstraint is a subtype of that Constraint;
 each RoleSequence occurs at least one time in
 	Role is in RoleSequence in Ordinal place;
-for each RoleValue, Concept either all or none of these holds:
-	Instance plays RoleValue and Instance is of Concept,
+Instance plays RoleValue and Instance is of Concept
+	if and only if
 	RoleValue is of Role and FactType has Ordinal role played by Concept;
-for each RoleValue, FactType either all or none of these holds:
-	RoleValue fulfils Fact and Fact is of FactType,
+RoleValue fulfils Fact and Fact is of FactType
+	if and only if
 	RoleValue is of Role and FactType has Ordinal role played by Concept;
 for each Unit exactly one of these holds:
 	Unit is fundamental,

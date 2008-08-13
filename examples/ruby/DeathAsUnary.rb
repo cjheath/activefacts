@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module ObjectifiedUnary
+module DeathAsUnary
 
   class CauseOfDeath < String
     value_type 
@@ -12,7 +12,14 @@ module ObjectifiedUnary
 
   class Person
     identified_by :person_name
-    maybe :death_role
+    maybe :is_dead
     one_to_one :person_name                     # See PersonName.person
   end
 
+  class Death
+    identified_by :is_dead
+    has_one :is_dead, Person                    # See Person.all_death_by_is_dead
+    has_one :cause_of_death                     # See CauseOfDeath.all_death
+  end
+
+end

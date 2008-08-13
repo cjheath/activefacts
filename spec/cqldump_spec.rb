@@ -70,8 +70,8 @@ END
   def one_to_many(one, many, reading)
     # Join them with a fact type:
     ft = @constellation.FactType(:new)
-    role0 = @constellation.Role(:new, :concept => one, :fact_type => ft)
-    role1 = @constellation.Role(:new, :concept => many, :fact_type => ft)
+    role0 = @constellation.Role(ft, 0, one)
+    role1 = @constellation.Role(ft, 1, many)
 
     # Make a role sequence:
     rs = @constellation.RoleSequence(:new)
@@ -92,8 +92,8 @@ END
   def one_to_one(first, second, reading)
     # Join them with a fact type:
     ft = @constellation.FactType(:new)
-    role0 = @constellation.Role(:new, :concept => first, :fact_type => ft)
-    role1 = @constellation.Role(:new, :concept => second, :fact_type => ft)
+    role0 = @constellation.Role(ft, 0, first)
+    role1 = @constellation.Role(ft, 1, second)
 
     # Make a role sequence for the reading
     rs = @constellation.RoleSequence(:new)
