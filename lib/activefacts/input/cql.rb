@@ -281,6 +281,10 @@ module ActiveFacts
           presence_constraint *value
         when :subset
           subset_constraint *value
+        when :set
+          set_constraint *value
+        when :equality
+          equality_constraint *value
         else
           $stderr.puts "REVISIT: external #{type} constraints aren't yet handled:\n\t"+value.map{|a| a.inspect }*"\n\t"
         end
@@ -288,7 +292,39 @@ module ActiveFacts
 
       def subset_constraint(subset_readings, superset_readings)
         raise "REVISIT: Join subset constraints not supported yet" if subset_readings.size > 1 or superset_readings.size > 1
+        @symbols = SymbolTable.new(@constellation, @vocabulary)
+
+        @symbols.bind_roles_in_readings(subset_readings)
+        existing_subset_reading = existing_fact_reading(subset_readings[0])
+        raise "Fact type reading not found for #{subset_readings[0].inspect}" unless existing_subset_reading
+        subset_bindings = subset_readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
+        print "=================== Subset Reading: "; p existing_subset_reading
+
+        @symbols.bind_roles_in_readings(superset_readings)
+        existing_superset_reading = existing_fact_reading(superset_readings[0])
+        raise "Fact type reading not found for #{superset_readings[0].inspect}" unless existing_superset_reading
+        superset_bindings = superset_readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
+        print "=================== Superset Reading: "; p existing_superset_reading
+
+        common_bindings = subset_bindings & superset_bindings
+        raise "Subset constraint must have common roles between subset and superset:\n\t#{subset_bindings.inspect}\n\t#{superset_bindings.inspect}" unless common_bindings.size > 0
+
+        # The common bindings occur in both subset and superset fact types.
+        # The corresponding roles form the constrained role sequences.
+        # Extract the corresponding roles, construct the role sequences, then the subset constraint.
+
         puts "REVISIT: #{subset_readings.inspect}\n\tonly if\n\t#{superset_readings.inspect}"
+
+      end
+
+      def set_constraint(constrained_roles, quantifier, *readings_list)
+        #raise "REVISIT: Join set constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
+        puts "REVISIT: set #{quantifier.inspect} over #{constrained_roles.map{|r| r*"-"}}\n\t#{readings_list.map{|rl| rl.inspect}*"\n\t"}"
+      end
+
+      def equality_constraint(*readings_list)
+        #raise "REVISIT: Join equality constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
+        puts "REVISIT: equality\n\t#{readings_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
       end
 
       def presence_constraint(constrained_role_names, quantifier, readings)
@@ -655,6 +691,10 @@ module ActiveFacts
         attr_reader :roles_by_binding
         attr_accessor :embedded_presence_constraints
         attr_accessor :allowed_forward
+        attr_reader :constellation
+        attr_reader :vocabulary
+        attr_reader :bindings_by_concept
+        attr_reader :role_names
 
         # A Binding here is a form of reference to a concept, being a name and optional adjectives, possibly designated by a role name:
         Binding = Struct.new("Binding", :concept, :name, :leading_adjective, :trailing_adjective, :role_name)

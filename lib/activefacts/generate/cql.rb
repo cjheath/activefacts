@@ -186,7 +186,7 @@ module ActiveFacts
         roles = c.role_sequence.all_role_ref.map{|rr| rr.role }
 
         # REVISIT: If only one role is covered and it's mandatory >=1 constraint, use SOME/THAT form:
-        # for each Bug SOME Tester logged THAT Bug;
+        # each Bug SOME Tester logged THAT Bug;
         players = c.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
 
         fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
@@ -288,7 +288,7 @@ module ActiveFacts
           return
         end
 
-        mode = (SetExclusionConstraint === c ? (c.is_mandatory ? "exactly one" : "at most one") : "either all or none")
+        mode = c.is_mandatory ? "exactly one" : "at most one"
         puts "for each #{players.map{|p| p.name}*", "} #{mode} of these holds:\n\t" +
           (scrs.map do |scr|
             constrained_roles = scr.role_sequence.all_role_ref.map{|rr| rr.role }

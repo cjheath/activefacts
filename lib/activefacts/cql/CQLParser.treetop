@@ -87,7 +87,7 @@ module ActiveFacts
 
     rule equality_constraint
       readings s tail:( if s and s only s if s readings s)+ ';' s
-      { def value; [ nil, [ :constraint, :set, [readings.value], *tail.elements.map{|e| [e.readings.value] } ] ]; end }
+      { def value; [ nil, [ :constraint, :equality, [readings.value], *tail.elements.map{|e| [e.readings.value] } ] ]; end }
     end
 
     rule readings_list
