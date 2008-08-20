@@ -295,16 +295,16 @@ module ActiveFacts
         @symbols = SymbolTable.new(@constellation, @vocabulary)
 
         @symbols.bind_roles_in_readings(subset_readings)
-        existing_subset_reading = existing_fact_reading(subset_readings[0])
-        raise "Fact type reading not found for #{subset_readings[0].inspect}" unless existing_subset_reading
+        subset_reading = existing_fact_reading(subset_readings[0])
+        raise "Fact type reading not found for #{subset_readings[0].inspect}" unless subset_reading
         subset_bindings = subset_readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
-        print "=================== Subset Reading: "; p existing_subset_reading
+        #print "=================== Subset Reading: "; p subset_reading
 
         @symbols.bind_roles_in_readings(superset_readings)
-        existing_superset_reading = existing_fact_reading(superset_readings[0])
-        raise "Fact type reading not found for #{superset_readings[0].inspect}" unless existing_superset_reading
+        superset_reading = existing_fact_reading(superset_readings[0])
+        raise "Fact type reading not found for #{superset_readings[0].inspect}" unless superset_reading
         superset_bindings = superset_readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
-        print "=================== Superset Reading: "; p existing_superset_reading
+        #print "=================== Superset Reading: "; p superset_reading
 
         common_bindings = subset_bindings & superset_bindings
         raise "Subset constraint must have common roles between subset and superset:\n\t#{subset_bindings.inspect}\n\t#{superset_bindings.inspect}" unless common_bindings.size > 0
@@ -312,8 +312,20 @@ module ActiveFacts
         # The common bindings occur in both subset and superset fact types.
         # The corresponding roles form the constrained role sequences.
         # Extract the corresponding roles, construct the role sequences, then the subset constraint.
+        subset_role_sequence = @constellation.RoleSequence(:new)
+        superset_role_sequence = @constellation.RoleSequence(:new)
+        common_bindings.each_with_index do |binding, index|
+          @constellation.RoleRef(subset_role_sequence, index).role = subset_reading.role_sequence.all_role_ref[subset_bindings.index(binding)].role
+          @constellation.RoleRef(superset_role_sequence, index).role = superset_reading.role_sequence.all_role_ref[superset_bindings.index(binding)].role
+        end
+        subset_constraint = @constellation.SubsetConstraint(:new)
+        #subset_constraint.name = nil
+        subset_constraint.vocabulary = @vocabulary
+        #subset_constraint.enforcement = 
+        subset_constraint.superset_role_sequence = superset_role_sequence
+        subset_constraint.subset_role_sequence = subset_role_sequence
 
-        puts "REVISIT: #{subset_readings.inspect}\n\tonly if\n\t#{superset_readings.inspect}"
+        #puts "REVISIT: #{subset_readings.inspect}\n\tonly if\n\t#{superset_readings.inspect}"
 
       end
 

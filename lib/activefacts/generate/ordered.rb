@@ -471,13 +471,13 @@ module ActiveFacts
     def constraint_sort_key(c)
       case c
       when RingConstraint
-        [1, c.ring_type, c.role.concept.name, c.other_role.concept.name, c.name]
+        [1, c.ring_type, c.role.concept.name, c.other_role.concept.name, c.name||""]
       when SetComparisonConstraint
-        [2, c.all_set_comparison_roles.map{|scrs| scrs.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name]
+        [2, c.all_set_comparison_roles.map{|scrs| scrs.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name||""]
       when SubsetConstraint
-        [3, [c.superset_role_sequence, c.subset_role_sequence].map{|rs| rs.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name]
+        [3, [c.superset_role_sequence, c.subset_role_sequence].map{|rs| rs.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name||""]
       when PresenceConstraint
-        [4, c.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}, c.name]
+        [4, c.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}, c.name||""]
       end
     end
 
