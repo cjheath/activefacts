@@ -150,12 +150,11 @@ module ActiveFacts
           # such as occurs in the Metamodel with TypeInheritance.
 
           # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
-          @allowed_forward = identification ? identification[:roles].inject({}){|h, i| h[i[0]] = true; h} : {}
-          @roles_by_binding = {}  # Build a hash of allowed bindings on first reading (check against it on subsequent ones)
+          @symbols.allowed_forward = identification ? identification[:roles].inject({}){|h, i| h[i[0]] = true; h} : {}
 
           clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
             fact_type = nil
-            @embedded_presence_constraints = []
+            @symbols.embedded_presence_constraints = [] # Clear embedded_presence_constraints for each fact type
             debug "New Fact Type for entity #{name}" do
               clauses_for_fact_type.each do |clause|
                 type, qualifiers, reading = *clause
@@ -196,7 +195,7 @@ module ActiveFacts
                 # not the order the fact tyoes were defined:
                 identifying_roles = id_role_names.map do |names|
                   player, binding = @symbols.bind(names)
-                  role = @roles_by_binding[binding] 
+                  role = @symbols.roles_by_binding[binding] 
                   raise "identifying role #{names*"-"} not found in fact types for #{name}" unless role
                   role
                 end
@@ -245,10 +244,6 @@ module ActiveFacts
         debug "Processing clauses for fact type" do
           fact_type = nil
 
-          @embedded_presence_constraints = []
-          @roles_by_binding = {}   # Build a hash of allowed bindings on first reading (check against it on subsequent ones)
-          @allowed_forward = {} # No roles may be forward-referenced
-
           #
           # The first step is to find all role references and definitions in the reading clauses.
           # This also:
@@ -281,12 +276,19 @@ module ActiveFacts
       end
 
       def constraint *value
-        case value[0]
+        case type = value.shift
         when :presence
-          presence_constraint value[1], value[2], value[3]
+          presence_constraint *value
+        when :subset
+          subset_constraint *value
         else
-          $stderr.puts "REVISIT: external #{value[0]} constraints aren't yet handled:\n\t"+value[1..-1].map{|a| a.inspect }*"\n\t"
+          $stderr.puts "REVISIT: external #{type} constraints aren't yet handled:\n\t"+value.map{|a| a.inspect }*"\n\t"
         end
+      end
+
+      def subset_constraint(subset_readings, superset_readings)
+        raise "REVISIT: Join subset constraints not supported yet" if subset_readings.size > 1 or superset_readings.size > 1
+        puts "REVISIT: #{subset_readings.inspect}\n\tonly if\n\t#{superset_readings.inspect}"
       end
 
       def presence_constraint(constrained_role_names, quantifier, readings)
@@ -294,9 +296,6 @@ module ActiveFacts
         readings = readings.map{|r| r[0] }
         #p readings
 
-        @embedded_presence_constraints = []
-        @roles_by_binding = {}   # Build a hash of allowed bindings on first reading (check against it on subsequent ones)
-        @allowed_forward = {} # No roles may be forward-referenced
         @symbols = SymbolTable.new(@constellation, @vocabulary)
 
         # Find players for all constrained_role_names. These may use leading or trailing adjective forms...
@@ -416,7 +415,7 @@ module ActiveFacts
           end
 
           # REVISIT: If the first reading is a re-iteration of an existing fact type, find and use the existing fact type
-          # This will require loading the @roles_by_binding using a SymbolTable
+          # This will require loading the @symbols.roles_by_binding using a SymbolTable
 
           fact_type ||= @constellation.FactType(:new)
 
@@ -434,10 +433,10 @@ module ActiveFacts
               role = @constellation.Role(fact_type, fact_type.all_role.size, player)
               role.role_name = role_name if role_name
               debug "Concept #{player.name} found, created role #{role.describe} by binding #{binding.inspect}"
-              @roles_by_binding[binding] = role
+              @symbols.roles_by_binding[binding] = role
             else                                # Subsequent readings
-              #debug "Looking for role #{binding.inspect} in bindings #{@roles_by_binding.inspect}"
-              role = @roles_by_binding[binding]
+              #debug "Looking for role #{binding.inspect} in bindings #{@symbols.roles_by_binding.inspect}"
+              role = @symbols.roles_by_binding[binding]
               raise "Role #{binding.inspect} not found in prior readings" if !role
               player = role.concept
             end
@@ -466,7 +465,7 @@ module ActiveFacts
       end
 
       def fact_type_identification(fact_type, name, prefer)
-        if !@embedded_presence_constraints.detect{|pc| pc.max_frequency == 1}
+        if !@symbols.embedded_presence_constraints.detect{|pc| pc.max_frequency == 1}
           first_role_sequence = fact_type.all_reading[0].role_sequence
           identifier = @constellation.PresenceConstraint(
               :new,
@@ -480,8 +479,8 @@ module ActiveFacts
           raise "'#{fact_type.default_reading}': non-unary fact types having no uniqueness constraints must be objectified (named)" unless fact_type.entity_type
           debug "Made default fact type identifier #{identifier.object_id} over #{first_role_sequence.describe} in #{fact_type.describe}"
         elsif prefer
-          #debug "Made fact type identifier #{identifier.object_id} preferred over #{@embedded_presence_constraints[0].role_sequence.describe} in #{fact_type.describe}"
-          @embedded_presence_constraints[0].is_preferred_identifier = true
+          #debug "Made fact type identifier #{identifier.object_id} preferred over #{@symbols.embedded_presence_constraints[0].role_sequence.describe} in #{fact_type.describe}"
+          @symbols.embedded_presence_constraints[0].is_preferred_identifier = true
         end
       end
 
@@ -542,8 +541,7 @@ module ActiveFacts
             end
           end
         end
-        @embedded_presence_constraints ||= []
-        @embedded_presence_constraints += embedded_presence_constraints
+        @symbols.embedded_presence_constraints += embedded_presence_constraints
       end
 
       def process_qualifiers(role_sequence, qualifiers)
@@ -646,13 +644,18 @@ module ActiveFacts
           player = @constellation.ValueType(name, @vocabulary.identifying_role_values)
         end
 
-        if (!player && @allowed_forward[name])
+        if (!player && @symbols.allowed_forward[name])
           player = @constellation.EntityType(name, @vocabulary)
         end
         player
       end
 
       class SymbolTable
+        # Externally built tables used in this binding context:
+        attr_reader :roles_by_binding
+        attr_accessor :embedded_presence_constraints
+        attr_accessor :allowed_forward
+
         # A Binding here is a form of reference to a concept, being a name and optional adjectives, possibly designated by a role name:
         Binding = Struct.new("Binding", :concept, :name, :leading_adjective, :trailing_adjective, :role_name)
         class Binding
@@ -671,6 +674,10 @@ module ActiveFacts
           @vocabulary = vocabulary
           @bindings_by_concept = Hash.new {|h, k| h[k] = [] }  # Indexed by Binding#name, maybe multiple entries for each name
           @role_names = {}
+
+          @embedded_presence_constraints = []
+          @roles_by_binding = {}   # Build a hash of allowed bindings on first reading (check against it on subsequent ones)
+          @allowed_forward = {} # No roles may be forward-referenced
         end
 
         #

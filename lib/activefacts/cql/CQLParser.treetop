@@ -81,8 +81,8 @@ module ActiveFacts
     end
 
     rule subset_constraint
-      reading s only s if s r2:reading s ';' s
-      { def value; [ nil, [ :constraint, :subset, reading.value, r2.value ] ]; end }
+      readings s only s if s r2:readings s ';' s
+      { def value; [ nil, [ :constraint, :subset, readings.value, r2.value ] ]; end }
     end
 
     rule equality_constraint
