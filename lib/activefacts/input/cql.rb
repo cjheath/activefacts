@@ -325,13 +325,46 @@ module ActiveFacts
         subset_constraint.superset_role_sequence = superset_role_sequence
         subset_constraint.subset_role_sequence = subset_role_sequence
 
-        #puts "REVISIT: #{subset_readings.inspect}\n\tonly if\n\t#{superset_readings.inspect}"
-
       end
 
       def set_constraint(constrained_roles, quantifier, *readings_list)
         #raise "REVISIT: Join set constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
-        puts "REVISIT: set #{quantifier.inspect} over #{constrained_roles.map{|r| r*"-"}}\n\t#{readings_list.map{|rl| rl.inspect}*"\n\t"}"
+        # Exactly one or at most one, nothing else will do
+        raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
+
+        @symbols = SymbolTable.new(@constellation, @vocabulary)
+
+        # Bind all roles, all readings to existing fact type readings, and extract the roles for each reading:
+        fact_readings = []
+        bindings_list = []
+        readings_list.each_with_index do |readings, index|
+          @symbols.bind_roles_in_readings(readings)
+          fact_readings[index] = existing_fact_reading(readings[0])
+          raise "Fact type reading not found for #{readings[0].inspect}" unless fact_readings[index]
+          bindings_list[index] = readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
+        end
+
+        # Extract the common bindings, these are the bindings of the constrained roles:
+        common_bindings = bindings_list.inject(bindings_list[0]) { |common, bindings| common & bindings }
+        raise "Set comparison constraints must have at least one common role between the sets" unless common_bindings.size > 0
+
+        # Create the role sequences and their role references:
+        role_sequences = readings_list.map{|r| @constellation.RoleSequence(:new) }
+        common_bindings.each_with_index do |binding, index|
+          role_sequences.each_with_index do |rs, rsi|
+            @constellation.RoleRef(rs, index).role = fact_readings[rsi].role_sequence.all_role_ref[bindings_list[rsi].index(binding)].role
+          end
+        end
+
+        # Finally, create the constraint:
+        constraint = @constellation.SetExclusionConstraint(:new)
+        constraint.vocabulary = @vocabulary
+        role_sequences.each do |rs|
+          @constellation.SetComparisonRoles(constraint, rs)
+        end
+        constraint.is_mandatory = quantifier[0] == 1
+
+        # puts "REVISIT: set #{quantifier.inspect} over #{constrained_roles.map{|r| r*"-"}}\n\t#{readings_list.map{|rl| rl.inspect}*"\n\t"}"
       end
 
       def equality_constraint(*readings_list)
