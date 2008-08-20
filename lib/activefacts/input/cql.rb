@@ -290,7 +290,8 @@ module ActiveFacts
       end
 
       def presence_constraint(constrained_role_names, quantifier, readings)
-        readings = readings.map{|r| r[0] }    # REVISIT: Join presence constraints not supported yet
+        raise "REVISIT: Join presence constraints not supported yet" if readings[0].size > 1
+        readings = readings.map{|r| r[0] }
         #p readings
 
         @embedded_presence_constraints = []

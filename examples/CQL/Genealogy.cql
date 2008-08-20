@@ -95,6 +95,9 @@ Friend is confirmed;
 
 /*
  * Constraints:
+ */
+each Event occurs at least one time in
+	Person played Role in Event according to Source;
 each EventDate occurs at least one time in
 	EventDate wasnt before min-Year,
 	EventDate wasnt after max-Year,
@@ -102,6 +105,3 @@ each EventDate occurs at least one time in
 	EventDate occurred on Day;
 each Person occurs at least one time in
 	Person played Role in Event according to Source;
-each Event occurs at least one time in
-	Person played Role in Event according to Source;
- */

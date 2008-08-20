@@ -103,20 +103,20 @@ Series has exactly one SeriesName (as Name),
 
 /*
  * Constraints:
-each combination GivenName, FamilyName occurs at most one time in
-	Person has GivenName,
-	Person has FamilyName;
 Event is in Series
 	if and only if
 	Event has Number;
+ */
+each combination Course, Event occurs at most one time in
+	ScoringMethod is used for Course of Event;
 each Event occurs at least one time in
 	Event is called EventName,
 	Event is in Series;
+each EventControl occurs at least one time in
+	Punch is placed at EventControl;
+each combination GivenName, FamilyName occurs at most one time in
+	Person has GivenName,
+	Person has FamilyName;
 each combination Series, Number occurs at most one time in
 	Event is in Series,
 	Event has Number;
-each combination Course, Event occurs at most one time in
-	ScoringMethod is used for Course of Event;
-each EventControl occurs at least one time in
-	Punch is placed at EventControl;
- */

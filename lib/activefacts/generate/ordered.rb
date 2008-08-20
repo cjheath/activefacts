@@ -407,6 +407,10 @@ module ActiveFacts
       (fact_type.entity_type ? [fact_type.entity_type.name] : [""]) + role_names
     end
 
+    def role_ref_key(role_ref)
+      [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-"
+    end
+
     # Dump fact types.
     def fact_types_dump
       # REVISIT: Uniqueness on the LHS of a binary can be coded using "distinct"
@@ -464,39 +468,50 @@ module ActiveFacts
       }
     end
 
+    def constraint_sort_key(c)
+      case c
+      when RingConstraint
+        [1, c.ring_type, c.role.concept.name, c.other_role.concept.name, c.name]
+      when SetComparisonConstraint
+        [2, c.all_set_comparison_roles.map{|scrs| scrs.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name]
+      when SubsetConstraint
+        [3, [c.superset_role_sequence, c.subset_role_sequence].map{|rs| rs.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name]
+      when PresenceConstraint
+        [4, c.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}, c.name]
+      end
+    end
+
     def constraints_dump(except = {})
       heading = false
-      @vocabulary.all_constraint.sort_by{|c| c.name || ""}.each{|c|
-          next if except[c]
-
-          # Skip some PresenceConstraints:
-          if PresenceConstraint === c
-            # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
-            role_refs = c.role_sequence.all_role_ref
-            if role_refs.size == 0
-              constraint_banner unless heading
-              heading = true
-              puts "PresenceConstraint without roles!" 
-              next
-            end
-            fact_type0 = role_refs[0].role.fact_type
-            next if c.max_frequency == 1 &&         # Uniqueness
-              role_refs.size == fact_type0.all_role.size &&     # Same number of roles
-              fact_type0.all_role.all?{|r| role_refs.map(&:role).include? r}    # All present
-
-            # Skip internal PresenceConstraints over TypeInheritances:
-            next if TypeInheritance === fact_type0 &&
-              !c.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type != fact_type0 }
+      @vocabulary.all_constraint.reject{|c| except[c]}.sort_by{ |c| constraint_sort_key(c) }.each do|c|
+        # Skip some PresenceConstraints:
+        if PresenceConstraint === c
+          # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
+          role_refs = c.role_sequence.all_role_ref
+          if role_refs.size == 0
+            constraint_banner unless heading
+            heading = true
+            puts "PresenceConstraint without roles!" 
+            next
           end
+          fact_type0 = role_refs[0].role.fact_type
+          next if c.max_frequency == 1 &&         # Uniqueness
+            role_refs.size == fact_type0.all_role.size &&     # Same number of roles
+            fact_type0.all_role.all?{|r| role_refs.map(&:role).include? r}    # All present
 
-          constraint_banner unless heading
-          heading = true
+          # Skip internal PresenceConstraints over TypeInheritances:
+          next if TypeInheritance === fact_type0 &&
+            !c.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type != fact_type0 }
+        end
 
-          # Skip presence constraints on value types:
-          # next if ActiveFacts::PresenceConstraint === c &&
-          #     ActiveFacts::ValueType === c.concept
-          constraint_dump(c)
-        }
+        constraint_banner unless heading
+        heading = true
+
+        # Skip presence constraints on value types:
+        # next if ActiveFacts::PresenceConstraint === c &&
+        #     ActiveFacts::ValueType === c.concept
+        constraint_dump(c)
+      end
       constraint_end if heading
     end
 

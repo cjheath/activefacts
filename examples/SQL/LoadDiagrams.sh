@@ -1,1 +1,1 @@
-bcp ORM..dtproperties in Metamodel.bcp -c -T -S .
+bcp Metamodel..dtproperties in Metamodel.bcp -c -T -S localhost

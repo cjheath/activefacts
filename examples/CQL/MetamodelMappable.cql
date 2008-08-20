@@ -10,6 +10,7 @@ Enforcement is defined as VariableLengthText(16);
 Exponent is defined as SignedSmallInteger(32);
 FactId is defined as AutoCounter();
 FactTypeId is defined as AutoCounter();
+FeatureId is defined as AutoCounter();
 Frequency is defined as UnsignedInteger(32);
 InstanceId is defined as AutoCounter();
 Length is defined as UnsignedInteger(32);
@@ -53,6 +54,11 @@ FactType is identified by FactTypeId where
 	FactType has exactly one FactTypeId,
 	FactTypeId is of at most one FactType;
 Fact is of exactly one FactType;
+
+Feature is identified by FeatureId where
+	Feature has exactly one FeatureId,
+	FeatureId is of at most one Feature;
+Feature is called exactly one Name;
 
 Instance is identified by InstanceId where
 	Instance has exactly one InstanceId,
@@ -117,25 +123,9 @@ ValueRestriction is identified by ValueRestrictionId where
 AllowedRange is where
 	ValueRestriction allows at least one ValueRange;
 
-FrequencyConstraint is a kind of PresenceConstraint;
-
-MandatoryConstraint is a kind of PresenceConstraint;
-
-SetComparisonConstraint is a kind of SetConstraint;
-SetComparisonRoles is where
-	SetComparisonConstraint covers at least one RoleSequence;
-
-SetEqualityConstraint is a kind of SetComparisonConstraint;
-
-SetExclusionConstraint is a kind of SetComparisonConstraint;
-SetExclusionConstraint is mandatory;
-
-Feature is identified by Name and Vocabulary where
-	Feature is called exactly one Name,
-	Feature belongs to at most one Vocabulary,
-	Vocabulary contains Feature;
-
 Vocabulary is a kind of Feature;
+Feature belongs to at most one Vocabulary,
+	Vocabulary contains Feature;
 Vocabulary contains Constraint,
 	Constraint belongs to at most one Vocabulary;
 Vocabulary extends at most one parent-Vocabulary [acyclic, intransitive],
@@ -179,6 +169,10 @@ TypeInheritance is a kind of FactType identified by Subtype and Supertype where
 	Supertype is supertype of Subtype;
 TypeInheritance provides identification;
 
+FrequencyConstraint is a kind of PresenceConstraint;
+
+MandatoryConstraint is a kind of PresenceConstraint;
+
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
 	Population belongs to at most one Vocabulary,
@@ -190,6 +184,15 @@ Population includes Instance,
 	Instance belongs to exactly one Population;
 Population includes RoleValue,
 	RoleValue belongs to exactly one Population;
+
+SetComparisonConstraint is a kind of SetConstraint;
+SetComparisonRoles is where
+	SetComparisonConstraint covers at least one RoleSequence;
+
+SetEqualityConstraint is a kind of SetComparisonConstraint;
+
+SetExclusionConstraint is a kind of SetComparisonConstraint;
+SetExclusionConstraint is mandatory;
 
 ValueType is a kind of Concept;
 ValueType has at most one Length,
@@ -238,6 +241,9 @@ each FactType occurs at least one time in
 each combination Name, Vocabulary occurs at most one time in
 	Name is of Constraint,
 	Vocabulary contains Constraint;
+each combination Name, Vocabulary occurs at most one time in
+	Feature is called Name,
+	Feature belongs to Vocabulary;
 each PresenceConstraint occurs at least one time in
 	PresenceConstraint has min-Frequency,
 	PresenceConstraint has max-Frequency,

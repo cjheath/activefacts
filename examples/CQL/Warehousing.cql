@@ -103,10 +103,10 @@ Customer made SalesOrder,
 
 /*
  * Constraints:
-for each ReceivedItem exactly one of these holds:
-	ReceivedItem is for PurchaseOrderItem,
-	ReceivedItem is for TransferRequest;
 for each DispatchItem exactly one of these holds:
 	DispatchItem is for TransferRequest,
 	DispatchItem is for SalesOrderItem;
+for each ReceivedItem exactly one of these holds:
+	ReceivedItem is for PurchaseOrderItem,
+	ReceivedItem is for TransferRequest;
  */
