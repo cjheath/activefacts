@@ -237,25 +237,22 @@ describe "Entity Types" do
     [ "Employee is a subtype of Person;",
       [["Employee", [:entity_type, ["Person"], nil, nil]]]
     ],
-    [ "Employee = subtype of Person;",
-      [["Employee", [:entity_type, ["Person"], nil, nil]]]
-    ],
     [ "Employee is defined as subtype of Person;",
       [["Employee", [:entity_type, ["Person"], nil, nil]]]
     ],
-    [ "AustralianEmployee = subtype of Employee, Australian;",
+    [ "AustralianEmployee is a subtype of Employee, Australian;",
       [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], nil, nil]]]
     ],
     [ "Employee is a kind of Person identified by EmployeeNumber;",
       [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
     ],
-    [ "Employee = subtype of Person identified by EmployeeNumber;",
+    [ "Employee is a subtype of Person identified by EmployeeNumber;",
       [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
     ],
     [ "Employee is defined as subtype of Person identified by EmployeeNumber;",
       [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
     ],
-    [ "AustralianEmployee = subtype of Employee, Australian identified by TaxFileNumber;",
+    [ "AustralianEmployee is a subtype of Employee, Australian identified by TaxFileNumber;",
       [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], {:roles=>[["TaxFileNumber"]]}, nil]]]
     ],
   ]
