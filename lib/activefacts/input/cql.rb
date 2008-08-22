@@ -129,6 +129,15 @@ module ActiveFacts
             debug :supertype, "Supertype #{supertype_name}"
             supertype = @constellation.EntityType(supertype_name, @vocabulary)
             inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :fact_type_id => :new)
+
+            # Create a reading:
+            sub_role = @constellation.Role(inheritance_fact, 0, entity_type)
+            super_role = @constellation.Role(inheritance_fact, 1, supertype)
+            rs = @constellation.RoleSequence(:new)
+            @constellation.RoleRef(rs, 0, :role => sub_role)
+            @constellation.RoleRef(rs, 1, :role => super_role)
+            @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :reading_text => "{0} is a subtype of {1}")
+
             if !identification && supertype_name == supertypes[0]
               inheritance_fact.provides_identification = true
             end
@@ -292,12 +301,12 @@ module ActiveFacts
 
       def bind_reading_list_as_role_sequences(readings_list)
         @symbols = SymbolTable.new(@constellation, @vocabulary)
-        fact_readings = []
+        fact_roles_list = []
         bindings_list = []
         readings_list.each_with_index do |readings, index|
           @symbols.bind_roles_in_readings(readings)
-          fact_readings[index] = existing_fact_reading(readings[0])
-          raise "Fact type reading not found for #{readings[0].inspect}" unless fact_readings[index]
+          fact_roles_list[index] = invoked_fact_roles(readings[0])
+          raise "Fact type reading not found for #{readings[0].inspect}" unless fact_roles_list[index]
           bindings_list[index] = readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
         end
         common_bindings = bindings_list.inject(bindings_list[0]) { |common, bindings| common & bindings }
@@ -307,7 +316,8 @@ module ActiveFacts
         role_sequences = readings_list.map{|r| @constellation.RoleSequence(:new) }
         common_bindings.each_with_index do |binding, index|
           role_sequences.each_with_index do |rs, rsi|
-            @constellation.RoleRef(rs, index).role = fact_readings[rsi].role_sequence.all_role_ref[bindings_list[rsi].index(binding)].role
+            position = bindings_list[rsi].index(binding)
+            @constellation.RoleRef(rs, index).role = fact_roles_list[rsi][position]
           end
         end
 
@@ -385,8 +395,8 @@ module ActiveFacts
           # puts reading.inspect
 
           # If this succeeds, the reading found matches the roles in our phrases
-          existing_reading = existing_fact_reading(reading)
-          raise "Fact type reading not found for #{reading.inspect}" unless existing_reading
+          fact_roles = invoked_fact_roles(reading)
+          raise "Fact type reading not found for #{reading.inspect}" unless fact_roles
 
           # Look for the constrained role(s); the bindings will be the same
           matched_bindings = reading.select{|p| Hash === p}.map{|p| p[:binding]}
@@ -397,7 +407,7 @@ module ActiveFacts
             next unless i
             unmatched_roles[i] = nil
             #puts "found #{constrained_bindings[i].inspect} found as #{b.inspect} in position #{i.inspect}"
-            role = existing_reading.role_sequence.all_role_ref[pos].role
+            role = fact_roles[pos]
             constrained_roles << role unless constrained_roles.include?(role)
           }
         end
@@ -427,7 +437,25 @@ module ActiveFacts
           )
       end
 
-      def existing_fact_reading(reading)
+      def inheritance_path(subtype, supertype)
+        direct_inheritance = subtype.all_type_inheritance_by_subtype.select{|ti| ti.supertype == supertype}
+        return direct_inheritance if (direct_inheritance[0])
+        subtype.all_type_inheritance_by_subtype.each{|ti|
+          ip = inheritance_path(ti.supertype, supertype)
+          return ip+[ti] if (ip)
+        }
+        return nil
+      end
+
+      def invoked_fact_roles(reading)
+        if (reading[0] == "!SUBTYPE!")
+          subtype = reading[1][:binding].concept
+          supertype = reading[2][:binding].concept
+          raise "#{subtype.name} is not a subtype of #{supertype.name}" unless subtype.supertypes_transitive.include?(supertype)
+          ip = inheritance_path(subtype, supertype)
+          return [ip[0].all_role[0], ip[-1].all_role[1]]
+        end
+
         players = reading.select{|p| Hash === p}.map{|p| p[:binding].concept }
         players[0].all_role.each do |role|
           # Does this fact type have the right number of roles?
@@ -458,7 +486,7 @@ module ActiveFacts
                   end
                 end
                 debug "Reading match was #{to_match.size == 0 ? "ok" : "bad"}"
-                return candidate_reading if to_match.size == 0
+                return candidate_reading.role_sequence.all_role_ref.map{|rr| rr.role} if to_match.size == 0
               end
             end
           end
@@ -894,6 +922,22 @@ module ActiveFacts
           disallow_loose_binding = allowed_forwards.inject({}) { |h, v| h[v] = true; h }
           readings.each do |reading|
             debug :bind, "Binding a reading"
+
+            if (reading.size == 1 && reading[0][:subtype])
+              # REVISIT: Handle a subtype reading here
+              subtype_name = reading[0][:subtype]
+              supertype_name = reading[0][:supertype]
+              subtype, subtype_binding = bind(subtype_name)
+              supertype, supertype_binding = bind(supertype_name)
+              reading.replace([
+                  "!SUBTYPE!",
+                  {:word => subtype, :binding => subtype_binding },
+                  {:word => supertype, :binding => supertype_binding }
+                ]
+              )
+              next
+            end
+
             phrase_numbers_used_speculatively = []
             disallow_loose_binding_this_reading = disallow_loose_binding.clone
             reading.each_with_index do |phrase, index|

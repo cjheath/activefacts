@@ -3,7 +3,7 @@ module ActiveFacts
     grammar Language
 
       rule subtype_prefix
-        ( s '=' s / defined_as ) 'subtype' S 'of' S
+        defined_as 'subtype' S 'of' S
         / 'is' s 'a' s ('kind'/'subtype') s 'of' S
       end
 
