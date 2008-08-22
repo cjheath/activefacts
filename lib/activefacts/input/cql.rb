@@ -290,51 +290,8 @@ module ActiveFacts
         end
       end
 
-      def subset_constraint(subset_readings, superset_readings)
-        raise "REVISIT: Join subset constraints not supported yet" if subset_readings.size > 1 or superset_readings.size > 1
+      def bind_reading_list_as_role_sequences(readings_list)
         @symbols = SymbolTable.new(@constellation, @vocabulary)
-
-        @symbols.bind_roles_in_readings(subset_readings)
-        subset_reading = existing_fact_reading(subset_readings[0])
-        raise "Fact type reading not found for #{subset_readings[0].inspect}" unless subset_reading
-        subset_bindings = subset_readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
-        #print "=================== Subset Reading: "; p subset_reading
-
-        @symbols.bind_roles_in_readings(superset_readings)
-        superset_reading = existing_fact_reading(superset_readings[0])
-        raise "Fact type reading not found for #{superset_readings[0].inspect}" unless superset_reading
-        superset_bindings = superset_readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
-        #print "=================== Superset Reading: "; p superset_reading
-
-        common_bindings = subset_bindings & superset_bindings
-        raise "Subset constraint must have common roles between subset and superset:\n\t#{subset_bindings.inspect}\n\t#{superset_bindings.inspect}" unless common_bindings.size > 0
-
-        # The common bindings occur in both subset and superset fact types.
-        # The corresponding roles form the constrained role sequences.
-        # Extract the corresponding roles, construct the role sequences, then the subset constraint.
-        subset_role_sequence = @constellation.RoleSequence(:new)
-        superset_role_sequence = @constellation.RoleSequence(:new)
-        common_bindings.each_with_index do |binding, index|
-          @constellation.RoleRef(subset_role_sequence, index).role = subset_reading.role_sequence.all_role_ref[subset_bindings.index(binding)].role
-          @constellation.RoleRef(superset_role_sequence, index).role = superset_reading.role_sequence.all_role_ref[superset_bindings.index(binding)].role
-        end
-        subset_constraint = @constellation.SubsetConstraint(:new)
-        #subset_constraint.name = nil
-        subset_constraint.vocabulary = @vocabulary
-        #subset_constraint.enforcement = 
-        subset_constraint.superset_role_sequence = superset_role_sequence
-        subset_constraint.subset_role_sequence = subset_role_sequence
-
-      end
-
-      def set_constraint(constrained_roles, quantifier, *readings_list)
-        #raise "REVISIT: Join set constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
-        # Exactly one or at most one, nothing else will do
-        raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
-
-        @symbols = SymbolTable.new(@constellation, @vocabulary)
-
-        # Bind all roles, all readings to existing fact type readings, and extract the roles for each reading:
         fact_readings = []
         bindings_list = []
         readings_list.each_with_index do |readings, index|
@@ -343,8 +300,6 @@ module ActiveFacts
           raise "Fact type reading not found for #{readings[0].inspect}" unless fact_readings[index]
           bindings_list[index] = readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
         end
-
-        # Extract the common bindings, these are the bindings of the constrained roles:
         common_bindings = bindings_list.inject(bindings_list[0]) { |common, bindings| common & bindings }
         raise "Set comparison constraints must have at least one common role between the sets" unless common_bindings.size > 0
 
@@ -356,20 +311,51 @@ module ActiveFacts
           end
         end
 
-        # Finally, create the constraint:
+        role_sequences
+      end
+
+      def subset_constraint(subset_readings, superset_readings)
+        raise "REVISIT: Join subset constraints not supported yet" if subset_readings.size > 1 or superset_readings.size > 1
+
+        role_sequences = bind_reading_list_as_role_sequences([subset_readings, superset_readings])
+
+        # create the constraint:
+        constraint = @constellation.SubsetConstraint(:new)
+        constraint.vocabulary = @vocabulary
+        #constraint.name = nil
+        #constraint.enforcement = 
+        constraint.subset_role_sequence = role_sequences[0]
+        constraint.superset_role_sequence = role_sequences[1]
+      end
+
+      def set_constraint(constrained_roles, quantifier, *readings_list)
+        #raise "REVISIT: Join set constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
+        # Exactly one or at most one, nothing else will do
+        raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
+
+        role_sequences = bind_reading_list_as_role_sequences(readings_list)
+
+        # Create the constraint:
         constraint = @constellation.SetExclusionConstraint(:new)
         constraint.vocabulary = @vocabulary
         role_sequences.each do |rs|
           @constellation.SetComparisonRoles(constraint, rs)
         end
         constraint.is_mandatory = quantifier[0] == 1
-
-        # puts "REVISIT: set #{quantifier.inspect} over #{constrained_roles.map{|r| r*"-"}}\n\t#{readings_list.map{|rl| rl.inspect}*"\n\t"}"
       end
 
       def equality_constraint(*readings_list)
-        #raise "REVISIT: Join equality constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
-        puts "REVISIT: equality\n\t#{readings_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
+        raise "REVISIT: Join equality constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
+        #puts "REVISIT: equality\n\t#{readings_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
+
+        role_sequences = bind_reading_list_as_role_sequences(readings_list)
+
+        # Create the constraint:
+        constraint = @constellation.SetEqualityConstraint(:new)
+        constraint.vocabulary = @vocabulary
+        role_sequences.each do |rs|
+          @constellation.SetComparisonRoles(constraint, rs)
+        end
       end
 
       def presence_constraint(constrained_role_names, quantifier, readings)

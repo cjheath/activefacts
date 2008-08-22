@@ -64,14 +64,6 @@ module ActiveFacts
       # REVISIT: / value_constraint
     end
 
-    # set (exclusion, mandatory exclusion, complex equality) constraint
-    rule set_constraint
-      'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
-      readings_list s
-      ';' s
-      { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, *readings_list.value ] ]; end }
-    end
-
     # presence constraint:
     rule presence_constraint
       'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s 'in' s
@@ -85,9 +77,17 @@ module ActiveFacts
       { def value; [ nil, [ :constraint, :subset, readings.value, r2.value ] ]; end }
     end
 
+    # set (exclusion, mandatory exclusion, complex equality) constraint
+    rule set_constraint
+      'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
+      readings_list s
+      ';' s
+      { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, *readings_list.value ] ]; end }
+    end
+
     rule equality_constraint
       readings s tail:( if s and s only s if s readings s)+ ';' s
-      { def value; [ nil, [ :constraint, :equality, [readings.value], *tail.elements.map{|e| [e.readings.value] } ] ]; end }
+      { def value; [ nil, [ :constraint, :equality, *([readings.value] + tail.elements.map{|e| e.readings.value }) ] ]; end }
     end
 
     rule readings_list
