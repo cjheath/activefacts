@@ -353,7 +353,8 @@ module ActiveFacts
             x_readings.each_with_index{|x, i|
               reading = @constellation.Reading(fact_type, fact_type.all_reading.size)
               reading.role_sequence = role_sequence
-              reading.reading_text = extract_adjectives(x.text, role_sequence)
+              # REVISIT: The downcase here only needs to be the initial letter of each word, but be safe:
+              reading.reading_text = extract_adjectives(x.text, role_sequence).downcase
             }
           }
         }
