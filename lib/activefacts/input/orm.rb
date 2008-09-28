@@ -90,7 +90,13 @@ module ActiveFacts
           name = nil if name.size == 0
           # puts "EntityType #{name} is #{id}"
           entity_types <<
-            @by_id[id] = @constellation.EntityType(name, @vocabulary)
+            @by_id[id] =
+              entity_type =
+              @constellation.EntityType(name, @vocabulary)
+            independent = x.attributes['IsIndependent']
+            entity_type.is_independent = true if independent && independent == 'true'
+            personal = x.attributes['IsPersonal']
+            entity_type.is_personal = true if personal && personal == 'true'
   #       x_pref = x.elements.to_a("orm:PreferredIdentifier")[0]
   #       if x_pref
   #         pi_id = x_pref.attributes['ref']
@@ -132,6 +138,10 @@ module ActiveFacts
           vt.supertype = data_type
           vt.length = length if length
           vt.scale = scale if scale
+          independent = x.attributes['IsIndependent']
+          vt.is_independent = true if independent && independent == 'true'
+          personal = x.attributes['IsPersonal']
+          vt.is_personal = true if personal && personal == 'true'
 
           x_ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
           next if x_ranges.size == 0

@@ -80,7 +80,7 @@ module ActiveFacts
       end
 
       def always_dependent
-        false
+        is_independent
       end
 
       def dependent_roles(excluding = [])
@@ -99,7 +99,7 @@ module ActiveFacts
       end
 
       def always_dependent
-        supertypes.size > 0
+        is_independent || supertypes.size > 0
       end
 
       def dependent_roles(excluding = [])
