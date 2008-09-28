@@ -1,0 +1,1 @@
+require 'activefacts/persistence/composition'

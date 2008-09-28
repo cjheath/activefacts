@@ -95,7 +95,7 @@ module ActiveFacts
         # REVISIT: Same when trailing_adjective is a suffix of the role_name
         ta = preferred_role_ref.trailing_adjective
         role_words << ta.gsub(/ /,'_') if ta && ta != "" and !role_name
-        n = role_words.map(&:snakecase)*"_"
+        n = role_words.map{|w| w.gsub(/([a-z])([A-Z]+)/,'\1_\2').downcase}*"_"
         # debug "\tresult=#{n}"
         n
       end
@@ -235,9 +235,11 @@ module ActiveFacts
         pi = o.preferred_identifier
         pi = nil if pi && primary_supertype && primary_supertype.preferred_identifier == pi
 
-        puts "  class #{name}#{primary_supertype ? " < "+primary_supertype.name : ""}\n" +
-                  secondary_supertypes.map{|sst| "    supertype :#{sst.name}"}*"\n" +
-                  (pi ? "    identified_by #{identified_by(o, pi)}" : "")
+        puts "  class #{name}" +
+          (primary_supertype ? " < "+primary_supertype.name : "") +
+          "\n" +
+          secondary_supertypes.map{|sst| "    supertype :#{sst.name}"}*"\n" +
+          (pi ? "    identified_by #{identified_by(o, pi)}" : "")
         fact_roles_dump(fact_type)
         roles_dump(o)
         puts "  end\n\n"

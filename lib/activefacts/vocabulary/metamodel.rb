@@ -251,6 +251,8 @@ module ActiveFacts
     end
 
     class Concept < Feature
+      maybe :is_independent
+      maybe :is_personal
     end
 
     class Role
@@ -272,8 +274,6 @@ module ActiveFacts
     end
 
     class EntityType < Concept
-      maybe :is_independent
-      maybe :is_personal
       one_to_one :fact_type                       # See FactType.entity_type
     end
 
