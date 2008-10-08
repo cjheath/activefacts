@@ -2,18 +2,15 @@ module ActiveFacts
   module Metamodel
     class Role
       def role_type
-        #print "\t#{fact_type.default_reading}: "
-
         # TypeInheritance roles are always functional
         if TypeInheritance === fact_type
-          return self == fact_type.supertype ? :supertype : :subtype
+          return concept == fact_type.supertype ? :supertype : :subtype
         end
 
         # Always functional if unary:
         return :unary if fact_type.all_role.size == 1
 
-        # A presence constraint over the fact type that
-        # ensures there's only one counterpart instance
+        # List the UCs on this fact type:
         all_uniqueness_constraints =
           fact_type.all_role.map do |fact_role|
             fact_role.all_role_ref.map do |rr|
@@ -23,19 +20,21 @@ module ActiveFacts
             end
           end.flatten.uniq
 
-        from_1 =
+        to_1 =
           all_uniqueness_constraints.
             detect do |c|
                 [self] == c.role_sequence.all_role_ref.map(&:role)
             end
 
-        # It's to-1 if a UC exists over the FT that doesn't cover this role:
-        p = other_roles.sort_by{|r| r.object_id}
-        to_1 =
-          all_uniqueness_constraints.
-            detect do |c|
-              c.role_sequence.all_role_ref.map(&:role).sort_by{|r| r.object_id} == p
-            end
+        if fact_type.entity_type
+          # This is a role in an objectified fact type
+          from_1 = true
+        else
+          # It's to-1 if a UC exists over the FT that doesn't cover this role:
+          from_1 = all_uniqueness_constraints.detect{|uc|
+            !uc.role_sequence.all_role_ref.detect{|rr| rr.role == self}
+          }
+        end
 
         if from_1
           return to_1 ? :one_one : :one_many
@@ -44,128 +43,92 @@ module ActiveFacts
         end
       end
 
-      def other_roles
-        fact_type.all_role-[self]
+      def other_role_player
+        fact_type.entity_type ||  # Objectified fact types only have counterpart roles, no self-roles
+          (fact_type.all_role-[self])[0].concept  # Only valid for roles in binaries (others must be objectified anyhow)
       end
     end
 
     class Concept
-      def independent?
-        @independent ||= is_independent || decide_independence
+      # Return the array of absorption paths that could absorb this object
+      def absorption_paths
+        return @absorption_roles if @absorption_roles
+        return @absorption_roles = [] if is_independent
+        @absorption_roles =
+          all_role.map do |role|
+            role_type = role.role_type
+            case role_type
+            when :supertype,  # Never absorb a supertype into its subtype (until later when we support partitioning)
+                 :many_one    # Can't absorb many of these into one of those
+              next nil
+            when :unary
+              # REVISIT: Test this with an objectified unary
+              next nil        # Never absorb an object into one if its unaries
+            when :subtype,    # This object is a subtype, so can be absorbed
+                 :one_many
+              next role
+            when :one_one     # This object
+              # Never absorb an entity type into a value type:
+              next nil if ValueType === role.other_role_player and !is_a?(ValueType)
+              next role
+            else
+              raise "Illegal role type, #{role.fact_type.describe(role)} no uniqueness constraint"
+            end
+          end.compact
       end
 
-      def functional_roles
-        #puts "\nGet functional_roles for #{name}"
-        @functional_roles ||=   # Comment out to not cache the calculation
-        all_role.select do |role|
-          [:many_one, :many_many].include?(role.role_type) ? false : role
-        end.map do |role|
-          all_role = role.fact_type.all_role
-          if all_role.size == 1
-            role
-          else
-            all_role[all_role[0] == role ? 1 : 0]
-          end
-        end
+      # Say whether the independence of this object is still under consideration
+      # This is used in detecting dependency cycles, such as occurs in the Metamodel
+      def tentative
+        @tentative = true unless defined @tentative
+        @tentative
+      end
+
+      def tentative=(v)
+        @tentative
+      end
+
+      # Say whether this object is currently considered independent or not:
+      def independent
+        return @independent if defined @independent
+        raise "REVISIT: Independence of #{name} hasn't been considered yet"
+      end
+
+      def independent=(v)
+        @independent = v
+      end
+
+      def absorption_cost
+        # The absorption cost is the total cost of each absorbed role
+      end
+
+      def reference_cost
+        # The absorption cost is the total cost of each preferred_identifier role
       end
     end
 
     class ValueType
-      def decide_independence
-        dependent_roles
-      end
-
-      def always_independent
-        false
-      end
-
-      def always_dependent
-        is_independent
-      end
-
-      def dependent_roles(excluding = [])
-        dr = (all_role-excluding).select{ |role| role.role_type == :one_many}
-        dr.size != 0 ? dr : nil
-      end
     end
 
     class EntityType
-      def functional_roles
-        (fact_type ? fact_type.all_role : []) + super
-      end
-
-      def always_independent
-        false
-      end
-
-      def always_dependent
-        is_independent || supertypes.size > 0
-      end
-
-      def dependent_roles(excluding = [])
-        # Functional roles that aren't TypeInheritance or covered by the PI are dependent:
-        pi_roles = preferred_identifier.role_sequence.all_role_ref.map(&:role)
-        fr = functional_roles
-        dr = (fr-pi_roles-excluding).reject{ |role| TypeInheritance === role.fact_type }
-        puts "#{name} dependent roles are #{dr.map{|role| role.fact_type.describe(role)}.inspect}" if dr.size > 0
-        dr.size != 0 ? dr : nil
-      end
-
-      def decide_independence
-        # Subtypes are *always* absorbed, until we add subtype hint support:
-        return false if always_dependent
-
-        # Object is independent if it cannot be absorbed into another object:
-        absorbee_roles = all_role.select{|r| [:one_one, :many_one, :supertype].include?(r.role_type)}
-        absorbee_roles += fact_type.all_role if fact_type
-
-        # REVISIT: Absorption may only take place along mandatory roles
-
-        #
-        # This entity type can perhaps be absorbed into another, or the other into it.
-        # Make a sensible decision.
-        #
-        pi_roles = preferred_identifier.role_sequence.all_role_ref.map(&:role)
-        # REVISIT: This knocks out too many cases:
-        absorbee_roles.reject!{|ar| pi_roles.include?(ar.other_roles[0])}
-
-        return true if absorbee_roles.size == 0
-
-        #all_role.each{|r| puts "\t#{name}: '" + r.fact_type.default_reading + "' is #{r.role_type}"}
-        # Must be independent if it will absorb instead of being absorbed:
-        puts "Decide whether to absorb #{name}"
-        # Independent unless it can be absorbed on all paths (detect a path where it *can't*):
-        if absorbee_roles.detect do |role|
-            absorbee = role.other_roles[0].concept
-            mustnt_absorb =
-              case
-              when ValueType === absorbee
-                "ValueType"  # Never absorb an entity type into a value type
-              # When we provide the preferred identifier for the absorbee:
-              when absorbee.preferred_identifier.role_sequence.all_role_ref.map(&:role) == [role]
-                "we identify it"
-              #REVISIT: when the absorbee has more dependent roles that we do
-              #  false
-              #REVISIT: when the existing relational database has a table of this name
-              #  true
-              else
-                false # Won't absorb on this path
-              end
-            puts "\t... into #{absorbee.name}, #{mustnt_absorb ? "no (#{mustnt_absorb})" : "yes"}"
-            mustnt_absorb
-          end
-          return true
+      def absorption_paths
+        return @absorption_roles if @absorption_roles
+        super
+        if (fact_type)
+          @absorption_roles += fact_type.all_role.map do |fact_role|
+            # REVISIT: Perhaps this objectified fact type can be absorbed through one of its roles
+            next fact_role if fact_role.all_role_ref.detect{|rr|
+              # Look for a UC that covers just this role
+              rr.role_sequence.all_role_ref.size == 1 and
+                rr.role_sequence.all_presence_constraint.detect { |pc|
+                  pc.max_frequency == 1
+                }
+            }
+            next nil
+          end.compact
         end
-
-        # Object is independent if it has dependent attributes
-        # ...that cannot absorb this object:
-        # and there's more than one place to absorb it
-        return true if dependent_roles(absorbee_roles.map{|r| r.other_roles[0]}) and
-          absorbee_roles.size != 1
-
-        false
+        @absorption_roles
       end
-
     end
   end
 end
