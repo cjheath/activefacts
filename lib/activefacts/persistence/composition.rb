@@ -23,16 +23,17 @@ module ActiveFacts
         to_1 =
           all_uniqueness_constraints.
             detect do |c|
-                [self] == c.role_sequence.all_role_ref.map(&:role)
+                c.role_sequence.all_role_ref.size == 1 and
+                c.role_sequence.all_role_ref[0].role == self
             end
 
         if fact_type.entity_type
           # This is a role in an objectified fact type
           from_1 = true
         else
-          # It's to-1 if a UC exists over the FT that doesn't cover this role:
+          # It's to-1 if a UC exists over roles of this FT that doesn't cover this role:
           from_1 = all_uniqueness_constraints.detect{|uc|
-            !uc.role_sequence.all_role_ref.detect{|rr| rr.role == self}
+            !uc.role_sequence.all_role_ref.detect{|rr| rr.role == self || rr.role.fact_type != fact_type}
           }
         end
 
