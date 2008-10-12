@@ -31,6 +31,7 @@ describe "Relational Composition from NORMA" do
     next unless sql_files.size > 0
 
     it "should load #{orm_file} and compute a list of tables similar to those in #{sql_files[0]}" do
+      pending
       vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
 
       # Get the list of tables from NORMA's SQL:
