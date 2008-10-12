@@ -109,8 +109,10 @@ module ActiveFacts
 
           ir = identifying_roles
           args, arg_hash = ActiveFacts::extract_hash_args(ir, args)
-          unless args.size == ir.size
+          if args.size < ir.size
             raise "#{basename} requires all identifying values, you're missing #{ir[args.size..-1].map(&:to_sym)*', '}"
+          elsif args.size > ir.size
+            raise "#{basename} requires all identifying values, you have #{args.size-ir.size} extras #{args[ir.size..-1].map(&:inspect)*', '}"
           end
 
           role_args = ir.map{|role_sym| roles(role_sym)}.zip(args)

@@ -128,34 +128,44 @@ module ActiveFacts
       def absorbed_reference_roles
         rs = RoleSequence.new(:new)
         reference_roles.all_role_ref.each do |rr|
-          role = rr.role
-          if role.fact_type.all_role.size == 1
-            # raise "Can't compute absorbed_reference_roles for unary role yet"
-            RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
-          elsif role.concept.is_a? ValueType
-            pr = role.preferred_reference
-            RoleRef.new(rs, rs.all_role_ref.size+1, :role => role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
-          else
-            # Add this role as a JoinPath to the referenced object's absorbed_reference_roles
-            absorbed_rs = role.concept.absorbed_reference_roles
-            absorbed_rs.all_role_ref.each do |rr|
-              # Clone the existing RoleRef and its JoinPaths:
-              new_rr = RoleRef.new(rs, rs.all_role_ref.size+1, :role => rr.role, :leading_adjective => rr.leading_adjective, :trailing_adjective => rr.trailing_adjective)
-              rr.all_join_path.each do |jp|
-                JoinPath.new(new_rr, new_rr.all_join_path.size+1, :input_role => jp.input_role, :output_role => jp.output_role)
-              end
-              # Add a new JoinPath
-              # output role is the counterpart of the last join_path's input_role or rr.role if no joins
-              # Find the input role, called icr
-              last_jp = new_rr.all_join_path.last
-              icr = last_jp ? last_jp.input_role : new_rr.role
-              raise "Unexpected JoinPath scenario absorbing #{icr.fact_type.describe(icr)} into #{name}" if icr.fact_type.entity_type or icr.fact_type.all_role.size > 2
-              other_role = (icr.fact_type.all_role-[icr])[0]
-              JoinPath.new(new_rr, new_rr.all_join_path.size+1, :input_role => role, :output_role => other_role)
-            end
-          end
+          absorb_reference(rs, rr.role)
         end
         rs
+      end
+
+      def absorb_reference(rs, role)
+        if role.fact_type.all_role.size == 1
+          # raise "Can't compute absorbed_reference_roles for unary role yet"
+          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
+        elsif role.concept.is_a? ValueType
+          pr = role.preferred_reference
+          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
+        else
+          # Add this role as a JoinPath to the referenced object's absorbed_reference_roles
+          absorb_entity_reference(rs, role)
+        end
+      end
+
+      def absorb_entity_reference(rs, role)
+        absorbed_rs = role.concept.absorbed_reference_roles
+        absorbed_rs.all_role_ref.each do |rr|
+          # Clone the existing RoleRef and its JoinPaths:
+          new_rr = RoleRef.new(rs, rs.all_role_ref.size+1, :role => rr.role, :leading_adjective => rr.leading_adjective, :trailing_adjective => rr.trailing_adjective)
+          rr.all_join_path.each do |jp|
+            JoinPath.new(new_rr, new_rr.all_join_path.size+1, :input_role => jp.input_role, :output_role => jp.output_role)
+          end
+          # Add a new JoinPath
+          # output role is the counterpart of the last join_path's input_role or rr.role if no joins
+          # Find the input role, called icr
+          last_jp = new_rr.all_join_path.last
+          icr = last_jp ? last_jp.input_role : new_rr.role
+          if icr.fact_type.all_role.size > 2
+            raise "Unexpected JoinPath scenario absorbing #{icr.fact_type.describe(icr)} into #{name}"
+          end
+          other_role = (icr.fact_type.all_role-[icr])[0]
+          # For an input_role in a unary fact_type, output_role will be nil
+          JoinPath.new(new_rr, new_rr.all_join_path.size+1, :input_role => role, :output_role => other_role)
+        end
       end
 
       def absorption_paths
