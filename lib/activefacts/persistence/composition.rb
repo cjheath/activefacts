@@ -2,12 +2,12 @@ module ActiveFacts
   module Metamodel
     class Role
       def role_type
-        # TypeInheritance roles are always functional
+        # TypeInheritance roles are always 1:1
         if TypeInheritance === fact_type
           return concept == fact_type.supertype ? :supertype : :subtype
         end
 
-        # Always functional if unary:
+        # Always N:1 if unary:
         return :unary if fact_type.all_role.size == 1
 
         # List the UCs on this fact type:
@@ -44,6 +44,8 @@ module ActiveFacts
         end
       end
 
+      # Each Role of an objectified fact type has no counterpart role; the other player is the objectifying entity.
+      # Otherwise return the player of the other role in a binary fact types
       def other_role_player
         fact_type.entity_type ||  # Objectified fact types only have counterpart roles, no self-roles
           (fact_type.all_role-[self])[0].concept  # Only valid for roles in binaries (others must be objectified anyhow)
@@ -53,19 +55,19 @@ module ActiveFacts
     class Concept
       # Return the array of absorption paths that could absorb this object
       def absorption_paths
-        return @absorption_roles if @absorption_roles
-        return @absorption_roles = [] if is_independent
-        @absorption_roles =
+        return @absorption_paths if @absorption_paths
+        return @absorption_paths = [] if is_independent
+        @absorption_paths =
           all_role.map do |role|
             role_type = role.role_type
             case role_type
-            when :supertype,  # Never absorb a supertype into its subtype (until later when we support partitioning)
+            when :supertype,  # Never absorb a supertype into its subtype (REVISIT: until later when we support partitioning)
                  :many_one    # Can't absorb many of these into one of those
               next nil
             when :unary
               # REVISIT: Test this with an objectified unary
               next nil        # Never absorb an object into one if its unaries
-            when :subtype,    # This object is a subtype, so can be absorbed
+            when :subtype,    # This object is a subtype, so can be absorbed. REVISIT: Support subtype separation and partition
                  :one_many
               next role
             when :one_one     # This object
@@ -112,11 +114,55 @@ module ActiveFacts
     end
 
     class EntityType
+      # Return all Roles for this object's preferred_identifier
+      def reference_roles
+        rs = RoleSequence.new(:new)
+        preferred_identifier.role_sequence.all_role_ref.each do |rr|
+          pr = rr.role.preferred_reference
+          RoleRef.new(rs, rs.all_role_ref.size+1, :role => rr.role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
+        end
+        rs
+      end
+
+      # Return a RoleSequence with RoleRefs (including JoinPath) for all ValueTypes required to form this EntityType's preferred_identifier
+      def absorbed_reference_roles
+        rs = RoleSequence.new(:new)
+        reference_roles.all_role_ref.each do |rr|
+          role = rr.role
+          if role.fact_type.all_role.size == 1
+            # raise "Can't compute absorbed_reference_roles for unary role yet"
+            RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
+          elsif role.concept.is_a? ValueType
+            pr = role.preferred_reference
+            RoleRef.new(rs, rs.all_role_ref.size+1, :role => role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
+          else
+            # Add this role as a JoinPath to the referenced object's absorbed_reference_roles
+            absorbed_rs = role.concept.absorbed_reference_roles
+            absorbed_rs.all_role_ref.each do |rr|
+              # Clone the existing RoleRef and its JoinPaths:
+              new_rr = RoleRef.new(rs, rs.all_role_ref.size+1, :role => rr.role, :leading_adjective => rr.leading_adjective, :trailing_adjective => rr.trailing_adjective)
+              rr.all_join_path.each do |jp|
+                JoinPath.new(new_rr, new_rr.all_join_path.size+1, :input_role => jp.input_role, :output_role => jp.output_role)
+              end
+              # Add a new JoinPath
+              # output role is the counterpart of the last join_path's input_role or rr.role if no joins
+              # Find the input role, called icr
+              last_jp = new_rr.all_join_path.last
+              icr = last_jp ? last_jp.input_role : new_rr.role
+              raise "Unexpected JoinPath scenario absorbing #{icr.fact_type.describe(icr)} into #{name}" if icr.fact_type.entity_type or icr.fact_type.all_role.size > 2
+              other_role = (icr.fact_type.all_role-[icr])[0]
+              JoinPath.new(new_rr, new_rr.all_join_path.size+1, :input_role => role, :output_role => other_role)
+            end
+          end
+        end
+        rs
+      end
+
       def absorption_paths
-        return @absorption_roles if @absorption_roles
+        return @absorption_paths if @absorption_paths
         super
         if (fact_type)
-          @absorption_roles += fact_type.all_role.map do |fact_role|
+          @absorption_paths += fact_type.all_role.map do |fact_role|
             # REVISIT: Perhaps this objectified fact type can be absorbed through one of its roles
             next fact_role if fact_role.all_role_ref.detect{|rr|
               # Look for a UC that covers just this role
@@ -128,7 +174,7 @@ module ActiveFacts
             next nil
           end.compact
         end
-        @absorption_roles
+        @absorption_paths
       end
     end
   end

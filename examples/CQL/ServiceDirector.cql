@@ -45,8 +45,8 @@ Company is identified by Company_Code where
 	Company has exactly one Company_Code,
 	Company_Code is of at most one Company;
 Company has exactly one Operating-Name;
-Company Is Client;
-Company Is Vendor;
+Company is client;
+Company is vendor;
 
 Credential is identified by Credential_Nr where
 	Credential has exactly one Credential_Nr,
@@ -92,8 +92,8 @@ DataStore is on exactly one Secondary-HostSystem;
 Monitor is identified by Monitor_Id where
 	Monitor has exactly one Monitor_Id,
 	Monitor_Id is of at most one Monitor;
-Monitor Monitors exactly one DataStore;
-Monitor Is Disabled;
+Monitor monitors exactly one DataStore;
+Monitor is disabled;
 
 MonitoringApplication is identified by MonitoringApplication_Name where
 	MonitoringApplication has exactly one MonitoringApplication_Name,
@@ -112,9 +112,9 @@ Network uses at most one Domain-Name;
 Network has at most one Ending-IP;
 Network has exactly one Initial-IP;
 Network uses at most one Netmask;
-Network Is IP_Range;
-Network Is IP_Single;
-Network Is IP_Subnet;
+Network is ip_range;
+Network is ip_single;
+Network is ip_subnet;
 
 NotificationLevel is identified by NotificationLevel_Nr where
 	NotificationLevel has exactly one NotificationLevel_Nr,
@@ -127,7 +127,7 @@ NotificationType is identified by NotificationType_Name where
 	NotificationType_Name is of at most one NotificationType;
 MonitorNotificationType is where
 	Monitor has at least one NotificationType;
-MonitorNotificationType Is Excluded;
+MonitorNotificationType is excluded;
 
 ProviderType is identified by ProviderType_Id where
 	ProviderType has exactly one ProviderType_Id,
@@ -141,18 +141,18 @@ Monitor has AllExclusion-RecurringSchedule,
 Monitor has IntegrationExclusion-RecurringSchedule,
 	RecurringSchedule applies to at most one Monitor;
 RecurringSchedule has exactly one Duration;
-RecurringSchedule Friday;
-RecurringSchedule Monday;
-RecurringSchedule Saturday;
-RecurringSchedule Sunday;
-RecurringSchedule Thursday;
-RecurringSchedule Tuesday;
-RecurringSchedule Wednesday;
+RecurringSchedule friday;
+RecurringSchedule monday;
+RecurringSchedule saturday;
+RecurringSchedule sunday;
+RecurringSchedule thursday;
+RecurringSchedule tuesday;
+RecurringSchedule wednesday;
 
 SatalliteMessage is identified by SatalliteMessage_Id where
 	SatalliteMessage has exactly one SatalliteMessage_Id,
 	SatalliteMessage_Id is of at most one SatalliteMessage;
-SatalliteMessage Is Designated for exactly one DataStore;
+SatalliteMessage is designated for exactly one DataStore;
 SatalliteMessage exactly one Insertion-DateTime;
 SatalliteMessage has at most one MessageData;
 SatalliteMessage has at most one MessageHeader;
@@ -163,9 +163,9 @@ Subscription is identified by Subscription_Nr where
 	Subscription has exactly one Subscription_Nr,
 	Subscription_Nr is of at most one Subscription;
 Company (as DriverTechSubscription) has exactly one DriverTech-Subscription;
-Subscription has Beginning exactly one Date;
-Subscription has Ending at most one Date;
-Subscription Is Enabled;
+Subscription has beginning exactly one Date;
+Subscription has ending at most one Date;
+Subscription is enabled;
 
 Switch is identified by Switch_Id where
 	Switch has exactly one Switch_Id,
@@ -180,12 +180,12 @@ Switch is on Private-Network,
 Switch is on at least one Public-Network,
 	Network connects to at most one Switch;
 Switch is exactly one Revision-Version;
-Switch Is Backup Messages;
-Switch Is Backup Updates;
-Switch Is Send Disabled;
-Switch Is Test Vectors Enabled;
+Switch is backup messages;
+Switch is backup updates;
+Switch is send disabled;
+Switch is test vectors enabled;
 HostSystemRunsSwitch is where
-	HostSystem Runs Switch;
+	HostSystem runs Switch;
 
 Time is identified by HHMMSS where
 	Time has exactly one HHMMSS,
@@ -232,57 +232,34 @@ DataStoreService (as DataStoreServiceSubscription) has exactly one Subscription;
 
 /*
  * Constraints:
-for each Company exactly one of these holds:
-	Company Is Client,
-	Company Is Vendor;
 for each Credential exactly one of these holds:
 	DataStore requires Credential,
 	DataStoreService requires Credential,
 	Vendor requires Credential,
 	DataStoreFileHostSystem has Internal-Credential,
 	DataStore has Internal-Credential;
-Network Is IP_Subnet
-	if and only if
-	Network uses Netmask;
 Network has Ending-IP
 	if and only if
-	Network Is IP_Range;
-for each Network at most one of these holds:
-	Network Is IP_Single,
-	Network has Ending-IP;
+	Network is ip_range;
 for each Network exactly one of these holds:
 	HostSystem uses Network,
 	Company has Origin-Network,
 	DataStore has TcpProxy-Network;
-for each Network exactly one of these holds:
-	Network Is IP_Single,
-	Network Is IP_Subnet,
-	Network Is IP_Range;
 Switch is on Private-Network
 	if and only if
 	DataStore has Legacy-Switch;
 for each Switch exactly one of these holds:
-	HostSystem Runs Switch,
+	HostSystem runs Switch,
 	DataStore has Legacy-Switch;
-Client has default-DataStore
-	only if DataStore belongs to Client;
-Network uses Domain-Name
-	only if Network Is IP_Single;
 DataStore has TcpProxy-Network
-	only if Network Is IP_Single;
- */
-each Credential occurs at most one time in
-	DataStore requires Credential;
-each Credential occurs at most one time in
-	Vendor requires Credential;
+	only if Network is ip_single;
 each Credential occurs at most one time in
 	DataStoreFileHostSystem has Internal-Credential;
 each Credential occurs at most one time in
 	DataStore has Internal-Credential;
-each Credential occurs at most one time in
-	DataStoreService requires Credential;
 each IP occurs at most one time in
 	Network has Initial-IP;
+
 each IP occurs at most one time in
 	Network has Ending-IP;
 each Name occurs at most one time in
@@ -291,24 +268,49 @@ each Network occurs at most one time in
 	Company has Origin-Network;
 each Port occurs at most one time in
 	Switch has Monitoring-Port;
+each Subscription occurs at most one time in
+	Company has DriverTech-Subscription;
+each Switch occurs at most one time in
+	DataStore has Legacy-Switch;
+ */
+
+for each Company exactly one of these holds:
+	Company is client,
+	Company is vendor;
+Network is ip_subnet
+	if and only if
+	Network uses Netmask;
+for each Network at most one of these holds:
+	Network is ip_single,
+	Network has Ending-IP;
+for each Network exactly one of these holds:
+	Network is ip_single,
+	Network is ip_subnet,
+	Network is ip_range;
+Client has default-DataStore
+	only if DataStore belongs to Client;
+Network uses Domain-Name
+	only if Network is ip_single;
+each Credential occurs at most one time in
+	DataStore requires Credential;
+each Credential occurs at most one time in
+	Vendor requires Credential;
+each Credential occurs at most one time in
+	DataStoreService requires Credential;
 each RecurringSchedule occurs at least one time in
-	RecurringSchedule Monday,
-	RecurringSchedule Tuesday,
-	RecurringSchedule Wednesday,
-	RecurringSchedule Thursday,
-	RecurringSchedule Friday,
-	RecurringSchedule Saturday,
-	RecurringSchedule Sunday;
+	RecurringSchedule monday,
+	RecurringSchedule tuesday,
+	RecurringSchedule wednesday,
+	RecurringSchedule thursday,
+	RecurringSchedule friday,
+	RecurringSchedule saturday,
+	RecurringSchedule sunday;
 each Service occurs exactly one time in
 	Vendor provides Service;
 each Service occurs at least one time in
 	DataStore has Service;
 each Subscription occurs at most one time in
 	DataStoreService has Subscription;
-each Subscription occurs at most one time in
-	Company has DriverTech-Subscription;
-each Switch occurs at most one time in
-	DataStore has Legacy-Switch;
 each combination UserName, Vendor, DataStoreService, DataStore occurs at most one time in
 	Credential has UserName,
 	Vendor requires Credential,

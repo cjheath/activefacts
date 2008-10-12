@@ -68,10 +68,10 @@ module OrienteeringER
   end
 
   class Event
-    identified_by :event_i_d
+    identified_by :event_id
     has_one :club                               # See Club.all_event
     has_one :date                               # See Date.all_event
-    has_one :event_i_d, ID                      # See ID.all_event_by_event_i_d
+    has_one :event_id, ID                       # See ID.all_event_by_event_id
     has_one :event_name                         # See EventName.all_event
     has_one :location                           # See Location.all_event
     has_one :map                                # See Map.all_event

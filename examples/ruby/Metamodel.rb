@@ -166,9 +166,6 @@ module Metamodel
     has_one :superset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_by_superset_role_sequence
   end
 
-  class UniquenessConstraint < PresenceConstraint
-  end
-
   class Unit
     identified_by :unit_id
     has_one :coefficient                        # See Coefficient.all_unit
@@ -201,10 +198,34 @@ module Metamodel
     has_one :value_restriction                  # See ValueRestriction.all_allowed_range
   end
 
-  class FrequencyConstraint < PresenceConstraint
+  class Vocabulary
+    identified_by :name
+    one_to_one :name                            # See Name.vocabulary
   end
 
-  class MandatoryConstraint < PresenceConstraint
+  class Import
+    identified_by :imported_vocabulary, :vocabulary
+    has_one :imported_vocabulary, Vocabulary    # See Vocabulary.all_import_by_imported_vocabulary
+    has_one :vocabulary                         # See Vocabulary.all_import
+  end
+
+  class Feature
+    identified_by :name, :vocabulary
+    has_one :name                               # See Name.all_feature
+    has_one :vocabulary                         # See Vocabulary.all_feature
+  end
+
+  class Correspondence
+    identified_by :imported_feature, :import
+    has_one :import                             # See Import.all_correspondence
+    has_one :imported_feature, Feature          # See Feature.all_correspondence_by_imported_feature
+    has_one :local_feature, Feature             # See Feature.all_correspondence_by_local_feature
+  end
+
+  class Population
+    identified_by :vocabulary, :name
+    has_one :name                               # See Name.all_population
+    has_one :vocabulary                         # See Vocabulary.all_population
   end
 
   class SetComparisonConstraint < SetConstraint
@@ -223,33 +244,12 @@ module Metamodel
     maybe :is_mandatory
   end
 
-  class Feature
-    identified_by :name, :vocabulary
-    has_one :name                               # See Name.all_feature
-    has_one :vocabulary                         # See Vocabulary.all_feature
-  end
-
-  class Vocabulary < Feature
-    has_one :parent_vocabulary, Vocabulary      # See Vocabulary.all_vocabulary_by_parent_vocabulary
-  end
-
-  class Import
-    identified_by :imported_vocabulary, :vocabulary
-    has_one :imported_vocabulary, Vocabulary    # See Vocabulary.all_import_by_imported_vocabulary
-    has_one :vocabulary                         # See Vocabulary.all_import
-  end
-
-  class Correspondence
-    identified_by :imported_feature, :import
-    has_one :import                             # See Import.all_correspondence
-    has_one :imported_feature, Feature          # See Feature.all_correspondence_by_imported_feature
-    has_one :local_feature, Feature             # See Feature.all_correspondence_by_local_feature
-  end
-
   class Alias < Feature
   end
 
   class Concept < Feature
+    maybe :is_independent
+    maybe :is_personal
   end
 
   class Role
@@ -270,10 +270,16 @@ module Metamodel
     has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_by_trailing_adjective
   end
 
+  class JoinPath
+    identified_by :role_ref, :ordinal
+    has_one :ordinal                            # See Ordinal.all_join_path
+    has_one :role_ref                           # See RoleRef.all_join_path
+    has_one :input_role, Role                   # See Role.all_join_path_by_input_role
+    has_one :output_role, Role                  # See Role.all_join_path_by_output_role
+  end
+
   class EntityType < Concept
     one_to_one :fact_type                       # See FactType.entity_type
-    maybe :is_independent
-    maybe :is_personal
   end
 
   class TypeInheritance < FactType
@@ -281,12 +287,6 @@ module Metamodel
     has_one :subtype, EntityType                # See EntityType.all_type_inheritance_by_subtype
     has_one :supertype, EntityType              # See EntityType.all_type_inheritance_by_supertype
     maybe :provides_identification
-  end
-
-  class Population
-    identified_by :vocabulary, :name
-    has_one :name                               # See Name.all_population
-    has_one :vocabulary                         # See Vocabulary.all_population
   end
 
   class ValueType < Concept

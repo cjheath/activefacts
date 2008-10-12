@@ -124,9 +124,9 @@ module Orienteering
   end
 
   class Event
-    identified_by :event_i_d
+    identified_by :event_id
     has_one :club                               # See Club.all_event
-    one_to_one :event_i_d                       # See EventID.event
+    one_to_one :event_id, EventID               # See EventID.event_by_event_id
     one_to_one :event_name                      # See EventName.event
     has_one :map                                # See Map.all_event
     has_one :number                             # See Number.all_event
@@ -150,37 +150,37 @@ module Orienteering
   end
 
   class Map
-    identified_by :map_i_d
+    identified_by :map_id
     has_one :accessibility                      # See Accessibility.all_map
-    one_to_one :map_i_d                         # See MapID.map
+    one_to_one :map_id, MapID                   # See MapID.map_by_map_id
     one_to_one :map_name                        # See MapName.map
     has_one :owner, Club                        # See Club.all_map_by_owner
   end
 
   class Person
-    identified_by :person_i_d
+    identified_by :person_id
     has_one :birth_year, Year                   # See Year.all_person_by_birth_year
     has_one :club                               # See Club.all_person
     has_one :family_name                        # See FamilyName.all_person
     has_one :gender                             # See Gender.all_person
     has_one :given_name                         # See GivenName.all_person
-    one_to_one :person_i_d                      # See PersonID.person
+    one_to_one :person_id, PersonID             # See PersonID.person_by_person_id
     has_one :post_code                          # See PostCode.all_person
   end
 
   class Entry
-    identified_by :entry_i_d
+    identified_by :entry_id
     has_one :course                             # See Course.all_entry
     has_one :event                              # See Event.all_entry
     has_one :person                             # See Person.all_entry
-    one_to_one :entry_i_d                       # See EntryID.entry
+    one_to_one :entry_id, EntryID               # See EntryID.entry_by_entry_id
     has_one :finish_placing, Placing            # See Placing.all_entry_by_finish_placing
     has_one :score                              # See Score.all_entry
   end
 
   class Punch
-    identified_by :punch_i_d
-    one_to_one :punch_i_d                       # See PunchID.punch
+    identified_by :punch_id
+    one_to_one :punch_id, PunchID               # See PunchID.punch_by_punch_id
   end
 
   class PunchPlacement
@@ -197,9 +197,9 @@ module Orienteering
   end
 
   class Series
-    identified_by :series_i_d
+    identified_by :series_id
     one_to_one :name, SeriesName                # See SeriesName.series_by_name
-    one_to_one :series_i_d                      # See SeriesID.series
+    one_to_one :series_id, SeriesID             # See SeriesID.series_by_series_id
   end
 
 end

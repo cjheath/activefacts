@@ -57,7 +57,7 @@ module ActiveFacts
               raise "Definitions must be in a vocabulary" if kind != :vocabulary and !@vocabulary
               case kind
               when :vocabulary
-                @vocabulary = @constellation.Vocabulary(value[0], nil)
+                @vocabulary = @constellation.Vocabulary(value[0])
               when :data_type
                 value_type *value
               when :entity_type

@@ -39,11 +39,24 @@ module ActiveFacts
           }
         }
       end
+
+      # Return the RoleRef to this role from its fact type's preferred_reading
+      def preferred_reference
+        fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == self }
+      end
     end
 
     class RoleRef
       def describe
         "#{[leading_adjective, role.concept.name, trailing_adjective].compact*"-"} in #{role_sequence.describe}"
+      end
+
+      def role_name(joiner = "-")
+        if role.fact_type.all_role.size == 1
+          role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.gsub(/ /, '_')
+        else
+          role.role_name || [leading_adjective, role.concept.name, trailing_adjective].compact*joiner
+        end
       end
     end
 

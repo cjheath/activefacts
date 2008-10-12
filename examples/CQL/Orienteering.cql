@@ -103,10 +103,10 @@ Series has exactly one SeriesName (as Name),
 
 /*
  * Constraints:
+ */
 Event is in Series
 	if and only if
 	Event has Number;
- */
 each combination Course, Event occurs at most one time in
 	ScoringMethod is used for Course of Event;
 each Event occurs at least one time in

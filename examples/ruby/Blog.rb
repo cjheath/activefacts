@@ -10,10 +10,6 @@ module Blog
     value_type 
   end
 
-  class ContentId < AutoCounter
-    value_type 
-  end
-
   class Name < String
     value_type :length => 64
   end
@@ -52,9 +48,8 @@ module Blog
   end
 
   class Content
-    identified_by :content_id
+    identified_by :style, :text
     one_to_one :comment                         # See Comment.content
-    one_to_one :content_id                      # See ContentId.content
     has_one :style                              # See Style.all_content
     has_one :text                               # See Text.all_content
   end

@@ -91,7 +91,7 @@ PurchaseOrder is to at most one Warehouse;
 SalesOrder is from at most one Warehouse;
 TransferRequest is from at most one Warehouse;
 TransferRequest is to at most one Warehouse;
-Warehouse contains exactly one Bin;
+Warehouse contains at least one Bin;
 StockedProduct is where
 	Warehouse contains Product;
 StockedProduct is in Bin,
@@ -103,10 +103,12 @@ Customer made SalesOrder,
 
 /*
  * Constraints:
+ */
 for each DispatchItem exactly one of these holds:
 	DispatchItem is for TransferRequest,
 	DispatchItem is for SalesOrderItem;
 for each ReceivedItem exactly one of these holds:
 	ReceivedItem is for PurchaseOrderItem,
 	ReceivedItem is for TransferRequest;
- */
+each Bin occurs at most one time in
+	Warehouse contains Bin;

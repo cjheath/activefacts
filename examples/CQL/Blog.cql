@@ -5,7 +5,6 @@ vocabulary Blog;
  */
 AuthorId is defined as AutoCounter();
 CommentId is defined as AutoCounter();
-ContentId is defined as AutoCounter();
 Name is defined as VariableLengthText(64);
 Ordinal is defined as UnsignedInteger(32);
 PostId is defined as AutoCounter();
@@ -28,14 +27,12 @@ Comment is identified by CommentId where
 Author wrote Comment,
 	Comment was written by exactly one Author;
 
-Content is identified by ContentId where
-	Content has exactly one ContentId,
-	ContentId is of at most one Content;
+Content is identified by Style and Text where
+	Content is of at most one Style,
+	Content has exactly one Text,
+	Text is of Content;
 Content provides text of at most one Comment,
 	Comment consists of exactly one text-Content;
-Content is of at most one Style;
-Content has exactly one Text,
-	Text is of Content;
 
 Post is identified by PostId where
 	Post has exactly one PostId,
@@ -59,7 +56,7 @@ Topic is called exactly one topic-Name,
 
 /*
  * Constraints:
+ */
 for each Content exactly one of these holds:
 	Content provides text of Comment,
 	Content is of Paragraph;
- */

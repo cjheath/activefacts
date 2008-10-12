@@ -55,7 +55,7 @@ module ActiveFacts
 
       def read_vocabulary
         @constellation = Constellation.new(ActiveFacts::Metamodel)
-        @vocabulary = @constellation.Vocabulary(@x_model.attributes['Name'], nil)
+        @vocabulary = @constellation.Vocabulary(@x_model.attributes['Name'])
 
         # Find all elements having an "id" attribute and index them
         x_identified = @x_model.elements.to_a("//*[@id]")

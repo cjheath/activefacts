@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
+<ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:oial="http://schemas.neumont.edu/ORM/Abstraction/2007-06/Core" xmlns:odt="http://schemas.neumont.edu/ORM/Abstraction/2007-06/DataTypes/Core" xmlns:rcd="http://schemas.neumont.edu/ORM/Relational/2007-06/ConceptualDatabase" xmlns:ddt="http://schemas.orm.net/DIL/DILDT" xmlns:ormtooial="http://schemas.neumont.edu/ORM/Bridge/2007-06/ORMToORMAbstraction" xmlns:oialtocdb="http://schemas.neumont.edu/ORM/Bridge/2007-06/ORMAbstractionToConceptualDatabase" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
 	<orm:ORMModel id="_EFE849F1-FE1C-4AD2-B4AB-FAB161E696D0" Name="SubtypePI">
 		<orm:Objects>
 			<orm:EntityType id="_EEC32FD0-8D94-466D-AAE2-5B7A863ECE74" Name="Entrant" _ReferenceMode="ID">
@@ -311,6 +311,17 @@
 			</orm:ImpliedFact>
 		</orm:Facts>
 		<orm:Constraints>
+			<orm:ExclusionConstraint id="_151C2815-792C-412A-8F07-FBD091B92E7E" Name="ExclusiveOrConstraint2">
+				<orm:RoleSequences>
+					<orm:RoleSequence id="_2F88FC2E-8A24-4E91-B22E-FB741D6F015B">
+						<orm:Role id="_CFC9EF97-1A24-43A4-AD04-710220DE1DFA" ref="_C9F2B99C-F10C-4CAE-9F69-6CE852F68EE4" />
+					</orm:RoleSequence>
+					<orm:RoleSequence id="_6054F9FB-21F0-43BD-A57A-20751435B039">
+						<orm:Role id="_D37D0AA5-C76D-4C59-9580-A687D1883D3B" ref="_F47C23B3-BF79-485C-8A40-13386094212C" />
+					</orm:RoleSequence>
+				</orm:RoleSequences>
+				<orm:ExclusiveOrMandatoryConstraint ref="_02DDD38D-22B5-40EA-8662-498388677151" />
+			</orm:ExclusionConstraint>
 			<orm:MandatoryConstraint id="_AC8D7904-B1EB-4B37-85C9-015762DDBB8A" Name="SimpleMandatoryConstraint1" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_6A5FA0A2-2BCE-40CB-BE27-A79EB4DFCA3D" ref="_B266F924-DCD3-4CBA-8C3C-717B703B9163" />
@@ -452,17 +463,6 @@
 					<orm:Role id="_828C92F1-87B8-4EA1-8CDB-13CA410D1849" ref="_09C9D30A-A451-4456-8A2E-57AF2D2362CA" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:ExclusionConstraint id="_151C2815-792C-412A-8F07-FBD091B92E7E" Name="ExclusiveOrConstraint2">
-				<orm:RoleSequences>
-					<orm:RoleSequence id="_2F88FC2E-8A24-4E91-B22E-FB741D6F015B">
-						<orm:Role id="_CFC9EF97-1A24-43A4-AD04-710220DE1DFA" ref="_C9F2B99C-F10C-4CAE-9F69-6CE852F68EE4" />
-					</orm:RoleSequence>
-					<orm:RoleSequence id="_6054F9FB-21F0-43BD-A57A-20751435B039">
-						<orm:Role id="_D37D0AA5-C76D-4C59-9580-A687D1883D3B" ref="_F47C23B3-BF79-485C-8A40-13386094212C" />
-					</orm:RoleSequence>
-				</orm:RoleSequences>
-				<orm:ExclusiveOrMandatoryConstraint ref="_02DDD38D-22B5-40EA-8662-498388677151" />
-			</orm:ExclusionConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:VariableLengthTextDataType id="_A7A1236F-BA2A-41A6-BD6E-B34206718FCA" />
@@ -474,6 +474,26 @@
 			<orm:ReferenceModeKind id="_3726F49D-627C-4AF0-83A5-8DCA45B0D05A" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>
+	<orm:NameGenerator id="_830A9FF3-39D8-4B2A-800E-AFCF744E0B75" AutomaticallyShortenNames="true" UseTargetDefaultMaximum="true" UserDefinedMaximum="128">
+		<orm:Refinements>
+			<oialtocdb:RelationalNameGenerator id="_0BE2E822-7659-4B91-942D-24C5338642EC" SpacingFormat="Remove" AutomaticallyShortenNames="true" UseTargetDefaultMaximum="true" UserDefinedMaximum="128">
+				<orm:Refinements>
+					<oialtocdb:RelationalNameGenerator id="_E82975F0-C7BC-4E0D-8599-7492B9F8C739" NameUsage="RelationalTable" CasingOption="Pascal" SpacingFormat="Remove" AutomaticallyShortenNames="true" UseTargetDefaultMaximum="true" UserDefinedMaximum="128" />
+					<oialtocdb:RelationalNameGenerator id="_65ECCF0D-728E-4EEF-B954-27191721CEE7" NameUsage="RelationalColumn" CasingOption="Camel" SpacingFormat="Remove" AutomaticallyShortenNames="true" UseTargetDefaultMaximum="true" UserDefinedMaximum="128" />
+				</orm:Refinements>
+			</oialtocdb:RelationalNameGenerator>
+		</orm:Refinements>
+	</orm:NameGenerator>
+	<orm:GenerationState id="_6108E4C7-1BCA-4FE9-9C80-4971DFE169AB">
+		<orm:GenerationSettings>
+			<ormtooial:AbstractionModelGenerationSetting id="_24307008-3A1D-4676-A30E-95B03557763F" AlgorithmVersion="1.004">
+				<ormtooial:AbstractionModel ref="_50B65ABC-D4E7-46E3-B49F-5FD30ACA1576" />
+			</ormtooial:AbstractionModelGenerationSetting>
+			<oialtocdb:SchemaGenerationSetting id="_315AFE0E-7371-4560-9DD2-8815015C661D" CoreAlgorithmVersion="1.004" NameAlgorithmVersion="1.009">
+				<oialtocdb:Schema ref="_BABE491B-489E-4259-B776-CC07397FE3CD" />
+			</oialtocdb:SchemaGenerationSetting>
+		</orm:GenerationSettings>
+	</orm:GenerationState>
 	<ormDiagram:ORMDiagram id="_9190A85F-CC4F-45C7-AD4A-7A9632898920" IsCompleteView="false" Name="SubtypePI" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
 			<ormDiagram:ObjectTypeShape id="_F0B05FD7-7557-4DC2-99B3-97E7A8301A00" IsExpanded="true" AbsoluteBounds="1.0312499602635699, 1.2916666269302364, 0.52885868668556213, 0.35900605320930479">
@@ -520,4 +540,151 @@
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_EFE849F1-FE1C-4AD2-B4AB-FAB161E696D0" />
 	</ormDiagram:ORMDiagram>
+	<oial:model id="_50B65ABC-D4E7-46E3-B49F-5FD30ACA1576" name="SubtypePI">
+		<oial:informationTypeFormats>
+			<odt:dataType id="_3F5772A0-A2BB-471D-9AA6-5D871E399002" name="GivenName" />
+			<odt:dataType id="_241EE11E-43BC-4877-9636-B262745FF7AF" name="FamilyName" />
+			<odt:dataType id="_4B72FAAE-01E0-466D-A283-AB34393030C1" name="EntrantID" />
+			<odt:dataType id="_47409D06-9BE9-4697-BEA5-C36A51964918" name="TeamID" />
+		</oial:informationTypeFormats>
+		<oial:conceptTypes>
+			<oial:conceptType id="_7A805B52-BDFC-4D9A-A7DD-20DEFD512106" name="Entrant">
+				<oial:children>
+					<oial:informationType id="_7A92B7F6-3ADA-488C-9D5F-D9EC6798A874" ref="_4B72FAAE-01E0-466D-A283-AB34393030C1" isMandatory="true" name="EntrantID" />
+					<oial:assimilatedConceptType id="_789D7B55-C081-4C2A-A0EC-5275769064D9" ref="_2840AB22-C811-4874-AB69-AD61E8C71653" name="Entrant" oppositeName="Competitor" refersToSubtype="true" isPreferredForTarget="true" />
+					<oial:assimilatedConceptType id="_C4C8FC1A-3D0B-4DCE-92B2-94A427AA136A" ref="_972FBA29-B74A-4259-A047-5C0BDE2711F8" name="Entrant" oppositeName="Team" refersToSubtype="true" />
+				</oial:children>
+				<oial:uniquenessConstraints>
+					<oial:uniquenessConstraint id="_7A52E8D1-A311-4B5E-8B99-21975F167DC0" name="InternalUniquenessConstraint3" isPreferred="true">
+						<oial:uniquenessChild ref="_7A92B7F6-3ADA-488C-9D5F-D9EC6798A874" />
+					</oial:uniquenessConstraint>
+				</oial:uniquenessConstraints>
+			</oial:conceptType>
+			<oial:conceptType id="_2840AB22-C811-4874-AB69-AD61E8C71653" name="Competitor">
+				<oial:children>
+					<oial:informationType id="_1E8761D5-B6ED-4FD9-8DFA-D10D9EB701CB" ref="_241EE11E-43BC-4877-9636-B262745FF7AF" isMandatory="true" name="FamilyName" />
+				</oial:children>
+			</oial:conceptType>
+			<oial:conceptType id="_972FBA29-B74A-4259-A047-5C0BDE2711F8" name="Team">
+				<oial:children>
+					<oial:informationType id="_B7F32D0B-F25E-444F-A72C-F5E3B8923E08" ref="_47409D06-9BE9-4697-BEA5-C36A51964918" isMandatory="true" name="TeamID" />
+				</oial:children>
+				<oial:uniquenessConstraints>
+					<oial:uniquenessConstraint id="_6585A105-96F7-413A-AEDA-14CD415C28D0" name="InternalUniquenessConstraint11" isPreferred="true">
+						<oial:uniquenessChild ref="_B7F32D0B-F25E-444F-A72C-F5E3B8923E08" />
+					</oial:uniquenessConstraint>
+				</oial:uniquenessConstraints>
+			</oial:conceptType>
+			<oial:conceptType id="_ED81A463-97DA-4FDC-91F5-C0FFCD3F06B5" name="EntrantHasGivenName">
+				<oial:children>
+					<oial:informationType id="_63E72C63-4947-46FD-A4A9-C7AF03262201" ref="_3F5772A0-A2BB-471D-9AA6-5D871E399002" isMandatory="true" name="GivenName" />
+					<oial:relatedConceptType id="_0B003943-2788-4B0E-A5BA-D63FC26F1F28" ref="_7A805B52-BDFC-4D9A-A7DD-20DEFD512106" isMandatory="true" name="EntrantHasGivenName" oppositeName="Entrant" />
+				</oial:children>
+				<oial:uniquenessConstraints>
+					<oial:uniquenessConstraint id="_B364379B-3AD0-4D89-9B70-02CFA779CE74" name="InternalUniquenessConstraint4" isPreferred="true">
+						<oial:uniquenessChild ref="_0B003943-2788-4B0E-A5BA-D63FC26F1F28" />
+						<oial:uniquenessChild ref="_63E72C63-4947-46FD-A4A9-C7AF03262201" />
+					</oial:uniquenessConstraint>
+				</oial:uniquenessConstraints>
+				<oial:association>
+					<oial:associationChild ref="_0B003943-2788-4B0E-A5BA-D63FC26F1F28" />
+					<oial:associationChild ref="_63E72C63-4947-46FD-A4A9-C7AF03262201" />
+				</oial:association>
+			</oial:conceptType>
+		</oial:conceptTypes>
+	</oial:model>
+	<rcd:Catalog id="_40A43689-F2EE-41CE-9894-9F46E350899E">
+		<rcd:Schemas>
+			<rcd:Schema id="_BABE491B-489E-4259-B776-CC07397FE3CD" Name="SubtypePI">
+				<rcd:Tables>
+					<rcd:Table id="_2DC25B11-6D16-4867-8C29-D993F636A594" Name="Entrant">
+						<rcd:Columns>
+							<rcd:Column id="_D74C9719-DEFB-447C-843F-311625874172" Name="entrantID" />
+							<rcd:Column id="_C64FF754-ADB7-4D1C-8FF5-6607DEC7F9CD" Name="competitorFamilyName" IsNullable="true" />
+							<rcd:Column id="_2EC3D5DC-AF64-46F9-B17F-A93FF5228587" Name="teamID" IsNullable="true" />
+						</rcd:Columns>
+						<rcd:Constraints>
+							<rcd:UniquenessConstraint id="_F46C6789-97A6-40E9-AAB4-FF0B948CD312" Name="Entrant_PK" IsPrimary="true">
+								<rcd:Columns>
+									<rcd:Column ref="_D74C9719-DEFB-447C-843F-311625874172" />
+								</rcd:Columns>
+							</rcd:UniquenessConstraint>
+							<rcd:UniquenessConstraint id="_73E3134D-A0A8-456A-BA34-9F3BCDC4BD2A" Name="Entrant_UC">
+								<rcd:Columns>
+									<rcd:Column ref="_2EC3D5DC-AF64-46F9-B17F-A93FF5228587" />
+								</rcd:Columns>
+							</rcd:UniquenessConstraint>
+						</rcd:Constraints>
+					</rcd:Table>
+					<rcd:Table id="_E4067FF9-A808-4456-A4A7-AC9D3BE9D703" Name="EntrantHasGivenName">
+						<rcd:Columns>
+							<rcd:Column id="_B12506C6-0B1E-4D1E-B766-D03C79346689" Name="givenName" />
+							<rcd:Column id="_5C38F74D-F9C9-43E4-AB77-A4144059A873" Name="entrantID" />
+						</rcd:Columns>
+						<rcd:Constraints>
+							<rcd:ReferenceConstraint id="_FA6E4C00-5E65-4B49-B907-3FB9B72DB5D7" Name="EntrantHasGivenName_FK">
+								<rcd:TargetTable ref="_2DC25B11-6D16-4867-8C29-D993F636A594" />
+								<rcd:TargetUniquenessConstraint ref="_F46C6789-97A6-40E9-AAB4-FF0B948CD312" />
+								<rcd:ColumnReferences>
+									<rcd:ColumnReference TargetColumn="_D74C9719-DEFB-447C-843F-311625874172" SourceColumn="_5C38F74D-F9C9-43E4-AB77-A4144059A873" />
+								</rcd:ColumnReferences>
+							</rcd:ReferenceConstraint>
+							<rcd:UniquenessConstraint id="_6D128E46-7F24-4D10-B439-F0F6F76D3BD9" Name="EntrantHasGivenName_PK" IsPrimary="true">
+								<rcd:Columns>
+									<rcd:Column ref="_5C38F74D-F9C9-43E4-AB77-A4144059A873" />
+									<rcd:Column ref="_B12506C6-0B1E-4D1E-B766-D03C79346689" />
+								</rcd:Columns>
+							</rcd:UniquenessConstraint>
+						</rcd:Constraints>
+					</rcd:Table>
+				</rcd:Tables>
+			</rcd:Schema>
+		</rcd:Schemas>
+	</rcd:Catalog>
+	<ormtooial:Bridge>
+		<ormtooial:AbstractionModelIsForORMModel id="_E7518840-54D6-4EF1-AED7-584BE010398C" AbstractionModel="_50B65ABC-D4E7-46E3-B49F-5FD30ACA1576" ORMModel="_EFE849F1-FE1C-4AD2-B4AB-FAB161E696D0" />
+		<ormtooial:FactTypeMapsTowardsRole id="_3DAF55A5-6422-46E1-8DEA-636577F3E546" FactType="_D5240A34-2D34-4623-A270-51C61F2B2596" TowardsRole="_F729787B-8E08-4BE3-B2E6-F4C1B53ECBE1" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_8EC23D07-89E1-4D00-8503-29F2F3C355A0" FactType="_5A8B55E1-E12A-4CF7-8E0E-A8F8365D2F96" TowardsRole="_C9F2B99C-F10C-4CAE-9F69-6CE852F68EE4" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_B73D86D2-6486-491A-8DBE-70D398AAE058" FactType="_0A83DBA4-000D-44D6-ABF7-ABD6BA172F07" TowardsRole="_528EFE6C-88F2-4583-B08C-A14C1B8A809A" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_994783FB-046A-42ED-8A62-C545B1F121F2" FactType="_375888F4-6C83-4CD4-B05E-451CBE93F2F1" TowardsRole="_0905D2F7-E734-4EBD-BC1B-DB7C5B0EBB6A" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_1ABBEC83-84DB-40F5-B0E5-78725D15E5DB" FactType="_2C35FFF1-BCE8-4707-B02F-E979B49992C1" TowardsRole="_09C9D30A-A451-4456-8A2E-57AF2D2362CA" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_BB1AB609-A09B-4A0A-920C-AE1E5AFB1DB8" FactType="_AE8506FE-A7C7-49DF-82A0-8280B65FA488" TowardsRole="_C9DDC8FD-3D32-4F71-9E88-B0711BC08FDA" Depth="Deep" UniquenessPattern="OneToOne" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_1B01DE18-8E90-4C09-9734-9CEB9580ACE5" FactType="_281BE1B4-8FDC-4E9A-BEC5-76EF6FF61B27" TowardsRole="_F47C23B3-BF79-485C-8A40-13386094212C" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:ConceptTypeIsForObjectType id="_9840B6F4-7F9D-496A-84A2-20FC14390F13" ConceptType="_2840AB22-C811-4874-AB69-AD61E8C71653" ObjectType="_1768C0DA-8033-4BC8-B97F-9F15E54B2A75" />
+		<ormtooial:ConceptTypeIsForObjectType id="_15E2458E-1687-401F-AED1-A58E77D59349" ConceptType="_7A805B52-BDFC-4D9A-A7DD-20DEFD512106" ObjectType="_EEC32FD0-8D94-466D-AAE2-5B7A863ECE74" />
+		<ormtooial:ConceptTypeIsForObjectType id="_C1AB4A88-8D11-4A48-9A8A-F73E30E589F9" ConceptType="_ED81A463-97DA-4FDC-91F5-C0FFCD3F06B5" ObjectType="_DFA85D22-8C53-4422-9701-22CD5E861E7B" />
+		<ormtooial:ConceptTypeIsForObjectType id="_898F9B62-D952-4108-AB9C-10E6B5A13474" ConceptType="_972FBA29-B74A-4259-A047-5C0BDE2711F8" ObjectType="_262EBB04-9D25-455B-A977-496A94B2E56A" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_1B2531F1-CD6E-4ACA-9A9C-FBD995201068" ConceptTypeChild="_789D7B55-C081-4C2A-A0EC-5275769064D9" PathFactType="_5A8B55E1-E12A-4CF7-8E0E-A8F8365D2F96" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_16FBD328-319E-49D1-B5EF-431FF4D5A554" ConceptTypeChild="_C4C8FC1A-3D0B-4DCE-92B2-94A427AA136A" PathFactType="_281BE1B4-8FDC-4E9A-BEC5-76EF6FF61B27" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_3E5EBC40-3C7F-4330-9D37-FC9C9624C52A" ConceptTypeChild="_0B003943-2788-4B0E-A5BA-D63FC26F1F28" PathFactType="_375888F4-6C83-4CD4-B05E-451CBE93F2F1" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_2801C472-08AE-4C37-94FB-EBB8D7517CE3" ConceptTypeChild="_7A92B7F6-3ADA-488C-9D5F-D9EC6798A874" PathFactType="_0A83DBA4-000D-44D6-ABF7-ABD6BA172F07" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_96D10665-1D80-4AF7-9DAD-8508F8525FA6" ConceptTypeChild="_1E8761D5-B6ED-4FD9-8DFA-D10D9EB701CB" PathFactType="_D5240A34-2D34-4623-A270-51C61F2B2596" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_471F37AC-04FF-4A75-AF99-BC3B1FF38076" ConceptTypeChild="_63E72C63-4947-46FD-A4A9-C7AF03262201" PathFactType="_2C35FFF1-BCE8-4707-B02F-E979B49992C1" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_CAE07061-08A6-45D9-8176-AB196503149F" ConceptTypeChild="_B7F32D0B-F25E-444F-A72C-F5E3B8923E08" PathFactType="_AE8506FE-A7C7-49DF-82A0-8280B65FA488" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_CDE367A9-B347-45F9-869A-8800AE7CFCB9" InformationTypeFormat="_4B72FAAE-01E0-466D-A283-AB34393030C1" ValueType="_C5242E48-97D5-41AC-ADF0-7269EF0C52EF" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_75ACF690-43D5-4599-A242-F2E754C155C0" InformationTypeFormat="_241EE11E-43BC-4877-9636-B262745FF7AF" ValueType="_C11C77B4-AD6B-43F8-8CF8-3AEA4AD2EAA6" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_64F45938-6FD7-4134-B0EE-8266953FC80F" InformationTypeFormat="_3F5772A0-A2BB-471D-9AA6-5D871E399002" ValueType="_1BADDD1B-51C5-4773-ABF2-3F5A19827510" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_3317281E-5BA9-44A6-BBAD-6B4058C39AA9" InformationTypeFormat="_47409D06-9BE9-4697-BEA5-C36A51964918" ValueType="_C384379E-32B7-478F-842A-0C87FB29992D" />
+		<ormtooial:UniquenessIsForUniquenessConstraint id="_076A8385-9A7D-4E45-8C28-358693B1995C" AbstractionUniquenessConstraint="_6585A105-96F7-413A-AEDA-14CD415C28D0" ORMUniquenessConstraint="_D6D85020-4FD0-462F-8F5E-E367E851CE90" />
+		<ormtooial:UniquenessIsForUniquenessConstraint id="_94099846-7CAB-4C12-8AD7-3FE2F409FFFB" AbstractionUniquenessConstraint="_7A52E8D1-A311-4B5E-8B99-21975F167DC0" ORMUniquenessConstraint="_9CFB5E8C-3513-4E95-B891-A9D1282CCEE6" />
+		<ormtooial:UniquenessIsForUniquenessConstraint id="_F061723E-3C33-42F5-9EEC-3A4D1CCE25B1" AbstractionUniquenessConstraint="_B364379B-3AD0-4D89-9B70-02CFA779CE74" ORMUniquenessConstraint="_F1C3331D-2104-419B-9777-C28E37484E3B" />
+	</ormtooial:Bridge>
+	<oialtocdb:Bridge>
+		<oialtocdb:SchemaIsForAbstractionModel id="_615B61F9-07F3-4A48-9A4C-EFF71B6733B8" Schema="_BABE491B-489E-4259-B776-CC07397FE3CD" AbstractionModel="_50B65ABC-D4E7-46E3-B49F-5FD30ACA1576" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_22538380-C6E2-4D6D-BE22-684E1D87C38E" Column="_C64FF754-ADB7-4D1C-8FF5-6607DEC7F9CD" ConceptTypeChild="_789D7B55-C081-4C2A-A0EC-5275769064D9" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_96D23DFE-8F90-4AE7-866A-DC17FA04D4E5" Column="_C64FF754-ADB7-4D1C-8FF5-6607DEC7F9CD" ConceptTypeChild="_1E8761D5-B6ED-4FD9-8DFA-D10D9EB701CB" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_FDDCD5FA-07DC-4B46-9B6F-67BF83F3B366" Column="_D74C9719-DEFB-447C-843F-311625874172" ConceptTypeChild="_7A92B7F6-3ADA-488C-9D5F-D9EC6798A874" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_B6A8FE83-7B08-4CE0-B1E3-3C92CBDE1D87" Column="_5C38F74D-F9C9-43E4-AB77-A4144059A873" ConceptTypeChild="_0B003943-2788-4B0E-A5BA-D63FC26F1F28" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_9D1A5481-529A-45E8-A200-ED57A0981BCD" Column="_5C38F74D-F9C9-43E4-AB77-A4144059A873" ConceptTypeChild="_7A92B7F6-3ADA-488C-9D5F-D9EC6798A874" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_DD82A707-427B-4D56-8D11-AA35C2564050" Column="_B12506C6-0B1E-4D1E-B766-D03C79346689" ConceptTypeChild="_63E72C63-4947-46FD-A4A9-C7AF03262201" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_25659E5A-5B76-47E3-80C1-FE7A906B8660" Column="_2EC3D5DC-AF64-46F9-B17F-A93FF5228587" ConceptTypeChild="_C4C8FC1A-3D0B-4DCE-92B2-94A427AA136A" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_3A7E914E-DA2B-4813-9EC6-AB5E955F8647" Column="_2EC3D5DC-AF64-46F9-B17F-A93FF5228587" ConceptTypeChild="_B7F32D0B-F25E-444F-A72C-F5E3B8923E08" />
+		<oialtocdb:TableIsPrimarilyForConceptType id="_2CFC9F4F-9074-4CBA-B0C0-F88BA2F9563F" Table="_2DC25B11-6D16-4867-8C29-D993F636A594" ConceptType="_7A805B52-BDFC-4D9A-A7DD-20DEFD512106" />
+		<oialtocdb:TableIsPrimarilyForConceptType id="_1D405383-4867-4AB9-B672-3F93C16AF68E" Table="_E4067FF9-A808-4456-A4A7-AC9D3BE9D703" ConceptType="_ED81A463-97DA-4FDC-91F5-C0FFCD3F06B5" />
+		<oialtocdb:TableIsAlsoForConceptType id="_1DD68697-35D8-42E5-9E39-145004ED7E78" Table="_2DC25B11-6D16-4867-8C29-D993F636A594" ConceptType="_2840AB22-C811-4874-AB69-AD61E8C71653" />
+		<oialtocdb:TableIsAlsoForConceptType id="_A1F25ADD-8977-43B3-A6AD-BDD6A6F5B641" Table="_2DC25B11-6D16-4867-8C29-D993F636A594" ConceptType="_972FBA29-B74A-4259-A047-5C0BDE2711F8" />
+		<oialtocdb:UniquenessConstraintIsForUniqueness id="_978734FF-5541-4AE9-AD63-308C0AE4DCA4" UniquenessConstraint="_6D128E46-7F24-4D10-B439-F0F6F76D3BD9" Uniqueness="_B364379B-3AD0-4D89-9B70-02CFA779CE74" />
+		<oialtocdb:UniquenessConstraintIsForUniqueness id="_E3784228-AFEA-4D66-BC37-6DA7FFB84031" UniquenessConstraint="_F46C6789-97A6-40E9-AAB4-FF0B948CD312" Uniqueness="_7A52E8D1-A311-4B5E-8B99-21975F167DC0" />
+		<oialtocdb:UniquenessConstraintIsForUniqueness id="_EDF1746D-9995-41E6-B9A3-6C932F246F98" UniquenessConstraint="_73E3134D-A0A8-456A-BA34-9F3BCDC4BD2A" Uniqueness="_6585A105-96F7-413A-AEDA-14CD415C28D0" />
+	</oialtocdb:Bridge>
 </ormRoot:ORM2>

@@ -11,8 +11,8 @@ module TaggedArticles
   end
 
   class Tagging
-    identified_by :article_i_d, :tag
-    has_one :article_i_d                        # See ArticleID.all_tagging
+    identified_by :article_id, :tag
+    has_one :article_id, ArticleID              # See ArticleID.all_tagging_by_article_id
     has_one :tag                                # See Tag.all_tagging
   end
 

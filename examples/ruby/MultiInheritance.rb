@@ -19,8 +19,8 @@ module MultiInheritance
   end
 
   class Employee < Person
-    identified_by :employee_i_d
-    one_to_one :employee_i_d                    # See EmployeeID.employee
+    identified_by :employee_id
+    one_to_one :employee_id, EmployeeID         # See EmployeeID.employee_by_employee_id
   end
 
   class AustralianEmployee < Australian

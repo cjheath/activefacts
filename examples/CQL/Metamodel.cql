@@ -94,8 +94,6 @@ SubsetConstraint is a kind of SetConstraint;
 SubsetConstraint covers exactly one subset-RoleSequence;
 SubsetConstraint covers exactly one superset-RoleSequence;
 
-UniquenessConstraint is a kind of PresenceConstraint;
-
 Unit is identified by UnitId where
 	Unit has exactly one UnitId,
 	UnitId is of at most one Unit;
@@ -117,9 +115,31 @@ ValueRestriction is identified by ValueRestrictionId where
 AllowedRange is where
 	ValueRestriction allows at least one ValueRange;
 
-FrequencyConstraint is a kind of PresenceConstraint;
+Vocabulary is identified by Name where
+	Vocabulary is called exactly one Name;
+Vocabulary contains Constraint,
+	Constraint belongs to at most one Vocabulary;
+Import is where
+	Vocabulary imports imported-Vocabulary [acyclic];
 
-MandatoryConstraint is a kind of PresenceConstraint;
+Feature is identified by Name and Vocabulary where
+	Feature is called exactly one Name,
+	Feature belongs to at most one Vocabulary,
+	Vocabulary contains Feature;
+Correspondence is where
+	in Import imported-Feature corresponds to at most one local-Feature;
+
+Population is identified by Vocabulary and Name where
+	Vocabulary includes Population,
+	Population belongs to at most one Vocabulary,
+	Population has exactly one Name,
+	Name is of Population;
+Population includes Fact,
+	Fact belongs to exactly one Population;
+Population includes Instance,
+	Instance belongs to exactly one Population;
+Population includes RoleValue,
+	RoleValue belongs to exactly one Population;
 
 SetComparisonConstraint is a kind of SetConstraint;
 SetComparisonRoles is where
@@ -130,24 +150,11 @@ SetEqualityConstraint is a kind of SetComparisonConstraint;
 SetExclusionConstraint is a kind of SetComparisonConstraint;
 SetExclusionConstraint is mandatory;
 
-Feature is identified by Name and Vocabulary where
-	Feature is called exactly one Name,
-	Feature belongs to at most one Vocabulary,
-	Vocabulary contains Feature;
-
-Vocabulary is a kind of Feature;
-Vocabulary contains Constraint,
-	Constraint belongs to at most one Vocabulary;
-Vocabulary extends at most one parent-Vocabulary [acyclic, intransitive],
-	parent-Vocabulary contains Vocabulary;
-Import is where
-	Vocabulary imports imported-Vocabulary [acyclic];
-Correspondence is where
-	in Import imported-Feature corresponds to at most one local-Feature;
-
 Alias is a kind of Feature;
 
 Concept is a kind of Feature;
+Concept is independent;
+Concept is personal;
 Instance is of exactly one Concept;
 Role is where
 	FactType has Ordinal role played by Concept,
@@ -168,28 +175,18 @@ RoleRef is where
 	Role has Ordinal place in RoleSequence;
 RoleRef has at most one leading-Adjective;
 RoleRef has at most one trailing-Adjective;
+JoinPath is where
+	RoleRef has Ordinal path;
+JoinPath has exactly one input-Role;
+JoinPath has exactly one output-Role;
 
 EntityType is a kind of Concept;
 EntityType nests at most one FactType,
 	FactType is nested as at most one EntityType;
-EntityType is independent;
-EntityType is personal;
 TypeInheritance is a kind of FactType identified by Subtype and Supertype where
 	EntityType (as Subtype) is subtype of super-EntityType (as Supertype) [acyclic],
 	Supertype is supertype of Subtype;
 TypeInheritance provides identification;
-
-Population is identified by Vocabulary and Name where
-	Vocabulary includes Population,
-	Population belongs to at most one Vocabulary,
-	Population has exactly one Name,
-	Name is of Population;
-Population includes Fact,
-	Fact belongs to exactly one Population;
-Population includes Instance,
-	Instance belongs to exactly one Population;
-Population includes RoleValue,
-	RoleValue belongs to exactly one Population;
 
 ValueType is a kind of Concept;
 ValueType has at most one Length,
@@ -203,6 +200,7 @@ ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 
 /*
  * Constraints:
+ */
 for each Concept exactly one of these holds:
 	EntityType is a subtype of Concept,
 	ValueType is a subtype of Concept;
@@ -213,7 +211,6 @@ for each Constraint exactly one of these holds:
 	some SubsetConstraint is a subtype of that Constraint,
 	some PresenceConstraint is a subtype of that Constraint;
 for each Feature exactly one of these holds:
-	Vocabulary is a subtype of Feature,
 	Concept is a subtype of Feature,
 	Alias is a subtype of Feature;
 Instance plays RoleValue and Instance is of Concept
@@ -229,7 +226,6 @@ PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale
 	only if ValueType has Length;
- */
 each combination EntityType, TypeInheritance occurs at most one time in
 	EntityType is subtype of super-EntityType,
 	TypeInheritance provides identification;

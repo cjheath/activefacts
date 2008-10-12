@@ -38,7 +38,7 @@ Region is identified by RegionName where
 TransportRoute is where
 	TransportMethod transportation is available from Refinery to Region,
 	TransportMethod transportation is available to Region from Refinery;
-TransportRoute incurs at most one Cost per kL;
+TransportRoute incurs at most one Cost per kl;
 
 Year is identified by YearNr where
 	Year has exactly one YearNr,
