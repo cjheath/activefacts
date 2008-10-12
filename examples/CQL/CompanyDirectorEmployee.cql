@@ -1,0 +1,54 @@
+vocabulary CompanyDirector;
+
+/*
+ * Value Types
+ */
+CompanyName is defined as VariableLengthText(48);
+EmployeeNr is defined as SignedInteger(32);
+Name is defined as VariableLengthText(48);
+
+/*
+ * Entity Types
+ */
+Company is identified by CompanyName where
+	Company is called exactly one CompanyName,
+	CompanyName is of at most one Company;
+Company is listed;
+
+Meeting is identified by Date and Meeting and Company where
+	Meeting held on exactly one Date,
+	Meeting is board meeting,
+	Company held Meeting,
+	Meeting is held by exactly one Company;
+
+Person is identified by given-Name and family-Name where
+	Person has exactly one given-Name,
+	given-Name is of Person,
+	family-Name is of Person,
+	Person is called at most one family-Name;
+Person was born on at most one birth-Date;
+Attendance is where
+	Person (as Attendee) attended Meeting,
+	Meeting was attended by Attendee;
+Directorship is where
+	Person (as Director) directs Company,
+	Company is directed by at least one Director;
+Directorship began on exactly one appointment-Date;
+
+Employee is a kind of Person identified by EmployeeNr where
+	Employee has exactly one EmployeeNr,
+	EmployeeNr is of at most one Employee;
+Employee works at exactly one Company,
+	Company employs Employee;
+
+Manager is a kind of Employee;
+Employee is supervised by at most one Manager [acyclic],
+	Manager supervises at least one Employee;
+Manager is ceo;
+
+/*
+ * Constraints:
+ */
+for each Employee exactly one of these holds:
+	that Employee is ceo,
+	that Employee is supervised by some Manager;
