@@ -33,7 +33,9 @@ module ActiveFacts
 
     def delete(instance)
       # REVISIT: Need to search, as key values are gone already. Is there a faster way?
-      @instances[instance.class].delete_if{|k,v| v == instance }
+      ([instance.class]+instance.class.supertypes_transitive).each do |klass|
+        @instances[klass].delete_if{|k,v| v == instance }
+      end
     end
 
     def method_missing(m, *args)

@@ -28,10 +28,16 @@ module ActiveFacts
       def delete
         # Delete from the constellation first, so it can remember our identifying role values
         @constellation.delete(self) if @constellation
-        self.class.roles.each{|role_name, role|
-            next unless role.unary?
+
+        # Now, for all roles (from this class and all supertypes), assign nil to all functional roles
+        # The counterpart roles get cleared automatically.
+        ([self.class]+self.class.supertypes_transitive).each do |klass|
+          klass.roles.each do |role_name, role|
+            next if role.unary?
+            next if !role.unique
             send "#{role.name}=", nil
-          }
+          end
+        end
       end
 
       module ClassMethods
