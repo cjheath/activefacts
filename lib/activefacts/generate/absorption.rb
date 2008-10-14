@@ -8,7 +8,7 @@ require 'activefacts/persistence'
 
 module ActiveFacts
   module Generate
-    class TEST
+    class ABSORPTION
       include Metamodel
 
       def initialize(vocabulary)
