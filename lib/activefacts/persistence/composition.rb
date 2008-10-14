@@ -148,23 +148,24 @@ module ActiveFacts
 
       def absorb_entity_reference(rs, role)
         absorbed_rs = role.concept.absorbed_reference_roles
+        # puts "Reference from #{name} to #{role.concept.name} requires absorbing #{ absorbed_rs.describe }"
         absorbed_rs.all_role_ref.each do |rr|
-          # Clone the existing RoleRef and its JoinPaths:
           new_rr = RoleRef.new(rs, rs.all_role_ref.size+1, :role => rr.role, :leading_adjective => rr.leading_adjective, :trailing_adjective => rr.trailing_adjective)
+
+          # Create a new JoinPath for this RoleRef (and append the old ones if any):
+          if (last_jp = new_rr.all_join_path.last and
+            last_jp.input_role.fact_type.entity_type)
+            # We don't have counterpart roles for objectified fact types
+            output_role = last_jp.input_role
+          else
+            output_role = (new_rr.role.fact_type.all_role-[new_rr.role])[0]
+          end
+          # REVISIT: In case this is a problem, for an input_role in a unary fact_type, output_role will be nil
+          JoinPath.new(new_rr, 0, :input_role => role, :output_role => output_role)
+
           rr.all_join_path.each do |jp|
-            JoinPath.new(new_rr, new_rr.all_join_path.size+1, :input_role => jp.input_role, :output_role => jp.output_role)
+            JoinPath.new(new_rr, new_rr.all_join_path.size, :input_role => jp.input_role, :output_role => jp.output_role)
           end
-          # Add a new JoinPath
-          # output role is the counterpart of the last join_path's input_role or rr.role if no joins
-          # Find the input role, called icr
-          last_jp = new_rr.all_join_path.last
-          icr = last_jp ? last_jp.input_role : new_rr.role
-          if icr.fact_type.all_role.size > 2
-            raise "Unexpected JoinPath scenario absorbing #{icr.fact_type.describe(icr)} into #{name}"
-          end
-          other_role = (icr.fact_type.all_role-[icr])[0]
-          # For an input_role in a unary fact_type, output_role will be nil
-          JoinPath.new(new_rr, new_rr.all_join_path.size+1, :input_role => role, :output_role => other_role)
         end
       end
 

@@ -176,7 +176,7 @@ RoleRef is where
 RoleRef has at most one leading-Adjective;
 RoleRef has at most one trailing-Adjective;
 JoinPath is where
-	RoleRef has Ordinal path;
+	RoleRef has Ordinal (as JoinStep) path;
 JoinPath has exactly one input-Role;
 JoinPath has exactly one output-Role;
 

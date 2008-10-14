@@ -271,8 +271,8 @@ module Metamodel
   end
 
   class JoinPath
-    identified_by :role_ref, :ordinal
-    has_one :ordinal                            # See Ordinal.all_join_path
+    identified_by :role_ref, :join_step
+    has_one :join_step, Ordinal                 # See Ordinal.all_join_path_by_join_step
     has_one :role_ref                           # See RoleRef.all_join_path
     has_one :input_role, Role                   # See Role.all_join_path_by_input_role
     has_one :output_role, Role                  # See Role.all_join_path_by_output_role

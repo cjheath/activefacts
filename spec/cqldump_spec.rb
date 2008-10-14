@@ -16,7 +16,7 @@ describe "CQL Dumper" do
 
   setup do
     @constellation = ActiveFacts::Constellation.new(ActiveFacts::Metamodel)
-    @vocabulary = @constellation.Vocabulary("TestVocab", nil)
+    @vocabulary = @constellation.Vocabulary("TestVocab")
     @string_type = @constellation.ValueType("String", @vocabulary)
     @integer_type = @constellation.ValueType("Integer", @vocabulary)
     @dumper = ActiveFacts::Generate::CQL.new(@constellation)

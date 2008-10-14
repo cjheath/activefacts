@@ -46,9 +46,20 @@ module ActiveFacts
       end
     end
 
+    class JoinPath
+      def describe
+        input_rr = input_role.preferred_reference
+        output_rr = input_role.preferred_reference
+        input_name = input_rr.role_name
+        output_name = output_rr.role_name
+        input_name + (input_name != output_name ? "/#{output_name}" : "")
+      end
+    end
+
     class RoleRef
       def describe
-        "#{[leading_adjective, role.concept.name, trailing_adjective].compact*"-"} in #{role_sequence.describe}"
+        # The reference traverses the JoinPaths in sequence to the final role:
+        all_join_path.sort_by{|jp| jp.ordinal}.map{ |jp| jp.describe + "->" }*"" + role_name
       end
 
       def role_name(joiner = "-")
@@ -65,7 +76,7 @@ module ActiveFacts
 #        fact_types = all_role_ref.map(&:role).map(&:fact_type).uniq
 #        fact_types.size.to_s+" FTs, "+
         "("+
-        all_role_ref.map{|rr| [ rr.leading_adjective, rr.role.concept.name, rr.trailing_adjective ].compact*"-" }*", "+
+        all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.describe }*", "+
         ")"
       end
     end
