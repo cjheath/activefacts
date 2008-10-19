@@ -53,10 +53,9 @@ module ActiveFacts
     end
 
     class Concept
-      # Return the array of absorption paths that could absorb this object
+      # Return the array of absorption paths (roles of this object) that could absorb this object or a reference to it
       def absorption_paths
         return @absorption_paths if @absorption_paths
-        return @absorption_paths = [] if is_independent
         @absorption_paths =
           all_role.map do |role|
             role_type = role.role_type
@@ -80,26 +79,23 @@ module ActiveFacts
           end.compact
       end
 
+      # Return the Concept into which this concept would be absorbed through its role given
+      def absorbed_into(role)
+        (self == role.fact_type.entity_type && role.concept) ||  # It's a role of this objectified FT
+          role.fact_type.entity_type ||                 # This is a role in another objectified FT
+          (role.fact_type.all_role-[role])[0].concept   # A normal role played by this concept in a binary FT
+      end
+
+      # can_absorb is an array of roles of other Concepts that this concept can absorb
+      # It may include roles of concepts into which this one may be absorbed, until we decide which way to go.
+      def can_absorb
+        @can_absorb ||= []
+      end
+
       # Say whether the independence of this object is still under consideration
       # This is used in detecting dependency cycles, such as occurs in the Metamodel
-      def tentative
-        @tentative = true unless defined @tentative
-        @tentative
-      end
-
-      def tentative=(v)
-        @tentative
-      end
-
-      # Say whether this object is currently considered independent or not:
-      def independent
-        return @independent if defined @independent
-        raise "REVISIT: Independence of #{name} hasn't been considered yet"
-      end
-
-      def independent=(v)
-        @independent = v
-      end
+      attr_accessor :tentative
+      attr_writer :independent
 
       def absorption_cost
         # The absorption cost is the total cost of each absorbed role
@@ -111,6 +107,27 @@ module ActiveFacts
     end
 
     class ValueType
+      # Say whether this object is currently considered independent or not:
+      def independent
+        return @independent if @independent != nil
+
+        # Always independent if marked so:
+        if is_independent
+          @tentative = false
+          return @independent = true
+        end
+
+        # Never independent unless they can absorb another ValueType or are marked is_independent
+        if (can_absorb.detect{|role| !role.fact_type.entity_type and role.concept.is_a? ValueType })
+          @tentative = true
+          @independent = true   # Possibly independent
+        else
+          @tentative = false
+          @independent = false
+        end
+
+        @independent
+      end
     end
 
     class EntityType
@@ -160,7 +177,7 @@ module ActiveFacts
           else
             output_role = (new_rr.role.fact_type.all_role-[new_rr.role])[0]
           end
-          # REVISIT: In case this is a problem, for an input_role in a unary fact_type, output_role will be nil
+          # REVISIT: For an input_role in a unary fact_type, output_role will be nil (in case this is a problem)
           JoinPath.new(new_rr, 0, :input_role => role, :output_role => output_role)
 
           rr.all_join_path.each do |jp|
@@ -174,7 +191,7 @@ module ActiveFacts
         super
         if (fact_type)
           @absorption_paths += fact_type.all_role.map do |fact_role|
-            # REVISIT: Perhaps this objectified fact type can be absorbed through one of its roles
+            # Perhaps this objectified fact type can be absorbed through one of its roles
             next fact_role if fact_role.all_role_ref.detect{|rr|
               # Look for a UC that covers just this role
               rr.role_sequence.all_role_ref.size == 1 and
@@ -187,6 +204,143 @@ module ActiveFacts
         end
         @absorption_paths
       end
+
+      # After computing what this EntityType can absorb, return the absorbed roles that aren't in the preferred_identifier:
+      def functional_dependencies
+        can_absorb - preferred_identifier.role_sequence.all_role_ref.map(&:role)
+      end
+
+      # Say whether this object is currently considered independent or not:
+      def independent
+        return @independent if @independent != nil
+
+        # Always independent if marked so or nowhere else to go:
+        if is_independent || absorption_paths.empty?
+          @tentative = false
+          return @independent = true
+        end
+
+        # Subtypes are not independent unless partitioned
+        if (!supertypes.empty?)
+          # REVISIT: Support partitioned here
+          @tentative = false
+          @independent = false
+          return @independent
+        end
+
+        # If the preferred_identifier includes an auto_assigned ValueType
+        if absorption_paths.size > 1 &&
+          preferred_identifier.role_sequence.all_role_ref.detect {|rr|
+            next false unless rr.role.concept.is_a? ValueType
+            # REVISIT: Find a better way to determine AutoCounters (ValueType unary role?)
+            rr.role.concept.supertype.name =~ /^Auto/
+          }
+          @tentative = false
+          @independent = true
+        end
+        @tentative = true
+        @independent = true
+      end
+    end # EntityType class
+
+    class Vocabulary
+      # return an Array of Concepts that will have their own tables
+      def tables
+        # Strategy:
+        # 1) Calculate absorption paths for all Concepts
+        #  a. Build the can_absorb list for each Concept (include unaries!)
+        #    - Each entry must absorb either a reference or all roles (unless one-to-one; absorption may be either way)
+        # 2) Decide which Concepts must be and must not be tables
+        #  a. Concepts labelled is_independent are tables
+        #  b. Entity types having no absorption paths must be tables
+        #  c. subtypes are not tables unless marked is_independent (subtype extension) or partitioned
+        #  d. ValueTypes are never tables unless they can absorb other ValueTypes
+        #  e. An EntityType having an identifying AutoInc field must be a table unless absorbed along only one path
+        #  f. An EntityType having a preferred_identifier containing one absorption path gets absorbed
+        #  g. An EntityType that must absorb non-PI roles must be a table unless absorbed exactly once (3NF restriction)
+        #  h. supertypes elided if all roles are absorbed into subtypes:
+        #    - partitioned subtype exhaustion
+        #    - subtype extension where supertype has only PI roles and no AutoInc
+        # 3) Handle tentative assignments that can now be resolved
+        #  a. Tentatively independent ValueTypes become independent if they absorb dependent ones
+        #  b. Surely something else...?
+        # 4) Optimise the decision for undecided Concepts
+        #  a. evaluate all combinations
+        #  b. minimise a cost function
+        #   - cost of not absorbing = number of reference roles * number of places absorbed + number of columns in table
+        #   - cost of absorbing = number of absorbed columns in absorbed table * number of places absorbed
+        # 5) Suggest improvements
+        #   Additional cost (or inject ID?) for references to large data types (>32 bytes)
+        all_feature.each do |feature|
+          next unless feature.is_a? Concept   # REVISIT: Handle Aliases here
+          feature.absorption_paths.each do |role|
+            into = feature.absorbed_into(role)
+            # puts "#{feature.name} can be absorbed into #{into.name}"
+            into.can_absorb << role
+          end
+          # Ensure that all unary roles are in can_absorb also:
+          feature.all_role.select{|role| role.fact_type.all_role.size == 1}.each { |role| feature.can_absorb << role }
+          feature.independent = nil   # Undecided
+          feature.tentative = nil     # Undecided
+        end
+
+        # Evaluate the possible independence of each concept, building an array of features of indeterminate status:
+        undecided = []
+        all_feature.each do |feature|
+          next unless feature.is_a? Concept   # REVISIT: Handle Aliases here
+          feature.independent
+          undecided << feature if (feature.tentative)
+        end
+
+        begin
+          finalised = []
+          undecided.each do |feature|
+            if feature.is_a?(ValueType) # This ValueType must be tentatively independent
+              if !feature.can_absorb.detect{|role| !role.fact_type.entity_type and role.concept.independent }
+                feature.tentative = false
+                finalised << feature
+              end
+            elsif feature.is_a?(EntityType)
+              # if the PI contains one role only and it's an absorption path, absorb it.
+              # This case is too ugly... there must be a better way to write it.
+              pi_roles = feature.preferred_identifier.role_sequence.all_role_ref.map(&:role)
+              if pi_roles.size == 1 &&
+                  pi_roles[0].concept.is_a?(EntityType) &&
+                  feature.absorption_paths.detect{|role| role == pi_roles[0] || !(role.fact_type.entity_type && (role.fact_type.all_role-[role])[0] == pi_roles[0])}
+                feature.independent = false
+                feature.tentative = false
+                finalised << feature
+                next
+              end
+
+              fd = feature.functional_dependencies
+
+              # if there are no functional deps, always absorb
+              # if there are FDs and only one absorption path which is certainly independent, always absorb
+              # if there are FDs and more than one absorption path, always independent
+              single_fd = fd.size == 1 && (fd[0].fact_type.entity_type || fd[0].concept)
+
+              if (fd.size != 1 ||
+                (single_fd &&
+                  single_fd.independent &&
+                  !single_fd.tentative))
+                feature.independent = !(fd.empty? || fd.size == 1)
+                #puts "@@@@@@@@@ #{feature.name} is #{feature.independent ? "in" : ""}dependent with #{fd.size} fd roles"+
+                #  ", can absorb #{feature.can_absorb.map{|r|r.concept.name}*", "}"
+                feature.tentative = false
+                finalised << feature
+              end
+            end
+          end
+          undecided -= finalised
+        end while !finalised.empty?
+
+        # Now, evaluate all possibilities of the tentative assignments
+        # REVISIT: Incomplete
+
+        all_feature.select { |f| f.independent }
+      end
     end
+
   end
 end

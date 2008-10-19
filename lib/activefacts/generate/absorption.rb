@@ -21,10 +21,12 @@ module ActiveFacts
         single_absorption_ets = 0
         multi_absorption_vts = 0
         multi_absorption_ets = 0
-        @vocabulary.constellation.Concept.values.sort_by{|c| c.name}.each do |o|
+        @vocabulary.tables
+        @vocabulary.all_feature.sort_by{|c| c.name}.each do |o|
           # Don't dump imported (base) ValueTypes:
           next if ValueType === o && !o.supertype
           show(o)
+
           case o.absorption_paths.size
           when 0; no_absorption += 1
           when 1
@@ -40,13 +42,14 @@ module ActiveFacts
               multi_absorption_ets += 1
             end
           end
+
         end
         puts "#{no_absorption} concepts have no absorption paths, #{single_absorption_vts}/#{single_absorption_ets} value/entity types have only one path, #{multi_absorption_vts}/#{multi_absorption_ets} have more than one"
       end
 
       def show concept
         ap = concept.absorption_paths
-        print concept.name
+        print "#{concept.name} (#{concept.tentative ? "tentatively " : ""}#{concept.independent ? "in" : ""}dependent)"
         if concept.is_a? EntityType
           print " is identified by: #{
               concept.absorbed_reference_roles.all_role_ref.map { |rr| rr.describe } * ", "
@@ -54,7 +57,7 @@ module ActiveFacts
         end
         puts "#{ ap.map {|role|
           prr = role.preferred_reference.describe
-          "\n\tcan absorb #{prr != role.concept.name ? "(via #{prr}) " : "" }into #{(role.fact_type.all_role-[role])[0].concept.name}"
+          "\n\tcan absorb #{prr != role.concept.name ? "(via #{prr}) " : "" }into #{concept.absorbed_into(role).name}"
         }*"" }"
       end
     end
