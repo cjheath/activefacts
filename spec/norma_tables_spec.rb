@@ -21,17 +21,17 @@ describe "Relational Composition from NORMA" do
   #Dir["examples/norma/Bl*.orm"].each do |orm_file|
   #Dir["examples/norma/[AC]*.orm"].each do |orm_file|
   #Dir["examples/norma/Comp*r.orm"].each do |orm_file|
-  Dir["examples/norma/Comp*e.orm"].each do |orm_file|
+  #Dir["examples/norma/Comp*e.orm"].each do |orm_file|
   #Dir["examples/norma/Ins*.orm"].each do |orm_file|
   #Dir["examples/norma/Meta*.orm"].each do |orm_file|
   #Dir["examples/norma/OilSupply.*orm"].each do |orm_file|
-  #Dir["examples/norma/*.orm"].each do |orm_file|
+  Dir["examples/norma/*.orm"].each do |orm_file|
     sql_file_pattern = orm_file.sub(/\.orm\Z/, '*.sql')
     sql_files = Dir[sql_file_pattern]
     next unless sql_files.size > 0
 
     it "should load #{orm_file} and compute a list of tables similar to those in #{sql_files[0]}" do
-      pending
+      #pending
       vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
 
       # Get the list of tables from NORMA's SQL:
@@ -42,26 +42,13 @@ describe "Relational Composition from NORMA" do
           l =~ /CREATE TABLE/
         end.
         map do |l|
-          l.chomp.gsub(/.*CREATE TABLE\s+\W*(\w+\.)?(\w+).*/, '\2')
+          l.chomp.gsub(/.*CREATE TABLE\s+\W*(\w+\.)?"?(\w+)"?.*/, '\2')
         end.
         sort
       end
 
       # Get the list of tables from our composition:
-      composition = vocabulary.
-        constellation.
-        Concept.
-        values.
-        select do |o|
-          !(ValueType === o && o.supertype && o.supertype.name == 'TrueOrFalseLogical' and o.all_role.size == 0) and
-          o.independent?
-        end.
-        sort_by do |o|
-          o.name
-        end.
-        map do |o|
-          o.name
-        end
+      composition = vocabulary.tables.map{|o| o.name }.sort
 
       # Save the actual and expected composition to files
       actual_tables = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.tables')
@@ -69,14 +56,14 @@ describe "Relational Composition from NORMA" do
       norma_tables = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.norma.tables')
       File.open(norma_tables, "w") { |f| f.puts sql_tables*"\n" }
 
-      if composition != sql_tables
-        puts "="*20 + " reasons " + "="*20
+      if false && composition != sql_tables
+        #puts "="*20 + " reasons " + "="*20
         # Show only the reasons for the differences:
         #((composition+sql_tables).uniq-(composition&sql_tables)).
         # Show the reasons for all entity types:
         vocabulary.
         all_feature.
-        select{|f| EntityType === f || f.independent? }.
+        select{|f| EntityType === f || f.independent }.
         map{|f| f.name}.
         sort.
         each do |concept_name|
