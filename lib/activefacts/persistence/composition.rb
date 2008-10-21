@@ -212,32 +212,29 @@ module ActiveFacts
 
       # Say whether this object is currently considered independent or not:
       def independent
-        return @independent if @independent != nil
+        return @independent if @independent != nil  # We already make a guess or decision
+
+        @tentative = false
 
         # Always independent if marked so or nowhere else to go:
-        if is_independent || absorption_paths.empty?
-          @tentative = false
-          return @independent = true
-        end
+        return @independent = true if is_independent || absorption_paths.empty?
 
         # Subtypes are not independent unless partitioned
-        if (!supertypes.empty?)
-          # REVISIT: Support partitioned here
-          @tentative = false
-          @independent = false
-          return @independent
-        end
+        # REVISIT: Support partitioned subtypes here
+        return @independent = false if (!supertypes.empty?)
 
         # If the preferred_identifier includes an auto_assigned ValueType
+        # and this object is absorbed in more than one place, we need a table
+        # to manage the auto-assignment.
         if absorption_paths.size > 1 &&
           preferred_identifier.role_sequence.all_role_ref.detect {|rr|
             next false unless rr.role.concept.is_a? ValueType
             # REVISIT: Find a better way to determine AutoCounters (ValueType unary role?)
             rr.role.concept.supertype.name =~ /^Auto/
           }
-          @tentative = false
-          @independent = true
+          return @independent = true
         end
+
         @tentative = true
         @independent = true
       end
@@ -325,8 +322,6 @@ module ActiveFacts
                   single_fd.independent &&
                   !single_fd.tentative))
                 feature.independent = !(fd.empty? || fd.size == 1)
-                #puts "@@@@@@@@@ #{feature.name} is #{feature.independent ? "in" : ""}dependent with #{fd.size} fd roles"+
-                #  ", can absorb #{feature.can_absorb.map{|r|r.concept.name}*", "}"
                 feature.tentative = false
                 finalised << feature
               end
@@ -336,7 +331,7 @@ module ActiveFacts
         end while !finalised.empty?
 
         # Now, evaluate all possibilities of the tentative assignments
-        # REVISIT: Incomplete
+        # REVISIT: Incomplete. Apparently unnecessary as well... so far.
 
         all_feature.select { |f| f.independent }
       end
