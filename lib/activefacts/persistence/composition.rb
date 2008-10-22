@@ -1,58 +1,30 @@
 module ActiveFacts
   module Metamodel
-    class Role
-      def role_type
-        # TypeInheritance roles are always 1:1
-        if TypeInheritance === fact_type
-          return concept == fact_type.supertype ? :supertype : :subtype
-        end
+    class Concept
+      # Return a RoleSequence containing a RoleRef (with JoinPath) for every column
+      # The vocabulary must have first been composed by calling "tables".
+      def absorbed_roles
+        return @absorbed_roles if @absorbed_roles
 
-        # Always N:1 if unary:
-        return :unary if fact_type.all_role.size == 1
+        # REVISIT: Emit preferred identifier roles first.
+        # Care though; an independent subtype absorbs a reference to its superclass, not the preferred_identifier roles
 
-        # List the UCs on this fact type:
-        all_uniqueness_constraints =
-          fact_type.all_role.map do |fact_role|
-            fact_role.all_role_ref.map do |rr|
-              rr.role_sequence.all_presence_constraint.select do |pc|
-                pc.max_frequency == 1
+        rs = RoleSequence.new(:new)
+        debug "absorbed_roles of #{name} are:" do
+          can_absorb.each do |role|
+            debug "#{role.preferred_reference.describe}" do
+              if role.fact_type.all_role.size == 1 or
+                  absorbed_into(role).independent
+                absorb_reference(rs, role)
+              else
+                absorb_all_roles(rs, role)
               end
             end
-          end.flatten.uniq
-
-        to_1 =
-          all_uniqueness_constraints.
-            detect do |c|
-                c.role_sequence.all_role_ref.size == 1 and
-                c.role_sequence.all_role_ref[0].role == self
-            end
-
-        if fact_type.entity_type
-          # This is a role in an objectified fact type
-          from_1 = true
-        else
-          # It's to-1 if a UC exists over roles of this FT that doesn't cover this role:
-          from_1 = all_uniqueness_constraints.detect{|uc|
-            !uc.role_sequence.all_role_ref.detect{|rr| rr.role == self || rr.role.fact_type != fact_type}
-          }
+          end
         end
-
-        if from_1
-          return to_1 ? :one_one : :one_many
-        else
-          return to_1 ? :many_one : :many_many
-        end
+        @absorbed_roles = rs
       end
 
-      # Each Role of an objectified fact type has no counterpart role; the other player is the objectifying entity.
-      # Otherwise return the player of the other role in a binary fact types
-      def other_role_player
-        fact_type.entity_type ||  # Objectified fact types only have counterpart roles, no self-roles
-          (fact_type.all_role-[self])[0].concept  # Only valid for roles in binaries (others must be objectified anyhow)
-      end
-    end
-
-    class Concept
       # Return the array of absorption paths (roles of this object) that could absorb this object or a reference to it
       def absorption_paths
         return @absorption_paths if @absorption_paths
@@ -86,6 +58,75 @@ module ActiveFacts
           (role.fact_type.all_role-[role])[0].concept   # A normal role played by this concept in a binary FT
       end
 
+      # Return a RoleSequence with RoleRefs (including JoinPath) for all ValueTypes required to form this EntityType's preferred_identifier
+      def absorbed_reference_roles
+        rs = RoleSequence.new(:new)
+        reference_roles.all_role_ref.each do |rr|
+          absorb_reference(rs, rr.role)
+        end
+        rs
+      end
+
+      def absorb_reference(rs, role)
+        if role.fact_type.all_role.size == 1
+          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
+        elsif role.concept.is_a? ValueType
+          pr = role.preferred_reference
+          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
+        else
+          # Add this role as a JoinPath to the referenced object's absorbed_reference_roles
+          absorb_entity_reference(rs, role)
+        end
+      end
+
+      def absorb_entity_reference(rs, role)
+        absorbed_rs = role.concept.absorbed_reference_roles
+        absorbed_rs.all_role_ref.each do |rr|
+          new_rr = extend_join_path(rs, role, rr)
+        end
+      end
+
+      # Absorb (into the RoleSequence) all roles that are absorbed by the player of this role
+      def absorb_all_roles(rs, role)
+        if role.fact_type.all_role.size == 1
+          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
+        elsif role.concept.is_a? ValueType
+          pr = role.preferred_reference
+          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
+        else
+          # Add this role as a JoinPath to the referenced object's absorbed_reference_roles
+          absorb_entity_roles(rs, role)
+        end
+      end
+
+      def absorb_entity_roles(rs, role)
+        absorbed_rs = role.concept.absorbed_roles
+        absorbed_rs.all_role_ref.each do |rr|
+          new_rr = extend_join_path(rs, role, rr)
+        end
+      end
+
+      # Add a RoleRef to this RoleSequence which traverses this role to the start-point of the existing RoleRef
+      def extend_join_path(rs, role, role_ref)
+        new_rr = RoleRef.new(rs, rs.all_role_ref.size+1, :role => role_ref.role, :leading_adjective => role_ref.leading_adjective, :trailing_adjective => role_ref.trailing_adjective)
+
+        # Create a new JoinPath for this RoleRef (and append the old ones if any):
+        if (last_jp = new_rr.all_join_path.last and
+          last_jp.input_role.fact_type.entity_type)
+          # We don't have counterpart roles for objectified fact types
+          output_role = last_jp.input_role
+        else
+          output_role = (new_rr.role.fact_type.all_role-[new_rr.role])[0]
+        end
+        # REVISIT: For an input_role in a unary fact_type, output_role will be nil (in case this is a problem)
+        JoinPath.new(new_rr, 0, :input_role => role, :output_role => output_role)
+
+        role_ref.all_join_path.each do |jp|
+          JoinPath.new(new_rr, new_rr.all_join_path.size, :input_role => jp.input_role, :output_role => jp.output_role)
+        end
+        new_rr
+      end
+
       # can_absorb is an array of roles of other Concepts that this concept can absorb
       # It may include roles of concepts into which this one may be absorbed, until we decide which way to go.
       def can_absorb
@@ -96,14 +137,6 @@ module ActiveFacts
       # This is used in detecting dependency cycles, such as occurs in the Metamodel
       attr_accessor :tentative
       attr_writer :independent
-
-      def absorption_cost
-        # The absorption cost is the total cost of each absorbed role
-      end
-
-      def reference_cost
-        # The absorption cost is the total cost of each preferred_identifier role
-      end
     end
 
     class ValueType
@@ -139,51 +172,6 @@ module ActiveFacts
           RoleRef.new(rs, rs.all_role_ref.size+1, :role => rr.role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
         end
         rs
-      end
-
-      # Return a RoleSequence with RoleRefs (including JoinPath) for all ValueTypes required to form this EntityType's preferred_identifier
-      def absorbed_reference_roles
-        rs = RoleSequence.new(:new)
-        reference_roles.all_role_ref.each do |rr|
-          absorb_reference(rs, rr.role)
-        end
-        rs
-      end
-
-      def absorb_reference(rs, role)
-        if role.fact_type.all_role.size == 1
-          # raise "Can't compute absorbed_reference_roles for unary role yet"
-          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
-        elsif role.concept.is_a? ValueType
-          pr = role.preferred_reference
-          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
-        else
-          # Add this role as a JoinPath to the referenced object's absorbed_reference_roles
-          absorb_entity_reference(rs, role)
-        end
-      end
-
-      def absorb_entity_reference(rs, role)
-        absorbed_rs = role.concept.absorbed_reference_roles
-        # puts "Reference from #{name} to #{role.concept.name} requires absorbing #{ absorbed_rs.describe }"
-        absorbed_rs.all_role_ref.each do |rr|
-          new_rr = RoleRef.new(rs, rs.all_role_ref.size+1, :role => rr.role, :leading_adjective => rr.leading_adjective, :trailing_adjective => rr.trailing_adjective)
-
-          # Create a new JoinPath for this RoleRef (and append the old ones if any):
-          if (last_jp = new_rr.all_join_path.last and
-            last_jp.input_role.fact_type.entity_type)
-            # We don't have counterpart roles for objectified fact types
-            output_role = last_jp.input_role
-          else
-            output_role = (new_rr.role.fact_type.all_role-[new_rr.role])[0]
-          end
-          # REVISIT: For an input_role in a unary fact_type, output_role will be nil (in case this is a problem)
-          JoinPath.new(new_rr, 0, :input_role => role, :output_role => output_role)
-
-          rr.all_join_path.each do |jp|
-            JoinPath.new(new_rr, new_rr.all_join_path.size, :input_role => jp.input_role, :output_role => jp.output_role)
-          end
-        end
       end
 
       def absorption_paths
@@ -240,6 +228,58 @@ module ActiveFacts
       end
     end # EntityType class
 
+    class Role
+      def role_type
+        # TypeInheritance roles are always 1:1
+        if TypeInheritance === fact_type
+          return concept == fact_type.supertype ? :supertype : :subtype
+        end
+
+        # Always N:1 if unary:
+        return :unary if fact_type.all_role.size == 1
+
+        # List the UCs on this fact type:
+        all_uniqueness_constraints =
+          fact_type.all_role.map do |fact_role|
+            fact_role.all_role_ref.map do |rr|
+              rr.role_sequence.all_presence_constraint.select do |pc|
+                pc.max_frequency == 1
+              end
+            end
+          end.flatten.uniq
+
+        to_1 =
+          all_uniqueness_constraints.
+            detect do |c|
+                c.role_sequence.all_role_ref.size == 1 and
+                c.role_sequence.all_role_ref[0].role == self
+            end
+
+        if fact_type.entity_type
+          # This is a role in an objectified fact type
+          from_1 = true
+        else
+          # It's to-1 if a UC exists over roles of this FT that doesn't cover this role:
+          from_1 = all_uniqueness_constraints.detect{|uc|
+            !uc.role_sequence.all_role_ref.detect{|rr| rr.role == self || rr.role.fact_type != fact_type}
+          }
+        end
+
+        if from_1
+          return to_1 ? :one_one : :one_many
+        else
+          return to_1 ? :many_one : :many_many
+        end
+      end
+
+      # Each Role of an objectified fact type has no counterpart role; the other player is the objectifying entity.
+      # Otherwise return the player of the other role in a binary fact types
+      def other_role_player
+        fact_type.entity_type ||  # Objectified fact types only have counterpart roles, no self-roles
+          (fact_type.all_role-[self])[0].concept  # Only valid for roles in binaries (others must be objectified anyhow)
+      end
+    end
+
     class Vocabulary
       # return an Array of Concepts that will have their own tables
       def tables
@@ -261,7 +301,7 @@ module ActiveFacts
         # 3) Handle tentative assignments that can now be resolved
         #  a. Tentatively independent ValueTypes become independent if they absorb dependent ones
         #  b. Surely something else...?
-        # 4) Optimise the decision for undecided Concepts
+        # 4) Optimise the decision for undecided Concepts (not yet)
         #  a. evaluate all combinations
         #  b. minimise a cost function
         #   - cost of not absorbing = number of reference roles * number of places absorbed + number of columns in table

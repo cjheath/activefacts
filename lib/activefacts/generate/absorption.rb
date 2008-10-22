@@ -48,17 +48,22 @@ module ActiveFacts
       end
 
       def show concept
-        ap = concept.absorption_paths
         print "#{concept.name} (#{concept.tentative ? "tentatively " : ""}#{concept.independent ? "in" : ""}dependent)"
         if concept.is_a? EntityType
           print " is identified by: #{
               concept.absorbed_reference_roles.all_role_ref.map { |rr| rr.describe } * ", "
             }"
         end
+        puts "#{ concept.absorbed_roles.all_role_ref.map do |role_ref|
+            "\n\t#{role_ref.describe}"
+          end*"" }"
+=begin
+        ap = concept.absorption_paths
         puts "#{ ap.map {|role|
           prr = role.preferred_reference.describe
           "\n\tcan absorb #{prr != role.concept.name ? "(via #{prr}) " : "" }into #{concept.absorbed_into(role).name}"
         }*"" }"
+=end
       end
     end
   end
