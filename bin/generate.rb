@@ -14,8 +14,9 @@ arg = ARGV.shift
 
 # Load the required generator, or the default "text" generator:
 generator = "text"
-if arg =~ /^--(.*)/
+if arg =~ /^--([^=]*)(?:=(.*))?/
   generator = $1
+  generator_options = ($2||"").split(/,/)
   arg = ARGV.shift
 end
 output_handler = "activefacts/generate/#{generator.downcase}"
@@ -41,4 +42,4 @@ rescue => e
 end
 
 # Generate the output:
-output_klass.new(vocabulary).generate if vocabulary
+output_klass.new(vocabulary, *generator_options).generate if vocabulary
