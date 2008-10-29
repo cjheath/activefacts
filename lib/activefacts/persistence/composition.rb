@@ -30,7 +30,12 @@ module ActiveFacts
 
         debug :absorption, "absorbed_roles of #{name} are:" do
           can_absorb.each do |role|
-            other_player = role.fact_type.all_role.size == 1 ? nil : (role.fact_type.entity_type || role.concept)
+            other_player =
+              case
+              when role.fact_type.all_role.size == 1; nil
+              when !role.fact_type.entity_type || role.fact_type.entity_type == self; role.concept
+              else role.fact_type.entity_type
+              end
 
             # When a ValueType is independent, it always absorbs another ValueType.
             # If this is it, it's our chance to also define the value role for this ValueType.
@@ -46,7 +51,7 @@ module ActiveFacts
                 other_player.independent ||
                 (other_player.is_a?(EntityType) and (via = other_player.absorbed_via) and via != role.fact_type)
 
-            debug :absorption, "#{name} absorbs #{reference_only ? "reference" : "all"} roles#{(other_player && " of "+other_player.name)} because '#{role.fact_type.default_reading}' via #{
+            debug :absorption, "#{name} absorbs #{reference_only ? "reference" : "all"} roles#{(other_player && " of "+other_player.name)} because '#{role.fact_type.default_reading}' via #{via && via.describe(role)} #{
                 #role.preferred_reference.describe
                 role.fact_type.describe(role)
               }" do
@@ -245,11 +250,6 @@ module ActiveFacts
         @absorption_paths
       end
 
-      # After computing what this EntityType can absorb, return the absorbed roles that aren't in the preferred_identifier:
-      def functional_dependencies
-        can_absorb - preferred_identifier.role_sequence.all_role_ref.map(&:role)
-      end
-
       # Decide whether this object is currently considered independent or not:
       def independent
         return @independent if @independent != nil  # We already make a guess or decision
@@ -276,6 +276,8 @@ module ActiveFacts
             # REVISIT: Find a better way to determine AutoCounters (ValueType unary role?)
             rr.role.concept.supertype.name =~ /^Auto/
           }
+          debug :absorption, "#{name} has an auto-assigned counter in its ID, so must be independent"
+          @tentative = false
           return @independent = true
         end
 
@@ -414,15 +416,26 @@ module ActiveFacts
                 finalised << feature
               end
             elsif feature.is_a?(EntityType)
+
+              # Always absorb an objectified unary:
+              if feature.fact_type && feature.fact_type.all_role.size == 1
+                feature.independent = false
+                feature.tentative = false
+                finalised << feature
+                next
+              end
+
               # If the PI contains one role only, played by an entity type that can absorb us, do that.
               pi_roles = feature.preferred_identifier.role_sequence.all_role_ref.map(&:role)
               if pi_roles.size == 1 &&
                   (into = pi_roles[0].concept).is_a?(EntityType) &&
                   into.absorption_paths.include?(pi_roles[0])
+                  # This doesn't work if we already decided that "into" is fully absorbed along one path.
+                  # It doesn't seem to be necessary anyhow.
+                  #(into.independent || into.tentative)
 
                 feature.can_absorb.delete(pi_roles[0])
-                debug(:absorption, "Removed reverse absorption of #{into.name} into #{feature.name}")
-#                puts "Identification of #{feature.name} is through #{pi_roles[0].concept.name}"
+                debug :absorption, "#{feature.name} absorbed along its sole reference path into #{into.name}, and reverse absorption prevented"
                 feature.absorbed_via(pi_roles[0].fact_type)
 
                 feature.independent = false
@@ -431,29 +444,49 @@ module ActiveFacts
                 next
               end
 
-              if feature.fact_type && feature.fact_type.all_role.size == 1
-                # Always absorb an objectified unary
-                feature.independent = false
+              # If there's more than one absorption path and any functional dependencies that can't absorb us, it's independent
+              fd = feature.can_absorb.reject{|role| role.role_type == :one_one} - pi_roles
+              if (fd.size > 0)
+                debug :absorption, "#{feature.name} has functional dependencies so 3NF requires it be independent"
+                feature.independent = true
                 feature.tentative = false
                 finalised << feature
                 next
               end
 
-              fd = feature.functional_dependencies
+#              # If there's exactly one absorption path into a object that's independent, absorb regardless of FDs
+#              This results in !3NF databases
+#              if feature.absorption_paths.size == 1 &&
+#                  feature.absorption_paths[0].role_type != :one_one
+#                absorbee = feature.referenced_from(feature.absorption_paths[0])
+#                debug :absorption, "Absorb #{feature.name} along single path, into #{absorbee.name}"
+#                feature.independent = false
+#                feature.tentative = false
+#                finalised << feature
+#              end
 
-              # if there are no functional deps, always absorb
-              # if there are FDs and only one absorption path which is certainly independent, always absorb
-              # if there are FDs and more than one absorption path, always independent
-              single_fd = fd.size == 1 && (fd[0].fact_type.entity_type || fd[0].concept)
+              # If the feature has only reference roles and any one-to-ones can absorb it, it's fully absorbed (dependent)
+              # We don't allow absorption into something we identify.
+              one_to_ones, others = (feature.can_absorb-pi_roles).partition{|role| role.role_type == :one_one }
+              if others.size == 0 &&
+                !one_to_ones.detect{|r|
+                  player = r.fact_type.entity_type || r.concept
+                  !player.independent ||
+                  player.preferred_identifier.role_sequence.all_role_ref.map{|r2|r2.role.concept} == [feature]
+                }
+                # All one_to_ones are at least tentatively independent, make them independent and we're fully absorbed
 
-              if (fd.size != 1 ||
-                (single_fd &&
-                  single_fd.independent &&
-                  !single_fd.tentative))
-                feature.independent = !(fd.empty? || fd.size == 1)
+                debug :absorption, "#{feature.name} is fully absorbed, into #{one_to_ones.map{|r| r.concept.name}*", "}"
+                !one_to_ones.each{|role|
+                  into = role.concept
+                  into.tentative = false
+                  feature.can_absorb.delete role  # Things that absorb us don't want to get this role too
+                }
+                feature.independent = false
                 feature.tentative = false
                 finalised << feature
               end
+
             end
           end
           undecided -= finalised
@@ -461,6 +494,9 @@ module ActiveFacts
 
         # Now, evaluate all possibilities of the tentative assignments
         # REVISIT: Incomplete. Apparently unnecessary as well... so far.
+        undecided.each do |feature|
+          debug :absorption, "Unable to decide independence of #{feature.name}, going with #{feature.independent && "in"}dependent"
+        end
 
         all_feature.select { |f| f.independent }
       end

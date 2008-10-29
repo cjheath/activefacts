@@ -17,20 +17,36 @@ require 'activefacts/generate/cql'
 include ActiveFacts
 include ActiveFacts::Metamodel
 
+Exceptions = {
+  "Blog" => ["Author", "Comment", "Paragraph", "Post", "Topic"],
+  "DeathAsBinary" => ["Person"],
+  "Insurance" => ["Asset", "Claim", "ContactMethods", "ContractorAppointment", "Cover", "CoverType", "CoverWording", "DamagedProperty", "DemeritKind", "LossType", "LostItem", "Party", "Policy", "Product", "State", "ThirdParty", "UnderwritingDemerit", "Witness"],
+  "Metamodel" => ["AllowedRange", "Coefficient", "Constraint", "Correspondence", "Fact", "FactType", "Feature", "Instance", "JoinPath", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "UnitBasis", "ValueRestriction"],
+  "OilSupplyWithCosts" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
+  "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
+  "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "TransferRequest", "Warehouse"]
+}
+
 describe "Relational Composition from NORMA" do
-  #Dir["examples/norma/D*.orm"].each do |orm_file|
+  #Dir["examples/norma/B*.orm"].each do |orm_file|
   #Dir["examples/norma/Ins*.orm"].each do |orm_file|
   Dir["examples/norma/*.orm"].each do |orm_file|
-    sql_file_pattern = orm_file.sub(/\.orm\Z/, '*.sql')
-    sql_files = Dir[sql_file_pattern]
-    next unless sql_files.size > 0
+    sql_tables = Exceptions[File.basename(orm_file, ".orm")]
+    if !sql_tables
+      sql_file_pattern = orm_file.sub(/\.orm\Z/, '*.sql')
+      sql_files = Dir[sql_file_pattern]
+      next unless sql_files.size > 0
+    end
 
-    it "should load #{orm_file} and compute a list of tables similar to those in #{sql_files[0]}" do
-      #pending
+    it "should load #{orm_file} and compute #{
+        sql_tables ? "the expected lost of tables" :
+          "a list of tables similar to those in #{sql_files[0]}"
+      }" do
+
       vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
 
       # Get the list of tables from NORMA's SQL:
-      sql_tables = File.open(sql_files[0]) do |f|
+      sql_tables ||= File.open(sql_files[0]) do |f|
         f.
         readlines.
         select do |l|

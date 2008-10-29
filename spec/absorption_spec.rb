@@ -63,8 +63,8 @@ describe "Absorption" do
         Person has exactly one birth-Date;
       },
       :tables => {
-        "Claim" => ["ClaimID", "Lodgement.DateTime"],
-        "Party" => ["PartyID"]
+        "Claim" => ["ClaimID", "Lodgement.DateTime", "Lodgement.Lodgement.Party.PartyID"],
+        "Party" => ["PartyID", "Person.birth-Date"]
       }
     },
 
