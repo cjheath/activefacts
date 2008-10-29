@@ -74,7 +74,7 @@ module ActiveFacts
       end
 
       rule fact_clause
-        q:qualifier? s reading s p:post_qualifiers? s
+        s q:qualifier? s reading s p:post_qualifiers? s
         {
           def body
             [ :fact_clause,

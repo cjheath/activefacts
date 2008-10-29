@@ -54,7 +54,7 @@ module ActiveFacts
               kind, *value = @parser.definition(node)
               #print "Parsed '#{node.text_value}'"
               #print " to "; p value
-              raise "Definitions must be in a vocabulary" if kind != :vocabulary and !@vocabulary
+              raise "Definition of #{kind} must be in a vocabulary" if kind != :vocabulary and !@vocabulary
               case kind
               when :vocabulary
                 @vocabulary = @constellation.Vocabulary(value[0])
@@ -141,6 +141,28 @@ module ActiveFacts
             if !identification && supertype_name == supertypes[0]
               inheritance_fact.provides_identification = true
             end
+
+            # Create uniqueness constraints over the subtyping fact type
+            p1rs = @constellation.RoleSequence(:new)
+            @constellation.RoleRef(p1rs, 0).role = sub_role
+            pc1 = @constellation.PresenceConstraint(:new)
+            pc1.vocabulary = @vocabulary
+            pc1.role_sequence = p1rs
+            pc1.is_mandatory = true   # A subtype instance must have a supertype instance
+            pc1.min_frequency = 1
+            pc1.max_frequency = 1
+            pc1.is_preferred_identifier = false
+
+            # The supertype role often identifies the subtype:
+            p2rs = @constellation.RoleSequence(:new)
+            @constellation.RoleRef(p2rs, 0).role = super_role
+            pc2 = @constellation.PresenceConstraint(:new)
+            pc2.vocabulary = @vocabulary
+            pc2.role_sequence = p2rs
+            pc2.is_mandatory = false
+            pc2.min_frequency = 0
+            pc2.max_frequency = 1
+            pc2.is_preferred_identifier = inheritance_fact.provides_identification
           end
 
           # Use a two-pass algorithm for entity fact types...

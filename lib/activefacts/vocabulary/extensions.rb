@@ -48,18 +48,17 @@ module ActiveFacts
 
     class JoinPath
       def describe
-        input_rr = input_role.preferred_reference
-        output_rr = input_role.preferred_reference
-        input_name = input_rr.role_name
-        output_name = output_rr.role_name
-        input_name + (input_name != output_name ? "/#{output_name}" : "")
+        input_name = (et = input_role.fact_type.entity_type) ? et.name : input_role.preferred_reference.role_name
+        # REVISIT: JoinPath output_roles are being set incorrectly!
+        #output_name = output_role.preferred_reference.role_name if output_role
+        input_name # + (output_name && input_name != output_name ? "/#{output_name}" : "")
       end
     end
 
     class RoleRef
       def describe
         # The reference traverses the JoinPaths in sequence to the final role:
-        all_join_path.sort_by{|jp| jp.ordinal}.map{ |jp| jp.describe + "->" }*"" + role_name
+        all_join_path.sort_by{|jp| jp.ordinal}.map{ |jp| jp.describe + "." }*"" + role_name
       end
 
       def role_name(joiner = "-")
@@ -88,7 +87,7 @@ module ActiveFacts
 
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles
           fact_roles = fact_type.all_role
-          debug "Looking for PI on nested fact type #{name}" do
+          debug :pi, "Looking for PI on nested fact type #{name}" do
             pi = catch :pi do
                 fact_roles[0,2].each{|r|                  # Try the first two roles of the fact type, that's enough
                     r.all_role_ref.map{|rr|               # All role sequences that reference this role
@@ -108,18 +107,18 @@ module ActiveFacts
                   }
                 throw :pi, nil
               end
-            debug "Got PI #{pi.name||pi.object_id} for nested #{name}" if pi
-            debug "Looking for PI on entity that nests this fact" unless pi
+            debug :pi, "Got PI #{pi.name||pi.object_id} for nested #{name}" if pi
+            debug :pi, "Looking for PI on entity that nests this fact" unless pi
             raise "Oops, pi for nested fact is #{pi.class}" unless !pi || PresenceConstraint === pi
             return pi if pi
           end
         end
 
-        debug "Looking for PI for ordinary entity #{name} with #{all_role.size} roles:" do
-          debug "Roles are in fact types #{all_role.map{|r| r.fact_type.describe(r)}*", "}"
+        debug :pi, "Looking for PI for ordinary entity #{name} with #{all_role.size} roles:" do
+          debug :pi, "Roles are in fact types #{all_role.map{|r| r.fact_type.describe(r)}*", "}"
           pi = catch :pi do
               all_supertypes = supertypes_transitive
-              debug "PI roles must be played by one of #{all_supertypes.map(&:name)*", "}" if all_supertypes.size > 1
+              debug :pi, "PI roles must be played by one of #{all_supertypes.map(&:name)*", "}" if all_supertypes.size > 1
               all_role.each{|role|
                   next unless role.unique || fact_type
                   ftroles = role.fact_type.all_role
@@ -127,41 +126,41 @@ module ActiveFacts
                   # Skip roles in ternary and higher fact types, they're objectified, and in unaries, they can't identify us.
                   next if ftroles.size != 2
 
-                  debug "Considering role in #{role.fact_type.describe(role)}"
+                  debug :pi, "Considering role in #{role.fact_type.describe(role)}"
 
                   # Find the related role which must be included in any PI:
                   # Note this works with unary fact types:
                   pi_role = ftroles[ftroles[0] != role ? 0 : -1]
 
                   next if ftroles.size == 2 && pi_role.concept == self
-                  debug "  Considering #{pi_role.concept.name} as a PI role"
+                  debug :pi, "  Considering #{pi_role.concept.name} as a PI role"
 
                   # If this is an identifying role, the PI is a PC whose role_sequence spans the role.
                   # Walk through all role_sequences that span this role, and test each:
                   pi_role.all_role_ref.each{|rr|
                       role_sequence = rr.role_sequence  # A role sequence that includes a possible role
 
-                      debug "    Considering role sequence #{role_sequence.describe}"
+                      debug :pi, "    Considering role sequence #{role_sequence.describe}"
 
                       # All roles in this role_sequence must be in fact types which
                       # (apart from that role) only have roles played by the original
                       # entity type or a supertype.
-                      #debug "      All supertypes #{all_supertypes.map{|st| "#{st.object_id}=>#{st.name}"}*", "}"
+                      #debug :pi, "      All supertypes #{all_supertypes.map{|st| "#{st.object_id}=>#{st.name}"}*", "}"
                       if role_sequence.all_role_ref.detect{|rsr|
                           fact_type = rsr.role.fact_type
-                          debug "      Role Sequence touches #{fact_type.describe(pi_role)}"
+                          debug :pi, "      Role Sequence touches #{fact_type.describe(pi_role)}"
 
                           fact_type_roles = fact_type.all_role
-                          debug "      residual is #{fact_type_roles.map{|r| r.concept.name}.inspect} minus #{rsr.role.concept.name}"
+                          debug :pi, "      residual is #{fact_type_roles.map{|r| r.concept.name}.inspect} minus #{rsr.role.concept.name}"
                           residual_roles = fact_type_roles-[rsr.role]
                           residual_roles.detect{|rfr|
-                              debug "        Checking residual role #{rfr.concept.object_id}=>#{rfr.concept.name}"
+                              debug :pi, "        Checking residual role #{rfr.concept.object_id}=>#{rfr.concept.name}"
 # This next line looks right, but breaks things. Find out what and why:
 #                              !rfr.unique or
                                 !all_supertypes.include?(rfr.concept)
                             }
                         }
-                        debug "      Discounting this role_sequence because it includes alien roles"
+                        debug :pi, "      Discounting this role_sequence because it includes alien roles"
                         next
                       end
 
@@ -169,7 +168,7 @@ module ActiveFacts
                       rr.role_sequence.all_presence_constraint.detect{|pc|
                           # Found it!
                           if pc.is_preferred_identifier
-                            debug "found PI #{pc.name||pc.object_id}, is_preferred_identifier=#{pc.is_preferred_identifier.inspect} over #{pc.role_sequence.describe}"
+                            debug :pi, "found PI #{pc.name||pc.object_id}, is_preferred_identifier=#{pc.is_preferred_identifier.inspect} over #{pc.role_sequence.describe}"
                             throw :pi, pc
                           end
                         }
@@ -178,12 +177,15 @@ module ActiveFacts
               throw :pi, nil
             end
           raise "Oops, pi for entity is #{pi.class}" if pi && !(PresenceConstraint === pi)
-          debug "Got PI #{pi.name||pi.object_id} for #{name}" if pi
+          debug :pi, "Got PI #{pi.name||pi.object_id} for #{name}" if pi
 
           if !pi
             if (supertype = identifying_supertype)
-              debug "PI not found for #{name}, looking in supertype #{supertype.name}"
-              pi = supertype.preferred_identifier
+              # This shouldn't happen now, as an identifying supertype is connected by a fact type
+              # that has a uniqueness constraint marked as the preferred identifier.
+              #debug :pi, "PI not found for #{name}, looking in supertype #{supertype.name}"
+              #pi = supertype.preferred_identifier
+              #return nil
             elsif fact_type
               fact_type.all_role.each{|role|
                 role.all_role_ref.each{|role_ref|
@@ -199,7 +201,7 @@ module ActiveFacts
                 break if pi
               }
             else
-              debug "No PI found for #{name}"
+              debug :pi, "No PI found for #{name}"
             end
           end
           raise "No PI found for #{name}" unless pi

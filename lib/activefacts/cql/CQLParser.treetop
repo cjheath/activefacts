@@ -28,7 +28,7 @@ module ActiveFacts
     end
 
     rule vocabulary_definition
-      vocabulary S id s ';' s
+      s vocabulary S id s ';' s
       {
         def value
           [ id.text_value, [ :vocabulary ] ]
@@ -37,7 +37,7 @@ module ActiveFacts
     end
 
     rule import_definition
-      import S id alias_list ';' s
+      s import S id alias_list ';' s
       {
         def value
           puts "import #{id.text_value}: not implemented"
@@ -66,27 +66,27 @@ module ActiveFacts
 
     # presence constraint:
     rule presence_constraint
-      'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s 'in' s
+      s 'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s 'in' s
       readings_list s
       ';' s
       { def value; [ nil, [ :constraint, :presence, role_list.roles, quantifier.value, readings_list.value ] ]; end }
     end
 
     rule subset_constraint
-      readings s only s if s r2:readings s ';' s
+      s readings s only s if s r2:readings s ';' s
       { def value; [ nil, [ :constraint, :subset, readings.value, r2.value ] ]; end }
     end
 
     # set (exclusion, mandatory exclusion, complex equality) constraint
     rule set_constraint
-      'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
+      s 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
       readings_list s
       ';' s
       { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, *readings_list.value ] ]; end }
     end
 
     rule equality_constraint
-      readings s tail:( if s and s only s if s readings s)+ ';' s
+      s readings s tail:( if s and s only s if s readings s)+ ';' s
       { def value; [ nil, [ :constraint, :equality, *([readings.value] + tail.elements.map{|e| e.readings.value }) ] ]; end }
     end
 

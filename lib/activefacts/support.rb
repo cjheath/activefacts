@@ -1,27 +1,36 @@
 #module ActiveFacts
   $debug_indent = nil
+  $debug_nested = false
   $debug_keys = nil
   def debug(*args, &block)
-    # Initialise the tracing environment
     unless $debug_indent
+      # First time, initialise the tracing environment
       $debug_indent = 0
       $debug_keys = {}
       if (e = ENV["DEBUG"])
-        e.split.each{|k| $debug_keys[k.to_sym] = true }
+        e.split(/[^a-z]/).each{|k| $debug_keys[k.to_sym] = true }
       end
     end
 
-    # Figure out whether this trace is enabled:
+    # Figure out whether this trace is enabled and nests:
     control = (!args.empty? && Symbol === args[0]) ? args.shift : :all
-    enabled = $debug_keys[control] || $debug_indent > 0
+    key = control.to_s.sub(/_\Z/, '')
+    enabled = $debug_nested || $debug_keys[key.to_sym]
+    nesting = control.to_s =~ /_\Z/
+    old_nested = $debug_nested
+    $debug_nested = nesting
 
     # Emit the message if enabled or a parent is:
     puts "# "+"  "*$debug_indent + args.join(' ') if args.size > 0 && enabled
 
     if block
-      $debug_indent += 1 if enabled
-      r = yield       # Return the value of the block
-      $debug_indent -= 1 if enabled
+      begin
+        $debug_indent += 1 if enabled
+        r = yield       # Return the value of the block
+      ensure
+        $debug_indent -= 1 if enabled
+        $debug_nesting = old_nested
+      end
     else
       r = enabled     # Return whether enabled
     end

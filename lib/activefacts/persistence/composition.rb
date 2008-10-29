@@ -1,28 +1,68 @@
+#
+# Calculate the relational composition of a given Vocabulary
+# The composition consists of decisiona about which Concepts are tables,
+# and what columns (absorbed roled) those tables will have.
+#
+# This module has the following known problems:
+#
+# * Some one-to-ones absorb in both directions (ET<->FT in Metamodel, Blog model)
+#
+# * When a subtype has no mandatory roles, we should introduce
+#   a binary (is_subtype) to indicate it's that subtype.
+#
 module ActiveFacts
   module Metamodel
     class Concept
       # Return a RoleSequence containing a RoleRef (with JoinPath) for every column
       # The vocabulary must have first been composed by calling "tables".
       def absorbed_roles
-        return @absorbed_roles if @absorbed_roles
+        if @absorbed_roles
+          # Recursion guard
+          raise "infinite absorption loop on #{name}" if @evaluating
+          return @absorbed_roles
+        end
+        rs = RoleSequence.new(:new)
+        @evaluating = true
 
         # REVISIT: Emit preferred identifier roles first.
         # Care though; an independent subtype absorbs a reference to its superclass, not the preferred_identifier roles
+        inject_value_type_role = is_a?(ValueType)
 
-        rs = RoleSequence.new(:new)
-        debug "absorbed_roles of #{name} are:" do
+        debug :absorption, "absorbed_roles of #{name} are:" do
           can_absorb.each do |role|
-            debug "#{role.preferred_reference.describe}" do
-              if role.fact_type.all_role.size == 1 or
-                  absorbed_into(role).independent
+            other_player = role.fact_type.all_role.size == 1 ? nil : (role.fact_type.entity_type || role.concept)
+
+            # When a ValueType is independent, it always absorbs another ValueType.
+            # If this is it, it's our chance to also define the value role for this ValueType.
+            if (inject_value_type_role && other_player.is_a?(ValueType))
+              my_role = (role.fact_type.all_role-[role])[0]
+              rr = my_role.preferred_reference.append_to(rs)
+              rr.trailing_adjective = "#{rr.trailing_adjective}Value"
+              inject_value_type_role = false
+            end
+
+            # If the role is unary, or independent, or what we're referring is absorbed elsewhere, emit a reference:
+            reference_only = !other_player ||
+                other_player.independent ||
+                (other_player.is_a?(EntityType) and (via = other_player.absorbed_via) and via != role.fact_type)
+
+            debug :absorption, "#{name} absorbs #{reference_only ? "reference" : "all"} roles#{(other_player && " of "+other_player.name)} because '#{role.fact_type.default_reading}' via #{
+                #role.preferred_reference.describe
+                role.fact_type.describe(role)
+              }" do
+              if reference_only
                 absorb_reference(rs, role)
+                # Objectified Unaries may play additional roles that were't in can_absorb:
+                absorb_entity_roles(rs, role.fact_type.entity_type, role) if (!other_player && role.fact_type.entity_type)
               else
                 absorb_all_roles(rs, role)
               end
             end
           end
         end
+        @evaluating = false
         @absorbed_roles = rs
+        @absorbed_roles
       end
 
       # Return the array of absorption paths (roles of this object) that could absorb this object or a reference to it
@@ -52,7 +92,7 @@ module ActiveFacts
       end
 
       # Return the Concept into which this concept would be absorbed through its role given
-      def absorbed_into(role)
+      def referenced_from(role)
         (self == role.fact_type.entity_type && role.concept) ||  # It's a role of this objectified FT
           role.fact_type.entity_type ||                 # This is a role in another objectified FT
           (role.fact_type.all_role-[role])[0].concept   # A normal role played by this concept in a binary FT
@@ -61,46 +101,59 @@ module ActiveFacts
       # Return a RoleSequence with RoleRefs (including JoinPath) for all ValueTypes required to form this EntityType's preferred_identifier
       def absorbed_reference_roles
         rs = RoleSequence.new(:new)
-        reference_roles.all_role_ref.each do |rr|
-          absorb_reference(rs, rr.role)
+        debug :absorption, "absorbed_reference_roles of #{name} are:" do
+          reference_roles.all_role_ref.each do |rr|
+            debug :absorption, "absorbed_reference_role of #{name} is #{rr.role.fact_type.describe(rr.role)}"
+            absorb_reference(rs, rr.role)
+          end
         end
         rs
       end
 
+      # This object is related to a Concept by this role played by that Concept.
+      # If it's a ValueType, add the role to this RoleSequence,
+      # otherwise add the reference roles for that EntityType.
+      # Note that the role may be in an objectified fact type,
+      # at either end (self or role.concept).
       def absorb_reference(rs, role)
-        if role.fact_type.all_role.size == 1
-          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
-        elsif role.concept.is_a? ValueType
-          pr = role.preferred_reference
-          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
+        if role.concept.is_a? ValueType
+          role.preferred_reference.append_to(rs)
+        elsif role.fact_type.entity_type != self and role.fact_type.all_role.size == 1
+          # A unary fact type, just add it:
+          return RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
         else
           # Add this role as a JoinPath to the referenced object's absorbed_reference_roles
-          absorb_entity_reference(rs, role)
-        end
-      end
-
-      def absorb_entity_reference(rs, role)
-        absorbed_rs = role.concept.absorbed_reference_roles
-        absorbed_rs.all_role_ref.each do |rr|
-          new_rr = extend_join_path(rs, role, rr)
+          debug :absorption, "Absorbing reference to #{role.concept.name} into #{name}" do
+            absorbed_rs = role.concept.absorbed_reference_roles
+            absorbed_rs.all_role_ref.each do |rr|
+              new_rr = extend_join_path(rs, role, rr)
+            end
+          end
         end
       end
 
       # Absorb (into the RoleSequence) all roles that are absorbed by the player of this role
       def absorb_all_roles(rs, role)
-        if role.fact_type.all_role.size == 1
-          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
-        elsif role.concept.is_a? ValueType
-          pr = role.preferred_reference
-          RoleRef.new(rs, rs.all_role_ref.size+1, :role => role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
+        #debug :absorption, "absorb_all_roles of #{role.fact_type.describe(role)}"
+
+        if role.concept.is_a? ValueType     # Absorb a role played by a ValueType
+          role.preferred_reference.append_to(rs)
+        elsif role.fact_type.entity_type != self and role.fact_type.all_role.size == 1
+          # Absorb a unary role:
+          return RoleRef.new(rs, rs.all_role_ref.size+1, :role => role)
         else
-          # Add this role as a JoinPath to the referenced object's absorbed_reference_roles
-          absorb_entity_roles(rs, role)
+          player = role.fact_type.entity_type
+          player = role.concept if !player || player == self 
+          if player.independent
+            absorb_reference(rs, role)
+          else
+            absorb_entity_roles(rs, player, role)
+          end
         end
       end
 
-      def absorb_entity_roles(rs, role)
-        absorbed_rs = role.concept.absorbed_roles
+      def absorb_entity_roles(rs, entity_type, role)
+        absorbed_rs = entity_type.absorbed_roles
         absorbed_rs.all_role_ref.each do |rr|
           new_rr = extend_join_path(rs, role, rr)
         end
@@ -108,7 +161,7 @@ module ActiveFacts
 
       # Add a RoleRef to this RoleSequence which traverses this role to the start-point of the existing RoleRef
       def extend_join_path(rs, role, role_ref)
-        new_rr = RoleRef.new(rs, rs.all_role_ref.size+1, :role => role_ref.role, :leading_adjective => role_ref.leading_adjective, :trailing_adjective => role_ref.trailing_adjective)
+        new_rr = role_ref.append_to(rs)
 
         # Create a new JoinPath for this RoleRef (and append the old ones if any):
         if (last_jp = new_rr.all_join_path.last and
@@ -164,12 +217,11 @@ module ActiveFacts
     end
 
     class EntityType
-      # Return all Roles for this object's preferred_identifier
+      # Return a RoleSequence containing the preferred reference to each Role in this object's preferred_identifier
       def reference_roles
         rs = RoleSequence.new(:new)
         preferred_identifier.role_sequence.all_role_ref.each do |rr|
-          pr = rr.role.preferred_reference
-          RoleRef.new(rs, rs.all_role_ref.size+1, :role => rr.role, :leading_adjective => pr.leading_adjective, :trailing_adjective => pr.trailing_adjective)
+          rr.role.preferred_reference.append_to(rs)
         end
         rs
       end
@@ -198,7 +250,7 @@ module ActiveFacts
         can_absorb - preferred_identifier.role_sequence.all_role_ref.map(&:role)
       end
 
-      # Say whether this object is currently considered independent or not:
+      # Decide whether this object is currently considered independent or not:
       def independent
         return @independent if @independent != nil  # We already make a guess or decision
 
@@ -209,7 +261,11 @@ module ActiveFacts
 
         # Subtypes are not independent unless partitioned
         # REVISIT: Support partitioned subtypes here
-        return @independent = false if (!supertypes.empty?)
+        if (!supertypes.empty?)
+          av = all_type_inheritance_by_subtype.detect{|ti|ti.provides_identification} || all_type_inheritance_by_subtype[0]
+          absorbed_via(av)
+          return @independent = false
+        end
 
         # If the preferred_identifier includes an auto_assigned ValueType
         # and this object is absorbed in more than one place, we need a table
@@ -226,7 +282,24 @@ module ActiveFacts
         @tentative = true
         @independent = true
       end
+
+      def absorbed_via(fact_type = nil)
+        # puts "#{name} is absorbed via #{fact_type.describe(role)}" if role
+        @absorbed_via = fact_type if fact_type
+        @absorbed_via
+      end
     end # EntityType class
+
+    class RoleRef
+      # Append a copy of this reference to this RoleSequence
+      def append_to(rs)
+        RoleRef.new(rs, rs.all_role_ref.size+1,
+          :role => role,
+          :leading_adjective => leading_adjective,
+          :trailing_adjective => trailing_adjective
+        )
+      end
+    end
 
     class Role
       def role_type
@@ -311,12 +384,14 @@ module ActiveFacts
         all_feature.each do |feature|
           next unless feature.is_a? Concept   # REVISIT: Handle Aliases here
           feature.absorption_paths.each do |role|
-            into = feature.absorbed_into(role)
+            into = feature.referenced_from(role)
             # puts "#{feature.name} can be absorbed into #{into.name}"
             into.can_absorb << role
           end
-          # Ensure that all unary roles are in can_absorb also:
-          feature.all_role.select{|role| role.fact_type.all_role.size == 1}.each { |role| feature.can_absorb << role }
+          # Ensure that all unary roles are in can_absorb also (unless objectified, already handled):
+          feature.all_role.select{|role|
+            role.fact_type.all_role.size == 1 && !role.fact_type.entity_type
+          }.each { |role| feature.can_absorb << role }
           feature.independent = nil   # Undecided
           feature.tentative = nil     # Undecided
         end
@@ -333,17 +408,31 @@ module ActiveFacts
           finalised = []
           undecided.each do |feature|
             if feature.is_a?(ValueType) # This ValueType must be tentatively independent
+              # If this ValueType could absorb no independent ValueType, it must be independent (absorbs a dependendent one)
               if !feature.can_absorb.detect{|role| !role.fact_type.entity_type and role.concept.independent }
                 feature.tentative = false
                 finalised << feature
               end
             elsif feature.is_a?(EntityType)
-              # if the PI contains one role only and it's an absorption path, absorb it.
-              # This case is too ugly... there must be a better way to write it.
+              # If the PI contains one role only, played by an entity type that can absorb us, do that.
               pi_roles = feature.preferred_identifier.role_sequence.all_role_ref.map(&:role)
               if pi_roles.size == 1 &&
-                  pi_roles[0].concept.is_a?(EntityType) &&
-                  feature.absorption_paths.detect{|role| role == pi_roles[0] || !(role.fact_type.entity_type && (role.fact_type.all_role-[role])[0] == pi_roles[0])}
+                  (into = pi_roles[0].concept).is_a?(EntityType) &&
+                  into.absorption_paths.include?(pi_roles[0])
+
+                feature.can_absorb.delete(pi_roles[0])
+                debug(:absorption, "Removed reverse absorption of #{into.name} into #{feature.name}")
+#                puts "Identification of #{feature.name} is through #{pi_roles[0].concept.name}"
+                feature.absorbed_via(pi_roles[0].fact_type)
+
+                feature.independent = false
+                feature.tentative = false
+                finalised << feature
+                next
+              end
+
+              if feature.fact_type && feature.fact_type.all_role.size == 1
+                # Always absorb an objectified unary
                 feature.independent = false
                 feature.tentative = false
                 finalised << feature

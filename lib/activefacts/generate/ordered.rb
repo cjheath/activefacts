@@ -150,10 +150,9 @@ module ActiveFacts
 
       supers = o.supertypes
       if (supers.size > 0)
-        supertype = o.identifying_supertype || supers[0]
-        #debug "#{supertype.name} is identifying_supertype of #{o.name}"
-        spi = supertype.preferred_identifier
-        subtype_dump(o, supers, pi != spi ? pi : nil)
+        # Ignore identification by a supertype:
+        pi = nil if pi && pi.role_sequence.all_role_ref[0].role.fact_type.is_a?(TypeInheritance)
+        subtype_dump(o, supers, pi)
       else
         non_subtype_dump(o, pi)
       end

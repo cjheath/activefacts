@@ -11,8 +11,11 @@ module ActiveFacts
     class ABSORPTION
       include Metamodel
 
-      def initialize(vocabulary)
+      def initialize(vocabulary, *options)
         @vocabulary = vocabulary
+        @nocolumns = options.include? "nocolumns"
+        @dependent = options.include? "dependent"
+        @paths = options.include? "paths"
       end
 
       def generate(out = $>)
@@ -48,22 +51,32 @@ module ActiveFacts
       end
 
       def show concept
-        print "#{concept.name} (#{concept.tentative ? "tentatively " : ""}#{concept.independent ? "in" : ""}dependent)"
+        return unless concept.independent || @dependent
+
+        print "#{concept.name}"
+        print " (#{concept.tentative ? "tentatively " : ""}#{concept.independent ? "in" : ""}dependent)" if @dependent
         if concept.is_a? EntityType
           print " is identified by: #{
               concept.absorbed_reference_roles.all_role_ref.map { |rr| rr.describe } * ", "
             }"
         end
-        puts "#{ concept.absorbed_roles.all_role_ref.map do |role_ref|
-            "\n\t#{role_ref.describe}"
-          end*"" }"
-=begin
-        ap = concept.absorption_paths
-        puts "#{ ap.map {|role|
-          prr = role.preferred_reference.describe
-          "\n\tcan absorb #{prr != role.concept.name ? "(via #{prr}) " : "" }into #{concept.absorbed_into(role).name}"
-        }*"" }"
-=end
+        print "\n"
+
+        unless @nocolumns
+          puts "#{ concept.absorbed_roles.all_role_ref.map do |role_ref|
+              "\t#{role_ref.describe}\n"
+            end*"" }"
+        end
+
+        if (@paths)
+          ap = concept.absorption_paths
+          puts "#{ ap.map {|role|
+            prr = role.preferred_reference.describe
+            player = role.fact_type.entity_type == concept ? role.concept : (role.fact_type.all_role-[role])[0].concept
+            "\tcan absorb #{prr != role.concept.name ? "(via #{prr}) " : "" }into #{player.name}\n"
+          }*"" }"
+        end
+
       end
     end
   end

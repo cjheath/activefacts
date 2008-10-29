@@ -18,13 +18,8 @@ include ActiveFacts
 include ActiveFacts::Metamodel
 
 describe "Relational Composition from NORMA" do
-  #Dir["examples/norma/Bl*.orm"].each do |orm_file|
-  #Dir["examples/norma/[AC]*.orm"].each do |orm_file|
-  #Dir["examples/norma/Comp*r.orm"].each do |orm_file|
-  #Dir["examples/norma/Comp*e.orm"].each do |orm_file|
+  #Dir["examples/norma/D*.orm"].each do |orm_file|
   #Dir["examples/norma/Ins*.orm"].each do |orm_file|
-  #Dir["examples/norma/Meta*.orm"].each do |orm_file|
-  #Dir["examples/norma/OilSupply.*orm"].each do |orm_file|
   Dir["examples/norma/*.orm"].each do |orm_file|
     sql_file_pattern = orm_file.sub(/\.orm\Z/, '*.sql')
     sql_files = Dir[sql_file_pattern]

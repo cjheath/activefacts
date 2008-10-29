@@ -213,8 +213,8 @@ module ActiveFacts
           inheritance_fact.fact_type_id = :new
           if x.attributes["IsPrimary"] == "true" or           # Old way
             x.attributes["PreferredIdentificationPath"] == "true"   # Newer
-          # $stderr.puts "#{supertype.name} is primary supertype of #{subtype.name}"
-          inheritance_fact.provides_identification = true
+            # $stderr.puts "#{supertype.name} is primary supertype of #{subtype.name}"
+            inheritance_fact.provides_identification = true
           end
           facts << @by_id[id] = inheritance_fact
 
@@ -234,6 +234,28 @@ module ActiveFacts
           reading = @constellation.Reading(inheritance_fact, 0)
           reading.reading_text = "{0} is a subtype of {1}"
           reading.role_sequence = rs
+
+          # Create uniqueness constraints over the subtyping fact type
+          p1rs = @constellation.RoleSequence(:new)
+          @constellation.RoleRef(p1rs, 0).role = subtype_role
+          pc1 = @constellation.PresenceConstraint(:new)
+          pc1.vocabulary = @vocabulary
+          pc1.role_sequence = p1rs
+          pc1.is_mandatory = true   # A subtype instance must have a supertype instance
+          pc1.min_frequency = 1
+          pc1.max_frequency = 1
+          pc1.is_preferred_identifier = false
+
+          # The supertype role often identifies the subtype:
+          p2rs = @constellation.RoleSequence(:new)
+          @constellation.RoleRef(p2rs, 0).role = supertype_role
+          pc2 = @constellation.PresenceConstraint(:new)
+          pc2.vocabulary = @vocabulary
+          pc2.role_sequence = p2rs
+          pc2.is_mandatory = false
+          pc2.min_frequency = 0
+          pc2.max_frequency = 1
+          pc2.is_preferred_identifier = inheritance_fact.provides_identification
         }
       end
 
