@@ -89,6 +89,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>OilSupplyWithCosts.orm</DependentUpon>
     </Compile>
+    <Compile Include="Orders._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orders.orm</DependentUpon>
+    </Compile>
     <Compile Include="Orienteering._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Orienteering.orm</DependentUpon>
@@ -118,6 +122,10 @@
       <DependentUpon>OilSupply.orm</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowInRoomInBldg._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Blog.orm">
@@ -576,6 +584,40 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Metamodel.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Orders.orm')">
+    <None Include="Orders.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orders.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Orders.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orders.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Orders.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orders.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('WindowInRoomInBldg.orm')">
+    <None Include="WindowInRoomInBldg.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="WindowInRoomInBldg.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="WindowInRoomInBldg.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
