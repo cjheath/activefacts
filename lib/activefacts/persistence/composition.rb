@@ -65,6 +65,23 @@ module ActiveFacts
             end
           end
         end
+
+        # Now go through all absorbed roles and ensure they have distinct names
+        roles_by_preferred_name =
+          rs.all_role_ref.inject({}) do |h, rr|
+            role = (jp = rr.all_join_path[0]) ? jp.input_role : rr.role
+            name = role.preferred_reference.role_name(".")
+            (h[name] ||= {})[role] = rr
+            h
+          end
+        roles_by_preferred_name.
+          keys.                 # Select the preferred names that attach to more than one role
+          select{|n| roles_by_preferred_name[n].size > 1}.
+          each do |n|
+            roles = roles_by_preferred_name[n].keys
+#            puts "REVISIT: #{name} has #{roles.size} roles named #{n}"
+          end
+
         @evaluating = false
         @absorbed_roles = rs
         @absorbed_roles
@@ -81,7 +98,6 @@ module ActiveFacts
                  :many_one    # Can't absorb many of these into one of those
               next nil
             when :unary
-              # REVISIT: Test this with an objectified unary
               next nil        # Never absorb an object into one if its unaries
             when :subtype,    # This object is a subtype, so can be absorbed. REVISIT: Support subtype separation and partition
                  :one_many
@@ -131,7 +147,9 @@ module ActiveFacts
           debug :absorption, "Absorbing reference to #{role.concept.name} into #{name}" do
             absorbed_rs = role.concept.absorbed_reference_roles
             absorbed_rs.all_role_ref.each do |rr|
-              new_rr = extend_join_path(rs, role, rr)
+              # Figure out what concept is traversed by the new JoinPath:
+              concept = (role.concept == self && role.fact_type.entity_type) || role.concept
+              new_rr = extend_join_path(rs, rr, role, concept)
             end
           end
         end
@@ -160,27 +178,33 @@ module ActiveFacts
       def absorb_entity_roles(rs, entity_type, role)
         absorbed_rs = entity_type.absorbed_roles
         absorbed_rs.all_role_ref.each do |rr|
-          new_rr = extend_join_path(rs, role, rr)
+          # Figure out what concept is traversed by the new JoinPath:
+          concept = role.concept == self ? role.fact_type.entity_type : role.concept
+          new_rr = extend_join_path(rs, rr, role, concept)
         end
       end
 
-      # Add a RoleRef to this RoleSequence which traverses this role to the start-point of the existing RoleRef
-      def extend_join_path(rs, role, role_ref)
+      # Copy the RoleRef into the RoleSequence, prepending a JoinPath via role and concept to the copy
+      def extend_join_path(rs, role_ref, role, concept)
+        # Copy the RoleRef and add the new one to this RoleSequence:
         new_rr = role_ref.append_to(rs)
 
-        # Create a new JoinPath for this RoleRef (and append the old ones if any):
-        if (last_jp = new_rr.all_join_path.last and
-          last_jp.input_role.fact_type.entity_type)
-          # We don't have counterpart roles for objectified fact types
-          output_role = last_jp.input_role
-        else
-          output_role = (new_rr.role.fact_type.all_role-[new_rr.role])[0]
-        end
-        # REVISIT: For an input_role in a unary fact_type, output_role will be nil (in case this is a problem)
-        JoinPath.new(new_rr, 0, :input_role => role, :output_role => output_role)
+        # Prepend a new JoinPath to this RoleRef.
+        # A JoinPath identifies two roles played by the passed concept, an input role and an output role.
+        # The final output role is the counterpart to the RoleRef role, played by the target.
+        # We're building the path in reverse order, so the role passed in is a new input role.
+        # Find the output role.
+        entry_role = (first_jp = role_ref.all_join_path.first) ? first_jp.input_role : new_rr.role
 
+        # If concept is an objectified fact type, the entry_role might be one of its roles
+        output_role = entry_role.concept == concept ? entry_role : (entry_role.fact_type.all_role-[entry_role])[0]
+
+        # REVISIT: For an input_role in a unary fact_type, output_role will be nil (in case this is a problem)
+        JoinPath.new(new_rr, 0, :concept => concept, :input_role => role, :output_role => output_role)
+
+        # Append the old JoinPaths if any
         role_ref.all_join_path.each do |jp|
-          JoinPath.new(new_rr, new_rr.all_join_path.size, :input_role => jp.input_role, :output_role => jp.output_role)
+          JoinPath.new(new_rr, new_rr.all_join_path.size, :concept => jp.concept, :input_role => jp.input_role, :output_role => jp.output_role)
         end
         new_rr
       end
@@ -300,6 +324,69 @@ module ActiveFacts
           :leading_adjective => leading_adjective,
           :trailing_adjective => trailing_adjective
         )
+      end
+
+      # When the joins traverse TypeInheritance, retain the subtype join path only:
+      def direct_type_join_paths
+        all_join_path.
+          sort_by{|jp| jp.join_step}.
+          inject([]) do |a, jp|
+            if a.last && (ti = jp.input_role.fact_type).is_a?(TypeInheritance)
+              if ti.subtype == jp.input_role.concept
+                # Retain the subtype, not the previously-recorded supertype
+                a[-1] = jp
+              # else we already had the supertype
+              end
+            else
+              a << jp
+            end
+            a
+          end.inject([]) do |a, jp|
+            # Skip an object which is identified by its precursor:
+            next a if a.size > 0 and
+              jp.concept.is_a?(EntityType) and
+              (role_refs = jp.concept.preferred_identifier.role_sequence.all_role_ref).size == 1 and
+              role_refs[0].role == a[-1].output_role
+
+            ## Skip a role that is a sole ValueType identifying its precursor:
+            # This seems to have very little effect
+            #next a if a.size > 0 and
+            #  #jp.concept.is_a?(ValueType) and
+            #  (role_refs = a[-1].concept.preferred_identifier.role_sequence.all_role_ref).size == 1 and
+            #  role_refs[0].role == jp.input_role
+
+            a << jp
+          end
+      end
+
+      # Return an array of column name words
+      def column_name(joiner = "-")
+        jps = direct_type_join_paths
+
+        # When Xyz is identified by XyzID, truncate that to just ID:
+        final_name = role_name(nil)
+        if final_name.size == 1 && jps.size > 0 && role.fact_type.all_role.size > 1   # We have a JoinPath to a non-unary
+          penultimate_role_player = all_join_path.last.concept
+          final_name = final_name[0]
+          if penultimate_role_player.is_a?(EntityType) and
+              (role_refs = penultimate_role_player.preferred_identifier.role_sequence.all_role_ref).size == 1 and
+              role_refs[0].role == role and
+              final_name[0...penultimate_role_player.name.size].downcase == penultimate_role_player.name.downcase
+            #puts "===== #{final_name} starts with and identifies #{penultimate_role_player.name} for #{jps.last.concept.name}"
+            final_name = final_name[penultimate_role_player.name.size..-1]
+            final_name = nil if final_name == ''
+          end
+        end
+
+        names = (jps.map{ |jp| jp.column_name(nil) }.flatten+Array(final_name)).compact
+        joiner ? names*joiner : names
+      end
+
+      def describe
+        # The reference traverses the JoinPaths in sequence to the final role:
+        all_join_path.
+          sort_by{|jp| jp.join_step}.
+          map{ |jp| jp.describe }.compact.map{|n| n+".\n\t\t"}*"" + role_name(".")
       end
     end
 
@@ -472,6 +559,7 @@ module ActiveFacts
                 !one_to_ones.detect{|r|
                   player = r.fact_type.entity_type || r.concept
                   !player.independent ||
+                  r.concept.is_a?(ValueType) ||
                   player.preferred_identifier.role_sequence.all_role_ref.map{|r2|r2.role.concept} == [feature]
                 }
                 # All one_to_ones are at least tentatively independent, make them independent and we're fully absorbed

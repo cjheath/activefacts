@@ -32,10 +32,10 @@ Bound is identified by Value and Bound where
 	Value is of at least one Bound,
 	Bound is inclusive;
 
-Coefficient is identified by Numerator and Denominator where
+Coefficient is identified by Numerator and Denominator and Coefficient where
 	Coefficient has exactly one Numerator,
-	Coefficient has exactly one Denominator;
-Coefficient is precise;
+	Coefficient has exactly one Denominator,
+	Coefficient is precise;
 
 Constraint is identified by ConstraintId where
 	Constraint has exactly one ConstraintId,
@@ -177,6 +177,8 @@ RoleRef has at most one leading-Adjective;
 RoleRef has at most one trailing-Adjective;
 JoinPath is where
 	RoleRef has Ordinal (as JoinStep) path;
+JoinPath traverses at most one Concept,
+	Concept is traversed by JoinPath;
 JoinPath has exactly one input-Role;
 JoinPath has exactly one output-Role;
 
@@ -205,11 +207,9 @@ for each Concept exactly one of these holds:
 	EntityType is a subtype of Concept,
 	ValueType is a subtype of Concept;
 for each Constraint exactly one of these holds:
-	some RingConstraint is a subtype of that Constraint,
-	some SetEqualityConstraint is a subtype of that Constraint,
-	some SetExclusionConstraint is a subtype of that Constraint,
-	some SubsetConstraint is a subtype of that Constraint,
-	some PresenceConstraint is a subtype of that Constraint;
+	PresenceConstraint is a subtype of Constraint,
+	SetConstraint is a subtype of Constraint,
+	RingConstraint is a subtype of Constraint;
 for each Feature exactly one of these holds:
 	Concept is a subtype of Feature,
 	Alias is a subtype of Feature;
@@ -219,6 +219,12 @@ Instance plays RoleValue and Instance is of Concept
 RoleValue fulfils Fact and Fact is of FactType
 	if and only if
 	RoleValue is of Role and FactType has Ordinal role played by Concept;
+for each SetComparisonConstraint exactly one of these holds:
+	SetExclusionConstraint is a subtype of SetComparisonConstraint,
+	SetEqualityConstraint is a subtype of SetComparisonConstraint;
+for each SetConstraint exactly one of these holds:
+	SetComparisonConstraint is a subtype of SetConstraint,
+	SubsetConstraint is a subtype of SetConstraint;
 for each Unit exactly one of these holds:
 	Unit is fundamental,
 	that Unit is derived from some base-Unit;

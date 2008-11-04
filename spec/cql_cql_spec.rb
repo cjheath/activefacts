@@ -19,7 +19,7 @@ class String
 end
 
 describe "CQL Loader" do
-  KNOWN_FAILURES = %w{
+  CQL_CQL_FAILURES = %w{
     Airline
     CompanyDirectorEmployee
     CompanyQuery
@@ -46,7 +46,7 @@ describe "CQL Loader" do
     actual_file = cql_file.sub(%r{examples/CQL/}, 'spec/actual/')
 
     it "should load CQL and dump valid CQL for #{cql_file}" do
-      pending if KNOWN_FAILURES.include? File.basename(cql_file, ".cql")
+      pending if CQL_CQL_FAILURES.include? File.basename(cql_file, ".cql")
       vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
 
       # Build and save the actual file:

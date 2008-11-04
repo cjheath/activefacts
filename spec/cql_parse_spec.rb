@@ -12,7 +12,7 @@ require 'activefacts/generate/cql'
 include ActiveFacts
 
 describe "CQL Parser" do
-  KNOWN_FAILURES = %w{
+  CQLPARSE_FAILURES = %w{
     Airline
     CompanyDirectorEmployee
     CompanyQuery
@@ -27,7 +27,7 @@ describe "CQL Parser" do
   #Dir["examples/CQL/[ACG]*.cql"].each do |cql_file|
   Dir["examples/CQL/*.cql"].each do |cql_file|
     it "should load CQL #{cql_file} without parse errors" do
-      pending if KNOWN_FAILURES.include? File.basename(cql_file, ".cql")
+      pending if CQLPARSE_FAILURES.include? File.basename(cql_file, ".cql")
       lambda { vocabulary = ActiveFacts::Input::CQL.readfile(cql_file) }.should_not raise_error
     end
   end

@@ -89,7 +89,7 @@ module Metamodel
   end
 
   class Coefficient
-    identified_by :numerator, :denominator
+    identified_by :numerator, :denominator, :is_precise
     has_one :denominator                        # See Denominator.all_coefficient
     maybe :is_precise
     has_one :numerator                          # See Numerator.all_coefficient
@@ -274,6 +274,7 @@ module Metamodel
     identified_by :role_ref, :join_step
     has_one :join_step, Ordinal                 # See Ordinal.all_join_path_by_join_step
     has_one :role_ref                           # See RoleRef.all_join_path
+    has_one :concept                            # See Concept.all_join_path
     has_one :input_role, Role                   # See Role.all_join_path_by_input_role
     has_one :output_role, Role                  # See Role.all_join_path_by_output_role
   end

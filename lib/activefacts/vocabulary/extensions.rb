@@ -47,35 +47,39 @@ module ActiveFacts
     end
 
     class JoinPath
+      def column_name(joiner = '-')
+        debugger unless concept
+        concept == input_role.concept ? input_role.preferred_reference.role_name(joiner) : Array(concept.name)
+      end
+
       def describe
-        input_name = (et = input_role.fact_type.entity_type) ? et.name : input_role.preferred_reference.role_name
-        # REVISIT: JoinPath output_roles are being set incorrectly!
-        #output_name = output_role.preferred_reference.role_name if output_role
-        input_name # + (output_name && input_name != output_name ? "/#{output_name}" : "")
+        "#{input_role.fact_type.describe(input_role)}->" +
+          concept.name +
+          (output_role ? "->#{output_role.fact_type.describe(output_role)}":"")
       end
     end
 
     class RoleRef
       def describe
         # The reference traverses the JoinPaths in sequence to the final role:
-        all_join_path.sort_by{|jp| jp.ordinal}.map{ |jp| jp.describe + "." }*"" + role_name
+        all_join_path.sort_by{|jp| jp.join_step}.map{ |jp| jp.describe + "." }*"" + role_name
       end
 
       def role_name(joiner = "-")
-        if role.fact_type.all_role.size == 1
-          role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.gsub(/ /, '_')
-        else
-          role.role_name || [leading_adjective, role.concept.name, trailing_adjective].compact*joiner
-        end
+        name_array =
+          if role.fact_type.all_role.size == 1
+            role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.split(/\s/)
+          else
+            role.role_name || [leading_adjective, role.concept.name, trailing_adjective].compact.map{|w| w.split(/\s/)}.flatten
+          end
+        return joiner ? Array(name_array)*joiner : Array(name_array)
       end
     end
 
     class RoleSequence
       def describe
-#        fact_types = all_role_ref.map(&:role).map(&:fact_type).uniq
-#        fact_types.size.to_s+" FTs, "+
         "("+
-        all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.describe }*", "+
+          all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.describe }*", "+
         ")"
       end
     end

@@ -26,6 +26,10 @@ module Warehousing
     value_type 
   end
 
+  class Quantity < UnsignedInteger
+    value_type :length => 32
+  end
+
   class ReceiptID < AutoCounter
     value_type 
   end
@@ -49,7 +53,6 @@ module Warehousing
   class Bin
     identified_by :bin_id
     one_to_one :bin_id, BinID                   # See BinID.bin_by_bin_id
-    has_one :stocked_product                    # See StockedProduct.all_bin
     has_one :warehouse                          # See Warehouse.all_bin
   end
 
@@ -63,6 +66,7 @@ module Warehousing
     has_one :dispatch                           # See Dispatch.all_dispatch_item
     one_to_one :dispatch_item_id, DispatchItemID  # See DispatchItemID.dispatch_item_by_dispatch_item_id
     has_one :product                            # See Product.all_dispatch_item
+    has_one :quantity                           # See Quantity.all_dispatch_item
     has_one :sales_order_item                   # See SalesOrderItem.all_dispatch_item
     has_one :transfer_request                   # See TransferRequest.all_dispatch_item
   end
@@ -77,6 +81,13 @@ module Warehousing
     one_to_one :product_id, ProductID           # See ProductID.product_by_product_id
   end
 
+  class StockedProduct
+    identified_by :bin, :product
+    has_one :bin                                # See Bin.all_stocked_product
+    has_one :product                            # See Product.all_stocked_product
+    has_one :quantity                           # See Quantity.all_stocked_product
+  end
+
   class PurchaseOrder
     identified_by :purchase_order_id
     one_to_one :purchase_order_id, PurchaseOrderID  # See PurchaseOrderID.purchase_order_by_purchase_order_id
@@ -88,6 +99,7 @@ module Warehousing
     identified_by :purchase_order, :product
     has_one :product                            # See Product.all_purchase_order_item
     has_one :purchase_order                     # See PurchaseOrder.all_purchase_order_item
+    has_one :quantity                           # See Quantity.all_purchase_order_item
   end
 
   class Receipt
@@ -99,6 +111,7 @@ module Warehousing
     identified_by :received_item_id
     has_one :product                            # See Product.all_received_item
     has_one :purchase_order_item                # See PurchaseOrderItem.all_received_item
+    has_one :quantity                           # See Quantity.all_received_item
     has_one :receipt                            # See Receipt.all_received_item
     one_to_one :received_item_id, ReceivedItemID  # See ReceivedItemID.received_item_by_received_item_id
     has_one :transfer_request                   # See TransferRequest.all_received_item
@@ -114,6 +127,7 @@ module Warehousing
   class SalesOrderItem
     identified_by :sales_order, :product
     has_one :product                            # See Product.all_sales_order_item
+    has_one :quantity                           # See Quantity.all_sales_order_item
     has_one :sales_order                        # See SalesOrder.all_sales_order_item
   end
 
@@ -128,20 +142,14 @@ module Warehousing
 
   class TransferRequest
     identified_by :transfer_request_id
+    has_one :from_warehouse, "Warehouse"        # See Warehouse.all_transfer_request_by_from_warehouse
+    has_one :to_warehouse, "Warehouse"          # See Warehouse.all_transfer_request_by_to_warehouse
     one_to_one :transfer_request_id, TransferRequestID  # See TransferRequestID.transfer_request_by_transfer_request_id
-    has_one :warehouse                          # See Warehouse.all_transfer_request
-    has_one :warehouse                          # See Warehouse.all_transfer_request
   end
 
   class Warehouse
     identified_by :warehouse_id
     one_to_one :warehouse_id, WarehouseID       # See WarehouseID.warehouse_by_warehouse_id
-  end
-
-  class StockedProduct
-    identified_by :warehouse, :product
-    has_one :product                            # See Product.all_stocked_product
-    has_one :warehouse                          # See Warehouse.all_stocked_product
   end
 
   class Customer < Party

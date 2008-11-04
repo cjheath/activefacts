@@ -43,7 +43,7 @@ describe "Absorption" do
         #{Prologue}
         Month is in exactly one Season;
       },
-      :tables => { "Month" => [ "Month-Value", "Season" ] }
+      :tables => { "Month" => [ %w{Month Value}, "Season" ] }
     },
 
     { :should => "absorb a one-to-one along the identification path",
@@ -51,7 +51,7 @@ describe "Absorption" do
         #{Prologue} #{Claim} #{Incident}
         Incident relates to loss on exactly one DateTime;
       },
-      :tables => { "Claim" => ["ClaimID", "Incident.DateTime"]}
+      :tables => { "Claim" => ["ClaimID", %w{Incident DateTime}]}
     },
 
     { :should => "absorb an objectified binary with single-role UC",
@@ -63,8 +63,8 @@ describe "Absorption" do
         Person has exactly one birth-Date;
       },
       :tables => {
-        "Claim" => ["ClaimID", "Lodgement.DateTime", "Lodgement.Lodgement.Party.PartyID"],
-        "Party" => ["PartyID", "Person.birth-Date"]
+        "Claim" => ["ClaimID", %w{Lodgement DateTime}, %w{Lodgement Person ID}],
+        "Party" => ["PartyID", %w{Person birth Date}]
       }
     },
 
@@ -87,8 +87,8 @@ describe "Absorption" do
 
       # Ensure that the same column descriptions were generated:
       tables.sort_by(&:name).each do |table|
-        column_descriptions = table.absorbed_roles.all_role_ref.map{|rr| rr.describe}.sort
-        column_descriptions.should == expected_tables[table.name].sort
+        column_descriptions = table.absorbed_roles.all_role_ref.map{|rr| rr.column_name(nil) }.sort
+        column_descriptions.should == expected_tables[table.name].map{|c| Array(c) }.sort
       end
     end
   end

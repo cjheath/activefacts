@@ -13,9 +13,10 @@ module ActiveFacts
 
       def initialize(vocabulary, *options)
         @vocabulary = vocabulary
-        @nocolumns = options.include? "nocolumns"
+        @no_columns = options.include? "no_columns"
         @dependent = options.include? "dependent"
         @paths = options.include? "paths"
+        @no_identifier = options.include? "no_identifier"
       end
 
       def generate(out = $>)
@@ -55,16 +56,17 @@ module ActiveFacts
 
         print "#{concept.name}"
         print " (#{concept.tentative ? "tentatively " : ""}#{concept.independent ? "in" : ""}dependent)" if @dependent
-        if concept.is_a? EntityType
-          print " is identified by: #{
-              concept.absorbed_reference_roles.all_role_ref.map { |rr| rr.describe } * ", "
+
+        if !@no_identifier && concept.is_a?(EntityType)
+          print " is identified by:\n\t#{
+              concept.absorbed_reference_roles.all_role_ref.map { |rr| rr.column_name*"." } * ",\n\t"
             }"
         end
         print "\n"
 
-        unless @nocolumns
+        unless @no_columns
           puts "#{ concept.absorbed_roles.all_role_ref.map do |role_ref|
-              "\t#{role_ref.describe}\n"
+              "\t#{role_ref.column_name(".")}\n"
             end*"" }"
         end
 

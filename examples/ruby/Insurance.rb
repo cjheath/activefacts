@@ -26,7 +26,7 @@ module Insurance
     value_type 
   end
 
-  class ClaimId < AutoCounter
+  class ClaimID < AutoCounter
     value_type 
   end
 
@@ -217,7 +217,7 @@ module Insurance
 
   class Claim
     identified_by :claim_id
-    one_to_one :claim_id                        # See ClaimId.claim
+    one_to_one :claim_id, ClaimID               # See ClaimID.claim_by_claim_id
     has_one :p_sequence, ClaimSequence          # See ClaimSequence.all_claim_by_p_sequence
     has_one :person                             # See Person.all_claim
     has_one :policy                             # See Policy.all_claim
@@ -274,7 +274,6 @@ module Insurance
   class Person < Party
     has_one :address                            # See Address.all_person
     has_one :birth_date, Date                   # See Date.all_person_by_birth_date
-    has_one :contact_methods                    # See ContactMethods.all_person
     has_one :family_name, Name                  # See Name.all_person_by_family_name
     has_one :given_name, Name                   # See Name.all_person_by_given_name
     has_one :occupation                         # See Occupation.all_person
@@ -401,16 +400,17 @@ module Insurance
   end
 
   class Company < Party
-    has_one :person                             # See Person.all_company
+    has_one :contact_person, Person             # See Person.all_company_by_contact_person
   end
 
   class ContactMethods
-    identified_by :mobile_phone, :home_phone, :business_phone, :email
+    identified_by :person
     has_one :business_phone, Phone              # See Phone.all_contact_methods_by_business_phone
     has_one :contact_time, Time                 # See Time.all_contact_methods_by_contact_time
     has_one :email                              # See Email.all_contact_methods
     has_one :home_phone, Phone                  # See Phone.all_contact_methods_by_home_phone
     has_one :mobile_phone, Phone                # See Phone.all_contact_methods_by_mobile_phone
+    one_to_one :person                          # See Person.contact_methods
     has_one :preferred_contact_method, ContactMethod  # See ContactMethod.all_contact_methods_by_preferred_contact_method
   end
 

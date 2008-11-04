@@ -20,16 +20,17 @@ include ActiveFacts::Metamodel
 Exceptions = {
   "Blog" => ["Author", "Comment", "Paragraph", "Post", "Topic"],
   "DeathAsBinary" => ["Person"],
-  "Insurance" => ["Asset", "Claim", "ContactMethods", "ContractorAppointment", "Cover", "CoverType", "CoverWording", "DamagedProperty", "DemeritKind", "LossType", "LostItem", "Party", "Policy", "Product", "State", "ThirdParty", "UnderwritingDemerit", "Witness"],
-  "Metamodel" => ["AllowedRange", "Coefficient", "Constraint", "Correspondence", "Fact", "FactType", "Feature", "Instance", "JoinPath", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "UnitBasis", "ValueRestriction"],
+  "Insurance" => ["Asset", "Claim", "ContractorAppointment", "Cover", "CoverType", "CoverWording", "DamagedProperty", "DemeritKind", "LossType", "LostItem", "Party", "Policy", "Product", "State", "ThirdParty", "UnderwritingDemerit", "Witness"],
+  "Metamodel" => ["AllowedRange", "Constraint", "Correspondence", "Fact", "FactType", "Feature", "Instance", "JoinPath", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "UnitBasis", "ValueRestriction"],
   "OilSupplyWithCosts" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
   "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
-  "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "TransferRequest", "Warehouse"]
+  "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "StockedProduct", "TransferRequest", "Warehouse"]
 }
 
 describe "Relational Composition from NORMA" do
   #Dir["examples/norma/B*.orm"].each do |orm_file|
   #Dir["examples/norma/Ins*.orm"].each do |orm_file|
+  #Dir["examples/norma/W*.orm"].each do |orm_file|
   Dir["examples/norma/*.orm"].each do |orm_file|
     sql_tables = Exceptions[File.basename(orm_file, ".orm")]
     if !sql_tables
@@ -39,7 +40,7 @@ describe "Relational Composition from NORMA" do
     end
 
     it "should load #{orm_file} and compute #{
-        sql_tables ? "the expected lost of tables" :
+        sql_tables ? "the expected list of tables" :
           "a list of tables similar to those in #{sql_files[0]}"
       }" do
 
@@ -66,6 +67,9 @@ describe "Relational Composition from NORMA" do
       File.open(actual_tables, "w") { |f| f.puts composition*"\n" }
       norma_tables = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.norma.tables')
       File.open(norma_tables, "w") { |f| f.puts sql_tables*"\n" }
+
+      # Calculate the columns and column names; REVISIT: check the results
+      vocabulary.tables.each {|table| table.absorbed_roles }
 
       if false && composition != sql_tables
         #puts "="*20 + " reasons " + "="*20

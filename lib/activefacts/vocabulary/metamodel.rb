@@ -262,14 +262,6 @@ module ActiveFacts
       has_one :role_value_restriction, ValueRestriction  # See ValueRestriction.all_role_by_role_value_restriction
     end
 
-    class JoinPath
-      identified_by :role_ref, :ordinal
-      has_one :ordinal                            # See Ordinal.all_join_path
-      has_one :role_ref                           # See RoleRef.all_join_path
-      has_one :input_role, Role                   # See Role.all_join_path_by_input_role
-      has_one :output_role, Role                  # See Role.all_join_path_by_output_role
-    end
-
     class RoleRef
       identified_by :role_sequence, :ordinal
       has_one :ordinal                            # See Ordinal.all_role_ref
@@ -277,6 +269,15 @@ module ActiveFacts
       has_one :role_sequence                      # See RoleSequence.all_role_ref
       has_one :leading_adjective, Adjective       # See Adjective.all_role_ref_by_leading_adjective
       has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_by_trailing_adjective
+    end
+
+    class JoinPath
+      identified_by :role_ref, :join_step
+      has_one :join_step, Ordinal                 # See Ordinal.all_join_path_by_join_step
+      has_one :role_ref                           # See RoleRef.all_join_path
+      has_one :concept                            # See Concept.all_join_path
+      has_one :input_role, Role                   # See Role.all_join_path_by_input_role
+      has_one :output_role, Role                  # See Role.all_join_path_by_output_role
     end
 
     class EntityType < Concept
