@@ -21,8 +21,8 @@ if arg =~ /^--([^=]*)(?:=(.*))?/
 end
 output_handler = "activefacts/generate/#{generator.downcase}"
 require output_handler
-output_class = generator.upcase
-output_klass = ActiveFacts::Generate.const_get(output_class.to_sym)
+output_class = generator.upcase.gsub(%r{[/\\]+},'::')
+output_klass = eval("ActiveFacts::Generate::#{output_class}")
 raise "Expected #{output_handler} to define #{output_class}" unless output_klass
 
 # Load the file type input method
