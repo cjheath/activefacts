@@ -197,7 +197,7 @@ module ActiveFacts
         entry_role = (first_jp = role_ref.all_join_path.first) ? first_jp.input_role : new_rr.role
 
         # If concept is an objectified fact type, the entry_role might be one of its roles
-        output_role = entry_role.concept == concept ? entry_role : (entry_role.fact_type.all_role-[entry_role])[0]
+        output_role = concept.fact_type ? entry_role : (entry_role.fact_type.all_role-[entry_role])[0]
 
         # REVISIT: For an input_role in a unary fact_type, output_role will be nil (in case this is a problem)
         JoinPath.new(new_rr, 0, :concept => concept, :input_role => role, :output_role => output_role)
@@ -382,6 +382,13 @@ module ActiveFacts
         joiner ? names*joiner : names
       end
 
+      def output_roles
+        first_counterpart = all_join_path.size > 0 ? all_join_path[0].input_role : role
+        (first_counterpart.fact_type.all_role.size != 1 && !first_counterpart.fact_type.entity_type ?
+            first_counterpart.fact_type.all_role-[first_counterpart] : [first_counterpart]) +
+          all_join_path.map(&:output_role).compact
+      end
+
       def describe
         # The reference traverses the JoinPaths in sequence to the final role:
         all_join_path.
@@ -439,6 +446,18 @@ module ActiveFacts
       def other_role_player
         fact_type.entity_type ||  # Objectified fact types only have counterpart roles, no self-roles
           (fact_type.all_role-[self])[0].concept  # Only valid for roles in binaries (others must be objectified anyhow)
+      end
+
+      def is_mandatory
+        return true if fact_type.all_role.size == 1  # Unaries are always optional, but represented as booleans, so mandatory yes/no
+        return true if fact_type.entity_type   # Objectified fact type roles are always mandatory
+        all_role_ref.each { |rr|
+          rr.role_sequence.all_role_ref.size == 1 &&
+          rr.role_sequence.all_presence_constraint.each { |pc|
+            return pc if pc.min_frequency == 1 && pc.is_mandatory
+          }
+        }
+        false
       end
     end
 
