@@ -1,22 +1,22 @@
-CREATE TABLE Student (
+CREATE TABLE SchoolActivity (
+	ActivityName	varchar(32) NOT NULL,
 	SchoolName	varchar NOT NULL,
+	UNIQUE(SchoolName, ActivityName)
+)
+GO
+
+CREATE TABLE Student (
 	StudentName	varchar NOT NULL,
+	SchoolName	varchar NOT NULL,
 	UNIQUE(StudentName)
 )
 GO
 
 CREATE TABLE StudentParticipation (
-	SchoolName	varchar NOT NULL,
 	ActivityName	varchar(32) NOT NULL,
 	StudentName	varchar NOT NULL,
-	UNIQUE(StudentName, ActivityName)
-)
-GO
-
-CREATE TABLE SchoolActivity (
 	SchoolName	varchar NOT NULL,
-	ActivityName	varchar(32) NOT NULL,
-	UNIQUE(SchoolName, ActivityName)
+	UNIQUE(StudentName, ActivityName)
 )
 GO
 

@@ -37,8 +37,13 @@ module ActiveFacts
             "bit"
           else
             vt = role_ref.role.concept
-            length = vt.length|| vt.supertype.length
-            scale = vt.scale|| vt.supertype.scale
+            length = vt.length
+            scale = vt.scale
+            while vt.supertype
+              length ||= vt.length
+              scale ||= vt.scale
+              vt = vt.supertype
+            end
             basic_type = case (vt.supertype||vt).name
               when "AutoCounter"; "int"
               when "Date"; "datetime"
@@ -76,15 +81,20 @@ module ActiveFacts
           @out = out
           #go "CREATE SCHEMA #{@vocabulary.name}"
 
-          @vocabulary.tables.each do |table|
+          @vocabulary.tables.sort_by{|table| table.name}.each do |table|
             puts "CREATE TABLE #{escape table.name} ("
+            pk = table.absorbed_reference_roles.all_role_ref
+            pk_names = pk.map{|rr| column_name(rr) }
             puts((
-                table.absorbed_roles.all_role_ref.map { |role_ref|
+                table.absorbed_roles.all_role_ref.sort_by { |role_ref|
+                  name = column_name(role_ref)
+                  [pk_names.include?(name) ? 0 : 1, name]
+                }.map { |role_ref|
                   "\t#{column_name(role_ref)}\t#{sql_type(role_ref)}"
                 } +
                 [
                   # Any nullable fields mean this can't be a primary key, just a unique constraint
-                  if table.absorbed_reference_roles.all_role_ref.detect{ |role_ref| !role_ref.role.is_mandatory }
+                  if pk.detect{ |role_ref| !role_ref.role.is_mandatory }
                     "\tUNIQUE("
                   else
                     "\tPRIMARY KEY("

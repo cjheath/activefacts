@@ -1,40 +1,67 @@
-CREATE TABLE Event (
-	ClubCode	varchar(6) NOT NULL,
-	MapID	int NOT NULL,
-	SeriesID	int NULL,
-	StartTime	StartTime NOT NULL,
-	EventName	varchar(50) NULL,
-	EventID	int NOT NULL,
-	StartLocation	varchar(200) NOT NULL,
-	Number	int NULL,
-	UNIQUE(EventID)
-)
-GO
-
 CREATE TABLE Club (
-	ClubName	varchar(32) NOT NULL,
 	ClubCode	varchar(6) NOT NULL,
+	ClubName	varchar(32) NOT NULL,
 	UNIQUE(ClubCode)
 )
 GO
 
-CREATE TABLE Map (
-	OwnerCode	varchar(6) NOT NULL,
-	MapName	varchar(80) NOT NULL,
-	Accessibility	Accessibility(1) NULL,
+CREATE TABLE Entry (
+	EntryID	int NOT NULL,
+	Course	varchar(16) NOT NULL,
+	EventID	int NOT NULL,
+	FinishPlacing	int NULL,
+	PersonID	int NOT NULL,
+	Score	int NULL,
+	UNIQUE(EntryID)
+)
+GO
+
+CREATE TABLE Event (
+	EventID	int NOT NULL,
+	ClubCode	varchar(6) NOT NULL,
+	EventName	varchar(50) NULL,
 	MapID	int NOT NULL,
+	Number	int NULL,
+	SeriesID	int NULL,
+	StartLocation	varchar(200) NOT NULL,
+	StartTime	DateAndTime NOT NULL,
+	UNIQUE(EventID)
+)
+GO
+
+CREATE TABLE EventControl (
+	ControlNumber	int NOT NULL,
+	EventID	int NOT NULL,
+	PointValue	int NULL,
+	UNIQUE(EventID, ControlNumber)
+)
+GO
+
+CREATE TABLE EventScoringMethod (
+	Course	varchar(16) NOT NULL,
+	EventID	int NOT NULL,
+	ScoringMethod	varchar(32) NOT NULL,
+	UNIQUE(Course, EventID)
+)
+GO
+
+CREATE TABLE Map (
+	MapID	int NOT NULL,
+	Accessibility	FixedLengthText(1) NULL,
+	MapName	varchar(80) NOT NULL,
+	OwnerCode	varchar(6) NOT NULL,
 	UNIQUE(MapID)
 )
 GO
 
 CREATE TABLE Person (
+	PersonID	int NOT NULL,
+	BirthYear	int NULL,
 	ClubCode	varchar(6) NULL,
 	FamilyName	varchar(48) NOT NULL,
+	Gender	FixedLengthText(1) NULL,
 	GivenName	varchar(48) NOT NULL,
-	Gender	Gender(1) NULL,
-	BirthYear	int NULL,
 	PostCode	int NULL,
-	PersonID	int NOT NULL,
 	UNIQUE(PersonID)
 )
 GO
@@ -45,53 +72,26 @@ CREATE TABLE Punch (
 )
 GO
 
+CREATE TABLE PunchPlacement (
+	EventControlControlNumber	int NOT NULL,
+	EventControlEventID	int NOT NULL,
+	PunchID	int NOT NULL,
+	UNIQUE(PunchID, EventControlEventID, EventControlControlNumber)
+)
+GO
+
 CREATE TABLE Series (
-	Name	varchar(40) NOT NULL,
 	SeriesID	int NOT NULL,
+	Name	varchar(40) NOT NULL,
 	UNIQUE(SeriesID)
 )
 GO
 
 CREATE TABLE Visit (
-	PunchID	int NOT NULL,
-	Time	Time NOT NULL,
 	EntryID	int NULL,
-	UNIQUE(PunchID, EntryID, Time)
-)
-GO
-
-CREATE TABLE Entry (
-	EventID	int NOT NULL,
-	PersonID	int NOT NULL,
-	Course	varchar(16) NOT NULL,
-	Score	int NULL,
-	FinishPlacing	int NULL,
-	EntryID	int NOT NULL,
-	UNIQUE(EntryID)
-)
-GO
-
-CREATE TABLE EventScoringMethod (
-	EventID	int NOT NULL,
-	ScoringMethod	varchar(32) NOT NULL,
-	Course	varchar(16) NOT NULL,
-	UNIQUE(Course, EventID)
-)
-GO
-
-CREATE TABLE EventControl (
-	EventID	int NOT NULL,
-	PointValue	int NULL,
-	ControlNumber	int NOT NULL,
-	UNIQUE(EventID, ControlNumber)
-)
-GO
-
-CREATE TABLE PunchPlacement (
 	PunchID	int NOT NULL,
-	EventControlEventID	int NOT NULL,
-	EventControlControlNumber	int NOT NULL,
-	UNIQUE(PunchID, EventControlEventID, EventControlControlNumber)
+	Time	DateAndTime NOT NULL,
+	UNIQUE(PunchID, EntryID, Time)
 )
 GO
 

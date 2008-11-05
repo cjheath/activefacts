@@ -1,35 +1,51 @@
-CREATE TABLE Person (
-	PersonID	int NOT NULL,
-	Gender	Gender(1) NULL,
-	GivenName	varchar(128) NULL,
-	FamilyName	varchar(128) NULL,
-	Occupation	varchar(128) NULL,
-	Address	varchar(128) NULL,
-	PreferredPicture	Picture(20) NULL,
-	Email	varchar(64) NULL,
-	UNIQUE(PersonID)
-)
-GO
-
 CREATE TABLE Event (
-	EventTypeID	int NULL,
-	EventDateDay	int NULL,
-	EventDateMinYear	int NULL,
-	EventDateMaxYear	int NULL,
-	EventDateMonth	int NULL,
 	EventID	int NOT NULL,
-	EventLocation	varchar(128) NULL,
 	Certificate	varchar(64) NULL,
+	EventDateDay	int NULL,
+	EventDateMaxYear	int NULL,
+	EventDateMinYear	int NULL,
+	EventDateMonth	int NULL,
+	EventLocation	varchar(128) NULL,
+	EventTypeID	int NULL,
 	Official	varchar(64) NULL,
 	UNIQUE(EventID)
 )
 GO
 
-CREATE TABLE Source (
+CREATE TABLE EventType (
+	EventTypeID	int NOT NULL,
+	EventTypeName	varchar(16) NOT NULL,
+	UNIQUE(EventTypeID)
+)
+GO
+
+CREATE TABLE Friend (
+	OtherUserID	int NOT NULL,
 	UserID	int NOT NULL,
-	SourceName	varchar(128) NOT NULL,
+	IsConfirmed	bit NOT NULL,
+	UNIQUE(UserID, OtherUserID)
+)
+GO
+
+CREATE TABLE Participation (
+	EventID	int NOT NULL,
+	PersonID	int NOT NULL,
+	RoleID	int NOT NULL,
 	SourceID	int NOT NULL,
-	UNIQUE(SourceID)
+	UNIQUE(PersonID, RoleID, EventID, SourceID)
+)
+GO
+
+CREATE TABLE Person (
+	PersonID	int NOT NULL,
+	Address	varchar(128) NULL,
+	Email	varchar(64) NULL,
+	FamilyName	varchar(128) NULL,
+	Gender	FixedLengthText(1) NULL,
+	GivenName	varchar(128) NULL,
+	Occupation	varchar(128) NULL,
+	PreferredPicture	PictureRawData(20) NULL,
+	UNIQUE(PersonID)
 )
 GO
 
@@ -40,34 +56,18 @@ CREATE TABLE Role (
 )
 GO
 
-CREATE TABLE EventType (
-	EventTypeName	varchar(16) NOT NULL,
-	EventTypeID	int NOT NULL,
-	UNIQUE(EventTypeID)
+CREATE TABLE Source (
+	SourceID	int NOT NULL,
+	SourceName	varchar(128) NOT NULL,
+	UserID	int NOT NULL,
+	UNIQUE(SourceID)
 )
 GO
 
 CREATE TABLE User (
+	UserID	int NOT NULL,
 	Email	varchar(64) NULL,
-	UserID	int NOT NULL,
 	UNIQUE(UserID)
-)
-GO
-
-CREATE TABLE Participation (
-	PersonID	int NOT NULL,
-	EventID	int NOT NULL,
-	SourceID	int NOT NULL,
-	RoleID	int NOT NULL,
-	UNIQUE(PersonID, RoleID, EventID, SourceID)
-)
-GO
-
-CREATE TABLE Friend (
-	UserID	int NOT NULL,
-	OtherUserID	int NOT NULL,
-	IsConfirmed	bit NOT NULL,
-	UNIQUE(UserID, OtherUserID)
 )
 GO
 

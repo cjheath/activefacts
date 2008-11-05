@@ -1,8 +1,8 @@
 CREATE TABLE Person (
-	EmployeeIsManager	bit NULL,
-	ManagerIsCeo	bit NULL,
-	EmployeeManagerName	varchar NULL,
 	PersonName	varchar NOT NULL,
+	EmployeeIsManager	bit NULL,
+	EmployeeManagerName	varchar NULL,
+	ManagerIsCeo	bit NULL,
 	UNIQUE(PersonName)
 )
 GO

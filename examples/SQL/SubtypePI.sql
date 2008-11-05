@@ -1,7 +1,7 @@
 CREATE TABLE Entrant (
+	EntrantID	int NOT NULL,
 	CompetitorFamilyName	varchar NULL,
 	TeamID	int NULL,
-	EntrantID	int NOT NULL,
 	UNIQUE(EntrantID)
 )
 GO

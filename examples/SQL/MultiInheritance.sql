@@ -1,7 +1,7 @@
 CREATE TABLE Person (
+	PersonName	varchar NOT NULL,
 	AustralianEmployeeID	int NULL,
 	EmployeeID	int NULL,
-	PersonName	varchar NOT NULL,
 	UNIQUE(PersonName)
 )
 GO
