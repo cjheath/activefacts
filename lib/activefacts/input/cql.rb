@@ -146,6 +146,7 @@ module ActiveFacts
             p1rs = @constellation.RoleSequence(:new)
             @constellation.RoleRef(p1rs, 0).role = sub_role
             pc1 = @constellation.PresenceConstraint(:new)
+            pc1.name = "#{name}MustHaveSupertype#{supertype.name}"
             pc1.vocabulary = @vocabulary
             pc1.role_sequence = p1rs
             pc1.is_mandatory = true   # A subtype instance must have a supertype instance
@@ -157,6 +158,7 @@ module ActiveFacts
             p2rs = @constellation.RoleSequence(:new)
             @constellation.RoleRef(p2rs, 0).role = super_role
             pc2 = @constellation.PresenceConstraint(:new)
+            pc2.name = "#{supertype.name}MayBeA#{name}"
             pc2.vocabulary = @vocabulary
             pc2.role_sequence = p2rs
             pc2.is_mandatory = false
