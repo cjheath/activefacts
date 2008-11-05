@@ -12,7 +12,6 @@ require 'activefacts/vocabulary'
 require 'activefacts/persistence'
 require 'activefacts/support'
 require 'activefacts/input/orm'
-require 'activefacts/generate/cql'
 
 include ActiveFacts
 include ActiveFacts::Metamodel

@@ -13,9 +13,7 @@ module ActiveFacts
 
         def initialize(vocabulary, *options)
           @vocabulary = vocabulary
-          #@no_columns = options.include? "no_columns"
-          #@dependent = options.include? "dependent"
-          #@paths = options.include? "paths"
+          @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
           #@no_identifier = options.include? "no_identifier"
         end
 
@@ -76,7 +74,8 @@ module ActiveFacts
 
         def generate(out = $>)
           @out = out
-          go "CREATE SCHEMA #{@vocabulary.name}"
+          #go "CREATE SCHEMA #{@vocabulary.name}"
+
           @vocabulary.tables.each do |table|
             puts "CREATE TABLE #{escape table.name} ("
             puts((
@@ -84,6 +83,7 @@ module ActiveFacts
                   "\t#{column_name(role_ref)}\t#{sql_type(role_ref)}"
                 } +
                 [
+                  # Any nullable fields mean this can't be a primary key, just a unique constraint
                   if table.absorbed_reference_roles.all_role_ref.detect{ |role_ref| !role_ref.role.is_mandatory }
                     "\tUNIQUE("
                   else

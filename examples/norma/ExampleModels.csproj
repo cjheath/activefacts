@@ -33,6 +33,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbsorbViaObjFact._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsorbViaObjFact.orm</DependentUpon>
+    </Compile>
     <Compile Include="Address._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Address.orm</DependentUpon>
@@ -104,6 +108,10 @@
     <Compile Include="SchoolActivities._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>SchoolActivities.orm</DependentUpon>
+    </Compile>
+    <Compile Include="SimplestUnary._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimplestUnary.orm</DependentUpon>
     </Compile>
     <Compile Include="SubtypePI._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -184,6 +192,10 @@
   <ItemGroup Condition="Exists('Units.orm')">
   </ItemGroup>
   <ItemGroup>
+    <None Include="AbsorbViaObjFact.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>AbsorbViaObjFact._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="CompanyDirector.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirector._ORMCustomToolReport.cs</LastGenOutput>
@@ -223,6 +235,10 @@
     <None Include="OilSupplyWithCosts.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>OilSupplyWithCosts._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="SimplestUnary.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>SimplestUnary._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="SubTypeWithoutRoles.orm">
       <Generator>ORMCustomTool</Generator>
@@ -621,6 +637,40 @@
     <None Include="WindowInRoomInBldg.MySQL.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('AbsorbViaObjFact.orm')">
+    <None Include="AbsorbViaObjFact.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsorbViaObjFact.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="AbsorbViaObjFact.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsorbViaObjFact.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="AbsorbViaObjFact.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsorbViaObjFact.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('SimplestUnary.orm')">
+    <None Include="SimplestUnary.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimplestUnary.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="SimplestUnary.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimplestUnary.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="SimplestUnary.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimplestUnary.orm</DependentUpon>
       <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
   </ItemGroup>

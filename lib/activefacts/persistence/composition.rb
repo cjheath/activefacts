@@ -37,8 +37,8 @@ module ActiveFacts
               else role.fact_type.entity_type
               end
 
-            # When a ValueType is independent, it always absorbs another ValueType.
-            # If this is it, it's our chance to also define the value role for this ValueType.
+            # When a ValueType is independent, it always absorbs another ValueType or has a unary role.
+            # If this is an absorbed VT, it's our chance to also define the value role for this ValueType.
             if (inject_value_type_role && other_player.is_a?(ValueType))
               my_role = (role.fact_type.all_role-[role])[0]
               rr = my_role.preferred_reference.append_to(rs)
@@ -64,6 +64,17 @@ module ActiveFacts
               end
             end
           end
+
+          # If the ValueType is independent only because it has a unary role,
+          # there is no role to absorb, duuh.
+          # REVISIT: define the value role for this ValueType.
+          if (inject_value_type_role)
+#            my_role = (role.fact_type.all_role-[role])[0]
+#            rr = my_role.preferred_reference.append_to(rs)
+#            rr.trailing_adjective = "#{rr.trailing_adjective}Value"
+#            inject_value_type_role = false
+          end
+
         end
 
         # Now go through all absorbed roles and ensure they have distinct names
@@ -242,6 +253,20 @@ module ActiveFacts
         end
 
         @independent
+      end
+
+      def reference_roles
+        # We must be independent, so inject the self-role
+        rs = RoleSequence.new(:new)
+        role_ref = absorbed_roles.all_role_ref.detect{|rr|
+          rr.role.fact_type.all_role.size != 1 && rr.role.concept == self
+        }
+        # This fails if the only absorbed role is unary, or the ValueType is merely marked independent
+        raise "REVISIT: Can't find self-role for #{name}" unless role_ref
+        rr = role_ref.append_to(rs)
+        # REVISIT: This fails to append the Value adjective:
+        rr.trailing_adjective = "#{rr.trailing_adjective}Value"
+        rs
       end
     end
 

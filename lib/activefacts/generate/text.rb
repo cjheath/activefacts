@@ -9,6 +9,7 @@ module ActiveFacts
     class TEXT
       def initialize(vocabulary)
         @vocabulary = vocabulary
+        @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
       end
 
       def generate(out = $>)

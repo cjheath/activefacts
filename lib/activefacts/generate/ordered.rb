@@ -12,6 +12,7 @@ module ActiveFacts
 
     def initialize(vocabulary)
       @vocabulary = vocabulary
+      @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
     end
 
     def puts(*a)
@@ -23,7 +24,6 @@ module ActiveFacts
     end
 
     def generate(out = $>)
-      @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
       @out = out
       vocabulary_start(@vocabulary)
 
