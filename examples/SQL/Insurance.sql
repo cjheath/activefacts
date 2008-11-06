@@ -56,7 +56,9 @@ GO
 CREATE TABLE ContractorAppointment (
 	ClaimID	int NOT NULL,
 	ContractorID	int NOT NULL,
-	UNIQUE(ClaimID, ContractorID)
+	UNIQUE(ClaimID, ContractorID),
+	FOREIGN KEY(ClaimID)
+	REFERENCES Claim(ClaimID)
 )
 GO
 
@@ -67,7 +69,9 @@ CREATE TABLE Cover (
 	PolicyP_serial	int NOT NULL,
 	PolicyP_stateCode	UnsignedTinyInteger(32) NOT NULL,
 	PolicyP_yearNr	int NOT NULL,
-	UNIQUE(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, AssetID, CoverTypeCode)
+	UNIQUE(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, AssetID, CoverTypeCode),
+	FOREIGN KEY(AssetID)
+	REFERENCES Asset(AssetID)
 )
 GO
 
@@ -82,7 +86,9 @@ CREATE TABLE CoverWording (
 	CoverTypeCode	FixedLengthText NOT NULL,
 	PolicyWordingText	LargeLengthText NOT NULL,
 	StartDate	datetime NOT NULL,
-	UNIQUE(CoverTypeCode, PolicyWordingText, StartDate)
+	UNIQUE(CoverTypeCode, PolicyWordingText, StartDate),
+	FOREIGN KEY(CoverTypeCode)
+	REFERENCES CoverType(CoverTypeCode)
 )
 GO
 
@@ -200,7 +206,9 @@ CREATE TABLE UnderwritingDemerit (
 	DemeritKindName	varchar NOT NULL,
 	VehicleIncidentClaimID	int NOT NULL,
 	OccurrenceCount	int NULL,
-	UNIQUE(VehicleIncidentClaimID, DemeritKindName)
+	UNIQUE(VehicleIncidentClaimID, DemeritKindName),
+	FOREIGN KEY(DemeritKindName)
+	REFERENCES DemeritKind(DemeritKindName)
 )
 GO
 
@@ -214,5 +222,80 @@ CREATE TABLE Witness (
 	ContactPhoneNr	varchar NULL,
 	UNIQUE(IncidentClaimID, Name)
 )
+GO
+
+ALTER TABLE Claim
+	ADD FOREIGN KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial)
+	REFERENCES Policy(P_yearNr, P_productCode, P_stateCode, P_serial)
+GO
+
+ALTER TABLE ContractorAppointment
+	ADD FOREIGN KEY(ContractorID)
+	REFERENCES Contractor(CompanyID)
+GO
+
+ALTER TABLE Cover
+	ADD FOREIGN KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial)
+	REFERENCES Policy(P_yearNr, P_productCode, P_stateCode, P_serial)
+GO
+
+ALTER TABLE Cover
+	ADD FOREIGN KEY(CoverTypeCode)
+	REFERENCES CoverType(CoverTypeCode)
+GO
+
+ALTER TABLE DamagedProperty
+	ADD FOREIGN KEY(IncidentClaimID)
+	REFERENCES Incident(ClaimID)
+GO
+
+ALTER TABLE LostItem
+	ADD FOREIGN KEY(IncidentClaimID)
+	REFERENCES Incident(ClaimID)
+GO
+
+ALTER TABLE Policy
+	ADD FOREIGN KEY(ClientID)
+	REFERENCES Client(PartyID)
+GO
+
+ALTER TABLE Policy
+	ADD FOREIGN KEY(P_stateCode)
+	REFERENCES State(StateCode)
+GO
+
+ALTER TABLE Policy
+	ADD FOREIGN KEY(P_productCode)
+	REFERENCES Product(ProductCode)
+GO
+
+ALTER TABLE Policy
+	ADD FOREIGN KEY(AuthorisedRepID)
+	REFERENCES AuthorisedRep(PartyID)
+GO
+
+ALTER TABLE ThirdParty
+	ADD FOREIGN KEY(PersonID)
+	REFERENCES Person(PartyID)
+GO
+
+ALTER TABLE ThirdParty
+	ADD FOREIGN KEY(InsurerID)
+	REFERENCES Insurer(CompanyID)
+GO
+
+ALTER TABLE ThirdParty
+	ADD FOREIGN KEY(VehicleIncidentClaimID)
+	REFERENCES VehicleIncident(IncidentClaimID)
+GO
+
+ALTER TABLE UnderwritingDemerit
+	ADD FOREIGN KEY(VehicleIncidentClaimID)
+	REFERENCES VehicleIncident(IncidentClaimID)
+GO
+
+ALTER TABLE Witness
+	ADD FOREIGN KEY(IncidentClaimID)
+	REFERENCES Incident(ClaimID)
 GO
 

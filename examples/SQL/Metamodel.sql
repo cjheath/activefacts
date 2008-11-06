@@ -8,7 +8,7 @@ CREATE TABLE AllowedRange (
 )
 GO
 
-CREATE TABLE Constraint (
+CREATE TABLE [Constraint] (
 	ConstraintId	int NOT NULL,
 	Enforcement	varchar(16) NULL,
 	Name	varchar(64) NULL,
@@ -117,7 +117,9 @@ CREATE TABLE Reading (
 	Ordinal	UnsignedSmallInteger(32) NULL,
 	ReadingText	varchar(256) NOT NULL,
 	RoleSequenceId	int NOT NULL,
-	UNIQUE(FactTypeId, Ordinal)
+	UNIQUE(FactTypeId, Ordinal),
+	FOREIGN KEY(FactTypeId)
+	REFERENCES FactType(FactTypeId)
 )
 GO
 
@@ -128,7 +130,9 @@ CREATE TABLE Role (
 	Ordinal	UnsignedSmallInteger(32) NOT NULL,
 	RoleName	varchar(64) NULL,
 	RoleValueRestrictionId	int NULL,
-	UNIQUE(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+	UNIQUE(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName),
+	FOREIGN KEY(FactTypeId)
+	REFERENCES FactType(FactTypeId)
 )
 GO
 
@@ -141,7 +145,9 @@ CREATE TABLE RoleRef (
 	RoleFactTypeId	int NOT NULL,
 	RoleOrdinal	UnsignedSmallInteger(32) NOT NULL,
 	TrailingAdjective	varchar(64) NULL,
-	UNIQUE(RoleSequenceId, Ordinal)
+	UNIQUE(RoleSequenceId, Ordinal),
+	FOREIGN KEY(RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName)
+	REFERENCES Role(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
 )
 GO
 
@@ -160,14 +166,22 @@ CREATE TABLE RoleValue (
 	RoleConceptVocabularyName	varchar(64) NULL,
 	RoleFactTypeId	int NOT NULL,
 	RoleOrdinal	UnsignedSmallInteger(32) NOT NULL,
-	UNIQUE(InstanceId, FactId)
+	UNIQUE(InstanceId, FactId),
+	FOREIGN KEY(InstanceId)
+	REFERENCES Instance(InstanceId),
+	FOREIGN KEY(FactId)
+	REFERENCES Fact(FactId),
+	FOREIGN KEY(RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName)
+	REFERENCES Role(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
 )
 GO
 
 CREATE TABLE SetComparisonRoles (
 	RoleSequenceId	int NOT NULL,
 	SetComparisonConstraintId	int NOT NULL,
-	UNIQUE(SetComparisonConstraintId, RoleSequenceId)
+	UNIQUE(SetComparisonConstraintId, RoleSequenceId),
+	FOREIGN KEY(RoleSequenceId)
+	REFERENCES RoleSequence(RoleSequenceId)
 )
 GO
 
@@ -186,7 +200,11 @@ CREATE TABLE UnitBasis (
 	BaseUnitId	int NOT NULL,
 	DerivedUnitId	int NOT NULL,
 	Exponent	SignedSmallInteger(32) NULL,
-	UNIQUE(BaseUnitId, DerivedUnitId)
+	UNIQUE(BaseUnitId, DerivedUnitId),
+	FOREIGN KEY(DerivedUnitId)
+	REFERENCES Unit(UnitId),
+	FOREIGN KEY(BaseUnitId)
+	REFERENCES Unit(UnitId)
 )
 GO
 
@@ -194,5 +212,80 @@ CREATE TABLE ValueRestriction (
 	ValueRestrictionId	int NOT NULL,
 	UNIQUE(ValueRestrictionId)
 )
+GO
+
+ALTER TABLE AllowedRange
+	ADD FOREIGN KEY(ValueRestrictionId)
+	REFERENCES ValueRestriction(ValueRestrictionId)
+GO
+
+ALTER TABLE Correspondence
+	ADD FOREIGN KEY(ImportedFeatureName, ImportedFeatureVocabularyName)
+	REFERENCES Feature(Name, VocabularyName)
+GO
+
+ALTER TABLE Correspondence
+	ADD FOREIGN KEY(LocalFeatureName, LocalFeatureVocabularyName)
+	REFERENCES Feature(Name, VocabularyName)
+GO
+
+ALTER TABLE Fact
+	ADD FOREIGN KEY(FactTypeId)
+	REFERENCES FactType(FactTypeId)
+GO
+
+ALTER TABLE FactType
+	ADD FOREIGN KEY(EntityTypeName, EntityTypeVocabularyName)
+	REFERENCES EntityType(ConceptName, ConceptVocabularyName)
+GO
+
+ALTER TABLE Instance
+	ADD FOREIGN KEY(ConceptName, ConceptVocabularyName)
+	REFERENCES Concept(FeatureName, FeatureVocabularyName)
+GO
+
+ALTER TABLE JoinPath
+	ADD FOREIGN KEY(ConceptName, ConceptVocabularyName)
+	REFERENCES Concept(FeatureName, FeatureVocabularyName)
+GO
+
+ALTER TABLE JoinPath
+	ADD FOREIGN KEY(RoleRefRoleSequenceId, RoleRefOrdinal)
+	REFERENCES RoleRef(RoleSequenceId, Ordinal)
+GO
+
+ALTER TABLE JoinPath
+	ADD FOREIGN KEY(InputRoleFactTypeId, InputRoleOrdinal, InputRoleConceptName, InputRoleConceptVocabularyName)
+	REFERENCES Role(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+GO
+
+ALTER TABLE JoinPath
+	ADD FOREIGN KEY(OutputRoleFactTypeId, OutputRoleOrdinal, OutputRoleConceptName, OutputRoleConceptVocabularyName)
+	REFERENCES Role(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+GO
+
+ALTER TABLE Reading
+	ADD FOREIGN KEY(RoleSequenceId)
+	REFERENCES RoleSequence(RoleSequenceId)
+GO
+
+ALTER TABLE Role
+	ADD FOREIGN KEY(ConceptName, ConceptVocabularyName)
+	REFERENCES Concept(FeatureName, FeatureVocabularyName)
+GO
+
+ALTER TABLE Role
+	ADD FOREIGN KEY(RoleValueRestrictionId)
+	REFERENCES ValueRestriction(ValueRestrictionId)
+GO
+
+ALTER TABLE RoleRef
+	ADD FOREIGN KEY(RoleSequenceId)
+	REFERENCES RoleSequence(RoleSequenceId)
+GO
+
+ALTER TABLE SetComparisonRoles
+	ADD FOREIGN KEY(SetComparisonConstraintId)
+	REFERENCES SetComparisonConstraint(SetConstraintId)
 GO
 

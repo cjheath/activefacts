@@ -25,7 +25,9 @@ CREATE TABLE Event (
 	SeriesID	int NULL,
 	StartLocation	varchar(200) NOT NULL,
 	StartTime	DateAndTime NOT NULL,
-	UNIQUE(EventID)
+	UNIQUE(EventID),
+	FOREIGN KEY(ClubCode)
+	REFERENCES Club(ClubCode)
 )
 GO
 
@@ -33,7 +35,9 @@ CREATE TABLE EventControl (
 	ControlNumber	int NOT NULL,
 	EventID	int NOT NULL,
 	PointValue	int NULL,
-	UNIQUE(EventID, ControlNumber)
+	UNIQUE(EventID, ControlNumber),
+	FOREIGN KEY(EventID)
+	REFERENCES Event(EventID)
 )
 GO
 
@@ -41,7 +45,9 @@ CREATE TABLE EventScoringMethod (
 	Course	varchar(16) NOT NULL,
 	EventID	int NOT NULL,
 	ScoringMethod	varchar(32) NOT NULL,
-	UNIQUE(Course, EventID)
+	UNIQUE(Course, EventID),
+	FOREIGN KEY(EventID)
+	REFERENCES Event(EventID)
 )
 GO
 
@@ -50,7 +56,9 @@ CREATE TABLE Map (
 	Accessibility	FixedLengthText(1) NULL,
 	MapName	varchar(80) NOT NULL,
 	OwnerCode	varchar(6) NOT NULL,
-	UNIQUE(MapID)
+	UNIQUE(MapID),
+	FOREIGN KEY(OwnerCode)
+	REFERENCES Club(ClubCode)
 )
 GO
 
@@ -62,7 +70,9 @@ CREATE TABLE Person (
 	Gender	FixedLengthText(1) NULL,
 	GivenName	varchar(48) NOT NULL,
 	PostCode	int NULL,
-	UNIQUE(PersonID)
+	UNIQUE(PersonID),
+	FOREIGN KEY(ClubCode)
+	REFERENCES Club(ClubCode)
 )
 GO
 
@@ -76,7 +86,11 @@ CREATE TABLE PunchPlacement (
 	EventControlControlNumber	int NOT NULL,
 	EventControlEventID	int NOT NULL,
 	PunchID	int NOT NULL,
-	UNIQUE(PunchID, EventControlEventID, EventControlControlNumber)
+	UNIQUE(PunchID, EventControlEventID, EventControlControlNumber),
+	FOREIGN KEY(PunchID)
+	REFERENCES Punch(PunchID),
+	FOREIGN KEY(EventControlEventID, EventControlControlNumber)
+	REFERENCES EventControl(EventID, ControlNumber)
 )
 GO
 
@@ -91,7 +105,31 @@ CREATE TABLE Visit (
 	EntryID	int NULL,
 	PunchID	int NOT NULL,
 	Time	DateAndTime NOT NULL,
-	UNIQUE(PunchID, EntryID, Time)
+	UNIQUE(PunchID, EntryID, Time),
+	FOREIGN KEY(PunchID)
+	REFERENCES Punch(PunchID),
+	FOREIGN KEY(EntryID)
+	REFERENCES Entry(EntryID)
 )
+GO
+
+ALTER TABLE Entry
+	ADD FOREIGN KEY(EventID)
+	REFERENCES Event(EventID)
+GO
+
+ALTER TABLE Entry
+	ADD FOREIGN KEY(PersonID)
+	REFERENCES Person(PersonID)
+GO
+
+ALTER TABLE Event
+	ADD FOREIGN KEY(MapID)
+	REFERENCES Map(MapID)
+GO
+
+ALTER TABLE Event
+	ADD FOREIGN KEY(SeriesID)
+	REFERENCES Series(SeriesID)
 GO
 

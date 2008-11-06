@@ -32,7 +32,9 @@ CREATE TABLE Participation (
 	PersonID	int NOT NULL,
 	RoleID	int NOT NULL,
 	SourceID	int NOT NULL,
-	UNIQUE(PersonID, RoleID, EventID, SourceID)
+	UNIQUE(PersonID, RoleID, EventID, SourceID),
+	FOREIGN KEY(EventID)
+	REFERENCES Event(EventID)
 )
 GO
 
@@ -69,5 +71,40 @@ CREATE TABLE User (
 	Email	varchar(64) NULL,
 	UNIQUE(UserID)
 )
+GO
+
+ALTER TABLE Event
+	ADD FOREIGN KEY(EventTypeID)
+	REFERENCES EventType(EventTypeID)
+GO
+
+ALTER TABLE Friend
+	ADD FOREIGN KEY(UserID)
+	REFERENCES User(UserID)
+GO
+
+ALTER TABLE Friend
+	ADD FOREIGN KEY(OtherUserID)
+	REFERENCES User(UserID)
+GO
+
+ALTER TABLE Participation
+	ADD FOREIGN KEY(PersonID)
+	REFERENCES Person(PersonID)
+GO
+
+ALTER TABLE Participation
+	ADD FOREIGN KEY(SourceID)
+	REFERENCES Source(SourceID)
+GO
+
+ALTER TABLE Participation
+	ADD FOREIGN KEY(RoleID)
+	REFERENCES Role(RoleID)
+GO
+
+ALTER TABLE Source
+	ADD FOREIGN KEY(UserID)
+	REFERENCES User(UserID)
 GO
 

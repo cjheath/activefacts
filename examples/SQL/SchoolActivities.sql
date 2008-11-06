@@ -16,7 +16,9 @@ CREATE TABLE StudentParticipation (
 	ActivityName	varchar(32) NOT NULL,
 	StudentName	varchar NOT NULL,
 	SchoolName	varchar NOT NULL,
-	UNIQUE(StudentName, ActivityName)
+	UNIQUE(StudentName, ActivityName),
+	FOREIGN KEY(StudentName)
+	REFERENCES Student(StudentName)
 )
 GO
 

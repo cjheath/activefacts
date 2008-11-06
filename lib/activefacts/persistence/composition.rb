@@ -13,6 +13,11 @@
 module ActiveFacts
   module Metamodel
     class Concept
+      def absorbed_references
+        absorbed_roles  # Calculate the list if not done already
+        @absorbed_references
+      end
+
       # Return a RoleSequence containing a RoleRef (with JoinPath) for every column
       # The vocabulary must have first been composed by calling "tables".
       def absorbed_roles
@@ -21,6 +26,7 @@ module ActiveFacts
           raise "infinite absorption loop on #{name}" if @evaluating
           return @absorbed_roles
         end
+        @absorbed_references = []
         rs = RoleSequence.new(:new)
         @evaluating = true
 
@@ -56,7 +62,10 @@ module ActiveFacts
                 role.fact_type.describe(role)
               }" do
               if reference_only
+                f, t, @from_columns, @to_columns = @from_columns, @to_columns, nil, nil
+                @absorbed_references << [role, other_player, @from_columns = [], @to_columns = []] if other_player
                 absorb_reference(rs, role)
+                @from_columns, @to_columns = f, t
                 # Objectified Unaries may play additional roles that were't in can_absorb:
                 absorb_entity_roles(rs, role.fact_type.entity_type, role) if (!other_player && role.fact_type.entity_type)
               else
@@ -136,7 +145,9 @@ module ActiveFacts
         debug :absorption, "absorbed_reference_roles of #{name} are:" do
           reference_roles.all_role_ref.each do |rr|
             debug :absorption, "absorbed_reference_role of #{name} is #{rr.role.fact_type.describe(rr.role)}"
+            f, t = @from_columns, @to_columns
             absorb_reference(rs, rr.role)
+            @from_columns, @to_columns = f, t
           end
         end
         rs
@@ -161,6 +172,8 @@ module ActiveFacts
               # Figure out what concept is traversed by the new JoinPath:
               concept = (role.concept == self && role.fact_type.entity_type) || role.concept
               new_rr = extend_join_path(rs, rr, role, concept)
+              @to_columns << rr if @to_columns
+              @from_columns << new_rr if @to_columns
             end
           end
         end
@@ -179,7 +192,9 @@ module ActiveFacts
           player = role.fact_type.entity_type
           player = role.concept if !player || player == self 
           if player.independent
+            f, t = @from_columns, @to_columns
             absorb_reference(rs, role)
+            @from_columns, @to_columns = f, t
           else
             absorb_entity_roles(rs, player, role)
           end

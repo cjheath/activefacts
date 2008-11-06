@@ -20,7 +20,9 @@ CREATE TABLE Directorship (
 	DirectorFamilyName	varchar(48) NULL,
 	DirectorGivenName	varchar(48) NOT NULL,
 	AppointmentDate	datetime NOT NULL,
-	UNIQUE(DirectorGivenName, DirectorFamilyName, CompanyName)
+	UNIQUE(DirectorGivenName, DirectorFamilyName, CompanyName),
+	FOREIGN KEY(CompanyName)
+	REFERENCES Company(CompanyName)
 )
 GO
 
@@ -34,5 +36,15 @@ CREATE TABLE Person (
 	ManagerIsCeo	bit NULL,
 	UNIQUE(GivenName, FamilyName)
 )
+GO
+
+ALTER TABLE Attendance
+	ADD FOREIGN KEY(AttendeeGivenName, AttendeeFamilyName)
+	REFERENCES Person(GivenName, FamilyName)
+GO
+
+ALTER TABLE Directorship
+	ADD FOREIGN KEY(DirectorGivenName, DirectorFamilyName)
+	REFERENCES Person(GivenName, FamilyName)
 GO
 
