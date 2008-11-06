@@ -183,7 +183,7 @@ module ActiveFacts
           # such as occurs in the Metamodel with TypeInheritance.
 
           # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
-          @symbols.allowed_forward = identification ? identification[:roles].inject({}){|h, i| h[i[0]] = true; h} : {}
+          @symbols.allowed_forward = (ir = identification && identification[:roles]) ? ir.inject({}){|h, i| h[i[0]] = true; h} : {}
 
           clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
             fact_type = nil
@@ -263,7 +263,57 @@ module ActiveFacts
 
               elsif identification[:mode]
                 mode = identification[:mode]        # An identification mode
-                raise "Identification modes aren't yet implemented"
+
+                # Create an appropriate ValueType called "#{name}#{mode}", of the supertype "#{mode}"
+                base_vt = @constellation.ValueType(mode, @vocabulary)
+                vt = @constellation.ValueType("#{name}#{mode}", @vocabulary, :supertype => base_vt)
+
+                # Fact Type:
+                ft = @constellation.FactType(:new)
+                entity_role = @constellation.Role(ft, 0, entity_type)
+                value_role = @constellation.Role(ft, 1, vt)
+
+                # Forward reading:
+                rs01 = @constellation.RoleSequence(:new)
+                @constellation.RoleRef(rs01, 0, :role => entity_role)
+                @constellation.RoleRef(rs01, 1, :role => value_role)
+                @constellation.Reading(ft, 0, :role_sequence => rs01, :reading_text => "{0} has {1}")
+
+                # Reverse reading:
+                rs10 = @constellation.RoleSequence(:new)
+                @constellation.RoleRef(rs10, 0, :role => value_role)
+                @constellation.RoleRef(rs10, 1, :role => entity_role)
+                @constellation.Reading(ft, 1, :role_sequence => rs10, :reading_text => "{0} is of {1}")
+
+                # Entity Type must have a value type
+                rs0 = @constellation.RoleSequence(:new)
+                @constellation.RoleRef(rs0, 0, :role => entity_role)
+                @constellation.PresenceConstraint(
+                  :new,
+                  :name => '',
+                  :enforcement => '',
+                  :vocabulary => @vocabulary,
+                  :role_sequence => rs0,
+                  :min_frequency => 1,
+                  :max_frequency => 1,
+                  :is_preferred_identifier => false,
+                  :is_mandatory => true
+                )
+
+                # Value Type identifies the entity type
+                rs1 = @constellation.RoleSequence(:new)
+                @constellation.RoleRef(rs1, 0, :role => value_role)
+                @constellation.PresenceConstraint(
+                  :new,
+                  :name => '',
+                  :enforcement => '',
+                  :vocabulary => @vocabulary,
+                  :role_sequence => rs1,
+                  :min_frequency => 0,
+                  :max_frequency => 1,
+                  :is_preferred_identifier => true,
+                  :is_mandatory => false
+                )
               end
             end
           else

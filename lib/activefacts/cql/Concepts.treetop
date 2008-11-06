@@ -45,9 +45,11 @@ module ActiveFacts
       end
 
       rule identification
-        identified_by role_list   { def value; {:roles => role_list.roles }; end }
-#        /
-#        reference_mode  { def value; {:mode => mode_name.text_value}; end }
+        identified_by its s id	  # Reference Mode
+	  { def value; {:mode => id.text_value }; end }
+	/
+        identified_by role_list
+	  { def value; {:roles => role_list.roles }; end }
       end
 
       # Identified by roles...
