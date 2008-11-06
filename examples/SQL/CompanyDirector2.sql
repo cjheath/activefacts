@@ -33,13 +33,13 @@ CREATE TABLE Person (
 GO
 
 ALTER TABLE Attendance
-	ADD FOREIGN KEY(AttendeeFamilyName, AttendeeGivenName)
-	REFERENCES Person(FamilyName, GivenName)
+	ADD FOREIGN KEY(MeetingDate, MeetingCompanyName)
+	REFERENCES Meeting(Date, CompanyName)
 GO
 
 ALTER TABLE Attendance
-	ADD FOREIGN KEY(MeetingDate, MeetingCompanyName)
-	REFERENCES Meeting(Date, CompanyName)
+	ADD FOREIGN KEY(AttendeeFamilyName, AttendeeGivenName)
+	REFERENCES Person(FamilyName, GivenName)
 GO
 
 ALTER TABLE Directorship

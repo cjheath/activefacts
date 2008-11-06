@@ -41,9 +41,8 @@ describe "CQL Loader with SQL output" do
   Dir["examples/CQL/*.cql"].each do |cql_file|
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql}, 'spec/actual/\1.sql')
     expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/SQL/\1.sql')
-    next unless File.exists? expected_file
 
-    it "should load CQL and dump valid SQL for #{cql_file}" do
+    it "should load #{cql_file} and dump SQL matching #{expected_file}" do
       pending if CQL_SQL_FAILURES.include? File.basename(cql_file, ".cql")
       vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
 
@@ -51,6 +50,7 @@ describe "CQL Loader with SQL output" do
       sql_text = sql(vocabulary)
       File.open(actual_file, "w") { |f| f.write sql_text }
 
+      pending unless File.exists? expected_file
       sql_text.should == File.open(expected_file) {|f| f.read }
       File.delete(actual_file)  # It succeeded, we don't need the file.
     end

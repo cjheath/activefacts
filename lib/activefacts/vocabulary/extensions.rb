@@ -48,7 +48,6 @@ module ActiveFacts
 
     class JoinPath
       def column_name(joiner = '-')
-        debugger unless concept
         concept == input_role.concept ? input_role.preferred_reference.role_name(joiner) : Array(concept.name)
       end
 

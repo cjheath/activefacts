@@ -51,10 +51,10 @@ CREATE TABLE PurchaseOrderItem (
 	PurchaseOrderID	int NOT NULL,
 	Quantity	int NOT NULL,
 	UNIQUE(PurchaseOrderID, ProductID),
-	FOREIGN KEY(PurchaseOrderID)
-	REFERENCES PurchaseOrder(PurchaseOrderID),
 	FOREIGN KEY(ProductID)
-	REFERENCES Product(ProductID)
+	REFERENCES Product(ProductID),
+	FOREIGN KEY(PurchaseOrderID)
+	REFERENCES PurchaseOrder(PurchaseOrderID)
 )
 GO
 
@@ -67,10 +67,10 @@ CREATE TABLE ReceivedItem (
 	ReceiptID	int NULL,
 	TransferRequestID	int NULL,
 	UNIQUE(ReceivedItemID),
-	FOREIGN KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID)
-	REFERENCES PurchaseOrderItem(PurchaseOrderID, ProductID),
 	FOREIGN KEY(ProductID)
-	REFERENCES Product(ProductID)
+	REFERENCES Product(ProductID),
+	FOREIGN KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID)
+	REFERENCES PurchaseOrderItem(PurchaseOrderID, ProductID)
 )
 GO
 
@@ -99,10 +99,10 @@ CREATE TABLE StockedProduct (
 	ProductID	int NOT NULL,
 	Quantity	int NOT NULL,
 	UNIQUE(BinID, ProductID),
-	FOREIGN KEY(ProductID)
-	REFERENCES Product(ProductID),
 	FOREIGN KEY(BinID)
-	REFERENCES Bin(BinID)
+	REFERENCES Bin(BinID),
+	FOREIGN KEY(ProductID)
+	REFERENCES Product(ProductID)
 )
 GO
 

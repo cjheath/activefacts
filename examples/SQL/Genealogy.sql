@@ -66,7 +66,7 @@ CREATE TABLE Source (
 )
 GO
 
-CREATE TABLE User (
+CREATE TABLE [User] (
 	UserID	int NOT NULL,
 	Email	varchar(64) NULL,
 	UNIQUE(UserID)
@@ -79,13 +79,13 @@ ALTER TABLE Event
 GO
 
 ALTER TABLE Friend
-	ADD FOREIGN KEY(UserID)
-	REFERENCES User(UserID)
+	ADD FOREIGN KEY(OtherUserID)
+	REFERENCES [User](UserID)
 GO
 
 ALTER TABLE Friend
-	ADD FOREIGN KEY(OtherUserID)
-	REFERENCES User(UserID)
+	ADD FOREIGN KEY(UserID)
+	REFERENCES [User](UserID)
 GO
 
 ALTER TABLE Participation
@@ -94,17 +94,17 @@ ALTER TABLE Participation
 GO
 
 ALTER TABLE Participation
-	ADD FOREIGN KEY(SourceID)
-	REFERENCES Source(SourceID)
-GO
-
-ALTER TABLE Participation
 	ADD FOREIGN KEY(RoleID)
 	REFERENCES Role(RoleID)
 GO
 
+ALTER TABLE Participation
+	ADD FOREIGN KEY(SourceID)
+	REFERENCES Source(SourceID)
+GO
+
 ALTER TABLE Source
 	ADD FOREIGN KEY(UserID)
-	REFERENCES User(UserID)
+	REFERENCES [User](UserID)
 GO
 

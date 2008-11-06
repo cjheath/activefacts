@@ -235,13 +235,13 @@ ALTER TABLE ContractorAppointment
 GO
 
 ALTER TABLE Cover
-	ADD FOREIGN KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial)
-	REFERENCES Policy(P_yearNr, P_productCode, P_stateCode, P_serial)
+	ADD FOREIGN KEY(CoverTypeCode)
+	REFERENCES CoverType(CoverTypeCode)
 GO
 
 ALTER TABLE Cover
-	ADD FOREIGN KEY(CoverTypeCode)
-	REFERENCES CoverType(CoverTypeCode)
+	ADD FOREIGN KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial)
+	REFERENCES Policy(P_yearNr, P_productCode, P_stateCode, P_serial)
 GO
 
 ALTER TABLE DamagedProperty
@@ -255,13 +255,13 @@ ALTER TABLE LostItem
 GO
 
 ALTER TABLE Policy
-	ADD FOREIGN KEY(ClientID)
-	REFERENCES Client(PartyID)
+	ADD FOREIGN KEY(AuthorisedRepID)
+	REFERENCES AuthorisedRep(PartyID)
 GO
 
 ALTER TABLE Policy
-	ADD FOREIGN KEY(P_stateCode)
-	REFERENCES State(StateCode)
+	ADD FOREIGN KEY(ClientID)
+	REFERENCES Client(PartyID)
 GO
 
 ALTER TABLE Policy
@@ -270,18 +270,18 @@ ALTER TABLE Policy
 GO
 
 ALTER TABLE Policy
-	ADD FOREIGN KEY(AuthorisedRepID)
-	REFERENCES AuthorisedRep(PartyID)
-GO
-
-ALTER TABLE ThirdParty
-	ADD FOREIGN KEY(PersonID)
-	REFERENCES Person(PartyID)
+	ADD FOREIGN KEY(P_stateCode)
+	REFERENCES State(StateCode)
 GO
 
 ALTER TABLE ThirdParty
 	ADD FOREIGN KEY(InsurerID)
 	REFERENCES Insurer(CompanyID)
+GO
+
+ALTER TABLE ThirdParty
+	ADD FOREIGN KEY(PersonID)
+	REFERENCES Person(PartyID)
 GO
 
 ALTER TABLE ThirdParty

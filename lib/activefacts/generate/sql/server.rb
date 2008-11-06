@@ -137,7 +137,9 @@ module ActiveFacts
                   end*", " + ")"
 
             inline_fks = []
-            table.absorbed_references.each do |role, other_table, from_columns, to_columns|
+            table.absorbed_references.sort_by { |role, other_table, from_columns, to_columns|
+              [ other_table.name, from_columns.map{|c| column_name(c)} ]
+            }.each do |role, other_table, from_columns, to_columns|
               fk =
                 if tables_emitted[other_table] && !@delay_fks
                   inline_fks << "\t"

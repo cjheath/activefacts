@@ -167,10 +167,10 @@ CREATE TABLE RoleValue (
 	RoleFactTypeId	int NOT NULL,
 	RoleOrdinal	UnsignedSmallInteger(32) NOT NULL,
 	UNIQUE(InstanceId, FactId),
-	FOREIGN KEY(InstanceId)
-	REFERENCES Instance(InstanceId),
 	FOREIGN KEY(FactId)
 	REFERENCES Fact(FactId),
+	FOREIGN KEY(InstanceId)
+	REFERENCES Instance(InstanceId),
 	FOREIGN KEY(RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName)
 	REFERENCES Role(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
 )
@@ -201,9 +201,9 @@ CREATE TABLE UnitBasis (
 	DerivedUnitId	int NOT NULL,
 	Exponent	SignedSmallInteger(32) NULL,
 	UNIQUE(BaseUnitId, DerivedUnitId),
-	FOREIGN KEY(DerivedUnitId)
-	REFERENCES Unit(UnitId),
 	FOREIGN KEY(BaseUnitId)
+	REFERENCES Unit(UnitId),
+	FOREIGN KEY(DerivedUnitId)
 	REFERENCES Unit(UnitId)
 )
 GO
@@ -250,11 +250,6 @@ ALTER TABLE JoinPath
 GO
 
 ALTER TABLE JoinPath
-	ADD FOREIGN KEY(RoleRefRoleSequenceId, RoleRefOrdinal)
-	REFERENCES RoleRef(RoleSequenceId, Ordinal)
-GO
-
-ALTER TABLE JoinPath
 	ADD FOREIGN KEY(InputRoleFactTypeId, InputRoleOrdinal, InputRoleConceptName, InputRoleConceptVocabularyName)
 	REFERENCES Role(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
 GO
@@ -262,6 +257,11 @@ GO
 ALTER TABLE JoinPath
 	ADD FOREIGN KEY(OutputRoleFactTypeId, OutputRoleOrdinal, OutputRoleConceptName, OutputRoleConceptVocabularyName)
 	REFERENCES Role(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+GO
+
+ALTER TABLE JoinPath
+	ADD FOREIGN KEY(RoleRefRoleSequenceId, RoleRefOrdinal)
+	REFERENCES RoleRef(RoleSequenceId, Ordinal)
 GO
 
 ALTER TABLE Reading

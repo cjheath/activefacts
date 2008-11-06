@@ -87,10 +87,10 @@ CREATE TABLE PunchPlacement (
 	EventControlEventID	int NOT NULL,
 	PunchID	int NOT NULL,
 	UNIQUE(PunchID, EventControlEventID, EventControlControlNumber),
-	FOREIGN KEY(PunchID)
-	REFERENCES Punch(PunchID),
 	FOREIGN KEY(EventControlEventID, EventControlControlNumber)
-	REFERENCES EventControl(EventID, ControlNumber)
+	REFERENCES EventControl(EventID, ControlNumber),
+	FOREIGN KEY(PunchID)
+	REFERENCES Punch(PunchID)
 )
 GO
 
@@ -106,10 +106,10 @@ CREATE TABLE Visit (
 	PunchID	int NOT NULL,
 	Time	DateAndTime NOT NULL,
 	UNIQUE(PunchID, EntryID, Time),
-	FOREIGN KEY(PunchID)
-	REFERENCES Punch(PunchID),
 	FOREIGN KEY(EntryID)
-	REFERENCES Entry(EntryID)
+	REFERENCES Entry(EntryID),
+	FOREIGN KEY(PunchID)
+	REFERENCES Punch(PunchID)
 )
 GO
 
