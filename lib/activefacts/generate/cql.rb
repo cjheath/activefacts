@@ -298,7 +298,7 @@ module ActiveFacts
               # REVISIT: future: Use "THAT" and "SOME" only when:
               # - the role player occurs twice in the reading, or
               # - is a subclass of the constrained concept, or
-              reading = fact_type.all_reading[0]
+              reading = fact_type.preferred_reading
               expand_constrained(reading, constrained_roles, players, players_differ)
             end * " and "
 
@@ -325,43 +325,48 @@ module ActiveFacts
           }
         frequency_constraints = [] unless frequency_constraints.detect{|fc| fc[0] != "some" }
 
-        #$stderr.puts "fact_type roles (#{fact_type.all_role.map{|r| r.concept.name}*","}) default_reading '#{fact_type.all_reading[0].reading_text}' roles (#{fact_type.all_reading[0].role_sequence.all_role_ref.map{|rr| rr.role.concept.name}*","}) #{frequency_constraints.inspect}"
+        #$stderr.puts "fact_type roles (#{fact_type.all_role.map{|r| r.concept.name}*","}) default_reading '#{fact_type.preferred_reading.reading_text}' roles (#{fact_type.preferred_reading.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}*","}) #{frequency_constraints.inspect}"
 
         # REVISIT: Make sure that we refer to the constrained players by their common supertype
 
         reading.expand(frequency_constraints, nil)
       end
 
-
       def dump_subset_constraint(c)
         # If the role players are identical and not duplicated, we can simply say "reading1 only if reading2"
-        subset_players = c.subset_role_sequence.all_role_ref.map{|rr| rr.role.concept}
-        superset_players = c.superset_role_sequence.all_role_ref.map{|rr| rr.role.concept}
-        if subset_players == superset_players && subset_players.uniq == subset_players
-          # REVISIT: Need to use SOME/THAT to identify the constrained roles.
+        subset_roles = c.subset_role_sequence.all_role_ref.map{|rr| rr.role}
+        superset_roles = c.superset_role_sequence.all_role_ref.map{|rr| rr.role}
+
+        subset_players = subset_roles.map(&:concept)
+        superset_players = superset_roles.map(&:concept)
+
+        subset_fact_types = c.subset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }.uniq
+        superset_fact_types = c.superset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }.uniq
+
+        # We need to ensure that if the player of any constrained role also exists
+        # as the player of a role that's not a constrained role, there are different
+        # adjectives or other qualifiers qualifier applied to distinguish that role.
+        fact_type_roles = (subset_fact_types+superset_fact_types).map{|ft| ft.all_role }.flatten
+        non_constrained_roles = fact_type_roles - subset_roles - superset_roles
+        if (r = non_constrained_roles.detect{|r| (subset_roles+superset_roles).include?(r) })
+          # REVISIT: Find a way to deal with this problem, should it arise.
+
+          # It would help, but not entirely fix it, to use SOME/THAT to identify the constrained roles.
           # See ServiceDirector's DataStore<->Client fact types for example
           # Use SOME on the subset, THAT on the superset.
-          puts \
-            "#{c.subset_role_sequence.all_role_ref[0].role.fact_type.default_reading([], nil)}" +
-            "\n\tonly if " +
-            "#{c.superset_role_sequence.all_role_ref[0].role.fact_type.default_reading([], nil)}" +
-            ";"
-        else
-          puts "// REVISIT: " +
-          "#{c.subset_role_sequence.describe
-            }" +
-            (c.subset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq.size == 1 ?
-              " in '#{c.subset_role_sequence.all_role_ref[0].role.fact_type.default_reading([], nil)}'" : "")+
-            " only if #{
-              c.superset_role_sequence.describe
-            }" +
-            (c.superset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq.size == 1 ?
-              " in '#{c.superset_role_sequence.all_role_ref[0].role.fact_type.default_reading([], nil)}'" : "")
+          raise "Critical ambiguity, #{r.concept.name} occurs both constrained and unconstrained in #{c.name}"
         end
+
+        puts \
+          "#{subset_fact_types.map{|ft| ft.default_reading([], nil)}*" and "}" +
+          "\n\tonly if " +
+          "#{superset_fact_types.map{|ft| ft.default_reading([], nil)}*" and "}" +
+          ";"
       end
 
       def dump_ring_constraint(c)
-        puts "// REVISIT: #{c.ring_type} ring over #{c.role.fact_type.default_reading([], nil)}"
+        # At present, no ring constraint can be missed to be handled in this pass
+        puts "// #{c.ring_type} ring over #{c.role.fact_type.default_reading([], nil)}"
       end
 
       def constraint_dump(c)
