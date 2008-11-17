@@ -31,19 +31,19 @@ module ActiveFacts
 
       def read
         begin
-          doc = REXML::Document.new(@file)
+          @document = REXML::Document.new(@file)
         rescue => e
           puts "Failed to parse XML in #{@filename}: #{e.inspect}"
         end
 
         # Find the Vocabulary and do some setup:
-        root = doc.elements[1]
+        root = @document.elements[1]
         if root.expanded_name == "ormRoot:ORM2"
           x_models = root.elements.to_a("orm:ORMModel")
           throw "No vocabulary found" unless x_models.size == 1
           @x_model = x_models[0]
         elsif root.name == "ORMModel"
-          @x_model = doc.elements[1]
+          @x_model = @document.elements[1]
         else
           pp root
           throw "NORMA vocabulary not found in file"
@@ -188,6 +188,8 @@ module ActiveFacts
         # Handle the subtype fact types:
         facts = []
         @x_subtypes = @x_model.elements.to_a("orm:Facts/orm:SubtypeFact")
+        @x_mappings = @document.elements.to_a("ormRoot:ORM2/oialtocdb:MappingCustomization/oialtocdb:AssimilationMappings/oialtocdb:AssimilationMapping/oialtocdb:FactType")
+
         @x_subtypes.each{|x|
           id = x.attributes['id']
           name = x.attributes['Name'] || x.attributes['_Name'] || ''
@@ -195,10 +197,15 @@ module ActiveFacts
           name = nil if name.size == 0
           # puts "FactType #{name || id}"
 
+          mapping = @x_mappings.detect{ |m| m.attributes['ref'] == id }
+          mapping_choice = mapping ? mapping.parent.attributes['AbsorptionChoice'] : 'Absorbed'
+
           x_subtype_role = x.elements['orm:FactRoles/orm:SubtypeMetaRole']
           subtype_role_id = x_subtype_role.attributes['id']
           subtype_id = x_subtype_role.elements['orm:RolePlayer'].attributes['ref']
           subtype = @by_id[subtype_id]
+          subtype.is_independent = true if mapping_choice == 'Separate'
+          # REVISIT: Provide a way in the metamodel of handling Partition, (and mapping choices that vary for each supertype?)
 
           x_supertype_role = x.elements['orm:FactRoles/orm:SupertypeMetaRole']
           supertype_role_id = x_supertype_role.attributes['id']
