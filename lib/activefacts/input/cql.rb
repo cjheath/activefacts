@@ -185,6 +185,20 @@ module ActiveFacts
           # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
           @symbols.allowed_forward = (ir = identification && identification[:roles]) ? ir.inject({}){|h, i| h[i[0]] = true; h} : {}
 
+          # If we're using a common identification mode, find or create the necessary ValueTypes first:
+          vt_name = vt = nil
+          if identification && identification[:mode]
+            mode = identification[:mode]        # An identification mode
+
+            # Find or Create an appropriate ValueType called "#{name}#{mode}", of the supertype "#{mode}"
+            vt_name = "#{name}#{mode}"
+            unless vt = @constellation.ValueType[[vt_name, @vocabulary]]
+              base_vt = @constellation.ValueType(mode, @vocabulary)
+              vt = @constellation.ValueType(vt_name, @vocabulary, :supertype => base_vt)
+            end
+          end
+
+          identifying_fact_types = {}
           clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
             fact_type = nil
             @symbols.embedded_presence_constraints = [] # Clear embedded_presence_constraints for each fact type
@@ -193,6 +207,7 @@ module ActiveFacts
                 type, qualifiers, reading = *clause
                 debug :reading, "Clause: #{clause.inspect}" do
                   f = bind_fact_reading(fact_type, qualifiers, reading)
+                  identifying_fact_types[f] = true
                   fact_type ||= f
                 end
               end
@@ -219,6 +234,7 @@ module ActiveFacts
 
           # Finally, create the identifying uniqueness constraint, or mark it as preferred
           # if it's already been created. The identifying roles have been defined already.
+
           if identification
             debug :identification, "Handling identification" do
               if id_role_names = identification[:roles]  # A list of identifying roles
@@ -264,56 +280,108 @@ module ActiveFacts
               elsif identification[:mode]
                 mode = identification[:mode]        # An identification mode
 
-                # Create an appropriate ValueType called "#{name}#{mode}", of the supertype "#{mode}"
-                base_vt = @constellation.ValueType(mode, @vocabulary)
-                vt = @constellation.ValueType("#{name}#{mode}", @vocabulary, :supertype => base_vt)
+                raise "Entity definition using reference mode may only have one identifying fact type" if identifying_fact_types.size > 1
+                mode_fact_type = identifying_fact_types.keys[0]
+
+                debug :mode, "Processing Reference Mode for #{name}#{mode_fact_type ? " with existing '#{mode_fact_type.default_reading}'" : ""}"
+
+                # WARNING: Several things here depend on the method and order of creation of roles and role sequences above
+                # But heck, that's what tests are for, right?
 
                 # Fact Type:
-                ft = @constellation.FactType(:new)
-                entity_role = @constellation.Role(ft, 0, entity_type)
-                value_role = @constellation.Role(ft, 1, vt)
+                if (ft = mode_fact_type)
+                  entity_role = ft.all_role[n = (ft.all_role[0].concept == entity_type ? 0 : 1)]
+                  value_role = ft.all_role[1-n]
+                else
+                  ft = @constellation.FactType(:new)
+                  entity_role = @constellation.Role(ft, 0, entity_type)
+                  value_role = @constellation.Role(ft, 1, vt)
+                  debug :mode, "Creating new fact type to identify #{name}"
+                end
 
-                # Forward reading:
-                rs01 = @constellation.RoleSequence(:new)
-                @constellation.RoleRef(rs01, 0, :role => entity_role)
-                @constellation.RoleRef(rs01, 1, :role => value_role)
-                @constellation.Reading(ft, 0, :role_sequence => rs01, :reading_text => "{0} has {1}")
+                # Forward reading, if it doesn't already exist:
+                rss = entity_role.all_role_ref.map{|rr| rr.role_sequence.all_role_ref.size == 2 ? rr.role_sequence : nil }.compact
+                rs01 = rss.select{|rs| rs.all_role_ref[1].role == value_role }[0]
+                rs10 = rss.select{|rs| rs.all_role_ref[1].role == entity_role }[0]
+                if !rs01
+                  rs01 = @constellation.RoleSequence(:new)
+                  @constellation.RoleRef(rs01, 0, :role => entity_role)
+                  @constellation.RoleRef(rs01, 1, :role => value_role)
+                  @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs01, :reading_text => "{0} has {1}")
+                  debug :mode, "Creating new forward reading '#{name} has #{vt.name}'"
+                else
+                  debug :mode, "Using existing forward reading #{rs01.all_reading[0].expand}"
+                end
 
                 # Reverse reading:
-                rs10 = @constellation.RoleSequence(:new)
-                @constellation.RoleRef(rs10, 0, :role => value_role)
-                @constellation.RoleRef(rs10, 1, :role => entity_role)
-                @constellation.Reading(ft, 1, :role_sequence => rs10, :reading_text => "{0} is of {1}")
+                if !rs10
+                  rs10 = @constellation.RoleSequence(:new)
+                  @constellation.RoleRef(rs10, 0, :role => value_role)
+                  @constellation.RoleRef(rs10, 1, :role => entity_role)
+                  @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs10, :reading_text => "{0} is of {1}")
+                  debug :mode, "Creating new reverse reading '#{vt.name} is of #{name}'"
+                else
+                  debug :mode, "Using existing reverse reading"
+                end
 
-                # Entity Type must have a value type
-                rs0 = @constellation.RoleSequence(:new)
-                @constellation.RoleRef(rs0, 0, :role => entity_role)
-                @constellation.PresenceConstraint(
-                  :new,
-                  :name => '',
-                  :enforcement => '',
-                  :vocabulary => @vocabulary,
-                  :role_sequence => rs0,
-                  :min_frequency => 1,
-                  :max_frequency => 1,
-                  :is_preferred_identifier => false,
-                  :is_mandatory => true
-                )
+                # Entity Type must have a value type. Find or create the role sequence, then create a PC if necessary
+                debug :mode, "entity_role has #{entity_role.all_role_ref.size} attached sequences"
+                debug :mode, "entity_role has #{entity_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}.size} unary sequences"
+                rs0 = entity_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1 ? rr.role_sequence : nil }.compact[0]
+                if !rs0
+                  rs0 = @constellation.RoleSequence(:new)
+                  @constellation.RoleRef(rs0, 0, :role => entity_role)
+                  debug :mode, "Creating new EntityType role sequence"
+                else
+                  rs0 = rs0.role_sequence
+                  debug :mode, "Using existing EntityType role sequence"
+                end
+                if (rs0.all_presence_constraint.size == 0)
+                  @constellation.PresenceConstraint(
+                    :new,
+                    :name => '',
+                    :enforcement => '',
+                    :vocabulary => @vocabulary,
+                    :role_sequence => rs0,
+                    :min_frequency => 1,
+                    :max_frequency => 1,
+                    :is_preferred_identifier => false,
+                    :is_mandatory => true
+                  )
+                  debug :mode, "Creating new EntityType PresenceConstraint"
+                else
+                  debug :mode, "Using existing EntityType PresenceConstraint"
+                end
 
-                # Value Type identifies the entity type
-                rs1 = @constellation.RoleSequence(:new)
-                @constellation.RoleRef(rs1, 0, :role => value_role)
-                @constellation.PresenceConstraint(
-                  :new,
-                  :name => '',
-                  :enforcement => '',
-                  :vocabulary => @vocabulary,
-                  :role_sequence => rs1,
-                  :min_frequency => 0,
-                  :max_frequency => 1,
-                  :is_preferred_identifier => true,
-                  :is_mandatory => false
-                )
+                # Value Type must have a value type. Find or create the role sequence, then create a PC if necessary
+                debug :mode, "value_role has #{value_role.all_role_ref.size} attached sequences"
+                debug :mode, "value_role has #{value_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}.size} unary sequences"
+                rs1 = value_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1 ? rr.role_sequence : nil }.compact[0]
+                if (!rs1)
+                  rs1 = @constellation.RoleSequence(:new)
+                  @constellation.RoleRef(rs1, 0, :role => value_role)
+                  debug :mode, "Creating new ValueType role sequence"
+                else
+                  rs1 = rs1.role_sequence
+                  debug :mode, "Using existing ValueType role sequence"
+                end
+                if (rs1.all_presence_constraint.size == 0)
+                  @constellation.PresenceConstraint(
+                    :new,
+                    :name => '',
+                    :enforcement => '',
+                    :vocabulary => @vocabulary,
+                    :role_sequence => rs1,
+                    :min_frequency => 0,
+                    :max_frequency => 1,
+                    :is_preferred_identifier => true,
+                    :is_mandatory => false
+                  )
+                  debug :mode, "Creating new ValueType PresenceConstraint"
+                else
+                  debug :mode, "Marking existing ValueType PresenceConstraint as preferred"
+                  rs1.all_presence_constraint[0].is_preferred_identifier = true
+                end
               end
             end
           else
