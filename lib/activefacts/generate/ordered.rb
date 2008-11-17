@@ -10,9 +10,13 @@ module ActiveFacts
   class OrderedDumper
     include Metamodel
 
-    def initialize(vocabulary)
+    def initialize(vocabulary, *options)
       @vocabulary = vocabulary
       @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
+      options.each{|option| set_option(option) }
+    end
+
+    def set_option(option)
     end
 
     def puts(*a)
