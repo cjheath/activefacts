@@ -34,21 +34,7 @@ CREATE TABLE Claim (
 	PolicyP_serial	int NOT NULL,
 	PolicyP_stateCode	UnsignedTinyInteger(32) NOT NULL,
 	PolicyP_yearNr	int NOT NULL,
-	VehicleIncidentDescription	varchar(1024) NULL,
-	VehicleIncidentDrivingBloodTestResult	varchar NULL,
-	VehicleIncidentDrivingBreathTestResult	varchar NULL,
-	VehicleIncidentDrivingCharge	varchar NULL,
-	VehicleIncidentDrivingDriverID	int NULL,
-	VehicleIncidentDrivingHospitalName	varchar(256) NULL,
-	VehicleIncidentDrivingIntoxication	varchar NULL,
-	VehicleIncidentDrivingIsWarning	bit NULL,
-	VehicleIncidentDrivingNonconsentReason	varchar NULL,
-	VehicleIncidentDrivingUnlicensedReason	varchar NULL,
-	VehicleIncidentLossTypeCode	FixedLengthText NULL,
-	VehicleIncidentPrevious_damageDescription	varchar(1024) NULL,
-	VehicleIncidentReason	varchar NULL,
-	VehicleIncidentTowedLocation	varchar NULL,
-	VehicleIncidentWeatherDescription	varchar(1024) NULL,
+	VehicleIncidentClaimID	int NULL,
 	UNIQUE(ClaimID)
 )
 GO
@@ -209,6 +195,28 @@ CREATE TABLE UnderwritingDemerit (
 	UNIQUE(VehicleIncidentClaimID, DemeritKindName),
 	FOREIGN KEY(DemeritKindName)
 	REFERENCES DemeritKind(DemeritKindName)
+)
+GO
+
+CREATE TABLE VehicleIncident (
+	Description	varchar(1024) NULL,
+	DrivingBloodTestResult	varchar NULL,
+	DrivingBreathTestResult	varchar NULL,
+	DrivingCharge	varchar NOT NULL,
+	DrivingDriverID	int NOT NULL,
+	DrivingHospitalName	varchar(256) NULL,
+	DrivingIntoxication	varchar NULL,
+	DrivingIsWarning	bit NOT NULL,
+	DrivingNonconsentReason	varchar NULL,
+	DrivingUnlicensedReason	varchar NULL,
+	LossTypeCode	FixedLengthText NULL,
+	Previous_damageDescription	varchar(1024) NULL,
+	Reason	varchar NULL,
+	TowedLocation	varchar NULL,
+	WeatherDescription	varchar(1024) NULL,
+	UNIQUE(IncidentClaimID),
+	FOREIGN KEY(LossTypeCode)
+	REFERENCES LossType(LossTypeCode)
 )
 GO
 
