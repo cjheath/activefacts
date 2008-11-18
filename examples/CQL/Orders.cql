@@ -13,7 +13,7 @@ SKUID is defined as AutoCounter();
  */
 Order is identified by its ID;
 OrderLine is where
-	Order has line Number;
+	Order has line-Number;
 OrderLine is for at most one quantity-Number;
 
 SKU is identified by its ID;

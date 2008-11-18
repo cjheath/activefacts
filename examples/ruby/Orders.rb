@@ -24,8 +24,8 @@ module Orders
   end
 
   class OrderLine
-    identified_by :order, :number
-    has_one :number                             # See Number.all_order_line
+    identified_by :order, :line_number
+    has_one :line_number, Number                # See Number.all_order_line_by_line_number
     has_one :order                              # See Order.all_order_line
     has_one :quantity_number, Number            # See Number.all_order_line_by_quantity_number
     has_one :sku, "SKU"                         # See SKU.all_order_line_by_sku

@@ -1,9 +1,9 @@
 CREATE TABLE OrderLine (
-	Number	int NOT NULL,
+	LineNumber	int NOT NULL,
 	OrderID	int NOT NULL,
 	QuantityNumber	int NULL,
 	SKUID	int NULL,
-	UNIQUE(OrderID, Number)
+	UNIQUE(OrderID, LineNumber)
 )
 GO
 
