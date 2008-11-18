@@ -8,9 +8,7 @@ Thing_ID is defined as AutoCounter();
 /*
  * Entity Types
  */
-Thing is identified by Thing_ID where
-	Thing has exactly one Thing_ID,
-	Thing_ID is of at most one Thing;
+Thing is identified by its _ID;
 
 Thong is a kind of Thing;
 

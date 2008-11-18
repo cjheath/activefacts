@@ -34,15 +34,11 @@ Year is defined as UnsignedInteger(32) restricted to {1900..3000};
 /*
  * Entity Types
  */
-Club is identified by ClubCode where
-	Club has exactly one ClubCode,
-	ClubCode is of at most one Club;
+Club is identified by its Code;
 ClubName is name of at most one Club,
 	Club is called exactly one ClubName;
 
-Event is identified by EventID where
-	Event has exactly one EventID,
-	EventID is of at most one Event;
+Event is identified by its ID;
 Club runs Event,
 	Event is run by exactly one Club;
 Event is called at most one EventName,
@@ -57,9 +53,7 @@ EventScoringMethod is where
 	ScoringMethod is used for Course of Event;
 EventControl has at most one PointValue;
 
-Map is identified by MapID where
-	Map has exactly one MapID,
-	MapID is of at most one Map;
+Map is identified by its ID;
 Club (as Owner) owns Map,
 	Map is owned by exactly one Owner;
 Map has at most one Accessibility;
@@ -68,9 +62,7 @@ Map is map for Event,
 Map has exactly one MapName,
 	MapName is of at most one Map;
 
-Person is identified by PersonID where
-	Person has exactly one PersonID,
-	PersonID is of at most one Person;
+Person is identified by its ID;
 Person is member of at most one Club;
 Person has exactly one FamilyName,
 	FamilyName is of Person;
@@ -79,24 +71,18 @@ Person has exactly one GivenName,
 	GivenName is name of Person;
 Person has at most one PostCode;
 Person was born in at most one birth-Year;
-Entry is identified by EntryID where
-	Entry has exactly one EntryID,
-	EntryID is of at most one Entry,
+Entry is identified by its ID where
 	Person entered at most one Course of Event;
 Entry received at most one Score;
 Entry finished in at most one finish-Placing;
 
-Punch is identified by PunchID where
-	Punch has exactly one PunchID,
-	PunchID is of at most one Punch;
+Punch is identified by its ID;
 PunchPlacement is where
 	Punch is placed at EventControl;
 Visit is where
 	Punch was visited by Entry at Time;
 
-Series is identified by SeriesID where
-	Series has exactly one SeriesID,
-	SeriesID is of at most one Series;
+Series is identified by its ID;
 Event is in at most one Series;
 Series has exactly one SeriesName (as Name),
 	Name is of at most one Series;

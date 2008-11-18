@@ -9,15 +9,11 @@ PersonName is defined as VariableLengthText();
 /*
  * Entity Types
  */
-Person is identified by PersonName where
-	Person has exactly one PersonName,
-	PersonName is of at most one Person;
+Person is identified by its Name;
 
 Australian is a kind of Person;
 
-Employee is a kind of Person identified by EmployeeID where
-	Employee has exactly one EmployeeID,
-	EmployeeID is of at most one Employee;
+Employee is a kind of Person identified by its ID;
 
 AustralianEmployee is a kind of Australian, Employee;
 

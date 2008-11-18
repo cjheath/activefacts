@@ -56,42 +56,28 @@ YearNr is defined as SignedInteger(32);
 /*
  * Entity Types
  */
-Application is identified by ApplicationNr where
-	Application has exactly one ApplicationNr,
-	ApplicationNr is of at most one Application;
+Application is identified by its Nr;
 
-Asset is identified by AssetID where
-	Asset has exactly one AssetID,
-	AssetID is of at most one Asset;
+Asset is identified by its ID;
 
-Claim is identified by ClaimID where
-	Claim has exactly one ClaimID,
-	ClaimID is of at most one Claim;
+Claim is identified by its ID;
 Claim has exactly one ClaimSequence (as p_sequence),
 	p_sequence is of Claim;
 
-CoverType is identified by CoverTypeCode where
-	CoverType has exactly one CoverTypeCode,
-	CoverTypeCode is of at most one CoverType;
+CoverType is identified by its Code;
 CoverType has exactly one CoverTypeName,
 	CoverTypeName is of at most one CoverType;
 
-DemeritKind is identified by DemeritKindName where
-	DemeritKind has exactly one DemeritKindName,
-	DemeritKindName is of at most one DemeritKind;
+DemeritKind is identified by its Name;
 
 Incident is identified by Claim where
 	Claim concerns at most one Incident,
 	Incident is of exactly one Claim;
 Incident relates to loss on exactly one DateTime;
 
-Liability is identified by LiabilityCode where
-	Liability has exactly one LiabilityCode,
-	LiabilityCode is of at most one Liability;
+Liability is identified by its Code;
 
-LossType is identified by LossTypeCode where
-	LossType has exactly one LossTypeCode,
-	LossTypeCode is of at most one LossType;
+LossType is identified by its Code;
 LossType implies at most one Liability;
 LossType involves driving;
 LossType is single vehicle incident;
@@ -106,9 +92,7 @@ LostItem was purchased on at most one purchase-Date;
 LostItem was purchased at at most one purchase-Place;
 LostItem was purchased for at most one purchase-Price;
 
-Party is identified by PartyID where
-	Party has exactly one PartyID,
-	PartyID is of at most one Party;
+Party is identified by its ID;
 Party is a company;
 
 Person is a kind of Party;
@@ -121,9 +105,7 @@ Lodgement is where
 	Claim was lodged by at most one Person;
 Lodgement was made at at most one DateTime;
 
-Phone is identified by PhoneNr where
-	Phone has exactly one PhoneNr,
-	PhoneNr is of at most one Phone;
+Phone is identified by its Nr;
 
 PoliceReport is identified by Incident where
 	Incident is covered by at most one PoliceReport,
@@ -134,27 +116,19 @@ PoliceReport has at most one police-ReportNr;
 PoliceReport was by at most one reporter-Name;
 PoliceReport was at at most one station-Name;
 
-PolicyWording is identified by PolicyWordingText where
-	PolicyWording has exactly one PolicyWordingText,
-	PolicyWordingText is of at most one PolicyWording;
+PolicyWording is identified by its Text;
 CoverWording is where
 	CoverType used PolicyWording from start-Date (as startDate);
 
-Product is identified by ProductCode where
-	Product has exactly one ProductCode,
-	ProductCode is of at most one Product;
+Product is identified by its Code;
 Alias is of at most one Product,
 	Product has at most one Alias;
 ProdDescription is of at most one Product,
 	Product has at most one ProdDescription;
 
-Registration is identified by RegistrationNr where
-	Registration has exactly one RegistrationNr,
-	RegistrationNr is of at most one Registration;
+Registration is identified by its Nr;
 
-State is identified by StateCode where
-	State has exactly one StateCode,
-	StateCode is of at most one State;
+State is identified by its Code;
 StateName is of at most one State,
 	State has at most one StateName;
 
@@ -192,9 +166,7 @@ Witness is identified by Incident and Name where
 	Witness is called exactly one Name;
 Witness has at most one contact-Phone;
 
-Year is identified by YearNr where
-	Year has exactly one YearNr,
-	YearNr is of at most one Year;
+Year is identified by its Nr;
 ThirdParty vehicle is of at most one model-Year;
 Vehicle is of exactly one model-Year;
 
@@ -317,9 +289,9 @@ MotorFleetPolicy is a kind of MotorPolicy;
 for each MotorPolicy exactly one of these holds:
 	SingleMotorPolicy is a subtype of MotorPolicy,
 	MotorFleetPolicy is a subtype of MotorPolicy;
-//Party is a company
-//	if and only if
-//	Company has contact-Person;
+Party is a company
+	if and only if
+	Company has contact-Person;
 each ContactMethods occurs at least one time in
 	ContactMethods includes mobile-Phone,
 	ContactMethods includes home-Phone,

@@ -16,33 +16,23 @@ YearNr is defined as SignedInteger(32);
 /*
  * Entity Types
  */
-Month is identified by MonthCode where
-	Month has exactly one MonthCode,
-	MonthCode is of at most one Month;
+Month is identified by its Code;
 Month is in exactly one Season;
 
-Product is identified by ProductName where
-	Product has exactly one ProductName,
-	ProductName is of at most one Product;
+Product is identified by its Name;
 AcceptableSubstitutes is where
 	Product may be substituted by alternate-Product in Season [acyclic, intransitive],
 	alternate-Product is an acceptable substitute for Product in Season;
 
-Refinery is identified by RefineryName where
-	Refinery has exactly one RefineryName,
-	RefineryName is of at most one Refinery;
+Refinery is identified by its Name;
 
-Region is identified by RegionName where
-	Region has exactly one RegionName,
-	RegionName is of at most one Region;
+Region is identified by its Name;
 TransportRoute is where
 	TransportMethod transportation is available from Refinery to Region,
 	TransportMethod transportation is available to Region from Refinery;
 TransportRoute incurs at most one Cost per kl;
 
-Year is identified by YearNr where
-	Year has exactly one YearNr,
-	YearNr is of at most one Year;
+Year is identified by its Nr;
 
 SupplyPeriod is identified by Month and Year where
 	SupplyPeriod is in exactly one Month,

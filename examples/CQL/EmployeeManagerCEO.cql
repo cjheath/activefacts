@@ -8,9 +8,7 @@ PersonName is defined as VariableLengthText();
 /*
  * Entity Types
  */
-Person is identified by PersonName where
-	Person has exactly one PersonName,
-	PersonName is of at most one Person;
+Person is identified by its Name;
 
 Employee is a kind of Person;
 Employee is manager;

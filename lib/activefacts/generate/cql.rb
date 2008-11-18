@@ -60,7 +60,7 @@ module ActiveFacts
         reading << " [#{(ring.ring_type.scan(/[A-Z][a-z]*/)*", ").downcase}]"
       end
 
-      def identified_by_roles_and_facts(identifying_roles, identifying_facts, preferred_readings)
+      def identified_by_roles_and_facts(entity_type, identifying_roles, identifying_facts, preferred_readings)
         identifying_role_names = identifying_roles.map{|role|
             preferred_role_ref = preferred_readings[role.fact_type].role_sequence.all_role_ref.detect{|reading_rr|
                 reading_rr.role == role
@@ -85,13 +85,77 @@ module ActiveFacts
         # REVISIT: Consider emitting extra fact types here, instead of in entity_type_dump?
         # Just beware that readings having the same players will be considered to be of the same fact type, even if they're not.
 
+        # Detect standard reference-mode scenarios
+        ft = identifying_facts[0]
+        fact_constraints = nil
+        if identifying_facts.size == 1 and
+          entity_role = ft.all_role[n = (ft.all_role[0].concept == entity_type ? 0 : 1)] and
+          value_role = ft.all_role[1-n] and
+          value_name = value_role.concept.name and
+          residual = value_name.gsub(%r{#{entity_role.concept.name}},'') and
+          residual != '' and
+          residual != value_name
+
+          # The EntityType is identified by its association with a single ValueType
+          # whose name is an extension (the residual) of the EntityType's name.
+
+          # Detect standard reference-mode readings:
+          forward_reading = reverse_reading = nil
+          ft.all_reading.each do |reading|
+            if reading.reading_text =~ /^\{(\d)\} has \{\d\}$/
+              if reading.role_sequence.all_role_ref[$1.to_i].role == entity_role
+                forward_reading = reading
+              else
+                reverse_reading = reading
+              end
+            elsif reading.reading_text =~ /^\{(\d)\} is of \{\d\}$/
+              if reading.role_sequence.all_role_ref[$1.to_i].role == value_role
+                reverse_reading = reading
+              else
+                forward_reading = reading
+              end
+            end
+          end
+
+          debug :mode, "------------------- Didn't find standard forward reading" unless forward_reading
+          debug :mode, "------------------- Didn't find standard reverse reading" unless reverse_reading
+
+          # If we didn't find at least one of the standard readings, don't use a refmode:
+          if (forward_reading || reverse_reading)
+            # Elide the constraints that would have been emitted on those readings.
+            # If there is a UC that's not in the standard form for a reference mode,
+            # we have to emit the standard reading anyhow.
+            fact_constraints = @presence_constraints_by_fact[ft]
+            fact_constraints.each do |pc|
+              if (pc.role_sequence.all_role_ref.size == 1 and pc.max_frequency == 1)
+                # It's a uniqueness constraint, and will be regenerated
+                @constraints_used[pc] = true
+              end
+            end
+
+            @fact_types_dumped[ft] = true
+
+            # Figure out whether any non-standard readings exist:
+            other_readings = ft.all_reading - [forward_reading] - [reverse_reading]
+            debug :mode, "--- other_readings.size now = #{other_readings.size}" if other_readings.size > 0
+
+            fact_text = other_readings.map do |reading|
+              expanded_reading(reading, fact_constraints, true)
+            end*",\n\t"
+raise hell if ft.entity_type && ft.entity_type.name == 'Entry'
+            return " identified by its #{residual}" +
+              (fact_text != "" ? " where\n\t" + fact_text : "")
+          end
+        end
+
         identifying_facts.each{|f| @fact_types_dumped[f] = true }
         @identifying_fact_text = 
             identifying_facts.map{|f|
-                fact_readings_with_constraints(f)
+                fact_readings_with_constraints(f, fact_constraints)
             }.flatten*",\n\t"
 
-        " identified by #{ identifying_role_names*" and " }"
+        " identified by #{ identifying_role_names*" and " }" +
+          " where\n\t"+@identifying_fact_text
       end
 
       def entity_type_banner
@@ -111,7 +175,6 @@ module ActiveFacts
         print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " }"
         if pi
           print identified_by(o, pi)
-          print " where\n\t"+@identifying_fact_text
         end
         # If there's a preferred_identifier for this subtype, identifying readings were emitted
         print((pi ? "," : " where") + "\n\t" + fact_readings(o.fact_type)) if o.fact_type
@@ -120,16 +183,8 @@ module ActiveFacts
 
       def non_subtype_dump(o, pi)
         print "#{o.name} is" + identified_by(o, pi)
-        print " where\n\t"+@identifying_fact_text
-        print(",\n\t"+ fact_readings(o.fact_type)) if o.fact_type
+        print(" where\n\t"+ fact_readings(o.fact_type)) if o.fact_type
         puts ";\n"
-      end
-
-      def skip_fact_type(f)
-        # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
-        # These will come up as un-handled constraints:
-        @fact_set_constraints_exhausted[f] ||
-          TypeInheritance === f
       end
 
       def fact_type_dump(fact_type, name)
@@ -146,14 +201,12 @@ module ActiveFacts
           pi = fact_type.entity_type.preferred_identifier
           if pi && primary_supertype && primary_supertype.preferred_identifier != pi
             print identified_by(o, pi)
+            print ";\n"
           end
-
-          print " where\n\t"
         end
 
-        if @identifying_fact_text
-          puts @identifying_fact_text+";\n"
-        else
+        unless @identifying_fact_text
+          print " where\n\t" if o
           puts(fact_readings(fact_type)+";")
         end
       end

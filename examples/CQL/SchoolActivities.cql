@@ -10,19 +10,13 @@ StudentName is defined as VariableLengthText();
 /*
  * Entity Types
  */
-Activity is identified by ActivityName where
-	Activity has exactly one ActivityName,
-	ActivityName is of at most one Activity;
+Activity is identified by its Name;
 
-School is identified by SchoolName where
-	School has exactly one SchoolName,
-	SchoolName is of at most one School;
+School is identified by its Name;
 SchoolActivity is where
 	School sanctions Activity;
 
-Student is identified by StudentName where
-	Student has exactly one StudentName,
-	StudentName is of at most one Student;
+Student is identified by its Name;
 Student is enrolled in exactly one School;
 StudentParticipation is where
 	Student represents at most one School in Activity,

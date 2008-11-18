@@ -15,9 +15,7 @@ Year is defined as UnsignedInteger(32);
 /*
  * Entity Types
  */
-Refinery is identified by RefineryName where
-	Refinery has exactly one RefineryName,
-	RefineryName is of at most one Refinery;
+Refinery is identified by its Name;
 ProductionCommitment is where
 	Refinery has committed by Month to produce Product in at most one Quantity,
 	in Month Refinery has committed to produce Quantity of Product;

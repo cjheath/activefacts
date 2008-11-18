@@ -14,12 +14,9 @@ StreetLine is defined as VariableLengthText(64);
 /*
  * Entity Types
  */
-Company is identified by CompanyName where
-	Company has exactly one CompanyName,
-	CompanyName is of at most one Company;
+Company is identified by its Name;
 
-Family is identified by FamilyName where
-	Family has exactly one FamilyName;
+Family is identified by its Name;
 
 Person is identified by Family and GivenNames where
 	Person is of exactly one Family,

@@ -15,15 +15,11 @@ TopicId is defined as AutoCounter();
 /*
  * Entity Types
  */
-Author is identified by AuthorId where
-	Author has exactly one AuthorId,
-	AuthorId is of at most one Author;
+Author is identified by its Id;
 author-Name is of at most one Author,
 	Author is called exactly one Name;
 
-Comment is identified by CommentId where
-	Comment has exactly one CommentId,
-	CommentId is of at most one Comment;
+Comment is identified by its Id;
 Author wrote Comment,
 	Comment was written by exactly one Author;
 
@@ -34,9 +30,7 @@ Content is identified by Style and Text where
 Content provides text of at most one Comment,
 	Comment consists of exactly one text-Content;
 
-Post is identified by PostId where
-	Post has exactly one PostId,
-	PostId is of at most one Post;
+Post is identified by its Id;
 Post was written by exactly one Author;
 Paragraph is where
 	Post includes Ordinal paragraph;
@@ -45,9 +39,7 @@ Content is of at most one Paragraph,
 Paragraph has Comment,
 	Comment is on exactly one Paragraph;
 
-Topic is identified by TopicId where
-	Topic has exactly one TopicId,
-	TopicId is of at most one Topic;
+Topic is identified by its Id;
 Post belongs to exactly one Topic,
 	Topic contains Post;
 Topic belongs to at most one parent-Topic [acyclic];

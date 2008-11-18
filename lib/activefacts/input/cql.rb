@@ -283,6 +283,9 @@ module ActiveFacts
                 raise "Entity definition using reference mode may only have one identifying fact type" if identifying_fact_types.size > 1
                 mode_fact_type = identifying_fact_types.keys[0]
 
+                # If the entity type is an objectified fact type, don't use the objectified fact type!
+                mode_fact_type = nil if mode_fact_type && mode_fact_type.entity_type == entity_type
+
                 debug :mode, "Processing Reference Mode for #{name}#{mode_fact_type ? " with existing '#{mode_fact_type.default_reading}'" : ""}"
 
                 # WARNING: Several things here depend on the method and order of creation of roles and role sequences above

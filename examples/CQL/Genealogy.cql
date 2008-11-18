@@ -28,9 +28,7 @@ Year is defined as UnsignedInteger(32);
 /*
  * Entity Types
  */
-Event is identified by EventID where
-	Event has exactly one EventID,
-	EventID is of at most one Event;
+Event is identified by its ID;
 Event is certified by at most one Certificate;
 Event occurred at at most one EventLocation;
 Event was confirmed by at most one Official;
@@ -42,16 +40,12 @@ EventDate is identified by min-Year and max-Year and Month and Day where
 	EventDate occurred on at most one Day;
 Event occurred on at most one EventDate;
 
-EventType is identified by EventTypeID where
-	EventType has exactly one EventTypeID,
-	EventTypeID is of at most one EventType;
+EventType is identified by its ID;
 Event is of at most one EventType;
 EventType is called exactly one EventTypeName,
 	EventTypeName is name of at most one EventType;
 
-Person is identified by PersonID where
-	Person has exactly one PersonID,
-	PersonID is of at most one Person;
+Person is identified by its ID;
 Address is of Person,
 	Person lives at at most one Address;
 Email is of Person,
@@ -66,15 +60,11 @@ given-Name is name of Person,
 preferred-Picture is of Person,
 	Person has at most one preferred-Picture;
 
-Role is identified by RoleID where
-	Role has exactly one RoleID,
-	RoleID is of at most one Role;
+Role is identified by its ID;
 Role is called exactly one EventRoleName,
 	EventRoleName is name of exactly one Role;
 
-Source is identified by SourceID where
-	Source has exactly one SourceID,
-	SourceID is of at most one Source;
+Source is identified by its ID;
 Source has exactly one SourceName,
 	SourceName is of at most one Source;
 Participation is where
@@ -82,9 +72,7 @@ Participation is where
 	Person was involved in Event according to Source in Role,
 	Source claims Person played Role in Event;
 
-User is identified by UserID where
-	User has exactly one UserID,
-	UserID is of at most one User;
+User is identified by its ID;
 Email is of User,
 	User has at most one Email;
 User provided Source,

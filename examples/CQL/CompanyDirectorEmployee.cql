@@ -10,9 +10,8 @@ Name is defined as VariableLengthText(48);
 /*
  * Entity Types
  */
-Company is identified by CompanyName where
-	Company is called exactly one CompanyName,
-	CompanyName is of at most one Company;
+Company is identified by its Name where
+	Company is called CompanyName;
 Company is listed;
 
 Meeting is identified by Date and Meeting and Company where
@@ -35,9 +34,7 @@ Directorship is where
 	Company is directed by at least one Director;
 Directorship began on exactly one appointment-Date;
 
-Employee is a kind of Person identified by EmployeeNr where
-	Employee has exactly one EmployeeNr,
-	EmployeeNr is of at most one Employee;
+Employee is a kind of Person identified by its Nr;
 Employee works at exactly one Company,
 	Company employs Employee;
 

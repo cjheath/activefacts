@@ -9,9 +9,8 @@ Name is defined as VariableLengthText(48);
 /*
  * Entity Types
  */
-Company is identified by CompanyName where
-	Company is called exactly one CompanyName,
-	CompanyName is of at most one Company;
+Company is identified by its Name where
+	Company is called CompanyName;
 
 Meeting is identified by Date and Company where
 	Meeting is held on exactly one Date,

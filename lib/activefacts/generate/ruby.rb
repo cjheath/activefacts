@@ -254,7 +254,7 @@ module ActiveFacts
         role_name.snakecase.gsub("-",'_')
       end
 
-      def identified_by_roles_and_facts(identifying_roles, identifying_facts, preferred_readings)
+      def identified_by_roles_and_facts(entity_type, identifying_roles, identifying_facts, preferred_readings)
         identifying_roles.map{|role|
             ":"+preferred_role_name(role)
           }*", "

@@ -37,26 +37,18 @@ Coefficient is identified by Numerator and Denominator and Coefficient where
 	Coefficient has exactly one Denominator,
 	Coefficient is precise;
 
-Constraint is identified by ConstraintId where
-	Constraint has exactly one ConstraintId,
-	ConstraintId is of at most one Constraint;
+Constraint is identified by its Id;
 Constraint requires at most one Enforcement,
 	Enforcement applies to Constraint;
 Name is of Constraint,
 	Constraint is called at most one Name;
 
-Fact is identified by FactId where
-	Fact has exactly one FactId,
-	FactId is of at most one Fact;
+Fact is identified by its Id;
 
-FactType is identified by FactTypeId where
-	FactType has exactly one FactTypeId,
-	FactTypeId is of at most one FactType;
+FactType is identified by its Id;
 Fact is of exactly one FactType;
 
-Instance is identified by InstanceId where
-	Instance has exactly one InstanceId,
-	InstanceId is of at most one Instance;
+Instance is identified by its Id;
 Instance has at most one Value;
 
 PresenceConstraint is a kind of Constraint;
@@ -75,9 +67,7 @@ Reading has exactly one ReadingText;
 RingConstraint is a kind of Constraint;
 RingConstraint is of exactly one RingType;
 
-RoleSequence is identified by RoleSequenceId where
-	RoleSequence has exactly one RoleSequenceId,
-	RoleSequenceId is of at most one RoleSequence;
+RoleSequence is identified by its Id;
 PresenceConstraint covers exactly one RoleSequence;
 Reading is in exactly one RoleSequence,
 	RoleSequence is for Reading;
@@ -94,9 +84,7 @@ SubsetConstraint is a kind of SetConstraint;
 SubsetConstraint covers exactly one subset-RoleSequence;
 SubsetConstraint covers exactly one superset-RoleSequence;
 
-Unit is identified by UnitId where
-	Unit has exactly one UnitId,
-	UnitId is of at most one Unit;
+Unit is identified by its Id;
 Name is of Unit,
 	Unit is called exactly one Name;
 Unit has at most one Coefficient;
@@ -109,9 +97,7 @@ ValueRange is identified by minimum-Bound and maximum-Bound where
 	ValueRange has at most one minimum-Bound,
 	ValueRange has at most one maximum-Bound;
 
-ValueRestriction is identified by ValueRestrictionId where
-	ValueRestriction has exactly one ValueRestrictionId,
-	ValueRestrictionId is of at most one ValueRestriction;
+ValueRestriction is identified by its Id;
 AllowedRange is where
 	ValueRestriction allows at least one ValueRange;
 

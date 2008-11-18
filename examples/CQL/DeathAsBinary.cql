@@ -9,9 +9,7 @@ Person_Name is defined as VariableLengthText();
 /*
  * Entity Types
  */
-Person is identified by Person_Name where
-	Person has exactly one Person_Name,
-	Person_Name is of at most one Person;
+Person is identified by its _Name;
 
 Death is identified by Person where
 	Person suffered at most one Death;

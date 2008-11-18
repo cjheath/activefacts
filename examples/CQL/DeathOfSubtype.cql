@@ -9,9 +9,7 @@ Party_Id is defined as AutoCounter();
 /*
  * Entity Types
  */
-Party is identified by Party_Id where
-	Party has exactly one Party_Id,
-	Party_Id is of at most one Party;
+Party is identified by its _Id;
 
 Person is a kind of Party;
 Death is where
