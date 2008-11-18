@@ -129,9 +129,9 @@ PoliceReport is identified by Incident where
 	Incident is covered by at most one PoliceReport,
 	PoliceReport covers exactly one Incident;
 PoliceReport was on at most one DateTime;
-PoliceReport was by at most one Name;
 PoliceReport was to at most one officer-Name;
 PoliceReport has at most one police-ReportNr;
+PoliceReport was by at most one reporter-Name;
 PoliceReport was at at most one station-Name;
 
 PolicyWording is identified by PolicyWordingText where

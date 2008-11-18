@@ -3951,7 +3951,7 @@
 					<orm:UniquenessConstraint ref="_9C595B79-2F04-42E7-B692-EA84C4837CF2" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_A07EFD68-D17F-4A2C-96F6-C1241017F5F2" _Name="PoliceReportWasByName">
+			<orm:Fact id="_A07EFD68-D17F-4A2C-96F6-C1241017F5F2" _Name="PoliceReportWasByReporterName">
 				<orm:FactRoles>
 					<orm:Role id="_5B0F838A-55FC-4012-8F3E-38DEFFFD5450" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_079421EB-8210-4DA5-BC25-2211D9B9C5BD" />
@@ -3964,7 +3964,7 @@
 					<orm:ReadingOrder id="_372A4DFE-EA23-4705-8CBA-74C83035E5B2">
 						<orm:Readings>
 							<orm:Reading id="_7E24E28A-BA44-4F66-8CC2-71643EC55CE8">
-								<orm:Data>{0} was by {1}</orm:Data>
+								<orm:Data>{0} was by reporter- {1}</orm:Data>
 							</orm:Reading>
 						</orm:Readings>
 						<orm:RoleSequence>
@@ -9096,7 +9096,7 @@
 			</ormDiagram:FactTypeShape>
 			<ormDiagram:FactTypeShape id="_E0E74F5C-E2E0-4868-92F4-8F440E64B30B" IsExpanded="true" AbsoluteBounds="8.3627261301889746, 6.1042354626560771, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_7D808795-DB12-4046-9084-82839CC200B6" IsExpanded="true" AbsoluteBounds="8.3627261301889746, 6.3577403888127924, 0.34049931168556213, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_7D808795-DB12-4046-9084-82839CC200B6" IsExpanded="true" AbsoluteBounds="8.3627261301889746, 6.3577403888127924, 0.76499199867248535, 0.12950302660465241">
 						<ormDiagram:Subject ref="_372A4DFE-EA23-4705-8CBA-74C83035E5B2" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -10343,7 +10343,7 @@
 							<rcd:Column id="_52D0CB0B-7E28-4131-A6E9-BA0ED5B4E7E4" Name="incidentDateTime" IsNullable="true" />
 							<rcd:Column id="_139B1596-95DE-40DC-9120-A2AF63596C90" Name="incidentAddressStateCode" IsNullable="true" />
 							<rcd:Column id="_12627EF4-8C85-498F-AE1C-51D23BB3E44A" Name="incidentPoliceReportDateTime" IsNullable="true" />
-							<rcd:Column id="_38A94434-59EA-4472-8E70-A3DA5A4A55A4" Name="incidentPoliceReportName" IsNullable="true" />
+							<rcd:Column id="_38A94434-59EA-4472-8E70-A3DA5A4A55A4" Name="incidentPoliceReportReporterName" IsNullable="true" />
 							<rcd:Column id="_B59E0DA3-8F74-4B1B-8058-59CDBD0EE8FB" Name="incidentPoliceReportStationName" IsNullable="true" />
 							<rcd:Column id="_BFA2EC99-3751-4558-B63E-C14F97D32C47" Name="incidentPoliceReportOfficerName" IsNullable="true" />
 							<rcd:Column id="_1E8F0ECF-84E0-489B-BD57-941C82C1CF92" Name="incidentPoliceReportPoliceReportNr" IsNullable="true" />
@@ -11427,15 +11427,15 @@
 		<oialtocdb:ColumnHasConceptTypeChild id="_5C5A4FEE-22EA-4676-866E-4CC491F683CF" Column="_12627EF4-8C85-498F-AE1C-51D23BB3E44A" ConceptTypeChild="_34C0EB34-F31A-42E8-A7A8-2BDB9324D780" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_FA9D1B02-47B1-4CA8-A05D-3C7006CFF320" Column="_12627EF4-8C85-498F-AE1C-51D23BB3E44A" ConceptTypeChild="_6AD15317-BDC7-455A-A0F9-766D972167D7" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_A3D89D4F-A07D-4A8E-86E1-88916657F934" Column="_12627EF4-8C85-498F-AE1C-51D23BB3E44A" ConceptTypeChild="_49A8ACBB-9D09-45FD-86DB-30454C280EC6" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_0EE8B6B9-CD6A-42DE-81E9-CEF7DD75B67E" Column="_38A94434-59EA-4472-8E70-A3DA5A4A55A4" ConceptTypeChild="_34C0EB34-F31A-42E8-A7A8-2BDB9324D780" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_8F21BEFB-CAEE-40EA-B0B2-93422F22C0C6" Column="_38A94434-59EA-4472-8E70-A3DA5A4A55A4" ConceptTypeChild="_6AD15317-BDC7-455A-A0F9-766D972167D7" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_4631D9EA-B42D-4BC8-8058-6C1A5923ADD5" Column="_38A94434-59EA-4472-8E70-A3DA5A4A55A4" ConceptTypeChild="_BE956844-2B8F-4F96-B930-487F4FBB0757" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_5C9F7D2E-A5E9-4141-A7F6-A6900A24E387" Column="_BFA2EC99-3751-4558-B63E-C14F97D32C47" ConceptTypeChild="_34C0EB34-F31A-42E8-A7A8-2BDB9324D780" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_8FABF30A-FB05-44F7-BCC0-1B45DDD888E9" Column="_BFA2EC99-3751-4558-B63E-C14F97D32C47" ConceptTypeChild="_6AD15317-BDC7-455A-A0F9-766D972167D7" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_BA925EF5-63ED-4B6D-BF4D-EC12D982D1E7" Column="_BFA2EC99-3751-4558-B63E-C14F97D32C47" ConceptTypeChild="_2331639A-0C7F-466A-BB13-A5EE701AB627" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_7CEF2A6C-44D9-4480-935A-B0F97E26D603" Column="_1E8F0ECF-84E0-489B-BD57-941C82C1CF92" ConceptTypeChild="_34C0EB34-F31A-42E8-A7A8-2BDB9324D780" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_CB5B2AA9-9B7B-48EE-B7AA-FBE22DC91E93" Column="_1E8F0ECF-84E0-489B-BD57-941C82C1CF92" ConceptTypeChild="_6AD15317-BDC7-455A-A0F9-766D972167D7" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_8B03D9A5-061D-4619-BD24-C317670A3CB7" Column="_1E8F0ECF-84E0-489B-BD57-941C82C1CF92" ConceptTypeChild="_FC666F3D-7953-4C1D-8BCC-1CAA830BD710" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_0EE8B6B9-CD6A-42DE-81E9-CEF7DD75B67E" Column="_38A94434-59EA-4472-8E70-A3DA5A4A55A4" ConceptTypeChild="_34C0EB34-F31A-42E8-A7A8-2BDB9324D780" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_8F21BEFB-CAEE-40EA-B0B2-93422F22C0C6" Column="_38A94434-59EA-4472-8E70-A3DA5A4A55A4" ConceptTypeChild="_6AD15317-BDC7-455A-A0F9-766D972167D7" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_4631D9EA-B42D-4BC8-8058-6C1A5923ADD5" Column="_38A94434-59EA-4472-8E70-A3DA5A4A55A4" ConceptTypeChild="_BE956844-2B8F-4F96-B930-487F4FBB0757" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_F5761FCA-A1F2-4113-876B-4B6AE6288D8E" Column="_B59E0DA3-8F74-4B1B-8058-59CDBD0EE8FB" ConceptTypeChild="_34C0EB34-F31A-42E8-A7A8-2BDB9324D780" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_B2FEC95B-6C93-40A4-8401-ED4DA8FF6B48" Column="_B59E0DA3-8F74-4B1B-8058-59CDBD0EE8FB" ConceptTypeChild="_6AD15317-BDC7-455A-A0F9-766D972167D7" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_1A2AD6C3-6721-4290-9892-5445F7325825" Column="_B59E0DA3-8F74-4B1B-8058-59CDBD0EE8FB" ConceptTypeChild="_5DF29374-5CC1-473C-AB61-7BD113EDA51E" />
