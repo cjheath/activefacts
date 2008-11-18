@@ -4,12 +4,12 @@ vocabulary DeathOfSubtype;
  * Value Types
  */
 CauseOfDeath is defined as VariableLengthText();
-Party_Id is defined as AutoCounter();
+PartyId is defined as AutoCounter();
 
 /*
  * Entity Types
  */
-Party is identified by its _Id;
+Party is identified by its Id;
 
 Person is a kind of Party;
 Death is where

@@ -9,7 +9,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_98BF6B07-5333-4C72-8604-F7FB6D948B52" />
 			</orm:EntityType>
-			<orm:ValueType id="_0FAC52AC-D04C-43DB-A5B2-1CFC26A3E223" Name="Thing_ID">
+			<orm:ValueType id="_0FAC52AC-D04C-43DB-A5B2-1CFC26A3E223" Name="ThingID">
 				<orm:PlayedRoles>
 					<orm:Role ref="_82AA187D-FD61-40B7-842D-195C50643723" />
 				</orm:PlayedRoles>
@@ -22,7 +22,7 @@
 			</orm:EntityType>
 		</orm:Objects>
 		<orm:Facts>
-			<orm:Fact id="_8A92A9CB-E956-4197-831D-123AC2FE25D5" _Name="ThingHasThing_ID">
+			<orm:Fact id="_8A92A9CB-E956-4197-831D-123AC2FE25D5" _Name="ThingHasThingID">
 				<orm:FactRoles>
 					<orm:Role id="_FE54FC9C-3EBD-41E8-96DA-9F63FEACDE70" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_2EE2DD6F-5318-4EF0-B87E-188679EEF1DF" />
@@ -127,7 +127,7 @@
 		</orm:DataTypes>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_3CDE5840-5AD5-4B9F-B45F-48618EFCCDA0" FormatString="{1}" ReferenceModeType="General" />
-			<orm:ReferenceModeKind id="_4773FDA1-0968-4151-8C43-286F57078B02" FormatString="{0}_{1}" ReferenceModeType="Popular" />
+			<orm:ReferenceModeKind id="_4773FDA1-0968-4151-8C43-286F57078B02" FormatString="{0}{1}" ReferenceModeType="Popular" />
 			<orm:ReferenceModeKind id="_7B471F98-C96E-4329-8BC9-FCF7F4CCA16C" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>

@@ -6,13 +6,13 @@ module DeathAsBinary
     value_type 
   end
 
-  class Person_Name < String
+  class PersonName < String
     value_type 
   end
 
   class Person
     identified_by :person_name
-    one_to_one :person_name, Person_Name        # See Person_Name.person
+    one_to_one :person_name                     # See PersonName.person
   end
 
   class Death

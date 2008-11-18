@@ -2,40 +2,40 @@
 <ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
 	<orm:ORMModel id="_DB543F6B-9CFE-426A-876C-5634031CD2BA" Name="BugTesting">
 		<orm:Objects>
-			<orm:EntityType id="_2F3D3C35-49F5-460F-A589-7817C3C01338" Name="Bug" _ReferenceMode="Bug_Nr">
+			<orm:EntityType id="_2F3D3C35-49F5-460F-A589-7817C3C01338" Name="Bug" _ReferenceMode="Nr">
 				<orm:PlayedRoles>
 					<orm:Role ref="_7AD644A8-9171-4279-A094-6B486F932891" />
 					<orm:Role ref="_42766ACA-8CB2-4C65-99F1-2B943022B158" />
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_B983474D-BEDC-4831-9596-2649F53F7CE7" />
 			</orm:EntityType>
-			<orm:ValueType id="_6A3EEC95-5B06-442A-B7F8-022A8CE2B9CC" Name="Bug_Nr">
+			<orm:ValueType id="_6A3EEC95-5B06-442A-B7F8-022A8CE2B9CC" Name="BugNr">
 				<orm:PlayedRoles>
 					<orm:Role ref="_A7B2A8DC-CD40-4207-B780-202F578C8AFF" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_76094B30-51ED-4737-99EF-00D574ADF286" ref="_5F5CA82D-4788-4F74-9B2B-1836FB2D85F8" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:EntityType id="_0786C3E5-F419-4609-A967-EE5BB13B7C25" Name="Tester" _ReferenceMode="Tester_Name">
+			<orm:EntityType id="_0786C3E5-F419-4609-A967-EE5BB13B7C25" Name="Tester" _ReferenceMode="Name">
 				<orm:PlayedRoles>
 					<orm:Role ref="_D64FE422-D6F2-4D17-A402-50BDDE1C0C89" />
 					<orm:Role ref="_8612CBBE-F21A-4A59-80AC-F665531876B4" />
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_0EC64E61-EDA8-4BC7-8665-AEE27B8F08EB" />
 			</orm:EntityType>
-			<orm:EntityType id="_2C7F418B-C1AD-4E7A-8388-1448B8DAC642" Name="TestCase" _ReferenceMode="TestCase_Id">
+			<orm:EntityType id="_2C7F418B-C1AD-4E7A-8388-1448B8DAC642" Name="TestCase" _ReferenceMode="Id">
 				<orm:PlayedRoles>
 					<orm:Role ref="_033B30F9-5ED8-4140-ADF0-C457FA28857A" />
 					<orm:Role ref="_450D92BD-62F7-4CC0-95B8-9962CE29197A" />
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_AFDDBD77-E545-4FDE-B0CE-161AD7E28FC9" />
 			</orm:EntityType>
-			<orm:ValueType id="_E338EE3D-174C-484D-9140-49D974309475" Name="TestCase_Id">
+			<orm:ValueType id="_E338EE3D-174C-484D-9140-49D974309475" Name="TestCaseId">
 				<orm:PlayedRoles>
 					<orm:Role ref="_7192AF1C-05B8-4A50-89EC-3649022B96CB" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_2EC50B05-1D01-4945-9913-79309217BACC" ref="_116C77AD-C7D2-4025-B210-2386A88AC1A5" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ValueType id="_D4C14B41-A483-4C82-B1AF-18DB9CD25BFA" Name="Tester_Name">
+			<orm:ValueType id="_D4C14B41-A483-4C82-B1AF-18DB9CD25BFA" Name="TesterName">
 				<orm:PlayedRoles>
 					<orm:Role ref="_737C49C2-6692-481C-927A-0A02EEEEB636" />
 				</orm:PlayedRoles>
@@ -52,7 +52,7 @@
 			</orm:ObjectifiedType>
 		</orm:Objects>
 		<orm:Facts>
-			<orm:Fact id="_1AFDBAE2-3887-4FB2-80FC-3B2B56A19C40" _Name="BugHasBug_Nr">
+			<orm:Fact id="_1AFDBAE2-3887-4FB2-80FC-3B2B56A19C40" _Name="BugHasBugNr">
 				<orm:FactRoles>
 					<orm:Role id="_7AD644A8-9171-4279-A094-6B486F932891" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_2F3D3C35-49F5-460F-A589-7817C3C01338" />
@@ -91,7 +91,7 @@
 					<orm:MandatoryConstraint ref="_EA7D0513-6D56-4C6F-BFD2-FEB3979126D7" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_341AD7D8-1AB7-431D-82B7-864A5475A248" _Name="TestCaseHasTestCase_Id">
+			<orm:Fact id="_341AD7D8-1AB7-431D-82B7-864A5475A248" _Name="TestCaseHasTestCaseId">
 				<orm:FactRoles>
 					<orm:Role id="_033B30F9-5ED8-4140-ADF0-C457FA28857A" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_2C7F418B-C1AD-4E7A-8388-1448B8DAC642" />
@@ -130,7 +130,7 @@
 					<orm:MandatoryConstraint ref="_EE4768D1-16D1-4DC9-9AA9-39B76AA504CF" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_6B84ABB8-2E37-4A7E-89B0-A940AE8DCBDE" _Name="TesterHasTester_Name">
+			<orm:Fact id="_6B84ABB8-2E37-4A7E-89B0-A940AE8DCBDE" _Name="TesterHasTesterName">
 				<orm:FactRoles>
 					<orm:Role id="_D64FE422-D6F2-4D17-A402-50BDDE1C0C89" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_0786C3E5-F419-4609-A967-EE5BB13B7C25" />
@@ -448,13 +448,13 @@
 	</orm:ORMModel>
 	<ormDiagram:ORMDiagram id="_51872EA8-8C1A-4175-BC27-BB753CE12125" IsCompleteView="false" Name="BugTesting" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
-			<ormDiagram:ObjectTypeShape id="_1AE28A08-0854-4FDC-8335-3F2E11B43270" IsExpanded="true" AbsoluteBounds="3.0625, 0.50844141789153219, 0.62351738929748535, 0.35900605320930479">
+			<ormDiagram:ObjectTypeShape id="_1AE28A08-0854-4FDC-8335-3F2E11B43270" IsExpanded="true" AbsoluteBounds="3.0625, 0.50844141789153219, 0.39522557973861694, 0.35900605320930479">
 				<ormDiagram:Subject ref="_2F3D3C35-49F5-460F-A589-7817C3C01338" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_FE861883-05F4-4512-8E1D-8FDD68BDE033" IsExpanded="true" AbsoluteBounds="0.5, 0.50844141789153219, 0.91599112272262573, 0.35900605320930479">
+			<ormDiagram:ObjectTypeShape id="_FE861883-05F4-4512-8E1D-8FDD68BDE033" IsExpanded="true" AbsoluteBounds="0.5, 0.50844141789153219, 0.56669368863105785, 0.35900605320930479">
 				<ormDiagram:Subject ref="_0786C3E5-F419-4609-A967-EE5BB13B7C25" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_B02D8466-D6F8-45F0-87DD-0168C26E50B3" IsExpanded="true" AbsoluteBounds="1.8609494136956828, 1.9447500397364297, 0.87032323598861694, 0.35900605320930479">
+			<ormDiagram:ObjectTypeShape id="_B02D8466-D6F8-45F0-87DD-0168C26E50B3" IsExpanded="true" AbsoluteBounds="1.8609494136956828, 1.9447500397364297, 0.604148919582367, 0.35900605320930479">
 				<ormDiagram:Subject ref="_2C7F418B-C1AD-4E7A-8388-1448B8DAC642" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_8E5C4A61-C8E7-4477-A773-E5433BFBE365" IsExpanded="true" AbsoluteBounds="2.0391665871938067, 0.5, 0.51388888899236917, 0.30588888899236916" ConstraintDisplayPosition="Top">

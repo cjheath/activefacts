@@ -9,7 +9,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_83B4046A-C744-495D-9A96-7E9CB520D082" />
 			</orm:EntityType>
-			<orm:ValueType id="_CA795353-CE25-4B7A-BCD1-FE43B9063300" Name="Person_Name">
+			<orm:ValueType id="_CA795353-CE25-4B7A-BCD1-FE43B9063300" Name="PersonName">
 				<orm:PlayedRoles>
 					<orm:Role ref="_B72B1F94-0BFE-41B1-A327-B2D014726252" />
 				</orm:PlayedRoles>
@@ -30,7 +30,7 @@
 			</orm:ValueType>
 		</orm:Objects>
 		<orm:Facts>
-			<orm:Fact id="_C39DAD98-432D-4281-883C-F71A566D4897" _Name="PersonHasPerson_Name">
+			<orm:Fact id="_C39DAD98-432D-4281-883C-F71A566D4897" _Name="PersonHasPersonName">
 				<orm:FactRoles>
 					<orm:Role id="_A0AEC5A9-D41F-47E9-9C47-4F29FE6124F3" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_E63F8986-E5D3-43D4-9060-F239D96954E3" />
@@ -192,7 +192,7 @@
 		</orm:DataTypes>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_62526C35-3DE8-4E1A-A627-93FC2FDE5AF2" FormatString="{1}" ReferenceModeType="General" />
-			<orm:ReferenceModeKind id="_10300D4B-7CDB-4118-9ED7-01AF291165E3" FormatString="{0}_{1}" ReferenceModeType="Popular" />
+			<orm:ReferenceModeKind id="_10300D4B-7CDB-4118-9ED7-01AF291165E3" FormatString="{0}{1}" ReferenceModeType="Popular" />
 			<orm:ReferenceModeKind id="_E877C88C-C56D-4EE2-A0A3-5182522AABF1" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>
@@ -248,7 +248,7 @@
 	</ormDiagram:ORMDiagram>
 	<oial:model id="_66364F7D-448A-4E27-AE97-0D55553E1731" name="DeathAsBinary">
 		<oial:informationTypeFormats>
-			<odt:dataType id="_C18B69D9-1C92-4FE2-9F32-B639B77C0F8A" name="Person_Name" />
+			<odt:dataType id="_C18B69D9-1C92-4FE2-9F32-B639B77C0F8A" name="PersonName" />
 			<odt:dataType id="_FE070D42-9BEF-4517-846B-AED4422AED9C" name="CauseOfDeath" />
 		</oial:informationTypeFormats>
 		<oial:conceptTypes>

@@ -1,12 +1,12 @@
 CREATE TABLE Party (
-	Party_id	int NOT NULL,
-	PartyMonikerAccuracy_level	int NULL,
+	Partyid	int NOT NULL,
+	PartyMonikerAccuracyLevel	int NULL,
 	PartyMonikerPartyName	varchar NOT NULL,
-	PersonBirthAttendingDoctor_id	int NULL,
+	PersonBirthAttendingDoctorId	int NULL,
 	PersonBirthDateYmd	datetime NULL,
 	PersonDeathDeathDateYmd	datetime NULL,
 	PersonDied	bit NULL,
-	UNIQUE(Party_id)
+	UNIQUE(Partyid)
 )
 GO
 

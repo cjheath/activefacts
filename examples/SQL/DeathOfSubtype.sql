@@ -1,8 +1,8 @@
 CREATE TABLE Party (
-	Party_Id	int NOT NULL,
+	PartyId	int NOT NULL,
 	PersonDeathCauseOfDeath	varchar NULL,
 	PersonIsDead	bit NULL,
-	UNIQUE(Party_Id)
+	UNIQUE(PartyId)
 )
 GO
 

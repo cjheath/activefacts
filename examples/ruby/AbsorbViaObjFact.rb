@@ -2,22 +2,22 @@ require 'activefacts/api'
 
 module AbsorbViaObjFact
 
-  class Game_Code < FixedLengthText
+  class GameCode < FixedLengthText
     value_type 
   end
 
-  class Person_Name < String
+  class PersonName < String
     value_type 
   end
 
   class Game
     identified_by :game_code
-    one_to_one :game_code, Game_Code            # See Game_Code.game
+    one_to_one :game_code                       # See GameCode.game
   end
 
   class Person
     identified_by :person_name
-    one_to_one :person_name, Person_Name        # See Person_Name.person
+    one_to_one :person_name                     # See PersonName.person
   end
 
   class PersonPlaysGame

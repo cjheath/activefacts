@@ -6,13 +6,13 @@ module DeathOfSubtype
     value_type 
   end
 
-  class Party_Id < AutoCounter
+  class PartyId < AutoCounter
     value_type 
   end
 
   class Party
     identified_by :party_id
-    one_to_one :party_id, Party_Id              # See Party_Id.party
+    one_to_one :party_id                        # See PartyId.party
   end
 
   class Person < Party

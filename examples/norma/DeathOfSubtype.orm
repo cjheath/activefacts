@@ -9,7 +9,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_F8CD6CF2-1DCC-4C9E-9A13-AF9D0E9E50A8" />
 			</orm:EntityType>
-			<orm:ValueType id="_97F27314-3F7F-4E91-B326-DB36D475B3E5" Name="Party_Id">
+			<orm:ValueType id="_97F27314-3F7F-4E91-B326-DB36D475B3E5" Name="PartyId">
 				<orm:PlayedRoles>
 					<orm:Role ref="_E8B1C915-F768-4057-97DC-AC35CA0CD125" />
 				</orm:PlayedRoles>
@@ -51,7 +51,7 @@
 			</orm:ValueType>
 		</orm:Objects>
 		<orm:Facts>
-			<orm:Fact id="_B2028F98-DA4E-405E-919E-95DA9923062F" _Name="PartyHasParty_Id">
+			<orm:Fact id="_B2028F98-DA4E-405E-919E-95DA9923062F" _Name="PartyHasPartyId">
 				<orm:FactRoles>
 					<orm:Role id="_DB131EB6-C0E2-44B8-B79A-59CFB5A700E0" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_7F69BAB2-9DF5-425E-AA7A-270D9B883C93" />
@@ -294,7 +294,7 @@
 		</orm:DataTypes>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_007B9799-ACC6-43FA-8372-C5AF6B837024" FormatString="{1}" ReferenceModeType="General" />
-			<orm:ReferenceModeKind id="_A954A608-88D9-479F-B493-0F53EA4FED01" FormatString="{0}_{1}" ReferenceModeType="Popular" />
+			<orm:ReferenceModeKind id="_A954A608-88D9-479F-B493-0F53EA4FED01" FormatString="{0}{1}" ReferenceModeType="Popular" />
 			<orm:ReferenceModeKind id="_9594F4E5-88E7-475A-979E-412C78A0C7FD" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>
@@ -353,7 +353,7 @@
 	</ormDiagram:ORMDiagram>
 	<oial:model id="_14956F0B-66CF-4FB6-B7A9-BA6EBCC8043C" name="DeathOfSubtype">
 		<oial:informationTypeFormats>
-			<odt:dataType id="_93E3946B-39D2-43E4-8A96-48AF8652F43B" name="Party_Id" />
+			<odt:dataType id="_93E3946B-39D2-43E4-8A96-48AF8652F43B" name="PartyId" />
 			<odt:dataType id="_9C143667-CE52-43DC-8AF7-36EB0718D27D" name="Person is dead" />
 			<odt:dataType id="_A34EE841-0C40-4910-BEA5-569106FBDEDA" name="CauseOfDeath" />
 		</oial:informationTypeFormats>

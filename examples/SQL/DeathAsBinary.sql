@@ -1,7 +1,7 @@
 CREATE TABLE Person (
-	Person_Name	varchar NOT NULL,
+	PersonName	varchar NOT NULL,
 	DeathCauseOfDeath	varchar NULL,
-	UNIQUE(Person_Name)
+	UNIQUE(PersonName)
 )
 GO
 

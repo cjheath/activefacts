@@ -2,31 +2,31 @@ require 'activefacts/api'
 
 module BugTesting
 
-  class Bug_Nr < SignedInteger
+  class BugNr < SignedInteger
     value_type :length => 32
   end
 
-  class TestCase_Id < AutoCounter
+  class TestCaseId < AutoCounter
     value_type 
   end
 
-  class Tester_Name < String
+  class TesterName < String
     value_type 
   end
 
   class Bug
     identified_by :bug_nr
-    one_to_one :bug_nr, Bug_Nr                  # See Bug_Nr.bug
+    one_to_one :bug_nr                          # See BugNr.bug
   end
 
   class TestCase
     identified_by :test_case_id
-    one_to_one :test_case_id, TestCase_Id       # See TestCase_Id.test_case
+    one_to_one :test_case_id                    # See TestCaseId.test_case
   end
 
   class Tester
     identified_by :tester_name
-    one_to_one :tester_name, Tester_Name        # See Tester_Name.tester
+    one_to_one :tester_name                     # See TesterName.tester
   end
 
   class BugReport

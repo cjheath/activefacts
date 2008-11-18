@@ -3,12 +3,12 @@ vocabulary SubTypeWithoutRoles;
 /*
  * Value Types
  */
-Thing_ID is defined as AutoCounter();
+ThingID is defined as AutoCounter();
 
 /*
  * Entity Types
  */
-Thing is identified by its _ID;
+Thing is identified by its ID;
 
 Thong is a kind of Thing;
 

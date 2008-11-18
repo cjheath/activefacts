@@ -9,7 +9,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_505DEFD0-B76C-4BD9-8EE4-A9D233F3A556" />
 			</orm:EntityType>
-			<orm:ValueType id="_4C65AB12-D263-424B-B893-04DECA2CB0B7" Name="Person_Name">
+			<orm:ValueType id="_4C65AB12-D263-424B-B893-04DECA2CB0B7" Name="PersonName">
 				<orm:PlayedRoles>
 					<orm:Role ref="_68521C20-0A74-4A1D-B5B2-65AB50970499" />
 				</orm:PlayedRoles>
@@ -22,7 +22,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_81EA14E6-0649-4934-845B-45F0CB529A72" />
 			</orm:EntityType>
-			<orm:ValueType id="_E7C405C5-874B-4612-8D97-0005ACF2A728" Name="Game_Code">
+			<orm:ValueType id="_E7C405C5-874B-4612-8D97-0005ACF2A728" Name="GameCode">
 				<orm:PlayedRoles>
 					<orm:Role ref="_5E604B8B-CED9-4055-A99E-99B4C9ACA994" />
 				</orm:PlayedRoles>
@@ -38,7 +38,7 @@
 			</orm:ObjectifiedType>
 		</orm:Objects>
 		<orm:Facts>
-			<orm:Fact id="_1004F7FD-86D5-4973-BF94-320DC54C3D25" _Name="PersonHasPerson_Name">
+			<orm:Fact id="_1004F7FD-86D5-4973-BF94-320DC54C3D25" _Name="PersonHasPersonName">
 				<orm:FactRoles>
 					<orm:Role id="_1697CCE0-B883-4791-8CA7-16F696548963" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_A3EDFDF0-CE26-4D10-84EB-C8A525C891E0" />
@@ -77,7 +77,7 @@
 					<orm:MandatoryConstraint ref="_E35BC120-ABEB-4C0C-A6C2-7F7745F882D5" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_73A72852-F827-40A4-BD1C-51B54EEC98D1" _Name="GameHasGame_Code">
+			<orm:Fact id="_73A72852-F827-40A4-BD1C-51B54EEC98D1" _Name="GameHasGameCode">
 				<orm:FactRoles>
 					<orm:Role id="_60AE72E6-C89E-4CCD-91BD-DEF748DA03E6" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_2CC87D7F-E3B5-4449-96EE-50EE92EA3E36" />
@@ -312,7 +312,7 @@
 		</orm:DataTypes>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_0E2D011F-9F67-4DBF-8DBB-84D4B3FAAA14" FormatString="{1}" ReferenceModeType="General" />
-			<orm:ReferenceModeKind id="_D0410A41-F055-4D88-BA1C-FF073050B408" FormatString="{0}_{1}" ReferenceModeType="Popular" />
+			<orm:ReferenceModeKind id="_D0410A41-F055-4D88-BA1C-FF073050B408" FormatString="{0}{1}" ReferenceModeType="Popular" />
 			<orm:ReferenceModeKind id="_2E0BD1CA-EBF3-4879-A7DA-3644B9C4F8F7" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>
@@ -360,7 +360,7 @@
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_73A72852-F827-40A4-BD1C-51B54EEC98D1" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_F20B103C-6E19-47B8-8FB0-8083EAD5DF7E" IsExpanded="true" AbsoluteBounds="2.33289310068557, 1.5657500004035729, 0.75681817054748535, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_F20B103C-6E19-47B8-8FB0-8083EAD5DF7E" IsExpanded="true" AbsoluteBounds="2.33289310068557, 1.5657500004035729, 0.69306355237960815, 0.22950302660465241">
 				<ormDiagram:Subject ref="_E7C405C5-874B-4612-8D97-0005ACF2A728" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_0C2EAD4F-3242-41BA-9CCD-9DC9DA619739" IsExpanded="true" AbsoluteBounds="1.0477181705646217, 0.988271365656719, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
@@ -375,7 +375,7 @@
 					<ormDiagram:Role ref="_68521C20-0A74-4A1D-B5B2-65AB50970499" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_C3803AA4-7DEE-490A-ABAC-FC96A9FF4385" IsExpanded="true" AbsoluteBounds="0.8125, 1.5657500004035729, 0.85432523012161254, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_C3803AA4-7DEE-490A-ABAC-FC96A9FF4385" IsExpanded="true" AbsoluteBounds="0.8125, 1.5657500004035729, 0.79057061195373535, 0.22950302660465241">
 				<ormDiagram:Subject ref="_4C65AB12-D263-424B-B893-04DECA2CB0B7" />
 			</ormDiagram:ObjectTypeShape>
 		</ormDiagram:Shapes>
@@ -383,8 +383,8 @@
 	</ormDiagram:ORMDiagram>
 	<oial:model id="_9D7E9B7E-9351-4963-ABB5-B553524744D6" name="AbsorbViaObjFact">
 		<oial:informationTypeFormats>
-			<odt:dataType id="_03E78185-FFB8-4DB1-AEDF-3EB73DE9F2E7" name="Person_Name" />
-			<odt:dataType id="_7062D3C9-3EAF-408C-9D42-FA573BB8FEB2" name="Game_Code" />
+			<odt:dataType id="_03E78185-FFB8-4DB1-AEDF-3EB73DE9F2E7" name="PersonName" />
+			<odt:dataType id="_7062D3C9-3EAF-408C-9D42-FA573BB8FEB2" name="GameCode" />
 		</oial:informationTypeFormats>
 		<oial:conceptTypes>
 			<oial:conceptType id="_3BAA8026-CF84-42A8-B7F8-6A7C6BC50CD2" name="PersonPlaysGame">

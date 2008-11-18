@@ -3,18 +3,18 @@ vocabulary BugTesting;
 /*
  * Value Types
  */
-Bug_Nr is defined as SignedInteger(32);
-TestCase_Id is defined as AutoCounter();
-Tester_Name is defined as VariableLengthText();
+BugNr is defined as SignedInteger(32);
+TestCaseId is defined as AutoCounter();
+TesterName is defined as VariableLengthText();
 
 /*
  * Entity Types
  */
-Bug is identified by its _Nr;
+Bug is identified by its Nr;
 
-TestCase is identified by its _Id;
+TestCase is identified by its Id;
 
-Tester is identified by its _Name;
+Tester is identified by its Name;
 BugReport is where
 	Tester logged Bug;
 BugReport is logged against exactly one TestCase,
