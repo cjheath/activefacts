@@ -601,12 +601,18 @@ module ActiveFacts
           return [ip[0].all_role[0], ip[-1].all_role[1]]
         end
 
-        players = reading.select{|p| Hash === p}.map{|p| p[:binding].concept }
+        bindings = reading.select{|p| Hash === p}
+        players = bindings.map{|p| p[:binding].concept }
+        invoked_fact_roles_by_players(reading, players)
+      end
+
+      def invoked_fact_roles_by_players(reading, players)
         players[0].all_role.each do |role|
           # Does this fact type have the right number of roles?
           next if role.fact_type.all_role.size != players.size
 
           # Does this fact type include the correct other players?
+          # REVISIT: Might need subtype/supertype matching here, with an implied subtyping join invocation
           next if role.fact_type.all_role.detect{|r| !players.include?(r.concept)}
 
           # Oooh, a real candidate. Check the reading words.
@@ -614,16 +620,19 @@ module ActiveFacts
             next unless role.fact_type.all_reading.detect do |candidate_reading|
               debug "Considering reading"+candidate_reading.reading_text do
                 to_match = reading.clone
+                players_to_match = players.clone
                 candidate_reading.words_and_role_refs.each do |wrr|
                   if (RoleRef === wrr)
                     break unless Hash === to_match.first
                     break unless binding = to_match[0][:binding]
-                    break unless binding.concept == wrr.role.concept
+                    break unless players_to_match[0] == wrr.role.concept
                     break if wrr.leading_adjective && binding.leading_adjective != wrr.leading_adjective
                     break if wrr.trailing_adjective && binding.trailing_adjective != wrr.trailing_adjective
 
                     # All matched.
                     to_match.shift
+                    players_to_match.shift
+                  # elsif # REVISIT: Match "not" and "none" here as negating the fact type invocation
                   else
                     break unless String === to_match[0]
                     break unless to_match[0] == wrr
@@ -636,6 +645,17 @@ module ActiveFacts
             end
           end
         end
+
+        # Hmm, that didn't work, try the subtypes of the first player:
+        players[0].all_type_inheritance_by_supertype.map do |ti|
+          players[0] = ti.subtype
+          puts "Trying #{reading.inspect} with #{ti.subtype.name}"
+          fr = invoked_fact_roles_by_players(reading, players)
+          return fr if fr
+        end
+
+        # REVISIT: Do we need to do this again for the supertypes of the first player?
+
         nil
       end
 

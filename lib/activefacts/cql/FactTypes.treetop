@@ -104,18 +104,24 @@ module ActiveFacts
       end
 
       rule reading
-        (('some'/'that') S)? subtype:id s subtype_prefix (('some'/'that') S)? supertype:id
-        {
-          def value
-            [{:subtype => subtype.text_value, :supertype => supertype.text_value }]
-            # [subtype.text_value, "is", "a", "subtype", "of", supertype.text_value].map{|w| {:word => w}}
-          end
-        }
+        subtype_invocation
         /
         role+
         {
           def value
             elements.map{|r| r.value}
+          end
+        }
+      end
+
+      # REVISIT: This allows invocation from subtype to supertype. We need the reverse as well (Employee is a Manager).
+      # Now that subtyping fact types have readings created during compilation, perhaps these custom rules can be removed?
+      rule subtype_invocation
+        (('some'/'that') S)? subtype:id s subtype_prefix (('some'/'that') S)? supertype:id
+        {
+          def value
+            [{:subtype => subtype.text_value, :supertype => supertype.text_value }]
+            # [subtype.text_value, "is", "a", "subtype", "of", supertype.text_value].map{|w| {:word => w}}
           end
         }
       end

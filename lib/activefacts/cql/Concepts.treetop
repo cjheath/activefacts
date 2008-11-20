@@ -45,6 +45,7 @@ module ActiveFacts
       end
 
       rule identification
+	# REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
         identified_by its s id s	  # Reference Mode
 	  { def value; {:mode => id.text_value }; end }
 	/
@@ -52,7 +53,7 @@ module ActiveFacts
 	  { def value; {:roles => role_list.roles }; end }
       end
 
-      # Identified by roles...
+      # Identified by roles... also used for constraints, beware
       rule role_list 
         head:role_player s tail:( ( and S / ',' s ) role:role_player s )*
         {
@@ -65,25 +66,24 @@ module ActiveFacts
           # We can't tell which word is an adjective and which is a concept here.
           # The concept might be forward-referenced, but not if adjectives are used.
           # REVISIT: This accepts double-adjective expressions (three words) but they don't work elsewhere
-          rule role_player
-            id0:role_player_id '-' tail:(s id1:role_player_id last:( s id2:role_player_id )? )?
-            {
-              def value
-                [ id0.text_value,
-                  tail.empty? ? nil : tail.id1.text_value,
-                  tail.empty? || tail.last.empty? ? nil : tail.last.id2.text_value ].compact
-              end
-            }
-            /
-            id0:role_player_id tail:(s id1:role_player_id last:( s '-' id2:role_player_id / s id2:role_player_id )? )?
-            {
-              def value
-                [ id0.text_value,
-                  tail.empty? ? nil : tail.id1.text_value,
-                  tail.empty? || tail.last.empty? ? nil : tail.last.id2.text_value ].compact
-              end
-            }
-          end
+	  rule lead_adj
+	    role_player_id '-'
+	  end
+
+	  rule trail_adj
+	    '-' role_player_id
+	  end
+
+	  rule role_player
+	    l:lead_adj? tail:(s role_player_id)+ s t:trail_adj?
+	    {
+	      def value
+		(l.empty? ? [] : [l.role_player_id.text_value]) +
+		tail.elements.map{|e| e.role_player_id.text_value } +
+		(t.empty? ? [] : [t.role_player_id.text_value])
+	      end
+	    }
+	  end
 
           rule role_player_id
             !(role_list_sep / quantifier) id
