@@ -19,7 +19,6 @@ include ActiveFacts::Metamodel
 Exceptions = {
   "Blog" => ["Author", "Comment", "Paragraph", "Post", "Topic"],
   "DeathAsBinary" => ["Person"],
-  "Insurance" => ["Asset", "Claim", "ContractorAppointment", "Cover", "CoverType", "CoverWording", "DamagedProperty", "DemeritKind", "LossType", "LostItem", "Party", "Policy", "Product", "State", "ThirdParty", "UnderwritingDemerit", "Witness"],
   "Metamodel" => ["AllowedRange", "Constraint", "Correspondence", "Fact", "FactType", "Feature", "Instance", "JoinPath", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "UnitBasis", "ValueRestriction"],
   "OilSupplyWithCosts" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
   "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
