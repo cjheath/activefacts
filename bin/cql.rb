@@ -9,11 +9,11 @@ require 'readline'
 
 parser = ActiveFacts::CQLParser.new
 parser.root = :definition
-statement = ""
-while line = Readline::readline(statement == "" ? "CQL? " : "CQL+ ", [])
-  statement << line
+statement = nil
+while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
+  statement = statement ? statement + "\n"+line : line
   if line =~ %r{\A/}
-    # meta-command, modify the parser call
+    # meta-commands start with /
     case (words = line.split).shift
     when "/root"
       parser.root = words[0] && words[0].to_sym || :definition
@@ -21,14 +21,19 @@ while line = Readline::readline(statement == "" ? "CQL? " : "CQL+ ", [])
     else
       puts "Unknown metacommand #{line}, did you mean /root <rule>?"
     end
-    statement = ''
+    statement = nil
   elsif parser.root != :definition or
       line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
     # After stripping string literals the line contains a ';', it's the last line of the command:
     begin
       result = parser.parse(statement)
       if result
-        p result.value rescue p result  # In case the root is changed and there's no value()
+        begin
+          p result.value
+        rescue => e
+          puts e.to_s+":"
+          p result  # In case the root is changed and there's no value()
+        end
         #p parser.definition(result)
       else
         p parser.failure_reason
@@ -37,7 +42,7 @@ while line = Readline::readline(statement == "" ? "CQL? " : "CQL+ ", [])
       puts e
       puts "\t"+e.backtrace*"\n\t"
     end
-    statement = ''
+    statement = nil
   end
 end
 puts
