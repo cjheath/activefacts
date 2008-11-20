@@ -14,9 +14,7 @@ include ActiveFacts
 describe "CQL Parser" do
   CQLPARSE_FAILURES = %w{
     Airline
-    CompanyDirectorEmployee
     CompanyQuery
-    EmployeeManagerCEO
     Insurance
     Metamodel
     OrienteeringER

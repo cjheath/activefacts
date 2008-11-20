@@ -11,7 +11,19 @@ module ActiveFacts
     class RUBY < OrderedDumper
       include Metamodel
 
+      def set_option(option)
+        @sql ||= false
+        case option
+        when 'sql'; @sql = true
+        else super
+        end
+      end
+
       def vocabulary_start(vocabulary)
+        if @sql
+          require 'activefacts/persistence'
+          @tables = vocabulary.tables
+        end
         puts "require 'activefacts/api'\n\n"
         puts "module #{vocabulary.name}\n\n"
       end
@@ -50,6 +62,7 @@ module ActiveFacts
 
         puts "  class #{o.name} < #{ruby_type_name}\n" +
              "    value_type #{params}\n"
+        puts "    table" if @sql and @tables.include? o
         puts "    \# REVISIT: #{o.name} has restricted values\n" if o.value_restriction
         puts "    \# REVISIT: #{o.name} is in units of #{o.unit.name}\n" if o.unit
         roles_dump(o)
@@ -57,13 +70,26 @@ module ActiveFacts
       end
 
       def roles_dump(o)
-        #puts "Sorting roles of #{o.name}:"
+        ar_by_role = nil
+        if @sql and @tables.include?(o)
+          ar = o.absorbed_roles
+          ar_by_role = ar.all_role_ref.inject({}){|h,rr|
+            input_role = (j=rr.all_join_path).size > 0 ? j[0].input_role : rr.role
+            (h[input_role] ||= []) << rr
+            h
+          }
+          #puts ar.all_role_ref.map{|rr| "\t"+rr.describe}*"\n"
+        end
         o.all_role.
           sort_by{|role|
             other_role = role.fact_type.all_role[role.fact_type.all_role[0] != role ? 0 : -1]
             other_role ? preferred_role_name(other_role) : ""
             #puts "\t#{role.fact_type.describe(other_role)} by #{p}"
           }.each{|role| 
+            other_role = role.fact_type.all_role[role.fact_type.all_role[0] != role ? 0 : -1]
+            if ar_by_role and ar_by_role[other_role]
+              puts "    # role #{role.fact_type.describe(role)}: absorbs in through #{preferred_role_name(other_role)}: "+ar_by_role[other_role].map(&:column_name)*", "
+            end
             role_dump(role)
           }
       end
@@ -164,6 +190,7 @@ module ActiveFacts
       def subtype_dump(o, supertypes, pi = nil)
         puts "  class #{o.name} < #{ supertypes[0].name }"
         puts "    identified_by #{identified_by(o, pi)}" if pi
+        puts "    table" if @sql and @tables.include? o
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)
         puts "  end\n\n"
@@ -173,6 +200,7 @@ module ActiveFacts
       def non_subtype_dump(o, pi)
         puts "  class #{o.name}"
         puts "    identified_by #{identified_by(o, pi)}"
+        puts "    table" if @sql and @tables.include? o
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)
         puts "  end\n\n"

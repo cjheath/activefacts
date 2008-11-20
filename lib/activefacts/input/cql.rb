@@ -203,11 +203,13 @@ module ActiveFacts
                 debug "Identifying roles: #{id_role_names.inspect}"
 
                 # Pick out the identifying_roles in the order they were declared,
-                # not the order the fact tyoes were defined:
+                # not the order the fact types were defined:
                 identifying_roles = id_role_names.map do |names|
-                  player, binding = @symbols.bind(names)
-                  role = @symbols.roles_by_binding[binding] 
-                  raise "identifying role #{names*"-"} not found in fact types for #{name}" unless role
+                  unless (role = bind_unary_fact_type(entity_type, names))
+                    player, binding = @symbols.bind(names)
+                    role = @symbols.roles_by_binding[binding] 
+                    raise "identifying role #{names*"-"} not found in fact types for #{name}" unless role
+                  end
                   role
                 end
 
@@ -396,6 +398,30 @@ module ActiveFacts
         pc2.min_frequency = 0
         pc2.max_frequency = 1
         pc2.is_preferred_identifier = inheritance_fact.provides_identification
+      end
+
+      # If one of the words is the name of the entity type, and the other
+      # words consist of a unary fact type reading, return the role it plays.
+      def bind_unary_fact_type(entity_type, words)
+        return nil unless i = words.index(entity_type.name)
+
+        to_match = words.clone
+        to_match[i] = '{0}'
+        to_match = to_match*' '
+
+        # See if any unary fact type of this or any supertype matches these words:
+        entity_type.supertypes_transitive.each do |supertype|
+          supertype.all_role.each do |role|
+            role.fact_type.all_role.size == 1 &&
+            role.fact_type.all_reading.each do |reading|
+              if reading.reading_text == to_match
+                debug :identification, "Bound identification to unary role '#{to_match.sub(/\{0\}/, entity_type.name)}'"
+                return role
+              end
+            end
+          end
+        end
+        nil
       end
 
       def fact_type(name, clauses, conditions) 
@@ -651,13 +677,12 @@ module ActiveFacts
           end
         end
 
-        # Hmm, that didn't work, try the subtypes of the first player:
-        if EntityType === players[0]
-          players[0].all_type_inheritance_by_supertype.map do |ti|
-            players[0] = ti.subtype
-            fr = invoked_fact_roles_by_players(reading, players)
-            return fr if fr
-          end
+        # Hmm, that didn't work, try the subtypes of the first player.
+        # When a fact type matches like this, there is an implied join to the subtype.
+        players[0].subtypes.map do |subtype|
+          players[0] = subtype
+          fr = invoked_fact_roles_by_players(reading, players)
+          return fr if fr
         end
 
         # REVISIT: Do we need to do this again for the supertypes of the first player?

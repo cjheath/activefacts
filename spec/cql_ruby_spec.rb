@@ -21,9 +21,7 @@ end
 describe "CQL Loader with Ruby output" do
   CQL_RUBY_FAILURES = %w{
     Airline
-    CompanyDirectorEmployee
     CompanyQuery
-    EmployeeManagerCEO
     Insurance
     Metamodel
     OrienteeringER

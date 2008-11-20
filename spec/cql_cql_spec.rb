@@ -21,13 +21,12 @@ end
 describe "CQL Loader" do
   CQL_CQL_FAILURES = %w{
     Airline
-    CompanyDirectorEmployee
     CompanyQuery
-    EmployeeManagerCEO
     Insurance
-    Metamodel
+    XMetamodel
     OrienteeringER
     ServiceDirector
+    Warehousing
   }
 
   # Generate and return the CQL for the given vocabulary

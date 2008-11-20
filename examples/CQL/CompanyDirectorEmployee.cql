@@ -14,7 +14,7 @@ Company is identified by its Name where
 	Company is called CompanyName;
 Company is listed;
 
-Meeting is identified by Date and Meeting and Company where
+Meeting is identified by Date and Meeting is board meeting and Company where
 	Meeting held on exactly one Date,
 	Meeting is board meeting,
 	Company held Meeting,

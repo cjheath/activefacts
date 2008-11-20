@@ -83,6 +83,16 @@ module ActiveFacts
       end
     end
 
+    class ValueType
+      def supertypes_transitive
+        [self] + (supertype ? supertype.supertypes_transitive : [])
+      end
+
+      def subtypes
+        all_value_type_by_supertype
+      end
+    end
+
     class EntityType
       include ActiveFacts
       def preferred_identifier
@@ -210,6 +220,11 @@ module ActiveFacts
           raise "No PI found for #{name}" unless pi
           pi
         end
+      end
+
+      # An array of all direct subtypes:
+      def subtypes
+        all_type_inheritance_by_supertype.map{|ti| ti.subtype }
       end
 
       # An array all direct supertypes

@@ -27,12 +27,12 @@ ValueRestrictionId is defined as AutoCounter();
 /*
  * Entity Types
  */
-Bound is identified by Value and Bound where
+Bound is identified by Value and Bound is inclusive where
 	Bound has exactly one Value,
 	Value is of at least one Bound,
 	Bound is inclusive;
 
-Coefficient is identified by Numerator and Denominator and Coefficient where
+Coefficient is identified by Numerator and Denominator and Coefficient is precise where
 	Coefficient has exactly one Numerator,
 	Coefficient has exactly one Denominator,
 	Coefficient is precise;

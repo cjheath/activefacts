@@ -15,9 +15,7 @@ include ActiveFacts::Metamodel
 describe "CQL Loader with SQL output" do
   CQL_SQL_FAILURES = %w{
     Airline
-    CompanyDirectorEmployee
     CompanyQuery
-    EmployeeManagerCEO
     Insurance
     Metamodel
     OrienteeringER
