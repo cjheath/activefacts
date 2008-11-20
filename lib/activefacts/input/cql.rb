@@ -126,45 +126,7 @@ module ActiveFacts
 
           # Set up its supertypes:
           supertypes.each do |supertype_name|
-            debug :supertype, "Supertype #{supertype_name}"
-            supertype = @constellation.EntityType(supertype_name, @vocabulary)
-            inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :fact_type_id => :new)
-
-            # Create a reading:
-            sub_role = @constellation.Role(inheritance_fact, 0, entity_type)
-            super_role = @constellation.Role(inheritance_fact, 1, supertype)
-            rs = @constellation.RoleSequence(:new)
-            @constellation.RoleRef(rs, 0, :role => sub_role)
-            @constellation.RoleRef(rs, 1, :role => super_role)
-            @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :reading_text => "{0} is a subtype of {1}")
-
-            if !identification && supertype_name == supertypes[0]
-              inheritance_fact.provides_identification = true
-            end
-
-            # Create uniqueness constraints over the subtyping fact type
-            p1rs = @constellation.RoleSequence(:new)
-            @constellation.RoleRef(p1rs, 0).role = sub_role
-            pc1 = @constellation.PresenceConstraint(:new)
-            pc1.name = "#{name}MustHaveSupertype#{supertype.name}"
-            pc1.vocabulary = @vocabulary
-            pc1.role_sequence = p1rs
-            pc1.is_mandatory = true   # A subtype instance must have a supertype instance
-            pc1.min_frequency = 1
-            pc1.max_frequency = 1
-            pc1.is_preferred_identifier = false
-
-            # The supertype role often identifies the subtype:
-            p2rs = @constellation.RoleSequence(:new)
-            @constellation.RoleRef(p2rs, 0).role = super_role
-            pc2 = @constellation.PresenceConstraint(:new)
-            pc2.name = "#{supertype.name}MayBeA#{name}"
-            pc2.vocabulary = @vocabulary
-            pc2.role_sequence = p2rs
-            pc2.is_mandatory = false
-            pc2.min_frequency = 0
-            pc2.max_frequency = 1
-            pc2.is_preferred_identifier = inheritance_fact.provides_identification
+            add_supertype(entity_type, supertype_name, !identification && supertype_name == supertypes[0])
           end
 
           # Use a two-pass algorithm for entity fact types...
@@ -392,6 +354,48 @@ module ActiveFacts
             debug "Identification is inherited"
           end
         end
+      end
+
+      def add_supertype(entity_type, supertype_name, identifying_supertype)
+        debug :supertype, "Supertype #{supertype_name}"
+        supertype = @constellation.EntityType(supertype_name, @vocabulary)
+        inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :fact_type_id => :new)
+
+        # Create a reading:
+        sub_role = @constellation.Role(inheritance_fact, 0, entity_type)
+        super_role = @constellation.Role(inheritance_fact, 1, supertype)
+        rs = @constellation.RoleSequence(:new)
+        @constellation.RoleRef(rs, 0, :role => sub_role)
+        @constellation.RoleRef(rs, 1, :role => super_role)
+        @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :reading_text => "{0} is a subtype of {1}")
+
+        if identifying_supertype
+          inheritance_fact.provides_identification = true
+        end
+
+        # Create uniqueness constraints over the subtyping fact type
+        p1rs = @constellation.RoleSequence(:new)
+        @constellation.RoleRef(p1rs, 0).role = sub_role
+        pc1 = @constellation.PresenceConstraint(:new)
+        pc1.name = "#{entity_type.name}MustHaveSupertype#{supertype.name}"
+        pc1.vocabulary = @vocabulary
+        pc1.role_sequence = p1rs
+        pc1.is_mandatory = true   # A subtype instance must have a supertype instance
+        pc1.min_frequency = 1
+        pc1.max_frequency = 1
+        pc1.is_preferred_identifier = false
+
+        # The supertype role often identifies the subtype:
+        p2rs = @constellation.RoleSequence(:new)
+        @constellation.RoleRef(p2rs, 0).role = super_role
+        pc2 = @constellation.PresenceConstraint(:new)
+        pc2.name = "#{supertype.name}MayBeA#{entity_type.name}"
+        pc2.vocabulary = @vocabulary
+        pc2.role_sequence = p2rs
+        pc2.is_mandatory = false
+        pc2.min_frequency = 0
+        pc2.max_frequency = 1
+        pc2.is_preferred_identifier = inheritance_fact.provides_identification
       end
 
       def fact_type(name, clauses, conditions) 
@@ -625,6 +629,7 @@ module ActiveFacts
                   if (RoleRef === wrr)
                     break unless Hash === to_match.first
                     break unless binding = to_match[0][:binding]
+                    # REVISIT: May need to match super- or sub-types here too!
                     break unless players_to_match[0] == wrr.role.concept
                     break if wrr.leading_adjective && binding.leading_adjective != wrr.leading_adjective
                     break if wrr.trailing_adjective && binding.trailing_adjective != wrr.trailing_adjective
@@ -647,11 +652,12 @@ module ActiveFacts
         end
 
         # Hmm, that didn't work, try the subtypes of the first player:
-        players[0].all_type_inheritance_by_supertype.map do |ti|
-          players[0] = ti.subtype
-          puts "Trying #{reading.inspect} with #{ti.subtype.name}"
-          fr = invoked_fact_roles_by_players(reading, players)
-          return fr if fr
+        if EntityType === players[0]
+          players[0].all_type_inheritance_by_supertype.map do |ti|
+            players[0] = ti.subtype
+            fr = invoked_fact_roles_by_players(reading, players)
+            return fr if fr
+          end
         end
 
         # REVISIT: Do we need to do this again for the supertypes of the first player?
