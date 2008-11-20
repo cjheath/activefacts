@@ -72,7 +72,10 @@ module ActiveFacts
             role_name = nil if role_name == ""
             # debug "concept.name=#{preferred_role_ref.role.concept.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
 
-            if (role_name)
+            if (role.fact_type.all_role.size == 1)
+              # REVISIT: Guard against unary reading containing the illegal words "and" and "where".
+              role.fact_type.default_reading    # Need whole reading for a unary.
+            elsif (role_name)
               role_name
             else
               role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
