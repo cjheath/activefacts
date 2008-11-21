@@ -18,7 +18,7 @@ CREATE TABLE ProductionCommitment (
 	Product	varchar(80) NOT NULL,
 	RefineryName	varchar(80) NOT NULL,
 	Quantity	int NOT NULL,
-	UNIQUE(Product, Month, RefineryName),
+	UNIQUE(RefineryName, Month, Product),
 	FOREIGN KEY()
 	REFERENCES Month()
 )

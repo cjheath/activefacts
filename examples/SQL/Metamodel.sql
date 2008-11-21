@@ -4,7 +4,7 @@ CREATE TABLE AllowedRange (
 	ValueRangeMinimumBoundIsInclusive	bit NULL,
 	ValueRangeMinimumBoundValue	varchar(256) NULL,
 	ValueRestrictionId	int NOT NULL,
-	UNIQUE(ValueRangeMinimumBoundValue, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValue, ValueRangeMaximumBoundIsInclusive, ValueRestrictionId)
+	UNIQUE(ValueRestrictionId, ValueRangeMinimumBoundValue, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValue, ValueRangeMaximumBoundIsInclusive)
 )
 GO
 
@@ -41,7 +41,7 @@ CREATE TABLE Correspondence (
 	ImportedFeatureVocabularyName	varchar(64) NULL,
 	LocalFeatureName	varchar(64) NOT NULL,
 	LocalFeatureVocabularyName	varchar(64) NULL,
-	UNIQUE(ImportedFeatureName, ImportedFeatureVocabularyName, ImportImportedVocabularyName, ImportVocabularyName)
+	UNIQUE(ImportVocabularyName, ImportImportedVocabularyName, ImportedFeatureName, ImportedFeatureVocabularyName)
 )
 GO
 
@@ -200,7 +200,7 @@ CREATE TABLE UnitBasis (
 	BaseUnitId	int NOT NULL,
 	DerivedUnitId	int NOT NULL,
 	Exponent	SignedSmallInteger(32) NULL,
-	UNIQUE(BaseUnitId, DerivedUnitId),
+	UNIQUE(DerivedUnitId, BaseUnitId),
 	FOREIGN KEY(BaseUnitId)
 	REFERENCES Unit(UnitId),
 	FOREIGN KEY(DerivedUnitId)
