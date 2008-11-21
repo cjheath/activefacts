@@ -19,7 +19,6 @@ describe "CQL Loader with SQL output" do
     Insurance
     OrienteeringER
     ServiceDirector
-    Warehousing
     SimplestUnary
   }
 

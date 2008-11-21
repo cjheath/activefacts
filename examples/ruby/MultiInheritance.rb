@@ -23,7 +23,7 @@ module MultiInheritance
     one_to_one :employee_id, EmployeeID         # See EmployeeID.employee_by_employee_id
   end
 
-  class AustralianEmployee < Australian
+  class AustralianEmployee < Employee
   end
 
 end

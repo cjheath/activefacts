@@ -326,7 +326,7 @@ module ActiveFacts
         # Subtypes are not independent unless partitioned
         # REVISIT: Support partitioned subtypes here
         if (!supertypes.empty?)
-          av = all_type_inheritance_by_subtype.detect{|ti|ti.provides_identification} || all_type_inheritance_by_subtype[0]
+          av = all_supertype_inheritance[0]
           absorbed_via(av)
           return @independent = false
         end

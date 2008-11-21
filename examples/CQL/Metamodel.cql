@@ -156,8 +156,9 @@ RoleValue is of exactly one Role;
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 RoleRef is where
+	RoleSequence in Ordinal position includes at most one Role,
 	Role is in RoleSequence in at most one Ordinal place,
-	RoleSequence includes at most one Role in Ordinal place,
+	RoleSequence includes Role in Ordinal place,
 	Role has Ordinal place in RoleSequence;
 RoleRef has at most one leading-Adjective;
 RoleRef has at most one trailing-Adjective;
@@ -231,7 +232,7 @@ each PresenceConstraint occurs at least one time in
 	PresenceConstraint has max-Frequency,
 	PresenceConstraint is mandatory;
 each RoleSequence occurs at least one time in
-	Role is in RoleSequence in Ordinal place;
+	RoleSequence in Ordinal position includes Role;
 each ValueRange occurs at least one time in
 	ValueRange has minimum-Bound,
 	ValueRange has maximum-Bound;

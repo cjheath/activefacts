@@ -14,7 +14,6 @@ include ActiveFacts
 describe "Norma Loader" do
   ORM_CQL_FAILURES = %w{
     ServiceDirector
-    Warehousing
   }
   # Generate and return the CQL for the given vocabulary
   def cql(vocabulary)

@@ -53,6 +53,8 @@ module Warehousing
   class Bin
     identified_by :bin_id
     one_to_one :bin_id, BinID                   # See BinID.bin_by_bin_id
+    has_one :product                            # See Product.all_bin
+    has_one :quantity                           # See Quantity.all_bin
     has_one :warehouse                          # See Warehouse.all_bin
   end
 
@@ -79,13 +81,6 @@ module Warehousing
   class Product
     identified_by :product_id
     one_to_one :product_id, ProductID           # See ProductID.product_by_product_id
-  end
-
-  class StockedProduct
-    identified_by :bin, :product
-    has_one :bin                                # See Bin.all_stocked_product
-    has_one :product                            # See Product.all_stocked_product
-    has_one :quantity                           # See Quantity.all_stocked_product
   end
 
   class PurchaseOrder

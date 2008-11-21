@@ -145,7 +145,6 @@ module ActiveFacts
             fact_text = other_readings.map do |reading|
               expanded_reading(reading, fact_constraints, true)
             end*",\n\t"
-raise hell if ft.entity_type && ft.entity_type.name == 'Entry'
             return " identified by its #{residual}" +
               (fact_text != "" ? " where\n\t" + fact_text : "")
           end

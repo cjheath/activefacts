@@ -149,7 +149,7 @@ module ActiveFacts
       @concept_types_dumped[o] = true
       pi = o.preferred_identifier
 
-      #debug "#{o.name} is a subtype!!!" if o.all_type_inheritance_by_subtype.size > 0
+      #debug "#{o.name} is a subtype!!!" if o.supertypes.size > 0
 
       supers = o.supertypes
       if (supers.size > 0)
@@ -216,7 +216,7 @@ module ActiveFacts
               }[0].role
           }
 
-        if (role != roles[0])   # First role of the reading?
+        if (role == roles.last)   # First role of the reading?
           # REVISIT: With a ternary, doing this on other than the last role can be ambiguous,
           # in case both the 2nd and 3rd roles have frequencies. Think some more!
 

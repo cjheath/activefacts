@@ -40,7 +40,7 @@ Employee works at exactly one Company,
 
 Manager is a kind of Employee;
 Employee is supervised by at most one Manager [acyclic],
-	Manager supervises at least one Employee;
+	Manager supervises Employee;
 Manager is ceo;
 
 /*

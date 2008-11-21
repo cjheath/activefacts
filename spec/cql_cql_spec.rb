@@ -1,5 +1,5 @@
 #
-# ActiveFacts tests: Parse all NORMA files and check the generated CQL.
+# ActiveFacts tests: Parse all CQL files and check the generated CQL.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 require 'rubygems'
@@ -25,7 +25,6 @@ describe "CQL Loader" do
     Insurance
     OrienteeringER
     ServiceDirector
-    Warehousing
   }
 
   # Generate and return the CQL for the given vocabulary

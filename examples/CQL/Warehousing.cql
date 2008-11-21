@@ -20,6 +20,8 @@ WarehouseID is defined as AutoCounter();
  * Entity Types
  */
 Bin is identified by its ID;
+Bin contains exactly one Quantity,
+	Quantity is in Bin;
 
 Dispatch is identified by its ID;
 
@@ -32,9 +34,8 @@ Party is identified by its ID;
 
 Product is identified by its ID;
 DispatchItem is exactly one Product;
-StockedProduct is where
-	Product is stocked in Bin;
-StockedProduct is in exactly one Quantity;
+Product is stocked in Bin,
+	Bin contains at most one Product;
 
 PurchaseOrder is identified by its ID;
 

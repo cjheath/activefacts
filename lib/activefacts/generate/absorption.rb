@@ -60,7 +60,7 @@ module ActiveFacts
 
         if !@no_identifier && concept.is_a?(EntityType)
           print " is identified by:\n\t#{
-              concept.absorbed_reference_roles.all_role_ref.map { |rr| rr.column_name*"." } * ",\n\t"
+              concept.absorbed_reference_roles.all_role_ref.map { |rr| rr.column_name(".") } * ",\n\t"
             }"
         end
         print "\n"

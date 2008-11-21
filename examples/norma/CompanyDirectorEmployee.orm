@@ -710,10 +710,10 @@
 			</orm:Fact>
 			<orm:Fact id="_4BFABAE1-B251-4E79-879C-BFEF55DEE35B" _Name="EmployeeIsSupervisedByManager">
 				<orm:FactRoles>
-					<orm:Role id="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" _IsMandatory="false" _Multiplicity="OneToMany" Name="">
+					<orm:Role id="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_7B1C120A-8407-4731-A16E-2F2A623F7A0D" />
 					</orm:Role>
-					<orm:Role id="_0E8D33BE-9080-4398-832A-4846F5DC23DA" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="Manager">
+					<orm:Role id="_0E8D33BE-9080-4398-832A-4846F5DC23DA" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="Manager">
 						<orm:RolePlayer ref="_BC093355-2353-4496-A3BE-BAD71775ED98" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -743,7 +743,6 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_9F35CC1C-CC18-4056-AD25-A62F2A6BEDEF" />
-					<orm:MandatoryConstraint ref="_90AEC314-5569-48DC-B7D4-CADE930CA46E" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:SubtypeFact id="_D17756C3-6DEE-49BE-BD9E-F85B018DB0DB" _Name="ManagerIsASubtypeOfEmployee" PreferredIdentificationPath="true">
@@ -1082,11 +1081,6 @@
 					<orm:Role id="_8B52FC36-52BE-41DD-B785-E3138EA7ACA1" ref="_08F1A9B1-388E-424E-99C9-3F4B5C9C5FBB" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_90AEC314-5569-48DC-B7D4-CADE930CA46E" Name="SimpleMandatoryConstraint12" IsSimple="true">
-				<orm:RoleSequence>
-					<orm:Role id="_4E238959-6437-4922-87F1-AD4F40A96D3B" ref="_0E8D33BE-9080-4398-832A-4846F5DC23DA" />
-				</orm:RoleSequence>
-			</orm:MandatoryConstraint>
 			<orm:UniquenessConstraint id="_ED333DD7-6E03-4DA2-99F6-CBB8083153B3" Name="InternalUniquenessConstraint9" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_84367462-BB75-4CCD-8687-E3D8D5B73712" ref="_BB04BC41-81B1-4A2E-A872-C71E06C6A0FC" />
@@ -1574,7 +1568,7 @@
 		<ormtooial:FactTypeMapsTowardsRole id="_A6670798-87EF-4091-BB84-9AA9A247AC3A" FactType="_8140F50F-679F-4E60-AAA0-91FCC9ED5585" TowardsRole="_A46E6303-24C5-4DCE-B2C8-2944BF0E328E" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_B5015C95-AC54-4AEE-8CA0-723D4F305185" FactType="_2FEBE304-E2E1-465A-A055-6646787079F7" TowardsRole="_35D50EF9-7539-471A-908A-2B0228489BF0" Depth="Deep" UniquenessPattern="OneToOne" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_30F951F9-20D5-4229-B8F7-36C8CEC8F193" FactType="_D4F42EA3-C53C-43D5-9E44-429B2B029D91" TowardsRole="_EE2E702D-01C3-48C8-9C09-CDC1E190F39F" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_1A010F26-5204-41A0-997D-CB01A5B4BDF4" FactType="_4BFABAE1-B251-4E79-879C-BFEF55DEE35B" TowardsRole="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_1A010F26-5204-41A0-997D-CB01A5B4BDF4" FactType="_4BFABAE1-B251-4E79-879C-BFEF55DEE35B" TowardsRole="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_C2884028-C269-4C3A-9614-C8C13DF45E24" FactType="_A855962D-5136-441C-A77F-059A199A3E5D" TowardsRole="_4F49E2A7-6557-4451-BC08-C0169B460889" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_61178E96-7A99-4139-8300-6176B3F2B9E6" FactType="_E8200BAE-F727-40B5-A973-C7E64EC0ACC1" TowardsRole="_B8F65E26-0C1B-4308-A0AE-B5C91DC1234F" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_61AB7CD9-B05A-425E-BDCE-2B096768615C" FactType="_D17756C3-6DEE-49BE-BD9E-F85B018DB0DB" TowardsRole="_08F1A9B1-388E-424E-99C9-3F4B5C9C5FBB" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />

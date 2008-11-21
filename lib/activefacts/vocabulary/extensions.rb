@@ -224,12 +224,19 @@ module ActiveFacts
 
       # An array of all direct subtypes:
       def subtypes
+        # REVISIT: There's no sorting here. Should there be?
         all_type_inheritance_by_supertype.map{|ti| ti.subtype }
+      end
+
+      def all_supertype_inheritance
+        all_type_inheritance_by_subtype.sort_by{|ti|
+            [ti.provides_identification ? 0 : 1, ti.supertype.name]
+          }
       end
 
       # An array all direct supertypes
       def supertypes
-        all_type_inheritance_by_subtype.map{|ti|
+        all_supertype_inheritance.map{|ti|
             ti.supertype
           }
       end

@@ -50,7 +50,8 @@ Event starts at exactly one start-Location,
 EventControl is where
 	Event includes at least one ControlNumber;
 EventScoringMethod is where
-	ScoringMethod is used for Course of Event;
+	ScoringMethod is used for Course of Event,
+	Course of Event uses at most one ScoringMethod;
 EventControl has at most one PointValue;
 
 Map is identified by its ID;
@@ -72,7 +73,8 @@ Person has exactly one GivenName,
 Person has at most one PostCode;
 Person was born in at most one birth-Year;
 Entry is identified by its ID where
-	Person entered at most one Course of Event;
+	Person entered Course of Event,
+	Person entered Event in at most one Course;
 Entry received at most one Score;
 Entry finished in at most one finish-Placing;
 
@@ -93,8 +95,6 @@ Series has exactly one SeriesName (as Name),
 Event is in Series
 	if and only if
 	Event has Number;
-each combination Course, Event occurs at most one time in
-	ScoringMethod is used for Course of Event;
 each Event occurs at least one time in
 	Event is called EventName,
 	Event is in Series;

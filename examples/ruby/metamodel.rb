@@ -175,7 +175,7 @@ module Metamodel
   end
 
   class UnitBasis
-    identified_by :base_unit, :derived_unit
+    identified_by :derived_unit, :base_unit
     has_one :base_unit, Unit                    # See Unit.all_unit_basis_by_base_unit
     has_one :derived_unit, Unit                 # See Unit.all_unit_basis_by_derived_unit
     has_one :exponent                           # See Exponent.all_unit_basis
@@ -193,7 +193,7 @@ module Metamodel
   end
 
   class AllowedRange
-    identified_by :value_range, :value_restriction
+    identified_by :value_restriction, :value_range
     has_one :value_range                        # See ValueRange.all_allowed_range
     has_one :value_restriction                  # See ValueRestriction.all_allowed_range
   end
@@ -204,7 +204,7 @@ module Metamodel
   end
 
   class Import
-    identified_by :imported_vocabulary, :vocabulary
+    identified_by :vocabulary, :imported_vocabulary
     has_one :imported_vocabulary, Vocabulary    # See Vocabulary.all_import_by_imported_vocabulary
     has_one :vocabulary                         # See Vocabulary.all_import
   end
@@ -216,7 +216,7 @@ module Metamodel
   end
 
   class Correspondence
-    identified_by :imported_feature, :import
+    identified_by :import, :imported_feature
     has_one :import                             # See Import.all_correspondence
     has_one :imported_feature, Feature          # See Feature.all_correspondence_by_imported_feature
     has_one :local_feature, Feature             # See Feature.all_correspondence_by_local_feature

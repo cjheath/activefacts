@@ -26,7 +26,6 @@ describe "CQL Loader with Ruby output" do
     OrienteeringER
     Orienteering
     ServiceDirector
-    Warehousing
   }
 
   # Generate and return the Ruby for the given vocabulary

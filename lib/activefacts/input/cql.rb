@@ -677,9 +677,9 @@ module ActiveFacts
       end
 
       def inheritance_path(subtype, supertype)
-        direct_inheritance = subtype.all_type_inheritance_by_subtype.select{|ti| ti.supertype == supertype}
+        direct_inheritance = subtype.all_supertype_inheritance.select{|ti| ti.supertype == supertype}
         return direct_inheritance if (direct_inheritance[0])
-        subtype.all_type_inheritance_by_subtype.each{|ti|
+        subtype.all_supertype_inheritance.each{|ti|
           ip = inheritance_path(ti.supertype, supertype)
           return ip+[ti] if (ip)
         }
@@ -982,20 +982,9 @@ module ActiveFacts
         debug "Added reading #{defined_reading.reading_text}"
       end
 
-=begin
-      def is_supertype(sup, sub)
-        # puts "Deciding whether #{sup.name} < #{sub.name}"
-        return true if sup == sub
-        sup.all_type_inheritance_by_supertype.each {|ti|
-            return true if is_supertype(ti.subtype, sub)
-          }
-        false
-      end
-=end
-
       # Return an array of this entity type and all its supertypes, transitively:
       def supertypes(o)
-        ([o] + o.all_type_inheritance_by_subtype.map{|ti| supertypes(ti.supertype)}.flatten).uniq
+        ([o] + o.all_supertype_inheritance.map{|ti| supertypes(ti.supertype)}.flatten).uniq
       end
 
       def concept_by_name(name)

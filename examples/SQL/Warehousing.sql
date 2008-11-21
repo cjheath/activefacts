@@ -1,5 +1,7 @@
 CREATE TABLE Bin (
 	BinID	int NOT NULL,
+	ProductID	int NULL,
+	Quantity	int NOT NULL,
 	WarehouseID	int NULL,
 	UNIQUE(BinID)
 )
@@ -94,18 +96,6 @@ CREATE TABLE SalesOrderItem (
 )
 GO
 
-CREATE TABLE StockedProduct (
-	BinID	int NOT NULL,
-	ProductID	int NOT NULL,
-	Quantity	int NOT NULL,
-	UNIQUE(BinID, ProductID),
-	FOREIGN KEY(BinID)
-	REFERENCES Bin(BinID),
-	FOREIGN KEY(ProductID)
-	REFERENCES Product(ProductID)
-)
-GO
-
 CREATE TABLE TransferRequest (
 	TransferRequestID	int NOT NULL,
 	FromWarehouseID	int NULL,
@@ -118,6 +108,11 @@ CREATE TABLE Warehouse (
 	WarehouseID	int NOT NULL,
 	UNIQUE(WarehouseID)
 )
+GO
+
+ALTER TABLE Bin
+	ADD FOREIGN KEY(ProductID)
+	REFERENCES Product(ProductID)
 GO
 
 ALTER TABLE Bin

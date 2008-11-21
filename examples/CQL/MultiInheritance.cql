@@ -15,5 +15,5 @@ Australian is a kind of Person;
 
 Employee is a kind of Person identified by its ID;
 
-AustralianEmployee is a kind of Australian, Employee;
+AustralianEmployee is a kind of Employee, Australian;
 
