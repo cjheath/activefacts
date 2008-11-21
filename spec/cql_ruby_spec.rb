@@ -23,7 +23,6 @@ describe "CQL Loader with Ruby output" do
     Airline
     CompanyQuery
     Insurance
-    Metamodel
     OrienteeringER
     Orienteering
     ServiceDirector

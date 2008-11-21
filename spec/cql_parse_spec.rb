@@ -16,7 +16,6 @@ describe "CQL Parser" do
     Airline
     CompanyQuery
     Insurance
-    Metamodel
     OrienteeringER
   }
 

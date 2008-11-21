@@ -23,7 +23,6 @@ describe "CQL Loader" do
     Airline
     CompanyQuery
     Insurance
-    XMetamodel
     OrienteeringER
     ServiceDirector
     Warehousing

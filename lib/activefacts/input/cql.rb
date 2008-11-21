@@ -474,25 +474,90 @@ module ActiveFacts
         end
       end
 
-      def bind_reading_list_as_role_sequences(readings_list)
+      # The readings list is an array of an array of fact types.
+      # The fact types contain roles played by concepts, where each
+      # concept plays more than one role. In fact, a concept may
+      # occur in more than one binding, and each binding plays more
+      # than one role. The bindings that are common to all fact types
+      # in each array in the readings list form the constrained role
+      # sequences. Each binding that isn't common at this top level
+      # must occur more than once in each group of fact types where
+      # it appears, and it forms a join between those fact types.
+      def bind_join_paths_as_role_sequences(readings_list)
         @symbols = SymbolTable.new(@constellation, @vocabulary)
         fact_roles_list = []
         bindings_list = []
         readings_list.each_with_index do |readings, index|
+          # readings is an array of readings
           @symbols.bind_roles_in_readings(readings)
-          fact_roles_list[index] = invoked_fact_roles(readings[0])
-          raise "Fact type reading not found for #{readings[0].inspect}" unless fact_roles_list[index]
-          bindings_list[index] = readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
-        end
-        common_bindings = bindings_list.inject(bindings_list[0]) { |common, bindings| common & bindings }
-        raise "Set comparison constraints must have at least one common role between the sets" unless common_bindings.size > 0
 
-        # Create the role sequences and their role references:
+          # Was:
+          # fact_roles_list[index] = invoked_fact_roles(readings[0])
+          # raise "Fact type reading not found for #{readings[0].inspect}" unless fact_roles_list[index]
+          # bindings_list[index] = readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
+
+          fact_roles_list << readings.map do |reading|
+            ifr = invoked_fact_roles(reading)
+            raise "Fact type reading not found for #{reading.inspect}" unless ifr
+            ifr
+          end
+          bindings_list << readings.map do |reading|
+            reading.map{ |phrase| Hash === phrase ? phrase[:binding] : nil}.compact
+          end
+        end
+
+        # Each set of binding arrays in the list must share at least one common binding
+        bindings_by_join_path = bindings_list.map{|join_path| join_path.flatten}
+        common_bindings = bindings_by_join_path[1..-1].inject(bindings_by_join_path[0]) { |c, b| c & b }
+        # Was:
+        # common_bindings = bindings_list.inject(bindings_list[0]) { |common, bindings| common & bindings }
+        raise "Set constraints must have at least one common role between the sets" unless common_bindings.size > 0
+
+        # REVISIT: Do we need to constrain things such that each join path only includes *one* instance of each common binding?
+
+        # For each set of binding arrays, if there's more than one binding array in the set,
+        # it represents a join path. Here we check that each join path is complete, i.e. linked up.
+        # Each element of a join path is the array of bindings for a fact type invocation.
+        # Each invocation must share a binding (not one of the globally common ones) with
+        # another invocation in that join path.
+        bindings_list.each_with_index do |join_path, jpnum|
+          # Check that this bindings array creates a complete join path:
+          join_path.each_with_index do |bindings, i|
+            fact_type_roles = fact_roles_list[jpnum][i]
+            fact_type = fact_type_roles[0].fact_type
+
+            # The bindings are for one fact type invocation.
+            # These bindings must be joined to some later fact type by a common binding that isn't a globally-common one:
+            local_bindings = bindings-common_bindings
+            next if local_bindings.size == 0  # No join path is required, as only one fact type is invoked.
+            next if i == join_path.size-1   # We already checked that the last fact type invocation is joined
+            ok = local_bindings.detect do |local_binding|
+              j = i+1
+              join_path[j..-1].detect do |other_bindings|
+                other_fact_type_roles = fact_roles_list[jpnum][j]
+                other_fact_type = other_fact_type_roles[0].fact_type
+                j += 1
+                # These next two lines allow joining from/to an objectified fact type:
+                fact_type_roles.detect{|r| r.concept == other_fact_type.entity_type } ||
+                other_fact_type_roles.detect{|r| r.concept == fact_type.entity_type } ||
+                other_bindings.include?(local_binding)
+              end
+            end
+            raise "Incomplete join path; one of the bindings #{local_bindings.inspect} must re-occur to establish a join" unless ok
+          end
+        end
+
+        # Create the role sequences and their role references.
+        # Each role sequence contain one RoleRef for each common binding
         role_sequences = readings_list.map{|r| @constellation.RoleSequence(:new) }
         common_bindings.each_with_index do |binding, index|
           role_sequences.each_with_index do |rs, rsi|
-            position = bindings_list[rsi].index(binding)
-            @constellation.RoleRef(rs, index).role = fact_roles_list[rsi][position]
+            join_path = bindings_list[rsi]
+            fact_pos = nil
+            join_pos = (0...join_path.size).detect do |i|
+              fact_pos = join_path[i].index(binding)
+            end
+            @constellation.RoleRef(rs, index).role = fact_roles_list[rsi][join_pos][fact_pos]
           end
         end
 
@@ -500,9 +565,10 @@ module ActiveFacts
       end
 
       def subset_constraint(subset_readings, superset_readings)
-        raise "REVISIT: Join subset constraints not supported yet" if subset_readings.size > 1 or superset_readings.size > 1
+        role_sequences = bind_join_paths_as_role_sequences([subset_readings, superset_readings])
 
-        role_sequences = bind_reading_list_as_role_sequences([subset_readings, superset_readings])
+        #puts "subset_constraint:\n\t#{subset_readings.inspect}\n\t#{superset_readings.inspect}"
+        #puts "\t#{role_sequences.map{|rs| rs.describe}.inspect}"
 
         # create the constraint:
         constraint = @constellation.SubsetConstraint(:new)
@@ -514,11 +580,10 @@ module ActiveFacts
       end
 
       def set_constraint(constrained_roles, quantifier, *readings_list)
-        #raise "REVISIT: Join set constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
         # Exactly one or at most one, nothing else will do
         raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
 
-        role_sequences = bind_reading_list_as_role_sequences(readings_list)
+        role_sequences = bind_join_paths_as_role_sequences(readings_list)
 
         # Create the constraint:
         constraint = @constellation.SetExclusionConstraint(:new)
@@ -530,10 +595,9 @@ module ActiveFacts
       end
 
       def equality_constraint(*readings_list)
-        raise "REVISIT: Join equality constraints not supported yet" if readings_list.detect{|rl| rl.size > 1 }
         #puts "REVISIT: equality\n\t#{readings_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
 
-        role_sequences = bind_reading_list_as_role_sequences(readings_list)
+        role_sequences = bind_join_paths_as_role_sequences(readings_list)
 
         # Create the constraint:
         constraint = @constellation.SetEqualityConstraint(:new)
@@ -622,6 +686,8 @@ module ActiveFacts
         return nil
       end
 
+      # For a given reading from the parser, find the matching declared reading, and return
+      # the array of Role object in the same order as they occur in the reading.
       def invoked_fact_roles(reading)
         if (reading[0] == "!SUBTYPE!")
           subtype = reading[1][:binding].concept
@@ -670,6 +736,11 @@ module ActiveFacts
                     to_match.shift
                   end
                 end
+
+                # This is the first matching candidate.
+                # REVISIT: Since we do sub/supertype matching (and will do more!),
+                # we need to accumulate all possible matches to be sure
+                # there's only one, or the match is exact, or risk ambiguity.
                 debug "Reading match was #{to_match.size == 0 ? "ok" : "bad"}"
                 return candidate_reading.role_sequence.all_role_ref.map{|rr| rr.role} if to_match.size == 0
               end

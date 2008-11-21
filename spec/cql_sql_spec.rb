@@ -17,7 +17,6 @@ describe "CQL Loader with SQL output" do
     Airline
     CompanyQuery
     Insurance
-    Metamodel
     OrienteeringER
     ServiceDirector
     Warehousing

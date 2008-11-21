@@ -22,7 +22,7 @@ Exceptions = {
   "Metamodel" => ["AllowedRange", "Constraint", "Correspondence", "Fact", "FactType", "Feature", "Instance", "JoinPath", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "UnitBasis", "ValueRestriction"],
   "OilSupplyWithCosts" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
   "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
-  "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "StockedProduct", "TransferRequest", "Warehouse"]
+  "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "TransferRequest", "Warehouse"]
 }
 
 describe "Relational Composition from NORMA" do
