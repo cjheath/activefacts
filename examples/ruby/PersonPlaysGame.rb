@@ -20,10 +20,10 @@ module AbsorbViaObjFact
     one_to_one :person_name                     # See PersonName.person
   end
 
-  class PersonPlaysGame
+  class Playing
     identified_by :person, :game
-    has_one :game                               # See Game.all_person_plays_game
-    has_one :person                             # See Person.all_person_plays_game
+    has_one :game                               # See Game.all_playing
+    has_one :person                             # See Person.all_playing
   end
 
 end

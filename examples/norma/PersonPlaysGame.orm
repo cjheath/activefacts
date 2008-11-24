@@ -28,7 +28,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_595AE348-37F3-49A2-A36F-16B9A802FB46" ref="_F6D95186-B75B-4D03-B9A5-CAF902295142" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ObjectifiedType id="_B09014B2-6B37-4B60-A259-7F518450FE8E" Name="PersonPlaysGame" IsIndependent="true" _ReferenceMode="">
+			<orm:ObjectifiedType id="_B09014B2-6B37-4B60-A259-7F518450FE8E" Name="Playing" IsIndependent="true" _ReferenceMode="">
 				<orm:PlayedRoles>
 					<orm:Role ref="_F2DA1DAD-6FE7-4BCA-BCF5-03E2B86158DE" />
 					<orm:Role ref="_8216BFB3-5C28-444A-99A5-F93937E6170F" />
@@ -116,7 +116,7 @@
 					<orm:MandatoryConstraint ref="_6A8F7D59-3FB6-42C3-AD3C-CFD3DC38A18E" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_2C943657-D25B-4543-AB06-9D3C414D0E92" _Name="PersonPlaysGame">
+			<orm:Fact id="_2C943657-D25B-4543-AB06-9D3C414D0E92" _Name="Playing">
 				<orm:FactRoles>
 					<orm:Role id="_825F97BB-7EBB-4112-9CF1-ACA40B45F80A" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_A3EDFDF0-CE26-4D10-84EB-C8A525C891E0" />
@@ -142,7 +142,7 @@
 					<orm:UniquenessConstraint ref="_9F60EE71-BC5F-424D-ABCC-3ED06A571C1C" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:ImpliedFact id="_3471E4E5-2738-420F-B701-A69AAAC4144B" _Name="PersonIsInvolvedInPersonPlaysGame">
+			<orm:ImpliedFact id="_3471E4E5-2738-420F-B701-A69AAAC4144B" _Name="PersonIsInvolvedInPlaying">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_FE911892-4AC1-4EC6-A649-CF2F69822A56">
 						<orm:Role ref="_825F97BB-7EBB-4112-9CF1-ACA40B45F80A" />
@@ -181,7 +181,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_EED7D8FA-A00A-4826-8C3D-E6F6F63E0BB2" />
 			</orm:ImpliedFact>
-			<orm:ImpliedFact id="_78E3745B-E734-4CBE-9D06-7C07C8D2129B" _Name="GameIsInvolvedInPersonPlaysGame">
+			<orm:ImpliedFact id="_78E3745B-E734-4CBE-9D06-7C07C8D2129B" _Name="GameIsInvolvedInPlaying">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_45CA7D87-682A-435E-9FE6-ED3F4D842B33">
 						<orm:Role ref="_32ADC632-45A7-4152-99A3-930FD1E7D8C1" />
@@ -338,46 +338,20 @@
 	</orm:GenerationState>
 	<ormDiagram:ORMDiagram id="_E3049A99-F334-42A7-9CD8-CE1D4F40BB86" IsCompleteView="false" Name="AbsorbViaObjFact" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
-			<ormDiagram:ObjectTypeShape id="_FB3CEE37-A49C-4363-ACF6-74E2C099F58B" IsExpanded="true" AbsoluteBounds="0.99040050804615021, 0.58558484663565935, 0.49852421402931213, 0.22950302660465241" ExpandRefMode="true">
+			<ormDiagram:ObjectTypeShape id="_FB3CEE37-A49C-4363-ACF6-74E2C099F58B" IsExpanded="true" AbsoluteBounds="0.5, 0.60641817996899261, 0.56669368863105773, 0.35900605320930479">
 				<ormDiagram:Subject ref="_A3EDFDF0-CE26-4D10-84EB-C8A525C891E0" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_2C73AF30-150F-4665-8C81-B113AE25EEED" IsExpanded="true" AbsoluteBounds="2.4903332713312838, 0.58558484663565935, 0.44193782925605773, 0.22950302660465241" ExpandRefMode="true">
+			<ormDiagram:ObjectTypeShape id="_2C73AF30-150F-4665-8C81-B113AE25EEED" IsExpanded="true" AbsoluteBounds="1.9999327632851336, 0.60641817996899261, 0.52577301383018493, 0.35900605320930479">
 				<ormDiagram:Subject ref="_2CC87D7F-E3B5-4449-96EE-50EE92EA3E36" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_DCF03679-640D-4F08-8A80-D149DB8B8608" IsExpanded="true" AbsoluteBounds="1.7395834922790527, 0.543391915441801, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
+			<ormDiagram:FactTypeShape id="_DCF03679-640D-4F08-8A80-D149DB8B8608" IsExpanded="true" AbsoluteBounds="1.332516317566236, 0.62897676207746034, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_3524149A-1B3B-4DD7-AD87-D008B340E68D" IsExpanded="true" AbsoluteBounds="1.7395834922790527, 0.85203231773649635, 0.25775596499443054, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_3524149A-1B3B-4DD7-AD87-D008B340E68D" IsExpanded="true" AbsoluteBounds="1.332516317566236, 0.9376171643721557, 0.25775596499443054, 0.12950302660465241">
 						<ormDiagram:Subject ref="_0EF3EA38-8FD9-457C-9E02-C4B5A1BAE200" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_2C943657-D25B-4543-AB06-9D3C414D0E92" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_31791CF1-DEFF-4EB0-8F7A-8F07CCC4EAB4" IsExpanded="true" AbsoluteBounds="2.5193577414631281, 0.98827136565671914, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
-				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_B116274B-4455-4AB7-A18A-E508025A43E5" IsExpanded="true" AbsoluteBounds="2.5193577414631281, 1.2969117679514146, 0.47137901186943054, 0.12950302660465241">
-						<ormDiagram:Subject ref="_B9C34957-263C-4737-8A65-A9731A7CE856" />
-					</ormDiagram:ReadingShape>
-				</ormDiagram:RelativeShapes>
-				<ormDiagram:Subject ref="_73A72852-F827-40A4-BD1C-51B54EEC98D1" />
-			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_F20B103C-6E19-47B8-8FB0-8083EAD5DF7E" IsExpanded="true" AbsoluteBounds="2.33289310068557, 1.5657500004035729, 0.69306355237960815, 0.22950302660465241">
-				<ormDiagram:Subject ref="_E7C405C5-874B-4612-8D97-0005ACF2A728" />
-			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_0C2EAD4F-3242-41BA-9CCD-9DC9DA619739" IsExpanded="true" AbsoluteBounds="1.0477181705646217, 0.988271365656719, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
-				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_FBAA559F-90F4-4260-9690-F5F56E502BDE" IsExpanded="true" AbsoluteBounds="1.0477181705646217, 1.2969117679514144, 0.47137901186943054, 0.12950302660465241">
-						<ormDiagram:Subject ref="_3BB3FC55-0050-453F-805D-0F1F61B1FDB4" />
-					</ormDiagram:ReadingShape>
-				</ormDiagram:RelativeShapes>
-				<ormDiagram:Subject ref="_1004F7FD-86D5-4973-BF94-320DC54C3D25" />
-				<ormDiagram:RoleDisplayOrder>
-					<ormDiagram:Role ref="_1697CCE0-B883-4791-8CA7-16F696548963" />
-					<ormDiagram:Role ref="_68521C20-0A74-4A1D-B5B2-65AB50970499" />
-				</ormDiagram:RoleDisplayOrder>
-			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_C3803AA4-7DEE-490A-ABAC-FC96A9FF4385" IsExpanded="true" AbsoluteBounds="0.8125, 1.5657500004035729, 0.79057061195373535, 0.22950302660465241">
-				<ormDiagram:Subject ref="_4C65AB12-D263-424B-B893-04DECA2CB0B7" />
-			</ormDiagram:ObjectTypeShape>
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_45F63CC6-368B-4DBE-8054-3BFB947B432F" />
 	</ormDiagram:ORMDiagram>
@@ -387,7 +361,7 @@
 			<odt:dataType id="_7062D3C9-3EAF-408C-9D42-FA573BB8FEB2" name="GameCode" />
 		</oial:informationTypeFormats>
 		<oial:conceptTypes>
-			<oial:conceptType id="_3BAA8026-CF84-42A8-B7F8-6A7C6BC50CD2" name="PersonPlaysGame">
+			<oial:conceptType id="_3BAA8026-CF84-42A8-B7F8-6A7C6BC50CD2" name="Playing">
 				<oial:children>
 					<oial:informationType id="_B86D2894-87ED-4F71-8756-506ECF70DEC9" ref="_03E78185-FFB8-4DB1-AEDF-3EB73DE9F2E7" isMandatory="true" name="Person_Name" />
 					<oial:informationType id="_EE977F0D-21D8-4E49-BE95-BFDCC5510A7A" ref="_7062D3C9-3EAF-408C-9D42-FA573BB8FEB2" isMandatory="true" name="Game_Code" />
@@ -409,13 +383,13 @@
 		<rcd:Schemas>
 			<rcd:Schema id="_62E7DA5C-3D2F-4AB8-926C-5D5F0709E08F" Name="AbsorbViaObjFact">
 				<rcd:Tables>
-					<rcd:Table id="_200BC07A-FF16-46B0-B546-A08A49178E5B" Name="PersonPlaysGame">
+					<rcd:Table id="_200BC07A-FF16-46B0-B546-A08A49178E5B" Name="Playing">
 						<rcd:Columns>
 							<rcd:Column id="_6F5A8268-E873-4CA1-AB9D-2AFE7C50BA48" Name="personName" />
 							<rcd:Column id="_62B20BF4-6CD3-41EF-A105-F67FE5AFCFE5" Name="gameCode" />
 						</rcd:Columns>
 						<rcd:Constraints>
-							<rcd:UniquenessConstraint id="_7D1D4075-ED1B-4CE4-90F3-8089B6769D0C" Name="PersonPlaysGame_PK" IsPrimary="true">
+							<rcd:UniquenessConstraint id="_7D1D4075-ED1B-4CE4-90F3-8089B6769D0C" Name="Playing_PK" IsPrimary="true">
 								<rcd:Columns>
 									<rcd:Column ref="_6F5A8268-E873-4CA1-AB9D-2AFE7C50BA48" />
 									<rcd:Column ref="_62B20BF4-6CD3-41EF-A105-F67FE5AFCFE5" />
