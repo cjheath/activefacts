@@ -36,16 +36,16 @@ Year is defined as UnsignedInteger(32) restricted to {1900..3000};
  */
 Club is identified by its Code;
 ClubName is name of at most one Club,
-	Club is called exactly one ClubName;
+	Club is called one ClubName;
 
 Event is identified by its ID;
 Club runs Event,
-	Event is run by exactly one Club;
+	Event is run by one Club;
 Event is called at most one EventName,
 	EventName is name of at most one Event;
 Event has at most one Number;
-Event is held on exactly one StartTime;
-Event starts at exactly one start-Location,
+Event is held on one StartTime;
+Event starts at one start-Location,
 	Location is where Event starts;
 EventControl is where
 	Event includes at least one ControlNumber;
@@ -56,19 +56,19 @@ EventControl has at most one PointValue;
 
 Map is identified by its ID;
 Club (as Owner) owns Map,
-	Map is owned by exactly one Owner;
+	Map is owned by one Owner;
 Map has at most one Accessibility;
 Map is map for Event,
-	Event uses exactly one Map;
-Map has exactly one MapName,
+	Event uses one Map;
+Map has one MapName,
 	MapName is of at most one Map;
 
 Person is identified by its ID;
 Person is member of at most one Club;
-Person has exactly one FamilyName,
+Person has one FamilyName,
 	FamilyName is of Person;
 Person is of at most one Gender;
-Person has exactly one GivenName,
+Person has one GivenName,
 	GivenName is name of Person;
 Person has at most one PostCode;
 Person was born in at most one birth-Year;
@@ -86,7 +86,7 @@ Visit is where
 
 Series is identified by its ID;
 Event is in at most one Series;
-Series has exactly one SeriesName (as Name),
+Series has one SeriesName (as Name),
 	Name is of at most one Series;
 
 /*

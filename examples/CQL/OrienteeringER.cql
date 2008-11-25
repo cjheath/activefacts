@@ -45,7 +45,7 @@ each Event occurs at least one time in
 	Event includes Control which is worth PointValue;
 each EventName occurs at most one time in
 	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
-each ID occurs exactly one time in
+each ID occurs one time in
 	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
 each Name occurs at most one time in
 	map-Name having Accessibility belongs to Club;

@@ -28,13 +28,13 @@ ValueRestrictionId is defined as AutoCounter();
  * Entity Types
  */
 Bound is identified by Value and Bound is inclusive where
-	Bound has exactly one Value,
+	Bound has one Value,
 	Value is of at least one Bound,
 	Bound is inclusive;
 
 Coefficient is identified by Numerator and Denominator and Coefficient is precise where
-	Coefficient has exactly one Numerator,
-	Coefficient has exactly one Denominator,
+	Coefficient has one Numerator,
+	Coefficient has one Denominator,
 	Coefficient is precise;
 
 Constraint is identified by its Id;
@@ -46,7 +46,7 @@ Name is of Constraint,
 Fact is identified by its Id;
 
 FactType is identified by its Id;
-Fact is of exactly one FactType;
+Fact is of one FactType;
 
 Instance is identified by its Id;
 Instance has at most one Value;
@@ -59,34 +59,34 @@ PresenceConstraint is preferred identifier;
 
 Reading is identified by FactType and Ordinal where
 	FactType has at least one Reading,
-	Reading is for exactly one FactType,
+	Reading is for one FactType,
 	Reading is in at most one Ordinal position,
 	Ordinal reading for fact type is Reading;
-Reading has exactly one ReadingText;
+Reading has one ReadingText;
 
 RingConstraint is a kind of Constraint;
-RingConstraint is of exactly one RingType;
+RingConstraint is of one RingType;
 
 RoleSequence is identified by its Id;
-PresenceConstraint covers exactly one RoleSequence;
-Reading is in exactly one RoleSequence,
+PresenceConstraint covers one RoleSequence;
+Reading is in one RoleSequence,
 	RoleSequence is for Reading;
 
 RoleValue is identified by Instance and Fact where
 	Instance plays RoleValue,
-	RoleValue is of exactly one Instance,
-	RoleValue fulfils exactly one Fact,
+	RoleValue is of one Instance,
+	RoleValue fulfils one Fact,
 	Fact includes at least one RoleValue;
 
 SetConstraint is a kind of Constraint;
 
 SubsetConstraint is a kind of SetConstraint;
-SubsetConstraint covers exactly one subset-RoleSequence;
-SubsetConstraint covers exactly one superset-RoleSequence;
+SubsetConstraint covers one subset-RoleSequence;
+SubsetConstraint covers one superset-RoleSequence;
 
 Unit is identified by its Id;
 Name is of Unit,
-	Unit is called exactly one Name;
+	Unit is called one Name;
 Unit has at most one Coefficient;
 Unit is fundamental;
 UnitBasis is where
@@ -102,14 +102,14 @@ AllowedRange is where
 	ValueRestriction allows at least one ValueRange;
 
 Vocabulary is identified by Name where
-	Vocabulary is called exactly one Name;
+	Vocabulary is called one Name;
 Vocabulary contains Constraint,
 	Constraint belongs to at most one Vocabulary;
 Import is where
 	Vocabulary imports imported-Vocabulary [acyclic];
 
 Feature is identified by Name and Vocabulary where
-	Feature is called exactly one Name,
+	Feature is called one Name,
 	Feature belongs to at most one Vocabulary,
 	Vocabulary contains Feature;
 Correspondence is where
@@ -118,14 +118,14 @@ Correspondence is where
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
 	Population belongs to at most one Vocabulary,
-	Population has exactly one Name,
+	Population has one Name,
 	Name is of Population;
 Population includes Fact,
-	Fact belongs to exactly one Population;
+	Fact belongs to one Population;
 Population includes Instance,
-	Instance belongs to exactly one Population;
+	Instance belongs to one Population;
 Population includes RoleValue,
-	RoleValue belongs to exactly one Population;
+	RoleValue belongs to one Population;
 
 SetComparisonConstraint is a kind of SetConstraint;
 SetComparisonRoles is where
@@ -141,7 +141,7 @@ Alias is a kind of Feature;
 Concept is a kind of Feature;
 Concept is independent;
 Concept is personal;
-Instance is of exactly one Concept;
+Instance is of one Concept;
 Role is where
 	FactType has Ordinal role played by Concept,
 	Concept plays role in FactType in Ordinal place,
@@ -152,7 +152,7 @@ Role has at most one role-Name,
 	role-Name is name of at least one Role;
 Role has at most one role-ValueRestriction,
 	ValueRestriction applies to Role;
-RoleValue is of exactly one Role;
+RoleValue is of one Role;
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 RoleRef is where
@@ -166,8 +166,8 @@ JoinPath is where
 	RoleRef has Ordinal (as JoinStep) path;
 JoinPath traverses at most one Concept,
 	Concept is traversed by JoinPath;
-JoinPath has exactly one input-Role;
-JoinPath has exactly one output-Role;
+JoinPath has one input-Role;
+JoinPath has one output-Role;
 
 EntityType is a kind of Concept;
 EntityType nests at most one FactType,

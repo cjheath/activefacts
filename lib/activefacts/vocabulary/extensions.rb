@@ -334,7 +334,7 @@ module ActiveFacts
         [
             ((min && min > 0 && min != max) ? "at least #{min == 1 ? "one" : min.to_s}" : nil),
             ((max && min != max) ? "at most #{max == 1 ? "one" : max.to_s}" : nil),
-            ((max && min == max) ? "exactly #{max == 1 ? "one" : max.to_s}" : nil)
+            ((max && min == max) ? "#{max == 1 ? "one" : max.to_s}" : nil)
         ].compact * " and"
       end
     end

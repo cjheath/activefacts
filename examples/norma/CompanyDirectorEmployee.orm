@@ -424,7 +424,7 @@
 					<orm:UniquenessConstraint ref="_55D87C1A-0981-41A8-8A7E-5230ED11ECD9" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_CF0C5E67-198F-42CE-AC88-2D0B567EA9B4" _Name="MeetingHeldOnDate">
+			<orm:Fact id="_CF0C5E67-198F-42CE-AC88-2D0B567EA9B4" _Name="MeetingIsHeldOnDate">
 				<orm:FactRoles>
 					<orm:Role id="_BB04BC41-81B1-4A2E-A872-C71E06C6A0FC" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_32921981-3873-439C-AD95-37075314558C" />
@@ -437,7 +437,7 @@
 					<orm:ReadingOrder id="_63B48861-86FC-4C30-8FDB-64FC93271EB6">
 						<orm:Readings>
 							<orm:Reading id="_4DCCD411-B8DF-4A50-B272-E3A5BE627421">
-								<orm:Data>{0} held on {1}</orm:Data>
+								<orm:Data>{0} is held on {1}</orm:Data>
 							</orm:Reading>
 						</orm:Readings>
 						<orm:RoleSequence>
@@ -1233,7 +1233,7 @@
 			</ormDiagram:ExternalConstraintShape>
 			<ormDiagram:FactTypeShape id="_1B21B9AC-A330-4160-BE60-8660F86A18C2" IsExpanded="true" AbsoluteBounds="3.6329055039862306, 1.7556290235623138, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_91591ADA-1946-4AFB-B96E-0D5CE70D10A1" IsExpanded="true" AbsoluteBounds="3.6433939902794359, 2.0434880224479564, 0.36062732338905334, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_91591ADA-1946-4AFB-B96E-0D5CE70D10A1" IsExpanded="true" AbsoluteBounds="3.6642273236127694, 2.0226546891146229, 0.45946359634399414, 0.12950302660465241">
 						<ormDiagram:Subject ref="_63B48861-86FC-4C30-8FDB-64FC93271EB6" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -1573,8 +1573,8 @@
 		<ormtooial:FactTypeMapsTowardsRole id="_61178E96-7A99-4139-8300-6176B3F2B9E6" FactType="_E8200BAE-F727-40B5-A973-C7E64EC0ACC1" TowardsRole="_B8F65E26-0C1B-4308-A0AE-B5C91DC1234F" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_61AB7CD9-B05A-425E-BDCE-2B096768615C" FactType="_D17756C3-6DEE-49BE-BD9E-F85B018DB0DB" TowardsRole="_08F1A9B1-388E-424E-99C9-3F4B5C9C5FBB" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_3EDB351B-90F6-4A58-BE28-2883783A158B" FactType="_83F9ACDD-7115-46FA-B11D-25694E650935" TowardsRole="_336909EA-CF10-45C4-8100-5139BA2D82BD" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_868C467C-F2B4-4A92-9CDB-F23B32629000" FactType="_CF0C5E67-198F-42CE-AC88-2D0B567EA9B4" TowardsRole="_BB04BC41-81B1-4A2E-A872-C71E06C6A0FC" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_889F834C-E23A-4E21-B469-18E5ECC6AF91" FactType="_AC1249AD-C0CB-477F-8A70-CEA6FA736B75" TowardsRole="_08941489-BF2A-48A6-8D60-6C733D285E5F" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_868C467C-F2B4-4A92-9CDB-F23B32629000" FactType="_CF0C5E67-198F-42CE-AC88-2D0B567EA9B4" TowardsRole="_BB04BC41-81B1-4A2E-A872-C71E06C6A0FC" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_C353839C-E042-4821-8BEA-2C76C1B92A81" FactType="_A89D15A6-16A4-46B4-8CE6-9D193E857FA6" TowardsRole="_E65ACA3F-EAD5-457E-A55C-23C443EBBA31" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_27B52F80-B4D9-4888-940F-A216B72C4823" FactType="_D778DB91-2DE7-46BE-ADF2-8F2D993AE74E" TowardsRole="_CF346F11-F9CF-4C58-A22A-1C0FA2EE8E91" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_69F48243-08CE-4B43-A49E-3F2F20E9E62C" FactType="_CDECDC1D-D3F0-43A6-BC74-2E179BBF285E" TowardsRole="_BC11C137-C303-489A-835A-24F72E28B897" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />

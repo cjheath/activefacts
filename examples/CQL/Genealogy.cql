@@ -42,7 +42,7 @@ Event occurred on at most one EventDate;
 
 EventType is identified by its ID;
 Event is of at most one EventType;
-EventType is called exactly one EventTypeName,
+EventType is called one EventTypeName,
 	EventTypeName is name of at most one EventType;
 
 Person is identified by its ID;
@@ -61,11 +61,11 @@ preferred-Picture is of Person,
 	Person has at most one preferred-Picture;
 
 Role is identified by its ID;
-Role is called exactly one EventRoleName,
-	EventRoleName is name of exactly one Role;
+Role is called one EventRoleName,
+	EventRoleName is name of one Role;
 
 Source is identified by its ID;
-Source has exactly one SourceName,
+Source has one SourceName,
 	SourceName is of at most one Source;
 Participation is where
 	Person played Role in Event according to Source,
@@ -76,7 +76,7 @@ User is identified by its ID;
 Email is of User,
 	User has at most one Email;
 User provided Source,
-	Source was provided by exactly one User;
+	Source was provided by one User;
 Friend is where
 	User is friend of other-User [symmetric];
 Friend is confirmed;

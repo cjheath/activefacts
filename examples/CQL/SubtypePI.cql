@@ -19,7 +19,7 @@ EntrantHasGivenName is where
 Team is a kind of Entrant identified by its ID;
 
 Competitor is a kind of Entrant;
-Competitor has exactly one FamilyName;
+Competitor has one FamilyName;
 
 /*
  * Constraints:

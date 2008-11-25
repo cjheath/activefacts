@@ -15,13 +15,13 @@ Company is identified by its Name where
 Company is listed;
 
 Meeting is identified by Date and Meeting is board meeting and Company where
-	Meeting held on exactly one Date,
+	Meeting is held on one Date,
 	Meeting is board meeting,
 	Company held Meeting,
-	Meeting is held by exactly one Company;
+	Meeting is held by one Company;
 
 Person is identified by given-Name and family-Name where
-	Person has exactly one given-Name,
+	Person has one given-Name,
 	given-Name is of Person,
 	family-Name is of Person,
 	Person is called at most one family-Name;
@@ -32,10 +32,10 @@ Attendance is where
 Directorship is where
 	Person (as Director) directs Company,
 	Company is directed by at least one Director;
-Directorship began on exactly one appointment-Date;
+Directorship began on one appointment-Date;
 
 Employee is a kind of Person identified by its Nr;
-Employee works at exactly one Company,
+Employee works at one Company,
 	Company employs Employee;
 
 Manager is a kind of Employee;

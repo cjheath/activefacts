@@ -17,7 +17,7 @@ SchoolActivity is where
 	School sanctions Activity;
 
 Student is identified by its Name;
-Student is enrolled in exactly one School;
+Student is enrolled in one School;
 StudentParticipation is where
 	Student represents School in Activity,
 	Student participates in Activity which is sanctioned by at most one School;

@@ -17,7 +17,7 @@ YearNr is defined as SignedInteger(32);
  * Entity Types
  */
 Month is identified by its Code;
-Month is in exactly one Season;
+Month is in one Season;
 
 Product is identified by its Name;
 AcceptableSubstitutes is where
@@ -35,13 +35,13 @@ TransportRoute incurs at most one Cost per kl;
 Year is identified by its Nr;
 
 SupplyPeriod is identified by Month and Year where
-	SupplyPeriod is in exactly one Month,
-	SupplyPeriod is in exactly one Year;
+	SupplyPeriod is in one Month,
+	SupplyPeriod is in one Year;
 ProductionForecast is where
 	Refinery forecasts production of Product in SupplyPeriod;
 RegionalDemand is where
 	Region will need Product in SupplyPeriod;
 ProductionForecast predicts at most one Cost;
-ProductionForecast is for exactly one Quantity;
+ProductionForecast is for one Quantity;
 RegionalDemand is for at most one Quantity;
 

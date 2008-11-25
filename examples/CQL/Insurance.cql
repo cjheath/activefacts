@@ -61,19 +61,19 @@ Application is identified by its Nr;
 Asset is identified by its ID;
 
 Claim is identified by its ID;
-Claim has exactly one ClaimSequence (as p_sequence),
+Claim has one ClaimSequence (as p_sequence),
 	p_sequence is of Claim;
 
 CoverType is identified by its Code;
-CoverType has exactly one CoverTypeName,
+CoverType has one CoverTypeName,
 	CoverTypeName is of at most one CoverType;
 
 DemeritKind is identified by its Name;
 
 Incident is identified by Claim where
 	Claim concerns at most one Incident,
-	Incident is of exactly one Claim;
-Incident relates to loss on exactly one DateTime;
+	Incident is of one Claim;
+Incident relates to loss on one DateTime;
 
 Liability is identified by its Code;
 
@@ -83,11 +83,11 @@ LossType involves driving;
 LossType is single vehicle incident;
 
 LostItem is identified by Incident and LostItemNr where
-	LostItem was lost in exactly one Incident,
-	LostItem has exactly one LostItemNr,
+	LostItem was lost in one Incident,
+	LostItem has one LostItemNr,
 	LostItemNr is of LostItem;
 Description is of LostItem,
-	LostItem has exactly one Description;
+	LostItem has one Description;
 LostItem was purchased on at most one purchase-Date;
 LostItem was purchased at at most one purchase-Place;
 LostItem was purchased for at most one purchase-Price;
@@ -97,10 +97,10 @@ Party is a company;
 
 Person is a kind of Party;
 Person has at most one Occupation;
-Person has exactly one Title;
+Person has one Title;
 Person has at most one birth-Date;
-Person has exactly one family-Name;
-Person has exactly one given-Name;
+Person has one family-Name;
+Person has one given-Name;
 Lodgement is where
 	Claim was lodged by at most one Person;
 Lodgement was made at at most one DateTime;
@@ -109,7 +109,7 @@ Phone is identified by its Nr;
 
 PoliceReport is identified by Incident where
 	Incident is covered by at most one PoliceReport,
-	PoliceReport covers exactly one Incident;
+	PoliceReport covers one Incident;
 PoliceReport was on at most one DateTime;
 PoliceReport was to at most one officer-Name;
 PoliceReport has at most one police-ReportNr;
@@ -133,10 +133,10 @@ StateName is of at most one State,
 	State has at most one StateName;
 
 Vehicle is a kind of Asset identified by VIN where
-	Vehicle has exactly one VIN,
+	Vehicle has one VIN,
 	VIN is of at most one Vehicle;
 Registration is of Vehicle,
-	Vehicle has exactly one Registration;
+	Vehicle has one Registration;
 Vehicle is of at most one Colour;
 Vehicle has at most one EngineNumber;
 Vehicle has commercial registration;
@@ -153,29 +153,29 @@ ThirdParty is where
 ThirdParty drove at most one vehicle-Registration;
 
 VehicleType is identified by Make and Model and Badge where
-	VehicleType is of exactly one Make,
-	VehicleType is of exactly one Model,
+	VehicleType is of one Make,
+	VehicleType is of one Model,
 	Badge is of VehicleType,
 	VehicleType has at most one Badge;
 ThirdParty vehicle is of at most one VehicleType;
-Vehicle is of exactly one VehicleType;
+Vehicle is of one VehicleType;
 
 Witness is identified by Incident and Name where
 	Incident was seen by Witness,
-	Witness saw exactly one Incident,
-	Witness is called exactly one Name;
+	Witness saw one Incident,
+	Witness is called one Name;
 Witness has at most one contact-Phone;
 
 Year is identified by its Nr;
 ThirdParty vehicle is of at most one model-Year;
-Vehicle is of exactly one model-Year;
+Vehicle is of one model-Year;
 
 Address is identified by Street and City and Postcode and State where
-	Address is at exactly one Street,
-	Address is in exactly one City,
+	Address is at one Street,
+	Address is in one City,
 	Address is in at most one Postcode,
 	Address is in at most one State;
-Incident relates to loss at exactly one Address;
+Incident relates to loss at one Address;
 Party has at most one postal-Address;
 Person lives at at most one Address;
 Witness lives at at most one Address;
@@ -185,12 +185,12 @@ AuthorisedRep is a kind of Party;
 Client is a kind of Party;
 
 Company is a kind of Party;
-Company has exactly one contact-Person,
+Company has one contact-Person,
 	Person is contact for Company;
 
 ContactMethods is identified by Person where
-	Person has exactly one ContactMethods,
-	ContactMethods are for exactly one Person;
+	Person has one ContactMethods,
+	ContactMethods are for one Person;
 ContactMethods includes at most one Email;
 ContactMethods includes at most one business-Phone;
 ContactMethods prefers at most one contact-Time;
@@ -206,7 +206,7 @@ ContractorAppointment is where
 DamagedProperty is identified by Incident and Address where
 	Incident caused DamagedProperty,
 	DamagedProperty was damaged in at most one Incident,
-	DamagedProperty is at exactly one Address;
+	DamagedProperty is at one Address;
 DamagedProperty owner has contact at most one Phone;
 DamagedProperty belongs to at most one owner-Name;
 
@@ -237,28 +237,28 @@ Investigator is a kind of Contractor;
 
 License is identified by Driver where
 	Driver holds at most one License,
-	License is held by exactly one Driver;
-License has exactly one LicenseNumber,
+	License is held by one Driver;
+License has one LicenseNumber,
 	LicenseNumber is of at most one License;
-License is of exactly one LicenseType,
+License is of one LicenseType,
 	LicenseType has License instance;
 License was granted in at most one Year;
 License is international;
 
 Policy is identified by p_year and p_product and p_state and p_serial where
-	Policy was issued in exactly one Year (as p_year),
-	Policy is for product having exactly one Product (as p_product),
-	Policy issued in state having exactly one State (as p_state),
-	Policy has exactly one PolicySerial (as p_serial);
+	Policy was issued in one Year (as p_year),
+	Policy is for product having one Product (as p_product),
+	Policy issued in state having one State (as p_state),
+	Policy has one PolicySerial (as p_serial);
 Application is for Policy,
-	Policy has exactly one Application;
-Claim is on exactly one Policy,
+	Policy has one Application;
+Claim is on one Policy,
 	Policy has Claim;
 ITCClaimed is for Policy,
 	Policy has at most one ITCClaimed;
 Policy was sold by at most one AuthorisedRep,
 	AuthorisedRep sold Policy;
-Policy belongs to exactly one Client,
+Policy belongs to one Client,
 	Client has Policy;
 Cover is where
 	Policy provides CoverType over Asset,
@@ -270,8 +270,8 @@ Solicitor is a kind of Contractor;
 
 UnderwritingDemerit is identified by VehicleIncident and DemeritKind where
 	VehicleIncident occurred despite UnderwritingDemerit,
-	UnderwritingDemerit preceded exactly one VehicleIncident,
-	UnderwritingDemerit has exactly one DemeritKind,
+	UnderwritingDemerit preceded one VehicleIncident,
+	UnderwritingDemerit has one DemeritKind,
 	DemeritKind is of UnderwritingDemerit;
 UnderwritingDemerit occurred at most one occurrence-Count times;
 

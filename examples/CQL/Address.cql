@@ -19,19 +19,19 @@ Company is identified by its Name;
 Family is identified by its Name;
 
 Person is identified by Family and GivenNames where
-	Person is of exactly one Family,
+	Person is of one Family,
 	Family includes Person,
-	Person has exactly one GivenNames;
+	Person has one GivenNames;
 
 Street is identified by first-StreetLine and second-StreetLine and third-StreetLine where
-	Street includes exactly one first-StreetLine,
+	Street includes one first-StreetLine,
 	Street includes at most one second-StreetLine,
 	Street includes at most one third-StreetLine;
 
 Address is identified by street-Number and Street and City and Postcode where
 	Address is at at most one street-Number,
-	Address is at exactly one Street,
-	Address is in exactly one City,
+	Address is at one Street,
+	Address is in one City,
 	Address is in at most one Postcode,
 	Postcode is of Address;
 Company has head office at at most one Address;
