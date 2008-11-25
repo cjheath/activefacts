@@ -149,8 +149,6 @@ module ActiveFacts
       @concept_types_dumped[o] = true
       pi = o.preferred_identifier
 
-      #debug "#{o.name} is a subtype!!!" if o.supertypes.size > 0
-
       supers = o.supertypes
       if (supers.size > 0)
         # Ignore identification by a supertype:
@@ -230,9 +228,9 @@ module ActiveFacts
           if constraint     # Mark this constraint as "verbalised" so we don't do it again:
             @constraints_used[constraint] = true
           end
-          frequency_constraints << constraint
+          frequency_constraints << show_frequency(role, constraint)
         else
-          frequency_constraints << nil
+          frequency_constraints << show_frequency(role, nil)
         end
       end
 
@@ -244,6 +242,10 @@ module ActiveFacts
         append_ring_to_reading(expanded, ring)
       end
       expanded
+    end
+
+    def show_frequency role, constraint
+      constraint ? constraint.frequency : nil
     end
 
     def describe_fact_type(fact_type, highlight = nil)

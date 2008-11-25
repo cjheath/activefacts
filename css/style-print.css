@@ -1,0 +1,357 @@
+      body
+{
+  color              : #000000;
+  background-color   : #FFFFFF;
+  line-height        : 1.5em;
+  font-family        : Calibri, Verdana, sans-serif;
+}
+
+/* emphasis */
+
+  em,
+  blockquote
+  {
+    font-family      : Cambria, Georgia, serif;
+  }
+
+/* headings */
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .title
+  {
+    font-weight      : lighter;
+    font-family      : Constantia, "Book Antiqua", "URW Bookman L", serif;
+  }
+
+  #lof h1,
+  #lof h2,
+  #lof h3,
+  #lof h4,
+  #lof h5,
+  #lof h6
+  {
+    margin-top       : 1.25em;
+  }
+
+  #content h1,
+  #content h2,
+  #content h3,
+  #content h4,
+  #content h5,
+  #content h6
+  {
+    margin-top       : 2.5em;
+    line-height      : 1.25em;
+  }
+
+  #content h1
+  {
+    font-size        : 2.0em;
+  }
+
+  #content h2
+  {
+    font-size        : 1.8em;
+  }
+
+  #content h3
+  {
+    font-size        : 1.6em;
+  }
+
+  #content h4
+  {
+    font-size        : 1.4em;
+  }
+
+  #content h5
+  {
+    font-size        : 1.2em;
+  }
+
+  #content h6
+  {
+    font-size        : 1.0em;
+  }
+
+/* tables */
+
+  table
+  {
+    border           : none;
+  }
+
+  th,
+  td
+  {
+    padding          : 1em;
+    border           : 1px solid #C0C0C0;
+    vertical-align   : top;
+    background-color : #FFFFFF;
+  }
+
+  th
+  {
+    background-color : #F5F5F5;
+  }
+
+  table
+  {
+    margin           : auto;
+  }
+
+/* document structure */
+
+  #header
+  {
+    margin-bottom    : 5em;
+    text-align       : center;
+  }
+
+  #abstract
+  {
+    margin-bottom    : 5em;
+  }
+
+  #toc li
+  {
+    list-style-type  : none;
+  }
+
+  #toc li ul
+  {
+    padding-bottom   : 1em;
+    border-left      : thick solid #F5F5F5;
+    _border-left     : none; /* for IE6 */
+  }
+
+  #toc li ul:hover
+  {
+    border-color     : #DCDCDC;
+  }
+
+  #toc > ul
+  {
+    padding-left     : 1em;
+  }
+
+  #references
+  {
+    margin-top       : 5em;
+  }
+
+  #footer
+  {
+    border-top       : thick dotted #DCDCDC;
+    padding-top      : 1em;
+    margin-top       : 5em;
+    text-align       : center;
+  }
+
+/* document nodes */
+
+  .part    > .title,
+  .chapter > .title
+  {
+    padding-bottom   : 0.5em;
+  }
+
+  .part    > .title > big,
+  .chapter > .title > big
+  {
+    display          : block;
+    margin-top       : 0.25em;
+  }
+
+  .part    .title big,
+  .chapter .title big
+  {
+    _display         : block; /* for IE6 */
+    _margin-top      : 0.25em; /* for IE6 */
+    _margin-bottom   : 0.75em; /* for IE6 */
+  }
+
+  .paragraph > .title,
+  .tip       > .title,
+  .note      > .title,
+  .caution   > .title,
+  .warning   > .title,
+  .important > .title,
+  .figure    > .title,
+  .table     > .title,
+  .example   > .title,
+  .equation  > .title,
+  .procedure > .title
+  {
+    font-size        : large;
+    margin-top       : 2em;
+  }
+
+  .paragraph .title,
+  .tip       .title,
+  .note      .title,
+  .caution   .title,
+  .warning   .title,
+  .important .title,
+  .figure    .title,
+  .table     .title,
+  .example   .title,
+  .equation  .title,
+  .procedure .title
+  {
+    _font-size       : large; /* for IE6 */
+    _font-weight     : bold; /* large is not bold in IE6 */
+    _margin-top      : 2em; /* for IE6 */
+  }
+
+  .tip      ,
+  .note     ,
+  .caution  ,
+  .warning  ,
+  .important,
+  .figure   ,
+  .table    ,
+  .example  ,
+  .equation ,
+  .procedure
+  {
+    margin           : 3em;
+  }
+
+  .tip       > .icon,
+  .note      > .icon,
+  .caution   > .icon,
+  .warning   > .icon,
+  .important > .icon
+  {
+    float            : left;
+    margin           : 0 1em 1em 0; /* top right bottom left */
+  }
+
+  .tip       .icon,
+  .note      .icon,
+  .caution   .icon,
+  .warning   .icon,
+  .important .icon
+  {
+    _display         : none; /* IE6 cannot display embedded images */
+  }
+
+  .figure > .title
+  {
+    text-align       : center;
+  }
+
+  .figure .title
+  {
+    _text-align      : center; /* for IE6 */
+  }
+
+  .figure > .content > img
+  {
+    display          : block;
+    margin           : auto;
+  }
+
+  .figure .content img
+  {
+    _display         : block; /* for IE6 */
+    _margin          : auto; /* for IE6 */
+  }
+
+      /* headings */
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6
+  {
+    font-weight      : normal;
+  }
+
+/* hyperlinks */
+
+  a:link,
+  a:visited,
+  a:active
+  {
+    color            : #0000FF;
+    font-weight      : bold;
+    text-decoration  : underline;
+  }
+
+  a:after
+  {
+    content          : " (" attr(href) ")";
+    font-family      : sans-serif;
+    font-weight      : normal;
+    font-size        : 90%;
+  }
+
+  a[href^="#"]:after
+  {
+    content          : "";
+  }
+
+  a[href^="#"]
+  {
+    color            : #A52A2A;
+    font-weight      : lighter;
+    text-decoration  : none;
+    font-style       : italic;
+  }
+
+  a.toc:link,
+  a.toc:visited
+  {
+    color            : inherit;
+    .color           : #000000; /* for IE6 and IE7 */
+    font-weight      : inherit;
+    text-decoration  : none;
+    font-style       : normal;
+  }
+
+/* source code */
+
+  tt
+  {
+    color            : inherit;
+    background-color : inherit;
+    font-weight      : normal;
+  }
+
+  pre,
+  .code
+  {
+    border           : none;
+    overflow         : visible;
+    background-color : inherit;
+  }
+
+/* document structure */
+
+  #lof
+  {
+    display          : none;
+  }
+
+/* document nodes */
+
+  .part    > .title > big,
+  .chapter > .title > big
+  {
+    padding-bottom   : 0.5em;
+  }
+
+  .part    .title big,
+  .chapter .title big
+  {
+    _padding-bottom  : 0.5em; /* for IE6 */
+  }
