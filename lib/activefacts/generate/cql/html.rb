@@ -8,11 +8,11 @@
 # copula: ORM2 standard concept is #060 (green)
 #
 require 'activefacts/vocabulary'
+require 'activefacts/api'
 require 'activefacts/generate/ordered'
 require 'activefacts/generate/cql'
 
 module ActiveFacts
-  class Constellation; end
 
   module Generate
     class CQL

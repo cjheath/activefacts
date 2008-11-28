@@ -13,6 +13,9 @@ require 'activefacts/vocabulary'
 
 module ActiveFacts
   module Input
+    # The ORM Input module is activated whenever afgen is called upon to process a file
+    # whose name ends in .orm (a file from NORMA). This parser uses Rexml so it's very slow.
+    # The file is parsed to a constellation and the vocabulary object defined in that file is returned.
     class ORM
       def self.readfile(filename)
         File.open(filename) {|file|
@@ -54,7 +57,7 @@ module ActiveFacts
       end
 
       def read_vocabulary
-        @constellation = Constellation.new(ActiveFacts::Metamodel)
+        @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
         @vocabulary = @constellation.Vocabulary(@x_model.attributes['Name'])
 
         # Find all elements having an "id" attribute and index them

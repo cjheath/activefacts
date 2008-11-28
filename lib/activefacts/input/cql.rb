@@ -8,12 +8,15 @@ require 'activefacts/cql/parser'
 require 'ruby-debug'
 
 module ActiveFacts
-  module Input
+  module Input #:nodoc:
+    # The CQL Input module is activated whenever afgen is called upon to process a file
+    # whose name ends in .cql. The file is parsed to a constellation and the vocabulary
+    # object defined in that file is returned.
     class CQL
       include ActiveFacts
       include ActiveFacts::Metamodel
 
-      class SymbolTable; end
+      class SymbolTable; end #:nodoc:
 
       RingTypes = %w{acyclic intransitive symmetric asymmetric transitive antisymmetric irreflexive reflexive}
       RingPairs = {
@@ -43,7 +46,7 @@ module ActiveFacts
 
       # Read the input, returning a new Vocabulary:
       def read
-        @constellation = Constellation.new(ActiveFacts::Metamodel)
+        @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
 
         @parser = ActiveFacts::CQLParser.new
 
@@ -1001,7 +1004,7 @@ module ActiveFacts
         player
       end
 
-      class SymbolTable
+      class SymbolTable #:nodoc:all
         # Externally built tables used in this binding context:
         attr_reader :roles_by_binding
         attr_accessor :embedded_presence_constraints

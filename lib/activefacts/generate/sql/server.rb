@@ -36,7 +36,7 @@ module ActiveFacts
 
         def initialize(vocabulary, *options)
           @vocabulary = vocabulary
-          @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
+          @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
           @delay_fks = options.include? "delay_fks"
         end
 

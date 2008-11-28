@@ -6,9 +6,7 @@ require 'activefacts/vocabulary'
 require 'activefacts/generate/ordered'
 
 module ActiveFacts
-  class Constellation; end
-
-  module Generate
+  module Generate #:nodoc:
     class CQL < OrderedDumper
       include Metamodel
 

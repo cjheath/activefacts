@@ -89,7 +89,7 @@ describe "Roles" do
   end
 
   it "should instantiate the matching concept on assignment" do
-    c = ActiveFacts::Constellation.new(Mod)
+    c = ActiveFacts::API::Constellation.new(Mod)
     bloggs = c.LegalEntity("Bloggs")
     acme = c.LegalEntity("Acme, Inc")
     contract = c.Contract("Bloggs", acme)
@@ -110,7 +110,7 @@ describe "Roles" do
   end
 
   it "should instantiate subclasses sensibly" do
-    c = ActiveFacts::Constellation.new(Mod)
+    c = ActiveFacts::API::Constellation.new(Mod)
     bloggs = c.LegalEntity("Bloggs & Co")
     #pending
     p = c.Person("Fred", "Bloggs")

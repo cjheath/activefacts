@@ -4,6 +4,8 @@
 #
 require "ruby-debug"
 
+require 'activefacts/api'
+
 describe "A Constellation instance" do
   setup do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
@@ -51,7 +53,7 @@ describe "A Constellation instance" do
         has_one :family_name, :Name
       end
     end
-    @constellation = ActiveFacts::Constellation.new(Mod)
+    @constellation = ActiveFacts::API::Constellation.new(Mod)
   end
 
   it "should support fetching its vocabulary" do

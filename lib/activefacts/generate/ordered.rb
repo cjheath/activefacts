@@ -3,16 +3,16 @@
 #
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+require 'activefacts/api'
 
 module ActiveFacts
-  class Constellation; end
 
-  class OrderedDumper
+  class OrderedDumper #:nodoc:
     include Metamodel
 
     def initialize(vocabulary, *options)
       @vocabulary = vocabulary
-      @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
+      @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
       options.each{|option| set_option(option) }
     end
 

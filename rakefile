@@ -1,4 +1,5 @@
-%w[rubygems rake rake/clean fileutils newgem rubigen].each { |f| require f }
+%w[rubygems rake rake/clean fileutils newgem rubigen spec spec/rake/spectask].each { |f| require f }
+
 require File.dirname(__FILE__) + '/lib/activefacts'
 
 # Generate all the Rake tasks
@@ -15,6 +16,11 @@ $hoe = Hoe.new('activefacts', ActiveFacts::VERSION) do |p|
     ['newgem', ">= #{::Newgem::VERSION}"]
   ]
   p.spec_extras[:extensions] = 'lib/activefacts/cql/Rakefile'
+  p.spec_extras[:rdoc_options] = [
+      "-x", "lib/activefacts/cql/.*.rb",
+      "-x", "lib/activefacts/vocabulary/.*.rb",
+      "-x", "lib/activefacts/persistence/.*.rb",
+    ]
   p.clean_globs |= %w[**/.DS_Store tmp *.log]
   path = (p.rubyforge_name == p.name) ? p.rubyforge_name : "\#{p.rubyforge_name}/\#{p.name}"
   p.remote_rdoc_dir = File.join(path.gsub(/^#{p.rubyforge_name}\/?/,''), 'rdoc')
@@ -26,3 +32,10 @@ Dir['tasks/**/*.rake'].each { |t| load t }
 
 # TODO - want other tests/tasks run by default? Add them to the list
 # task :default => [:spec, :features]
+
+Spec::Rake::SpecTask.new(:spec) do |t|
+    t.ruby_opts = ['-I', "lib"]
+    t.spec_files = FileList['spec/**/*_spec.rb']
+    # t.rcov = true
+    # t.rcov_opts = ['--exclude', 'spec,/usr/lib/ruby' ]
+end

@@ -22,7 +22,7 @@ describe "AutoCounter Value Type instances" do
         has_one :ordinal
       end
     end
-    @constellation = ActiveFacts::Constellation.new(Mod)
+    @constellation = ActiveFacts::API::Constellation.new(Mod)
     @thing = Mod::Thing.new(:new)
     @thing_id = Mod::ThingId.new
   end
