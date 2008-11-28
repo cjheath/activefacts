@@ -1,58 +1,28 @@
-#
-# Rakefile for activefacts.
-#
-# See LICENSE file for copyright notice.
-#
-require 'rubygems'
-Gem::manage_gems
-require 'rake/rdoctask'
-require 'rake/gempackagetask'
-require 'rake/clean'
-require 'spec'
-require 'spec/rake/spectask'
+%w[rubygems rake rake/clean fileutils newgem rubigen].each { |f| require f }
+require File.dirname(__FILE__) + '/lib/activefacts'
 
-#task :default => [ :test, :rdoc, :packaging, :package ]
-task :default => [ :rdoc, :packaging, :package ]
-
-task :spec => :test
-
-rst = Spec::Rake::SpecTask.new(:test) do |t|
-    t.ruby_opts = ['-I', "lib"]
-    t.spec_files = FileList['spec/**/*_spec.rb']
-    # t.rcov = true
-    # t.rcov_opts = ['--exclude', 'spec,/usr/lib/ruby' ]
-end
-#rst.options.files.clear
-
-Rake::RDocTask.new do |rd|
-    rd.rdoc_files.include("lib/**/*.rb", "LICENSE")
-    rd.rdoc_dir = "docs"
-    rd.options << "--accessor=typed_attr"
-    rd.options << "--accessor=array_attr"
+# Generate all the Rake tasks
+# Run 'rake -T' to see list of generated tasks (from gem root directory)
+$hoe = Hoe.new('activefacts', ActiveFacts::VERSION) do |p|
+  p.developer('Clifford Heath', 'cjh@dataconstellation.org')
+  p.changes              = p.paragraphs_of("History.txt", 0..1).join("\n\n")
+  p.post_install_message = 'For more information on ActiveFacts, see http://dataconstellation.com/ActiveFacts'
+  p.rubyforge_name       = "cjheath@rubyforge.org"
+  p.extra_deps         = [
+    ['treetop','>= 1.2.4'],
+  ]
+  p.extra_dev_deps = [
+    ['newgem', ">= #{::Newgem::VERSION}"]
+  ]
+  p.spec_extras[:extensions] = 'lib/activefacts/cql/Rakefile'
+  p.clean_globs |= %w[**/.DS_Store tmp *.log]
+  path = (p.rubyforge_name == p.name) ? p.rubyforge_name : "\#{p.rubyforge_name}/\#{p.name}"
+  p.remote_rdoc_dir = File.join(path.gsub(/^#{p.rubyforge_name}\/?/,''), 'rdoc')
+  p.rsync_args = '-av --delete --ignore-errors'
 end
 
-# Create the package task dynamically so FileList happens after RDocTask
-CLOBBER.include("pkg")	# Make sure we clean up the gem
-task :packaging do
-    spec = Gem::Specification.new do |s|
-	s.name       = "active_facts"
-	s.version    = "0.1.0"
-	s.author     = "Clifford Heath"
-	s.email      = "clifford dot heath at gmail dot com"
-	s.homepage   = "http://rubyforge.org/projects/active_facts"
-	s.platform   = Gem::Platform::RUBY
-	s.summary    = "Fact-based data modeling and database access"
-	s.files      = FileList["{bin,lib,spec}/**/*"].to_a
-	s.files      += [ "LICENSE" ]
-	s.require_path      = "lib"
-	s.autorequire       = "active_facts"
-	s.test_file         = "spec/runtest.rb"
-	s.has_rdoc          = true
-	s.extra_rdoc_files  = []
-    end
+require 'newgem/tasks' # load /tasks/*.rake
+Dir['tasks/**/*.rake'].each { |t| load t }
 
-    Rake::GemPackageTask.new(spec) do |pkg|
-	pkg.package_files += FileList["docs/**/*"].exclude(/rdoc$/).to_a
-	pkg.need_tar = true
-    end
-end
+# TODO - want other tests/tasks run by default? Add them to the list
+# task :default => [:spec, :features]

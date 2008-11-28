@@ -1,0 +1,6 @@
+task :default do
+  pattern = File.dirname(__FILE__) + '**/*.treetop'
+  files = Dir[pattern]
+  # Hopefully this quoting will work where there are spaces in filenames, and even maybe on Windows?
+  exec "tt '#{files*"' '"}'"
+end
