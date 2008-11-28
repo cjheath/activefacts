@@ -10,8 +10,15 @@ module ActiveFacts
     module Entity
       include Instance
 
-      # Entity instance methods:
-
+      # Assign the identifying roles to initialise a new Entity instance.
+      # The role values are asserted in the constellation first, so you
+      # can pass bare values (array, string, integer, etc) for any role
+      # whose instances can be constructed using those values.
+      #
+      # A value must be provided for every identifying role, but if the
+      # last argument is a hash, they may come from there.
+      #
+      # Any additional (non-identifying) roles may also be passed in the final hash.
       def initialize(*args)
         super(args)
         klass = self.class
@@ -40,7 +47,7 @@ module ActiveFacts
         end
       end
 
-      def inspect
+      def inspect #:nodoc:
         "\#<#{
           self.class.basename
         }:#{
@@ -53,6 +60,8 @@ module ActiveFacts
         }>"
       end
 
+      # When used as a hash key, the hash key of this entity instance is calculated
+      # by hashing the values of its identifying roles
       def hash
         self.class.identifying_roles.map{|role|
             send role
@@ -62,7 +71,8 @@ module ActiveFacts
           }
       end
 
-      # To be equal as a hash key, must have same identifying role values
+      # When used as a hash key, this entity instance is compared with another by
+      # comparing the values of its identifying roles
       def eql?(other)
         return false unless self.class == other.class
         self.class.identifying_roles.each{|role|
@@ -71,7 +81,7 @@ module ActiveFacts
         return true
       end
 
-      # verbalise this entity
+      # Verbalise this entity instance
       def verbalise(role_name = nil)
         "#{role_name || self.class.basename}(#{
           self.class.identifying_roles.map{|role_sym|
@@ -82,21 +92,23 @@ module ActiveFacts
         })"
       end
 
-      # An entity's key is the values of its identifying roles
+      # Return the array of the values of this entity instance's identifying roles
       def identifying_role_values
         self.class.identifying_roles.map{|role|
             send(role)
           }
       end
 
+      # All classes that become Entity types receive the methods of this class as class methods:
       module ClassMethods
         include Instance::ClassMethods
 
-        # Entity class methods:
+        # Return the array of Role objects that define the identifying relationships of this Entity type:
         def identifying_roles
           @identifying_roles ||= []
         end
 
+        # Return an array of Instance objects that can identify an instance of this Entity type:
         def identifying_role_values(*args)
           #puts "Getting identifying role values #{identifying_roles.inspect} of #{basename} using #{args.inspect}"
 
@@ -128,7 +140,7 @@ module ActiveFacts
           end
         end
 
-        def assert_instance(constellation, args)
+        def assert_instance(constellation, args) #:nodoc:
           # Build the key for this instance from the args
           # The key of an instance is the value or array of keys of the identifying values.
           # The key values aren't necessarily present in the constellation, even after this.
@@ -169,7 +181,7 @@ module ActiveFacts
           return *index_instance(instance, key, ir)
         end
 
-        def index_instance(instance, key = nil, key_roles = nil)
+        def index_instance(instance, key = nil, key_roles = nil) #:nodoc:
           # Derive a new key if we didn't receive one or if the roles are different:
           unless key && key_roles && key_roles == identifying_roles
             key = (key_roles = identifying_roles).map do |role_name|
@@ -193,7 +205,7 @@ module ActiveFacts
         # A concept that isn't a ValueType must have an identification scheme,
         # which is a list of roles it plays. The identification scheme may be
         # inherited from a superclass.
-        def initialise_entity_type(*args)
+        def initialise_entity_type(*args) #:nodoc:
           #puts "Initialising entity type #{self} using #{args.inspect}"
           @identifying_roles = superclass.identifying_roles if superclass.respond_to?(:identifying_roles)
           # REVISIT: @identifying_roles here are the symbols passed in, not the Role objects we should use.
@@ -201,7 +213,7 @@ module ActiveFacts
           @identifying_roles = args if args.size > 0 || !@identifying_roles
         end
 
-        def inherited(other)
+        def inherited(other) #:nodoc:
           other.identified_by *identifying_roles
           vocabulary.add_concept(other)
         end
@@ -212,7 +224,7 @@ module ActiveFacts
         end
       end
 
-      def Entity.included other
+      def Entity.included other #:nodoc:
         other.send :extend, ClassMethods
 
         # Register ourselves with the parent module, which has become a Vocabulary:

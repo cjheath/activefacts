@@ -5,13 +5,13 @@
 # Note that we still require facets/basicobject, see numeric.rb
 #
 
-class Symbol
+class Symbol #:nodoc:
   def to_proc
     Proc.new{|*args| args.shift.__send__(self, *args)}
   end
 end
 
-class String
+class String #:nodoc:
   def camelcase(first=false, on='_\s')
     if first
       gsub(/(^|[#{on}]+)([A-Za-z])/){ $2.upcase }
@@ -25,7 +25,7 @@ class String
   end
 end
 
-class Module
+class Module #:nodoc:
   def modspace
     space = name[ 0...(name.rindex( '::' ) || 0)]
     space == '' ? Object : eval(space)
@@ -36,7 +36,7 @@ class Module
   end
 end
 
-module ActiveFacts
+module ActiveFacts #:nodoc:
   # If the args array ends with a hash, remove it.
   # If the remaining args are fewer than the arg_names,
   # extract values from the hash and append them to args.

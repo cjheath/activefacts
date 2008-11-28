@@ -6,11 +6,12 @@
 #
 module ActiveFacts
   module API
+    # Every Instance of a Concept (A Value type or an Entity type) includes the methods of this module:
     module Instance
+      # What constellation does this Instance belong to (if any):
       attr_accessor :constellation
 
-      # Instance methods:
-      def initialize(args = [])
+      def initialize(args = []) #:nodoc:
         unless (self.class.respond_to?(:identifying_roles))
         #if (self.class.superclass != Object)
           # puts "constructing #{self.class.superclass} with #{args.inspect}"
@@ -40,12 +41,12 @@ module ActiveFacts
         end
       end
 
-      module ClassMethods
+      module ClassMethods #:nodoc:
         include Concept
         # Add Instance class methods here
       end
 
-      def Instance.included other
+      def Instance.included other #:nodoc:
         other.send :extend, ClassMethods
       end
     end

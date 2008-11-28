@@ -5,5 +5,6 @@
 # Author: Clifford Heath.
 #
 require 'rubygems'
+require 'activefacts/version'
 require 'activefacts/support'
 require 'activefacts/api'

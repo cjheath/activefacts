@@ -9,8 +9,8 @@ require 'date'
 module ActiveFacts
   module API
     # Adapter module to add value_type to all potential value classes
-    module ValueClass
-      def value_type *args, &block
+    module ValueClass #:nodoc:
+      def value_type *args, &block #:nodoc:
         include ActiveFacts::API::Value
         # the included method adds the Value::ClassMethods
         initialise_value_type(*args, &block)
@@ -28,11 +28,11 @@ ValueClasses.each{|c|
     c.send :extend, ActiveFacts::API::ValueClass
   }
 
-class TrueClass
+class TrueClass #:nodoc:
   def verbalise(role_name = nil); role_name ? "#{role_name}: true" : "true"; end
 end
 
-class NilClass
+class NilClass #:nodoc:
   def verbalise; "nil"; end
 end
 
@@ -45,13 +45,23 @@ class Class
 end
 
 # REVISIT: Fix these NORMA types
-class Decimal < Int; end
-class SignedInteger < Int; end
-class SignedSmallInteger < Int; end
-class UnsignedInteger < Int; end
-class UnsignedSmallInteger < Int; end
-class LargeLengthText < String; end
-class FixedLengthText < String; end
-class PictureRawData < String; end
-class DateAndTime < DateTime; end
-class Money < Decimal; end
+class Decimal < Int #:nodoc:
+end
+class SignedInteger < Int #:nodoc:
+end
+class SignedSmallInteger < Int #:nodoc:
+end
+class UnsignedInteger < Int #:nodoc:
+end
+class UnsignedSmallInteger < Int #:nodoc:
+end
+class LargeLengthText < String #:nodoc:
+end
+class FixedLengthText < String #:nodoc:
+end
+class PictureRawData < String #:nodoc:
+end
+class DateAndTime < DateTime #:nodoc:
+end
+class Money < Decimal #:nodoc:
+end

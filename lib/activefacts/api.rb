@@ -2,8 +2,17 @@
 # ActiveFacts runtime API.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
-# Note that we still require facets/basicobject, see numeric.rb
+# The ActiveFacts API is heavily metaprogrammed, so difficult to document.
 #
+# It operates on the principle that a Ruby module is used to encapsulate
+# a Vocabulary (the methods of the class Vocabulary are extend()ed into
+# the module). A Vocabulary contains classes that either derive from a
+# builtin Value type class (see standard_types.rb), or that use the method
+# Class#_identified_by_ to become an Entity (their classes are extend()ed
+# by the class Entity::ClassMethods). Each Value and Entity class also
+# contains the methods of the class Concept.
+#
+# A module becomes a Vocabulary when the first Concept class is defined within it.
 
 require 'activefacts/api/support'               # General support code and core patches
 require 'activefacts/api/vocabulary'            # A Ruby module may become a Vocabulary

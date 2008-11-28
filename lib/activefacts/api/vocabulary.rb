@@ -8,6 +8,8 @@
 module ActiveFacts
   module API
     module Vocabulary
+      # With a parameter, look up a concept class by name.
+      # Without, return the hash of all concepts in this vocabulary
       def concept(name = nil)
         @concept ||= {}
         return @concept unless name
@@ -23,7 +25,7 @@ module ActiveFacts
         return (const_get(camel) rescue nil)
       end
 
-      def add_concept(klass)
+      def add_concept(klass)  #:nodoc:
         name = klass.basename
         __bind(name)
         # puts "Adding concept #{name} to #{self.name}"
@@ -31,14 +33,14 @@ module ActiveFacts
         @concept[klass.basename] = klass
       end
 
-      def __delay(concept_name, args, &block)
+      def __delay(concept_name, args, &block) #:nodoc:
         # puts "Arranging for delayed binding on #{concept_name.inspect}"
         @delayed ||= Hash.new { |h,k| h[k] = [] }
         @delayed[concept_name] << [args, block]
       end
 
       # __bind raises an error if the named class doesn't exist yet.
-      def __bind(concept_name)
+      def __bind(concept_name)  #:nodoc:
         concept = const_get(concept_name)
         if (@delayed && @delayed.include?(concept_name))
           # $stderr.puts "#{concept_name} was delayed, binding now"
@@ -50,10 +52,6 @@ module ActiveFacts
         end
       end
 
-#      def inspect
-#        "#<Vocabulary #{basename}>"
-#      end
-
       def verbalise
         "Vocabulary #{name}:\n\t" +
           @concept.keys.sort.map{|concept|
@@ -64,7 +62,7 @@ module ActiveFacts
       end
 
       # Create or find an instance of klass in constellation using value to identify it
-      def adopt(klass, constellation, value)
+      def adopt(klass, constellation, value)  #:nodoc:
         puts "Adopting #{ value.verbalise rescue value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
 
         path = "unknown"

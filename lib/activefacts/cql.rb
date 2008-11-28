@@ -4,31 +4,25 @@
 #
 require 'rubygems'
 require 'polyglot'
-require 'activefacts/cql/parser'
+require 'activefacts/support'
+require 'activefacts/input/cql'
 require 'activefacts/generate/ruby'
 
 module ActiveFacts
   # Extend the generated parser:
   class CQLLoader
-    # The load method required by Polyglot.
-    # The meaning of load will probably be to parse the file, and
-    # generate and eval Ruby source code for the implied modules.
+    # This load method for Polyglot tells it how to _require_ a CQL file.
+    # The CQL file is parsed to a vocabulary constellation, which is generated
+    # to Ruby code and eval'd, making the generated classes available.
     def self.load(file)
       debug "Loading #{file}" do
-        parser = ActiveFacts::CQLParser.new
+        vocabulary = ActiveFacts::Input::CQL.readfile(file)
 
-        result = nil
-        File.open(file) do |f|
-          result = parser.parse_all(input = f.read, :definition) { |node|
-              parser.definition(node)
-              nil
-            }
-          raise parser.failure_reason unless result
-        end
-
-        # REVISIT: Nothing is done with results (the loaded parse tree) yet
-        # The parser will produce a vocabulary, which will be generated into
-        # Ruby code and eval'ed.
+        ruby = StringIO.new
+        @dumper = ActiveFacts::Generate::RUBY.new(vocabulary.constellation)
+        @dumper.generate(ruby)
+        ruby.rewind
+        eval ruby.read, ::TOPLEVEL_BINDING
       end
     end
   end

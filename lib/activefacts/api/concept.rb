@@ -6,7 +6,9 @@ module ActiveFacts
   module API
     module Vocabulary; end
 
+    # Concept contains methods that are added as class methods to all Value and Entity classes.
     module Concept
+      # What vocabulary (Ruby module) does this concept belong to?
       def vocabulary
         modspace        # The module that contains this concept.
       end
@@ -39,27 +41,43 @@ module ActiveFacts
         end
       end
 
-      # Define a unary fact type attached to this concept
+      # Define a unary fact type attached to this concept; in essence, a boolean attribute.
+      #
+      # Example: maybe :is_ceo
       def maybe(role_name)
         realise_role(roles[role_name] = Role.new(TrueClass, nil, role_name))
       end
 
-      # Define a binary fact type joning this concept to another,
+      # Define a binary fact type relating this concept to another,
       # with a uniqueness constraint only on this concept's role.
+      # This method creates two accessor methods, one in this concept and one in the other concept.
+      # Parameters after the role_name may be omitted if not required:
+      # * role_name - a Symbol for the name of the role (this end of the relationship).
+      # * other_player - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined.
+      # * :mandatory - if this role may not be NULL in a valid fact population. Mandatory constraints are only enforced during validation (e.g. before saving).
+      # * :other_role_name - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>_by_<role_name>
       def has_one(*args)
         role_name, related, mandatory, related_role_name = extract_binary_params(false, args)
         define_binary_fact_type(false, role_name, related, mandatory, related_role_name)
       end
 
-      # Define a binary fact type joning this concept to another,
-      # with uniqueness constraints in both directions
+      # Define a binary fact type joining this concept to another,
+      # with uniqueness constraints in both directions, i.e. a one-to-one relationship
+      # This method creates two accessor methods, one in this concept and one in the other concept.
+      # Parameters after the role_name may be omitted if not required:
+      # * role_name - a Symbol for the name of the role (this end of the relationship)
+      # * other_player - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined
+      # * :mandatory - if this role may not be NULL in a valid fact population. Mandatory constraints are only enforced during validation (e.g. before saving)
+      # * :other_role_name - use if the role at the other end should have a name other than the default :<concept> or :<concept>_by_<role_name>
       def one_to_one(*args)
         role_name, related, mandatory, related_role_name =
           extract_binary_params(true, args)
         define_binary_fact_type(true, role_name, related, mandatory, related_role_name)
       end
 
-      # Access supertypes or add new supertypes
+      # Access supertypes or add new supertypes; multiple inheritance.
+      # With parameters (Class objects), it adds new supertypes to this class. Instances of this class will then have role methods for any new superclasses (transitively). Superclasses must be Ruby classes which are existing Concepts.
+      # Without parameters, it returns the array of Concept supertypes (one by Ruby inheritance, any others as defined using this method)
       def supertypes(*concepts)
         class_eval do
           @supertypes ||= []
@@ -86,7 +104,7 @@ module ActiveFacts
         end
       end
 
-      # All concept supertypes, transitively.
+      # Return the array of all Concept supertypes, transitively.
       def supertypes_transitive
         class_eval do
           supertypes = []
@@ -101,7 +119,7 @@ module ActiveFacts
       end
 
       # Every new role added or inherited comes through here:
-      def realise_role(role)
+      def realise_role(role) #:nodoc:
         #puts "Realising role #{role.player.basename rescue role.player}.#{role.name} in #{basename}"
 
         if (!role.counterpart)

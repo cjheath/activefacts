@@ -8,6 +8,7 @@
 require 'delegate'
 require 'date'
 
+# It's not possible to subclass Integer, so instead we delegate to it.
 class Int < SimpleDelegator
   def initialize(i = nil)
     __setobj__(Integer(i))
@@ -34,6 +35,7 @@ class Int < SimpleDelegator
   end
 end
 
+# It's not possible to subclass Float, so instead we delegate to it.
 class Real < SimpleDelegator
   def initialize(r = nil)
     __setobj__(Float(r))
@@ -60,8 +62,8 @@ class Real < SimpleDelegator
   end
 end
 
-# A Date can be constructed from any Date subclass
-class ::Date
+# A Date can be constructed from any Date subclass, not just using the normal date constructors.
+class ::Date #:nodoc:
   class << self; alias_method :old_new, :new end
   def self.new(*a, &b)
     #puts "Constructing date with #{a.inspect} from #{caller*"\n\t"}"
@@ -75,7 +77,7 @@ class ::Date
 end
 
 # A DateTime can be constructed from any Date or DateTime subclass
-class ::DateTime
+class ::DateTime #:nodoc:
   class << self; alias_method :old_new, :new end
   def self.new(*a, &b)
     #puts "Constructing DateTime with #{a.inspect} from #{caller*"\n\t"}"
@@ -97,6 +99,9 @@ end
 # The AutoCounter class is an integer, but only after the value
 # has been established in the database.
 # Construct it with the value :new to get an uncommitted value.
+# You can use this new instance as a role value to identify an entity instance,
+# or anywhere else for that matter.
+# The assigned value will be filled out everywhere it needs to be, upon save.
 class AutoCounter
   def initialize(i = :new)
     raise "AutoCounter #{self.class} may not be #{i.inspect}" unless i == :new or Integer === i

@@ -6,11 +6,13 @@
 #
 module ActiveFacts
   module API
+
+    # All Value instances include the methods defined here
     module Value
       include Instance
 
       # Value instance methods:
-      def initialize(*args)
+      def initialize(*args) #:nodoc:
         super(args)
       end
 
@@ -20,14 +22,15 @@ module ActiveFacts
       end
 
       # A value is its own key
-      def identifying_role_values
+      def identifying_role_values #:nodoc:
         self
       end
 
+      # All ValueType classes include the methods defined here
       module ClassMethods
         include Instance::ClassMethods
 
-        def initialise_value_type *args, &block
+        def initialise_value_type *args, &block #:nodoc:
           # REVISIT: args could be a hash, with keys :length, :scale, :unit, :allow
           #raise "value_type args unexpected" if args.size > 0
         end
@@ -53,14 +56,14 @@ module ActiveFacts
           "#{basename} = #{superclass.basename}();"
         end
 
-        def identifying_role_values(*args)
+        def identifying_role_values(*args)  #:nodoc:
           # If the single arg is the correct class or a subclass, use it directly
           #puts "#{basename}.identifying_role_values#{args.inspect}"
           return args[0] if (args.size == 1 and self.class === args[0])   # No secondary supertypes allowed for value types
           new(*args)
         end
 
-        def assert_instance(constellation, args)
+        def assert_instance(constellation, args)  #:nodoc:
           # Build the key for this instance from the args
           # The key of an instance is the value or array of keys of the identifying values.
           # The key values aren't necessarily present in the constellation, even after this.
@@ -79,7 +82,7 @@ module ActiveFacts
           return *index_instance(instance)
         end
 
-        def index_instance(instance, key = nil)
+        def index_instance(instance, key = nil) #:nodoc:
           instances = instance.constellation.instances[self]
           key = instance.identifying_role_values
           instances[key] = instance
@@ -93,7 +96,7 @@ module ActiveFacts
           return instance, key
         end
 
-        def inherited(other)
+        def inherited(other)  #:nodoc:
           #puts "REVISIT: ValueType #{self} < #{self.superclass} was inherited by #{other}; not implemented" #+"from #{caller*"\n\t"}"
           # Copy the type parameters here, etc?
           other.send :realise_supertypes, self
@@ -102,7 +105,7 @@ module ActiveFacts
         end
       end
 
-      def self.included other
+      def self.included other #:nodoc:
         other.send :extend, ClassMethods
 
         #puts "ValueType included in #{other.basename} from #{caller*"\n\t"}"

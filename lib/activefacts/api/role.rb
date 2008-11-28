@@ -4,6 +4,10 @@
 module ActiveFacts
   module API
 
+    # A Role represents the relationship of one object to another (or to a boolean condition).
+    # Relationships (or binary fact types) have a Role at each end; one is declared using _has_one_
+    # or _one_to_one_, and the other is created on the counterpart class. Each Concept class maintains
+    # an array of the roles it plays.
     class Role
       attr_accessor :name
       attr_accessor :counterpart      # All roles except unaries have a binary counterpart
@@ -25,14 +29,14 @@ module ActiveFacts
         counterpart == nil
       end
 
-      def resolve_player(vocabulary)
+      def resolve_player(vocabulary)  #:nodoc:
         return @player if Class === @player   # Done already
         klass = vocabulary.concept(@player)   # Trigger the binding
         raise "Cannot resolve role player #{@player.inspect} for role #{name} in vocabulary #{vocabulary.basename}; still forward-declared?" unless klass
         @player = klass                       # Memoize a successful result
       end
 
-      def adapt(constellation, value)
+      def adapt(constellation, value) #:nodoc:
         # If the value is a compatible class, use it (if in another constellation, clone it),
         # else create a compatible object using the value as constructor parameters.
         if @player === value  # REVISIT: may be a non-primary subtype of player
@@ -56,20 +60,20 @@ module ActiveFacts
 
     # Every Concept has a Role collection
     # REVISIT: You can enumerate the concept's own roles, or inherited roles as well.
-    class RoleCollection < Hash
+    class RoleCollection < Hash #:nodoc:
       def verbalise
         keys.sort_by(&:to_s).inspect
       end
     end
 
-    # REVISIT: Perhaps I should use an enumerator here instead,
-    # and just find a way to handle replace and delete?
-    #
     # A RoleValueArray is an array with all mutating methods hidden.
     # We use these for the "many" side of a 1:many relationship.
     # Only "replace" and "delete" are actually used (so far!).
-    # Perhaps sort! is innocuous and can remain?
-    class RoleValueArray < Array
+    #
+    # Don't rely on this implementation, as it must change to support
+    # persistence.
+    #
+    class RoleValueArray < Array  #:nodoc:
       [ :"<<", :"[]=", :clear, :collect!, :compact!, :concat, :delete,
         :delete_at, :delete_if, :fill, :flatten!, :insert, :map!, :pop,
         :push, :reject!, :replace, :reverse!, :shift, :shuffle!, :slice!,
