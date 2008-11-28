@@ -1,3 +1,4 @@
+#! env ruby
 #
 # Read an ORM2 Vocabulary from a NORMA, CQL or other file
 #
