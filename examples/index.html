@@ -1,311 +1,92 @@
 <!--#include virtual="/header.html" -->
+<!--#include virtual="navbar.html" -->
 
-<div class="localnav">
-  <a href="#top"><strong>Example Models</strong></a><br/>
-  <a href="#CompanyDirectorEmployee"> Company </a><br/>
-  <a href="#SchoolActivities"> School Activities </a><br/>
-  <a href="#Death"> Death </a><br/>
-  <a href="#Address"> Address</a><br/>
-  <a href="#Orienteering"> Orienteering </a><br/>
-  <a href="#AllExamples"> Table of all examples </a><br/>
-</div
+<div class="localnav standalone" style="position: fixed;">
+  <ul>
+    <li id="nav-home"><a href="/ActiveFacts/" title="Home">Home</a></li>
+    <li><a title="CompanyDirectorEmployee" href="#CompanyDirectorEmployee"> Company and People </a></li>
+    <li><a title="Blog" href="#Blog"> Blog </a></li>
+    <li><a title="SchoolActivities" href="#SchoolActivities"> School Activities </a></li>
+    <li><a title="Orienteering" href="#Orienteering"> Orienteering </a></li>
+    <li><a title="Metamodel" href="#Metamodel"> Metamodel </a></li>
+    <li><a title="All Examples" href="#AllExamples"> Table of all examples </a></li>
+  </ul>
+</div>
 
-<div id="top" class="content" style="margin: 0px 80px 0px 200px">
+<div id="top" class="content" style="margin: 0px 80px 0px 240px">
 
-  <h2>ActiveFacts Example Models and introduction to ORM2</h2>
-  <p><font size="-1">Copyright (c) 2007 Clifford Heath.</font></p>
+  <h2>ActiveFacts Example Models</h2>
+  <p class="standalone"><font size="-1">Copyright (c) 2007 Clifford Heath.</font></p>
 
-  <p>The example models presented here were created in ORM2 using
-  <a href="http://www.ormfoundation.org/files/">NORMA</a>, and
-  converted from there to CQL, SQL and Ruby code using ActiveFacts.
-  If you have Visual Studio (pro) with NORMA installed, you can open
-  the solution <a href="norma/ExampleModels.sln">here</a>. If not,
-  read on; all the diagrams are available as PNG images, and though
-  you won't be able to edit the ORM2 files, you can do all the same
-  things by editing the CQL text.
+  <p>The example models presented here were created as Object Role Models
+  using <a href="http://www.ormfoundation.org/files/">NORMA</a>. The
+  ActiveFacts generator <em>afgen</em> was used to convert them from ORM2
+  to CQL, SQL and Ruby code using ActiveFacts.  They're all available here
+  as PNG images and in the other formats.
+
+  </p><p>
+  To make a start learning Object Role Modeling, read the
+  <a href="intro.html">Introduction to ORM2</a> or check the Resources page
+  for other sites.
+
+  </p><p>
+  The CQL code here formatted and laid out is <em>exactly</em> as it was generated.
+  It's interesting how cleverly the semantic clustering algorithm works!
+
+  </p><p class="standalone">
+  If you're looking at a Subversion checkout of the project on Windows,
+  and have Visual Studio (pro) with NORMA installed, you can open
+  the solution <a href="norma/ExampleModels.sln">here</a>.
+  Otherwise, you won't be able to edit the ORM2 files, but never fear,
+  you can do all the same things by editing the CQL text.
   </p>
-
-  <p>Since this is an introductory document, ORM2 terminology is
-  <i>italicised</i> on first use.</p>
 
   <a name="CompanyDirectorEmployee"></a>
-  <h3>CompanyDirectorEmployee</h3>
-  <p><center>
-  <img src="images/CompanyDirectorEmployee.png" width="700" height="420"></p>
-  </center>
-  <table width="100%">
-  <tr>
-  <td style='width:25%; border:0;'>View the generated:</td>
-  <td><a href="CQL/CompanyDirectorEmployee.cql">CQL</a></td>
-  <td><a href="ruby/CompanyDirectorEmployee.rb">Ruby</a></td>
-  <td><a href="SQL/CompanyDirectorEmployee.sql">SQL</a></td>
-  </tr>
-  </table>
+  <h4>CompanyDirectorEmployee</h4>
+  <p>This is my main introductory model. It shows the relationships of a person
+  to a company of which they are a director or employee.
   </p>
 
-  <p>This model includes examples of the features of ORM2 you'll be seeing most often.</p>
-  <ul>
-    <li><i>Entity Types</i> (<b>Person</b>, <b>Company</b>) and <i>Value Types</i>
-      (Name, Date). Collectively, ActiveFacts calls them Concepts. Value types
-      have a dashed outline.
-    </li>
-
-    <li>Entity <i>Identification schemes</i>: Person is identified by the pair
-      of values (given-Name, family-Name), as indicated by the circle with two
-      lines across it. Company is identified by a single CompanyName, but since
-      this is a common pattern, it's included within the Company shape, which
-      is called a <b>reference mode</b>. Every Entity Type must have some
-      identification scheme or preferred identifier, which enables us to tell
-      the instances apart.
-      </li>
-
-    <li><i>Subtype:</i> <b>Employee</b> and <b>Manager</b> are subtypes.
-      Employee has a dashed arrow, because it has its own identification scheme,
-      it doesn't use Persons's scheme. An EntityType may have multiple supertypes,
-      and an instance may play any role of its supertypes (so we can record the
-      Birth-Date of an Employee, for example).
-      </li>
-
-    <li><i>Fact Types</i> define relationships between concepts. They're displayed
-      as a series of one or more <i>Role</i> boxes. For example, the fact type
-      "Person has given-Name" has two roles, played by Person and Name.
-      The <b>unary fact type</b> <i>Meeting is board meeting</i> indicates a
-      true/false condition with respect to a meeting.
-      </li>
-
-    <li><i>Objectified Fact Type:</i> <b>Directorship</b> and <b>Meeting</b> are
-      fact types that are also entities, and thus can play other roles, such as
-      the role of Directorship in "Directorship began on appointment-Date".
-      </li>
-
-    <li><i>Fact Readings</i> are displayed as text under each fact type. A fact
-      type may have many readings, though only the preferred one is shown on the
-      diagram. Binary fact types may display a reading for each direction. An
-      arrow is displayed if a single reading is to be read in the opposite order
-      from the obvious one.
-      </li>
-
-    <li><i>Uniqueness constraints</i>: The horizontal lines above the fact types
-      are uniqueness constraints (UC). A UC covering a single role allows that
-      role's player to occur only once all the instances of that fact type (what
-      we call the <b>population</b> of that fact type). A UC that covers two or
-      more roles allows any combination of those players, but only once for each
-      combination. An </b>external</b> UC may connect to roles in more than one
-      fact type, and is shown as a circle with a line across it. If any of the
-      UC lines is doubles, that UC acts as a preferred identifier for the indicated
-      entity type.
-      </li>
-
-    <li><i>Mandatory constraint</i>: The heavy dot on some role connectors (like
-      the one on the Company role box of Director) is a mandatory constraint that
-      requires every company to have at least one director. A mandatory constraint
-      may also be shown as a hollow dot, which says <i>should</i>, rather than
-      <i>must</i>.
-      </li>
-
-    <li><i>External Mandatory constraint</i>: The circle containing a crossed dot
-      which is joined to "is ceo" and "Employee is supervised by Manager" is a
-      mandatory exclusion constraint. The cross (X) indicates exclusion (only one)
-      and the dot indicates mandatory (at least one). Both types may also occur
-      separately.
-      </li>
-
-    <li><i>Ring constraint</i>: A Ring constraint is attached to the "Employee is
-      supervised by Manager". This one is acyclic, indicating that an Employee
-      may not supervise themselves, or anyone who supervises them, and so on.
-      There are a number of other types of ring constraints.
-      </li>
-
-    <li><i>Role Value Restriction</i>: The Date value recorded for a person's birth
-      date may not be before the year 1900. Other Date values don't have this
-      same restriction.
-      </li>
-
-  </ul>
-
-  <br clear="all">
-  <a name="SchoolActivities">
-  </a>
-  <h3>SchoolActivities
-  </h3>
-  <p align="center"><img src="images/SchoolActivities.png"></p>
-  <p>This model shows a ternary (which represents a student's participation in a
-  school-sanctioned activity). The Participation ternary has a UC spanning two
-  roles (which says that a given Student may only participate in a given Activity
-  for a single School). But there are two occurrences of a new symbol, <i>subset constraints<b>.</b></i>
-  These constraints specify restrictions on the allowed <i>fact population</i> of
-  the ternary fact type. The UC doesn't specify <b>which</b> school a student may
-  represent for an activity. The student is enrolled in exactly one school, and
-  the set of (School, Student) pairs is a superset of the (School, Student) pair
-  inside the ternary. In simple terms, this requires that each student who
-  participates in some activity may only do so as a representative of the school
-  in which they're enrolled, and not for any other school. Furthermore, the upper
-  subset constraint requires that such participation may only occur for an activity
-  that is sanctioned by that school. The direction of the subset arrow is consistent
-  with the arrows used in sub-typing, as shown in the next case.
+  <a name="Blog"></a>
+  <h4>Blog</h4>
+  <p>The Blog model supports a hierarchy of topics, Posts by Authors, each Post
+  consisting of a series of styled Paragraphs. Comments may be made on individual
+  Paragraphs.
   </p>
 
-  <p>
-      Every fact type must have at least one UC that covers all, or all-but-one, of its roles.  Any fewer and the fact type is not <i>elementary</i>.  Elementarity is an important reason why semantic modeling is an effective technique.
-  </p>
-  <br clear="all">
-  <a name="Death">
-  </a>
-  <h3>Death
-  </h3>
-  <img src="images/Death.png" align="right">
-  This example is more a curiosity than anything else, serving to illustrate a case
-  that you might not otherwise think was possible. Person may play a unary role in
-  the fact type &quot;is dead&quot;. If they are in fact dead, we might wish to
-  record some facts about the event of their death, so we nest (objectify) the
-  &quot;is dead&quot; fact type as a new entity, Death. This allows us to
-  associate their death with a value indicating the cause of death. The uniqueness
-  constraint requires that we record only one cause of death.
-  <p>
-
-  <br clear="all">
-  <a name="Address">
-  </a>
-  <h3>
-  Address
-  </h3>
-
-  <p align="center"><img src="images/Address.png">
-  <table width="100%">
-  <tr>
-  <td style='width:25%; border:0;'>View the generated:</td>
-  <td><a href="CQL/Address.cql">CQL</a></td>
-  <td><a href="ruby/Address.rb">Ruby</a></td>
-  <td><a href="SQL/Address.sql">SQL</a></td>
-  </tr>
-  </table>
+  <a name="SchoolActivities"></a>
+  <h4>SchoolActivities</h4>
+  <p>This model represents students representing their school in school-sanctioned activities.
+  It includes the ternary StudentParticipation <em>Fact Type</em>, which represents a student's
+  participation in a school-sanctioned activity.
+  The model has constraints that allow a given Student to participate only in a given
+  Activity for a single School, only representing the School in which they're enrolled, and
+  only if the School sanctions that activity.
   </p>
 
-  <p>By now you're asking how all this mess of detail is going to be turned into a
-  usable database design. Before moving on to a larger real-life example, let's
-  cover the concept of <i>absorption</i> into a relational, or <i>compound</i>
-  schema.
+  <a name="Orienteering"></a>
+  <h4>Orienteering </h4>
+  <p>A model for the sport of Orienteering, broken into three diagrams for
+  administration, registration and scoring. These diagrams also reflect areas
+  of interest to folk in different roles, an idea which could inspire the use
+  of the division as security domains. However, for an object showing on multiple
+  diagrams, ORM2 doesn't indicate with which diagram it has a primary affinity.
+  In CQL, it might be better to structure this as three separate <em>vocabularies</em>.
+
+  </p><p>
+  The author is involved in orienteering in his local association (which publishes a
+  program and results at <a href="http://street.orienteering.com.au">street.orienteering.com.au</a>
+  and the <a href="http://www.vicorienteering.asn.au/parkstreet/"> Victorian Orienteering
+  Association</a>) and he used this model to construct a scoring system using low-power
+  microprocessors distributed around the course.
   </p>
 
-  <p>
-  <img src="images/Address.SQL.png" align="left">
-  </p>
-  <br clear="all">
-  <p>How is it that the SQL for this whole detailed diagram requires only the
-  two tables shown? You can see that Street has exactly three StreetLine values
-  allowed, and is identified by the combination, so here we could <b>absorb</b>
-  these fact roles into a Street table.  The same principle applies again to
-  Address, except here it absorbs StreetNumber, City, Postcode and <b>all
-  three</b> roles of the Street nested type. The same process continues with
-  Person, which is finally absorbed to the single table you see shown in the SQL
-  code. Note how the respective role names are appended to form column names
-  like <b>AddressStreetLine1</b>. </p>
-
-  <p>Note also that this table doesn't enforce the uniqueness constraint requiring
-  that each Address occurs once only. There's no need to. Each Address is
-  identified by its roles, but more than one person may live at the same address,
-  and a company might have its HQ there too. If you want all distinct addresses,
-  you can write an SQL UNION query for that.
-  </p>
-
-  <p> However, if you add a functional role to Address that's not part of its
-  identifier, the rules of normalisation defeat absorption and Address will become
-  an independent table; then Company and Person would have each a large multi-part
-  foreign key into the new Address table, so it's preferable to introduce a
-  <i>surrogate key</i> in the form of a database-allocated unique integer into the
-  address entity, and mark that key as the preferred identifier instead. Note that
-  this is <b>not</b> a detail of the conceptual model, but is merely a pragmatic
-  concern which should not need to be shown; instead the absorption process should
-  apply rules that require it to introduce such a surrogate key.  </p>
-
-  <p>It's also possible to mark Address as an <i>independent entity type</i>,
-  which is an instruction to the absorption process that indicates that this
-  entity might exist apart from any roles it might play. Independent entity types
-  are shown in ORM2 as having an exclamation point <b>!</b> after their name. In
-  order to represent an independent entity type in SQL, a separate table is always
-  needed.
-  </p>
-
-  <p>
-  Note that the absorption process requires <b>all</b> the entity types,
-  fact types, and constraints for the model. Adding a single fact type or changing
-  a constraint might require that some features are represented in new tables, or
-  different ones, and these changes can <b>cascade</b>, so that a small change in
-  the conceptual model requires a large database migration. Don't worry about that
-  for now, as there are ways of minimizing the impact, and in the future the
-  migration process will be fully automatic, and larger impacts may perhaps even
-  be delayed without delaying the incremental schema change.
-  </p>
-
-  <br clear="all">
-  <h3>
-  <a name="Orienteering">
-  </a>
-  Orienteering
-  </h3>
-  <p>Here's a three-part model of a system for the sport of Orienteering.  The
-  three parts cover administration, registration and scoring respectively, which
-  also happens to map areas of interest to folk in different roles.  Any feature
-  may show on more than one diagram, and the ORM2 rules don't indicate that such
-  an element has a special affinity with any diagram on which it appears.
-  Concepts that appear in more than one place are shown with a drop-shadow. The
-  diagrams are presented without much comment, and after that, the absorbed
-  (compound) form is shown as an entity-relationship diagram.  </p>
-
-  <a name="Administration"></a>
-  <h3>
-  Administration
-  </h3>
-  <p align="center"><img src="images/Orienteering/Administration.png">
-  </p>
-
-  <p>
-  A couple of new features are shown here. <i>Number</i> has a <b>Value restriction</b>,
-  which is similar to the role value restrictions we saw before, except it applies
-  to all <i>Number</i>s.
-  </p>
-
-  <p>Also here you'll see an external mandatory constraint without an exclusive
-  cross.  This one requires that an event is either part of a series, or has a name,
-  or <b>both</b>. If and only if the event is part of a series, it must also have a
-  number in that series - this is shown by the <b>equality constraint</b>, a
-  circle with an = sign in it.  </p>
-  <br clear="all">
-  </p>
-
-  <a name="Registration"></a>
-  <h3>
-  Registration
-  </h3>
-
-  <p align="center"><img src="images/Orienteering/Registration.png"></p>
-
-  <br clear="all">
-  <a name="Scoring"></a>
-  </p>
-  <h3>
-  Scoring
-  </h3>
-
-  <p align="center"><img src="images/Orienteering/Scoring.png">
-  <table width="100%">
-  <tr>
-  <td style='width:25%; border:0;'>View the generated:</td>
-  <td><a href="CQL/Orienteering.cql">CQL</a></td>
-  <td><a href="ruby/Orienteering.rb">Ruby</a></td>
-  <td><a href="SQL/Orienteering.sql">SQL</a></td>
-  </tr>
-  </table>
-  </p>
-
-  <p>This model also shows the resultant score for a given Entrant's
-  Entry to a given Event. This value will be computed from the times
-  of their visits to punches during the event, according to a scoring
-  method as advised. The asterisks indicate that the role value is
-  derived from other values in the model, or that some values may
-  be derived and others now.
-
-  <br clear="all">
+  <a name="Metamodel"></a>
+  <h4>Metamodel </h4>
+  <p>The Metamodel encodes the meaning of an ORM2 or CQL model. All features of the
+  ORM2 and CQL languages have a representation here, as well as a few CQL features
+  that haven't yet been implemented yet. The generated Ruby code is <em>used as the
+  intermediate form</em> inside the CQL language implementation.
   </p>
 
   <a name="AllExamples"></a>
@@ -313,6 +94,14 @@
   <h3>Table of all examples</h3>
   <!-- Table below here is generated automatically -->
   <table width="100%">
+  <tr>
+  <th>Model Name</th>
+  <td></td>
+  <td></td>
+  <td></td>
+  <th>Diagrams</th>
+  </tr>
+
   <tr>
   <td>Address</td>
   <td><a href="CQL/Address.cql">CQL</a></td>
