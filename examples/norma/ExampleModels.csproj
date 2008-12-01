@@ -69,9 +69,17 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>MultiInheritance.orm</DependentUpon>
     </Compile>
+    <Compile Include="OddIdentifier._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OddIdentifier.orm</DependentUpon>
+    </Compile>
     <Compile Include="OilSupply._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>OilSupply.orm</DependentUpon>
+    </Compile>
+    <Compile Include="OneToOnes._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOnes.orm</DependentUpon>
     </Compile>
     <Compile Include="Orienteering._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -176,9 +184,17 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>MultiInheritance._ORMCustomToolReport.cs</LastGenOutput>
     </None>
+    <None Include="OddIdentifier.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>OddIdentifier._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="OilSupply.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>OilSupply._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="OneToOnes.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>OneToOnes._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="PersonPlaysGame.orm">
       <Generator>ORMCustomTool</Generator>
@@ -496,6 +512,23 @@
     <None Include="OilSupply.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>OilSupply.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('OneToOnes.orm')">
+    <None Include="OneToOnes.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOnes.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="OneToOnes.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOnes.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="OneToOnes.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOnes.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>

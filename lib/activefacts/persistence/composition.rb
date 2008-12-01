@@ -125,6 +125,7 @@ module ActiveFacts
             when :one_one     # This object
               # Never absorb an entity type into a value type:
               next nil if ValueType === role.other_role_player and !is_a?(ValueType)
+              # REVISIT: Perhaps make an annotation here to help find counterpart when we decide which way to go...
               next role
             else
               raise "Illegal role type, #{role.fact_type.describe(role)} no uniqueness constraint"

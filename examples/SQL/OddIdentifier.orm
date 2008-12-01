@@ -1,0 +1,8 @@
+CREATE TABLE ThingSequence (
+	Text	varchar NULL,
+	ThingID	int NOT NULL,
+	Ordinal	int NOT NULL,
+	UNIQUE(ThingID, Text)
+)
+GO
+

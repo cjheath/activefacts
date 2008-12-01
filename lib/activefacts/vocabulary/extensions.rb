@@ -107,9 +107,23 @@ module ActiveFacts
                         role_sequence = rr.role_sequence
 
                         # The role sequence is only interesting if it cover only this fact's roles
+                        # or roles of the objectification
                         next if role_sequence.all_role_ref.size < fact_roles.size-1 # Not enough roles
                         next if role_sequence.all_role_ref.size > fact_roles.size   # Too many roles
-                        next if role_sequence.all_role_ref.detect{|rsr| ft = rsr.role.fact_type; ft != fact_type }
+                        next if role_sequence.all_role_ref.detect do |rsr|
+                            if (of = rsr.role.fact_type) != fact_type
+                              case of.all_role.size
+                              when 1    # A unary FT must be played by the objectification of this fact type
+                                next rsr.role.concept != fact_type.entity_type
+                              when 2    # A binary FT must have the objectification of this FT as the other player
+                                other_role = (of.all_role-[rsr.role])[0]
+                                next other_role.concept != fact_type.entity_type
+                              else
+                                next true # A role in a ternary (or higher) cannot be usd in our identifier
+                              end
+                            end
+                            rsr.role.fact_type != fact_type
+                          end
 
                         # This role sequence is a candidate
                         pc = role_sequence.all_presence_constraint.detect{|c|

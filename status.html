@@ -1,0 +1,66 @@
+<!--#include virtual="/header.html" -->
+<!--#include virtual="navbar.html" -->
+
+<div id="top" class="content" style="margin-left: 240px">
+
+<a name="status"></a>
+  <h2 class="title">
+    ActiveFacts Project Status
+  </h2>
+
+  <p>
+  The Constellation Query Language has almost-complete DDL support,
+  sufficient to allow conversion of any ORM2 model. The Ruby generator is
+  complete, and the SQL generator is complete also, though it has a couple
+  of known defects. The generated Ruby code has only a partial
+  implementation of the mapping data needed to convert to and from SQL
+  tables, and even that has to be enabled using an option.
+  </p>
+
+  <p>
+  CQL is not yet handling imported vocabularies, example fact populations or
+  value type units yet. It has limited model validation facilities, and it's
+  not yet possible to add a new reading to an existing fact type.  It's also
+  only parsing query syntax, with no semantic analysis or SQL generation.
+  </p>
+
+  <p>
+  The Constellation API (in Ruby) supports the generated Ruby code, allowing
+  any fact population to be constructed for a given vocabulary.  There is
+  not yet any support within the API for database persistence, but that's
+  coming up for implementation soon.
+  </p>
+
+  <p>
+  The Metamodel is generated to Ruby from CQL or ORM2 to support the
+  creation and manipulation of any semantic model. Some changes are upcoming
+  to support a vocabulary that provides a translation of an existing
+  vocabulary, such as a Dutch or Japanese version of an English language
+  model.
+  </p>
+
+  <p>
+  ActiveFacts can currently read models from NORMA, which are in elementary
+  form, and it can reverse engineer the schemas of existing databases in SQL
+  Server, DB2, Oracle, and open-source databases not yet tested including
+  MySQL, PostgreSQL, etc.  Reverse-engineered models are still in composite
+  form - the mapping to elementary form is incomplete.  Reverse engineering
+  does not yet analyse actual data.
+  </p>
+
+  <p>
+  ActiveFacts has no database adapter infrastructure yet. The
+  previously-available reverse engineering tools used used the
+  infrastructure of ActiveRecord with DRYSql and Composite Primary Keys, but
+  future versions will probably just use the ActiveRecord adapters directly.
+  </p>
+
+  <!--p>
+  APRIMO allows the definition of vocabulary aspects as well as the addition
+  of entity and value objects and the fact types that link them.  Subtyping,
+  data types and units, and complex constraints are still to be implemented.
+  </p-->
+
+</div>
+
+<!--#include virtual="/footer.html" -->
