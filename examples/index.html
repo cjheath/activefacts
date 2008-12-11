@@ -1,22 +1,28 @@
 <!--#include virtual="/header.html" -->
 <!--#include virtual="navbar.html" -->
 
-<div class="localnav standalone" style="position: fixed;">
-  <ul>
-    <li id="nav-home"><a href="/ActiveFacts/" title="Home">Home</a></li>
-    <li><a title="CompanyDirectorEmployee" href="#CompanyDirectorEmployee"> Company and People </a></li>
-    <li><a title="Blog" href="#Blog"> Blog </a></li>
-    <li><a title="SchoolActivities" href="#SchoolActivities"> School Activities </a></li>
-    <li><a title="Orienteering" href="#Orienteering"> Orienteering </a></li>
-    <li><a title="Metamodel" href="#Metamodel"> Metamodel </a></li>
-    <li><a title="All Examples" href="#AllExamples"> Table of all examples </a></li>
-  </ul>
-</div>
+<link rel="stylesheet" href="../css/offline.css" media="screen" type="text/css" />
+<link rel="stylesheet" href="../css/print.css" media="print" type="text/css" />
 
-<div id="top" class="content" style="margin: 0px 80px 0px 240px">
+<div id="sidebar"></div>
+
+<div id="top" class="content">
 
   <h2>ActiveFacts Example Models</h2>
-  <p class="standalone"><font size="-1">Copyright (c) 2007 Clifford Heath.</font></p>
+  <p class="offline noprint"><font size="-1">Copyright (c) 2007 Clifford Heath.</font></p>
+
+  <!-- Things to show only in the offline version -->
+  <div class="localnav offline noprint">
+    <ul>
+      <li id="nav-home"><a href="/ActiveFacts/" title="Home">Home</a></li>
+      <li><a title="CompanyDirectorEmployee" href="#CompanyDirectorEmployee"> Company and People </a></li>
+      <li><a title="Blog" href="#Blog"> Blog </a></li>
+      <li><a title="SchoolActivities" href="#SchoolActivities"> School Activities </a></li>
+      <li><a title="Orienteering" href="#Orienteering"> Orienteering </a></li>
+      <li><a title="Metamodel" href="#Metamodel"> Metamodel </a></li>
+      <li><a title="All Examples" href="#AllExamples"> Table of all examples </a></li>
+    </ul>
+  </div>
 
   <p>The example models presented here were created as Object Role Models
   using <a href="http://www.ormfoundation.org/files/">NORMA</a>. The
@@ -33,7 +39,7 @@
   The CQL code here formatted and laid out is <em>exactly</em> as it was generated.
   It's interesting how cleverly the semantic clustering algorithm works!
 
-  </p><p class="standalone">
+  </p><p class="offline">
   If you're looking at a Subversion checkout of the project on Windows,
   and have Visual Studio (pro) with NORMA installed, you can open
   the solution <a href="norma/ExampleModels.sln">here</a>.

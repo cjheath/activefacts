@@ -1,7 +1,10 @@
 <!--#include virtual="/header.html" -->
 <!--#include virtual="navbar.html" -->
 
-<div id="top" class="content" style="margin-left: 240px">
+<link rel="stylesheet" href="css/offline.css" media="screen" type="text/css" />
+<div id="sidebar"></div>
+
+<div id="top" class="content">
 
 <a name="status"></a>
   <h2 class="title">
@@ -9,12 +12,12 @@
   </h2>
 
   <p>
-  The Constellation Query Language has almost-complete DDL support,
-  sufficient to allow conversion of any ORM2 model. The Ruby generator is
-  complete, and the SQL generator is complete also, though it has a couple
-  of known defects. The generated Ruby code has only a partial
-  implementation of the mapping data needed to convert to and from SQL
-  tables, and even that has to be enabled using an option.
+  The Constellation Query Language has DDL support sufficient to allow
+  conversion of any ORM2 model. The Ruby generator is complete. The SQL
+  generator is complete, but with a couple of known defects in corner cases.
+  The generated Ruby code has only a partial implementation of the mapping
+  data needed to convert to and from SQL tables, and even that has to be
+  enabled using an option.
   </p>
 
   <p>

@@ -1,46 +1,47 @@
 <!--#include virtual="/header.html" -->
 <!--#include virtual="navbar.html" -->
 
-  <!--div id="sidebar">
-    <h3>More detail</h3>
-    <ul>
-      <li><a href="why.html">Why semantic modeling?</a></li>
-    </ul>
-  </div-->
+<link rel="stylesheet" href="css/offline.css" media="screen" type="text/css" />
+<link rel="stylesheet" href="css/print.css" media="print" type="text/css" />
 
-  <div id="sidebar">
+  <!-- Things to show only in the online version -->
+  <div id="sidebar" class="online">
     <h3>Quotes</h3>
     <!--p><em>&ldquo;epic, a masterwork&rdquo;</em></p>
     <p align="right">Who</p-->
 
-    <p><em>&ldquo;I've long believed there must be a way to do this, but could never work out how to start.&rdquo;</em></p>
+    <p><em>&ldquo;I've long believed there must be a way to do this, but could never
+    work out how to start.&rdquo;</em></p>
     <p align="right">OSDC conference attendee</p>
 
-    <!--p><em>&ldquo;Six months ago I quit my job and sold my house to fund a related project that now seems trivial and unnecessary in comparison&rdquo;</em></p>
+    <!--p><em>&ldquo;Six months ago I quit my job and sold my house to fund a related
+    project that now seems trivial and unnecessary in comparison&rdquo;</em></p>
     <p align="right">OSDC conference attendee</p>
 
-    <p><em>&ldquo;Epic, a major achievement. Your approach is so far ahead of the industry it's hard to believe it possible.&rdquo;</em></p>
+    <p><em>&ldquo;Epic, a major achievement. Your approach is so far ahead of the
+    industry it's hard to believe it possible.&rdquo;</em></p>
     <p align="right">Who</p-->
 
     <p><em>&ldquo;Inspirational!&rdquo;</em></p>
     <p align="right">Sven Dowideit</p>
   </div>
 
-  <div class="localnav standalone" style="position: fixed;">
-    <ul>
-      <li><a href="http://dataconstellation.com" title="Data Constellation Home">Data Constellation</a></li>
-      <li><a href="http://dataconstellation.com/ActiveFacts" title="ActiveFacts Home Page">ActiveFacts Home</a></li>
-      <li><a href="examples/index.html" title="Example Models">Example Models</a></li>
-      <li><a href="examples/intro.html" title="Introduction to ORM2">Introduction to ORM2</a></li>
-      <li><a href="http://dataconstellation.com/ActiveFacts/CQLIntroduction.html" title="The Constellation Query Language">Constellation Query Language</a></li>
-      <li><a href="status.html" title="Project Status">Project Status</a></li>
-      <li><a href="download.html" title="Download">Download</a></li>
-      <!--li><a href="resources.html" title="Resources">Resources</a></li-->
-    </ul>
-  </div>
-
-  <div id="top" class="content" style="margin-left: 240px">
+  <div id="top" class="content">
     <h2>ActiveFacts</h2>
+
+    <!-- Things to show only in the offline version -->
+    <div class="localnav offline noprint">
+      <ul>
+	<li><a href="http://dataconstellation.com" title="Data Constellation Home">Data Constellation</a></li>
+	<li><a href="http://dataconstellation.com/ActiveFacts" title="ActiveFacts Home Page">ActiveFacts Home</a></li>
+	<li><a href="examples/index.html" title="Example Models">Example Models</a></li>
+	<li><a href="examples/intro.html" title="Introduction to ORM2">Introduction to ORM2</a></li>
+	<li><a href="http://dataconstellation.com/ActiveFacts/CQLIntroduction.html" title="The Constellation Query Language">Constellation Query Language</a></li>
+	<li><a href="status.html" title="Project Status">Project Status</a></li>
+	<li><a href="download.html" title="Download">Download</a></li>
+	<!--li><a href="resources.html" title="Resources">Resources</a></li-->
+      </ul>
+    </div>
 
     <p>
     ActiveFacts is a <strong>semantic modeling toolkit</strong> that

@@ -1,0 +1,497 @@
+<!--#include virtual="/header.html" -->
+<!--#include virtual="navbar.html" -->
+
+<link rel="stylesheet" href="../css/offline.css" media="screen" type="text/css" />
+<link rel="stylesheet" href="../css/print.css" media="print" type="text/css" />
+
+<div id="top" class="content">
+  <h2>Introduction to Object Role Modeling</h2>
+  <p class="offline" ><font size="-1">Copyright (c) 2007 Clifford Heath.</font></p>
+
+  <div class="localnav offline noprint">
+    <a href="#top"><strong>Example Models</strong></a><br/>
+    <a href="#CompanyDirectorEmployee"> Company </a><br/>
+    <a href="#SchoolActivities"> School Activities </a><br/>
+    <a href="#Death"> Death </a><br/>
+    <a href="#Address"> Address</a><br/>
+    <a href="#Orienteering"> Orienteering </a><br/>
+    <a href="#AllExamples"> Table of all examples </a><br/>
+  </div>
+
+  <p> Congratulations, you're just a few minutes away from knowing a more
+  agile way to design good database schemas.  These models were created in ORM2
+  using <a href="http://www.ormfoundation.org/files/">NORMA</a>.
+  ORM2 terminology is <em>emphasised</em> on first use.
+  </p>
+
+  <a name="CompanyDirectorEmployee"></a>
+  <h3>CompanyDirectorEmployee</h3>
+  <p>This model shows the some of the relationships of a person to a company of
+  which they are a director or employee.
+  </p>
+
+  <table width="100%">
+  <tr>
+  <td style='width:25%; border:0;'>View the generated:</td>
+  <td><a href="CQL/CompanyDirectorEmployee.cql">CQL</a></td>
+  <td><a href="ruby/CompanyDirectorEmployee.rb">Ruby</a></td>
+  <td><a href="SQL/CompanyDirectorEmployee.sql">SQL</a></td>
+  </tr>
+  </table>
+
+  <p><center>
+  <img src="images/CompanyDirectorEmployee.png" width="700" height="420" class="hangleft"></p>
+  </center>
+  </p>
+
+  <p>This model includes examples of the features of ORM2 you'll be seeing most often.</p>
+  <ul>
+    <li><i>Entity Types</i> (<b>Person</b>, <b>Company</b>) and <i>Value Types</i>
+      (Name, Date). Collectively, ActiveFacts calls them Concepts. Value types
+      have a dashed outline.
+    </li>
+
+    <li>Entity <i>Identification schemes</i>: Person is identified by the pair
+      of values (given-Name, family-Name), as indicated by the circle with two
+      lines across it. Company is identified by a single CompanyName, but since
+      this is a common pattern, it's included within the Company shape, which
+      is called a <b>reference mode</b>. Every Entity Type must have some
+      identification scheme or preferred identifier, which enables us to tell
+      the instances apart.
+      </li>
+
+    <li><i>Subtype:</i> <b>Employee</b> and <b>Manager</b> are subtypes.
+      Employee has a dashed arrow, because it has its own identification scheme,
+      it doesn't use Persons's scheme. An EntityType may have multiple supertypes,
+      and an instance may play any role of its supertypes (so we can record the
+      Birth-Date of an Employee, for example).
+      </li>
+
+    <li><i>Fact Types</i> define relationships between concepts. They're displayed
+      as a series of one or more <i>Role</i> boxes. For example, the fact type
+      "Person has given-Name" has two roles, played by Person and Name.
+      The <b>unary fact type</b> <i>Meeting is board meeting</i> indicates a
+      true/false condition with respect to a meeting.
+      </li>
+
+    <li><i>Objectified Fact Type:</i> <b>Directorship</b> and <b>Meeting</b> are
+      fact types that are also entities, and thus can play other roles, such as
+      the role of Directorship in "Directorship began on appointment-Date".
+      </li>
+
+    <li><i>Fact Readings</i> are displayed as text under each fact type. A fact
+      type may have many readings, though only the preferred one is shown on the
+      diagram. Binary fact types may display a reading for each direction. An
+      arrow is displayed if a single reading is to be read in the opposite order
+      from the obvious one.
+      </li>
+
+    <li><i>Uniqueness constraints</i>: The horizontal lines above the fact types
+      are uniqueness constraints (UC). A UC covering a single role allows that
+      role's player to occur only once all the instances of that fact type (what
+      we call the <b>population</b> of that fact type). A UC that covers two or
+      more roles allows any combination of those players, but only once for each
+      combination. An </b>external</b> UC may connect to roles in more than one
+      fact type, and is shown as a circle with a line across it. If any of the
+      UC lines is doubles, that UC acts as a preferred identifier for the indicated
+      entity type.
+      </li>
+
+    <li><i>Mandatory constraint</i>: The heavy dot on some role connectors (like
+      the one on the Company role box of Director) is a mandatory constraint that
+      requires every company to have at least one director. A mandatory constraint
+      may also be shown as a hollow dot, which says <i>should</i>, rather than
+      <i>must</i>.
+      </li>
+
+    <li><i>External Mandatory constraint</i>: The circle containing a crossed dot
+      which is joined to "is ceo" and "Employee is supervised by Manager" is a
+      mandatory exclusion constraint. The cross (X) indicates exclusion (only one)
+      and the dot indicates mandatory (at least one). Both types may also occur
+      separately.
+      </li>
+
+    <li><i>Ring constraint</i>: A Ring constraint is attached to the "Employee is
+      supervised by Manager". This one is acyclic, indicating that an Employee
+      may not supervise themselves, or anyone who supervises them, and so on.
+      There are a number of other types of ring constraints.
+      </li>
+
+    <li><i>Role Value Restriction</i>: The Date value recorded for a person's birth
+      date may not be before the year 1900. Other Date values don't have this
+      same restriction.
+      </li>
+
+  </ul>
+
+  <br clear="all">
+  <a name="SchoolActivities">
+  </a>
+  <h3>SchoolActivities
+  </h3>
+  <p>This model represents students representing their school in school-sanctioned activities.
+  </p>
+
+  <p align="center"><img src="images/SchoolActivities.png"></p>
+
+  <p>
+  The model has three interesting constraints:
+  <dl>
+    <dt> Uniqueness over <em>Student represents School in Activity</em>:</dt>
+    <dd> Allows a given Student may only participate in a given Activity for a single School</dd>
+    <dt> <b>Subset</b> from Participation to Enrollment</dt>
+    <dd> Only for the School in which they're enrolled</dd>
+    <dt> <b>Subset</b> from Participation to Sanctions</dt>
+    <dd> Only if the School sanctions that activity.</dd>
+  </p>
+
+  <p> The rules of <em>elementarity</em> require that every fact type having N roles has
+  a uniqueness constraint over either N or N-1 roles, and never over fewer roles.
+  This is satisfied here by the StudentParticipation having a uniqueness constraint
+  over two of its three roles.
+  </p>
+
+  <p>
+  The subset constraints work like this. The student is enrolled in exactly one school,
+  and the set of (School, Student) pairs is a superset of the (School, Student) pair
+  inside the StudentParticipation ternary. In simple terms, this requires that each
+  student who participates in some activity may only do so as a representative of the
+  school in which they're enrolled, and not for any other school. The other subset
+  constraint requires that such participation may only occur for an activity that is
+  sanctioned by that school. The direction of the subset arrow is consistent with the
+  arrows used in sub-typing, as shown in the next case.
+  </p>
+
+  <br clear="all">
+  <a name="Death"></a>
+  <h3>Death</h3>
+  <img src="images/Death.png" align="right">
+  This example is more a curiosity than anything else, serving to illustrate a case
+  that you might not otherwise think was possible. Person may play a unary role in
+  the fact type &quot;is dead&quot;. If they are in fact dead, we might wish to
+  record some facts about the event of their death, so we nest (objectify) the
+  &quot;is dead&quot; fact type as a new entity, Death. This allows us to
+  associate their death with a value indicating the cause of death. The uniqueness
+  constraint requires that we record only one cause of death.
+  <p>
+
+  <br clear="all">
+  <a name="Address">
+  </a>
+  <h3>
+  Address
+  </h3>
+
+  <p>The Address model shows how a mass of fine semantic detail can be turned into
+  an efficient relational database structure, through the miracle of <em>absorption</em>.
+  </p>
+
+  <table width="100%">
+  <tr>
+  <td style='width:25%; border:0;'>View the generated:</td>
+  <td><a href="CQL/Address.cql">CQL</a></td>
+  <td><a href="ruby/Address.rb">Ruby</a></td>
+  <td><a href="SQL/Address.sql">SQL</a></td>
+  </tr>
+  </table>
+  </p>
+
+  <p align="center"><img src="images/Address.png" class="hangleft">
+
+  <p>Note that the preferred identifier for Street covers all its functional roles.
+  Essentially that means that whereever we have a Street, all the attributes of that
+  street must be provided; so we can include them in more than one table without
+  breaking the relational <a href="http://en.wikipedia.org/wiki/Third_normal_form">Third
+  Normal Form</a>, which would introduce unsafe duplication.
+
+  </p><p>
+  The same thing pertains for Address, so we can have an Address in both the Company
+  and Person tables without breaking normalisation. Here's the generated SQL created
+  by <em>afgen</em>:
+
+  </p> <p>
+  <img src="images/Address.SQL.png" align="left">
+  </p>
+  <br clear="all">
+
+  <p>Note also that the SQL doesn't enforce the uniqueness constraint requiring
+  that each Address occurs once only. There's no need to. Each Address is
+  identified by its roles, but more than one person may live at the same address,
+  and a company might have its HQ there too. If you want all the distinct addresses,
+  you can write an SQL UNION query for that.
+  </p>
+
+  <p>If you want an Address table anyhow, you can mark it as <em>independent</em>,
+  which is an instruction to the absorption process that an instance of this entity
+  type might exist apart from any other roles it might play. Independent entity types
+  are shown in ORM2 as having an exclamation point <b>!</b> after their name. In
+  order to represent an independent entity type in SQL, a separate table is always
+  needed.
+  </p>
+
+  <p> If you were to add a functional role to Address that's not part of its
+  identifier, the rules of normalisation gazump absorption and Address will become
+  an independent table. In that case, Company and Person would have each a large
+  multi-part foreign key into the new Address table, so it might be preferable to
+  introduce a <i>surrogate key</i> in the form of a database-allocated unique integer
+  into the address entity, and mark that key as the preferred identifier instead.
+  This can be done with <em>minimal</em> change to the semantic model, so any queries
+  you have will probably still <b>just work</b> - this is a key advantage of the
+  semantic approach.
+  </p>
+
+  <p>
+  Note that the absorption process must know <b>all</b> the entity types, fact types,
+  and constraints for the model. If you add a single fact type or change a constraint,
+  that might require that some concepts are represented in new tables, or different ones,
+  and these changes can <b>cascade</b>, so that a small change in the conceptual model
+  requires a large database migration. If you've written your program using the
+  Constellation API, you'll have <em>minimal rework</em>.
+  </p>
+
+  <br clear="all">
+  <h3>
+  <a name="Orienteering">
+  </a>
+  Orienteering
+  </h3>
+  <p>Here's a three-part model of a system for the sport of Orienteering.  The
+  three parts cover administration, registration and scoring respectively, which
+  also happens to map areas of interest to folk in different roles.  Any feature
+  may show on more than one diagram, and the ORM2 rules don't indicate that such
+  an element has a special affinity with any diagram on which it appears.
+  Concepts that appear in more than one place are shown with a drop-shadow. The
+  diagrams are presented without much comment, and after that, the absorbed
+  (compound) form is shown as an entity-relationship diagram.  </p>
+
+  <a name="Administration"></a>
+  <h3>
+  Administration
+  </h3>
+  <p align="center"><img src="images/Orienteering/Administration.png">
+  </p>
+
+  <p>
+  A couple of new features are shown here. <i>Number</i> has a <b>Value restriction</b>,
+  which is similar to the role value restrictions we saw before, except it applies
+  to all <i>Number</i>s.
+  </p>
+
+  <p>Also here you'll see an external mandatory constraint without an exclusive
+  cross.  This one requires that an event is either part of a series, or has a name,
+  or <b>both</b>. If and only if the event is part of a series, it must also have a
+  number in that series - this is shown by the <b>equality constraint</b>, a
+  circle with an = sign in it.  </p>
+  <br clear="all">
+  </p>
+
+  <a name="Registration"></a>
+  <h3>
+  Registration
+  </h3>
+
+  <p align="center"><img src="images/Orienteering/Registration.png"></p>
+
+  <br clear="all">
+  <a name="Scoring"></a>
+  </p>
+  <h3>
+  Scoring
+  </h3>
+
+  <p align="center"><img src="images/Orienteering/Scoring.png">
+  <table width="100%">
+  <tr>
+  <td style='width:25%; border:0;'>View the generated:</td>
+  <td><a href="CQL/Orienteering.cql">CQL</a></td>
+  <td><a href="ruby/Orienteering.rb">Ruby</a></td>
+  <td><a href="SQL/Orienteering.sql">SQL</a></td>
+  </tr>
+  </table>
+  </p>
+
+  <p>This model also shows the resultant score for a given Entrant's
+  Entry to a given Event. This value will be computed from the times
+  of their visits to punches during the event, according to a scoring
+  method as advised. The asterisks indicate that the role value is
+  derived from other values in the model, or that some values may
+  be derived and others now.
+
+  <br clear="all">
+  </p>
+
+  <div class="noprint">
+  <a name="AllExamples"></a>
+
+  <h3>Table of all examples</h3>
+  <!-- Table below here is generated automatically -->
+  <table width="100%">
+  <tr>
+  <td>Address</td>
+  <td><a href="CQL/Address.cql">CQL</a></td>
+  <td><a href="ruby/Address.rb">Ruby</a></td>
+  <td><a href="SQL/Address.sql">SQL</a></td>
+  <td>
+  <a href="images/Address.png">Address</a><br>
+  </tr>
+
+  <a name="Blog"></a>
+  <tr>
+  <td>Blog</td>
+  <td><a href="CQL/Blog.cql">CQL</a></td>
+  <td><a href="ruby/Blog.rb">Ruby</a></td>
+  <td><a href="SQL/Blog.sql">SQL</a></td>
+  <td>
+  <a href="images/Blog.png">Blog</a><br>
+  </tr>
+
+  <tr>
+  <td>CompanyDirectorEmployee</td>
+  <td><a href="CQL/CompanyDirectorEmployee.cql">CQL</a></td>
+  <td><a href="ruby/CompanyDirectorEmployee.rb">Ruby</a></td>
+  <td><a href="SQL/CompanyDirectorEmployee.sql">SQL</a></td>
+  <td>
+  <a href="images/CompanyDirectorEmployee.png">CompanyDirectorEmployee</a><br>
+  </tr>
+
+  <tr>
+  <td>Death</td>
+  <td><a href="CQL/Death.cql">CQL</a></td>
+  <td><a href="ruby/Death.rb">Ruby</a></td>
+  <td><a href="SQL/Death.sql">SQL</a></td>
+  <td>
+  <a href="images/Death.png">Death</a><br>
+  </tr>
+
+  <tr>
+  <td>Genealogy</td>
+  <td><a href="CQL/Genealogy.cql">CQL</a></td>
+  <td><a href="ruby/Genealogy.rb">Ruby</a></td>
+  <td><a href="SQL/Genealogy.sql">SQL</a></td>
+  <td>
+  <a href="images/Genealogy.png">Genealogy</a><br>
+  </tr>
+
+  <tr>
+  <td>Insurance</td>
+  <td><a href="CQL/Insurance.cql">CQL</a></td>
+  <td><a href="ruby/Insurance.rb">Ruby</a></td>
+  <td><a href="SQL/Insurance.sql">SQL</a></td>
+  <td>
+  <a href="images/Insurance/Claim.png">Claim</a><br>
+  <a href="images/Insurance/Insurance.png">Insurance</a><br>
+  <a href="images/Insurance/Person.png">Person</a><br>
+  <a href="images/Insurance/Policy.png">Policy</a><br>
+  </tr>
+
+  <tr>
+  <td>Marriage</td>
+  <td><a href="CQL/Marriage.cql">CQL</a></td>
+  <td><a href="ruby/Marriage.rb">Ruby</a></td>
+  <td><a href="SQL/Marriage.sql">SQL</a></td>
+  <td>
+  <a href="images/Marriage.png">Marriage</a><br>
+  </tr>
+
+  <a name="Metamodel"></a>
+  <tr>
+  <td>Metamodel</td>
+  <td><a href="CQL/Metamodel.cql">CQL</a></td>
+  <td><a href="ruby/Metamodel.rb">Ruby</a></td>
+  <td><a href="SQL/Metamodel.sql">SQL</a></td>
+  <td>
+  <a href="images/Metamodel/Constraints.png">Constraints</a><br>
+  <a href="images/Metamodel/Import.png">Import</a><br>
+  <a href="images/Metamodel/Objects.png">Objects</a><br>
+  <a href="images/Metamodel/Populations.png">Populations</a><br>
+  <a href="images/Metamodel/Values.png">Values</a><br>
+  </tr>
+
+  <tr>
+  <td>MultiInheritance</td>
+  <td><a href="CQL/MultiInheritance.cql">CQL</a></td>
+  <td><a href="ruby/MultiInheritance.rb">Ruby</a></td>
+  <td><a href="SQL/MultiInheritance.sql">SQL</a></td>
+  <td>
+  <a href="images/MultiInheritance.png">MultiInheritance</a><br>
+  </tr>
+
+  <tr>
+  <td>OilSupply</td>
+  <td><a href="CQL/OilSupply.cql">CQL</a></td>
+  <td><a href="ruby/OilSupply.rb">Ruby</a></td>
+  <td><a href="SQL/OilSupply.sql">SQL</a></td>
+  <td>
+  <a href="images/OilSupply.png">OilSupply</a><br>
+  </tr>
+
+  <tr>
+  <td>Orienteering</td>
+  <td><a href="CQL/Orienteering.cql">CQL</a></td>
+  <td><a href="ruby/Orienteering.rb">Ruby</a></td>
+  <td><a href="SQL/Orienteering.sql">SQL</a></td>
+  <td>
+  <a href="images/Orienteering/Administration.png">Administration</a><br>
+  <a href="images/Orienteering/Registration.png">Registration</a><br>
+  <a href="images/Orienteering/Scoring.png">Scoring</a><br>
+  </tr>
+
+  <tr>
+  <td>OrienteeringER</td>
+  <td><a href="CQL/OrienteeringER.cql">CQL</a></td>
+  <td><a href="ruby/OrienteeringER.rb">Ruby</a></td>
+  <td><a href="SQL/OrienteeringER.sql">SQL</a></td>
+  <td>
+  <a href="images/OrienteeringER.png">OrienteeringER</a><br>
+  </tr>
+
+  <tr>
+  <td>PersonPlaysGame</td>
+  <td><a href="CQL/PersonPlaysGame.cql">CQL</a></td>
+  <td><a href="ruby/PersonPlaysGame.rb">Ruby</a></td>
+  <td><a href="SQL/PersonPlaysGame.sql">SQL</a></td>
+  <td>
+  <a href="images/PersonPlaysGame.png">PersonPlaysGame</a><br>
+  </tr>
+
+  <tr>
+  <td>SchoolActivities</td>
+  <td><a href="CQL/SchoolActivities.cql">CQL</a></td>
+  <td><a href="ruby/SchoolActivities.rb">Ruby</a></td>
+  <td><a href="SQL/SchoolActivities.sql">SQL</a></td>
+  <td>
+  <a href="images/SchoolActivities.png">SchoolActivities</a><br>
+  </tr>
+
+  <tr>
+  <td>SimplestUnary</td>
+  <td><a href="CQL/SimplestUnary.cql">CQL</a></td>
+  <td><a href="ruby/SimplestUnary.rb">Ruby</a></td>
+  <td><a href="SQL/SimplestUnary.sql">SQL</a></td>
+  <td>
+  <a href="images/SimplestUnary.png">SimplestUnary</a><br>
+  </tr>
+
+  <tr>
+  <td>Warehousing</td>
+  <td><a href="CQL/Warehousing.cql">CQL</a></td>
+  <td><a href="ruby/Warehousing.rb">Ruby</a></td>
+  <td><a href="SQL/Warehousing.sql">SQL</a></td>
+  <td>
+  <a href="images/Warehousing.png">Warehousing</a><br>
+  </tr>
+
+  <tr>
+  <td>WindowInRoomInBldg</td>
+  <td><a href="CQL/WindowInRoomInBldg.cql">CQL</a></td>
+  <td><a href="ruby/WindowInRoomInBldg.rb">Ruby</a></td>
+  <td><a href="SQL/WindowInRoomInBldg.sql">SQL</a></td>
+  <td>
+  <a href="images/WindowInRoomInBldg.png">WindowInRoomInBldg</a><br>
+  </tr>
+  </table>
+  </div>
+
+</div>
+
+<!--#include virtual="/footer.html" -->
