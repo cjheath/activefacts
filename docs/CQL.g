@@ -1,103 +1,116 @@
 grammar CQL;
 
 cql
-:	( definition ';' )*
+:	statement*
+;
+
+statement
+:	definition ';'
+|	query '?'
 ;
 
 definition
 :	'vocabulary' ID
-|	import
-|	unit
+|	import_def
+|	unit_def
 |	constraint
 |	concept
 ;
-
-import
+	
+import_def
 :	'import' ID ( ',' 'alias' ID 'as' ID )*
 ;
 
+unit_def
+:	'unit' ID ( '=' ( REAL | DECIMAL '/' DECIMAL )? unit_derivation )?
+;
+
+unit_derivation
+:	unit+ ( '/' unit+ )?
+;
+
 unit
-:	'unit' ID ( '=' ( REAL | DECIMAL '/' DECIMAL ) units_raised )?
-;
-
-units_raised
-:	unit_raised+ ( '/' unit_raised+ )?
-;
-
-unit_raised
 :	ID ( '^' '-'? DIGIT )?
 ;
 
-/* External constraints */
+// External constraints
 constraint
-:	( 'for' 'each' role_list quantifier 'of' 'these' 'holds' ':'
-	| 'each' role_list 'occurs' quantifier 'time' 'in'
-	) reading_list		/* roles in readings may need 'some' and 'that' */
-	| reading_list 'only' 'if' reading_list
+:	mandatory_or_exclusive_constraint
+	| join_expression 'only' 'if' join_expression
+	| join_expression 'if' 'and' 'only' 'if' join_expression
 ;
 
-reading_list
+mandatory_or_exclusive_constraint
+:	( 'for' 'each' role_list quantifier 'of' 'these' 'holds' ':'
+	|  'each' role_list 'occurs' quantifier 'time' 'in'
+	) join_expression
+|	'either' join_expression 'or' join_expression 'but' 'not' 'both'
+;
+
+join_expression
 :	reading ( 'and' reading )*
 ;
 
 role_list
-:	role_name ( ',' role_name )*
+:	role_ref ( ',' role_ref )*
 ;
 
 concept
-:	base_type
-|	subtype
+:	entity_type
 |	data_type
 |	fact_type
 ;
 
-base_type
-:	ID 'is' identification ( 'where' | ':' ) clause_list
+entity_type
+:	ID 'is' identification
+|	ID 'is' supertypes identification?
 ;
 
-subtype
-:	ID kind_of ID ( ',' ID )* identification? ( ( 'where' | ':' ) clause_list )?
-;
-
-kind_of
-:	'is'  'a' 'subtype' 'of'
-|	'is'  'a' 'kind' 'of'
+supertypes
+:	'a' ( 'subtype' | 'kind' ) 'of' ID ( ',' ID )*
 ;
 
 identification
-:	'identified' 'by' role_name ( 'and' role_name )*
+:	'identified' 'by' ( 'its' ID id_fact_types? | role_ref ( 'and' role_ref )* id_fact_types)
 ;
 
-role_name
-:	ID ( '-'? ID )?
+id_fact_types
+:	( 'where' | ':' ) clause_list
 ;
 
-/* Data Types */
+role_ref
+:	((ID '-') => (ID '-'))? ID (('-' | ID) => ('-'? ID))?
+//:	(ID '-')? ID ('-'? ID)?
+;
+
+// Data Types
 data_type
 :	ID ( '=' | 'is' 'defined' 'as' ) ID parameter_list
-	dt_details?
+	dt_details
 ;
 
 dt_details
-:	units_raised? restriction?
+:	('in' unit)? restriction?
 ;
 
-/* Fact types */
+// Fact types
 fact_type
-:	( ID 'is' 'where' )?	/* Nominalise the fact type? */
-	clause_list		/* Alternate readings for the fact type */
+:	( ID 'is' 'where' )?	// Nominalise the fact type?
+	clause_list		// Alternate readings for the fact type
 	derivation?
-;
-
-derivation
-:	( ( 'where' | ':' )	/* Fact derivation conditions */
-	  condition_list
-	)?
-	returning?	/* Default result constellation */
+	returning?		// Default result constellation
 ;
 
 clause_list
 :	clause ( ',' clause )*
+;
+
+query
+:	condition_list returning?
+;
+
+derivation	// Fact derivation conditions
+:	( 'where' | ':' ) condition_list
 ;
 
 condition_list
@@ -114,49 +127,36 @@ returning
 ;
 
 return
-:	role_name
-|	'by' ( 'ascending' | 'descending' ) role_name
+:	role_ref
+|	'by' ( 'ascending' | 'descending' ) role_ref
 ;
 
-/* Fact clauses (readings with embedded constraints). Plenty of ambiguity here! */
 clause
-:	qualifier? reading post_qualifiers?
+:	'maybe'? reading qualifiers?
+;
+
+qualifiers
+:	'[' qualifier ( ',' qualifier )* ']'
 ;
 
 qualifier
-:	'maybe' | 'definitely'
-;
-
-post_qualifiers
-:	'[' post_qualifier ( ',' post_qualifier )* ']'
-;
-
-post_qualifier
 :	'static' | 'transient' | 'intransitive' | 'transitive' | 'acyclic' | 'symmetric'
 ;
 
 reading
-:	( ID | fact_role )+
+:	(ID | fact_role)* (quantifier? fact_role)
 ;
 
 fact_role
-:	quantifier?
-	leading_adjective?
-	ID
-	trailing_adjective?
-	function_call*
+:	role_ref
+//	function_call*
 	role_name_def?
-	( value | restriction )?
+	values?
 ;
 
-role
-:	quantifier?
-	leading_adjective?
-	ID
-	trailing_adjective?
-	role_name_def?
+values
+:	value | restriction
 ;
-
 
 quantifier
 :	'no'
@@ -175,11 +175,11 @@ quantity
 ;
 
 leading_adjective
-:	ID '-'?	/* There may be no space between the ID and the '-', if present */
+:	ID '-'?	// There may be no space between the ID and the '-', if present
 ;
 
 trailing_adjective
-:	'-'? ID	/* There may be no space between the ID and the '-', if present */
+:	'-'? ID	// There may be no space between the ID and the '-', if present
 ;
 
 function_call
@@ -191,7 +191,7 @@ parameter_list
 ;
 
 parameter
-:	role_name | value
+:	role_ref | value
 ;
 
 role_name_def
@@ -202,7 +202,7 @@ restriction
 :	'restricted' 'to' '{' range ( ',' range )* '}'
 ;
 
-/* Expressions */
+// Expressions
 comparison
 :	expression comparator expression
 ;
@@ -224,12 +224,12 @@ term
 ;
 
 factor
-:	number unit_power?
-|	role_name function_call*
+:	number unit?
+|	role_ref function_call*
 |	'(' expression ')'
 ;
 
-/* Mostly lexical rules */
+// Mostly lexical rules
 
 range
 :	numeric_range | string_range

@@ -11,362 +11,403 @@
 
 <p>The Constellation Query Language (<b>CQL</b>) is a language for
 constructing and querying semantic information models. It is based
-on the graphical <b>Object Role Modeling</b><a href="#_ftn1" name= 
-"_ftnref1" title=""></a> language, with some terminology adopted
-from <b>SBVR</b><a href="#_ftn2" name="_ftnref2" title=""></a>. As
-described here, it uses English language keywords and expressions,
-but these may be substituted for keywords and expressions from
-another language. Because CQL has an open vocabulary, and because
-it is designed to resemble natural language, the formal grammar has
-many potential ambiguities. Some will become obvious as the syntax
-rules unfold, and in most cases the valid resolution is
-described.</p>
+on the graphical <a href="#ftn1" title="ORM Foundation">
+<b>Object Role Modeling</b></a> language, with some terminology
+adopted from the <a href="#ftn2" title="SBVR"><b>Semantics of
+Business Vocabulary and Business Rules</b></a>.</p>
 
-<p>The elements of a semantic model (known in CQL as a <b>
-vocabulary</b>) are:</p>
+<p>Because CQL has an open vocabulary, and because it is designed to
+resemble natural language, the formal grammar has potential ambiguities.
+Most of these ambiguities can be automatically resolved, and the
+resolutions will become obvious as the syntax rules unfold.  As
+described here, CQL uses English language keywords and expressions,
+though variants of CQL are being defined that substitute keywords and
+expressions from other languages. Some of these keywords are disallowed
+as open vocabulary, where they would create unresolvable ambiguities.
+This includes all the logical operators, such as <em>and, or, maybe,
+not, none, no, only if</em>, etc. Other keywords such as <em>is,
+identified, kind, of, as, at</em>, etc, are allowed to be used anywhere
+open vocabulary is allowed, and their special meaning applies only in
+the specific places noted.</p>
 
-<ul type="disc">
-<li>named <b>concepts</b> (data types, entity types and their
-subtypes). In ORM, concepts are called object types, divided into
-value types and entity types.</li>
-
-<li><b>fact types</b> which define the associations of those
-concepts</li>
-
-<li><b>constraints</b>, which limit the allowed instances of facts
-and concepts within a valid <b>population</b>.</li>
-</ul>
-
-<p>Examples of concepts are Person, Name, Date, Address, Employee.
-Examples of fact types are &ldquo;Person has given-Name&rdquo;,
-&ldquo;Person lives at Address&rdquo;. A constraint is present in
-&ldquo;Person has at most one family-Name&rdquo;.</p>
-
-<p>Name and Date are <b>data types</b>. Data types are lexical,
-meaning that they have values that may be written down, like a
-number, a name, etc. Some data types allow parameters, such as
-length or scale.</p>
-
-<p>A numeric data type may indicate a quantity in a defined <b>
-unit</b>. Units are defined either as fundamental, or as a
-coefficient multiplied by a base unit or units, each base unit
-being raised to some integer power. A unit definition may be marked
-as approximate or exact. Queries check dimensional conformance and
-provide conversion factors where needed, so if you store dimensions
-in millimeters, you can query rectangular areas in square feet, for
-example, but not in years.</p>
-
-<p>Every <b>fact type</b> involves one or more concepts (most often
-two), which each &ldquo;play a<b> role</b>&rdquo; in that fact
-type. Each fact type has one or more <b>readings</b> that associate
-those concepts through a natural-language expression, and each
-reading must include all the concepts (cover all the roles) of that
-fact type. The concepts may occur in any order in each reading,
-linked by arbitrary words of the natural language, as long as those
-linking words don&rsquo;t have a special meaning to CQL <i>in the
-contexts in which they will appear</i>. In particular, no concept
-name may be used as a linking word. CQL is case sensitive however,
-and it is recommended (though not required, as in ORM) to use an
-initial capital letter for all concept names. This allows the
-lower-case form to be used as a linking word in readings.</p>
-
-<p>For each reading, each concept may be associated with either a
-leading or a trailing <b>adjective</b>. The adjective may be any
-word that doesn&rsquo;t have a special meaning, and is especially
-useful where a fact type might involve the same concept more than
-once (&ldquo;Person is friend of other-Person&rdquo;). Where an
-embedded constraint doesn&rsquo;t make it clear, an adjective must
-be indicated by a hyphen character. For example, &ldquo;Person has
-exactly one given Name&rdquo; contains a mandatory uniqueness
-constraint (&ldquo;exactly one&rdquo;), and the adjective <i>
-given</i> occurs between that and Name, so it doesn&rsquo;t need
-the hyphen as in the friendship reading shown above. In any case
-the hyphen is only needed on the first occurrence of a reading;
-subsequent uses of that reading to invoke the fact type will detect
-the adjective without it. Unlike in ORM readings, the hyphen
-character may not be used other than to indicate an adjective.</p>
-
-<p>Every <b>entity type</b> has some identification scheme. An
-entity type that has no supertypes is identified by one or more
-fact roles played by that entity type. The identifying roles must
-be sufficient to distinguish one instance of this entity type from
-other instances. As an example, we might say:</p>
-
-<pre>
-<i>Person is identified by given Name and family Name where
-	Person has exactly one family Name,
-	Person has exactly one given Name<b>;</b></i></pre>
-
-<p>This defines Person, indicates the identifying roles for Person,
-and defines the two fact types that provide the identifying
-roles.</p>
-
-<p>An entity that has a supertype will normally inherit its
-identification from the first (or primary) supertype, though it may
-instead define its own identification. To illustrate, we might
-say</p>
-
-<pre><i>
-Employee is a kind of Person identified by employee Number where
-	Employee has exactly one employee Number<b>;</b></i></pre>
-
-<p>A fact type may be named, which allows it to act as a concept,
-playing roles in other fact types. These <b>objectified</b> fact
-types may also define identifying roles. As an example, given
-existing definitions for Person and Company, we can say</p>
-
-<pre><i>
-Directorship is where
-	Person directs Company;</i></pre>
-
-<p>The new fact type &ldquo;Person directs Company&rdquo; is
-objectified as Directorship. All fact types not bearing a
-uniqueness constraint that&rsquo;s suitable for identification must
-be named.</p>
-
-<h2>CQL File</h2>
-
-<p>A CQL file is a sequence of definitions, each terminated by a
-semi-colon.</p>
-
-<p>Each CQL file <b>must</b> start with a vocabulary
-definition.</p>
-
-<img src="../images/syntax/definitions.png">
-
-<p>White space and comments as used in C and C++ are allowed:
+<p>CQL is <em>case sensitive</em>. <em>"Person"</em> is not the same
+thing as <em>"person"</em>. It's conventional, though not required, to
+use a capital letter for all concept names.
+White space and comments as used in C and C++ are allowed:
 <b>/*&nbsp;comment<br>may&nbsp;span&nbsp;lines&nbsp;*/</b> and
 <b>//&nbsp;introduces&nbsp;a&nbsp;comment&nbsp;to&nbsp;end&nbsp;of&nbsp;the&nbsp;current&nbsp;line.</b></p>
 
-<img src="../images/syntax/definition.png">
+<h2>CQL Definitions</h2>
 
-<h2>Imports</h2>
+<p>A semantic model (known in CQL as a <b>vocabulary</b>) comprises definitions of the following kinds:</p>
+
+<ul type="disc">
+
+<li><b>Concepts</b> designated by name, including <b>entity types</b>
+and <b>data types</b>.
+</li>
+
+<li><b>Fact Types</b> each designated by one or more <b>readings</b>.
+Fact types define the relationships between concepts.
+A fact type may be designated by a name, which allows its use as a concept in other fact types.
+</li>
+
+<li><b>Instances</b> of concepts and fact types as examples
+or as reference data.
+</li>
+
+<li><b>Constraints</b> which restrict the allowed concept instances
+and facts within a valid <b>population</b>.</li>
+
+<li><b>Units</b> used to automate value conversion.</li>
+
+</ul>
+
+<p>
+In ORM, concepts are called object types, divided into value types and
+entity types. Value types in ORM are slightly different from data types
+in CQL, but CQL uses the terms interchangably.
+</p>
+
+<p>A CQL file must start with a vocabulary definition, and may import elements from one or more other vocabularies.</p>
+
+<dl>
+<dt>statement:
+<dd>
+<img src="../images/syntax/statement.png"><br>
+<dt>definition:
+<dd>
+<img src="../images/syntax/definition.png">
+</dl>
 
 <p>An import definition imports concept names from another
 vocabulary, possibly using the <b>alias</b> syntax to rename some
 terms:</p>
 
-<img src="../images/syntax/import.png">
+<dl>
+<dt>import_def:
+<dd>
+<img src="../images/syntax/import_def.png" class="syntax">
+</dl>
 
-<h2>Units</h2>
+<p>
+A concept represents a type of thing that can be perceived or conceived.
+Each concept has at least one name (or <em>term</em>), and the word
+concept as used throughout this document implies the use of one of these
+terms.  A concept definition starts with its name, and is one of the
+following kinds.  Names in CQL are case sensitive, and it&rsquo;s
+conventional practice to use initial capital letters for concept names
+(this is required in Object Role Modeling but not in CQL).  It is however
+a good way of allowing concept names to be to be distinguished from the
+same words in lower case, where they may occur in fact type readings.
+</p>
 
-<p>A unit definition defines a new unit identifier in terms of a
-real number or fraction multiplied by one or more base units, each
-raised to an integer power:</p>
+<dl>
+  <dt>concept:
+  <dd><img src="../images/syntax/concept.png"><br>
+</dl>
 
-<img src="../images/syntax/unit.png" class="syntax"><br>
-<img src="../images/syntax/units_raised.png"><br>
-<img src="../images/syntax/unit_raised.png">
+<h3>Data Types</h3>
 
-<h2>Concepts</h2>
+<p>A Data Type is a kind of thing which has a single value that may be
+written down, that is, a lexical type, like a number, a name, a date,
+etc.
+</p>
 
-<p>A concept definition is one of the following types, which start
-with the ID (name of the concept being defined). Names in CQL are
-case sensitive, and it&rsquo;s conventional practice to use initial
-capital letters for concept names - this is required in Object Role
-Modeling but not in CQL. It is however a good way of allowing
-concept names to be to be distinguished from the same words in
-lower case, where they may occur in fact type readings.</p>
+<p>
+A data type is usually derived from another data type, where top-level
+data types are defined in an imported vocabulary.  A data type may
+refine its supertype by the use of <b>length</b> and <b>scale</b>
+parameters where relevant. (The ability to define custom parameters is
+anticipated in a revision of the language.) A value restriction might
+also limit the allowable values from those allowed by the supertype;
+these restrictions are discussed below.
+</p>
 
-<img src="../images/syntax/concept.png"><br>
+<dl>
+  <dt>data type:
+  <dd><img src="../images/syntax/data_type.png" class="syntax"><br>
+  <dt>data type details:
+  <dd><img src="../images/syntax/dt_details.png"><br>
+</dl>
 
-<p>base type:</p>
-<img src="../images/syntax/base_type.png"><br>
+<p>
+Top-level data types are defined by self-reference, e.g.
+</p>
+<pre><em>
+      Integer is defined as Integer();
 
-<p>subtype:</p>
-<img src="../images/syntax/subtype.png" class="syntax"><br>
-<img src="../images/syntax/kind_of.png"><br>
+</em></pre>
 
-<p>data type:</p>
-<img src="../images/syntax/data_type.png" class="syntax"><br>
+<p>A unit definition defines a new unit identifier in terms of an
+optional coefficient (real number or integer fraction) multiplied by one
+or more base units, each raised to an integer power. It's common to
+define the singular form of a unit, then also define the plural as
+equivalent.
+</p>
 
-<p>fact type:</p>
-<img src="../images/syntax/fact_type.png"><br>
+<dl>
+<dt>unit_def:
+<dd>
+<img src="../images/syntax/unit_def.png" class="syntax"><br>
+<dt>unit_derivation:
+<dd>
+<img src="../images/syntax/unit_derivation.png"><br>
+<dt>unit:
+<dd>
+<img src="../images/syntax/unit.png">
+</dl>
 
-<p>derivation:</p>
-<img src="../images/syntax/derivation.png"><br>
+<p>
+An extensive library of unit definitions is provided, and you can define your own.
+</p>
 
-<p>Note that a fact type does not always have to be named; it can
-simply be a reading such as &ldquo;Person was born at one
-birth-Place&rdquo;. In the case where no unique quantifier exists
-in the fact type, or where there are more than two roles, the fact
-type must have a name. For example, &ldquo;Directorship is where
-Person directs Company&rdquo;. Technically, where a fact type
-isn&rsquo;t named, it isn&rsquo;t treated as a concept, so it
-cannot play roles in other fact types. Syntactically though
-it&rsquo;s more convenient to discuss these together.</p>
+<h3>Entity Types</h3>
 
-<p>Data types are derived from other data types, and the original
-data types are predefined in an imported vocabulary. They may
-refine the supertype by the use of <b>length</b> and <b>scale</b>
-parameters, where the supertype allows it. A value restriction
-might also apply, and these are discussed below.</p>
+<p>
+Each Entity Type plays roles in at least one fact type, and is identified
+by the combination of one or more such roles. At least one identifying role
+must be mandatory.
+</p>
 
-<h3>Entity Type identification</h3>
+<dl>
+  <dt>entity type:
+  <dd><img src="../images/syntax/entity_type.png"><br>
+  <dt>supertypes:
+  <dd><img src="../images/syntax/supertypes.png" class="syntax">
+  <dt>identification:
+  <dd><img src="../images/syntax/identification.png" class="syntax"><br>
+  <dt>id_fact_types:
+  <dd><img src="../images/syntax/id_fact_types.png"><br>
+  <dt>role_ref:
+  <dd><img src="../images/syntax/role_ref.png"><br>
+</dl>
 
-<p>The instances of each entity type are uniquely identified by the
-combination of their identifying roles. A subtype may inherit its
-identification from the first supertype, or it may define new
-identification. When a fact type is named and hence becomes an
-entity type, it is identified in the same way all fact instances
-are, by all its roles (or all-but-one, where a uniqueness
-constraint applies). Because of the use of adjectives, role names
-may consist of two words (the concept name and the adjective) or a
-role name defined using the role-name definition syntax discussed
-below).</p>
+<p>The simplest form of entity type identification scheme is by a single
+role value, for which the reference mode shorthand is provided, as in:
+</p>
+<pre><em>
+    Thing is identified by its Value;
 
-<img src="../images/syntax/identification.png"><br>
+</em></pre>
 
-<p>All the fact type clauses of an entity type definition must
-involve the entity type and one of the identifying roles, and no
-other roles. There is one binary fact type for each identifying
-role, but there may be more than one reading for each fact
-type:</p>
+<p>
+<em>Value</em> is assumed to be (or created as) a data type.
+A subtype of <em>Value</em> is assumed (or created) called <em>ThingValue</em>.
+Data type parameters may not yet be provided; this is an omission that
+will be corrected in an early revision.
+The <em>Thing</em> is then associated in an identifying one-to-one
+fact type with <em>ThingValue</em>. The result is equivalent to saying:
+</p>
+<pre><em>
+    ThingValue is defined as Thing();
+    Thing is identified by ThingValue where
+	Thing has one ThingValue,
+	ThingValue is of at most one Thing;
 
-<pre><i>
-Person is identified by given Name and family Name:
+</em></pre>
+
+<p>
+If the default fact type readings (<em>has/is of</em>) aren't appropriate,
+you can provide one or more alternative readings. The required uniqueness
+and mandatory constraints are added where needed.
+</p>
+<pre><em>
+    Thing is identified by its Value where
+	Thing is known by ThingValue;
+
+</em></pre>
+
+<p>
+The full form of identification must be used where a new entity type is
+identified by its relationship to another entity type, where adjectives
+are applied, or where the entity type has more than one identifying role.
+In this last case, at least one reading must be provided for each fact
+type involved in the identification, and normally these readings will
+embed the appropriate uniqueness constraints.  Each fact type reading in
+an entity type definition must involve the entity type and one of the
+identifying roles, and no other roles, as in the folowing example.
+Note that hyphens are used here to identify the adjectives which can
+be either leading or trailing as required by the language.
+</p>
+
+<pre><em>
+    Person is identified by given Name and family Name:
 	Person is called given-Name, given-Name is of Person,
-Person has family-Name, family-Name is of Person;</i></pre>
+	Person has family-Name, family-Name is of Person;
+
+</em></pre>
 
 <p>Note that the uniqueness constraints for these fact types are
 not shown, but are needed for valid identification. They can be
 provided later, but must be included within the same vocabulary.
-The hyphens must then be used to identify the adjectives.</p>
+</p>
+
+<p>
+Finally, when the full form of identification is used, but there are fact type
+readings all referring to the same roles <em>none of which is the defined entity
+type</em>, these are the readings of a new fact type, which is objectified (named)
+as the new entity type. This is discussed below, but in this case, the entity type
+has an identification scheme which is not drawn from the fact type roles.
+</p>
 
 <h3>Subtypes</h3>
 
-<p>An entity type may be declared to be a subtype (or more
-informally, using the word &ldquo;kind&rdquo;) or one or more other
-entity types, the supertypes:</p>
+<p>An entity type may be declared to be a subtype (or more informally,
+using the word &ldquo;kind&rdquo;) of one or more other entity types,
+the supertypes.  Any subtype may play any of the roles of its supertypes.
+A subtype may have its own identification scheme, but doesn't need to.
+It will be identified by its relationship with its first supertype.
+</p>
 
-<pre><i>Apple is a kind of Fruit;</i></pre>
+<pre><em>
+    Apple is a kind of Fruit;
 
-<p>No additional identification is required, as the supertype must
-already have an identification scheme, and the subtype inherits the
-identification of its first supertype, unless an alternate
-identification scheme is declared. Any subtype may play any of the
-roles of its supertypes.</p>
+    Employee is a kind of Person identified by its Number;
 
-<pre><i>
-Perishable has at most one ShelfLife;
-Fruit has one Price per kg;
-Apple is a kind of Fruit, Perishable;</i></pre>
+</em></pre>
+
+<pre><em>
+    ShelfLife is defined as Time() in days;
+    Perishable has at most one ShelfLife;
+    Fruit has one Price per kg;
+    Apple is a kind of Fruit, Perishable;
+
+</em></pre>
 
 <p>In these fact types, each apple must have a price and may record
 a shelf life.</p>
 
-<p>Subtyping is itself a fact type, which is useful when subtyping
-relationships must be constrained.</p>
+<p>Declaring a subtype creates subtyping fact types, which is useful
+when subtyping relationships must be constrained.</p>
 
 <h3>Fact Types</h3>
 
-<p>Fact types are defined by one or more readings provided as fact
-type clauses. All the clauses of a fact type must have the same set
-of role players.</p>
+<p>
+Fact types are declared as one or more fact type readings. Each reading
+provides a verbal description of the relationship between one or more
+concepts, the role players.  All the readings of a fact type must have
+the same set of role players. The first reading of a fact type is the
+default reading, and provides the identification scheme when needed.
+The readings of a new fact type may be preceeded by the name of the
+concept that is the objectification of that fact type.  A
+<em>derived</em> fact type is followed by its derivation.
+</p>
 
-<p>If a concept plays more than one role in a fact type, adjectives
-must be consistently used with those roles across all readings. The
-only exception to this is that if all such roles use an adjective,
-one role of the concept may omit its adjective in all but one
-reading. In all other cases, each reading of a fact type may use
-(or omit) different adjectives for the same roles.</p>
+<dl>
+  <dt>fact_type:
+  <dd><img src="../images/syntax/fact_type.png" class="syntax">
+  <dt>clause_list:
+  <dd><img src="../images/syntax/clause_list.png">
+  <dt>clause:
+  <dd><img src="../images/syntax/clause.png">
+  <dt>qualifiers:
+  <dd><img src="../images/syntax/qualifiers.png" class="syntax">
+</dl>
 
-<p>Fact type clauses may contain quantifier phrases, which assert
-mandatory, uniqueness or frequency constraints over the allowed
-population of instances of that fact. Qualifiers that assert ring
-constraints (see below) may also follow fact type clauses. In some
-fact type invocations in queries, a preceding outer-join qualifier
-&ldquo;maybe&rdquo; may also occur:</p>
+<p>Each fact type reading may contain a quantifier expression before the
+last role player, which can assert mandatory, uniqueness or frequency
+constraints over the allowed population of instances of that fact. A
+qualifier that asserts a ring constraint (see below) may also follow a
+reading.
+</p>
 
-<img src="../images/syntax/clause.png">
+<p>Note that a fact type does not have to be named; it can simply be a
+set of readings such as &ldquo;Person was born at one birth-Place&rdquo;.
+Naming makes the fact type a <em>concept</em>, and is necessary whenever
+no unique quantifier exists in the fact type, or where there are more
+than two roles.  Where a fact type isn&rsquo;t named, it cannot play
+roles in other fact types.
+</p>
 
-<p>The post qualifiers are encased in square brackets, and are most
-commonly used for ring constraints. See the section on constraints
-for more details.</p>
+<p>
+If a concept plays more than one role in a fact type, the separate
+roles must be distinguished by either adjectives or a defined role
+name, consistent with the <em>binding rules</em> defined below.
+In other cases, each reading of a fact type may use (or omit)
+different adjectives for the same roles.
+</p>
 
-<b><br clear="all" />
-</b> 
+<p>The qualifiers are encased in square brackets, and are most commonly
+used for ring constraints. See the section on constraints for more
+details. The <em>'maybe'</em> outer-join qualifier is only used in
+derivation clauses. Derivations are discussed below, under queries.</p>
 
-<p><b>Fact Type Readings</b></p>
+<dl>
+  <dt>derivation:
+  <dd><img src="../images/syntax/derivation.png" class="syntax">
+</dl>
 
-<p>Fact type readings are a sequence of roles and linking words.
-The definition of roles given here is slightly simplified for
-reasons that will be explained.</p>
+<h3>Readings</h3>
 
-<p>reading:</p>
-<img src="../images/syntax/reading.png">
+<p>
+Fact type readings are a sequence of roles and linking words:
+</p>
 
-<p>fact role:</p>
-<img src="../images/syntax/fact_role.png" class="syntax">
+<dl>
+<dt>reading:
+<dd><img src="../images/syntax/reading.png" class="syntax">
+<dt>fact_role:
+<dd><img src="../images/syntax/fact_role.png" class="syntax">
+<dt>role_name_def:
+<dd><img src="../images/syntax/role_name_def.png">
+</dl>
 
-<p>leading adjective:</p>
-<img src="../images/syntax/leading_adjective.png">
+<p>
+The syntax here is ambiguous, because a fact_role consists of one or
+more IDs with optional hyphens to indicate adjectives, interspersed
+with arbitrary linking words (also IDs).  So how is the ambiguity resolved?
+</p>
 
-<p>trailing adjective:</p>
-<img src="../images/syntax/trailing_adjective.png">
+<p>
+First of all, CQL looks through all the fact roles of all readings in
+this definition, and finds the definitions of any role names are defined
+(using the last syntax shown). Role names apply to the preceeding
+concept, which must already be known.  Elsewhere in this definition, the
+use of the new role name will be treated as a reference to the same
+occurrence of that concept (note that there may be more than one
+occurrence).
+</p>
 
-<p>role name def:</p>
-<img src="../images/syntax/role_name_def.png">
+<p>
+During the first scan, any adjectives that are marked with a hyphen
+(dash) are remembered with the associated role player.  Adjectives may
+not be the same as the name of any defined concept, or of any local role
+name.
+</p>
 
-<p>That&rsquo;s clearly ambiguous&hellip; especially since
-adjectives don&rsquo;t always have to have an associated dash
-character. So how is the ambiguity resolved?</p>
+<p>
+Now, all references to role players can be identified, because all will
+either be defined concepts or local role names. At this point, any
+unmarked adjetives can be matched up with their definitions, and the
+remaining words are the open vocabulary used as an identifier of this
+fact type.
+</p>
 
-<p>First of all, CQL looks through all the fact roles of all
-readings in this definition, and finds where every role name is
-defined (using the last syntax shown). The preceding ID
-that&rsquo;s a defined concept name must be the real name of the
-role player, but elsewhere in this definition, it will be known by
-the role name. In the process, any adjectives that are marked with
-a dash are remembered with the associated role player. Adjectives
-may not be the same as the name of any defined concept, or of any
-local role name.</p>
+<p>
+When a fact type reading is re-iterated in order to invoke an existing
+fact type, for example in a constraint, in a derivation or to add a new
+reading to an existing fact type, there may be adjectives in the definition
+of the invoked fact type. These also must be matched in the reading.
+</p>
 
-<p>Then, all role players can be identified (the ID in the fact
-role syntax diagram), because all will either be defined concepts
-or local role names. Having identified all role players, unmarked
-adjectives are picked up in one of two ways; either they&rsquo;re
-used with this concept elsewhere in the same definition, or they
-occur in a reading of a previously defined fact type that uses
-those adjectives.</p>
+<h4>Embedded Presence Constraints</h4>
 
-<p>All the discussion so far has only referred to fact type
-readings being used to make new definitions, but the last paragraph
-reveals another usage. A fact type reading may be re-iterated in
-order to link that existing fact type into a new definition. This
-allows the introduction of the full definition of fact roles.</p>
+<p>
+The final role in a reading may be preceeded by a quantifier, which does
+not form a part of the reading. These are normally used to apply a
+uniqueness constraint (<em>at most one</em>), a mandatory constraint
+(<em>at least one</em>) or both (<em>exactly one</em> or just
+<em>one</em>). Other forms allow various other role frequency
+constraints. The <em>quantity</em> here may be a positive integer or the
+word <em>one</em>. Note that some quantifiers are only used in derivations
+or in constraints.
+</p>
 
-<h5>Fact Roles Revisited</h5>
-
-<p>The previous definition of fact roles omitted discussion of some
-of the optional syntactic elements. We discuss the quantifier
-here.</p>
-
-<img src="../images/syntax/fact_role.png" class="syntax">
-
-<h6>The quantifier is used to introduce a constraint on the number
-of times the other role players in this fact type may occur in
-conjunction with an instance of this concept. As a simple example,
-consider</h6>
-
-<pre><i>Person has exactly one family-Name;</i></pre>
-
-<p>The fact type reading is &ldquo;Person has family-Name&rdquo;,
-and the quantifier&nbsp; &ldquo;exactly one&rdquo; requires that
-each Person occurs exactly once in the fact population; in other
-words, a family name must be recorded for each person, and only one
-family name may be recorded for each person.</p>
-
-<p><b>Quantifiers</b></p>
-
-<p>The full list of possible quantifiers is shown below (though
-some are only used in constraints):</p>
-
-<img src="../images/syntax/quantifier.png">
-
-<p>quantity:</p>
-
-<img src="../images/syntax/quantity.png">
+<dd>
+<dt>quantifier:
+<dd><img src="../images/syntax/quantifier.png" class="syntax">
+</dl>
 
 <p>In this way, CQL absorbs many of the uniqueness, mandatory and
 frequency constraints of Object Role Modeling. The only ORM
@@ -378,38 +419,177 @@ if a participant submits no tips this week, they get the tips
 published by a known tipster, but if they do submit tips, they must
 submit at least eight. This kind of non-mandatory frequency
 constraint may be expressed in CQL using the <b>maybe</b>
-qualifier:</p>
+qualifier, which is also used in outer join derivations.</p>
 
-<pre><b><i>maybe</i></b><i> Participant entered at least 8 Tips</i></pre>
+<pre>
+    <b><em>maybe</em></b><em> Participant entered at least 8 Tips
+</em></pre>
 
-<h5>Value Restrictions</h5>
+<h4>Value Restrictions</h4>
+
+<p>
+A value restriction may follow a role reference where the role is played
+by a data type, and this constrains the allowed values of that data
+type in this role. In addition to fact type definitions, a value or a
+value restriction may be applied include fact instances and inn
+derivations, where it has the obvious effect.
+</p>
 
 <p>In addition to the value restrictions that can apply to data
 types, a role played by a data type may be restricted to specified
 values or value ranges:</p>
 
-<p>restriction:</p>
-<img src="../images/syntax/restriction.png">
-
-<p>range:</p>
-<img src="../images/syntax/range.gif">
-
-<p>numeric range:</p>
-<img src="../images/syntax/numeric_range.png">
-
-<p>string range:</p>
-<img src="../images/syntax/string_range.png">
+<dl>
+<dt>restriction:
+<dd><img src="../images/syntax/restriction.png" class="syntax">
+<dt>range:
+<dd><img src="../images/syntax/range.gif">
+<dt>numeric_range:
+<dd><img src="../images/syntax/numeric_range.png">
+<dt>string_range:
+<dd><img src="../images/syntax/string_range.png">
+</dl>
 
 <p>Note that the ranges in a value restriction may be open ended at
 one end.</p>
 
-<p><b>Fact Instances</b></p>
+<h3>Constraints</h3>
 
-<p>When a fact reading is re-iterated with values, a fact instance
+<p>Quantifiers allow the definition of the most common kinds of
+constraints, the mandatory, uniqueness and frequency constraints
+(collectively, CQL calls these <b>presence constraints</b>). Often
+there are constraints that cannot be expressed in this form
+however, such as when a concept must play one of many unrelated
+roles. This is handled in CQL by the use of an external constraint
+definition, or with a ring constraint qualifier.</p>
+
+<dl>
+<dt>constraint
+<dd><img src="../images/syntax/constraint.png" class="syntax">
+<dt>mandatory_or_exclusive_constraint
+<dd><img src="../images/syntax/mandatory_or_exclusive_constraint.png" class="syntax">
+</dl>
+
+<h4>Mandatory (and either-or) constraints</h4>
+
+<p>When a single role player must play one and only one (or at
+least one) of a set of roles, we can say:</p>
+
+<pre><b><em>each</em></b><em> Range <b>occurs</b> at least one <b>time in</b>
+	Range has minimum-Bound,
+	Range has maximum-Bound;
+	<b>for each</b> ReceivedItem exactly one<b> of these holds:</b>
+	ReceivedItem is for PurchaseOrderItem,
+	ReceivedItem is for TransferRequest;</em></pre>
+
+<p>Where such constraints must be declared over fact types in which
+the same role player occurs in unrelated roles, the role players
+may be separated by the use of the keywords <b>some</b> and <b>
+that</b>. &ldquo;That&rdquo; means that this role player is the
+same one referred to earlier, and &ldquo;some&rdquo; means
+it&rsquo;s not. If that&rsquo;s still not enough, you can introduce
+adjectives and role names to separate the different instances of
+the same concept:</p>
+
+<pre>
+<b><em>
+for each</em></b><em> Unit exactly one <b>of these holds</b>:
+	Unit is fundamental,
+	that Unit is derived from some base-Unit;
+</em></pre>
+
+In the case where one of two fact types applies, you can use the more
+natural form:
+
+<pre><em>
+<b>either</b> Unit is fundamental
+	<b>or</b>
+	Unit is derived from some base-Unit
+	<b>but not both</b>;
+</em></pre>
+
+<h4>External Uniqueness Constraints</h4>
+
+<p>For example, supposing that we were to identify Person instances
+by given name and family name (not a good idea in a real system!)
+we need to ensure that the <b>combination</b> given name, family
+name is unique. We can say:</p>
+
+<pre><em><b>each</b> family Name, given Name <b>occurs</b> at most one<b> time in</b>
+	Person is known by given-Name,
+	Person has family-Name;</em></pre>
+
+<h4>Subset Constraints</h4>
+
+<p>When one role may be played only if another is, you can use a
+subset constraint:</p>
+
+<pre><em>Address has third-StreetLine
+	<b>only if</b>
+	Address has second-StreetLine;</em></pre>
+
+<p>Note that this example didn&rsquo;t use the first and second
+StreetLine, as we assume that the first StreetLine is a mandatory
+part of the address, so the subset constraint would be
+redundant.</p>
+
+<h4>Equality Constraints</h4>
+
+<p>Equality constraints declare that the populations of two roles
+(or role sequences) are the same. They are expressed using
+&lsquo;if and only if&rsquo;:</p>
+
+<pre><em>
+Competition is in Series
+	<b>if and only if</b>
+	Competition has series-Number;</em></pre>
+
+<h4>Ring Constraints</h4>
+
+<p>When a fact type includes the same concept more than once, or
+includes a supertype and its subtype, there&rsquo;s the possibility
+of the same instance playing both roles. This is often not desired,
+but further it introduces a whole class of further situations which
+can be restricted using ring constraints. The CQL keywords used in
+fact clause qualifiers for ring constraints are the following:</p>
+
+<p><b>intransitive</b>,<b> transitive</b>,<b> acyclic</b> and <b>
+symmetric</b>. Intransitive means that just because &ldquo;A
+relates to B&rdquo;, and &ldquo;B relates to C&rdquo;, that
+doesn&rsquo;t mean that&nbsp; &ldquo;A relates to C&rdquo;.
+Transitive means the opposite. Acyclic means that no A may relate
+to itself, or to any B that has that relation to A, and so on.
+Symmetric means that if A relates to B, B also relates to A (so
+there is only one fact instance possible between A and B).</p>
+
+<h4>Join constraints</h4>
+
+<p>Most of the above constraint types may use joins, where more
+than one fact type is joined together with the <b>and</b> keyword.
+A full discussion is beyond the scope of this paper, but
+here&rsquo;s a small example of a subset constraint using a
+join:</p>
+
+<pre><em>Diplomat speaks Language;
+Country uses Language;
+Diplomat serves in Country;
+
+Diplomat serves in Country
+	<b>only if</b>
+	Country uses Language <b>and</b> Diplomat speaks Language;</em></pre>
+
+<p>This constraint requires that in order to serve in a country, a
+diplomat must speak at least one language used in that country.</p>
+
+<h3>Fact Instances</h3>
+
+<p>When a fact reading is invoked with values, a fact instance
 is created. The simplest is where a declaration is just a concept
 name followed by a value:</p>
 
-<pre><i>Name &lsquo;Fred&rsquo;;</i></pre>
+<pre><em>
+    Name &lsquo;Fred&rsquo;;
+</em></pre>
 
 <p>This form is allowed for any data type, or any entity type
 that&rsquo;s identified by a single data type (or an entity
@@ -417,14 +597,26 @@ identified by a single entity identified by a single data type,
 etc). In more complex cases, it might be necessary to invoke more
 than one fact type to define the instance:</p>
 
-<pre><i>Person is called given name &lsquo;Fred&rsquo;,
-  Person has family Name &lsquo;Bloggs&rsquo;;</i></pre>
+<pre><em>
+    Person is called given name &lsquo;Fred&rsquo;,
+	Person has family Name &lsquo;Bloggs&rsquo;;
+</em></pre>
 
 <p>The Person instance being defined is a reference to the same
 instance in each fact type reading; there is an implicit join over
-the two clauses.</p>
+the two clauses.
+</p>
 
-<p><b>Fact Derivation (Queries)</b></p>
+<p>
+A revision of the language will allow a contraction of such joins
+(which also occur in queries) to just
+</p>
+
+<pre><em>
+    given Name &lsquo;Fred&rsquo; is of Person <b>who</b> has family Name &lsquo;Bloggs&rsquo;;
+</em></pre>
+
+<h3>Fact Derivation (Queries)</h3>
 
 <p>Fact derivation is a large subject by itself, so we&rsquo;ll
 leave a detailed coverage for a future paper. Here&rsquo;s a short
@@ -444,22 +636,24 @@ different roles, and those roles are not to be joined, additional
 adjectives or defined role names may be used to separate the
 roles.</p>
 
-<p>The values may be modified by functions, such as the built-in
+<!--p>The values may be modified by functions, such as the built-in
 functions on the Date data type which can extract the year, month,
-day, etc from the Date.</p>
+day, etc from the Date.</p-->
 
 <p>It&rsquo;s possible to negate any invoked fact type by inserting
 the word <b>no</b> into it as a quantifier, or <b>not</b> as an
 additional linking word. Here are some examples of fact type
 derivations (the full fact type definition is elided):</p>
 
-<pre><i>Person has family Name,
+<pre><em>
+    Person has family Name,
 	family Name = &lsquo;Bloggs&rsquo;,
 	Person is <b>not</b> called given Name &lsquo;Fred&rsquo;,
 	Person is a kind of Employee,
-	Employee is managed by <b>no</b> Manager<b>;</b></i></pre>
+	Employee is managed by <b>no</b> Manager<b>;</b>
+</em></pre>
 
-<p><b>Result Constellations</b></p>
+<h4>Result Constellations</h4>
 
 <p>A fact derivation may include a <b>returning</b> clause.
 Normally, when processing a query, only the concept instances that
@@ -488,128 +682,111 @@ the query engine about which additional instances will be useful to
 the calling program, and in what order.<br clear="all" />
 </p>
 
-<p><b>Constraints</b></p>
+<h4>Footnotes</h4>
+<ol>
+  <li><a href="http://ormfoundation.org/" name="ftn1" title="">The ORM Foundation</a>
+  </li>
 
-<p>Quantifiers allow the definition of the most common kinds of
-constraints, the mandatory, uniqueness and frequency constraints
-(collectively, CQL calls these <b>presence constraints</b>). Often
-there are constraints that cannot be expressed in this form
-however, such as when a concept must play one of many unrelated
-roles. This is handled in CQL by the use of an external constraint
-definition, or with a ring constraint qualifier.</p>
-
-<img src="../images/syntax/constraint.png" class="syntax">
-
-<p><b>Mandatory (and either-or) constraints</b></p>
-
-<p>When a single role player must play one and only one (or at
-least one) of a set of roles, we can say:</p>
-
-<pre><b><i>each</i></b><i> Range <b>occurs</b> at least one <b>time
-in</b>
-	Range has minimum-Bound,
-	Range has maximum-Bound;
-	<b>for each</b> ReceivedItem exactly one<b> of these holds:</b>
-	ReceivedItem is for PurchaseOrderItem,
-	ReceivedItem is for TransferRequest;</i></pre>
-
-<p>Where such constraints must be declared over fact types in which
-the same role player occurs in unrelated roles, the role players
-may be separated by the use of the keywords <b>some</b> and <b>
-that</b>. &ldquo;That&rdquo; means that this role player is the
-same one referred to earlier, and &ldquo;some&rdquo; means
-it&rsquo;s not. If that&rsquo;s still not enough, you can introduce
-adjectives and role names to separate the different instances of
-the same concept:</p>
-
-<pre>
-<b><i>for each</i></b><i> Unit exactly one <b>of these
-holds</b>:
-	Unit is fundamental,
-	that Unit is derived from some base-Unit;</i></pre>
-
-<p><b>External Uniqueness Constraints</b></p>
-
-<p>For example, supposing that we were to identify Person instances
-by given name and family name (not a good idea in a real system!)
-we need to ensure that the <b>combination</b> given name, family
-name is unique. We can say:</p>
-
-<pre><i><b>each</b> family Name, given Name <b>occurs</b> at most one<b> time in</b>
-	Person is known by given-Name,
-	Person has family-Name;</i></pre>
-
-<p><b>Subset Constraints</b></p>
-
-<p>When one role may be played only if another is, you can use a
-subset constraint:</p>
-
-<pre><i>Address has third-StreetLine
-	<b>only if</b>
-	Address has second-StreetLine;</i></pre>
-
-<p>Note that this example didn&rsquo;t use the first and second
-StreetLine, as we assume that the first StreetLine is a mandatory
-part of the address, so the subset constraint would be
-redundant.</p>
-
-<p><b>Equality Constraints</b></p>
-
-<p>Equality constraints declare that the populations of two roles
-(or role sequences) are the same. They are expressed using
-&lsquo;if and only if&rsquo;:</p>
-
-<pre><i>
-Competition is in Series
-	<b>if and only if</b>
-	Competition has series-Number;</i></pre>
-
-<p><b>Ring Constraints</b></p>
-
-<p>When a fact type includes the same concept more than once, or
-includes a supertype and its subtype, there&rsquo;s the possibility
-of the same instance playing both roles. This is often not desired,
-but further it introduces a whole class of further situations which
-can be restricted using ring constraints. The CQL keywords used in
-fact clause qualifiers for ring constraints are the following:</p>
-
-<p><b>intransitive</b>,<b> transitive</b>,<b> acyclic</b> and <b>
-symmetric</b>. Intransitive means that just because &ldquo;A
-relates to B&rdquo;, and &ldquo;B relates to C&rdquo;, that
-doesn&rsquo;t mean that&nbsp; &ldquo;A relates to C&rdquo;.
-Transitive means the opposite. Acyclic means that no A may relate
-to itself, or to any B that has that relation to A, and so on.
-Symmetric means that if A relates to B, B also relates to A (so
-there is only one fact instance possible between A and B).</p>
-
-<p><b>Join constraints</b></p>
-
-<p>Most of the above constraint types may use joins, where more
-than one fact type is joined together with the <b>and</b> keyword.
-A full discussion is beyond the scope of this paper, but
-here&rsquo;s a small example of a subset constraint using a
-join:</p>
-
-<pre><i>Diplomat speaks Language;
-Country uses Language;
-Diplomat serves in Country;
-
-Diplomat serves in Country
-	<b>only if</b>
-	Country uses Language <b>and</b> Diplomat speaks Language;</i></pre>
-
-<p>This constraint requires that in order to serve in a country, a
-diplomat must speak at least one language used in that country.</p>
-
-<div id="ftn1">
-<p><a href="#_ftnref1" name="_ftn1" title=""></a>
-http://www.orm.net</p>
-</div>
-
-<div id="ftn2">
-<p><a href="#_ftnref2" name="_ftn2" title=""></a>
-http://en.wikipedia.org/wiki/Semantics_of_Business_Vocabulary_and_Business_Rules</p>
-</div>
+  <li><a href="http://en.wikipedia.org/wiki/Semantics_of_Business_Vocabulary_and_Business_Rules" name="ftn2"
+    title="Semantics of Business Vocabulary and Business Rules">Semantics
+    of Business Vocabulary and Business Rules</a>
+  </li>
+</ol>
 </div>
 
 <!--#include virtual="/footer.html" -->
+
+<!--
+<p>Examples of concepts are Person, Name, Date, Address,
+Employee.  Examples of fact types are &ldquo;Person has
+given-Name&rdquo;, &ldquo;Person lives at Address&rdquo;. A
+uniqueness constraint is present in &ldquo;Person has at most
+one family-Name&rdquo;.</p>
+
+<p>Name and Date are <b>data types</b>. Data types are lexical,
+meaning that they have values that may be written down, like a
+number, a name, etc. Data types may derive (inherit) from
+another data type, and some data types allow parameters, such as
+length or scale. Values for parameters are inherited.</p>
+
+<p>A numeric data type may indicate a quantity in a defined
+<b>unit</b>. Units are defined either as fundamental, or as a
+coefficient multiplied by a base unit or units, each base unit
+being raised to some integer power. A unit definition may be
+marked as approximate or exact. Queries check dimensional
+conformance and provide conversion factors where needed, so if
+you store dimensions in millimeters, you can query rectangular
+areas in square feet, for example, but not in years.</p>
+
+<p>Every <b>fact type</b> involves one or more concepts (most
+often two), which each &ldquo;play a<b> role</b>&rdquo; in that
+fact type. Each fact type has one or more <b>readings</b> that
+associate those concepts through a natural-language expression,
+and every reading must include all the concepts (cover all the
+roles) of that fact type. The concepts may occur in any order in
+each reading, linked by arbitrary words (&ldquo;copula&rdquo;) of
+the natural language, as long as those linking words don&rsquo;t
+have a special meaning to CQL <em>in the contexts in which they
+will appear</em>.  In particular, no concept name may be used as
+a linking word, and most words that invoke a logical operation
+(and, or, not, no, none, etc) are disallowed in all readings.
+CQL is case sensitive however, and it is recommended (though not
+required, as in ORM) to use an initial capital letter for all
+concept names. This allows the lower-case form to be used as a
+linking word in readings.</p>
+
+<p>For each reading, each concept may be associated with either a
+leading or a trailing <b>adjective</b>. The adjective may be any
+word that doesn&rsquo;t have a special meaning, and is especially
+useful where a fact type might involve the same concept more than
+once (&ldquo;Person is friend of other-Person&rdquo;). Where an
+embedded constraint doesn&rsquo;t make it clear, an adjective must
+be indicated by a hyphen character. For example, &ldquo;Person has
+exactly one given Name&rdquo; contains a mandatory uniqueness
+constraint (&ldquo;exactly one&rdquo;), and the adjective <em>
+given</em> occurs between that and Name, so it doesn&rsquo;t need
+the hyphen as in the friendship reading shown above. In any case
+the hyphen is only needed on the first occurrence of a reading;
+subsequent uses of that reading to invoke the fact type will detect
+the adjective without it. Unlike in ORM readings, the hyphen
+character may not be used other than to indicate an adjective.</p>
+
+<p>Every <b>entity type</b> has some identification scheme. An
+entity type that has no supertypes is identified by one or more
+fact roles played by that entity type. The identifying roles must
+be sufficient to distinguish one instance of this entity type from
+other instances. As an example, we might say:</p>
+
+<pre>
+<em>Person is identified by given Name and family Name where
+	Person has exactly one family Name,
+	Person has exactly one given Name<b>;</b></em></pre>
+
+<p>This defines Person, indicates the identifying roles for Person,
+and defines the two fact types that provide the identifying
+roles.</p>
+
+<p>An entity that has a supertype will normally inherit its
+identification from the first (or primary) supertype, though it may
+instead define its own identification. To illustrate, we might
+say</p>
+
+<pre><em>
+Employee is a kind of Person identified by employee Number where
+	Employee has exactly one employee Number<b>;</b></em></pre>
+
+<p>A fact type may be named, which allows it to act as a concept,
+playing roles in other fact types. These <b>objectified</b> fact
+types may also define identifying roles. As an example, given
+existing definitions for Person and Company, we can say</p>
+
+<pre><em>
+Directorship is where
+	Person directs Company;</em></pre>
+
+<p>The new fact type &ldquo;Person directs Company&rdquo; is
+objectified as Directorship. All fact types not bearing a
+uniqueness constraint that&rsquo;s suitable for identification must
+be named.</p>
+-->
+
