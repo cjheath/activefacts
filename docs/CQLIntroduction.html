@@ -1,6 +1,13 @@
 <!--#include virtual="/header.html" -->
 <!--#include virtual="navbar.html" -->
 
+<link rel="stylesheet" href="../css/offline.css" media="screen" type="text/css" />
+
+<div id="sidebar" class="online noprint">
+  <h3>More Information</h3>
+  <p><em><a href="Semantic%20Modeling%20Slides%20OSDC.pdf">Presentation slides</a> from OSDC 2008</em></p>
+</div>
+
 <!--title>Introduction to the</title-->
 <div id="top" class="content">
 <h1 align="center">
@@ -88,7 +95,7 @@ terms:</p>
 <dl>
 <dt>import_def:
 <dd>
-<img src="../images/syntax/import_def.png" class="syntax">
+<img src="../images/syntax/import_def.png" class="hangleft">
 </dl>
 
 <p>
@@ -127,7 +134,7 @@ these restrictions are discussed below.
 
 <dl>
   <dt>data type:
-  <dd><img src="../images/syntax/data_type.png" class="syntax"><br>
+  <dd><img src="../images/syntax/data_type.png" class="hangleft"><br>
   <dt>data type details:
   <dd><img src="../images/syntax/dt_details.png"><br>
 </dl>
@@ -150,7 +157,7 @@ equivalent.
 <dl>
 <dt>unit_def:
 <dd>
-<img src="../images/syntax/unit_def.png" class="syntax"><br>
+<img src="../images/syntax/unit_def.png" class="hangleft"><br>
 <dt>unit_derivation:
 <dd>
 <img src="../images/syntax/unit_derivation.png"><br>
@@ -175,9 +182,9 @@ must be mandatory.
   <dt>entity type:
   <dd><img src="../images/syntax/entity_type.png"><br>
   <dt>supertypes:
-  <dd><img src="../images/syntax/supertypes.png" class="syntax">
+  <dd><img src="../images/syntax/supertypes.png" class="hangleft">
   <dt>identification:
-  <dd><img src="../images/syntax/identification.png" class="syntax"><br>
+  <dd><img src="../images/syntax/identification.png" class="hangleft"><br>
   <dt>id_fact_types:
   <dd><img src="../images/syntax/id_fact_types.png"><br>
   <dt>role_ref:
@@ -297,13 +304,13 @@ concept that is the objectification of that fact type.  A
 
 <dl>
   <dt>fact_type:
-  <dd><img src="../images/syntax/fact_type.png" class="syntax">
+  <dd><img src="../images/syntax/fact_type.png" class="hangleft">
   <dt>clause_list:
   <dd><img src="../images/syntax/clause_list.png">
   <dt>clause:
   <dd><img src="../images/syntax/clause.png">
   <dt>qualifiers:
-  <dd><img src="../images/syntax/qualifiers.png" class="syntax">
+  <dd><img src="../images/syntax/qualifiers.png" class="hangleft">
 </dl>
 
 <p>Each fact type reading may contain a quantifier expression before the
@@ -336,7 +343,7 @@ derivation clauses. Derivations are discussed below, under queries.</p>
 
 <dl>
   <dt>derivation:
-  <dd><img src="../images/syntax/derivation.png" class="syntax">
+  <dd><img src="../images/syntax/derivation.png" class="hangleft">
 </dl>
 
 <h3>Readings</h3>
@@ -347,9 +354,9 @@ Fact type readings are a sequence of roles and linking words:
 
 <dl>
 <dt>reading:
-<dd><img src="../images/syntax/reading.png" class="syntax">
+<dd><img src="../images/syntax/reading.png" class="hangleft">
 <dt>fact_role:
-<dd><img src="../images/syntax/fact_role.png" class="syntax">
+<dd><img src="../images/syntax/fact_role.png" class="hangleft">
 <dt>role_name_def:
 <dd><img src="../images/syntax/role_name_def.png">
 </dl>
@@ -407,7 +414,7 @@ or in constraints.
 
 <dd>
 <dt>quantifier:
-<dd><img src="../images/syntax/quantifier.png" class="syntax">
+<dd><img src="../images/syntax/quantifier.png" class="hangleft">
 </dl>
 
 <p>In this way, CQL absorbs many of the uniqueness, mandatory and
@@ -442,7 +449,7 @@ values or value ranges:</p>
 
 <dl>
 <dt>restriction:
-<dd><img src="../images/syntax/restriction.png" class="syntax">
+<dd><img src="../images/syntax/restriction.png" class="hangleft">
 <dt>range:
 <dd><img src="../images/syntax/range.gif">
 <dt>numeric_range:
@@ -466,9 +473,9 @@ definition, or with a ring constraint qualifier.</p>
 
 <dl>
 <dt>constraint
-<dd><img src="../images/syntax/constraint.png" class="syntax">
+<dd><img src="../images/syntax/constraint.png" class="hangleft">
 <dt>mandatory_or_exclusive_constraint
-<dd><img src="../images/syntax/mandatory_or_exclusive_constraint.png" class="syntax">
+<dd><img src="../images/syntax/mandatory_or_exclusive_constraint.png" class="hangleft">
 </dl>
 
 <h4>Mandatory (and either-or) constraints</h4>
