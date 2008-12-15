@@ -26,6 +26,7 @@ module ActiveFacts
           raise "infinite absorption loop on #{name}" if @evaluating
           return @absorbed_roles
         end
+
         @absorbed_references = []
         rs = RoleSequence.new(:new)
         @evaluating = true
@@ -246,6 +247,11 @@ module ActiveFacts
       # This is used in detecting dependency cycles, such as occurs in the Metamodel
       attr_accessor :tentative
       attr_writer :independent
+
+      def show_dep
+        (tentative ? "tentatively " : "") +
+        (independent ? "in" : "")+"dependent"
+      end
     end
 
     class ValueType
@@ -530,46 +536,54 @@ module ActiveFacts
         #   - cost of absorbing = number of absorbed columns in absorbed table * number of places absorbed
         # 5) Suggest improvements
         #   Additional cost (or inject ID?) for references to large data types (>32 bytes)
+
         all_feature.each do |feature|
           next unless feature.is_a? Concept   # REVISIT: Handle Aliases here
           feature.absorption_paths.each do |role|
             into = feature.referenced_from(role)
-            # puts "#{feature.name} can be absorbed into #{into.name}"
+            debug :absorption, "Can absorb #{role.concept.name} #{role.concept.show_dep} through #{role.role_type} into #{into.name} #{into.show_dep}"
+
             into.can_absorb << role
           end
           # Ensure that all unary roles are in can_absorb also (unless objectified, already handled):
           feature.all_role.select{|role|
             role.fact_type.all_role.size == 1 && !role.fact_type.entity_type
-          }.each { |role| feature.can_absorb << role }
+          }.each { |role|
+            feature.can_absorb << role
+          }
           feature.independent = nil   # Undecided
           feature.tentative = nil     # Undecided
         end
 
         # Evaluate the possible independence of each concept, building an array of features of indeterminate status:
-        undecided = []
-        all_feature.each do |feature|
-          next unless feature.is_a? Concept   # REVISIT: Handle Aliases here
-          feature.independent
-          undecided << feature if (feature.tentative)
-        end
+        undecided =
+          all_feature.select do |feature|
+            next unless feature.is_a? Concept   # REVISIT: Handle Aliases here
+            feature.independent       # Ask it whether it thinks it should be a table
+            feature.tentative
+          end
 
-        begin
-          finalised = []
-          undecided.each do |feature|
-            if feature.is_a?(ValueType) # This ValueType must be tentatively independent
-              # If this ValueType could absorb no independent ValueType, it must be independent (absorbs a dependendent one)
-              if !feature.can_absorb.detect{|role| !role.fact_type.entity_type and role.concept.independent }
-                feature.tentative = false
-                finalised << feature
+        begin                         # Loop while we continue to make progress
+          finalised =                 # Make an array of things we finalised during this pass
+            undecided.select do |feature|
+              if feature.is_a?(ValueType) # This ValueType must be tentatively independent
+                # If this ValueType could absorb no independent ValueType, it must be independent (absorbs a dependent one)
+                if !feature.can_absorb.detect{|role| !role.fact_type.entity_type and role.concept.independent }
+                  # Must be tentatively independent or we wouldn't be here.
+                  # REVISIT: Need to add the self-role somewhere here.
+                  feature.tentative = false
+                  next feature
+                end
+                next nil
               end
-            elsif feature.is_a?(EntityType)
 
-              # Always absorb an objectified unary:
+              next nil unless feature.is_a?(EntityType)
+
+              # Always absorb an objectified unary into its role player:
               if feature.fact_type && feature.fact_type.all_role.size == 1
                 feature.independent = false
                 feature.tentative = false
-                finalised << feature
-                next
+                next feature
               end
 
               # If the PI contains one role only, played by an entity type that can absorb us, do that.
@@ -587,8 +601,7 @@ module ActiveFacts
 
                 feature.independent = false
                 feature.tentative = false
-                finalised << feature
-                next
+                next feature
               end
 
               # If there's more than one absorption path and any functional dependencies that can't absorb us, it's independent
@@ -597,20 +610,8 @@ module ActiveFacts
                 debug :absorption, "#{feature.name} has functional dependencies so 3NF requires it be independent"
                 feature.independent = true
                 feature.tentative = false
-                finalised << feature
-                next
+                next feature
               end
-
-#              # If there's exactly one absorption path into a object that's independent, absorb regardless of FDs
-#              This results in !3NF databases
-#              if feature.absorption_paths.size == 1 &&
-#                  feature.absorption_paths[0].role_type != :one_one
-#                absorbee = feature.referenced_from(feature.absorption_paths[0])
-#                debug :absorption, "Absorb #{feature.name} along single path, into #{absorbee.name}"
-#                feature.independent = false
-#                feature.tentative = false
-#                finalised << feature
-#              end
 
               # If the feature has only reference roles and any one-to-ones can absorb it, it's fully absorbed (dependent)
               # We don't allow absorption into something we identify.
@@ -624,7 +625,7 @@ module ActiveFacts
                 }
                 # All one_to_ones are at least tentatively independent, make them independent and we're fully absorbed
 
-                debug :absorption, "#{feature.name} is fully absorbed, into #{one_to_ones.map{|r| r.concept.name}*", "}"
+                debug :absorption, "#{feature.name} is fully absorbed, in #{one_to_ones.size} places: #{one_to_ones.map{|r| r.concept.name}*", "}"
                 !one_to_ones.each{|role|
                   into = role.concept
                   into.tentative = false
@@ -632,18 +633,20 @@ module ActiveFacts
                 }
                 feature.independent = false
                 feature.tentative = false
-                finalised << feature
+                next feature
               end
 
+              false   # Failed to decide about this entity_type this time around
             end
-          end
           undecided -= finalised
         end while !finalised.empty?
 
         # Now, evaluate all possibilities of the tentative assignments
         # REVISIT: Incomplete. Apparently unnecessary as well... so far.
-        undecided.each do |feature|
-          debug :absorption, "Unable to decide independence of #{feature.name}, going with #{feature.independent && "in"}dependent"
+        if debug :absorption
+          undecided.each do |feature|
+            debug :absorption, "Unable to decide independence of #{feature.name}, going with #{feature.independent && "in"}dependent"
+          end
         end
 
         all_feature.select { |f| f.independent }

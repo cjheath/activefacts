@@ -119,6 +119,7 @@ module ActiveFacts
             pk_names = pk.map{|rr| column_name(rr) }
 
             columns = table.absorbed_roles.all_role_ref.sort_by do |role_ref|
+                  # Sort the primary key columns first, then sort all by column name
                   name = column_name(role_ref)
                   [pk_names.include?(name) ? 0 : 1, name]
                 end.map do |role_ref|
