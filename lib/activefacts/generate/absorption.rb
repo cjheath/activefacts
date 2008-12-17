@@ -13,7 +13,7 @@ module ActiveFacts
 
       def initialize(vocabulary, *options)
         @vocabulary = vocabulary
-        @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::Constellation === @vocabulary
+        @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
         @no_columns = options.include? "no_columns"
         @dependent = options.include? "dependent"
         @paths = options.include? "paths"
