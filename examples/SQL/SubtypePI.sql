@@ -2,14 +2,14 @@ CREATE TABLE Entrant (
 	EntrantID	int NOT NULL,
 	CompetitorFamilyName	varchar NULL,
 	TeamID	int NULL,
-	UNIQUE(EntrantID)
+	PRIMARY KEY(EntrantID)
 )
 GO
 
 CREATE TABLE EntrantHasGivenName (
 	EntrantID	int NOT NULL,
 	GivenName	varchar NOT NULL,
-	UNIQUE(EntrantID, GivenName),
+	PRIMARY KEY(EntrantID, GivenName),
 	FOREIGN KEY(EntrantID)
 	REFERENCES Entrant(EntrantID)
 )

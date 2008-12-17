@@ -6,7 +6,7 @@ CREATE TABLE Company (
 	AddressStreetNumber	varchar(12) NULL,
 	AddressStreetSecondStreetLine	varchar(64) NULL,
 	AddressStreetThirdStreetLine	varchar(64) NULL,
-	UNIQUE(CompanyName)
+	PRIMARY KEY(CompanyName)
 )
 GO
 
@@ -19,7 +19,7 @@ CREATE TABLE Person (
 	AddressStreetNumber	varchar(12) NULL,
 	AddressStreetSecondStreetLine	varchar(64) NULL,
 	AddressStreetThirdStreetLine	varchar(64) NULL,
-	UNIQUE(FamilyName, GivenNames)
+	PRIMARY KEY(FamilyName, GivenNames)
 )
 GO
 

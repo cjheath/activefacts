@@ -8,31 +8,31 @@ CREATE TABLE Event (
 	EventLocation	varchar(128) NULL,
 	EventTypeID	int NULL,
 	Official	varchar(64) NULL,
-	UNIQUE(EventID)
+	PRIMARY KEY(EventID)
 )
 GO
 
 CREATE TABLE EventType (
 	EventTypeID	int NOT NULL,
 	EventTypeName	varchar(16) NOT NULL,
-	UNIQUE(EventTypeID)
+	PRIMARY KEY(EventTypeID)
 )
 GO
 
 CREATE TABLE Friend (
-	OtherUserID	int NOT NULL,
 	UserID	int NOT NULL,
+	OtherUserID	int NOT NULL,
 	IsConfirmed	bit NOT NULL,
-	UNIQUE(UserID, OtherUserID)
+	PRIMARY KEY(UserID, OtherUserID)
 )
 GO
 
 CREATE TABLE Participation (
-	EventID	int NOT NULL,
 	PersonID	int NOT NULL,
 	RoleID	int NOT NULL,
+	EventID	int NOT NULL,
 	SourceID	int NOT NULL,
-	UNIQUE(PersonID, RoleID, EventID, SourceID),
+	PRIMARY KEY(PersonID, RoleID, EventID, SourceID),
 	FOREIGN KEY(EventID)
 	REFERENCES Event(EventID)
 )
@@ -47,14 +47,14 @@ CREATE TABLE Person (
 	GivenName	varchar(128) NULL,
 	Occupation	varchar(128) NULL,
 	PreferredPicture	PictureRawData(20) NULL,
-	UNIQUE(PersonID)
+	PRIMARY KEY(PersonID)
 )
 GO
 
 CREATE TABLE Role (
 	RoleID	int NOT NULL,
 	EventRoleName	varchar NOT NULL,
-	UNIQUE(RoleID)
+	PRIMARY KEY(RoleID)
 )
 GO
 
@@ -62,14 +62,14 @@ CREATE TABLE Source (
 	SourceID	int NOT NULL,
 	SourceName	varchar(128) NOT NULL,
 	UserID	int NOT NULL,
-	UNIQUE(SourceID)
+	PRIMARY KEY(SourceID)
 )
 GO
 
 CREATE TABLE [User] (
 	UserID	int NOT NULL,
 	Email	varchar(64) NULL,
-	UNIQUE(UserID)
+	PRIMARY KEY(UserID)
 )
 GO
 
@@ -79,12 +79,12 @@ ALTER TABLE Event
 GO
 
 ALTER TABLE Friend
-	ADD FOREIGN KEY(OtherUserID)
+	ADD FOREIGN KEY(UserID)
 	REFERENCES [User](UserID)
 GO
 
 ALTER TABLE Friend
-	ADD FOREIGN KEY(UserID)
+	ADD FOREIGN KEY(OtherUserID)
 	REFERENCES [User](UserID)
 GO
 
@@ -94,13 +94,13 @@ ALTER TABLE Participation
 GO
 
 ALTER TABLE Participation
-	ADD FOREIGN KEY(RoleID)
-	REFERENCES Role(RoleID)
+	ADD FOREIGN KEY(SourceID)
+	REFERENCES Source(SourceID)
 GO
 
 ALTER TABLE Participation
-	ADD FOREIGN KEY(SourceID)
-	REFERENCES Source(SourceID)
+	ADD FOREIGN KEY(RoleID)
+	REFERENCES Role(RoleID)
 GO
 
 ALTER TABLE Source

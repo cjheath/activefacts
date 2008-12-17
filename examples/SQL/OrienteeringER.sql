@@ -21,8 +21,8 @@ CREATE TABLE Event (
 GO
 
 CREATE TABLE EventControl (
-	Control	int NOT NULL,
 	EventEventID	int NOT NULL,
+	Control	int NOT NULL,
 	PointValue	int NOT NULL,
 	PRIMARY KEY(EventEventID, Control),
 	FOREIGN KEY(EventEventID)

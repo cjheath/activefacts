@@ -8,10 +8,10 @@ CREATE TABLE Bin (
 GO
 
 CREATE TABLE DirectOrderMatch (
-	PurchaseOrderItemProductID	int NOT NULL,
 	PurchaseOrderItemPurchaseOrderID	int NOT NULL,
-	SalesOrderItemProductID	int NOT NULL,
+	PurchaseOrderItemProductID	int NOT NULL,
 	SalesOrderItemSalesOrderID	int NOT NULL,
+	SalesOrderItemProductID	int NOT NULL,
 	UNIQUE(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID, SalesOrderItemSalesOrderID, SalesOrderItemProductID)
 )
 GO
@@ -49,8 +49,8 @@ CREATE TABLE PurchaseOrder (
 GO
 
 CREATE TABLE PurchaseOrderItem (
-	ProductID	int NOT NULL,
 	PurchaseOrderID	int NOT NULL,
+	ProductID	int NOT NULL,
 	Quantity	int NOT NULL,
 	UNIQUE(PurchaseOrderID, ProductID),
 	FOREIGN KEY(ProductID)
@@ -85,8 +85,8 @@ CREATE TABLE SalesOrder (
 GO
 
 CREATE TABLE SalesOrderItem (
-	ProductID	int NOT NULL,
 	SalesOrderID	int NOT NULL,
+	ProductID	int NOT NULL,
 	Quantity	int NOT NULL,
 	UNIQUE(SalesOrderID, ProductID),
 	FOREIGN KEY(ProductID)

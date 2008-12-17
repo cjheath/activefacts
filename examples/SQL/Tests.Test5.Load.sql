@@ -6,7 +6,7 @@ CREATE TABLE Party (
 	PersonBirthDateYmd	datetime NULL,
 	PersonDeathDeathDateYmd	datetime NULL,
 	PersonDied	bit NULL,
-	UNIQUE(Partyid)
+	PRIMARY KEY(Partyid)
 )
 GO
 

@@ -1,22 +1,22 @@
 CREATE TABLE SchoolActivity (
-	ActivityName	varchar(32) NOT NULL,
 	SchoolName	varchar NOT NULL,
-	UNIQUE(SchoolName, ActivityName)
+	ActivityName	varchar(32) NOT NULL,
+	PRIMARY KEY(SchoolName, ActivityName)
 )
 GO
 
 CREATE TABLE Student (
 	StudentName	varchar NOT NULL,
 	SchoolName	varchar NOT NULL,
-	UNIQUE(StudentName)
+	PRIMARY KEY(StudentName)
 )
 GO
 
 CREATE TABLE StudentParticipation (
-	ActivityName	varchar(32) NOT NULL,
 	StudentName	varchar NOT NULL,
+	ActivityName	varchar(32) NOT NULL,
 	SchoolName	varchar NOT NULL,
-	UNIQUE(StudentName, ActivityName),
+	PRIMARY KEY(StudentName, ActivityName),
 	FOREIGN KEY(StudentName)
 	REFERENCES Student(StudentName)
 )

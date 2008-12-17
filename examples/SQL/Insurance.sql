@@ -49,12 +49,12 @@ CREATE TABLE ContractorAppointment (
 GO
 
 CREATE TABLE Cover (
+	PolicyP_yearNr	int NOT NULL,
+	PolicyP_productCode	UnsignedTinyInteger(32) NOT NULL,
+	PolicyP_stateCode	UnsignedTinyInteger(32) NOT NULL,
+	PolicyP_serial	int NOT NULL,
 	AssetID	int NOT NULL,
 	CoverTypeCode	FixedLengthText NOT NULL,
-	PolicyP_productCode	UnsignedTinyInteger(32) NOT NULL,
-	PolicyP_serial	int NOT NULL,
-	PolicyP_stateCode	UnsignedTinyInteger(32) NOT NULL,
-	PolicyP_yearNr	int NOT NULL,
 	UNIQUE(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, AssetID, CoverTypeCode),
 	FOREIGN KEY(AssetID)
 	REFERENCES Asset(AssetID)
@@ -79,11 +79,11 @@ CREATE TABLE CoverWording (
 GO
 
 CREATE TABLE DamagedProperty (
+	IncidentClaimID	int NULL,
+	AddressStreet	varchar(256) NOT NULL,
 	AddressCity	varchar NOT NULL,
 	AddressPostcode	varchar NULL,
 	AddressStateCode	UnsignedTinyInteger(32) NULL,
-	AddressStreet	varchar(256) NOT NULL,
-	IncidentClaimID	int NULL,
 	OwnerName	varchar(256) NULL,
 	PhoneNr	varchar NULL,
 	UNIQUE(IncidentClaimID, AddressStreet, AddressCity, AddressPostcode, AddressStateCode)
@@ -148,10 +148,10 @@ CREATE TABLE Party (
 GO
 
 CREATE TABLE Policy (
-	P_productCode	UnsignedTinyInteger(32) NOT NULL,
-	P_serial	int NOT NULL,
-	P_stateCode	UnsignedTinyInteger(32) NOT NULL,
 	P_yearNr	int NOT NULL,
+	P_productCode	UnsignedTinyInteger(32) NOT NULL,
+	P_stateCode	UnsignedTinyInteger(32) NOT NULL,
+	P_serial	int NOT NULL,
 	ApplicationNr	int NOT NULL,
 	AuthorisedRepID	int NULL,
 	ClientID	int NOT NULL,
@@ -189,8 +189,8 @@ CREATE TABLE ThirdParty (
 GO
 
 CREATE TABLE UnderwritingDemerit (
-	DemeritKindName	varchar NOT NULL,
 	VehicleIncidentClaimID	int NOT NULL,
+	DemeritKindName	varchar NOT NULL,
 	OccurrenceCount	int NULL,
 	UNIQUE(VehicleIncidentClaimID, DemeritKindName),
 	FOREIGN KEY(DemeritKindName)

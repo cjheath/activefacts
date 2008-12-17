@@ -3,7 +3,7 @@ CREATE TABLE Window (
 	RoomRoomNumber	int NOT NULL,
 	WallNumber	int NOT NULL,
 	WindowNumber	int NOT NULL,
-	UNIQUE(RoomBuilding, RoomRoomNumber, WallNumber, WindowNumber)
+	PRIMARY KEY(RoomBuilding, RoomRoomNumber, WallNumber, WindowNumber)
 )
 GO
 

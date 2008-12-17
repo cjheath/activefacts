@@ -1,9 +1,9 @@
 CREATE TABLE Attendance (
-	AttendeeFamilyName	varchar(48) NULL,
 	AttendeeGivenName	varchar(48) NOT NULL,
-	MeetingCompanyName	varchar(48) NOT NULL,
+	AttendeeFamilyName	varchar(48) NULL,
 	MeetingDate	datetime NOT NULL,
 	MeetingIsBoardMeeting	bit NOT NULL,
+	MeetingCompanyName	varchar(48) NOT NULL,
 	UNIQUE(AttendeeGivenName, AttendeeFamilyName, MeetingDate, MeetingIsBoardMeeting, MeetingCompanyName)
 )
 GO
@@ -11,14 +11,14 @@ GO
 CREATE TABLE Company (
 	CompanyName	varchar(48) NOT NULL,
 	IsListed	bit NOT NULL,
-	UNIQUE(CompanyName)
+	PRIMARY KEY(CompanyName)
 )
 GO
 
 CREATE TABLE Directorship (
-	CompanyName	varchar(48) NOT NULL,
-	DirectorFamilyName	varchar(48) NULL,
 	DirectorGivenName	varchar(48) NOT NULL,
+	DirectorFamilyName	varchar(48) NULL,
+	CompanyName	varchar(48) NOT NULL,
 	AppointmentDate	datetime NOT NULL,
 	UNIQUE(DirectorGivenName, DirectorFamilyName, CompanyName),
 	FOREIGN KEY(CompanyName)
@@ -27,8 +27,8 @@ CREATE TABLE Directorship (
 GO
 
 CREATE TABLE Person (
-	FamilyName	varchar(48) NULL,
 	GivenName	varchar(48) NOT NULL,
+	FamilyName	varchar(48) NULL,
 	BirthDate	datetime NULL,
 	EmployeeCompanyName	varchar(48) NULL,
 	EmployeeManagerNr	int NULL,

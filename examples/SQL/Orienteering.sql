@@ -1,7 +1,7 @@
 CREATE TABLE Club (
 	ClubCode	varchar(6) NOT NULL,
 	ClubName	varchar(32) NOT NULL,
-	UNIQUE(ClubCode)
+	PRIMARY KEY(ClubCode)
 )
 GO
 
@@ -12,7 +12,7 @@ CREATE TABLE Entry (
 	FinishPlacing	int NULL,
 	PersonID	int NOT NULL,
 	Score	int NULL,
-	UNIQUE(EntryID)
+	PRIMARY KEY(EntryID)
 )
 GO
 
@@ -25,17 +25,17 @@ CREATE TABLE Event (
 	SeriesID	int NULL,
 	StartLocation	varchar(200) NOT NULL,
 	StartTime	DateAndTime NOT NULL,
-	UNIQUE(EventID),
+	PRIMARY KEY(EventID),
 	FOREIGN KEY(ClubCode)
 	REFERENCES Club(ClubCode)
 )
 GO
 
 CREATE TABLE EventControl (
-	ControlNumber	int NOT NULL,
 	EventID	int NOT NULL,
+	ControlNumber	int NOT NULL,
 	PointValue	int NULL,
-	UNIQUE(EventID, ControlNumber),
+	PRIMARY KEY(EventID, ControlNumber),
 	FOREIGN KEY(EventID)
 	REFERENCES Event(EventID)
 )
@@ -45,7 +45,7 @@ CREATE TABLE EventScoringMethod (
 	Course	varchar(16) NOT NULL,
 	EventID	int NOT NULL,
 	ScoringMethod	varchar(32) NOT NULL,
-	UNIQUE(Course, EventID),
+	PRIMARY KEY(Course, EventID),
 	FOREIGN KEY(EventID)
 	REFERENCES Event(EventID)
 )
@@ -56,7 +56,7 @@ CREATE TABLE Map (
 	Accessibility	FixedLengthText(1) NULL,
 	MapName	varchar(80) NOT NULL,
 	OwnerCode	varchar(6) NOT NULL,
-	UNIQUE(MapID),
+	PRIMARY KEY(MapID),
 	FOREIGN KEY(OwnerCode)
 	REFERENCES Club(ClubCode)
 )
@@ -70,7 +70,7 @@ CREATE TABLE Person (
 	Gender	FixedLengthText(1) NULL,
 	GivenName	varchar(48) NOT NULL,
 	PostCode	int NULL,
-	UNIQUE(PersonID),
+	PRIMARY KEY(PersonID),
 	FOREIGN KEY(ClubCode)
 	REFERENCES Club(ClubCode)
 )
@@ -78,38 +78,38 @@ GO
 
 CREATE TABLE Punch (
 	PunchID	int NOT NULL,
-	UNIQUE(PunchID)
+	PRIMARY KEY(PunchID)
 )
 GO
 
 CREATE TABLE PunchPlacement (
-	EventControlControlNumber	int NOT NULL,
-	EventControlEventID	int NOT NULL,
 	PunchID	int NOT NULL,
-	UNIQUE(PunchID, EventControlEventID, EventControlControlNumber),
-	FOREIGN KEY(EventControlEventID, EventControlControlNumber)
-	REFERENCES EventControl(EventID, ControlNumber),
+	EventControlEventID	int NOT NULL,
+	EventControlControlNumber	int NOT NULL,
+	PRIMARY KEY(PunchID, EventControlEventID, EventControlControlNumber),
 	FOREIGN KEY(PunchID)
-	REFERENCES Punch(PunchID)
+	REFERENCES Punch(PunchID),
+	FOREIGN KEY(EventControlEventID, EventControlControlNumber)
+	REFERENCES EventControl(EventID, ControlNumber)
 )
 GO
 
 CREATE TABLE Series (
 	SeriesID	int NOT NULL,
 	Name	varchar(40) NOT NULL,
-	UNIQUE(SeriesID)
+	PRIMARY KEY(SeriesID)
 )
 GO
 
 CREATE TABLE Visit (
-	EntryID	int NULL,
 	PunchID	int NOT NULL,
+	EntryID	int NULL,
 	Time	DateAndTime NOT NULL,
 	UNIQUE(PunchID, EntryID, Time),
-	FOREIGN KEY(EntryID)
-	REFERENCES Entry(EntryID),
 	FOREIGN KEY(PunchID)
-	REFERENCES Punch(PunchID)
+	REFERENCES Punch(PunchID),
+	FOREIGN KEY(EntryID)
+	REFERENCES Entry(EntryID)
 )
 GO
 

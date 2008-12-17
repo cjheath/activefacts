@@ -1,16 +1,16 @@
 CREATE TABLE Marriage (
-	HusbandFamilyName	varchar NOT NULL,
 	HusbandGivenName	varchar NOT NULL,
-	WifeFamilyName	varchar NOT NULL,
+	HusbandFamilyName	varchar NOT NULL,
 	WifeGivenName	varchar NOT NULL,
-	UNIQUE(HusbandGivenName, HusbandFamilyName, WifeGivenName, WifeFamilyName)
+	WifeFamilyName	varchar NOT NULL,
+	PRIMARY KEY(HusbandGivenName, HusbandFamilyName, WifeGivenName, WifeFamilyName)
 )
 GO
 
 CREATE TABLE Person (
-	FamilyName	varchar NOT NULL,
 	GivenName	varchar NOT NULL,
-	UNIQUE(GivenName, FamilyName)
+	FamilyName	varchar NOT NULL,
+	PRIMARY KEY(GivenName, FamilyName)
 )
 GO
 

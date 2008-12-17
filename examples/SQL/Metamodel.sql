@@ -1,9 +1,9 @@
 CREATE TABLE AllowedRange (
-	ValueRangeMaximumBoundIsInclusive	bit NULL,
-	ValueRangeMaximumBoundValue	varchar(256) NULL,
-	ValueRangeMinimumBoundIsInclusive	bit NULL,
-	ValueRangeMinimumBoundValue	varchar(256) NULL,
 	ValueRestrictionId	int NOT NULL,
+	ValueRangeMinimumBoundValue	varchar(256) NULL,
+	ValueRangeMinimumBoundIsInclusive	bit NULL,
+	ValueRangeMaximumBoundValue	varchar(256) NULL,
+	ValueRangeMaximumBoundIsInclusive	bit NULL,
 	UNIQUE(ValueRestrictionId, ValueRangeMinimumBoundValue, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValue, ValueRangeMaximumBoundIsInclusive)
 )
 GO
@@ -35,13 +35,21 @@ CREATE TABLE [Constraint] (
 GO
 
 CREATE TABLE Correspondence (
-	ImportImportedVocabularyName	varchar(64) NOT NULL,
 	ImportVocabularyName	varchar(64) NOT NULL,
+	ImportImportedVocabularyName	varchar(64) NOT NULL,
 	ImportedFeatureName	varchar(64) NOT NULL,
 	ImportedFeatureVocabularyName	varchar(64) NULL,
 	LocalFeatureName	varchar(64) NOT NULL,
 	LocalFeatureVocabularyName	varchar(64) NULL,
 	UNIQUE(ImportVocabularyName, ImportImportedVocabularyName, ImportedFeatureName, ImportedFeatureVocabularyName)
+)
+GO
+
+CREATE TABLE Derivation (
+	DerivedUnitId	int NOT NULL,
+	BaseUnitId	int NOT NULL,
+	Exponent	SignedSmallInteger(32) NULL,
+	UNIQUE(DerivedUnitId, BaseUnitId)
 )
 GO
 
@@ -95,9 +103,9 @@ CREATE TABLE Instance (
 GO
 
 CREATE TABLE JoinPath (
-	JoinStep	UnsignedSmallInteger(32) NOT NULL,
-	RoleRefOrdinal	UnsignedSmallInteger(32) NOT NULL,
 	RoleRefRoleSequenceId	int NOT NULL,
+	RoleRefOrdinal	UnsignedSmallInteger(32) NOT NULL,
+	JoinStep	UnsignedSmallInteger(32) NOT NULL,
 	ConceptName	varchar(64) NULL,
 	ConceptVocabularyName	varchar(64) NULL,
 	InputRoleConceptName	varchar(64) NOT NULL,
@@ -115,8 +123,8 @@ GO
 CREATE TABLE Reading (
 	FactTypeId	int NOT NULL,
 	Ordinal	UnsignedSmallInteger(32) NULL,
-	ReadingText	varchar(256) NOT NULL,
 	RoleSequenceId	int NOT NULL,
+	Text	varchar(256) NOT NULL,
 	UNIQUE(FactTypeId, Ordinal),
 	FOREIGN KEY(FactTypeId)
 	REFERENCES FactType(FactTypeId)
@@ -124,10 +132,10 @@ CREATE TABLE Reading (
 GO
 
 CREATE TABLE Role (
-	ConceptName	varchar(64) NOT NULL,
-	ConceptVocabularyName	varchar(64) NULL,
 	FactTypeId	int NOT NULL,
 	Ordinal	UnsignedSmallInteger(32) NOT NULL,
+	ConceptName	varchar(64) NOT NULL,
+	ConceptVocabularyName	varchar(64) NULL,
 	RoleName	varchar(64) NULL,
 	RoleValueRestrictionId	int NULL,
 	UNIQUE(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName),
@@ -137,8 +145,8 @@ CREATE TABLE Role (
 GO
 
 CREATE TABLE RoleRef (
-	Ordinal	UnsignedSmallInteger(32) NOT NULL,
 	RoleSequenceId	int NOT NULL,
+	Ordinal	UnsignedSmallInteger(32) NOT NULL,
 	LeadingAdjective	varchar(64) NULL,
 	RoleConceptName	varchar(64) NOT NULL,
 	RoleConceptVocabularyName	varchar(64) NULL,
@@ -158,8 +166,8 @@ CREATE TABLE RoleSequence (
 GO
 
 CREATE TABLE RoleValue (
-	FactId	int NOT NULL,
 	InstanceId	int NOT NULL,
+	FactId	int NOT NULL,
 	PopulationName	varchar(64) NOT NULL,
 	PopulationVocabularyName	varchar(64) NULL,
 	RoleConceptName	varchar(64) NOT NULL,
@@ -177,8 +185,8 @@ CREATE TABLE RoleValue (
 GO
 
 CREATE TABLE SetComparisonRoles (
-	RoleSequenceId	int NOT NULL,
 	SetComparisonConstraintId	int NOT NULL,
+	RoleSequenceId	int NOT NULL,
 	UNIQUE(SetComparisonConstraintId, RoleSequenceId),
 	FOREIGN KEY(RoleSequenceId)
 	REFERENCES RoleSequence(RoleSequenceId)
@@ -193,18 +201,6 @@ CREATE TABLE Unit (
 	IsFundamental	bit NOT NULL,
 	Name	varchar(64) NOT NULL,
 	UNIQUE(UnitId)
-)
-GO
-
-CREATE TABLE UnitBasis (
-	BaseUnitId	int NOT NULL,
-	DerivedUnitId	int NOT NULL,
-	Exponent	SignedSmallInteger(32) NULL,
-	UNIQUE(DerivedUnitId, BaseUnitId),
-	FOREIGN KEY(BaseUnitId)
-	REFERENCES Unit(UnitId),
-	FOREIGN KEY(DerivedUnitId)
-	REFERENCES Unit(UnitId)
 )
 GO
 
@@ -227,6 +223,16 @@ GO
 ALTER TABLE Correspondence
 	ADD FOREIGN KEY(LocalFeatureName, LocalFeatureVocabularyName)
 	REFERENCES Feature(Name, VocabularyName)
+GO
+
+ALTER TABLE Derivation
+	ADD FOREIGN KEY(BaseUnitId)
+	REFERENCES Unit(UnitId)
+GO
+
+ALTER TABLE Derivation
+	ADD FOREIGN KEY(DerivedUnitId)
+	REFERENCES Unit(UnitId)
 GO
 
 ALTER TABLE Fact
