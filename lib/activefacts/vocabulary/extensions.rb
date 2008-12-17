@@ -73,6 +73,19 @@ module ActiveFacts
           end
         return joiner ? Array(name_array)*joiner : Array(name_array)
       end
+
+      # Two RoleRefs are equal if they have the same role and JoinPaths with matching roles
+      def ==(role_ref)
+        RoleRef === role_ref &&
+        role_ref.role == role &&
+        all_join_path.size == role_ref.all_join_path.size &&
+        !all_join_path.sort_by{|j|j.join_step}.
+          zip(role_ref.all_join_path.sort_by{|j|j.join_step}).
+          detect{|j1,j2|
+            j1.input_role != j2.input_role ||
+            j1.output_role != j2.output_role
+          }
+      end
     end
 
     class RoleSequence
