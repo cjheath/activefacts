@@ -54,10 +54,6 @@ module Metamodel
     value_type :length => 32
   end
 
-  class ReadingText < String
-    value_type :length => 256
-  end
-
   class RingType < String
     value_type 
   end
@@ -68,6 +64,10 @@ module Metamodel
 
   class Scale < UnsignedInteger
     value_type :length => 32
+  end
+
+  class Text < String
+    value_type :length => 256
   end
 
   class UnitId < AutoCounter
@@ -135,8 +135,8 @@ module Metamodel
     identified_by :fact_type, :ordinal
     has_one :fact_type                          # See FactType.all_reading
     has_one :ordinal                            # See Ordinal.all_reading
-    has_one :reading_text                       # See ReadingText.all_reading
     has_one :role_sequence                      # See RoleSequence.all_reading
+    has_one :text                               # See Text.all_reading
   end
 
   class RingConstraint < Constraint
@@ -174,11 +174,11 @@ module Metamodel
     one_to_one :unit_id                         # See UnitId.unit
   end
 
-  class UnitBasis
+  class Derivation
     identified_by :derived_unit, :base_unit
-    has_one :base_unit, Unit                    # See Unit.all_unit_basis_by_base_unit
-    has_one :derived_unit, Unit                 # See Unit.all_unit_basis_by_derived_unit
-    has_one :exponent                           # See Exponent.all_unit_basis
+    has_one :base_unit, Unit                    # See Unit.all_derivation_by_base_unit
+    has_one :derived_unit, Unit                 # See Unit.all_derivation_by_derived_unit
+    has_one :exponent                           # See Exponent.all_derivation
   end
 
   class ValueRange

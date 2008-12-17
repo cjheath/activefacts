@@ -16,10 +16,10 @@ Length is defined as UnsignedInteger(32);
 Name is defined as VariableLengthText(64);
 Numerator is defined as Decimal();
 Ordinal is defined as UnsignedSmallInteger(32);
-ReadingText is defined as VariableLengthText(256);
 RingType is defined as VariableLengthText();
 RoleSequenceId is defined as AutoCounter();
 Scale is defined as UnsignedInteger(32);
+Text is defined as VariableLengthText(256);
 UnitId is defined as AutoCounter();
 Value is defined as VariableLengthText(256);
 ValueRestrictionId is defined as AutoCounter();
@@ -62,7 +62,7 @@ Reading is identified by FactType and Ordinal where
 	Reading is for one FactType,
 	Reading is in at most one Ordinal position,
 	Ordinal reading for fact type is Reading;
-Reading has one ReadingText;
+Reading has one Text;
 
 RingConstraint is a kind of Constraint;
 RingConstraint is of one RingType;
@@ -89,9 +89,9 @@ Name is of Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
 Unit is fundamental;
-UnitBasis is where
+Derivation is where
 	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];
-UnitBasis has at most one Exponent;
+Derivation has at most one Exponent;
 
 ValueRange is identified by minimum-Bound and maximum-Bound where
 	ValueRange has at most one minimum-Bound,
