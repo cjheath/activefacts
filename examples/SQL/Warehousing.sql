@@ -3,7 +3,7 @@ CREATE TABLE Bin (
 	ProductID	int NULL,
 	Quantity	int NOT NULL,
 	WarehouseID	int NULL,
-	UNIQUE(BinID)
+	PRIMARY KEY(BinID)
 )
 GO
 
@@ -12,7 +12,7 @@ CREATE TABLE DirectOrderMatch (
 	PurchaseOrderItemProductID	int NOT NULL,
 	SalesOrderItemSalesOrderID	int NOT NULL,
 	SalesOrderItemProductID	int NOT NULL,
-	UNIQUE(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID, SalesOrderItemSalesOrderID, SalesOrderItemProductID)
+	PRIMARY KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID, SalesOrderItemSalesOrderID, SalesOrderItemProductID)
 )
 GO
 
@@ -24,19 +24,19 @@ CREATE TABLE DispatchItem (
 	SalesOrderItemProductID	int NULL,
 	SalesOrderItemSalesOrderID	int NULL,
 	TransferRequestID	int NULL,
-	UNIQUE(DispatchItemID)
+	PRIMARY KEY(DispatchItemID)
 )
 GO
 
 CREATE TABLE Party (
 	PartyID	int NOT NULL,
-	UNIQUE(PartyID)
+	PRIMARY KEY(PartyID)
 )
 GO
 
 CREATE TABLE Product (
 	ProductID	int NOT NULL,
-	UNIQUE(ProductID)
+	PRIMARY KEY(ProductID)
 )
 GO
 
@@ -44,7 +44,7 @@ CREATE TABLE PurchaseOrder (
 	PurchaseOrderID	int NOT NULL,
 	SupplierID	int NOT NULL,
 	WarehouseID	int NOT NULL,
-	UNIQUE(PurchaseOrderID)
+	PRIMARY KEY(PurchaseOrderID)
 )
 GO
 
@@ -52,7 +52,7 @@ CREATE TABLE PurchaseOrderItem (
 	PurchaseOrderID	int NOT NULL,
 	ProductID	int NOT NULL,
 	Quantity	int NOT NULL,
-	UNIQUE(PurchaseOrderID, ProductID),
+	PRIMARY KEY(PurchaseOrderID, ProductID),
 	FOREIGN KEY(ProductID)
 	REFERENCES Product(ProductID),
 	FOREIGN KEY(PurchaseOrderID)
@@ -68,7 +68,7 @@ CREATE TABLE ReceivedItem (
 	Quantity	int NOT NULL,
 	ReceiptID	int NULL,
 	TransferRequestID	int NULL,
-	UNIQUE(ReceivedItemID),
+	PRIMARY KEY(ReceivedItemID),
 	FOREIGN KEY(ProductID)
 	REFERENCES Product(ProductID),
 	FOREIGN KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID)
@@ -80,7 +80,7 @@ CREATE TABLE SalesOrder (
 	SalesOrderID	int NOT NULL,
 	CustomerID	int NOT NULL,
 	WarehouseID	int NOT NULL,
-	UNIQUE(SalesOrderID)
+	PRIMARY KEY(SalesOrderID)
 )
 GO
 
@@ -88,7 +88,7 @@ CREATE TABLE SalesOrderItem (
 	SalesOrderID	int NOT NULL,
 	ProductID	int NOT NULL,
 	Quantity	int NOT NULL,
-	UNIQUE(SalesOrderID, ProductID),
+	PRIMARY KEY(SalesOrderID, ProductID),
 	FOREIGN KEY(ProductID)
 	REFERENCES Product(ProductID),
 	FOREIGN KEY(SalesOrderID)
@@ -100,13 +100,13 @@ CREATE TABLE TransferRequest (
 	TransferRequestID	int NOT NULL,
 	FromWarehouseID	int NULL,
 	ToWarehouseID	int NULL,
-	UNIQUE(TransferRequestID)
+	PRIMARY KEY(TransferRequestID)
 )
 GO
 
 CREATE TABLE Warehouse (
 	WarehouseID	int NOT NULL,
-	UNIQUE(WarehouseID)
+	PRIMARY KEY(WarehouseID)
 )
 GO
 

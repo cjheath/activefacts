@@ -30,7 +30,7 @@ CREATE TABLE [Constraint] (
 	SubsetConstraintSubsetRoleSequenceId	int NULL,
 	SubsetConstraintSupersetRoleSequenceId	int NULL,
 	VocabularyName	varchar(64) NULL,
-	UNIQUE(ConstraintId)
+	PRIMARY KEY(ConstraintId)
 )
 GO
 
@@ -49,7 +49,7 @@ CREATE TABLE Derivation (
 	DerivedUnitId	int NOT NULL,
 	BaseUnitId	int NOT NULL,
 	Exponent	SignedSmallInteger(32) NULL,
-	UNIQUE(DerivedUnitId, BaseUnitId)
+	PRIMARY KEY(DerivedUnitId, BaseUnitId)
 )
 GO
 
@@ -58,7 +58,7 @@ CREATE TABLE Fact (
 	FactTypeId	int NOT NULL,
 	PopulationName	varchar(64) NOT NULL,
 	PopulationVocabularyName	varchar(64) NULL,
-	UNIQUE(FactId)
+	PRIMARY KEY(FactId)
 )
 GO
 
@@ -71,7 +71,7 @@ CREATE TABLE FactType (
 	TypeInheritanceSubtypeVocabularyName	varchar(64) NULL,
 	TypeInheritanceSupertypeName	varchar(64) NULL,
 	TypeInheritanceSupertypeVocabularyName	varchar(64) NULL,
-	UNIQUE(FactTypeId)
+	PRIMARY KEY(FactTypeId)
 )
 GO
 
@@ -98,7 +98,7 @@ CREATE TABLE Instance (
 	PopulationName	varchar(64) NOT NULL,
 	PopulationVocabularyName	varchar(64) NULL,
 	Value	varchar(256) NULL,
-	UNIQUE(InstanceId)
+	PRIMARY KEY(InstanceId)
 )
 GO
 
@@ -116,16 +116,16 @@ CREATE TABLE JoinPath (
 	OutputRoleConceptVocabularyName	varchar(64) NULL,
 	OutputRoleFactTypeId	int NOT NULL,
 	OutputRoleOrdinal	UnsignedSmallInteger(32) NOT NULL,
-	UNIQUE(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep)
+	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep)
 )
 GO
 
 CREATE TABLE Reading (
 	FactTypeId	int NOT NULL,
-	Ordinal	UnsignedSmallInteger(32) NULL,
+	Ordinal	UnsignedSmallInteger(32) NOT NULL,
 	RoleSequenceId	int NOT NULL,
 	Text	varchar(256) NOT NULL,
-	UNIQUE(FactTypeId, Ordinal),
+	PRIMARY KEY(FactTypeId, Ordinal),
 	FOREIGN KEY(FactTypeId)
 	REFERENCES FactType(FactTypeId)
 )
@@ -153,7 +153,7 @@ CREATE TABLE RoleRef (
 	RoleFactTypeId	int NOT NULL,
 	RoleOrdinal	UnsignedSmallInteger(32) NOT NULL,
 	TrailingAdjective	varchar(64) NULL,
-	UNIQUE(RoleSequenceId, Ordinal),
+	PRIMARY KEY(RoleSequenceId, Ordinal),
 	FOREIGN KEY(RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName)
 	REFERENCES Role(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
 )
@@ -161,7 +161,7 @@ GO
 
 CREATE TABLE RoleSequence (
 	RoleSequenceId	int NOT NULL,
-	UNIQUE(RoleSequenceId)
+	PRIMARY KEY(RoleSequenceId)
 )
 GO
 
@@ -174,7 +174,7 @@ CREATE TABLE RoleValue (
 	RoleConceptVocabularyName	varchar(64) NULL,
 	RoleFactTypeId	int NOT NULL,
 	RoleOrdinal	UnsignedSmallInteger(32) NOT NULL,
-	UNIQUE(InstanceId, FactId),
+	PRIMARY KEY(InstanceId, FactId),
 	FOREIGN KEY(FactId)
 	REFERENCES Fact(FactId),
 	FOREIGN KEY(InstanceId)
@@ -187,7 +187,7 @@ GO
 CREATE TABLE SetComparisonRoles (
 	SetComparisonConstraintId	int NOT NULL,
 	RoleSequenceId	int NOT NULL,
-	UNIQUE(SetComparisonConstraintId, RoleSequenceId),
+	PRIMARY KEY(SetComparisonConstraintId, RoleSequenceId),
 	FOREIGN KEY(RoleSequenceId)
 	REFERENCES RoleSequence(RoleSequenceId)
 )
@@ -200,13 +200,13 @@ CREATE TABLE Unit (
 	CoefficientNumerator	decimal NULL,
 	IsFundamental	bit NOT NULL,
 	Name	varchar(64) NOT NULL,
-	UNIQUE(UnitId)
+	PRIMARY KEY(UnitId)
 )
 GO
 
 CREATE TABLE ValueRestriction (
 	ValueRestrictionId	int NOT NULL,
-	UNIQUE(ValueRestrictionId)
+	PRIMARY KEY(ValueRestrictionId)
 )
 GO
 

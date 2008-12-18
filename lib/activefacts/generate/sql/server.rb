@@ -96,7 +96,7 @@ module ActiveFacts
           end +
           (
             # Is there any role along the path that lacks a mandatory constraint?
-            role_ref.output_roles.detect { |role| !role.is_mandatory } ? " NULL" : " NOT NULL"
+            !role_ref.is_mandatory ? " NULL" : " NOT NULL"
           )
         end
 
@@ -119,15 +119,15 @@ module ActiveFacts
             pk_names = pk.map{|rr| column_name(rr) }
 
             columns = table.absorbed_roles.all_role_ref.sort_by do |role_ref|
-                  # Sort the primary key columns first, then sort all by column name
-                  name = column_name(role_ref)
-                  [pk_names.include?(name) ? 0 : 1, name]
-                end.map do |role_ref|
-                  "\t#{column_name(role_ref)}\t#{sql_type(role_ref)}"
-                end
+              # Emit the primary key columns first, in order, then others sorted by column name
+              i = table.absorbed_reference_roles.all_role_ref.index(role_ref)
+              [i || table.absorbed_reference_roles.all_role_ref.size, column_name(role_ref)]
+            end.map do |role_ref|
+              "\t#{column_name(role_ref)}\t#{sql_type(role_ref)}"
+            end
 
             pk_def =
-                  if pk.detect{ |role_ref| !role_ref.role.is_mandatory }
+                  if pk.detect{ |role_ref| !role_ref.is_mandatory }
                     # Any nullable fields mean this can't be a primary key, just a unique constraint
                     "\tUNIQUE("
                   else

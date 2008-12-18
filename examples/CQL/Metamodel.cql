@@ -60,7 +60,7 @@ PresenceConstraint is preferred identifier;
 Reading is identified by FactType and Ordinal where
 	FactType has at least one Reading,
 	Reading is for one FactType,
-	Reading is in at most one Ordinal position,
+	Reading is in one Ordinal position,
 	Ordinal reading for fact type is Reading;
 Reading has one Text;
 

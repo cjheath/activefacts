@@ -11,7 +11,7 @@ CREATE TABLE Asset (
 	VehicleVehicleTypeBadge	varchar NULL,
 	VehicleVehicleTypeMake	varchar NULL,
 	VehicleVehicleTypeModel	varchar NULL,
-	UNIQUE(AssetID)
+	PRIMARY KEY(AssetID)
 )
 GO
 
@@ -35,14 +35,14 @@ CREATE TABLE Claim (
 	PolicyP_stateCode	UnsignedTinyInteger(32) NOT NULL,
 	PolicyP_yearNr	int NOT NULL,
 	VehicleIncidentClaimID	int NULL,
-	UNIQUE(ClaimID)
+	PRIMARY KEY(ClaimID)
 )
 GO
 
 CREATE TABLE ContractorAppointment (
 	ClaimID	int NOT NULL,
 	ContractorID	int NOT NULL,
-	UNIQUE(ClaimID, ContractorID),
+	PRIMARY KEY(ClaimID, ContractorID),
 	FOREIGN KEY(ClaimID)
 	REFERENCES Claim(ClaimID)
 )
@@ -55,7 +55,7 @@ CREATE TABLE Cover (
 	PolicyP_serial	int NOT NULL,
 	AssetID	int NOT NULL,
 	CoverTypeCode	FixedLengthText NOT NULL,
-	UNIQUE(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, AssetID, CoverTypeCode),
+	PRIMARY KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, AssetID, CoverTypeCode),
 	FOREIGN KEY(AssetID)
 	REFERENCES Asset(AssetID)
 )
@@ -64,7 +64,7 @@ GO
 CREATE TABLE CoverType (
 	CoverTypeCode	FixedLengthText NOT NULL,
 	CoverTypeName	varchar NOT NULL,
-	UNIQUE(CoverTypeCode)
+	PRIMARY KEY(CoverTypeCode)
 )
 GO
 
@@ -72,7 +72,7 @@ CREATE TABLE CoverWording (
 	CoverTypeCode	FixedLengthText NOT NULL,
 	PolicyWordingText	LargeLengthText NOT NULL,
 	StartDate	datetime NOT NULL,
-	UNIQUE(CoverTypeCode, PolicyWordingText, StartDate),
+	PRIMARY KEY(CoverTypeCode, PolicyWordingText, StartDate),
 	FOREIGN KEY(CoverTypeCode)
 	REFERENCES CoverType(CoverTypeCode)
 )
@@ -92,7 +92,7 @@ GO
 
 CREATE TABLE DemeritKind (
 	DemeritKindName	varchar NOT NULL,
-	UNIQUE(DemeritKindName)
+	PRIMARY KEY(DemeritKindName)
 )
 GO
 
@@ -101,7 +101,7 @@ CREATE TABLE LossType (
 	InvolvesDriving	bit NOT NULL,
 	IsSingleVehicleIncident	bit NOT NULL,
 	LiabilityCode	FixedLengthText(1) NULL,
-	UNIQUE(LossTypeCode)
+	PRIMARY KEY(LossTypeCode)
 )
 GO
 
@@ -112,7 +112,7 @@ CREATE TABLE LostItem (
 	PurchaseDate	datetime NULL,
 	PurchasePlace	varchar NULL,
 	PurchasePrice	decimal(18, 2) NULL,
-	UNIQUE(IncidentClaimID, LostItemNr)
+	PRIMARY KEY(IncidentClaimID, LostItemNr)
 )
 GO
 
@@ -143,7 +143,7 @@ CREATE TABLE Party (
 	PostalAddressPostcode	varchar NULL,
 	PostalAddressStateCode	UnsignedTinyInteger(32) NULL,
 	PostalAddressStreet	varchar(256) NULL,
-	UNIQUE(PartyID)
+	PRIMARY KEY(PartyID)
 )
 GO
 
@@ -156,7 +156,7 @@ CREATE TABLE Policy (
 	AuthorisedRepID	int NULL,
 	ClientID	int NOT NULL,
 	ITCClaimed	decimal(18, 2) NULL,
-	UNIQUE(P_yearNr, P_productCode, P_stateCode, P_serial)
+	PRIMARY KEY(P_yearNr, P_productCode, P_stateCode, P_serial)
 )
 GO
 
@@ -164,14 +164,14 @@ CREATE TABLE Product (
 	ProductCode	UnsignedTinyInteger(32) NOT NULL,
 	Alias	FixedLengthText(3) NULL,
 	ProdDescription	varchar(80) NULL,
-	UNIQUE(ProductCode)
+	PRIMARY KEY(ProductCode)
 )
 GO
 
 CREATE TABLE State (
 	StateCode	UnsignedTinyInteger(32) NOT NULL,
 	StateName	varchar(256) NULL,
-	UNIQUE(StateCode)
+	PRIMARY KEY(StateCode)
 )
 GO
 
@@ -184,7 +184,7 @@ CREATE TABLE ThirdParty (
 	VehicleTypeBadge	varchar NULL,
 	VehicleTypeMake	varchar NULL,
 	VehicleTypeModel	varchar NULL,
-	UNIQUE(PersonID, VehicleIncidentClaimID)
+	PRIMARY KEY(PersonID, VehicleIncidentClaimID)
 )
 GO
 
@@ -192,7 +192,7 @@ CREATE TABLE UnderwritingDemerit (
 	VehicleIncidentClaimID	int NOT NULL,
 	DemeritKindName	varchar NOT NULL,
 	OccurrenceCount	int NULL,
-	UNIQUE(VehicleIncidentClaimID, DemeritKindName),
+	PRIMARY KEY(VehicleIncidentClaimID, DemeritKindName),
 	FOREIGN KEY(DemeritKindName)
 	REFERENCES DemeritKind(DemeritKindName)
 )
@@ -214,7 +214,7 @@ CREATE TABLE VehicleIncident (
 	Reason	varchar NULL,
 	TowedLocation	varchar NULL,
 	WeatherDescription	varchar(1024) NULL,
-	UNIQUE(IncidentClaimID),
+	PRIMARY KEY(IncidentClaimID),
 	FOREIGN KEY(LossTypeCode)
 	REFERENCES LossType(LossTypeCode)
 )
@@ -228,7 +228,7 @@ CREATE TABLE Witness (
 	AddressStateCode	UnsignedTinyInteger(32) NULL,
 	AddressStreet	varchar(256) NULL,
 	ContactPhoneNr	varchar NULL,
-	UNIQUE(IncidentClaimID, Name)
+	PRIMARY KEY(IncidentClaimID, Name)
 )
 GO
 

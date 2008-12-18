@@ -78,12 +78,12 @@ module ActiveFacts
           # If the ValueType is independent only because it has a unary role,
           # there is no role to absorb, duuh.
           # REVISIT: define the value role for this ValueType.
-          if (inject_value_type_role)
+#          if (inject_value_type_role)
 #            my_role = (role.fact_type.all_role-[role])[0]
 #            rr = my_role.preferred_reference.append_to(rs)
 #            rr.trailing_adjective = "#{rr.trailing_adjective}Value"
 #            inject_value_type_role = false
-          end
+#          end
 
         end
 
@@ -115,11 +115,13 @@ module ActiveFacts
           all_role.map do |role|
             role_type = role.role_type
             case role_type
-            when :supertype,  # Never absorb a supertype into its subtype (REVISIT: until later when we support partitioning)
-                 :many_one    # Can't absorb many of these into one of those
+            when :many_one    # Can't absorb many of these into one of those
               next nil
             when :unary
               next nil        # Never absorb an object into one if its unaries
+            when :supertype   # A subtype absorbs a reference to its supertype when separate, or all when partitioned
+              next role if is_independent
+              next nil
             when :subtype,    # This object is a subtype, so can be absorbed. REVISIT: Support subtype separation and partition
                  :one_many
               next role
@@ -436,6 +438,10 @@ module ActiveFacts
           all_join_path.map(&:output_role).compact
       end
 
+      def is_mandatory
+        !output_roles.detect { |role| !role.is_mandatory }
+      end
+
       def describe
         # The reference traverses the JoinPaths in sequence to the final role:
         all_join_path.
@@ -529,19 +535,29 @@ module ActiveFacts
         # 3) Handle tentative assignments that can now be resolved
         #  a. Tentatively independent ValueTypes become independent if they absorb dependent ones
         #  b. Surely something else...?
-        # 4) Optimise the decision for undecided Concepts (not yet)
-        #  a. evaluate all combinations
-        #  b. minimise a cost function
-        #   - cost of not absorbing = number of reference roles * number of places absorbed + number of columns in table
-        #   - cost of absorbing = number of absorbed columns in absorbed table * number of places absorbed
-        # 5) Suggest improvements
-        #   Additional cost (or inject ID?) for references to large data types (>32 bytes)
 
         all_feature.each do |feature|
           next unless feature.is_a? Concept   # REVISIT: Handle Aliases here
           feature.absorption_paths.each do |role|
             into = feature.referenced_from(role)
             debug :absorption, "Can absorb #{role.concept.name} #{role.concept.show_dep} through #{role.role_type} into #{into.name} #{into.show_dep}"
+
+            if TypeInheritance === role.fact_type
+              if feature == role.fact_type.subtype
+                if feature.independent
+                  debug :absorption, "Avoiding absorption of separate subtype #{feature.name} into #{role.fact_type.supertype.name}"
+                  feature.absorption_paths.delete role
+                  next
+                #else go ahead normally
+                end
+              else
+                if !role.fact_type.subtype.independent
+                  debug :absorption, "Removing absorption of supertype #{feature.name} into #{role.fact_type.subtype.name}"
+                  # role.fact_type.subtype.absorption_paths.delete REVISIT: OOPS, need the reverse role here...
+                  next
+                end
+              end
+            end
 
             into.can_absorb << role
           end
@@ -640,6 +656,16 @@ module ActiveFacts
             end
           undecided -= finalised
         end while !finalised.empty?
+
+        # A ValueType that isn't explicitly independent and isn't absorbed anywhere doesn't matter,
+        # unless it should absorb something else (another ValueType is all it could be):
+        all_feature.each do |feature|
+          if !feature.independent and feature.absorption_paths.size == 0 and feature.can_absorb.size != 0
+            debug :absorption, "Making #{feature.name} independent; it has nowhere else to go and needs to absorb things"
+            feature.independent = true
+            feature.tentative = true
+          end
+        end
 
         # Now, evaluate all possibilities of the tentative assignments
         # REVISIT: Incomplete. Apparently unnecessary as well... so far.
