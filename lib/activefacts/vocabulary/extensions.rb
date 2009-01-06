@@ -40,6 +40,16 @@ module ActiveFacts
         }
       end
 
+      def is_mandatory
+        all_role_ref.detect{|rr|
+          rs = rr.role_sequence
+          rs.all_role_ref.size == 1 and
+          rs.all_presence_constraint.detect{|pc|
+            pc.min_frequency and pc.min_frequency >= 1 and pc.is_mandatory
+          }
+        }
+      end
+
       # Return the RoleRef to this role from its fact type's preferred_reading
       def preferred_reference
         fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == self }
