@@ -96,7 +96,7 @@ module ActiveFacts
 
       # For a one-to-one (or a subtyping fact type), reverse the direction:
       def flip
-        raise "Illegal reference flip" unless @to and [:one_one, :subtype, :supertype].include?(role_type)
+        raise "Illegal flip of #{self}" unless @to and [:one_one, :subtype, :supertype].include?(role_type)
 
         detabulate
 

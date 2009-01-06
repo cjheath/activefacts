@@ -184,6 +184,7 @@ module ActiveFacts
           begin                         # Loop while we continue to make progress
             pass += 1
             debug :absorption, "Starting composition pass #{pass} with #{undecided.size} undecided tables"
+            possible_flips = {}         # A hash by table containing an array of references that can be flipped
             finalised =                 # Make an array of things we finalised during this pass
               undecided.select do |feature|
                 debug :absorption, "Considering #{feature.name}:" do
@@ -213,6 +214,7 @@ module ActiveFacts
                   # If there's more than one absorption path and any functional dependencies that can't absorb us, it's a table
                   non_identifying_refs_from =
                     feature.references_from.reject{|ref|
+                      # REVISIT: I think from_role can be removed here (pi roles are always to_roles now), test it:
                       pi_roles.include?(ref.to_role || ref.from_role)
                     }
                   debug :absorption, "#{feature.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
@@ -224,13 +226,24 @@ module ActiveFacts
                     next feature
                   end
 
-                  # If all non-identifying one-to-ones can be flipped, do it and this feature will be absorbed.
-                  # REVISIT: Maybe not do this if we identify the other player? (though NORMA does)!
-                  if non_identifying_refs_from.size > 0 and
-                    !non_identifying_refs_from.detect{|ref| ref.role_type != :one_one or !ref.to.is_table}
-                    debug :absorption, "Flipping all #{non_identifying_refs_from.size} non-identifying one-to-one references from #{feature.name}"
-                    non_identifying_refs_from.each{|ref| ref.flip}
-                    non_identifying_refs_from = []
+                  absorption_paths =
+                    (
+                      non_identifying_refs_from.reject do |ref|
+                        !ref.to or ref.to.absorbed_via == ref
+                      end+feature.references_to
+                    ).reject do |ref|
+                      !ref.to.is_table or
+                      ![:one_one, :supertype, :subtype].include?(ref.role_type)
+                    end
+
+                  # If this object can be fully absorbed, do that (might require flipping some references)
+                  if absorption_paths.size > 0
+                    debug :absorption, "#{feature.name} is fully absorbed through #{absorption_paths.inspect}"
+                    absorption_paths.each do |ref|
+                      ref.flip if feature == ref.from
+                    end
+                    feature.definitely_not_table
+                    next feature
                   end
 
                   if non_identifying_refs_from.size == 0
@@ -245,6 +258,7 @@ module ActiveFacts
 
                 false   # Failed to decide about this entity_type this time around
               end
+
             undecided -= finalised
           end while !finalised.empty?
 
