@@ -1,16 +1,14 @@
 CREATE TABLE Month (
-	MonthValue	varchar NOT NULL,
-	Season	varchar NULL,
+	Season                                  VariableLengthText NULL,
+	MonthValue                              VariableLengthText NOT NULL,
 	PRIMARY KEY(MonthValue)
 )
 GO
 
 CREATE TABLE Occurrence (
-	EventId	int NOT NULL,
-	Month	varchar NOT NULL,
-	PRIMARY KEY(EventId, Month),
-	FOREIGN KEY(Month)
-	REFERENCES Month(MonthValue)
+	EventId                                 AutoCounter NOT NULL,
+	MonthValue                              VariableLengthText NOT NULL,
+	PRIMARY KEY(EventId, MonthValue)
 )
 GO
 

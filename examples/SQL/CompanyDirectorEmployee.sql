@@ -1,50 +1,38 @@
 CREATE TABLE Attendance (
-	AttendeeGivenName	varchar(48) NOT NULL,
-	AttendeeFamilyName	varchar(48) NULL,
-	MeetingDate	datetime NOT NULL,
-	MeetingIsBoardMeeting	bit NOT NULL,
-	MeetingCompanyName	varchar(48) NOT NULL,
+	AttendeeGivenName                       VariableLengthText(48) NOT NULL,
+	AttendeeFamilyName                      VariableLengthText(48) NULL,
+	MeetingDate                             Date NOT NULL,
+	MeetingIsBoardMeeting                   BIT NOT NULL,
+	MeetingCompanyName                      VariableLengthText(48) NOT NULL,
 	UNIQUE(AttendeeGivenName, AttendeeFamilyName, MeetingDate, MeetingIsBoardMeeting, MeetingCompanyName)
 )
 GO
 
 CREATE TABLE Company (
-	CompanyName	varchar(48) NOT NULL,
-	IsListed	bit NOT NULL,
+	CompanyName                             VariableLengthText(48) NOT NULL,
+	IsListed                                BIT NOT NULL,
 	PRIMARY KEY(CompanyName)
 )
 GO
 
 CREATE TABLE Directorship (
-	DirectorGivenName	varchar(48) NOT NULL,
-	DirectorFamilyName	varchar(48) NULL,
-	CompanyName	varchar(48) NOT NULL,
-	AppointmentDate	datetime NOT NULL,
-	UNIQUE(DirectorGivenName, DirectorFamilyName, CompanyName),
-	FOREIGN KEY(CompanyName)
-	REFERENCES Company(CompanyName)
+	DirectorGivenName                       VariableLengthText(48) NOT NULL,
+	DirectorFamilyName                      VariableLengthText(48) NULL,
+	CompanyName                             VariableLengthText(48) NOT NULL,
+	AppointmentDate                         Date NOT NULL,
+	UNIQUE(DirectorGivenName, DirectorFamilyName, CompanyName)
 )
 GO
 
 CREATE TABLE Person (
-	GivenName	varchar(48) NOT NULL,
-	FamilyName	varchar(48) NULL,
-	BirthDate	datetime NULL,
-	EmployeeCompanyName	varchar(48) NULL,
-	EmployeeManagerNr	int NULL,
-	EmployeeNr	int NULL,
-	ManagerIsCeo	bit NULL,
+	GivenName                               VariableLengthText(48) NOT NULL,
+	BirthDate                               Date NULL CHECK(REVISIT: valid value),
+	FamilyName                              VariableLengthText(48) NULL,
+	EmployeeNr                              SignedInteger(32) NULL,
+	EmployeeCompanyName                     VariableLengthText(48) NULL,
+	EmployeeManagerNr                       SignedInteger(32) NULL,
+	ManagerIsCeo                            BIT NULL,
 	UNIQUE(GivenName, FamilyName)
 )
-GO
-
-ALTER TABLE Attendance
-	ADD FOREIGN KEY(AttendeeGivenName, AttendeeFamilyName)
-	REFERENCES Person(GivenName, FamilyName)
-GO
-
-ALTER TABLE Directorship
-	ADD FOREIGN KEY(DirectorGivenName, DirectorFamilyName)
-	REFERENCES Person(GivenName, FamilyName)
 GO
 

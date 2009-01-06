@@ -548,6 +548,74 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
+  <ItemGroup Condition="Exists('SeparateSubtype.orm')">
+    <None Include="SeparateSubtype.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SeparateSubtype.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="SeparateSubtype.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SeparateSubtype.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="SeparateSubtype.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SeparateSubtype.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('MonthInSeason.orm')">
+    <None Include="MonthInSeason.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MonthInSeason.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="MonthInSeason.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MonthInSeason.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="MonthInSeason.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MonthInSeason.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('OddIdentifier.orm')">
+    <None Include="OddIdentifier.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OddIdentifier.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="OddIdentifier.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OddIdentifier.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="OddIdentifier.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OddIdentifier.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('MetamodelTerms.orm')">
+    <None Include="MetamodelTerms.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelTerms.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="MetamodelTerms.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelTerms.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="MetamodelTerms.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelTerms.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

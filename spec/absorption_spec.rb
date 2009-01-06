@@ -43,7 +43,7 @@ describe "Absorption" do
         #{Prologue}
         Month is in exactly one Season;
       },
-      :tables => { "Month" => [ %w{Month Value}, "Season" ] }
+      :tables => { "Month" => [ "MonthValue", "Season" ] }
     },
 
     { :should => "absorb a one-to-one along the identification path",
@@ -64,7 +64,7 @@ describe "Absorption" do
       },
       :tables => {
         "Claim" => ["ClaimID", %w{Lodgement DateTime}, %w{Lodgement Person ID}],
-        "Party" => ["PartyID", %w{Person birth Date}]
+        "Party" => ["PartyID", %w{Person Birth Date}]
       }
     },
 
@@ -81,13 +81,15 @@ describe "Absorption" do
       @compiler = ActiveFacts::Input::CQL.new(cql, should)
       @vocabulary = @compiler.read
 
+      # puts cql
+
       # Ensure that the same tables were generated:
-      tables = @vocabulary.tables
-      tables.map(&:name).sort.should == expected_tables.keys.sort
+      tables = @vocabulary.tables.sort_by(&:name)
+      tables.map(&:name).should == expected_tables.keys.sort
 
       # Ensure that the same column descriptions were generated:
-      tables.sort_by(&:name).each do |table|
-        column_descriptions = table.absorbed_roles.all_role_ref.map{|rr| rr.column_name(nil) }.sort
+      tables.each do |table|
+        column_descriptions = table.columns.map{|col| col.name(nil) }.sort
         column_descriptions.should == expected_tables[table.name].map{|c| Array(c) }.sort
       end
     end

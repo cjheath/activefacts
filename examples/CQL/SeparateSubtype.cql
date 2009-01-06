@@ -4,6 +4,7 @@ vocabulary OneToOnes;
  * Value Types
  */
 ClaimID is defined as AutoCounter();
+DateTime is defined as DateAndTime();
 DriverName is defined as VariableLengthText();
 
 /*
@@ -15,6 +16,7 @@ Driver is identified by its Name;
 
 Incident is identified by Claim where
 	Claim concerns at most one Incident;
+Incident occurred on at most one DateTime;
 
 VehicleIncident is a kind of Incident;
 VehicleIncident occured while at most one Driver was in charge;

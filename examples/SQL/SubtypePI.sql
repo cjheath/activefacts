@@ -1,17 +1,15 @@
 CREATE TABLE Entrant (
-	EntrantID	int NOT NULL,
-	CompetitorFamilyName	varchar NULL,
-	TeamID	int NULL,
+	EntrantID                               AutoCounter NOT NULL,
+	CompetitorFamilyName                    VariableLengthText NULL,
+	TeamID                                  AutoCounter NULL,
 	PRIMARY KEY(EntrantID)
 )
 GO
 
 CREATE TABLE EntrantHasGivenName (
-	EntrantID	int NOT NULL,
-	GivenName	varchar NOT NULL,
-	PRIMARY KEY(EntrantID, GivenName),
-	FOREIGN KEY(EntrantID)
-	REFERENCES Entrant(EntrantID)
+	EntrantID                               AutoCounter NOT NULL,
+	GivenName                               VariableLengthText NOT NULL,
+	PRIMARY KEY(EntrantID, GivenName)
 )
 GO
 

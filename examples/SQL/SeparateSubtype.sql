@@ -1,12 +1,14 @@
 CREATE TABLE Claim (
-	ClaimID	int NOT NULL,
-	VehicleIncidentClaimID	int NULL,	-- Wrong absorption into identifying role
+	IncidentDateTime                        DateAndTime NULL,
+	ClaimID                                 AutoCounter NOT NULL,
 	PRIMARY KEY(ClaimID)
 )
 GO
 
-CREATE TABLE VehicleIncident (			-- Should absorb ClaimId here
-	DriverName	varchar NULL,
-	PRIMARY KEY(IncidentClaimID)
+CREATE TABLE VehicleIncident (
+	IncidentID                              AutoCounter NOT NULL,
+	DriverName                              VariableLengthText NULL,
+	PRIMARY KEY(IncidentID)
 )
 GO
+

@@ -237,9 +237,6 @@ describe "Entity Types" do
     [ "Employee is a subtype of Person;",
       [["Employee", [:entity_type, ["Person"], nil, nil]]]
     ],
-    [ "Employee is defined as subtype of Person;",
-      [["Employee", [:entity_type, ["Person"], nil, nil]]]
-    ],
     [ "AustralianEmployee is a subtype of Employee, Australian;",
       [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], nil, nil]]]
     ],
@@ -247,9 +244,6 @@ describe "Entity Types" do
       [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
     ],
     [ "Employee is a subtype of Person identified by EmployeeNumber;",
-      [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
-    ],
-    [ "Employee is defined as subtype of Person identified by EmployeeNumber;",
       [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
     ],
     [ "AustralianEmployee is a subtype of Employee, Australian identified by TaxFileNumber;",

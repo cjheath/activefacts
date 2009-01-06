@@ -1,6 +1,6 @@
 CREATE TABLE Tagging (
-	ArticleID	int NOT NULL,
-	Tag	varchar NOT NULL,
+	ArticleID                               SignedInteger(32) NOT NULL,
+	Tag                                     VariableLengthText NOT NULL,
 	PRIMARY KEY(ArticleID, Tag)
 )
 GO

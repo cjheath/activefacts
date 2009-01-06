@@ -19,3 +19,8 @@ Occurrence is where
  */
 Month is in at most one Season;
 
+/*
+ * Constraints:
+ */
+each Season occurs at least one time in
+	Month is in Season;

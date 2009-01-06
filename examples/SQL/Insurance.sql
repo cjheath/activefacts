@@ -1,309 +1,224 @@
 CREATE TABLE Asset (
-	AssetID	int NOT NULL,
-	VehicleColour	varchar NULL,
-	VehicleDealerID	int NULL,
-	VehicleEngineNumber	varchar NULL,
-	VehicleFinanceInstitutionID	int NULL,
-	VehicleHasCommercialRegistration	bit NULL,
-	VehicleModelYearNr	int NULL,
-	VehicleRegistrationNr	FixedLengthText(8) NULL,
-	VehicleVIN	int NULL,
-	VehicleVehicleTypeBadge	varchar NULL,
-	VehicleVehicleTypeMake	varchar NULL,
-	VehicleVehicleTypeModel	varchar NULL,
+	AssetID                                 AutoCounter NOT NULL,
+	VehicleVIN                              UnsignedInteger(32) NULL,
+	VehicleModelYearNr                      SignedInteger(32) NULL,
+	VehicleTypeModel                        VariableLengthText NULL,
+	VehicleTypeMake                         VariableLengthText NULL,
+	VehicleTypeBadge                        VariableLengthText NULL,
+	VehicleEngineNumber                     VariableLengthText NULL,
+	VehicleHasCommercialRegistration        BIT NULL,
+	VehicleFinanceInstitutionID             AutoCounter NULL,
+	VehicleDealerID                         AutoCounter NULL,
+	VehicleRegistrationNr                   FixedLengthText(8) NULL,
+	VehicleColour                           VariableLengthText NULL,
 	PRIMARY KEY(AssetID)
 )
 GO
 
 CREATE TABLE Claim (
-	ClaimID	int NOT NULL,
-	IncidentAddressCity	varchar NULL,
-	IncidentAddressPostcode	varchar NULL,
-	IncidentAddressStateCode	UnsignedTinyInteger(32) NULL,
-	IncidentAddressStreet	varchar(256) NULL,
-	IncidentDateTime	DateAndTime NULL,
-	IncidentDateTime	DateAndTime NULL,
-	IncidentOfficerName	varchar(256) NULL,
-	IncidentPoliceReportNr	int NULL,
-	IncidentReporterName	varchar(256) NULL,
-	IncidentStationName	varchar(256) NULL,
-	LodgementDateTime	DateAndTime NULL,
-	LodgementPersonID	int NOT NULL,
-	P_sequence	int NOT NULL,
-	PolicyP_productCode	UnsignedTinyInteger(32) NOT NULL,
-	PolicyP_serial	int NOT NULL,
-	PolicyP_stateCode	UnsignedTinyInteger(32) NOT NULL,
-	PolicyP_yearNr	int NOT NULL,
-	VehicleIncidentClaimID	int NULL,
+	PolicyP_yearNr                          SignedInteger(32) NOT NULL,
+	PolicyP_productCode                     UnsignedTinyInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	PolicyP_stateCode                       UnsignedTinyInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	PolicyP_serial                          UnsignedInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	P_sequence                              UnsignedInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	LodgementPersonID                       AutoCounter NULL,
+	LodgementDateTime                       DateAndTime NULL,
+	IncidentDateTime                        DateAndTime NULL,
+	IncidentAddressStreet                   VariableLengthText(256) NULL,
+	IncidentAddressCity                     VariableLengthText NULL,
+	IncidentAddressPostcode                 VariableLengthText NULL,
+	IncidentAddressStateCode                UnsignedTinyInteger(32) NULL CHECK(REVISIT: valid value),
+	IncidentDateTime                        DateAndTime NULL,
+	IncidentReporterName                    VariableLengthText(256) NULL,
+	IncidentStationName                     VariableLengthText(256) NULL,
+	IncidentPoliceReportNr                  SignedInteger(32) NULL,
+	IncidentOfficerName                     VariableLengthText(256) NULL,
+	ClaimID                                 AutoCounter NOT NULL,
 	PRIMARY KEY(ClaimID)
 )
 GO
 
 CREATE TABLE ContractorAppointment (
-	ClaimID	int NOT NULL,
-	ContractorID	int NOT NULL,
-	PRIMARY KEY(ClaimID, ContractorID),
-	FOREIGN KEY(ClaimID)
-	REFERENCES Claim(ClaimID)
+	ContractorID                            AutoCounter NOT NULL,
+	ClaimID                                 AutoCounter NOT NULL,
+	PRIMARY KEY(ClaimID, ContractorID)
 )
 GO
 
 CREATE TABLE Cover (
-	PolicyP_yearNr	int NOT NULL,
-	PolicyP_productCode	UnsignedTinyInteger(32) NOT NULL,
-	PolicyP_stateCode	UnsignedTinyInteger(32) NOT NULL,
-	PolicyP_serial	int NOT NULL,
-	AssetID	int NOT NULL,
-	CoverTypeCode	FixedLengthText NOT NULL,
-	PRIMARY KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, AssetID, CoverTypeCode),
-	FOREIGN KEY(AssetID)
-	REFERENCES Asset(AssetID)
+	PolicyP_yearNr                          SignedInteger(32) NOT NULL,
+	PolicyP_productCode                     UnsignedTinyInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	PolicyP_stateCode                       UnsignedTinyInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	PolicyP_serial                          UnsignedInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	CoverTypeCode                           FixedLengthText NOT NULL,
+	AssetID                                 AutoCounter NOT NULL,
+	PRIMARY KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, AssetID, CoverTypeCode)
 )
 GO
 
 CREATE TABLE CoverType (
-	CoverTypeCode	FixedLengthText NOT NULL,
-	CoverTypeName	varchar NOT NULL,
+	CoverTypeName                           VariableLengthText NOT NULL,
+	CoverTypeCode                           FixedLengthText NOT NULL,
 	PRIMARY KEY(CoverTypeCode)
 )
 GO
 
 CREATE TABLE CoverWording (
-	CoverTypeCode	FixedLengthText NOT NULL,
-	PolicyWordingText	LargeLengthText NOT NULL,
-	StartDate	datetime NOT NULL,
-	PRIMARY KEY(CoverTypeCode, PolicyWordingText, StartDate),
-	FOREIGN KEY(CoverTypeCode)
-	REFERENCES CoverType(CoverTypeCode)
+	CoverTypeCode                           FixedLengthText NOT NULL,
+	PolicyWordingText                       LargeLengthText NOT NULL,
+	StartDate                               Date NOT NULL,
+	PRIMARY KEY(CoverTypeCode, PolicyWordingText, StartDate)
 )
 GO
 
 CREATE TABLE DamagedProperty (
-	IncidentClaimID	int NULL,
-	AddressStreet	varchar(256) NOT NULL,
-	AddressCity	varchar NOT NULL,
-	AddressPostcode	varchar NULL,
-	AddressStateCode	UnsignedTinyInteger(32) NULL,
-	OwnerName	varchar(256) NULL,
-	PhoneNr	varchar NULL,
-	UNIQUE(IncidentClaimID, AddressStreet, AddressCity, AddressPostcode, AddressStateCode)
+	OwnerName                               VariableLengthText(256) NULL,
+	AddressStreet                           VariableLengthText(256) NOT NULL,
+	AddressCity                             VariableLengthText NOT NULL,
+	AddressPostcode                         VariableLengthText NULL,
+	AddressStateCode                        UnsignedTinyInteger(32) NULL CHECK(REVISIT: valid value),
+	IncidentID                              AutoCounter NULL,
+	PhoneNr                                 VariableLengthText NULL,
+	UNIQUE(IncidentID, AddressStreet, AddressCity, AddressPostcode, AddressStateCode)
 )
 GO
 
 CREATE TABLE DemeritKind (
-	DemeritKindName	varchar NOT NULL,
+	DemeritKindName                         VariableLengthText NOT NULL,
 	PRIMARY KEY(DemeritKindName)
 )
 GO
 
 CREATE TABLE LossType (
-	LossTypeCode	FixedLengthText NOT NULL,
-	InvolvesDriving	bit NOT NULL,
-	IsSingleVehicleIncident	bit NOT NULL,
-	LiabilityCode	FixedLengthText(1) NULL,
+	LossTypeCode                            FixedLengthText NOT NULL,
+	LiabilityCode                           FixedLengthText(1) NULL CHECK(REVISIT: valid value),
+	IsSingleVehicleIncident                 BIT NOT NULL,
+	InvolvesDriving                         BIT NOT NULL,
 	PRIMARY KEY(LossTypeCode)
 )
 GO
 
 CREATE TABLE LostItem (
-	IncidentClaimID	int NOT NULL,
-	LostItemNr	int NOT NULL,
-	Description	varchar(1024) NOT NULL,
-	PurchaseDate	datetime NULL,
-	PurchasePlace	varchar NULL,
-	PurchasePrice	decimal(18, 2) NULL,
-	PRIMARY KEY(IncidentClaimID, LostItemNr)
+	LostItemNr                              SignedInteger(32) NOT NULL,
+	IncidentID                              AutoCounter NOT NULL,
+	Description                             VariableLengthText(1024) NOT NULL,
+	PurchasePlace                           VariableLengthText NULL,
+	PurchasePrice                           Decimal(18, 2) NULL,
+	PurchaseDate                            Date NULL,
+	PRIMARY KEY(IncidentID, LostItemNr)
 )
 GO
 
 CREATE TABLE Party (
-	PartyID	int NOT NULL,
-	CompanyContactPersonID	int NULL,
-	DriverIsInternational	bit NULL,
-	DriverLicenseNumber	varchar NULL,
-	DriverLicenseType	varchar NULL,
-	DriverYearNr	int NULL,
-	IsACompany	bit NOT NULL,
-	PersonAddressCity	varchar NULL,
-	PersonAddressPostcode	varchar NULL,
-	PersonAddressStateCode	UnsignedTinyInteger(32) NULL,
-	PersonAddressStreet	varchar(256) NULL,
-	PersonBirthDate	datetime NULL,
-	PersonBusinessPhoneNr	varchar NULL,
-	PersonContactTime	Time NULL,
-	PersonEmail	varchar NULL,
-	PersonFamilyName	varchar(256) NULL,
-	PersonGivenName	varchar(256) NULL,
-	PersonHomePhoneNr	varchar NULL,
-	PersonMobilePhoneNr	varchar NULL,
-	PersonOccupation	varchar NULL,
-	PersonPreferredContactMethod	FixedLengthText(1) NULL,
-	PersonTitle	varchar NULL,
-	PostalAddressCity	varchar NULL,
-	PostalAddressPostcode	varchar NULL,
-	PostalAddressStateCode	UnsignedTinyInteger(32) NULL,
-	PostalAddressStreet	varchar(256) NULL,
+	PartyID                                 AutoCounter NOT NULL,
+	IsACompany                              BIT NOT NULL,
+	PostalAddressStreet                     VariableLengthText(256) NULL,
+	PostalAddressCity                       VariableLengthText NULL,
+	PostalAddressPostcode                   VariableLengthText NULL,
+	PostalAddressStateCode                  UnsignedTinyInteger(32) NULL CHECK(REVISIT: valid value),
+	PersonGivenName                         VariableLengthText(256) NULL,
+	PersonFamilyName                        VariableLengthText(256) NULL,
+	PersonTitle                             VariableLengthText NULL,
+	PersonBirthDate                         Date NULL,
+	PersonOccupation                        VariableLengthText NULL,
+	PersonAddressStreet                     VariableLengthText(256) NULL,
+	PersonAddressCity                       VariableLengthText NULL,
+	PersonAddressPostcode                   VariableLengthText NULL,
+	PersonAddressStateCode                  UnsignedTinyInteger(32) NULL CHECK(REVISIT: valid value),
+	PersonMobilePhoneNr                     VariableLengthText NULL,
+	PersonHomePhoneNr                       VariableLengthText NULL,
+	PersonBusinessPhoneNr                   VariableLengthText NULL,
+	PersonEmail                             VariableLengthText NULL,
+	PersonContactTime                       Time NULL,
+	PersonPreferredContactMethod            FixedLengthText(1) NULL CHECK(REVISIT: valid value),
+	DriverLicenseNumber                     VariableLengthText NULL,
+	DriverLicenseType                       VariableLengthText NULL,
+	DriverIsInternational                   BIT NULL,
+	DriverYearNr                            SignedInteger(32) NULL,
+	CompanyContactPersonID                  AutoCounter NULL,
 	PRIMARY KEY(PartyID)
 )
 GO
 
 CREATE TABLE Policy (
-	P_yearNr	int NOT NULL,
-	P_productCode	UnsignedTinyInteger(32) NOT NULL,
-	P_stateCode	UnsignedTinyInteger(32) NOT NULL,
-	P_serial	int NOT NULL,
-	ApplicationNr	int NOT NULL,
-	AuthorisedRepID	int NULL,
-	ClientID	int NOT NULL,
-	ITCClaimed	decimal(18, 2) NULL,
+	AuthorisedRepID                         AutoCounter NULL,
+	ClientID                                AutoCounter NOT NULL,
+	P_yearNr                                SignedInteger(32) NOT NULL,
+	P_productCode                           UnsignedTinyInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	P_stateCode                             UnsignedTinyInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	P_serial                                UnsignedInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	ITCClaimed                              Decimal(18, 2) NULL CHECK(REVISIT: valid value),
+	ApplicationNr                           SignedInteger(32) NOT NULL,
 	PRIMARY KEY(P_yearNr, P_productCode, P_stateCode, P_serial)
 )
 GO
 
 CREATE TABLE Product (
-	ProductCode	UnsignedTinyInteger(32) NOT NULL,
-	Alias	FixedLengthText(3) NULL,
-	ProdDescription	varchar(80) NULL,
+	ProductCode                             UnsignedTinyInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	Alias                                   FixedLengthText(3) NULL,
+	ProdDescription                         VariableLengthText(80) NULL,
 	PRIMARY KEY(ProductCode)
 )
 GO
 
 CREATE TABLE State (
-	StateCode	UnsignedTinyInteger(32) NOT NULL,
-	StateName	varchar(256) NULL,
+	StateCode                               UnsignedTinyInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	StateName                               VariableLengthText(256) NULL,
 	PRIMARY KEY(StateCode)
 )
 GO
 
 CREATE TABLE ThirdParty (
-	PersonID	int NOT NULL,
-	VehicleIncidentClaimID	int NOT NULL,
-	InsurerID	int NULL,
-	ModelYearNr	int NULL,
-	VehicleRegistrationNr	FixedLengthText(8) NULL,
-	VehicleTypeBadge	varchar NULL,
-	VehicleTypeMake	varchar NULL,
-	VehicleTypeModel	varchar NULL,
-	PRIMARY KEY(PersonID, VehicleIncidentClaimID)
+	PersonID                                AutoCounter NOT NULL,
+	VehicleIncidentID                       AutoCounter NOT NULL,
+	InsurerID                               AutoCounter NULL,
+	VehicleRegistrationNr                   FixedLengthText(8) NULL,
+	ModelYearNr                             SignedInteger(32) NULL,
+	VehicleTypeModel                        VariableLengthText NULL,
+	VehicleTypeMake                         VariableLengthText NULL,
+	VehicleTypeBadge                        VariableLengthText NULL,
+	PRIMARY KEY(PersonID, VehicleIncidentID)
 )
 GO
 
 CREATE TABLE UnderwritingDemerit (
-	VehicleIncidentClaimID	int NOT NULL,
-	DemeritKindName	varchar NOT NULL,
-	OccurrenceCount	int NULL,
-	PRIMARY KEY(VehicleIncidentClaimID, DemeritKindName),
-	FOREIGN KEY(DemeritKindName)
-	REFERENCES DemeritKind(DemeritKindName)
+	VehicleIncidentID                       AutoCounter NOT NULL,
+	DemeritKindName                         VariableLengthText NOT NULL,
+	OccurrenceCount                         UnsignedInteger(32) NULL,
+	PRIMARY KEY(VehicleIncidentID, DemeritKindName)
 )
 GO
 
 CREATE TABLE VehicleIncident (
-	Description	varchar(1024) NULL,
-	DrivingBloodTestResult	varchar NULL,
-	DrivingBreathTestResult	varchar NULL,
-	DrivingCharge	varchar NOT NULL,
-	DrivingDriverID	int NOT NULL,
-	DrivingHospitalName	varchar(256) NULL,
-	DrivingIntoxication	varchar NULL,
-	DrivingIsWarning	bit NOT NULL,
-	DrivingNonconsentReason	varchar NULL,
-	DrivingUnlicensedReason	varchar NULL,
-	LossTypeCode	FixedLengthText NULL,
-	Previous_damageDescription	varchar(1024) NULL,
-	Reason	varchar NULL,
-	TowedLocation	varchar NULL,
-	WeatherDescription	varchar(1024) NULL,
-	PRIMARY KEY(IncidentClaimID),
-	FOREIGN KEY(LossTypeCode)
-	REFERENCES LossType(LossTypeCode)
+	IncidentID                              AutoCounter NOT NULL,
+	DrivingDriverID                         AutoCounter NULL,
+	DrivingNonconsentReason                 VariableLengthText NULL,
+	DrivingUnlicensedReason                 VariableLengthText NULL,
+	DrivingIntoxication                     VariableLengthText NULL,
+	DrivingHospitalName                     VariableLengthText(256) NULL,
+	DrivingBreathTestResult                 VariableLengthText NULL,
+	DrivingBloodTestResult                  VariableLengthText NULL,
+	DrivingCharge                           VariableLengthText NULL,
+	DrivingIsWarning                        BIT NULL,
+	TowedLocation                           VariableLengthText NULL,
+	Description                             VariableLengthText(1024) NULL,
+	LossTypeCode                            FixedLengthText NULL,
+	Reason                                  VariableLengthText NULL,
+	Previous_damageDescription              VariableLengthText(1024) NULL,
+	WeatherDescription                      VariableLengthText(1024) NULL,
+	PRIMARY KEY(IncidentID)
 )
 GO
 
 CREATE TABLE Witness (
-	IncidentClaimID	int NOT NULL,
-	Name	varchar(256) NOT NULL,
-	AddressCity	varchar NULL,
-	AddressPostcode	varchar NULL,
-	AddressStateCode	UnsignedTinyInteger(32) NULL,
-	AddressStreet	varchar(256) NULL,
-	ContactPhoneNr	varchar NULL,
-	PRIMARY KEY(IncidentClaimID, Name)
+	IncidentID                              AutoCounter NOT NULL,
+	Name                                    VariableLengthText(256) NOT NULL,
+	AddressStreet                           VariableLengthText(256) NULL,
+	AddressCity                             VariableLengthText NULL,
+	AddressPostcode                         VariableLengthText NULL,
+	AddressStateCode                        UnsignedTinyInteger(32) NULL CHECK(REVISIT: valid value),
+	ContactPhoneNr                          VariableLengthText NULL,
+	PRIMARY KEY(IncidentID, Name)
 )
-GO
-
-ALTER TABLE Claim
-	ADD FOREIGN KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial)
-	REFERENCES Policy(P_yearNr, P_productCode, P_stateCode, P_serial)
-GO
-
-ALTER TABLE ContractorAppointment
-	ADD FOREIGN KEY(ContractorID)
-	REFERENCES Contractor(CompanyID)
-GO
-
-ALTER TABLE Cover
-	ADD FOREIGN KEY(CoverTypeCode)
-	REFERENCES CoverType(CoverTypeCode)
-GO
-
-ALTER TABLE Cover
-	ADD FOREIGN KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial)
-	REFERENCES Policy(P_yearNr, P_productCode, P_stateCode, P_serial)
-GO
-
-ALTER TABLE DamagedProperty
-	ADD FOREIGN KEY(IncidentClaimID)
-	REFERENCES Incident(ClaimID)
-GO
-
-ALTER TABLE LostItem
-	ADD FOREIGN KEY(IncidentClaimID)
-	REFERENCES Incident(ClaimID)
-GO
-
-ALTER TABLE Policy
-	ADD FOREIGN KEY(AuthorisedRepID)
-	REFERENCES AuthorisedRep(PartyID)
-GO
-
-ALTER TABLE Policy
-	ADD FOREIGN KEY(ClientID)
-	REFERENCES Client(PartyID)
-GO
-
-ALTER TABLE Policy
-	ADD FOREIGN KEY(P_productCode)
-	REFERENCES Product(ProductCode)
-GO
-
-ALTER TABLE Policy
-	ADD FOREIGN KEY(P_stateCode)
-	REFERENCES State(StateCode)
-GO
-
-ALTER TABLE ThirdParty
-	ADD FOREIGN KEY(InsurerID)
-	REFERENCES Insurer(CompanyID)
-GO
-
-ALTER TABLE ThirdParty
-	ADD FOREIGN KEY(PersonID)
-	REFERENCES Person(PartyID)
-GO
-
-ALTER TABLE ThirdParty
-	ADD FOREIGN KEY(VehicleIncidentClaimID)
-	REFERENCES VehicleIncident(IncidentClaimID)
-GO
-
-ALTER TABLE UnderwritingDemerit
-	ADD FOREIGN KEY(VehicleIncidentClaimID)
-	REFERENCES VehicleIncident(IncidentClaimID)
-GO
-
-ALTER TABLE Witness
-	ADD FOREIGN KEY(IncidentClaimID)
-	REFERENCES Incident(ClaimID)
 GO
 

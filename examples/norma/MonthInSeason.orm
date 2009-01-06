@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
+<ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:oial="http://schemas.neumont.edu/ORM/Abstraction/2007-06/Core" xmlns:odt="http://schemas.neumont.edu/ORM/Abstraction/2007-06/DataTypes/Core" xmlns:rcd="http://schemas.neumont.edu/ORM/Relational/2007-06/ConceptualDatabase" xmlns:ddt="http://schemas.orm.net/DIL/DILDT" xmlns:ormtooial="http://schemas.neumont.edu/ORM/Bridge/2007-06/ORMToORMAbstraction" xmlns:oialtocdb="http://schemas.neumont.edu/ORM/Bridge/2007-06/ORMAbstractionToConceptualDatabase" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
 	<orm:ORMModel id="_FA21568C-4D3F-4774-AA0D-9BA76373BDD9" Name="MonthInSeason">
 		<orm:Objects>
-			<orm:ValueType id="_CD1098AF-8EEF-4DA7-81D0-9506EE3BEEAD" Name="Month" IsIndependent="true">
+			<orm:ValueType id="_CD1098AF-8EEF-4DA7-81D0-9506EE3BEEAD" Name="Month">
 				<orm:PlayedRoles>
 					<orm:Role ref="_EAA8593C-289E-4C49-B560-AF215A37F539" />
 					<orm:Role ref="_3A5A480C-1EAC-440C-B739-3C0CB9217683" />
@@ -275,6 +275,13 @@
 					<orm:Role id="_3AD7F911-1AD0-4DF1-BA41-7EEA995B75EA" ref="_2CE75417-6FF5-4C1C-9C78-02B990089A91" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_976ACA1C-2431-44F6-85D3-D9E9DC5D275C" Name="ImpliedMandatoryConstraint2" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_18A4E267-EC5F-481C-AFB5-3063ED3E2929" ref="_EAA8593C-289E-4C49-B560-AF215A37F539" />
+					<orm:Role id="_56FF9195-7790-45EC-9BBB-C47114D42C8F" ref="_3A5A480C-1EAC-440C-B739-3C0CB9217683" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_CD1098AF-8EEF-4DA7-81D0-9506EE3BEEAD" />
+			</orm:MandatoryConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:VariableLengthTextDataType id="_7A6C7639-2055-4848-8335-6E60857794DB" />
@@ -286,9 +293,29 @@
 			<orm:ReferenceModeKind id="_78509891-1854-4DA9-8C08-44D1292CB68B" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>
+	<orm:NameGenerator id="_18A89503-32FF-43CB-88DD-652B45E39040" AutomaticallyShortenNames="true" UseTargetDefaultMaximum="true" UserDefinedMaximum="128">
+		<orm:Refinements>
+			<oialtocdb:RelationalNameGenerator id="_9ECBF598-D549-4870-A86C-96DA19697196" SpacingFormat="Remove" AutomaticallyShortenNames="true" UseTargetDefaultMaximum="true" UserDefinedMaximum="128">
+				<orm:Refinements>
+					<oialtocdb:RelationalNameGenerator id="_1E74AF28-ACD0-46A6-83A8-1B4C94A38248" NameUsage="RelationalTable" CasingOption="Pascal" SpacingFormat="Remove" AutomaticallyShortenNames="true" UseTargetDefaultMaximum="true" UserDefinedMaximum="128" />
+					<oialtocdb:RelationalNameGenerator id="_2D726B61-13F4-487E-A240-A23CCC88B049" NameUsage="RelationalColumn" CasingOption="Camel" SpacingFormat="Remove" AutomaticallyShortenNames="true" UseTargetDefaultMaximum="true" UserDefinedMaximum="128" />
+				</orm:Refinements>
+			</oialtocdb:RelationalNameGenerator>
+		</orm:Refinements>
+	</orm:NameGenerator>
+	<orm:GenerationState id="_C61FF5F8-D1EB-42D9-ABF0-06D7085E9903">
+		<orm:GenerationSettings>
+			<ormtooial:AbstractionModelGenerationSetting id="_5C646B31-1C91-4BAC-BF3D-A9692E98C9A4" AlgorithmVersion="1.004">
+				<ormtooial:AbstractionModel ref="_0411AB42-DEB9-4CE6-8143-84A9C74B8BAC" />
+			</ormtooial:AbstractionModelGenerationSetting>
+			<oialtocdb:SchemaGenerationSetting id="_8B1A6ED8-601F-4A6A-9319-A065754FF86A" CoreAlgorithmVersion="1.004" NameAlgorithmVersion="1.009">
+				<oialtocdb:Schema ref="_34E0D38E-9B22-4200-9F6F-3072351AF1B2" />
+			</oialtocdb:SchemaGenerationSetting>
+		</orm:GenerationSettings>
+	</orm:GenerationState>
 	<ormDiagram:ORMDiagram id="_F830A371-4803-4B70-BEB9-2AC63FD62FE4" IsCompleteView="false" Name="MonthInSeason" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
-			<ormDiagram:ObjectTypeShape id="_1DA9A7E5-A32C-4A7B-88CA-08875069A230" IsExpanded="true" AbsoluteBounds="0.5, 0.54219293119385847, 0.53711875796318054, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_1DA9A7E5-A32C-4A7B-88CA-08875069A230" IsExpanded="true" AbsoluteBounds="0.5, 0.54219293119385847, 0.47345908999443054, 0.22950302660465241">
 				<ormDiagram:Subject ref="_CD1098AF-8EEF-4DA7-81D0-9506EE3BEEAD" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_D121C531-E358-4046-878C-05B5BEF0B936" IsExpanded="true" AbsoluteBounds="2.003902941942215, 0.54219293119385847, 0.51267078042030345, 0.22950302660465241">
@@ -316,4 +343,111 @@
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_FA21568C-4D3F-4774-AA0D-9BA76373BDD9" />
 	</ormDiagram:ORMDiagram>
+	<oial:model id="_0411AB42-DEB9-4CE6-8143-84A9C74B8BAC" name="MonthInSeason">
+		<oial:informationTypeFormats>
+			<odt:dataType id="_40E8C478-E641-4E96-B97A-87323BB40C90" name="Month" />
+			<odt:dataType id="_C9702795-CA55-4A5E-AE18-3EFA3195F098" name="Season" />
+			<odt:dataType id="_65A12EE8-8B4A-41CD-9C27-F7AF409C83EE" name="EventId" />
+		</oial:informationTypeFormats>
+		<oial:conceptTypes>
+			<oial:conceptType id="_4B5B1BE4-7C25-4577-9703-8DD3BB936CD1" name="Month">
+				<oial:children>
+					<oial:informationType id="_4764A820-C968-4096-9275-73A06E7922CA" ref="_40E8C478-E641-4E96-B97A-87323BB40C90" isMandatory="true" name="MonthValue" />
+					<oial:informationType id="_EFCB21BB-D10E-45B7-ADCE-7A1F188431CD" ref="_C9702795-CA55-4A5E-AE18-3EFA3195F098" name="Season" />
+				</oial:children>
+				<oial:uniquenessConstraints>
+					<oial:uniquenessConstraint id="_5A018813-046E-4D60-82C7-2CD2FB30114B" name="MonthUniqueness" isPreferred="true">
+						<oial:uniquenessChild ref="_4764A820-C968-4096-9275-73A06E7922CA" />
+					</oial:uniquenessConstraint>
+				</oial:uniquenessConstraints>
+			</oial:conceptType>
+			<oial:conceptType id="_F5557349-DBBC-4178-9BE8-C88D130ADD42" name="Occurrence">
+				<oial:children>
+					<oial:informationType id="_E59221CA-733C-40EC-8F2A-C86614095312" ref="_65A12EE8-8B4A-41CD-9C27-F7AF409C83EE" isMandatory="true" name="EventId" />
+					<oial:relatedConceptType id="_22F67225-1B8B-4DA3-AC5E-8CF1877FBD88" ref="_4B5B1BE4-7C25-4577-9703-8DD3BB936CD1" isMandatory="true" name="Occurrence" oppositeName="Month" />
+				</oial:children>
+				<oial:uniquenessConstraints>
+					<oial:uniquenessConstraint id="_015D42CB-AB06-4C5C-A976-CF64F1FBC500" name="InternalUniquenessConstraint4" isPreferred="true">
+						<oial:uniquenessChild ref="_E59221CA-733C-40EC-8F2A-C86614095312" />
+						<oial:uniquenessChild ref="_22F67225-1B8B-4DA3-AC5E-8CF1877FBD88" />
+					</oial:uniquenessConstraint>
+				</oial:uniquenessConstraints>
+				<oial:association>
+					<oial:associationChild ref="_22F67225-1B8B-4DA3-AC5E-8CF1877FBD88" />
+					<oial:associationChild ref="_E59221CA-733C-40EC-8F2A-C86614095312" />
+				</oial:association>
+			</oial:conceptType>
+		</oial:conceptTypes>
+	</oial:model>
+	<rcd:Catalog id="_4352B4F9-1A3F-433D-A800-DC2496741E22">
+		<rcd:Schemas>
+			<rcd:Schema id="_34E0D38E-9B22-4200-9F6F-3072351AF1B2" Name="MonthInSeason">
+				<rcd:Tables>
+					<rcd:Table id="_5B53B3C3-9355-48C6-9BE5-B999D4E01244" Name="Month">
+						<rcd:Columns>
+							<rcd:Column id="_0B0C1FAB-87D8-490F-855C-A7064F77347D" Name="value" />
+							<rcd:Column id="_11C946C3-4073-4E98-8DA1-D564C54A8AEC" Name="season" IsNullable="true" />
+						</rcd:Columns>
+						<rcd:Constraints>
+							<rcd:UniquenessConstraint id="_3DA1DF88-74F6-413A-983D-9061DC1A98EB" Name="Month_PK" IsPrimary="true">
+								<rcd:Columns>
+									<rcd:Column ref="_0B0C1FAB-87D8-490F-855C-A7064F77347D" />
+								</rcd:Columns>
+							</rcd:UniquenessConstraint>
+						</rcd:Constraints>
+					</rcd:Table>
+					<rcd:Table id="_B0876A76-306B-4BF8-9E41-1D66EE142318" Name="Occurrence">
+						<rcd:Columns>
+							<rcd:Column id="_7DF96F05-FA79-40B9-BDD4-AE7DCD1B5FC4" Name="eventId" />
+							<rcd:Column id="_8E9F0ED7-C2E3-41CD-A712-AECECBF9D05E" Name="month" />
+						</rcd:Columns>
+						<rcd:Constraints>
+							<rcd:ReferenceConstraint id="_87EC1A29-5044-48E6-8783-758545112DE9" Name="Occurrence_FK">
+								<rcd:TargetTable ref="_5B53B3C3-9355-48C6-9BE5-B999D4E01244" />
+								<rcd:TargetUniquenessConstraint ref="_3DA1DF88-74F6-413A-983D-9061DC1A98EB" />
+								<rcd:ColumnReferences>
+									<rcd:ColumnReference TargetColumn="_0B0C1FAB-87D8-490F-855C-A7064F77347D" SourceColumn="_8E9F0ED7-C2E3-41CD-A712-AECECBF9D05E" />
+								</rcd:ColumnReferences>
+							</rcd:ReferenceConstraint>
+							<rcd:UniquenessConstraint id="_A92E7D26-DAB1-4B99-81D2-13AACB5FBF18" Name="Occurrence_PK" IsPrimary="true">
+								<rcd:Columns>
+									<rcd:Column ref="_7DF96F05-FA79-40B9-BDD4-AE7DCD1B5FC4" />
+									<rcd:Column ref="_8E9F0ED7-C2E3-41CD-A712-AECECBF9D05E" />
+								</rcd:Columns>
+							</rcd:UniquenessConstraint>
+						</rcd:Constraints>
+					</rcd:Table>
+				</rcd:Tables>
+			</rcd:Schema>
+		</rcd:Schemas>
+	</rcd:Catalog>
+	<ormtooial:Bridge>
+		<ormtooial:AbstractionModelIsForORMModel id="_52B10447-E776-4C8F-B21E-948AD426CD05" AbstractionModel="_0411AB42-DEB9-4CE6-8143-84A9C74B8BAC" ORMModel="_FA21568C-4D3F-4774-AA0D-9BA76373BDD9" />
+		<ormtooial:FactTypeMapsTowardsRole id="_AF52B143-9801-4D96-8035-EAD07AD2AE57" FactType="_C9592F0F-12F2-4EBA-9200-995963D08C37" TowardsRole="_C924F951-063B-45EA-8F48-B3B0A3D6F792" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_3B5B0296-48FA-4CBD-8883-E59C9D55AB31" FactType="_34D04228-3F74-4960-803E-AD67FB7E72F4" TowardsRole="_F46DCE39-01DB-45E3-BF05-0F0A16CC5F74" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_0D5368BE-6890-43AC-8E3B-E17A9CCB0FCB" FactType="_CB4E7DE3-603A-43C5-9846-B3006271A595" TowardsRole="_EAA8593C-289E-4C49-B560-AF215A37F539" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_DC643DD9-4D2F-411F-BFE7-C23CD5844537" FactType="_6485BE09-6D39-46FE-8BB8-F44FF7F6053E" TowardsRole="_D0DEFAC8-5504-404D-8634-627440674740" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
+		<ormtooial:ConceptTypeIsForObjectType id="_7CEE39C2-E5BF-447D-A2A8-FDC0661B8161" ConceptType="_4B5B1BE4-7C25-4577-9703-8DD3BB936CD1" ObjectType="_CD1098AF-8EEF-4DA7-81D0-9506EE3BEEAD" />
+		<ormtooial:ConceptTypeIsForObjectType id="_1C486D32-96CB-47DA-AC3B-5974158F904D" ConceptType="_F5557349-DBBC-4178-9BE8-C88D130ADD42" ObjectType="_BE7ACC21-6755-4646-9931-33F86B5582A9" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_90DBE83D-7A4F-4209-9A70-6CE6955F093C" ConceptTypeChild="_E59221CA-733C-40EC-8F2A-C86614095312" PathFactType="_34D04228-3F74-4960-803E-AD67FB7E72F4" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_CEBFBC61-1141-4961-906C-0F92C297D2AF" ConceptTypeChild="_E59221CA-733C-40EC-8F2A-C86614095312" PathFactType="_C9592F0F-12F2-4EBA-9200-995963D08C37" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_9C1AF9DB-CABC-4848-99A8-7FA5BF0F8602" ConceptTypeChild="_22F67225-1B8B-4DA3-AC5E-8CF1877FBD88" PathFactType="_6485BE09-6D39-46FE-8BB8-F44FF7F6053E" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_DC5B4B43-86DB-4274-A70D-08723262E446" ConceptTypeChild="_EFCB21BB-D10E-45B7-ADCE-7A1F188431CD" PathFactType="_CB4E7DE3-603A-43C5-9846-B3006271A595" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_664D0592-A748-4642-AF8E-46E289A8F66A" InformationTypeFormat="_65A12EE8-8B4A-41CD-9C27-F7AF409C83EE" ValueType="_D072C442-91EC-4C8B-99A4-A31D2EB61FA7" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_56CE8558-5E0B-4216-BBEA-942D5B4D857F" InformationTypeFormat="_40E8C478-E641-4E96-B97A-87323BB40C90" ValueType="_CD1098AF-8EEF-4DA7-81D0-9506EE3BEEAD" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_3800D236-ACEE-43D1-80C8-E2C73864D8D5" InformationTypeFormat="_C9702795-CA55-4A5E-AE18-3EFA3195F098" ValueType="_F99194FE-8909-451B-94A5-3C8D0EDFD58D" />
+		<ormtooial:UniquenessIsForUniquenessConstraint id="_A6381EC0-3B78-4DEB-83A3-D6FC9C465BE9" AbstractionUniquenessConstraint="_015D42CB-AB06-4C5C-A976-CF64F1FBC500" ORMUniquenessConstraint="_F89A9912-E531-4A89-A899-A2079151E483" />
+	</ormtooial:Bridge>
+	<oialtocdb:Bridge>
+		<oialtocdb:SchemaIsForAbstractionModel id="_63CED5F9-B1D3-4227-B1B6-71B382DC856B" Schema="_34E0D38E-9B22-4200-9F6F-3072351AF1B2" AbstractionModel="_0411AB42-DEB9-4CE6-8143-84A9C74B8BAC" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_9EB3D4FD-85CC-4549-A096-1D400F555258" Column="_7DF96F05-FA79-40B9-BDD4-AE7DCD1B5FC4" ConceptTypeChild="_E59221CA-733C-40EC-8F2A-C86614095312" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_70CF83A0-162B-4E49-96AC-3E44A7806F23" Column="_8E9F0ED7-C2E3-41CD-A712-AECECBF9D05E" ConceptTypeChild="_22F67225-1B8B-4DA3-AC5E-8CF1877FBD88" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_A9C66884-F6AB-4DE7-87E2-34E2B2530DEF" Column="_8E9F0ED7-C2E3-41CD-A712-AECECBF9D05E" ConceptTypeChild="_4764A820-C968-4096-9275-73A06E7922CA" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_F6F9CF75-047A-46EC-B462-0C17D9BA780A" Column="_11C946C3-4073-4E98-8DA1-D564C54A8AEC" ConceptTypeChild="_EFCB21BB-D10E-45B7-ADCE-7A1F188431CD" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_BBC6CB59-8FDA-4EDB-B2C6-FC50A2BB0ACB" Column="_0B0C1FAB-87D8-490F-855C-A7064F77347D" ConceptTypeChild="_4764A820-C968-4096-9275-73A06E7922CA" />
+		<oialtocdb:TableIsPrimarilyForConceptType id="_7F7557CF-0C34-494D-BA0A-52AB46727540" Table="_5B53B3C3-9355-48C6-9BE5-B999D4E01244" ConceptType="_4B5B1BE4-7C25-4577-9703-8DD3BB936CD1" />
+		<oialtocdb:TableIsPrimarilyForConceptType id="_3CDCCCDA-3AB3-4C9D-B2B5-900E608B0763" Table="_B0876A76-306B-4BF8-9E41-1D66EE142318" ConceptType="_F5557349-DBBC-4178-9BE8-C88D130ADD42" />
+		<oialtocdb:UniquenessConstraintIsForUniqueness id="_6231D5CA-CE0F-47A8-9515-AD9D88FFC142" UniquenessConstraint="_3DA1DF88-74F6-413A-983D-9061DC1A98EB" Uniqueness="_5A018813-046E-4D60-82C7-2CD2FB30114B" />
+		<oialtocdb:UniquenessConstraintIsForUniqueness id="_FA462AD2-D89C-4D4A-9A5F-94B89FC42CBE" UniquenessConstraint="_A92E7D26-DAB1-4B99-81D2-13AACB5FBF18" Uniqueness="_015D42CB-AB06-4C5C-A976-CF64F1FBC500" />
+	</oialtocdb:Bridge>
 </ormRoot:ORM2>

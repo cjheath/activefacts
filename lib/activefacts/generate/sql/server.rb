@@ -10,6 +10,7 @@ module ActiveFacts
     class SQL
       class SERVER
         include Metamodel
+        ColumnNameMax = 40
 
         RESERVED_WORDS = %w{
           ADD ALL ALTER AND ANY AS ASC AUTHORIZATION BACKUP BEGIN BETWEEN
@@ -38,6 +39,7 @@ module ActiveFacts
           @vocabulary = vocabulary
           @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
           @delay_fks = options.include? "delay_fks"
+          @norma = options.include? "norma"
         end
 
         def puts s
@@ -59,49 +61,25 @@ module ActiveFacts
         end
 
         # Return a ValueType definition for the passed role reference
-        def sql_type(role_ref)
-          if role_ref.role.fact_type.all_role.size == 1
-            "bit"
-          else
-            vt = role_ref.role.concept
-            length = vt.length
-            scale = vt.scale
-            while vt.supertype
-              length ||= vt.length
-              scale ||= vt.scale
-              vt = vt.supertype
-            end
-            basic_type = case (vt.supertype||vt).name
-              when "AutoCounter"; "int"
-              when "Date"; "datetime"
-              when "UnsignedInteger",
-                "SignedInteger"
-                l = length
-                length = nil
-                case
-                when l <= 8; "tinyint"
-                when l <= 16; "shortint"
-                when l <= 32; "int"
+        def norma_type(type, length)
+          sql_type = case type
+            when "AutoCounter"; "int"
+            when "Date"; "datetime"
+            when "UnsignedInteger", "SignedInteger"
+              s = case
+                when length <= 8; "tinyint"
+                when length <= 16; "shortint"
+                when length <= 32; "int"
                 else "bigint"
                 end
-              when "VariableLengthText"; "varchar"
-              when "Decimal"; "decimal"
-              else vt.name
-              end
-            if length && length != 0
-              basic_type + ((scale && scale != 0) ? "(#{length}, #{scale})" : "(#{length})")
-            else
-              basic_type
+              length = nil
+              s
+            when "VariableLengthText"; "varchar"
+            when "LargeLengthText"; "text"
+            when "Decimal"; "decimal"
+            else type
             end
-          end +
-          (
-            # Is there any role along the path that lacks a mandatory constraint?
-            !role_ref.is_mandatory ? " NULL" : " NOT NULL"
-          )
-        end
-
-        def column_name(role_ref)
-          escape(role_ref.column_name(nil).map{|n| n.sub(/^[a-z]/){|s| s.upcase}}*"")
+          [sql_type, length]
         end
 
         def generate(out = $>)
@@ -115,29 +93,34 @@ module ActiveFacts
             tables_emitted[table] = true
             puts "CREATE TABLE #{escape table.name} ("
 
-            pk = table.absorbed_reference_roles.all_role_ref
-            pk_names = pk.map{|rr| column_name(rr) }
-
-            columns = table.absorbed_roles.all_role_ref.sort_by do |role_ref|
-              # Emit the primary key columns first, in order, then others sorted by column name
-              i = table.absorbed_reference_roles.all_role_ref.index(role_ref)
-              [i || table.absorbed_reference_roles.all_role_ref.size, column_name(role_ref)]
-            end.map do |role_ref|
-              "\t#{column_name(role_ref)}\t#{sql_type(role_ref)}"
+            pk = table.identifier_columns
+            columns = table.columns.map do |column|
+              name = escape column.name("")
+              padding = " "*(name.size >= ColumnNameMax ? 1 : ColumnNameMax-name.size)
+              type, params, restrictions = column.type
+              length = params[:length]
+              length &&= length.to_i
+              scale = params[:scale]
+              scale &&= scale.to_i
+              type, length = norma_type(type, length) if @norma
+              sql_type = "#{type}#{
+                if !length
+                  ""
+                else
+                  "(" + length.to_s + (scale ? ", #{scale}" : "") + ")"
+                end
+                }"
+              null = (column.is_mandatory ? "NOT " : "") + "NULL"
+              check = (restrictions.empty? ? "" : " CHECK(REVISIT: valid value)")
+              "#{name}#{padding}#{sql_type} #{null}#{check}"
             end
 
-            pk_def =
-                  if pk.detect{ |role_ref| !role_ref.is_mandatory }
-                    # Any nullable fields mean this can't be a primary key, just a unique constraint
-                    "\tUNIQUE("
-                  else
-                    "\tPRIMARY KEY("
-                  end +
-                  table.absorbed_reference_roles.all_role_ref.map do |role_ref|
-                    column_name(role_ref)
-                  end*", " + ")"
+            pk_def = (pk.detect{|column| !column.is_mandatory} ? "UNIQUE(" : "PRIMARY KEY(") +
+                pk.map{|column| escape column.name("")}*", " +
+                ")"
 
             inline_fks = []
+=begin
             table.absorbed_references.sort_by { |role, other_table, from_columns, to_columns|
               [ other_table.name, from_columns.map{|c| column_name(c)} ]
             }.each do |role, other_table, from_columns, to_columns|
@@ -150,8 +133,9 @@ module ActiveFacts
               fk << "FOREIGN KEY(#{from_columns.map{|c| column_name(c)}*", "})\n"+
                 "\tREFERENCES #{escape other_table.name}(#{to_columns.map{|c| column_name(c)}*", "})"
             end
+=end
 
-            puts((columns + [pk_def] + inline_fks)*",\n")
+            puts("\t" + (columns + [pk_def] + inline_fks)*",\n\t")
             go ")"
           end
 

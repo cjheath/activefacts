@@ -10,12 +10,17 @@ module MultiInheritance
     value_type 
   end
 
+  class TFN < FixedLengthText
+    value_type :length => 9
+  end
+
   class Person
     identified_by :person_name
     one_to_one :person_name                     # See PersonName.person
   end
 
   class Australian < Person
+    has_one :tfn, TFN                           # See TFN.all_australian_by_tfn
   end
 
   class Employee < Person

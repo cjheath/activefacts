@@ -1,9 +1,9 @@
 CREATE TABLE Window (
-	RoomBuilding	int NOT NULL,
-	RoomRoomNumber	int NOT NULL,
-	WallNumber	int NOT NULL,
-	WindowNumber	int NOT NULL,
-	PRIMARY KEY(RoomBuilding, RoomRoomNumber, WallNumber, WindowNumber)
+	RoomBuilding                            SignedInteger(32) NOT NULL,
+	RoomNumber                              SignedInteger(32) NOT NULL,
+	WallNumber                              SignedInteger(32) NOT NULL,
+	WindowNumber                            UnsignedInteger(32) NOT NULL,
+	PRIMARY KEY(RoomBuilding, RoomNumber, WallNumber, WindowNumber)
 )
 GO
 

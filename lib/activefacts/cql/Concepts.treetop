@@ -20,12 +20,28 @@ module ActiveFacts
         }
       end
 
+      rule basetype
+        is s
+	# independency?
+	identification
+        { def supers; [] end
+          def identifier; identification.value; end
+        }
+      end
+
       rule subtype
-        subtype_prefix supertype_list ident:identification?
+        subtype_prefix
+	# independency?
+	supertype_list ident:identification?
         {
           def supers; supertype_list.value; end
           def identifier; ident.empty? ? nil : ident.value; end
         }
+      end
+
+      # REVISIT: This doesn't work, and I don't know why.
+      rule independency
+	 ('independent' S / 'separate' S / 'partitioned' S)
       end
 
       rule supertype_list
@@ -34,13 +50,6 @@ module ActiveFacts
         { def value
             [primary.text_value]+alternate_supertypes.elements.map{|sup| sup.name.text_value}
           end
-        }
-      end
-
-      rule basetype
-        is s identification
-        { def supers; [] end
-          def identifier; identification.value; end
         }
       end
 

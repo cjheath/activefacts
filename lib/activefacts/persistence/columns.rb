@@ -83,7 +83,7 @@ module ActiveFacts
       def type
         params = {}
         restrictions = []
-        return ["BIT", params, restrictions] unless references[-1].to   # It's a unary
+        return ["BIT", params, restrictions] if references[-1].is_unary   # It's a unary
 
         # Add a role value restriction
         # REVISIT: Can add join-role-value-restrictions here, if we ever provide a way to define them
@@ -91,7 +91,7 @@ module ActiveFacts
           restrictions << references[-1].to_role.role_value_restriction
         end
 
-        vt = references[-1].to
+        vt = references[-1].is_self_value ? references[-1].from : references[-1].to
         params[:length] ||= vt.length if vt.length.to_i != 0
         params[:scale] ||= vt.scale if vt.scale.to_i != 0
         while vt.supertype

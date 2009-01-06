@@ -1,135 +1,97 @@
 CREATE TABLE Club (
-	ClubCode	varchar(6) NOT NULL,
-	ClubName	varchar(32) NOT NULL,
+	ClubName                                VariableLengthText(32) NOT NULL,
+	ClubCode                                VariableLengthText(6) NOT NULL,
 	PRIMARY KEY(ClubCode)
 )
 GO
 
 CREATE TABLE Entry (
-	EntryID	int NOT NULL,
-	Course	varchar(16) NOT NULL,
-	EventID	int NOT NULL,
-	FinishPlacing	int NULL,
-	PersonID	int NOT NULL,
-	Score	int NULL,
+	PersonID                                AutoCounter NOT NULL,
+	Course                                  VariableLengthText(16) NOT NULL CHECK(REVISIT: valid value),
+	EventID                                 AutoCounter NOT NULL,
+	Score                                   SignedInteger(32) NULL,
+	FinishPlacing                           UnsignedInteger(32) NULL,
+	EntryID                                 AutoCounter NOT NULL,
 	PRIMARY KEY(EntryID)
 )
 GO
 
 CREATE TABLE Event (
-	EventID	int NOT NULL,
-	ClubCode	varchar(6) NOT NULL,
-	EventName	varchar(50) NULL,
-	MapID	int NOT NULL,
-	Number	int NULL,
-	SeriesID	int NULL,
-	StartLocation	varchar(200) NOT NULL,
-	StartTime	DateAndTime NOT NULL,
-	PRIMARY KEY(EventID),
-	FOREIGN KEY(ClubCode)
-	REFERENCES Club(ClubCode)
+	EventName                               VariableLengthText(50) NULL,
+	MapID                                   AutoCounter NOT NULL,
+	StartLocation                           VariableLengthText(200) NOT NULL,
+	EventID                                 AutoCounter NOT NULL,
+	StartTime                               DateAndTime NOT NULL,
+	SeriesID                                AutoCounter NULL,
+	Number                                  UnsignedInteger(32) NULL CHECK(REVISIT: valid value),
+	ClubCode                                VariableLengthText(6) NOT NULL,
+	PRIMARY KEY(EventID)
 )
 GO
 
 CREATE TABLE EventControl (
-	EventID	int NOT NULL,
-	ControlNumber	int NOT NULL,
-	PointValue	int NULL,
-	PRIMARY KEY(EventID, ControlNumber),
-	FOREIGN KEY(EventID)
-	REFERENCES Event(EventID)
+	EventID                                 AutoCounter NOT NULL,
+	ControlNumber                           UnsignedInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	PointValue                              UnsignedInteger(32) NULL,
+	PRIMARY KEY(EventID, ControlNumber)
 )
 GO
 
 CREATE TABLE EventScoringMethod (
-	Course	varchar(16) NOT NULL,
-	EventID	int NOT NULL,
-	ScoringMethod	varchar(32) NOT NULL,
-	PRIMARY KEY(Course, EventID),
-	FOREIGN KEY(EventID)
-	REFERENCES Event(EventID)
+	ScoringMethod                           VariableLengthText(32) NOT NULL CHECK(REVISIT: valid value),
+	Course                                  VariableLengthText(16) NOT NULL CHECK(REVISIT: valid value),
+	EventID                                 AutoCounter NOT NULL,
+	PRIMARY KEY(Course, EventID)
 )
 GO
 
 CREATE TABLE Map (
-	MapID	int NOT NULL,
-	Accessibility	FixedLengthText(1) NULL,
-	MapName	varchar(80) NOT NULL,
-	OwnerCode	varchar(6) NOT NULL,
-	PRIMARY KEY(MapID),
-	FOREIGN KEY(OwnerCode)
-	REFERENCES Club(ClubCode)
+	MapName                                 VariableLengthText(80) NOT NULL,
+	OwnerCode                               VariableLengthText(6) NOT NULL,
+	Accessibility                           FixedLengthText(1) NULL CHECK(REVISIT: valid value),
+	MapID                                   AutoCounter NOT NULL,
+	PRIMARY KEY(MapID)
 )
 GO
 
 CREATE TABLE Person (
-	PersonID	int NOT NULL,
-	BirthYear	int NULL,
-	ClubCode	varchar(6) NULL,
-	FamilyName	varchar(48) NOT NULL,
-	Gender	FixedLengthText(1) NULL,
-	GivenName	varchar(48) NOT NULL,
-	PostCode	int NULL,
-	PRIMARY KEY(PersonID),
-	FOREIGN KEY(ClubCode)
-	REFERENCES Club(ClubCode)
+	FamilyName                              VariableLengthText(48) NOT NULL,
+	GivenName                               VariableLengthText(48) NOT NULL,
+	Gender                                  FixedLengthText(1) NULL CHECK(REVISIT: valid value),
+	BirthYear                               UnsignedInteger(32) NULL CHECK(REVISIT: valid value),
+	PostCode                                UnsignedInteger(32) NULL,
+	ClubCode                                VariableLengthText(6) NULL,
+	PersonID                                AutoCounter NOT NULL,
+	PRIMARY KEY(PersonID)
 )
 GO
 
 CREATE TABLE Punch (
-	PunchID	int NOT NULL,
+	PunchID                                 AutoCounter NOT NULL,
 	PRIMARY KEY(PunchID)
 )
 GO
 
 CREATE TABLE PunchPlacement (
-	PunchID	int NOT NULL,
-	EventControlEventID	int NOT NULL,
-	EventControlControlNumber	int NOT NULL,
-	PRIMARY KEY(PunchID, EventControlEventID, EventControlControlNumber),
-	FOREIGN KEY(PunchID)
-	REFERENCES Punch(PunchID),
-	FOREIGN KEY(EventControlEventID, EventControlControlNumber)
-	REFERENCES EventControl(EventID, ControlNumber)
+	PunchID                                 AutoCounter NOT NULL,
+	EventControlEventID                     AutoCounter NOT NULL,
+	EventControlControlNumber               UnsignedInteger(32) NOT NULL CHECK(REVISIT: valid value),
+	PRIMARY KEY(PunchID, EventControlEventID, EventControlControlNumber)
 )
 GO
 
 CREATE TABLE Series (
-	SeriesID	int NOT NULL,
-	Name	varchar(40) NOT NULL,
+	Name                                    VariableLengthText(40) NOT NULL,
+	SeriesID                                AutoCounter NOT NULL,
 	PRIMARY KEY(SeriesID)
 )
 GO
 
 CREATE TABLE Visit (
-	PunchID	int NOT NULL,
-	EntryID	int NULL,
-	Time	DateAndTime NOT NULL,
-	UNIQUE(PunchID, EntryID, Time),
-	FOREIGN KEY(PunchID)
-	REFERENCES Punch(PunchID),
-	FOREIGN KEY(EntryID)
-	REFERENCES Entry(EntryID)
+	PunchID                                 AutoCounter NOT NULL,
+	EntryID                                 AutoCounter NOT NULL,
+	Time                                    DateAndTime NOT NULL,
+	PRIMARY KEY(PunchID, EntryID, Time)
 )
-GO
-
-ALTER TABLE Entry
-	ADD FOREIGN KEY(EventID)
-	REFERENCES Event(EventID)
-GO
-
-ALTER TABLE Entry
-	ADD FOREIGN KEY(PersonID)
-	REFERENCES Person(PersonID)
-GO
-
-ALTER TABLE Event
-	ADD FOREIGN KEY(MapID)
-	REFERENCES Map(MapID)
-GO
-
-ALTER TABLE Event
-	ADD FOREIGN KEY(SeriesID)
-	REFERENCES Series(SeriesID)
 GO
 

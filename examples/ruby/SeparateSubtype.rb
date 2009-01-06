@@ -6,6 +6,10 @@ module OneToOnes
     value_type 
   end
 
+  class DateTime < DateAndTime
+    value_type 
+  end
+
   class DriverName < String
     value_type 
   end
@@ -23,6 +27,7 @@ module OneToOnes
   class Incident
     identified_by :claim
     one_to_one :claim                           # See Claim.incident
+    has_one :date_time                          # See DateTime.all_incident
   end
 
   class VehicleIncident < Incident

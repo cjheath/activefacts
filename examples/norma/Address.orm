@@ -482,16 +482,6 @@
 					</orm:RoleSequence>
 				</orm:RoleSequences>
 			</orm:SubsetConstraint>
-			<orm:SubsetConstraint id="_6A904284-4F06-4EE4-BA75-726845EDCFC5" Name="SubsetConstraint2">
-				<orm:RoleSequences>
-					<orm:RoleSequence id="_644D1B70-271E-48AB-BA8D-B7ABD670B52A">
-						<orm:Role id="_B43057A8-0FA0-431C-A7D1-24A038B060CD" ref="_1F5B5E56-3A10-45BE-84EC-D509FBC83C9D" />
-					</orm:RoleSequence>
-					<orm:RoleSequence id="_0F750825-3F08-4EB0-8A08-B865B949AC62">
-						<orm:Role id="_0A07D918-3E36-4DCC-86AA-1CEAAC2367E5" ref="_BF0415B8-D99C-4CF9-806F-861B071BF634" />
-					</orm:RoleSequence>
-				</orm:RoleSequences>
-			</orm:SubsetConstraint>
 			<orm:MandatoryConstraint id="_4733EB7A-431A-48F4-9C90-9F36EB554808" Name="PersonMustHaveFamilyName" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_EB734602-18DA-405E-A146-AB47B20A6B55" ref="_D6EE6716-CE6D-4E60-AE87-4DF950146818" />
@@ -711,11 +701,6 @@
 		<orm:DataTypes>
 			<orm:VariableLengthTextDataType id="_0491E1C9-8539-4C49-8EAB-7E14CB85A7C4" />
 		</orm:DataTypes>
-		<orm:ModelErrors>
-			<orm:SubsetConstraintImpliedByMandatoryConstraintsError id="_663D89F2-478F-46BC-89BB-660243DE8385" Name="Subset constraint 'SubsetConstraint2' in model 'Address' is implied by a simple mandatory constraint on the superset role.">
-				<orm:SubsetConstraint ref="_6A904284-4F06-4EE4-BA75-726845EDCFC5" />
-			</orm:SubsetConstraintImpliedByMandatoryConstraintsError>
-		</orm:ModelErrors>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_F14CB3B7-A84A-47B3-899C-0FFE9E7BB4FC" FormatString="{1}" ReferenceModeType="General" />
 			<orm:ReferenceModeKind id="_4EDCDBA7-9938-4F20-A089-8AEB9BEA22D7" FormatString="{0}{1}" ReferenceModeType="Popular" />
@@ -870,9 +855,6 @@
 			</ormDiagram:FactTypeShape>
 			<ormDiagram:ExternalConstraintShape id="_C0582FD9-43F7-4B4F-AC48-7E152C1D5C2E" IsExpanded="true" AbsoluteBounds="5.1263180407695481, 2.1250000794728594, 0.16, 0.16">
 				<ormDiagram:Subject ref="_3C18AA95-1013-423E-87C2-A036EF319771" />
-			</ormDiagram:ExternalConstraintShape>
-			<ormDiagram:ExternalConstraintShape id="_ECF4A6FE-5CEF-4FA7-A54A-F7BDF7E2672D" IsExpanded="true" AbsoluteBounds="5.1263180407695481, 1.4791666666666672, 0.16, 0.16">
-				<ormDiagram:Subject ref="_6A904284-4F06-4EE4-BA75-726845EDCFC5" />
 			</ormDiagram:ExternalConstraintShape>
 			<ormDiagram:ObjectTypeShape id="_DE07C657-3CC6-4D44-8242-BCC680717C41" IsExpanded="true" AbsoluteBounds="0.58053588867187522, 2.9386914973643923, 0.62128620862960815, 0.35900605320930479">
 				<ormDiagram:Subject ref="_8F16FA3F-C4B7-4527-975B-ED75FD02D828" />
