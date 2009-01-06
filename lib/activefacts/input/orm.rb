@@ -161,8 +161,18 @@ module ActiveFacts
         min = x_range.attributes['MinValue']
         max = x_range.attributes['MaxValue']
         q = "'"
-        min = min =~ /[^0-9\.]/ ? q+min+q : min.to_i
-        max = max =~ /[^0-9\.]/ ? q+max+q : max.to_i
+        min = case min
+          when ""; nil
+          when /[^0-9\.]/; q+min+q
+          when /\./; Float(min)
+          else Integer(min)
+          end
+        max = case max
+          when ""; nil
+          when /[^0-9\.]/; q+max+q
+          when /\./; Float(max)
+          else Integer(max)
+          end
         # ValueRange takes a minimum and/or a maximum Bound, each takes value and whether inclusive
         @constellation.ValueRange(
             min ? [min.to_s, true] : nil,
