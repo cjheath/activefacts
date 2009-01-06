@@ -76,6 +76,33 @@ module ActiveFacts
         joiner ? name_array * joiner : name_array
       end
 
+      def is_mandatory
+        !@references.detect{|ref| !ref.is_mandatory}
+      end
+
+      def type
+        params = {}
+        restrictions = []
+        return ["BIT", params, restrictions] unless references[-1].to   # It's a unary
+
+        # Add a role value restriction
+        # REVISIT: Can add join-role-value-restrictions here, if we ever provide a way to define them
+        if references[-1].to_role && references[-1].to_role.role_value_restriction
+          restrictions << references[-1].to_role.role_value_restriction
+        end
+
+        vt = references[-1].to
+        params[:length] ||= vt.length if vt.length.to_i != 0
+        params[:scale] ||= vt.scale if vt.scale.to_i != 0
+        while vt.supertype
+          params[:length] ||= vt.length if vt.length.to_i != 0
+          params[:scale] ||= vt.scale if vt.scale.to_i != 0
+          restrictions << vt.value_restriction if vt.value_restriction
+          vt = vt.supertype
+        end
+        return [vt.name, params, restrictions]
+      end
+
       def to_s
         "#{@references[0].from.name} column #{name('.')}"
       end
@@ -119,6 +146,13 @@ module ActiveFacts
     end
 
     class ValueType
+      def identifier_columns
+        debug :columns, "Identifier Columns for #{name}" do
+          raise "Illegal call to identifier_columns for absorbed ValueType #{name}" unless is_table
+          columns.select{|column| column.references[0] == self_value_reference}
+        end
+      end
+
       def reference_columns(excluded_supertypes)
         debug :columns, "Reference Columns for #{name}" do
           if is_table
@@ -153,6 +187,23 @@ module ActiveFacts
     end
 
     class EntityType
+      def identifier_columns
+        debug :columns, "Identifier Columns for #{name}" do
+          if absorbed_via and
+            # If this is a subtype that has its own identification, use that.
+            (all_type_inheritance_by_subtype.size == 0 ||
+              all_type_inheritance_by_subtype.detect{|ti| ti.provides_identification })
+            return absorbed_via.from.identifier_columns
+          end
+
+          preferred_identifier.role_sequence.all_role_ref.map do |role_ref|
+            ref = references_from.detect {|ref| ref.to_role == role_ref.role}
+
+            columns.select{|column| column.references[0] == ref}
+          end.flatten
+        end
+      end
+
       def reference_columns(excluded_supertypes)
         debug :columns, "Reference Columns for #{name}" do
 
@@ -165,9 +216,8 @@ module ActiveFacts
 
           # REVISIT: Should have built preferred_identifier_references
           preferred_identifier.role_sequence.all_role_ref.map do |role_ref|
-            role = role_ref.role
             # REVISIT: Should index references by to_role:
-            ref = references_from.detect {|ref| ref.to_role == role}
+            ref = references_from.detect {|ref| ref.to_role == role_ref.role}
 
             raise "reference for role #{role.describe} not found on #{name} in #{references_from.size} references:\n\t#{references_from.map(&:to_s)*"\n\t"}" unless ref
 
@@ -215,7 +265,7 @@ module ActiveFacts
       end
 
       def populate_all_columns
-        # REVISIT: Is now a good time to apply schema transforms?
+        # REVISIT: Is now a good time to apply schema transforms or should this be more explicit?
         finish_schema
 
         debug :columns, "Populating all columns" do

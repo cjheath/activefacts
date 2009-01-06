@@ -214,8 +214,7 @@ module ActiveFacts
                   # If there's more than one absorption path and any functional dependencies that can't absorb us, it's a table
                   non_identifying_refs_from =
                     feature.references_from.reject{|ref|
-                      # REVISIT: I think from_role can be removed here (pi roles are always to_roles now), test it:
-                      pi_roles.include?(ref.to_role || ref.from_role)
+                      pi_roles.include?(ref.to_role)
                     }
                   debug :absorption, "#{feature.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
 
@@ -232,14 +231,22 @@ module ActiveFacts
                         !ref.to or ref.to.absorbed_via == ref
                       end+feature.references_to
                     ).reject do |ref|
-                      !ref.to.is_table or
-                      ![:one_one, :supertype, :subtype].include?(ref.role_type)
+                      next true if !ref.to.is_table or
+                        ![:one_one, :supertype, :subtype].include?(ref.role_type)
+
+                      # If one side is mandatory but not the other, don't absorb the mandatory side into the non-mandatory one
+                      from_is_mandatory = !!ref.is_mandatory
+                      to_is_mandatory = !ref.to_role || !!ref.to_role.is_mandatory
+                      bad = (to_is_mandatory != from_is_mandatory and (ref.from == feature ? from_is_mandatory : to_is_mandatory))
+                      debug :absorption, "Not absorbing mandatory #{feature.name} through #{ref}" if bad
+                      bad
                     end
 
                   # If this object can be fully absorbed, do that (might require flipping some references)
                   if absorption_paths.size > 0
                     debug :absorption, "#{feature.name} is fully absorbed through #{absorption_paths.inspect}"
                     absorption_paths.each do |ref|
+                      debug :absorption, "flip #{ref} so #{feature.name} can be absorbed"
                       ref.flip if feature == ref.from
                     end
                     feature.definitely_not_table
@@ -254,12 +261,13 @@ module ActiveFacts
                     feature.definitely_not_table
                     next feature
                   end
-                end
 
-                false   # Failed to decide about this entity_type this time around
+                  false   # Failed to decide about this entity_type this time around
+                end
               end
 
             undecided -= finalised
+            debug :absorption, "Finalised #{finalised.size} this pass: #{finalised.map{|f| f.name}*", "}"
           end while !finalised.empty?
 
           # A ValueType that isn't explicitly a table and isn't needed anywhere doesn't matter,

@@ -51,6 +51,12 @@ module ActiveFacts
         role && role.role_type
       end
 
+      def is_mandatory
+        !@from_role ||        # All phantom roles of fact types are mandatory
+        is_unary ||           # Unary fact types become booleans, which must be true or false
+        @from_role.is_mandatory
+      end
+
       def is_unary
         !@to && @to_role && @to_role.fact_type.all_role.size == 1
       end
@@ -74,7 +80,7 @@ module ActiveFacts
 
       def is_simple_reference
         # It's a simple reference to a thing if that thing is a table,
-        # or is fully absorbed into another table REVISIT: but not via this reference.
+        # or is fully absorbed into another table but not via this reference.
         @to && (@to.is_table or @to.absorbed_via && !is_absorbing)
       end
 
