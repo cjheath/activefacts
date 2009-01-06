@@ -1,6 +1,6 @@
 CREATE TABLE SomeString (
-	IsLong                                  BIT NOT NULL,
-	SomeStringValue                         VariableLengthText NOT NULL,
+	IsLong                                  bit NOT NULL,
+	SomeStringValue                         varchar NOT NULL,
 	PRIMARY KEY(SomeStringValue)
 )
 GO

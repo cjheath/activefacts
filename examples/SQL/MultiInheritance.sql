@@ -1,7 +1,7 @@
 CREATE TABLE Person (
-	PersonName                              VariableLengthText NOT NULL,
-	AustralianTFN                           FixedLengthText(9) NULL,
-	EmployeeID                              AutoCounter NULL,
+	PersonName                              varchar NOT NULL,
+	AustralianTFN                           char(9) NULL,
+	EmployeeID                              int NULL,
 	PRIMARY KEY(PersonName)
 )
 GO

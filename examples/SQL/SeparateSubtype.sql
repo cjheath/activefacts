@@ -1,14 +1,15 @@
 CREATE TABLE Claim (
-	IncidentDateTime                        DateAndTime NULL,
-	ClaimID                                 AutoCounter NOT NULL,
+	IncidentDateTime                        datetime NULL,
+	ClaimID                                 int IDENTITY NOT NULL,
 	PRIMARY KEY(ClaimID)
 )
 GO
 
 CREATE TABLE VehicleIncident (
-	IncidentID                              AutoCounter NOT NULL,
-	DriverName                              VariableLengthText NULL,
-	PRIMARY KEY(IncidentID)
+	IncidentID                              int IDENTITY NOT NULL,
+	DriverName                              varchar NULL,
+	PRIMARY KEY(IncidentID),
+	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID)
 )
 GO
 

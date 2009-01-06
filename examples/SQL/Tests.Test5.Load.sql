@@ -1,10 +1,10 @@
 CREATE TABLE Party (
-	Partyid                                 AutoCounter NOT NULL,
-	PartyMonikerPartyName                   VariableLengthText NULL,
-	PartyMonikerAccuracyLevel               SignedInteger(32) NULL CHECK(REVISIT: valid value),
-	PersonDateYmd                           Date NULL,
-	PersonAttendingDoctorId                 AutoCounter NULL,
-	PersonDeathDateYmd                      Date NULL,
+	Partyid                                 int IDENTITY NOT NULL,
+	PartyMonikerPartyName                   varchar NULL,
+	PartyMonikerAccuracyLevel               int NULL CHECK((PartyMonikerAccuracyLevel >= 1 AND PartyMonikerAccuracyLevel <= 5)),
+	PersonDateYmd                           datetime NULL,
+	PersonAttendingDoctorId                 int NULL,
+	PersonDeathDateYmd                      datetime NULL,
 	PRIMARY KEY(Partyid)
 )
 GO

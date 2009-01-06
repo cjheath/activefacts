@@ -1,44 +1,44 @@
 CREATE TABLE AcceptableSubstitutes (
-	ProductName                             VariableLengthText NOT NULL,
-	AlternateProductName                    VariableLengthText NOT NULL,
-	Season                                  VariableLengthText(6) NOT NULL CHECK(REVISIT: valid value),
+	ProductName                             varchar NOT NULL,
+	AlternateProductName                    varchar NOT NULL,
+	Season                                  varchar(6) NOT NULL CHECK(Season = 'Spring' OR Season = 'Summer' OR Season = 'Autumn' OR Season = 'Winter'),
 	PRIMARY KEY(ProductName, AlternateProductName, Season)
 )
 GO
 
 CREATE TABLE Month (
-	Season                                  VariableLengthText(6) NOT NULL CHECK(REVISIT: valid value),
-	MonthCode                               FixedLengthText NOT NULL,
+	Season                                  varchar(6) NOT NULL CHECK(Season = 'Spring' OR Season = 'Summer' OR Season = 'Autumn' OR Season = 'Winter'),
+	MonthCode                               char NOT NULL,
 	PRIMARY KEY(MonthCode)
 )
 GO
 
 CREATE TABLE ProductionForecast (
-	RefineryName                            VariableLengthText(80) NOT NULL,
-	ProductName                             VariableLengthText NOT NULL,
-	SupplyPeriodYearNr                      SignedInteger(32) NOT NULL,
-	SupplyPeriodMonthCode                   FixedLengthText NOT NULL,
-	Quantity                                UnsignedInteger(32) NOT NULL,
-	Cost                                    Money NULL,
+	RefineryName                            varchar(80) NOT NULL,
+	ProductName                             varchar NOT NULL,
+	SupplyPeriodYearNr                      int NOT NULL,
+	SupplyPeriodMonthCode                   char NOT NULL,
+	Quantity                                int NOT NULL,
+	Cost                                    decimal NULL,
 	PRIMARY KEY(RefineryName, ProductName, SupplyPeriodYearNr, SupplyPeriodMonthCode)
 )
 GO
 
 CREATE TABLE RegionalDemand (
-	RegionName                              VariableLengthText NOT NULL,
-	ProductName                             VariableLengthText NOT NULL,
-	SupplyPeriodYearNr                      SignedInteger(32) NOT NULL,
-	SupplyPeriodMonthCode                   FixedLengthText NOT NULL,
-	Quantity                                UnsignedInteger(32) NULL,
+	RegionName                              varchar NOT NULL,
+	ProductName                             varchar NOT NULL,
+	SupplyPeriodYearNr                      int NOT NULL,
+	SupplyPeriodMonthCode                   char NOT NULL,
+	Quantity                                int NULL,
 	PRIMARY KEY(RegionName, ProductName, SupplyPeriodYearNr, SupplyPeriodMonthCode)
 )
 GO
 
 CREATE TABLE TransportRoute (
-	TransportMethod                         VariableLengthText NOT NULL CHECK(REVISIT: valid value),
-	RefineryName                            VariableLengthText(80) NOT NULL,
-	RegionName                              VariableLengthText NOT NULL,
-	Cost                                    Money NULL,
+	TransportMethod                         varchar NOT NULL CHECK(TransportMethod = 'Rail' OR TransportMethod = 'Road' OR TransportMethod = 'Sea'),
+	RefineryName                            varchar(80) NOT NULL,
+	RegionName                              varchar NOT NULL,
+	Cost                                    decimal NULL,
 	PRIMARY KEY(TransportMethod, RefineryName, RegionName)
 )
 GO

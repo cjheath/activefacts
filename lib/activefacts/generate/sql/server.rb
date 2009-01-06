@@ -60,7 +60,7 @@ module ActiveFacts
           end
         end
 
-        # Return a ValueType definition for the passed role reference
+        # Return SQL type and (modified?) length for the passed NORMA base type
         def norma_type(type, length)
           sql_type = case type
             when "AutoCounter"; "int"
@@ -74,10 +74,19 @@ module ActiveFacts
                 end
               length = nil
               s
+            when "FixedLengthText"; "char"
             when "VariableLengthText"; "varchar"
             when "LargeLengthText"; "text"
             when "Decimal"; "decimal"
-            else type
+            when "DateAndTime"; "datetime"
+            when "Money"; "decimal"
+            when "PictureRawData"; "image"
+            when "Time"; "datetime"
+            when "UnsignedSmallInteger"; "shortint"
+            when "SignedSmallInteger"; "shortint"
+            when "UnsignedTinyInteger"; "tinyint"
+            when "BIT"; "bit"
+            else raise "SQL type unknown for NORMA type #{type}"
             end
           [sql_type, length]
         end
@@ -94,10 +103,18 @@ module ActiveFacts
             puts "CREATE TABLE #{escape table.name} ("
 
             pk = table.identifier_columns
+            identity_column = pk[0] if pk.size == 1 && pk[0].is_auto_assigned
+
+            fk_refs = table.references_from.select{|ref| ref.is_simple_reference }
+            fk_columns = table.columns.select do |column|
+              column.references[0].is_simple_reference
+            end
+
             columns = table.columns.map do |column|
               name = escape column.name("")
               padding = " "*(name.size >= ColumnNameMax ? 1 : ColumnNameMax-name.size)
               type, params, restrictions = column.type
+              restrictions = [] if (fk_columns.include?(column))  # Don't enforce VT restrictions on FK columns
               length = params[:length]
               length &&= length.to_i
               scale = params[:scale]
@@ -110,9 +127,10 @@ module ActiveFacts
                   "(" + length.to_s + (scale ? ", #{scale}" : "") + ")"
                 end
                 }"
+              identity = column == identity_column ? " IDENTITY" : ""
               null = (column.is_mandatory ? "NOT " : "") + "NULL"
-              check = (restrictions.empty? ? "" : " CHECK(REVISIT: valid value)")
-              "#{name}#{padding}#{sql_type} #{null}#{check}"
+              check = check_clause(name, restrictions)
+              "#{name}#{padding}#{sql_type}#{identity} #{null}#{check}"
             end
 
             pk_def = (pk.detect{|column| !column.is_mandatory} ? "UNIQUE(" : "PRIMARY KEY(") +
@@ -120,20 +138,42 @@ module ActiveFacts
                 ")"
 
             inline_fks = []
-=begin
-            table.absorbed_references.sort_by { |role, other_table, from_columns, to_columns|
-              [ other_table.name, from_columns.map{|c| column_name(c)} ]
-            }.each do |role, other_table, from_columns, to_columns|
-              fk =
-                if tables_emitted[other_table] && !@delay_fks
-                  inline_fks << "\t"
-                else
-                  delayed_foreign_keys << "ALTER TABLE #{escape table.name}\n\tADD "
-                end.last
-              fk << "FOREIGN KEY(#{from_columns.map{|c| column_name(c)}*", "})\n"+
-                "\tREFERENCES #{escape other_table.name}(#{to_columns.map{|c| column_name(c)}*", "})"
+            fk_refs.map do |fk_ref|
+              from_columns = table.columns.select{|column| column.references[0] == fk_ref }
+
+              to = fk_ref.to
+              # REVISIT: There should be a better way to find where it's absorbed (especially since this fails for absorbed subtypes having their own identification!)
+              while (r = to.absorbed_via)
+                #puts "#{to.name} is absorbed into #{r.to.name}/#{r.from.name}"
+                to = r.to == to ? r.from : r.to
+              end
+              raise "REVISIT: #{fk_ref} is bad" unless to and to.columns
+
+              all_to_columns_by_role = to.columns.inject({}) do |hash, column|
+                r0 = column.references[0]
+                hash[r0.to_role] = column
+                hash
+              end
+              to_columns = from_columns.map do |from_column|
+                c ||= all_to_columns_by_role[from_column.references[1].to_role]
+                raise "REVISIT: Failed to find target column for #{fk_ref} matching #{from_column.name}" unless c
+                # p from_column.references
+                # p from_column.references[1]
+                # p from_column.references[1].from_role
+                # p from_column.references[1].to_role
+                c
+              end
+              fk = "FOREIGN KEY (" +
+                from_columns.map{|column| column.name}*", " +
+                ") REFERENCES #{escape to.name} (" +
+                to_columns.map{|column| column.name}*", " +
+                ")"
+              if tables_emitted[to] && !@delay_fks
+                inline_fks << fk
+              else
+                delayed_foreign_keys << ("ALTER TABLE #{escape table.name}\n\tADD " + fk)
+              end
             end
-=end
 
             puts("\t" + (columns + [pk_def] + inline_fks)*",\n\t")
             go ")"
@@ -142,6 +182,27 @@ module ActiveFacts
           delayed_foreign_keys.each do |fk|
             go fk
           end
+        end
+
+        def check_clause(column_name, restrictions)
+          return "" if restrictions.empty?
+          # REVISIT: Merge all restrictions (later; now just use the first)
+          " CHECK(" +
+            restrictions[0].all_allowed_range.map do |ar|
+              vr = ar.value_range
+              min = vr.minimum_bound
+              max = vr.maximum_bound
+              if (min && max && max.value == min.value)
+                "#{column_name} = #{min.value}"
+              else
+                inequalities = [
+                  min && "#{column_name} >#{min.is_inclusive ? "=" : ""} #{min.value}",
+                  max && "#{column_name} <#{max.is_inclusive ? "=" : ""} #{max.value}"
+                ].compact
+                inequalities.size > 1 ? "(" + inequalities*" AND " + ")" : inequalities[0]
+              end
+            end*" OR " +
+          ")"
         end
       end
     end

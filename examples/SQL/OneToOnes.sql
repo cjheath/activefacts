@@ -1,13 +1,14 @@
 CREATE TABLE Boy (
-	BoyID                                   AutoCounter NOT NULL,
+	BoyID                                   int IDENTITY NOT NULL,
 	PRIMARY KEY(BoyID)
 )
 GO
 
 CREATE TABLE Girl (
-	GirlID                                  AutoCounter NOT NULL,
-	BoyID                                   AutoCounter NULL,
-	PRIMARY KEY(GirlID)
+	GirlID                                  int IDENTITY NOT NULL,
+	BoyID                                   int NULL,
+	PRIMARY KEY(GirlID),
+	FOREIGN KEY (BoyID) REFERENCES Boy (BoyID)
 )
 GO
 

@@ -1,6 +1,6 @@
 CREATE TABLE Person (
-	PersonName                              VariableLengthText(40) NOT NULL,
-	PersonCauseOfDeath                      VariableLengthText NULL,
+	PersonName                              varchar(40) NOT NULL,
+	PersonCauseOfDeath                      varchar NULL,
 	PRIMARY KEY(PersonName)
 )
 GO

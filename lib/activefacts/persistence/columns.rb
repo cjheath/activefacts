@@ -80,6 +80,10 @@ module ActiveFacts
         !@references.detect{|ref| !ref.is_mandatory}
       end
 
+      def is_auto_assigned
+        (to = references[-1].to) && to.is_auto_assigned
+      end
+
       def type
         params = {}
         restrictions = []

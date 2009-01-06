@@ -21,7 +21,7 @@ DemeritKindName is defined as VariableLengthText();
 Description is defined as VariableLengthText(1024);
 Email is defined as VariableLengthText();
 EngineNumber is defined as VariableLengthText();
-ITCClaimed is defined as Decimal(18,2) restricted to {0..100};
+ITCClaimed is defined as Decimal(18,2) restricted to {0.0..100.0};
 Intoxication is defined as VariableLengthText();
 LiabilityCode is defined as FixedLengthText(1) restricted to {'L', 'R', 'U', 'D'};
 LicenseNumber is defined as VariableLengthText();

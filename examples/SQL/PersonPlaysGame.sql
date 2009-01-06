@@ -1,6 +1,6 @@
 CREATE TABLE Playing (
-	PersonName                              VariableLengthText NOT NULL,
-	GameCode                                FixedLengthText NOT NULL,
+	PersonName                              varchar NOT NULL,
+	GameCode                                char NOT NULL,
 	PRIMARY KEY(PersonName, GameCode)
 )
 GO

@@ -41,10 +41,19 @@ module ActiveFacts
 
         @is_table
       end
+
+      # REVISIT: Find a better way to determine AutoCounters (ValueType unary role?)
+      def is_auto_assigned
+        type = self;
+        type = type.supertype while type.supertype
+        type.name =~ /^Auto/
+      end
     end
 
     class EntityType
       attr_accessor :absorbed_via   # A reference from an entity type that fully absorbs this one
+
+      def is_auto_assigned; false; end
 
       # Decide whether this object is currently considered a table or not:
       def is_table
@@ -78,8 +87,7 @@ module ActiveFacts
         if references_to.size > 1 and
           preferred_identifier.role_sequence.all_role_ref.detect {|rr|
             next false unless rr.role.concept.is_a? ValueType
-            # REVISIT: Find a better way to determine AutoCounters (ValueType unary role?)
-            rr.role.concept.supertype.name =~ /^Auto/
+            rr.role.concept.is_auto_assigned
           }
           debug :absorption, "#{name} has an auto-assigned counter in its ID, so must be a table"
           @tentative = false

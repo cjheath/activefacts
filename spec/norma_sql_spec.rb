@@ -17,7 +17,7 @@ describe "NORMA Loader with SQL output" do
   # Generate and return the SQL for the given vocabulary
   def sql(vocabulary)
     output = StringIO.new
-    @dumper = ActiveFacts::Generate::SQL::SERVER.new(vocabulary.constellation)
+    @dumper = ActiveFacts::Generate::SQL::SERVER.new(vocabulary.constellation, "norma")
     @dumper.generate(output)
     output.rewind
     output.read
