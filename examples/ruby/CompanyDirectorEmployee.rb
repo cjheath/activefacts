@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module CompanyDirector
+module CompanyDirectorEmployee
 
   class CompanyName < String
     value_type :length => 48

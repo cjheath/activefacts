@@ -37,7 +37,7 @@ PartyID is defined as AutoCounter();
 PhoneNr is defined as VariableLengthText();
 Place is defined as VariableLengthText();
 PolicySerial is defined as UnsignedInteger(32) restricted to {1..99999};
-PolicyWordingText is defined as LargeLengthText();
+PolicyWordingText is defined as VariableLengthText();
 Postcode is defined as VariableLengthText();
 Price is defined as Decimal(18,2);
 ProdDescription is defined as VariableLengthText(80);
@@ -110,9 +110,9 @@ Phone is identified by its Nr;
 PoliceReport is identified by Incident where
 	Incident is covered by at most one PoliceReport,
 	PoliceReport covers one Incident;
-PoliceReport was on at most one DateTime;
 PoliceReport was to at most one officer-Name;
 PoliceReport has at most one police-ReportNr;
+PoliceReport was on at most one report-DateTime;
 PoliceReport was by at most one reporter-Name;
 PoliceReport was at at most one station-Name;
 
@@ -291,7 +291,7 @@ for each MotorPolicy exactly one of these holds:
 	MotorFleetPolicy is a subtype of MotorPolicy;
 Party is a company
 	if and only if
-	Company has contact-Person;
+	Company is a kind of Party and Company has contact-Person;
 each ContactMethods occurs at least one time in
 	ContactMethods includes mobile-Phone,
 	ContactMethods includes home-Phone,

@@ -1,4 +1,4 @@
-vocabulary CompanyDirector;
+vocabulary CompanyDirectorEmployee;
 
 /*
  * Value Types

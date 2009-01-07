@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module AbsorbViaObjFact
+module PersonPlaysGame
 
   class GameCode < FixedLengthText
     value_type 

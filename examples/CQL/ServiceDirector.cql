@@ -42,51 +42,51 @@ Version is defined as FixedLengthText(5);
  * Entity Types
  */
 Company is identified by its _Code;
-Company has exactly one Operating-Name;
+Company has one Operating-Name;
 Company is client;
 Company is vendor;
 
 Credential is identified by its _Nr;
-Credential has exactly one Password;
-Credential has exactly one UserName;
+Credential has one Password;
+Credential has one UserName;
 
 DataStore is identified by its _Name;
 DataStore requires at least one Credential;
-DataStore (as FriendlyName) has exactly one Friendly-Name;
+DataStore (as FriendlyName) has one Friendly-Name;
 DataStore has at most one HeartBeat-TruckPCID;
-DataStore has exactly one Internal-Credential (as InternalCredential);
-DataStore is exactly one Major-Version;
-DataStore is exactly one Minor-Version;
-DataStore is exactly one Revision-Version;
+DataStore has one Internal-Credential (as InternalCredential);
+DataStore is one Major-Version;
+DataStore is one Minor-Version;
+DataStore is one Revision-Version;
 
 Date is identified by DDMMYYYY where
-	Date has exactly one DDMMYYYY,
+	Date has one DDMMYYYY,
 	DDMMYYYY is of at most one Date;
 Credential has at most one Expiration-Date;
 
 DateTime is identified by MDYHMS where
-	DateTime has exactly one MDYHMS,
+	DateTime has one MDYHMS,
 	MDYHMS is of at most one DateTime;
 
 Duration is identified by Seconds where
-	Duration has exactly one Seconds,
+	Duration has one Seconds,
 	Seconds is of at most one Duration;
 
 GeocodeFile is identified by Path where
-	GeocodeFile has exactly one Path,
+	GeocodeFile has one Path,
 	Path is of at most one GeocodeFile;
 DataStore uses at most one GeocodeFile;
 
 HostSystem is identified by its _Name;
-DataStore is on exactly one Primary-HostSystem;
-DataStore is on exactly one Secondary-HostSystem;
+DataStore is on one Primary-HostSystem;
+DataStore is on one Secondary-HostSystem;
 
 Monitor is identified by its _Id;
-Monitor monitors exactly one DataStore;
+Monitor monitors one DataStore;
 Monitor is disabled;
 
 MonitoringApplication is identified by its _Name;
-Monitor is owned by exactly one MonitoringApplication;
+Monitor is owned by one MonitoringApplication;
 
 Network is identified by its _Nr;
 Company has at least one Origin-Network;
@@ -96,15 +96,15 @@ HostSystem uses at least one Network,
 	Network is used by at most one HostSystem;
 Network uses at most one Domain-Name;
 Network has at most one Ending-IP;
-Network has exactly one Initial-IP;
+Network has one Initial-IP;
 Network uses at most one Netmask;
 Network is ip_range;
 Network is ip_single;
 Network is ip_subnet;
 
 NotificationLevel is identified by its _Nr;
-NotificationLevel has exactly one InitialDelay-Duration;
-NotificationLevel has exactly one Repeat-Duration;
+NotificationLevel has one InitialDelay-Duration;
+NotificationLevel has one Repeat-Duration;
 
 NotificationType is identified by its _Name;
 MonitorNotificationType is where
@@ -115,10 +115,10 @@ ProviderType is identified by its _Id;
 
 RecurringSchedule is identified by its _Id;
 Monitor has AllExclusion-RecurringSchedule,
-	RecurringSchedule applies to at most one Monitor;
+	AllExclusion-RecurringSchedule applies to at most one Monitor;
 Monitor has IntegrationExclusion-RecurringSchedule,
-	RecurringSchedule applies to at most one Monitor;
-RecurringSchedule has exactly one Duration;
+	IntegrationExclusion-RecurringSchedule applies to at most one Monitor;
+RecurringSchedule has one Duration;
 RecurringSchedule friday;
 RecurringSchedule monday;
 RecurringSchedule saturday;
@@ -128,30 +128,30 @@ RecurringSchedule tuesday;
 RecurringSchedule wednesday;
 
 SatalliteMessage is identified by its _Id;
-SatalliteMessage is designated for exactly one DataStore;
-SatalliteMessage exactly one Insertion-DateTime;
+SatalliteMessage is designated for one DataStore;
+SatalliteMessage one Insertion-DateTime;
 SatalliteMessage has at most one MessageData;
 SatalliteMessage has at most one MessageHeader;
 SatalliteMessage is of at most one ProviderType;
-SatalliteMessage has exactly one SerialNumber;
+SatalliteMessage has one SerialNumber;
 
 Subscription is identified by its _Nr;
-Company (as DriverTechSubscription) has exactly one DriverTech-Subscription;
-Subscription has beginning exactly one Date;
-Subscription has ending at most one Date;
+Company (as DriverTechSubscription) has one DriverTech-Subscription;
+Subscription has one Beginning-Date;
+Subscription has at most one Ending-Date;
 Subscription is enabled;
 
 Switch is identified by its _Id;
 DataStore has at most one Legacy-Switch;
-Switch is exactly one Major-Version;
-Switch is exactly one Minor-Version;
-Switch has exactly one Monitoring-Port;
-Switch has exactly one Operating-Port;
+Switch is one Major-Version;
+Switch is one Minor-Version;
+Switch has one Monitoring-Port;
+Switch has one Operating-Port;
 Switch is on Private-Network,
-	Network connects to at most one Switch;
+	Private-Network connects to at most one Switch;
 Switch is on at least one Public-Network,
-	Network connects to at most one Switch;
-Switch is exactly one Revision-Version;
+	Public-Network connects to at most one Switch;
+Switch is one Revision-Version;
 Switch is backup messages;
 Switch is backup updates;
 Switch is send disabled;
@@ -160,43 +160,43 @@ HostSystemRunsSwitch is where
 	HostSystem runs Switch;
 
 Time is identified by HHMMSS where
-	Time has exactly one HHMMSS,
+	Time has one HHMMSS,
 	HHMMSS is of at most one Time;
-RecurringSchedule has exactly one Start-Time;
+RecurringSchedule has one Start-Time;
 
 Transaction is identified by its _Nr;
 SatalliteMessage has at most one Group-Transaction;
 
 User is identified by its _Name;
-User has exactly one Primary-EmailAddress;
+User has one Primary-EmailAddress;
 User has at most one Secondary-EmailAddress;
 User is monitor notification disabled;
 MonitorNotificationUser is where
 	MonitorNotificationType has Notification-User;
-MonitorNotificationUser has exactly one NotificationLevel;
+MonitorNotificationUser has one NotificationLevel;
 
 Vendor is a kind of Company;
 Vendor requires at least one Credential;
 
 Client is a kind of Company;
 Client has at most one default-DataStore;
-DataStore belongs to exactly one Client,
+DataStore belongs to one Client,
 	Client uses DataStore;
 
 FileHostSystem is a kind of HostSystem;
-FileHostSystem has exactly one Port;
+FileHostSystem has one Port;
 DataStoreFileHostSystem is where
 	DataStore has at most one FileHostSystem;
-DataStoreFileHostSystem has exactly one Internal-Credential;
+DataStoreFileHostSystem has one Internal-Credential;
 
 Service is identified by Vendor and ServiceType where
 	Vendor provides Service,
-	Service is of exactly one ServiceType;
+	Service is of one ServiceType;
 DataStoreService is where
 	DataStore has Service;
-DataStoreService belongs to exactly one Client;
+DataStoreService belongs to one Client;
 DataStoreService requires at least one Credential;
-DataStoreService (as DataStoreServiceSubscription) has exactly one Subscription;
+DataStoreService (as DataStoreServiceSubscription) has one Subscription;
 
 /*
  * Constraints:
@@ -204,12 +204,12 @@ DataStoreService (as DataStoreServiceSubscription) has exactly one Subscription;
 for each Company exactly one of these holds:
 	Company is client,
 	Company is vendor;
-//for each Credential exactly one of these holds:
-//	DataStore requires Credential,
-//	DataStoreService requires Credential,
-//	Vendor requires Credential,
-//	DataStoreFileHostSystem has Internal-Credential,
-//	DataStore has Internal-Credential;
+for each Credential exactly one of these holds:
+	DataStore requires Credential,
+	DataStoreService requires Credential,
+	Vendor requires Credential,
+	DataStoreFileHostSystem has Internal-Credential,
+	DataStore has Internal-Credential;
 Network is ip_subnet
 	if and only if
 	Network uses Netmask;
@@ -219,46 +219,46 @@ Network has Ending-IP
 for each Network at most one of these holds:
 	Network is ip_single,
 	Network has Ending-IP;
-//for each Network exactly one of these holds:
-//	HostSystem uses Network,
-//	Company has Origin-Network,
-//	DataStore has TcpProxy-Network;
+for each Network exactly one of these holds:
+	HostSystem uses Network,
+	Company has Origin-Network,
+	DataStore has TcpProxy-Network;
 for each Network exactly one of these holds:
 	Network is ip_single,
 	Network is ip_subnet,
 	Network is ip_range;
-//Switch is on Private-Network
-//	if and only if
-//	DataStore has Legacy-Switch;
-//for each Switch exactly one of these holds:
-//	HostSystem runs Switch,
-//	DataStore has Legacy-Switch;
+Switch is on Private-Network
+	if and only if
+	DataStore has Legacy-Switch;
+for each Switch exactly one of these holds:
+	HostSystem runs Switch,
+	DataStore has Legacy-Switch;
 Client has default-DataStore
 	only if DataStore belongs to Client;
 Network uses Domain-Name
 	only if Network is ip_single;
-//DataStore has TcpProxy-Network
-//	only if Network is ip_single;
+DataStore has TcpProxy-Network
+	only if Network is ip_single;
 each Credential occurs at most one time in
 	DataStore requires Credential;
 each Credential occurs at most one time in
 	Vendor requires Credential;
-//each Credential occurs at most one time in
-//	DataStoreFileHostSystem has Internal-Credential;
-//each Credential occurs at most one time in
-//	DataStore has Internal-Credential;
+each Credential occurs at most one time in
+	DataStoreFileHostSystem has Internal-Credential;
+each Credential occurs at most one time in
+	DataStore has Internal-Credential;
 each Credential occurs at most one time in
 	DataStoreService requires Credential;
-//each IP occurs at most one time in
-//	Network has Initial-IP;
-//each IP occurs at most one time in
-//	Network has Ending-IP;
-//each Name occurs at most one time in
-//	DataStore has Friendly-Name;
-//each Network occurs at most one time in
-//	Company has Origin-Network;
-//each Port occurs at most one time in
-//	Switch has Monitoring-Port;
+each IP occurs at most one time in
+	Network has Initial-IP;
+each IP occurs at most one time in
+	Network has Ending-IP;
+each Name occurs at most one time in
+	DataStore has Friendly-Name;
+each Network occurs at most one time in
+	Company has Origin-Network;
+each Port occurs at most one time in
+	Switch has Monitoring-Port;
 each RecurringSchedule occurs at least one time in
 	RecurringSchedule monday,
 	RecurringSchedule tuesday,
@@ -267,16 +267,16 @@ each RecurringSchedule occurs at least one time in
 	RecurringSchedule friday,
 	RecurringSchedule saturday,
 	RecurringSchedule sunday;
-each Service occurs exactly one time in
+each Service occurs one time in
 	Vendor provides Service;
 each Service occurs at least one time in
 	DataStore has Service;
 each Subscription occurs at most one time in
 	DataStoreService has Subscription;
-//each Subscription occurs at most one time in
-//	Company has DriverTech-Subscription;
-//each Switch occurs at most one time in
-//	DataStore has Legacy-Switch;
+each Subscription occurs at most one time in
+	Company has DriverTech-Subscription;
+each Switch occurs at most one time in
+	DataStore has Legacy-Switch;
 each combination UserName, Vendor, DataStoreService, DataStore occurs at most one time in
 	Credential has UserName,
 	Vendor requires Credential,

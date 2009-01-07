@@ -17,8 +17,8 @@ GO
 
 CREATE TABLE Claim (
 	PolicyP_yearNr                          int NOT NULL,
-	PolicyP_productCode                     tinyint(32) NOT NULL,
-	PolicyP_stateCode                       tinyint(32) NOT NULL,
+	PolicyP_productCode                     int NOT NULL,
+	PolicyP_stateCode                       int NOT NULL,
 	PolicyP_serial                          int NOT NULL,
 	P_sequence                              int NOT NULL CHECK((P_sequence >= 1 AND P_sequence <= 999)),
 	LodgementPersonID                       int NULL,
@@ -27,8 +27,8 @@ CREATE TABLE Claim (
 	IncidentAddressStreet                   varchar(256) NULL,
 	IncidentAddressCity                     varchar NULL,
 	IncidentAddressPostcode                 varchar NULL,
-	IncidentAddressStateCode                tinyint(32) NULL CHECK((IncidentAddressStateCode >= 0 AND IncidentAddressStateCode <= 9)),
-	IncidentDateTime                        datetime NULL,
+	IncidentAddressStateCode                int NULL CHECK((IncidentAddressStateCode >= 0 AND IncidentAddressStateCode <= 9)),
+	IncidentReportDateTime                  datetime NULL,
 	IncidentReporterName                    varchar(256) NULL,
 	IncidentStationName                     varchar(256) NULL,
 	IncidentPoliceReportNr                  int NULL,
@@ -48,8 +48,8 @@ GO
 
 CREATE TABLE Cover (
 	PolicyP_yearNr                          int NOT NULL,
-	PolicyP_productCode                     tinyint(32) NOT NULL,
-	PolicyP_stateCode                       tinyint(32) NOT NULL,
+	PolicyP_productCode                     int NOT NULL,
+	PolicyP_stateCode                       int NOT NULL,
 	PolicyP_serial                          int NOT NULL,
 	CoverTypeCode                           char NOT NULL,
 	AssetID                                 int NOT NULL,
@@ -67,7 +67,7 @@ GO
 
 CREATE TABLE CoverWording (
 	CoverTypeCode                           char NOT NULL,
-	PolicyWordingText                       text NOT NULL,
+	PolicyWordingText                       varchar NOT NULL,
 	StartDate                               datetime NOT NULL,
 	PRIMARY KEY(CoverTypeCode, PolicyWordingText, StartDate),
 	FOREIGN KEY (CoverTypeCode) REFERENCES CoverType (CoverTypeCode)
@@ -79,7 +79,7 @@ CREATE TABLE DamagedProperty (
 	AddressStreet                           varchar(256) NOT NULL,
 	AddressCity                             varchar NOT NULL,
 	AddressPostcode                         varchar NULL,
-	AddressStateCode                        tinyint(32) NULL CHECK((AddressStateCode >= 0 AND AddressStateCode <= 9)),
+	AddressStateCode                        int NULL CHECK((AddressStateCode >= 0 AND AddressStateCode <= 9)),
 	IncidentID                              int NULL,
 	PhoneNr                                 varchar NULL,
 	UNIQUE(IncidentID, AddressStreet, AddressCity, AddressPostcode, AddressStateCode),
@@ -120,7 +120,7 @@ CREATE TABLE Party (
 	PostalAddressStreet                     varchar(256) NULL,
 	PostalAddressCity                       varchar NULL,
 	PostalAddressPostcode                   varchar NULL,
-	PostalAddressStateCode                  tinyint(32) NULL CHECK((PostalAddressStateCode >= 0 AND PostalAddressStateCode <= 9)),
+	PostalAddressStateCode                  int NULL CHECK((PostalAddressStateCode >= 0 AND PostalAddressStateCode <= 9)),
 	PersonGivenName                         varchar(256) NULL,
 	PersonFamilyName                        varchar(256) NULL,
 	PersonTitle                             varchar NULL,
@@ -129,7 +129,7 @@ CREATE TABLE Party (
 	PersonAddressStreet                     varchar(256) NULL,
 	PersonAddressCity                       varchar NULL,
 	PersonAddressPostcode                   varchar NULL,
-	PersonAddressStateCode                  tinyint(32) NULL CHECK((PersonAddressStateCode >= 0 AND PersonAddressStateCode <= 9)),
+	PersonAddressStateCode                  int NULL CHECK((PersonAddressStateCode >= 0 AND PersonAddressStateCode <= 9)),
 	PersonMobilePhoneNr                     varchar NULL,
 	PersonHomePhoneNr                       varchar NULL,
 	PersonBusinessPhoneNr                   varchar NULL,
@@ -149,8 +149,8 @@ CREATE TABLE Policy (
 	AuthorisedRepID                         int NULL,
 	ClientID                                int NOT NULL,
 	P_yearNr                                int NOT NULL,
-	P_productCode                           tinyint(32) NOT NULL,
-	P_stateCode                             tinyint(32) NOT NULL,
+	P_productCode                           int NOT NULL,
+	P_stateCode                             int NOT NULL,
 	P_serial                                int NOT NULL CHECK((P_serial >= 1 AND P_serial <= 99999)),
 	ITCClaimed                              decimal(18, 2) NULL CHECK((ITCClaimed >= 0.0 AND ITCClaimed <= 100.0)),
 	ApplicationNr                           int NOT NULL,
@@ -161,7 +161,7 @@ CREATE TABLE Policy (
 GO
 
 CREATE TABLE Product (
-	ProductCode                             tinyint(32) NOT NULL CHECK((ProductCode >= 1 AND ProductCode <= 99)),
+	ProductCode                             int NOT NULL CHECK((ProductCode >= 1 AND ProductCode <= 99)),
 	Alias                                   char(3) NULL,
 	ProdDescription                         varchar(80) NULL,
 	PRIMARY KEY(ProductCode)
@@ -169,7 +169,7 @@ CREATE TABLE Product (
 GO
 
 CREATE TABLE State (
-	StateCode                               tinyint(32) NOT NULL CHECK((StateCode >= 0 AND StateCode <= 9)),
+	StateCode                               int NOT NULL CHECK((StateCode >= 0 AND StateCode <= 9)),
 	StateName                               varchar(256) NULL,
 	PRIMARY KEY(StateCode)
 )
@@ -228,7 +228,7 @@ CREATE TABLE Witness (
 	AddressStreet                           varchar(256) NULL,
 	AddressCity                             varchar NULL,
 	AddressPostcode                         varchar NULL,
-	AddressStateCode                        tinyint(32) NULL CHECK((AddressStateCode >= 0 AND AddressStateCode <= 9)),
+	AddressStateCode                        int NULL CHECK((AddressStateCode >= 0 AND AddressStateCode <= 9)),
 	ContactPhoneNr                          varchar NULL,
 	PRIMARY KEY(IncidentID, Name),
 	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID)

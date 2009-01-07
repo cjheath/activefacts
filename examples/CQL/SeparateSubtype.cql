@@ -1,4 +1,4 @@
-vocabulary OneToOnes;
+vocabulary SeparateSubtype;
 
 /*
  * Value Types

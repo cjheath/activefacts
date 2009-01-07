@@ -1,4 +1,4 @@
-vocabulary OddTernary;
+vocabulary OddIdentifier;
 
 /*
  * Value Types
@@ -14,10 +14,3 @@ Thing is identified by its ID;
 ThingSequence is identified by Thing and Text where
 	Thing has Ordinal occurrence,
 	ThingSequence has at most one Text;
-
-/*
- * Constraints:
-each combination Thing, Text occurs at most one time in
-	Thing has Ordinal occurrence,
-	ThingSequence has Text;
- */

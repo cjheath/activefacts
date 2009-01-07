@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:oial="http://schemas.neumont.edu/ORM/Abstraction/2007-06/Core" xmlns:odt="http://schemas.neumont.edu/ORM/Abstraction/2007-06/DataTypes/Core" xmlns:rcd="http://schemas.neumont.edu/ORM/Relational/2007-06/ConceptualDatabase" xmlns:ddt="http://schemas.orm.net/DIL/DILDT" xmlns:ormtooial="http://schemas.neumont.edu/ORM/Bridge/2007-06/ORMToORMAbstraction" xmlns:oialtocdb="http://schemas.neumont.edu/ORM/Bridge/2007-06/ORMAbstractionToConceptualDatabase" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
-	<orm:ORMModel id="_FD0A74F8-DF43-4473-975F-E8178142163F" Name="OneToOnes">
+	<orm:ORMModel id="_FD0A74F8-DF43-4473-975F-E8178142163F" Name="SeparateSubtype">
 		<orm:Objects>
 			<orm:EntityType id="_6E4019BD-8054-40CD-833D-8512F2F0405A" Name="Claim" _ReferenceMode="ID">
 				<orm:PlayedRoles>
@@ -411,7 +411,7 @@
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_FD0A74F8-DF43-4473-975F-E8178142163F" />
 	</ormDiagram:ORMDiagram>
-	<oial:model id="_996D2FC9-10A1-49DD-9CBB-54B03A08632E" name="OneToOnes">
+	<oial:model id="_996D2FC9-10A1-49DD-9CBB-54B03A08632E" name="SeparateSubtype">
 		<oial:informationTypeFormats>
 			<odt:dataType id="_655B9327-11CE-43EB-82E4-4F7041B7691B" name="ClaimID" />
 			<odt:dataType id="_5A4B083F-B50E-411C-ABAF-62DC5CA03BE4" name="DriverName" />
@@ -439,7 +439,7 @@
 	</oial:model>
 	<rcd:Catalog id="_F5615D69-3A5A-49F3-9AE3-04D255F220EB">
 		<rcd:Schemas>
-			<rcd:Schema id="_3F6247D4-1AF4-4CEA-A525-3328C067C67A" Name="OneToOnes">
+			<rcd:Schema id="_3F6247D4-1AF4-4CEA-A525-3328C067C67A" Name="SeparateSubtype">
 				<rcd:Tables>
 					<rcd:Table id="_2BE18611-D6F5-437A-99D2-39E50DDAC833" Name="Incident">
 						<rcd:Columns>

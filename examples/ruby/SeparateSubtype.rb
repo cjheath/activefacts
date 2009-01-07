@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module OneToOnes
+module SeparateSubtype
 
   class ClaimID < AutoCounter
     value_type 

@@ -1,4 +1,4 @@
-vocabulary AbsorbViaObjFact;
+vocabulary PersonPlaysGame;
 
 /*
  * Value Types

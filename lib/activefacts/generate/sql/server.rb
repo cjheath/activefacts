@@ -64,8 +64,11 @@ module ActiveFacts
         def norma_type(type, length)
           sql_type = case type
             when "AutoCounter"; "int"
-            when "Date"; "datetime"
-            when "UnsignedInteger", "SignedInteger"
+            when "UnsignedInteger",
+              "SignedInteger",
+              "UnsignedSmallInteger",
+              "SignedSmallInteger",
+              "UnsignedTinyInteger"
               s = case
                 when length <= 8; "tinyint"
                 when length <= 16; "shortint"
@@ -74,17 +77,20 @@ module ActiveFacts
                 end
               length = nil
               s
+            when "Decimal"; "decimal"
+
             when "FixedLengthText"; "char"
             when "VariableLengthText"; "varchar"
             when "LargeLengthText"; "text"
-            when "Decimal"; "decimal"
+
             when "DateAndTime"; "datetime"
+            when "Date"; "datetime" # SQLSVR 2K5: "date"
+            when "Time"; "datetime" # SQLSVR 2K5: "time"
+            when "AutoTimestamp"; "timestamp"
+
             when "Money"; "decimal"
             when "PictureRawData"; "image"
-            when "Time"; "datetime"
-            when "UnsignedSmallInteger"; "shortint"
-            when "SignedSmallInteger"; "shortint"
-            when "UnsignedTinyInteger"; "tinyint"
+            when "VariableLengthRawData"; "varbinary"
             when "BIT"; "bit"
             else raise "SQL type unknown for NORMA type #{type}"
             end
@@ -138,40 +144,16 @@ module ActiveFacts
                 ")"
 
             inline_fks = []
-            fk_refs.map do |fk_ref|
-              from_columns = table.columns.select{|column| column.references[0] == fk_ref }
-
-              to = fk_ref.to
-              # REVISIT: There should be a better way to find where it's absorbed (especially since this fails for absorbed subtypes having their own identification!)
-              while (r = to.absorbed_via)
-                #puts "#{to.name} is absorbed into #{r.to.name}/#{r.from.name}"
-                to = r.to == to ? r.from : r.to
-              end
-              raise "REVISIT: #{fk_ref} is bad" unless to and to.columns
-
-              all_to_columns_by_role = to.columns.inject({}) do |hash, column|
-                r0 = column.references[0]
-                hash[r0.to_role] = column
-                hash
-              end
-              to_columns = from_columns.map do |from_column|
-                c ||= all_to_columns_by_role[from_column.references[1].to_role]
-                raise "REVISIT: Failed to find target column for #{fk_ref} matching #{from_column.name}" unless c
-                # p from_column.references
-                # p from_column.references[1]
-                # p from_column.references[1].from_role
-                # p from_column.references[1].to_role
-                c
-              end
-              fk = "FOREIGN KEY (" +
-                from_columns.map{|column| column.name}*", " +
-                ") REFERENCES #{escape to.name} (" +
-                to_columns.map{|column| column.name}*", " +
+            table.foreign_keys.each do |fk|
+              fk_text = "FOREIGN KEY (" +
+                fk.from_columns.map{|column| column.name}*", " +
+                ") REFERENCES #{escape fk.to.name} (" +
+                fk.to_columns.map{|column| column.name}*", " +
                 ")"
-              if tables_emitted[to] && !@delay_fks
-                inline_fks << fk
+              if tables_emitted[fk.to] && !@delay_fks
+                inline_fks << fk_text
               else
-                delayed_foreign_keys << ("ALTER TABLE #{escape table.name}\n\tADD " + fk)
+                delayed_foreign_keys << ("ALTER TABLE #{escape fk.from.name}\n\tADD " + fk_text)
               end
             end
 

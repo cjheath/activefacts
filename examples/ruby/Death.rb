@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module DeathAsUnary
+module Death
 
   class CauseOfDeath < String
     value_type 

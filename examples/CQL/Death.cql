@@ -1,4 +1,4 @@
-vocabulary DeathAsUnary;
+vocabulary Death;
 
 /*
  * Value Types

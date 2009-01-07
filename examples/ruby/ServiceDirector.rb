@@ -224,8 +224,8 @@ module ServiceDirector
     maybe :is_ip_subnet
     has_one :netmask                            # See Netmask.all_network
     one_to_one :network_nr, Network_Nr          # See Network_Nr.network
-    has_one :switch, :private_network           # See Switch.all_private_network
-    has_one :switch, :public_network            # See Switch.all_public_network
+    has_one :private_interface_switch, "Switch", :private_network  # See Switch.all_private_network_by_private_interface_switch
+    has_one :public_interface_switch, "Switch", :public_network  # See Switch.all_public_network_by_public_interface_switch
   end
 
   class NotificationLevel
@@ -257,8 +257,8 @@ module ServiceDirector
     has_one :duration                           # See Duration.all_recurring_schedule
     maybe :friday
     maybe :monday
-    has_one :monitor, :all_exclusion_recurring_schedule  # See Monitor.all_all_exclusion_recurring_schedule
-    has_one :monitor, :integration_exclusion_recurring_schedule  # See Monitor.all_integration_exclusion_recurring_schedule
+    has_one :monitor_all_exclusion, Monitor, :all_exclusion_recurring_schedule  # See Monitor.all_all_exclusion_recurring_schedule_by_monitor_all_exclusion
+    has_one :monitor_integration_exclusion, Monitor, :integration_exclusion_recurring_schedule  # See Monitor.all_integration_exclusion_recurring_schedule_by_monitor_integration_exclusion
     one_to_one :recurring_schedule_id, RecurringSchedule_Id  # See RecurringSchedule_Id.recurring_schedule
     maybe :saturday
     has_one :start_time, "Time"                 # See Time.all_recurring_schedule_by_start_time
@@ -282,9 +282,9 @@ module ServiceDirector
 
   class Subscription
     identified_by :subscription_nr
-    has_one :date                               # See Date.all_subscription
-    has_one :date                               # See Date.all_subscription
+    has_one :beginning_date, Date               # See Date.all_subscription_by_beginning_date
     one_to_one :driver_tech_subscription, Company, :driver_tech_subscription  # See Company.driver_tech_subscription_by_driver_tech_subscription
+    has_one :ending_date, Date                  # See Date.all_subscription_by_ending_date
     maybe :is_enabled
     one_to_one :subscription_nr, Subscription_Nr  # See Subscription_Nr.subscription
   end

@@ -143,7 +143,7 @@ module Insurance
     # REVISIT: PolicySerial has restricted values
   end
 
-  class PolicyWordingText < LargeLengthText
+  class PolicyWordingText < String
     value_type 
   end
 
@@ -294,10 +294,10 @@ module Insurance
 
   class PoliceReport
     identified_by :incident
-    has_one :date_time                          # See DateTime.all_police_report
     one_to_one :incident                        # See Incident.police_report
     has_one :officer_name, Name                 # See Name.all_police_report_by_officer_name
     has_one :police_report_nr, ReportNr         # See ReportNr.all_police_report_by_police_report_nr
+    has_one :report_date_time, DateTime         # See DateTime.all_police_report_by_report_date_time
     has_one :reporter_name, Name                # See Name.all_police_report_by_reporter_name
     has_one :station_name, Name                 # See Name.all_police_report_by_station_name
   end
