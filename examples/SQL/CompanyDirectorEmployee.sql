@@ -52,8 +52,7 @@ CREATE TABLE Person (
 	-- maybe Employee is a subtype of Person and maybe Manager is a subtype of Employee and Manager is ceo,
 	ManagerIsCeo                            bit NULL,
 	UNIQUE(GivenName, FamilyName),
-	FOREIGN KEY (EmployeeCompanyName) REFERENCES Company (CompanyName),
-	FOREIGN KEY (EmployeeManagerNr) REFERENCES Person (EmployeeNr)
+	FOREIGN KEY (EmployeeCompanyName) REFERENCES Company (CompanyName)
 )
 GO
 
@@ -63,5 +62,9 @@ GO
 
 ALTER TABLE Directorship
 	ADD FOREIGN KEY (DirectorGivenName, DirectorFamilyName) REFERENCES Person (GivenName, FamilyName)
+GO
+
+ALTER TABLE Person
+	ADD FOREIGN KEY (EmployeeManagerNr) REFERENCES Person (EmployeeNr)
 GO
 

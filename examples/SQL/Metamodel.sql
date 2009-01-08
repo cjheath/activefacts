@@ -143,8 +143,7 @@ CREATE TABLE Feature (
 	ValueTypeValueRestrictionId             int NULL,
 	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is of Unit and Unit has UnitId,
 	ValueTypeUnitId                         int NULL,
-	UNIQUE(Name, VocabularyName),
-	FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	UNIQUE(Name, VocabularyName)
 )
 GO
 
@@ -373,6 +372,10 @@ GO
 
 ALTER TABLE FactType
 	ADD FOREIGN KEY (EntityTypeName, EntityTypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+GO
+
+ALTER TABLE Feature
+	ADD FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
 GO
 
 ALTER TABLE Feature

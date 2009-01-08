@@ -105,7 +105,6 @@ module ActiveFacts
           delayed_foreign_keys = []
 
           @vocabulary.tables.sort_by{|table| table.name}.each do |table|
-            tables_emitted[table] = true
             puts "CREATE TABLE #{escape table.name} ("
 
             pk = table.identifier_columns
@@ -151,12 +150,16 @@ module ActiveFacts
                 ") REFERENCES #{escape fk.to.name} (" +
                 fk.to_columns.map{|column| column.name}*", " +
                 ")"
-              if tables_emitted[fk.to] && !@delay_fks
+              if !@delay_fks and              # We don't want to delay all Fks
+                (tables_emitted[fk.to] or     # The target table has been emitted
+                fk.to == table && !fk.to_columns.detect{|column| !column.is_mandatory})   # The reference columns already have the required indexes
                 inline_fks << fk_text
               else
                 delayed_foreign_keys << ("ALTER TABLE #{escape fk.from.name}\n\tADD " + fk_text)
               end
             end
+
+            tables_emitted[table] = true
 
             puts("\t" + (columns + [pk_def] + inline_fks)*",\n\t")
             go ")"
