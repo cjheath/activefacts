@@ -143,7 +143,8 @@ CREATE TABLE Feature (
 	ValueTypeValueRestrictionId             int NULL,
 	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is of Unit and Unit has UnitId,
 	ValueTypeUnitId                         int NULL,
-	UNIQUE(Name, VocabularyName)
+	UNIQUE(Name, VocabularyName),
+	FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
 )
 GO
 
@@ -322,6 +323,26 @@ ALTER TABLE AllowedRange
 	ADD FOREIGN KEY (ValueRestrictionId) REFERENCES ValueRestriction (ValueRestrictionId)
 GO
 
+ALTER TABLE [Constraint]
+	ADD FOREIGN KEY (RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal, RingConstraintRoleConceptName, RingConstraintRoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+GO
+
+ALTER TABLE [Constraint]
+	ADD FOREIGN KEY (RingConstraintOtherRoleFactTypeId, RingConstraintOtherRoleOrdinal, RingConstraintOtherRoleConceptName, RingConstraintOtherRoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+GO
+
+ALTER TABLE [Constraint]
+	ADD FOREIGN KEY (PresenceConstraintRoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
+GO
+
+ALTER TABLE [Constraint]
+	ADD FOREIGN KEY (SubsetConstraintSupersetRoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
+GO
+
+ALTER TABLE [Constraint]
+	ADD FOREIGN KEY (SubsetConstraintSubsetRoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
+GO
+
 ALTER TABLE Correspondence
 	ADD FOREIGN KEY (ImportedFeatureName, ImportedFeatureVocabularyName) REFERENCES Feature (Name, VocabularyName)
 GO
@@ -343,7 +364,23 @@ ALTER TABLE Fact
 GO
 
 ALTER TABLE FactType
+	ADD FOREIGN KEY (TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+GO
+
+ALTER TABLE FactType
+	ADD FOREIGN KEY (TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+GO
+
+ALTER TABLE FactType
 	ADD FOREIGN KEY (EntityTypeName, EntityTypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+GO
+
+ALTER TABLE Feature
+	ADD FOREIGN KEY (ValueTypeValueRestrictionId) REFERENCES ValueRestriction (ValueRestrictionId)
+GO
+
+ALTER TABLE Feature
+	ADD FOREIGN KEY (ValueTypeUnitId) REFERENCES Unit (UnitId)
 GO
 
 ALTER TABLE JoinPath

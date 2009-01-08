@@ -23,6 +23,7 @@ describe "CQL Loader" do
     Airline
     CompanyQuery
     Insurance
+    OddIdentifier
     OrienteeringER
     ServiceDirector
   }

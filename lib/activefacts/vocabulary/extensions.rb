@@ -280,10 +280,10 @@ module ActiveFacts
 
       # An array of self followed by all supertypes in order:
       def supertypes_transitive
-          ([self] + all_type_inheritance_by_subtype.map{|ti|
-              # debug ti.class.roles.verbalise; exit
-              ti.supertype.supertypes_transitive
-            }).flatten.uniq
+        ([self] + all_type_inheritance_by_subtype.map{|ti|
+            # debug ti.class.roles.verbalise; exit
+            ti.supertype.supertypes_transitive
+          }).flatten.uniq
       end
 
       # A subtype does not have a identifying_supertype if it defines its own identifier

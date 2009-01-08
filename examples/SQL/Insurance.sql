@@ -228,7 +228,8 @@ CREATE TABLE Party (
 	DriverYearNr                            int NULL,
 	-- maybe Company is a subtype of Party and Company has contact-Person and Party has PartyID,
 	CompanyContactPersonID                  int NULL,
-	PRIMARY KEY(PartyID)
+	PRIMARY KEY(PartyID),
+	FOREIGN KEY (CompanyContactPersonID) REFERENCES Party (PartyID)
 )
 GO
 
@@ -369,8 +370,20 @@ CREATE TABLE Witness (
 )
 GO
 
+ALTER TABLE Asset
+	ADD FOREIGN KEY (VehicleFinanceInstitutionID) REFERENCES Party (PartyID)
+GO
+
+ALTER TABLE Asset
+	ADD FOREIGN KEY (VehicleDealerID) REFERENCES Party (PartyID)
+GO
+
 ALTER TABLE Claim
 	ADD FOREIGN KEY (PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial) REFERENCES Policy (P_yearNr, P_productCode, P_stateCode, P_serial)
+GO
+
+ALTER TABLE Claim
+	ADD FOREIGN KEY (LodgementPersonID) REFERENCES Party (PartyID)
 GO
 
 ALTER TABLE ContractorAppointment

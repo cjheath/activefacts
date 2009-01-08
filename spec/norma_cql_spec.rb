@@ -13,6 +13,7 @@ include ActiveFacts
 
 describe "Norma Loader" do
   ORM_CQL_FAILURES = %w{
+    OddIdentifier
     ServiceDirector
   }
   # Generate and return the CQL for the given vocabulary

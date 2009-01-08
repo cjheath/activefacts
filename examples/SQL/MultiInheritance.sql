@@ -5,7 +5,8 @@ CREATE TABLE Person (
 	AustralianTFN                           char(9) NULL,
 	-- maybe Employee is a subtype of Person and Employee has EmployeeID,
 	EmployeeID                              int NULL,
-	PRIMARY KEY(PersonName)
+	PRIMARY KEY(PersonName),
+	FOREIGN KEY () REFERENCES Person ()
 )
 GO
 

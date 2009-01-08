@@ -51,7 +51,9 @@ CREATE TABLE Person (
 	EmployeeManagerNr                       int NULL,
 	-- maybe Employee is a subtype of Person and maybe Manager is a subtype of Employee and Manager is ceo,
 	ManagerIsCeo                            bit NULL,
-	UNIQUE(GivenName, FamilyName)
+	UNIQUE(GivenName, FamilyName),
+	FOREIGN KEY (EmployeeCompanyName) REFERENCES Company (CompanyName),
+	FOREIGN KEY (EmployeeManagerNr) REFERENCES Person (EmployeeNr)
 )
 GO
 

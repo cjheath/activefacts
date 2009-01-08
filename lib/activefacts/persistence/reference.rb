@@ -75,7 +75,7 @@ module ActiveFacts
       end
 
       def is_absorbing
-        @to.absorbed_via == self
+        @to && @to.absorbed_via == self
       end
 
       def is_simple_reference
@@ -137,6 +137,10 @@ module ActiveFacts
 
       def to_s
         "reference from #{@from.name}#{@to ? " to #{@to.name}" : ""}" + (@fact_type ? " in '#{@fact_type.default_reading}'" : "")
+      end
+
+      def reading
+        is_self_value ? "#{from.name} has value" : @fact_type.default_reading
       end
 
       def inspect; to_s; end
