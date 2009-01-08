@@ -136,8 +136,9 @@ module ActiveFacts
               identity = column == identity_column ? " IDENTITY" : ""
               null = (column.is_mandatory ? "NOT " : "") + "NULL"
               check = check_clause(name, restrictions)
-              "#{name}#{padding}#{sql_type}#{identity} #{null}#{check}"
-            end
+              comment = column.comment
+              [ "-- #{comment}", "#{name}#{padding}#{sql_type}#{identity} #{null}#{check}" ]
+            end.flatten
 
             pk_def = (pk.detect{|column| !column.is_mandatory} ? "UNIQUE(" : "PRIMARY KEY(") +
                 pk.map{|column| escape column.name("")}*", " +

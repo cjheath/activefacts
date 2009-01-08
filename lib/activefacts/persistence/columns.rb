@@ -107,6 +107,14 @@ module ActiveFacts
         return [vt.name, params, restrictions]
       end
 
+      def comment
+        @references.map do |ref|
+          (ref.is_mandatory ? "" : "maybe ") +
+          (ref.fact_type.entity_type ? ref.fact_type.entity_type.name+" is where " : "") +
+          ref.fact_type.default_reading
+        end * " and "
+      end
+
       def to_s
         "#{@references[0].from.name} column #{name('.')}"
       end
