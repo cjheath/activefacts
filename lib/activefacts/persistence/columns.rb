@@ -23,6 +23,25 @@ module ActiveFacts
         @references ||= []
       end
 
+      # All references up to and including the first non-absorbing reference
+      def absorption_references
+        @references.inject([]) do |array, ref|
+          array << ref
+          # puts "Column #{name} spans #{ref}, #{ref.is_absorbing ? "" : "not "} absorbing (#{ref.to.name} absorbs via #{ref.to.absorbed_via.inspect})"
+          break array unless ref.is_absorbing
+          array
+        end
+      end
+
+      def absorption_level
+        l = 0
+        @references.detect do |ref|
+          l += 1 if ref.is_absorbing
+          false
+        end
+        l
+      end
+
       def initialize(reference = nil)
         references << reference if reference
       end

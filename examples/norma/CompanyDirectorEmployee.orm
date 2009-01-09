@@ -825,7 +825,7 @@
 			</orm:Fact>
 		</orm:Facts>
 		<orm:Constraints>
-			<orm:ExclusionConstraint id="_21860382-C68B-4903-B753-EE6AA0507521" Name="ExclusiveOrConstraint1">
+			<orm:ExclusionConstraint id="_21860382-C68B-4903-B753-EE6AA0507521" Name="EmployeeCantBeCeoAndHaveManager">
 				<orm:RoleSequences>
 					<orm:RoleSequence id="_BAADFADD-FBD9-4844-8231-470C330986C8">
 						<orm:Role id="_1B65DBAE-6938-4DF6-8E4E-8146D6659782" ref="_336909EA-CF10-45C4-8100-5139BA2D82BD" />
@@ -892,12 +892,12 @@
 					<orm:Role id="_9EF0937A-51A1-4C80-8AC6-99E6B59F42E3" ref="_A46E6303-24C5-4DCE-B2C8-2944BF0E328E" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_B05559ED-1E03-4A32-9F60-B1AFAED60F1A" Name="SimpleMandatoryConstraint5" IsSimple="true">
+			<orm:MandatoryConstraint id="_B05559ED-1E03-4A32-9F60-B1AFAED60F1A" Name="DirectorWasAppointedOnSomeDate" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_D58D1D6D-BB7E-4F6F-961F-74BB9749C305" ref="_A46E6303-24C5-4DCE-B2C8-2944BF0E328E" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_F6C2D78B-12E3-429E-AFC9-EE92D3871441" Name="InternalUniquenessConstraint4" IsInternal="true">
+			<orm:UniquenessConstraint id="_F6C2D78B-12E3-429E-AFC9-EE92D3871441" Name="PersonWasBornOnOneDate" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_9B038B64-A6E9-4E4F-BA8B-E507CD227366" ref="_7A5ED546-F9DB-41B4-90FB-9005EC5B1C6F" />
 				</orm:RoleSequence>
@@ -916,14 +916,14 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_72001F12-4E59-4E01-9ED7-0C543BCFEBFC" />
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_9A7D92EA-3E12-4283-B24C-6FADA8BAA486" Name="ExternalUniquenessConstraint1">
+			<orm:UniquenessConstraint id="_9A7D92EA-3E12-4283-B24C-6FADA8BAA486" Name="NamesIdentifyPerson">
 				<orm:RoleSequence>
 					<orm:Role id="_ABFF45AF-86DC-420E-84F4-A114315FF960" ref="_903F7CCC-9054-42B7-A2EE-27EA1D0DD97F" />
 					<orm:Role id="_FB6C5476-470D-4E6F-80C5-DF97EF096774" ref="_B184DDF6-FEAF-4603-A9DD-6492957DE7D4" />
 				</orm:RoleSequence>
 				<orm:PreferredIdentifierFor ref="_DFC45711-72ED-4E50-A15A-A559A33A66DF" />
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_55D87C1A-0981-41A8-8A7E-5230ED11ECD9" Name="InternalUniquenessConstraint8" IsInternal="true">
+			<orm:UniquenessConstraint id="_55D87C1A-0981-41A8-8A7E-5230ED11ECD9" Name="PersonHasOneFamilyName" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_DA90C984-6FDE-4AD7-B7D8-2A03819CB498" ref="_B8F65E26-0C1B-4308-A0AE-B5C91DC1234F" />
 				</orm:RoleSequence>
@@ -938,7 +938,7 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_DFC45711-72ED-4E50-A15A-A559A33A66DF" />
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_64F483F0-D0CD-42D0-9CFE-9C04FBB2F26E" Name="InternalUniquenessConstraint5" IsInternal="true">
+			<orm:UniquenessConstraint id="_64F483F0-D0CD-42D0-9CFE-9C04FBB2F26E" Name="MeetingIsOnlyBoardMeetingOnce" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_CFE58B1A-097B-4168-B7C9-63CE46C20C92" ref="_08941489-BF2A-48A6-8D60-6C733D285E5F" />
 				</orm:RoleSequence>
@@ -956,52 +956,52 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_AF2B1FE0-DFB4-4852-80D4-B0B99F744812" />
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_A2645279-FD17-4CB8-A539-0565897FA7C1" Name="InternalUniquenessConstraint1" IsInternal="true">
+			<orm:UniquenessConstraint id="_A2645279-FD17-4CB8-A539-0565897FA7C1" Name="PersonAttendedEachMeetingOnce" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_5371F7CE-0812-4109-B4FB-C463F89A24D5" ref="_026301F0-29C8-47AC-8503-825DBCBF68A0" />
 					<orm:Role id="_B9EA5944-FC5F-4E2A-AA70-E149FCFA7C69" ref="_B7A89C92-0C8E-4A7B-B8B5-49E2EFD72EDD" />
 				</orm:RoleSequence>
 				<orm:PreferredIdentifierFor ref="_5FF1E1AB-7658-408F-9D0D-E264EF1698B2" />
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_F97ABE1B-D083-4265-AF34-7DDEB513BD36" Name="SimpleMandatoryConstraint1" IsSimple="true">
+			<orm:MandatoryConstraint id="_F97ABE1B-D083-4265-AF34-7DDEB513BD36" Name="AttendenceIsBySomePerson" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_888A3969-EB29-4649-8842-8639AD7ABF0C" ref="_BC11C137-C303-489A-835A-24F72E28B897" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_111C1929-1FCC-4668-8153-182C886E6686" Name="InternalUniquenessConstraint2" IsInternal="true">
+			<orm:UniquenessConstraint id="_111C1929-1FCC-4668-8153-182C886E6686" Name="AttendenceIsByOnePerson" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_A36287C2-FFFF-4074-9B9B-CA79E6E16196" ref="_BC11C137-C303-489A-835A-24F72E28B897" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_84438C06-90EA-450E-B860-53285E689B33" Name="SimpleMandatoryConstraint2" IsSimple="true">
+			<orm:MandatoryConstraint id="_84438C06-90EA-450E-B860-53285E689B33" Name="AttendenceIsAtSomeMeeting" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_EE343BA6-530D-4DBF-A596-A8F07811DB1A" ref="_E65ACA3F-EAD5-457E-A55C-23C443EBBA31" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_8F69249A-97DB-453F-B8A4-E1BB95FD7E23" Name="InternalUniquenessConstraint3" IsInternal="true">
+			<orm:UniquenessConstraint id="_8F69249A-97DB-453F-B8A4-E1BB95FD7E23" Name="AttendenceIsAtOneMeeting" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_D9849D30-CA6E-4CBF-952B-FB835CA9312D" ref="_E65ACA3F-EAD5-457E-A55C-23C443EBBA31" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_EFD203D7-1914-4499-9C78-DC2C57317F28" Name="InternalUniquenessConstraint12" IsInternal="true">
+			<orm:UniquenessConstraint id="_EFD203D7-1914-4499-9C78-DC2C57317F28" Name="EachDirectorDirectsEachCompanyOnce" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_8A6EA873-C713-44DF-8DCF-D594E9E9EECC" ref="_027183E4-1CE6-4554-BDB1-C295255FCAC6" />
 					<orm:Role id="_6FCD05C0-590F-49E1-B109-F5DB0FA15E43" ref="_8A6330A1-B7AD-432F-B633-38946BDC054F" />
 				</orm:RoleSequence>
 				<orm:PreferredIdentifierFor ref="_50320266-CCB4-45A5-89DB-AADE63810AAF" />
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_8F4B8BEF-DDBD-49F8-A683-003CC5BF86BF" Name="InternalUniquenessConstraint13" IsInternal="true">
+			<orm:UniquenessConstraint id="_8F4B8BEF-DDBD-49F8-A683-003CC5BF86BF" Name="NumberIdentifiesEmployee" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_241A7C33-9F6C-4724-A0C6-FC14F9BA8AE0" ref="_A15853B4-4CC7-40C0-9A8B-34A632FAE1CD" />
 				</orm:RoleSequence>
 				<orm:PreferredIdentifierFor ref="_7B1C120A-8407-4731-A16E-2F2A623F7A0D" />
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_52B5A185-DE66-4D58-998B-A4825D8139DB" Name="InternalUniquenessConstraint14" IsInternal="true">
+			<orm:UniquenessConstraint id="_52B5A185-DE66-4D58-998B-A4825D8139DB" Name="EmployeeHasOneNumber" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_9A3A66EB-22AE-440A-BFB8-EB9E07B02B85" ref="_35D50EF9-7539-471A-908A-2B0228489BF0" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_894B8810-D77D-4C23-A4ED-61033FF48F7E" Name="SimpleMandatoryConstraint6" IsSimple="true">
+			<orm:MandatoryConstraint id="_894B8810-D77D-4C23-A4ED-61033FF48F7E" Name="EmployeeHasSomeNumber" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_567263BA-C6D8-46BA-8E66-F1E1CC0FE2B9" ref="_35D50EF9-7539-471A-908A-2B0228489BF0" />
 				</orm:RoleSequence>
@@ -1012,32 +1012,32 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_2AFFE769-FE05-40C5-849D-B1316EDFA88E" />
 			</orm:MandatoryConstraint>
-			<orm:MandatoryConstraint id="_F6D5DD83-8B93-4F04-86A8-9244D81C491B" Name="SimpleMandatoryConstraint9" IsSimple="true">
+			<orm:MandatoryConstraint id="_F6D5DD83-8B93-4F04-86A8-9244D81C491B" Name="EmployeeIsSomePerson" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_660A1348-1219-4219-B56A-6E7C6253DD02" ref="_49AF413B-37B4-4223-86B6-10F156DABA0D" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_83144C79-AF7C-4A6A-83E1-C28292439E6E" Name="InternalUniquenessConstraint15" IsInternal="true">
+			<orm:UniquenessConstraint id="_83144C79-AF7C-4A6A-83E1-C28292439E6E" Name="PersonIsOneEmployee" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_ACB08AC1-058D-42BB-A571-6E16E219ED15" ref="_49AF413B-37B4-4223-86B6-10F156DABA0D" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_2D7BFDE8-5834-4FB8-ADB6-E9ACBAAE1E52" Name="InternalUniquenessConstraint16" IsInternal="true">
+			<orm:UniquenessConstraint id="_2D7BFDE8-5834-4FB8-ADB6-E9ACBAAE1E52" Name="EmployeeIsOnePerson" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_C05B1F7E-BCC5-4EDB-B6F4-A72242E06296" ref="_EE2E702D-01C3-48C8-9C09-CDC1E190F39F" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_9258B180-BF0F-404D-9613-0D723E839B3B" Name="SimpleMandatoryConstraint10" IsSimple="true">
+			<orm:MandatoryConstraint id="_9258B180-BF0F-404D-9613-0D723E839B3B" Name="EmployeeWorksAtSomeCompany" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_5E71D8CE-5C2F-4B8F-A8B6-BC741768D763" ref="_4F49E2A7-6557-4451-BC08-C0169B460889" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_4096E034-FA3B-4338-AAF6-07D686700FA2" Name="InternalUniquenessConstraint17" IsInternal="true">
+			<orm:UniquenessConstraint id="_4096E034-FA3B-4338-AAF6-07D686700FA2" Name="EmployeeHasOneEmployer" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_001F8213-23B2-4B62-A52E-9ECF257A82C1" ref="_4F49E2A7-6557-4451-BC08-C0169B460889" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_7CE1995B-F9CD-4494-9476-B5681307BCBC" Name="InternalUniquenessConstraint18" IsInternal="true">
+			<orm:UniquenessConstraint id="_7CE1995B-F9CD-4494-9476-B5681307BCBC" Name="ManagerIsOnlyCEOOnce" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_44B4DF24-CC1B-4314-BB3D-0F716579FA11" ref="_336909EA-CF10-45C4-8100-5139BA2D82BD" />
 				</orm:RoleSequence>
@@ -1048,50 +1048,50 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_A50F7AFA-2339-400F-B19A-14DF69E28651" />
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_9F35CC1C-CC18-4056-AD25-A62F2A6BEDEF" Name="InternalUniquenessConstraint19" IsInternal="true">
+			<orm:UniquenessConstraint id="_9F35CC1C-CC18-4056-AD25-A62F2A6BEDEF" Name="EmployeeIsSupervisedByOneManager" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_90901786-4FC8-4AF8-9A4F-AD92A8D4BAED" ref="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_D367C771-D61A-48AC-A512-B7A099EE3399" Name="InclusiveOrConstraint1">
+			<orm:MandatoryConstraint id="_D367C771-D61A-48AC-A512-B7A099EE3399" Name="EmployeeMustBeCeoOrHaveManager">
 				<orm:RoleSequence>
 					<orm:Role id="_A2B56EF0-F742-4B71-879C-C9F74C0940EE" ref="_336909EA-CF10-45C4-8100-5139BA2D82BD" />
 					<orm:Role id="_B65BD1DE-D2CF-4693-B121-EC09493587A9" ref="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" />
 				</orm:RoleSequence>
 				<orm:ExclusiveOrExclusionConstraint ref="_21860382-C68B-4903-B753-EE6AA0507521" />
 			</orm:MandatoryConstraint>
-			<orm:RingConstraint id="_A89235F2-858F-4847-9886-9B277C205B0F" Name="RingConstraint1" Type="Acyclic">
+			<orm:RingConstraint id="_A89235F2-858F-4847-9886-9B277C205B0F" Name="CantBeManagedBySubordinate" Type="Acyclic">
 				<orm:RoleSequence>
 					<orm:Role id="_670E879B-BA4B-4E69-A99C-69F69CB36B65" ref="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" />
 					<orm:Role id="_33F6C3A9-4E4E-4696-ACE7-38A4C36D7F57" ref="_0E8D33BE-9080-4398-832A-4846F5DC23DA" />
 				</orm:RoleSequence>
 			</orm:RingConstraint>
-			<orm:MandatoryConstraint id="_E22AD911-0609-4A4B-AF41-52B436A84510" Name="SimpleMandatoryConstraint11" IsSimple="true">
+			<orm:MandatoryConstraint id="_E22AD911-0609-4A4B-AF41-52B436A84510" Name="ManagerIsSomeEmployee" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_E0D1475C-8E1E-4E93-B652-33540396F9DD" ref="_F5E2A31C-3A50-423F-9EB2-1C1C355FA91F" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_4349FB1A-A400-452C-B60F-20C8182C530C" Name="InternalUniquenessConstraint20" IsInternal="true">
+			<orm:UniquenessConstraint id="_4349FB1A-A400-452C-B60F-20C8182C530C" Name="ManagerIsOneEmployee" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_9F30D261-67AD-48FF-8F4D-B3BF82991B5E" ref="_F5E2A31C-3A50-423F-9EB2-1C1C355FA91F" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_7B7C80B0-4AD9-4E7A-B41E-B30A2D471E6C" Name="InternalUniquenessConstraint21" IsInternal="true">
+			<orm:UniquenessConstraint id="_7B7C80B0-4AD9-4E7A-B41E-B30A2D471E6C" Name="EmployeeIsOneManager" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_8B52FC36-52BE-41DD-B785-E3138EA7ACA1" ref="_08F1A9B1-388E-424E-99C9-3F4B5C9C5FBB" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_ED333DD7-6E03-4DA2-99F6-CBB8083153B3" Name="InternalUniquenessConstraint9" IsInternal="true">
+			<orm:UniquenessConstraint id="_ED333DD7-6E03-4DA2-99F6-CBB8083153B3" Name="MeetingIsHeldOnOneDate" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_84367462-BB75-4CCD-8687-E3D8D5B73712" ref="_BB04BC41-81B1-4A2E-A872-C71E06C6A0FC" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_E7F65E0D-8B68-44D0-835B-87ADDDA634BA" Name="InternalUniquenessConstraint10" IsInternal="true">
+			<orm:UniquenessConstraint id="_E7F65E0D-8B68-44D0-835B-87ADDDA634BA" Name="MeetingIsHeldByOneCompany" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_53159F5E-8AAC-48F9-902F-3488BD677651" ref="_1953C3AE-B79F-4BB3-BC16-82E056A148FD" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_2916DED9-26A3-4CCF-81BC-128747320D35" Name="ExternalUniquenessConstraint2">
+			<orm:UniquenessConstraint id="_2916DED9-26A3-4CCF-81BC-128747320D35" Name="MeetingIsUniqueByCompanyDateAndIsBoardMeeting">
 				<orm:RoleSequence>
 					<orm:Role id="_D2C8F7C7-3420-4E3A-9B5E-E68B1D511507" ref="_7F2CC99F-F202-4AE9-999F-A2107F836882" />
 					<orm:Role id="_7239325C-4111-49BF-AB0C-7AF9D861C5FC" ref="_81BA5C92-6B24-41F8-9D3C-8811AF63F02A" />
@@ -1099,17 +1099,17 @@
 				</orm:RoleSequence>
 				<orm:PreferredIdentifierFor ref="_32921981-3873-439C-AD95-37075314558C" />
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_B3BC3100-4DCE-4248-8E76-662F5B606B2B" Name="SimpleMandatoryConstraint7" IsSimple="true">
+			<orm:MandatoryConstraint id="_B3BC3100-4DCE-4248-8E76-662F5B606B2B" Name="MeetingIsHeldBySomeCompany" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_C1DFDA2B-08E4-4D7F-B299-CFFAFDE6A8B2" ref="_1953C3AE-B79F-4BB3-BC16-82E056A148FD" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:MandatoryConstraint id="_027AD970-5546-4900-89E2-D1AC4A7808A7" Name="SimpleMandatoryConstraint8" IsSimple="true">
+			<orm:MandatoryConstraint id="_027AD970-5546-4900-89E2-D1AC4A7808A7" Name="MeetingIsHeldOnSomeDate" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_3EE54AAC-88E7-4F9C-85EB-87AC16452DE8" ref="_BB04BC41-81B1-4A2E-A872-C71E06C6A0FC" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_8A03D1A9-2FD9-4D41-80A2-838575052A62" Name="InternalUniquenessConstraint11" IsInternal="true">
+			<orm:UniquenessConstraint id="_8A03D1A9-2FD9-4D41-80A2-838575052A62" Name="CompanyIsOnlyListedOnce" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_129C2396-D243-4BBE-A310-4AE2B023EB61" ref="_3CEB9294-DB70-4596-B56A-142FE3BB72B0" />
 				</orm:RoleSequence>
@@ -1346,7 +1346,7 @@
 					<oial:assimilatedConceptType id="_EDF275E1-442C-4707-89A7-374AC4453069" ref="_71F0B5EA-ED57-4B8A-AF7A-A4764483DEF2" name="Person" oppositeName="Employee" refersToSubtype="true" />
 				</oial:children>
 				<oial:uniquenessConstraints>
-					<oial:uniquenessConstraint id="_5512C9E6-4D95-446B-A77A-827855E29757" name="ExternalUniquenessConstraint1" isPreferred="true">
+					<oial:uniquenessConstraint id="_5512C9E6-4D95-446B-A77A-827855E29757" name="NamesIdentifyPerson" isPreferred="true">
 						<oial:uniquenessChild ref="_B86D70AC-4460-424D-ACCB-FB4AB8628849" />
 						<oial:uniquenessChild ref="_E3BF9D24-8043-48F9-B44F-A8465C97D831" />
 					</oial:uniquenessConstraint>
@@ -1370,7 +1370,7 @@
 					<oial:relatedConceptType id="_EB902769-236B-49F5-9240-5A416E74CD1D" ref="_D9E9364C-6281-4220-9024-20362071845B" isMandatory="true" name="Directorship" oppositeName="Company" />
 				</oial:children>
 				<oial:uniquenessConstraints>
-					<oial:uniquenessConstraint id="_651449E7-A9A9-4F14-A059-DB591DEA30B8" name="InternalUniquenessConstraint12" isPreferred="true">
+					<oial:uniquenessConstraint id="_651449E7-A9A9-4F14-A059-DB591DEA30B8" name="EachDirectorDirectsEachCompanyOnce" isPreferred="true">
 						<oial:uniquenessChild ref="_C5219506-B516-4A9B-A34A-A6C1165140B8" />
 						<oial:uniquenessChild ref="_EB902769-236B-49F5-9240-5A416E74CD1D" />
 					</oial:uniquenessConstraint>
@@ -1388,7 +1388,7 @@
 					<oial:relatedConceptType id="_502CA6F3-4DB4-4D55-BCBC-0A44FC006971" ref="_D9E9364C-6281-4220-9024-20362071845B" isMandatory="true" name="Meeting" oppositeName="Company" />
 				</oial:children>
 				<oial:uniquenessConstraints>
-					<oial:uniquenessConstraint id="_7E631AFC-499F-4EF7-9014-C97721FEAFFF" name="InternalUniquenessConstraint1" isPreferred="true">
+					<oial:uniquenessConstraint id="_7E631AFC-499F-4EF7-9014-C97721FEAFFF" name="PersonAttendedEachMeetingOnce" isPreferred="true">
 						<oial:uniquenessChild ref="_5DFEC790-FF7C-4BCD-9E1D-67524C3A35A5" />
 						<oial:uniquenessChild ref="_E766AA1E-7C5C-4846-9DE3-424CAAEF2264" />
 						<oial:uniquenessChild ref="_F6FB537A-EBB5-451F-A266-2861E7FD4820" />
@@ -1410,7 +1410,7 @@
 					<oial:assimilatedConceptType id="_1CB3281E-5A30-403F-8489-0FE6CCD55A89" ref="_479E7D3F-00C2-4415-807C-B713AC8CDFD1" name="Employee" oppositeName="Manager" refersToSubtype="true" isPreferredForTarget="true" />
 				</oial:children>
 				<oial:uniquenessConstraints>
-					<oial:uniquenessConstraint id="_77B1DB6E-0E08-40D2-97B2-9EC016396F9D" name="InternalUniquenessConstraint13" isPreferred="true">
+					<oial:uniquenessConstraint id="_77B1DB6E-0E08-40D2-97B2-9EC016396F9D" name="NumberIdentifiesEmployee" isPreferred="true">
 						<oial:uniquenessChild ref="_9A91CC3F-2829-4813-A0F4-5EDF16E8B7D8" />
 					</oial:uniquenessConstraint>
 				</oial:uniquenessConstraints>
@@ -1603,11 +1603,11 @@
 		<ormtooial:InformationTypeFormatIsForValueType id="_4BC0E94C-2272-4493-9E4D-A2F8588AE33C" InformationTypeFormat="_E5D8B79A-592F-4FDD-AFF4-C3BD5919FCAC" ValueType="_A50F7AFA-2339-400F-B19A-14DF69E28651" />
 		<ormtooial:InformationTypeFormatIsForValueType id="_E9CB01E9-7A8A-40DE-A551-6D30634A13BC" InformationTypeFormat="_3F4278F8-28BA-4523-83F9-FF5D4B9E46EF" ValueType="_2F182A73-39E2-4961-BB9B-0A8DF65767FE" />
 		<ormtooial:InformationTypeFormatIsForValueType id="_EC859C76-1735-428B-9ECE-F72262FA4486" InformationTypeFormat="_A7A523F4-DAF7-41AD-9CD2-BDB5801539F5" ValueType="_AF2B1FE0-DFB4-4852-80D4-B0B99F744812" />
-		<ormtooial:UniquenessIsForUniquenessConstraint id="_E7315CED-2B96-4BEC-AEE1-CEB5C3F4A614" AbstractionUniquenessConstraint="_5512C9E6-4D95-446B-A77A-827855E29757" ORMUniquenessConstraint="_9A7D92EA-3E12-4283-B24C-6FADA8BAA486" />
-		<ormtooial:UniquenessIsForUniquenessConstraint id="_474AC3FA-0B7F-4FEF-B3D3-E5590C00F3CC" AbstractionUniquenessConstraint="_7E631AFC-499F-4EF7-9014-C97721FEAFFF" ORMUniquenessConstraint="_A2645279-FD17-4CB8-A539-0565897FA7C1" />
 		<ormtooial:UniquenessIsForUniquenessConstraint id="_59B68917-B45F-4A4A-9385-4BE4085A52D5" AbstractionUniquenessConstraint="_651449E7-A9A9-4F14-A059-DB591DEA30B8" ORMUniquenessConstraint="_EFD203D7-1914-4499-9C78-DC2C57317F28" />
-		<ormtooial:UniquenessIsForUniquenessConstraint id="_0C87009F-08E9-4E85-8CED-6EB8AF02620E" AbstractionUniquenessConstraint="_77B1DB6E-0E08-40D2-97B2-9EC016396F9D" ORMUniquenessConstraint="_8F4B8BEF-DDBD-49F8-A683-003CC5BF86BF" />
 		<ormtooial:UniquenessIsForUniquenessConstraint id="_41A0B7C6-B22B-44D1-B4D5-69490F560119" AbstractionUniquenessConstraint="_A59BB459-FA5E-48CC-A486-0BEED284A417" ORMUniquenessConstraint="_CF1435FD-660A-449C-B59C-617149A4DB99" />
+		<ormtooial:UniquenessIsForUniquenessConstraint id="_E7315CED-2B96-4BEC-AEE1-CEB5C3F4A614" AbstractionUniquenessConstraint="_5512C9E6-4D95-446B-A77A-827855E29757" ORMUniquenessConstraint="_9A7D92EA-3E12-4283-B24C-6FADA8BAA486" />
+		<ormtooial:UniquenessIsForUniquenessConstraint id="_0C87009F-08E9-4E85-8CED-6EB8AF02620E" AbstractionUniquenessConstraint="_77B1DB6E-0E08-40D2-97B2-9EC016396F9D" ORMUniquenessConstraint="_8F4B8BEF-DDBD-49F8-A683-003CC5BF86BF" />
+		<ormtooial:UniquenessIsForUniquenessConstraint id="_474AC3FA-0B7F-4FEF-B3D3-E5590C00F3CC" AbstractionUniquenessConstraint="_7E631AFC-499F-4EF7-9014-C97721FEAFFF" ORMUniquenessConstraint="_A2645279-FD17-4CB8-A539-0565897FA7C1" />
 	</ormtooial:Bridge>
 	<oialtocdb:Bridge>
 		<oialtocdb:SchemaIsForAbstractionModel id="_D51C8EB6-1E19-4ED0-8F89-E731B5375FC5" Schema="_3D87864D-D989-4BB9-95BB-F997B90AFCBB" AbstractionModel="_122C711D-758A-453F-8113-FEC49255702D" />

@@ -5,7 +5,8 @@ CREATE TABLE ThingSequence (
 	Ordinal                                 int NOT NULL,
 	-- maybe ThingSequence has Text,
 	Text                                    varchar NULL,
-	UNIQUE(ThingID, Text)
+	UNIQUE(ThingID, Text),
+	UNIQUE(ThingID, Ordinal)
 )
 GO
 

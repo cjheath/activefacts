@@ -3,7 +3,8 @@ CREATE TABLE Club (
 	ClubName                                varchar(32) NOT NULL,
 	-- Club has ClubCode,
 	ClubCode                                varchar(6) NOT NULL,
-	PRIMARY KEY(ClubCode)
+	PRIMARY KEY(ClubCode),
+	UNIQUE(ClubName)
 )
 GO
 
@@ -20,7 +21,8 @@ CREATE TABLE Entry (
 	FinishPlacing                           int NULL,
 	-- Entry has EntryID,
 	EntryID                                 int IDENTITY NOT NULL,
-	PRIMARY KEY(EntryID)
+	PRIMARY KEY(EntryID),
+	UNIQUE(EventID, PersonID)
 )
 GO
 
@@ -44,6 +46,23 @@ CREATE TABLE Event (
 	PRIMARY KEY(EventID),
 	FOREIGN KEY (ClubCode) REFERENCES Club (ClubCode)
 )
+GO
+
+CREATE VIEW dbo.Event_NumberSeriesID (Number, SeriesID) WITH SCHEMABINDING AS
+	SELECT Number, SeriesID FROM dbo.Event
+	WHERE	Number IS NOT NULL
+	  AND	SeriesID IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_EventByNumberSeriesID ON dbo.Event_NumberSeriesID(Number, SeriesID)
+GO
+
+CREATE VIEW dbo.Event_Name (EventName) WITH SCHEMABINDING AS
+	SELECT EventName FROM dbo.Event
+	WHERE	EventName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX EventNameIsOfOneEvent ON dbo.Event_Name(EventName)
 GO
 
 CREATE TABLE EventControl (
@@ -80,6 +99,7 @@ CREATE TABLE Map (
 	-- Map has MapID,
 	MapID                                   int IDENTITY NOT NULL,
 	PRIMARY KEY(MapID),
+	UNIQUE(MapName),
 	FOREIGN KEY (OwnerCode) REFERENCES Club (ClubCode)
 )
 GO
@@ -100,6 +120,7 @@ CREATE TABLE Person (
 	-- Person has PersonID,
 	PersonID                                int IDENTITY NOT NULL,
 	PRIMARY KEY(PersonID),
+	UNIQUE(GivenName, FamilyName),
 	FOREIGN KEY (ClubCode) REFERENCES Club (ClubCode)
 )
 GO
@@ -129,7 +150,8 @@ CREATE TABLE Series (
 	Name                                    varchar(40) NOT NULL,
 	-- Series has SeriesID,
 	SeriesID                                int IDENTITY NOT NULL,
-	PRIMARY KEY(SeriesID)
+	PRIMARY KEY(SeriesID),
+	UNIQUE(Name)
 )
 GO
 

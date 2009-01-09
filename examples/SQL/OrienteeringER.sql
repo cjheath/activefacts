@@ -3,7 +3,8 @@ CREATE TABLE Club (
 	Code                                    char NOT NULL,
 	-- Club is where Code is of the club called ClubName,
 	ClubName                                varchar NOT NULL,
-	PRIMARY KEY(Code)
+	PRIMARY KEY(Code),
+	UNIQUE(ClubName)
 )
 GO
 
@@ -25,6 +26,8 @@ CREATE TABLE Event (
 	-- Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location and SeriesEvent is where SeriesName includes event-Number,
 	SeriesEventEventNumber                  int NOT NULL,
 	PRIMARY KEY(EventID),
+	UNIQUE(EventName),
+	UNIQUE(SeriesEventSeriesName, SeriesEventEventNumber),
 	FOREIGN KEY (ClubCode) REFERENCES Club (Code)
 )
 GO

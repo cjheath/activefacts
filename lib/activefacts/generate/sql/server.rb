@@ -53,6 +53,7 @@ module ActiveFacts
 
         def escape s
           # Escape SQL keywords and non-identifiers
+          s = s[0...120]
           if s =~ /[^A-Za-z0-9_]/ || RESERVED_WORDS[s.upcase]
             "[#{s}]"
           else
@@ -159,10 +160,42 @@ module ActiveFacts
               end
             end
 
+            indices = table.indices
+            inline_indices = []
+            delayed_indices = []
+            indices.each do |index|
+              next if index.over == table && index.is_primary   # Already did the primary keys
+              abbreviated_column_names = index.abbreviated_column_names*""
+              column_names = index.column_names
+              column_name_list = column_names.map{|n| escape(n)}*", "
+              if index.columns.all?{|column| column.is_mandatory}
+                inline_indices << "UNIQUE(#{column_name_list})"
+              else
+                view_name = escape "#{index.view_name}_#{abbreviated_column_names}"
+                delayed_indices <<
+%Q{CREATE VIEW dbo.#{view_name} (#{column_name_list}) WITH SCHEMABINDING AS
+\tSELECT #{column_name_list} FROM dbo.#{escape index.on.name}
+\tWHERE\t#{
+  index.columns.
+    select{|column| !column.is_mandatory }.
+    map{|column|
+      escape(column.name) + " IS NOT NULL"
+    }*"\n\t  AND\t"
+}
+GO
+
+CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.columns.map{|column| column.name}*", "})
+}
+              end
+            end
+
             tables_emitted[table] = true
 
-            puts("\t" + (columns + [pk_def] + inline_fks)*",\n\t")
+            puts("\t" + (columns + [pk_def] + inline_indices + inline_fks)*",\n\t")
             go ")"
+            delayed_indices.each {|index_text|
+              go index_text
+            }
           end
 
           delayed_foreign_keys.each do |fk|

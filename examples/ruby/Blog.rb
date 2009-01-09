@@ -44,12 +44,12 @@ module Blog
     identified_by :comment_id
     has_one :author                             # See Author.all_comment
     one_to_one :comment_id                      # See CommentId.comment
+    has_one :content                            # See Content.all_comment
     has_one :paragraph                          # See Paragraph.all_comment
   end
 
   class Content
     identified_by :style, :text
-    one_to_one :comment                         # See Comment.content
     has_one :style                              # See Style.all_content
     has_one :text                               # See Text.all_content
   end
@@ -65,7 +65,7 @@ module Blog
     identified_by :post, :ordinal
     has_one :ordinal                            # See Ordinal.all_paragraph
     has_one :post                               # See Post.all_paragraph
-    one_to_one :content                         # See Content.paragraph
+    has_one :content                            # See Content.all_paragraph
   end
 
   class Topic

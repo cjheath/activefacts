@@ -14,10 +14,11 @@ module ActiveFacts
         @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
         @tables = options.include? "tables"
         @columns = options.include? "columns"
+        @indices = options.include? "indices"
       end
 
       def generate(out = $>)
-        @vocabulary.tables if @tables || @columns
+        @vocabulary.tables if @tables || @columns || @indices
       end
     end
   end

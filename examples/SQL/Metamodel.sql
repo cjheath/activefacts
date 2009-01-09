@@ -60,6 +60,15 @@ CREATE TABLE [Constraint] (
 )
 GO
 
+CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
+	SELECT VocabularyName, Name FROM dbo.[Constraint]
+	WHERE	VocabularyName IS NOT NULL
+	  AND	Name IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameName ON dbo.Constraint_VocabularyNameName(VocabularyName, Name)
+GO
+
 CREATE TABLE Correspondence (
 	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Import is where Vocabulary imports imported-Vocabulary and Vocabulary is called Name,
 	ImportVocabularyName                    varchar(64) NOT NULL,
@@ -120,6 +129,36 @@ CREATE TABLE FactType (
 	TypeInheritanceProvidesIdentification   bit NULL,
 	PRIMARY KEY(FactTypeId)
 )
+GO
+
+CREATE VIEW dbo.TypeInheritanceInFactType_SupertypeNameSupertypeVocabularyNameSubtypeNameSubtypeVocabularyName (TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) WITH SCHEMABINDING AS
+	SELECT TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName FROM dbo.FactType
+	WHERE	TypeInheritanceSupertypeName IS NOT NULL
+	  AND	TypeInheritanceSupertypeVocabularyName IS NOT NULL
+	  AND	TypeInheritanceSubtypeName IS NOT NULL
+	  AND	TypeInheritanceSubtypeVocabularyName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_SupertypeNameSupertypeVocabularyNameSubtypeNameSubtypeVocabularyName(TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName)
+GO
+
+CREATE VIEW dbo.TypeInheritanceInFactType_ProvidesIdentificationSubtypeNameSubtypeVocabularyName (TypeInheritanceProvidesIdentification, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) WITH SCHEMABINDING AS
+	SELECT TypeInheritanceProvidesIdentification, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName FROM dbo.FactType
+	WHERE	TypeInheritanceProvidesIdentification IS NOT NULL
+	  AND	TypeInheritanceSubtypeName IS NOT NULL
+	  AND	TypeInheritanceSubtypeVocabularyName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_ProvidesIdentificationSubtypeNameSubtypeVocabularyName(TypeInheritanceProvidesIdentification, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName)
+GO
+
+CREATE VIEW dbo.FactType_EntityTypeNameEntityTypeVocabularyName (EntityTypeName, EntityTypeVocabularyName) WITH SCHEMABINDING AS
+	SELECT EntityTypeName, EntityTypeVocabularyName FROM dbo.FactType
+	WHERE	EntityTypeName IS NOT NULL
+	  AND	EntityTypeVocabularyName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeNameEntityTypeVocabularyName(EntityTypeName, EntityTypeVocabularyName)
 GO
 
 CREATE TABLE Feature (
@@ -250,6 +289,14 @@ CREATE TABLE RoleRef (
 	PRIMARY KEY(RoleSequenceId, Ordinal),
 	FOREIGN KEY (RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
 )
+GO
+
+CREATE VIEW dbo.RoleRef_RoleFactTypeIdRoleOrdinalRoleConceptNameRoleConceptVocabularyNameRoleSequenceId (RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName, RoleSequenceId) WITH SCHEMABINDING AS
+	SELECT RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName, RoleSequenceId FROM dbo.RoleRef
+	WHERE	RoleConceptVocabularyName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByRoleFactTypeIdRoleOrdinalRoleConceptNameRoleConceptVocabularyNameRoleSequenceId ON dbo.RoleRef_RoleFactTypeIdRoleOrdinalRoleConceptNameRoleConceptVocabularyNameRoleSequenceId(RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName, RoleSequenceId)
 GO
 
 CREATE TABLE RoleSequence (

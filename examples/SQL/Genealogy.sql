@@ -26,7 +26,8 @@ CREATE TABLE EventType (
 	EventTypeName                           varchar(16) NOT NULL CHECK(EventTypeName = 'Birth' OR EventTypeName = 'Christening' OR EventTypeName = 'Marriage' OR EventTypeName = 'Divorce' OR EventTypeName = 'Death' OR EventTypeName = 'Burial'),
 	-- EventType has EventTypeID,
 	EventTypeID                             int IDENTITY NOT NULL,
-	PRIMARY KEY(EventTypeID)
+	PRIMARY KEY(EventTypeID),
+	UNIQUE(EventTypeName)
 )
 GO
 
@@ -81,7 +82,8 @@ CREATE TABLE Role (
 	RoleID                                  int IDENTITY NOT NULL,
 	-- Role is called EventRoleName,
 	EventRoleName                           varchar NOT NULL CHECK(EventRoleName = 'Subject' OR EventRoleName = 'Father' OR EventRoleName = 'Mother' OR EventRoleName = 'Husband' OR EventRoleName = 'Wife' OR EventRoleName = 'Celebrant'),
-	PRIMARY KEY(RoleID)
+	PRIMARY KEY(RoleID),
+	UNIQUE(EventRoleName)
 )
 GO
 
@@ -92,7 +94,8 @@ CREATE TABLE Source (
 	SourceID                                int IDENTITY NOT NULL,
 	-- User provided Source and User has UserID,
 	UserID                                  int NOT NULL,
-	PRIMARY KEY(SourceID)
+	PRIMARY KEY(SourceID),
+	UNIQUE(SourceName)
 )
 GO
 

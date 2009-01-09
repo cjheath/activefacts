@@ -10,3 +10,11 @@ CREATE TABLE Person (
 )
 GO
 
+CREATE VIEW dbo.EmployeeInPerson_ID (EmployeeID) WITH SCHEMABINDING AS
+	SELECT EmployeeID FROM dbo.Person
+	WHERE	EmployeeID IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX PK_EmployeeInPerson ON dbo.EmployeeInPerson_ID(EmployeeID)
+GO
+

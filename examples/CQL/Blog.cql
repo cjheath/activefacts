@@ -27,14 +27,14 @@ Content is identified by Style and Text where
 	Content is of at most one Style,
 	Content has one Text,
 	Text is of Content;
-Content provides text of at most one Comment,
+Content provides text of Comment,
 	Comment consists of one text-Content;
 
 Post is identified by its Id;
 Post was written by one Author;
 Paragraph is where
 	Post includes Ordinal paragraph;
-Content is of at most one Paragraph,
+Content is of Paragraph,
 	Paragraph contains one Content;
 Paragraph has Comment,
 	Comment is on one Paragraph;

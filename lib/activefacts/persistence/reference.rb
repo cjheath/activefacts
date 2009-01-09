@@ -293,7 +293,7 @@ module ActiveFacts
     end
 
     class Vocabulary
-      def populate_concept_references
+      def populate_all_references
         debug :references, "Populating all concept references" do
           all_feature.each do |feature|
             next unless feature.is_a? Concept

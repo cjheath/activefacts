@@ -56,6 +56,14 @@ CREATE TABLE Person (
 )
 GO
 
+CREATE VIEW dbo.EmployeeInPerson_Nr (EmployeeNr) WITH SCHEMABINDING AS
+	SELECT EmployeeNr FROM dbo.Person
+	WHERE	EmployeeNr IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX NumberIdentifiesEmployee ON dbo.EmployeeInPerson_Nr(EmployeeNr)
+GO
+
 ALTER TABLE Attendance
 	ADD FOREIGN KEY (AttendeeGivenName, AttendeeFamilyName) REFERENCES Person (GivenName, FamilyName)
 GO

@@ -3,23 +3,24 @@ CREATE TABLE Author (
 	AuthorId                                int IDENTITY NOT NULL,
 	-- author-Name is of Author,
 	AuthorName                              varchar(64) NOT NULL,
-	PRIMARY KEY(AuthorId)
+	PRIMARY KEY(AuthorId),
+	UNIQUE(AuthorName)
 )
 GO
 
 CREATE TABLE Comment (
 	-- Comment has CommentId,
 	CommentId                               int IDENTITY NOT NULL,
+	-- Content provides text of Comment and Content has Text,
+	ContentText                             text NOT NULL,
+	-- Content provides text of Comment and maybe Content is of Style,
+	ContentStyle                            varchar(20) NULL,
 	-- Author wrote Comment and Author has AuthorId,
 	AuthorId                                int NOT NULL,
 	-- Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph and Post has PostId,
 	ParagraphPostId                         int NOT NULL,
 	-- Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph,
 	ParagraphOrdinal                        int NOT NULL,
-	-- Content provides text of Comment and Content has Text,
-	ContentText                             text NOT NULL,
-	-- Content provides text of Comment and maybe Content is of Style,
-	ContentStyle                            varchar(20) NULL,
 	PRIMARY KEY(CommentId),
 	FOREIGN KEY (AuthorId) REFERENCES Author (AuthorId)
 )
@@ -58,6 +59,7 @@ CREATE TABLE Topic (
 	-- maybe Topic belongs to parent-Topic and Topic has TopicId,
 	ParentTopicId                           int NULL,
 	PRIMARY KEY(TopicId),
+	UNIQUE(TopicName),
 	FOREIGN KEY (ParentTopicId) REFERENCES Topic (TopicId)
 )
 GO

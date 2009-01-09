@@ -8,7 +8,7 @@
       $debug_indent = 0
       $debug_keys = {}
       if (e = ENV["DEBUG"])
-        e.split(/[^a-z]/).each{|k| $debug_keys[k.to_sym] = true }
+        e.split(/[^a-zA-Z0-9]/).each{|k| $debug_keys[k.to_sym] = true }
       end
     end
 

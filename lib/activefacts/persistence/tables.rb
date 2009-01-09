@@ -168,7 +168,7 @@ module ActiveFacts
         #    - subtype extension where supertype has only PI roles and no AutoInc
         # 3) any ValueType that has references from it must become a table if not already
 
-        populate_concept_references
+        populate_all_references
 
         debug :absorption, "Calculating relational composition" do
           # Evaluate the possible independence of each concept, building an array of features of indeterminate status:
@@ -297,6 +297,7 @@ module ActiveFacts
         end
 
         populate_all_columns
+        populate_all_indices
 
         @tables = all_feature.select { |f| f.is_table }
       end
