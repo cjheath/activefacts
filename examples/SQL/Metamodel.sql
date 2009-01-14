@@ -26,18 +26,18 @@ CREATE TABLE [Constraint] (
 	RingConstraintRoleFactTypeId            int NULL,
 	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept,
 	RingConstraintRoleOrdinal               int NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	RingConstraintRoleConceptName           varchar(64) NULL,
 	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	RingConstraintRoleConceptVocabularyName varchar(64) NULL,
+	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	RingConstraintRoleConceptName           varchar(64) NULL,
 	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
 	RingConstraintOtherRoleFactTypeId       int NULL,
 	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept,
 	RingConstraintOtherRoleOrdinal          int NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	RingConstraintOtherRoleConceptName      varchar(64) NULL,
 	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	RingConstraintOtherRoleConceptVocabularyName varchar(64) NULL,
+	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	RingConstraintOtherRoleConceptName      varchar(64) NULL,
 	-- maybe RingConstraint is a subtype of Constraint and RingConstraint is of RingType,
 	RingConstraintRingType                  varchar NULL,
 	-- maybe PresenceConstraint is a subtype of Constraint and PresenceConstraint covers RoleSequence and RoleSequence has RoleSequenceId,
@@ -74,15 +74,15 @@ CREATE TABLE Correspondence (
 	ImportVocabularyName                    varchar(64) NOT NULL,
 	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Import is where Vocabulary imports imported-Vocabulary and Vocabulary is called Name,
 	ImportImportedVocabularyName            varchar(64) NOT NULL,
-	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Feature is called Name,
-	ImportedFeatureName                     varchar(64) NOT NULL,
 	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	ImportedFeatureVocabularyName           varchar(64) NULL,
 	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Feature is called Name,
-	LocalFeatureName                        varchar(64) NOT NULL,
+	ImportedFeatureName                     varchar(64) NOT NULL,
 	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	LocalFeatureVocabularyName              varchar(64) NULL,
-	UNIQUE(ImportVocabularyName, ImportImportedVocabularyName, ImportedFeatureName, ImportedFeatureVocabularyName)
+	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Feature is called Name,
+	LocalFeatureName                        varchar(64) NOT NULL,
+	UNIQUE(ImportVocabularyName, ImportImportedVocabularyName, ImportedFeatureVocabularyName, ImportedFeatureName)
 )
 GO
 
@@ -113,52 +113,52 @@ GO
 CREATE TABLE FactType (
 	-- FactType has FactTypeId,
 	FactTypeId                              int IDENTITY NOT NULL,
-	-- maybe EntityType nests FactType and Feature is called Name,
-	EntityTypeName                          varchar(64) NULL,
 	-- maybe EntityType nests FactType and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	EntityTypeVocabularyName                varchar(64) NULL,
-	-- maybe TypeInheritance is a subtype of FactType and TypeInheritance is where Subtype is subtype of Supertype and Feature is called Name,
-	TypeInheritanceSubtypeName              varchar(64) NULL,
+	-- maybe EntityType nests FactType and Feature is called Name,
+	EntityTypeName                          varchar(64) NULL,
 	-- maybe TypeInheritance is a subtype of FactType and TypeInheritance is where Subtype is subtype of Supertype and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSubtypeVocabularyName    varchar(64) NULL,
 	-- maybe TypeInheritance is a subtype of FactType and TypeInheritance is where Subtype is subtype of Supertype and Feature is called Name,
-	TypeInheritanceSupertypeName            varchar(64) NULL,
+	TypeInheritanceSubtypeName              varchar(64) NULL,
 	-- maybe TypeInheritance is a subtype of FactType and TypeInheritance is where Subtype is subtype of Supertype and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSupertypeVocabularyName  varchar(64) NULL,
+	-- maybe TypeInheritance is a subtype of FactType and TypeInheritance is where Subtype is subtype of Supertype and Feature is called Name,
+	TypeInheritanceSupertypeName            varchar(64) NULL,
 	-- maybe TypeInheritance is a subtype of FactType and TypeInheritance provides identification,
 	TypeInheritanceProvidesIdentification   bit NULL,
 	PRIMARY KEY(FactTypeId)
 )
 GO
 
-CREATE VIEW dbo.TypeInheritanceInFactType_SupertypeNameSupertypeVocabularyNameSubtypeNameSubtypeVocabularyName (TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) WITH SCHEMABINDING AS
-	SELECT TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName FROM dbo.FactType
-	WHERE	TypeInheritanceSupertypeName IS NOT NULL
+CREATE VIEW dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameSupertypeVocabularyNameSupertypeName (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
+	SELECT TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName FROM dbo.FactType
+	WHERE	TypeInheritanceSubtypeVocabularyName IS NOT NULL
+	  AND	TypeInheritanceSubtypeName IS NOT NULL
 	  AND	TypeInheritanceSupertypeVocabularyName IS NOT NULL
+	  AND	TypeInheritanceSupertypeName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameSupertypeVocabularyNameSupertypeName(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
+GO
+
+CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocabularyName, EntityTypeName) WITH SCHEMABINDING AS
+	SELECT EntityTypeVocabularyName, EntityTypeName FROM dbo.FactType
+	WHERE	EntityTypeVocabularyName IS NOT NULL
+	  AND	EntityTypeName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
+GO
+
+CREATE VIEW dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameProvidesIdentification (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
+	SELECT TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification FROM dbo.FactType
+	WHERE	TypeInheritanceSubtypeVocabularyName IS NOT NULL
 	  AND	TypeInheritanceSubtypeName IS NOT NULL
-	  AND	TypeInheritanceSubtypeVocabularyName IS NOT NULL
+	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_SupertypeNameSupertypeVocabularyNameSubtypeNameSubtypeVocabularyName(TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName)
-GO
-
-CREATE VIEW dbo.TypeInheritanceInFactType_ProvidesIdentificationSubtypeNameSubtypeVocabularyName (TypeInheritanceProvidesIdentification, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) WITH SCHEMABINDING AS
-	SELECT TypeInheritanceProvidesIdentification, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName FROM dbo.FactType
-	WHERE	TypeInheritanceProvidesIdentification IS NOT NULL
-	  AND	TypeInheritanceSubtypeName IS NOT NULL
-	  AND	TypeInheritanceSubtypeVocabularyName IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_ProvidesIdentificationSubtypeNameSubtypeVocabularyName(TypeInheritanceProvidesIdentification, TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName)
-GO
-
-CREATE VIEW dbo.FactType_EntityTypeNameEntityTypeVocabularyName (EntityTypeName, EntityTypeVocabularyName) WITH SCHEMABINDING AS
-	SELECT EntityTypeName, EntityTypeVocabularyName FROM dbo.FactType
-	WHERE	EntityTypeName IS NOT NULL
-	  AND	EntityTypeVocabularyName IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeNameEntityTypeVocabularyName(EntityTypeName, EntityTypeVocabularyName)
+CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameProvidesIdentification(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE TABLE Feature (
@@ -170,10 +170,10 @@ CREATE TABLE Feature (
 	ConceptIsIndependent                    bit NULL,
 	-- maybe Concept is a subtype of Feature and Concept is personal,
 	ConceptIsPersonal                       bit NULL,
-	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is subtype of Supertype and Feature is called Name,
-	ValueTypeSupertypeName                  varchar(64) NULL,
 	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is subtype of Supertype and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
+	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is subtype of Supertype and Feature is called Name,
+	ValueTypeSupertypeName                  varchar(64) NULL,
 	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has Length,
 	ValueTypeLength                         int NULL,
 	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has Scale,
@@ -182,7 +182,7 @@ CREATE TABLE Feature (
 	ValueTypeValueRestrictionId             int NULL,
 	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is of Unit and Unit has UnitId,
 	ValueTypeUnitId                         int NULL,
-	UNIQUE(Name, VocabularyName)
+	UNIQUE(VocabularyName, Name)
 )
 GO
 
@@ -191,16 +191,16 @@ CREATE TABLE Instance (
 	InstanceId                              int IDENTITY NOT NULL,
 	-- maybe Instance has Value,
 	Value                                   varchar(256) NULL,
-	-- Instance is of Concept and Feature is called Name,
-	ConceptName                             varchar(64) NOT NULL,
 	-- Instance is of Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	ConceptVocabularyName                   varchar(64) NULL,
+	-- Instance is of Concept and Feature is called Name,
+	ConceptName                             varchar(64) NOT NULL,
 	-- Population includes Instance and Population has Name,
 	PopulationName                          varchar(64) NOT NULL,
 	-- Population includes Instance and maybe Vocabulary includes Population and Vocabulary is called Name,
 	PopulationVocabularyName                varchar(64) NULL,
 	PRIMARY KEY(InstanceId),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	FOREIGN KEY (ConceptVocabularyName, ConceptName) REFERENCES Feature (VocabularyName, Name)
 )
 GO
 
@@ -215,24 +215,24 @@ CREATE TABLE JoinPath (
 	InputRoleFactTypeId                     int NOT NULL,
 	-- JoinPath has input-Role and Role is where FactType has Ordinal role played by Concept,
 	InputRoleOrdinal                        int NOT NULL,
-	-- JoinPath has input-Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	InputRoleConceptName                    varchar(64) NOT NULL,
 	-- JoinPath has input-Role and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	InputRoleConceptVocabularyName          varchar(64) NULL,
+	-- JoinPath has input-Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	InputRoleConceptName                    varchar(64) NOT NULL,
 	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
 	OutputRoleFactTypeId                    int NOT NULL,
 	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept,
 	OutputRoleOrdinal                       int NOT NULL,
-	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	OutputRoleConceptName                   varchar(64) NOT NULL,
 	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	OutputRoleConceptVocabularyName         varchar(64) NULL,
-	-- maybe JoinPath traverses Concept and Feature is called Name,
-	ConceptName                             varchar(64) NULL,
+	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	OutputRoleConceptName                   varchar(64) NOT NULL,
 	-- maybe JoinPath traverses Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	ConceptVocabularyName                   varchar(64) NULL,
+	-- maybe JoinPath traverses Concept and Feature is called Name,
+	ConceptName                             varchar(64) NULL,
 	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	FOREIGN KEY (ConceptVocabularyName, ConceptName) REFERENCES Feature (VocabularyName, Name)
 )
 GO
 
@@ -255,17 +255,17 @@ CREATE TABLE Role (
 	FactTypeId                              int NOT NULL,
 	-- Role is where FactType has Ordinal role played by Concept,
 	Ordinal                                 int NOT NULL,
-	-- Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	ConceptName                             varchar(64) NOT NULL,
 	-- Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	ConceptVocabularyName                   varchar(64) NULL,
+	-- Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	ConceptName                             varchar(64) NOT NULL,
 	-- maybe Role has role-Name,
 	RoleName                                varchar(64) NULL,
 	-- maybe Role has role-ValueRestriction and ValueRestriction has ValueRestrictionId,
 	RoleValueRestrictionId                  int NULL,
-	UNIQUE(FactTypeId, Ordinal, ConceptName, ConceptVocabularyName),
+	UNIQUE(FactTypeId, Ordinal, ConceptVocabularyName, ConceptName),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	FOREIGN KEY (ConceptVocabularyName, ConceptName) REFERENCES Feature (VocabularyName, Name)
 )
 GO
 
@@ -278,25 +278,25 @@ CREATE TABLE RoleRef (
 	RoleFactTypeId                          int NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role played by Concept,
 	RoleOrdinal                             int NOT NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	RoleConceptName                         varchar(64) NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	RoleConceptVocabularyName               varchar(64) NULL,
+	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	RoleConceptName                         varchar(64) NOT NULL,
 	-- maybe RoleRef has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
 	-- maybe RoleRef has trailing-Adjective,
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
-	FOREIGN KEY (RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+	FOREIGN KEY (RoleFactTypeId, RoleOrdinal, RoleConceptVocabularyName, RoleConceptName) REFERENCES Role (FactTypeId, Ordinal, ConceptVocabularyName, ConceptName)
 )
 GO
 
-CREATE VIEW dbo.RoleRef_RoleFactTypeIdRoleOrdinalRoleConceptNameRoleConceptVocabularyNameRoleSequenceId (RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName, RoleSequenceId) WITH SCHEMABINDING AS
-	SELECT RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName, RoleSequenceId FROM dbo.RoleRef
+CREATE VIEW dbo.RoleRef_RoleFactTypeIdRoleOrdinalRoleConceptVocabularyNameRoleConceptNameRoleSequenceId (RoleFactTypeId, RoleOrdinal, RoleConceptVocabularyName, RoleConceptName, RoleSequenceId) WITH SCHEMABINDING AS
+	SELECT RoleFactTypeId, RoleOrdinal, RoleConceptVocabularyName, RoleConceptName, RoleSequenceId FROM dbo.RoleRef
 	WHERE	RoleConceptVocabularyName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByRoleFactTypeIdRoleOrdinalRoleConceptNameRoleConceptVocabularyNameRoleSequenceId ON dbo.RoleRef_RoleFactTypeIdRoleOrdinalRoleConceptNameRoleConceptVocabularyNameRoleSequenceId(RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName, RoleSequenceId)
+CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByRoleFactTypeIdRoleOrdinalRoleConceptVocabularyNameRoleConceptNameRoleSequenceId ON dbo.RoleRef_RoleFactTypeIdRoleOrdinalRoleConceptVocabularyNameRoleConceptNameRoleSequenceId(RoleFactTypeId, RoleOrdinal, RoleConceptVocabularyName, RoleConceptName, RoleSequenceId)
 GO
 
 CREATE TABLE RoleSequence (
@@ -319,14 +319,14 @@ CREATE TABLE RoleValue (
 	RoleFactTypeId                          int NOT NULL,
 	-- RoleValue is of Role and Role is where FactType has Ordinal role played by Concept,
 	RoleOrdinal                             int NOT NULL,
-	-- RoleValue is of Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	RoleConceptName                         varchar(64) NOT NULL,
 	-- RoleValue is of Role and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	RoleConceptVocabularyName               varchar(64) NULL,
+	-- RoleValue is of Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	RoleConceptName                         varchar(64) NOT NULL,
 	PRIMARY KEY(InstanceId, FactId),
 	FOREIGN KEY (FactId) REFERENCES Fact (FactId),
 	FOREIGN KEY (InstanceId) REFERENCES Instance (InstanceId),
-	FOREIGN KEY (RoleFactTypeId, RoleOrdinal, RoleConceptName, RoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+	FOREIGN KEY (RoleFactTypeId, RoleOrdinal, RoleConceptVocabularyName, RoleConceptName) REFERENCES Role (FactTypeId, Ordinal, ConceptVocabularyName, ConceptName)
 )
 GO
 
@@ -370,11 +370,11 @@ ALTER TABLE AllowedRange
 GO
 
 ALTER TABLE [Constraint]
-	ADD FOREIGN KEY (RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal, RingConstraintRoleConceptName, RingConstraintRoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+	ADD FOREIGN KEY (RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal, RingConstraintRoleConceptVocabularyName, RingConstraintRoleConceptName) REFERENCES Role (FactTypeId, Ordinal, ConceptVocabularyName, ConceptName)
 GO
 
 ALTER TABLE [Constraint]
-	ADD FOREIGN KEY (RingConstraintOtherRoleFactTypeId, RingConstraintOtherRoleOrdinal, RingConstraintOtherRoleConceptName, RingConstraintOtherRoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+	ADD FOREIGN KEY (RingConstraintOtherRoleFactTypeId, RingConstraintOtherRoleOrdinal, RingConstraintOtherRoleConceptVocabularyName, RingConstraintOtherRoleConceptName) REFERENCES Role (FactTypeId, Ordinal, ConceptVocabularyName, ConceptName)
 GO
 
 ALTER TABLE [Constraint]
@@ -390,11 +390,11 @@ ALTER TABLE [Constraint]
 GO
 
 ALTER TABLE Correspondence
-	ADD FOREIGN KEY (ImportedFeatureName, ImportedFeatureVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	ADD FOREIGN KEY (ImportedFeatureVocabularyName, ImportedFeatureName) REFERENCES Feature (VocabularyName, Name)
 GO
 
 ALTER TABLE Correspondence
-	ADD FOREIGN KEY (LocalFeatureName, LocalFeatureVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	ADD FOREIGN KEY (LocalFeatureVocabularyName, LocalFeatureName) REFERENCES Feature (VocabularyName, Name)
 GO
 
 ALTER TABLE Derivation
@@ -410,19 +410,19 @@ ALTER TABLE Fact
 GO
 
 ALTER TABLE FactType
-	ADD FOREIGN KEY (TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	ADD FOREIGN KEY (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName) REFERENCES Feature (VocabularyName, Name)
 GO
 
 ALTER TABLE FactType
-	ADD FOREIGN KEY (TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	ADD FOREIGN KEY (TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) REFERENCES Feature (VocabularyName, Name)
 GO
 
 ALTER TABLE FactType
-	ADD FOREIGN KEY (EntityTypeName, EntityTypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	ADD FOREIGN KEY (EntityTypeVocabularyName, EntityTypeName) REFERENCES Feature (VocabularyName, Name)
 GO
 
 ALTER TABLE Feature
-	ADD FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
+	ADD FOREIGN KEY (ValueTypeSupertypeVocabularyName, ValueTypeSupertypeName) REFERENCES Feature (VocabularyName, Name)
 GO
 
 ALTER TABLE Feature
@@ -438,11 +438,11 @@ ALTER TABLE JoinPath
 GO
 
 ALTER TABLE JoinPath
-	ADD FOREIGN KEY (InputRoleFactTypeId, InputRoleOrdinal, InputRoleConceptName, InputRoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+	ADD FOREIGN KEY (InputRoleFactTypeId, InputRoleOrdinal, InputRoleConceptVocabularyName, InputRoleConceptName) REFERENCES Role (FactTypeId, Ordinal, ConceptVocabularyName, ConceptName)
 GO
 
 ALTER TABLE JoinPath
-	ADD FOREIGN KEY (OutputRoleFactTypeId, OutputRoleOrdinal, OutputRoleConceptName, OutputRoleConceptVocabularyName) REFERENCES Role (FactTypeId, Ordinal, ConceptName, ConceptVocabularyName)
+	ADD FOREIGN KEY (OutputRoleFactTypeId, OutputRoleOrdinal, OutputRoleConceptVocabularyName, OutputRoleConceptName) REFERENCES Role (FactTypeId, Ordinal, ConceptVocabularyName, ConceptName)
 GO
 
 ALTER TABLE Reading
