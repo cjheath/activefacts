@@ -103,7 +103,12 @@ module ActiveFacts
                   next unless pcs.size > 0
                   # The columns for this ref_path support the UCs in "pcs".
                   pcs.each do |pc|
-                    (columns_by_unique_constraint[pc] ||= []).concat(all_column_by_ref_path[ref_path])
+                    ref_columns = all_column_by_ref_path[ref_path]
+                    ordinal = role_ref.ordinal  # Position in priority order
+                    ref_columns.each_with_index do |column, index|
+                      #puts "Adding index column #{column.name} in rank[#{ordinal},#{index}]"
+                      (columns_by_unique_constraint[pc] ||= []) << [ordinal, index, column]
+                    end
                   end
                   hash[role_ref] = all_column_by_ref_path[ref_path]
                 end
@@ -112,7 +117,9 @@ module ActiveFacts
             end
 
         debug :index, "All Indices in #{name}:" do
-          @indices = columns_by_unique_constraint.map do |uc, columns|
+          @indices = columns_by_unique_constraint.map do |uc, columns_with_ordinal|
+            #puts "Index on #{name} over (#{columns_with_ordinal.sort.map{|ca| [ca[0], ca[1], ca[2].name].inspect}})"
+            columns = columns_with_ordinal.sort.map{|ca| ca[2]}
             absorption_level = columns.map(&:absorption_level).min
             over = columns[0].references[absorption_level].from
 
