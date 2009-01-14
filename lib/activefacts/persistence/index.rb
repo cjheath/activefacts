@@ -107,6 +107,7 @@ module ActiveFacts
                     ordinal = role_ref.ordinal  # Position in priority order
                     ref_columns.each_with_index do |column, index|
                       #puts "Adding index column #{column.name} in rank[#{ordinal},#{index}]"
+                      # REVISIT: the "index" here might be a duplicate in some cases: change sort_by below to just sort and run the SeparateSubtypes CQL model for example.
                       (columns_by_unique_constraint[pc] ||= []) << [ordinal, index, column]
                     end
                   end
@@ -119,12 +120,12 @@ module ActiveFacts
         debug :index, "All Indices in #{name}:" do
           @indices = columns_by_unique_constraint.map do |uc, columns_with_ordinal|
             #puts "Index on #{name} over (#{columns_with_ordinal.sort.map{|ca| [ca[0], ca[1], ca[2].name].inspect}})"
-            columns = columns_with_ordinal.sort.map{|ca| ca[2]}
+            columns = columns_with_ordinal.sort_by{|ca| [ca[0,2], ca[2].name]}.map{|ca| ca[2]}
             absorption_level = columns.map(&:absorption_level).min
             over = columns[0].references[absorption_level].from
 
             # Absorption through a one-to-one forms a UC that we don't need to enforce using an index:
-            next if over != self and
+            next nil if over != self and
               over.absorbed_via == columns[0].references[absorption_level-1] and
               (rrs = uc.role_sequence.all_role_ref).size == 1 and
               over.absorbed_via.fact_type.all_role.include?(rrs[0].role)
@@ -138,7 +139,7 @@ module ActiveFacts
             )
             debug :index, index
             index
-          end
+          end.compact
         end
       end
 
