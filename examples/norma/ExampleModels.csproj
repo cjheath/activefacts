@@ -53,6 +53,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Insurance.orm</DependentUpon>
     </Compile>
+    <Compile Include="JoinEquality._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+    </Compile>
     <Compile Include="Marriage._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Marriage.orm</DependentUpon>
@@ -100,6 +104,10 @@
     <Compile Include="PersonPlaysGame._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>PersonPlaysGame.orm</DependentUpon>
+    </Compile>
+    <Compile Include="RedundantDependency._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedundantDependency.orm</DependentUpon>
     </Compile>
     <Compile Include="SchoolActivities._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -180,6 +188,10 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Insurance._ORMCustomToolReport.cs</LastGenOutput>
     </None>
+    <None Include="JoinEquality.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>JoinEquality._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="Marriage.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Marriage._ORMCustomToolReport.cs</LastGenOutput>
@@ -219,6 +231,10 @@
     <None Include="PersonPlaysGame.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>PersonPlaysGame._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="RedundantDependency.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>RedundantDependency._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="SeparateSubtype.orm">
       <Generator>ORMCustomTool</Generator>
@@ -621,6 +637,40 @@
     <None Include="MetamodelTerms.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>MetamodelTerms.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('RedundantDependency.orm')">
+    <None Include="RedundantDependency.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedundantDependency.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="RedundantDependency.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedundantDependency.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="RedundantDependency.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedundantDependency.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('JoinEquality.orm')">
+    <None Include="JoinEquality.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="JoinEquality.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="JoinEquality.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
