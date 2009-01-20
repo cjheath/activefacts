@@ -1,39 +1,36 @@
 CREATE TABLE Event (
 	-- Event has EventId,
-	EventId                                 AutoCounter IDENTITY NOT NULL,
+	EventId                                 int IDENTITY NOT NULL,
 	-- Event is held at Venue and Venue has VenueId,
-	VenueId                                 AutoCounter NOT NULL,
+	VenueId                                 int NOT NULL,
 	PRIMARY KEY(EventId)
 )
 GO
 
 CREATE TABLE Seat (
-	-- Seat has SeatId,
-	SeatId                                  AutoCounter NOT NULL,
 	-- Seat is at Venue and Venue has VenueId,
-	VenueId                                 AutoCounter NOT NULL,
+	VenueId                                 int NOT NULL,
 	-- Seat is in Reserve,
-	Reserve                                 VariableLengthText(20) NOT NULL,
+	Reserve                                 varchar(20) NOT NULL,
 	-- Seat is in Row,
-	Row                                     FixedLengthText(2) NOT NULL,
+	Row                                     char(2) NOT NULL,
 	-- Seat has Number,
-	Number                                  UnsignedSmallInteger(32) NOT NULL,
-	PRIMARY KEY(VenueId, Reserve, Row, Number),
-	UNIQUE(SeatId)
+	Number                                  int NOT NULL,
+	PRIMARY KEY(VenueId, Reserve, Row, Number)
 )
 GO
 
 CREATE TABLE Ticket (
 	-- Ticket is for Seat and Seat is at Venue and Venue has VenueId,
-	SeatVenueId                             AutoCounter NOT NULL,
+	SeatVenueId                             int NOT NULL,
 	-- Ticket is for Seat and Seat is in Reserve,
-	SeatReserve                             VariableLengthText(20) NOT NULL,
+	SeatReserve                             varchar(20) NOT NULL,
 	-- Ticket is for Seat and Seat is in Row,
-	SeatRow                                 FixedLengthText(2) NOT NULL,
+	SeatRow                                 char(2) NOT NULL,
 	-- Ticket is for Seat and Seat has Number,
-	SeatNumber                              UnsignedSmallInteger(32) NOT NULL,
+	SeatNumber                              int NOT NULL,
 	-- Ticket is for Event and Event has EventId,
-	EventId                                 AutoCounter NOT NULL,
+	EventId                                 int NOT NULL,
 	PRIMARY KEY(EventId, SeatVenueId, SeatReserve, SeatRow, SeatNumber),
 	FOREIGN KEY (SeatVenueId, SeatReserve, SeatRow, SeatNumber) REFERENCES Seat (VenueId, Reserve, Row, Number),
 	FOREIGN KEY (EventId) REFERENCES Event (EventId)
@@ -42,7 +39,7 @@ GO
 
 CREATE TABLE Venue (
 	-- Venue has VenueId,
-	VenueId                                 AutoCounter IDENTITY NOT NULL,
+	VenueId                                 int IDENTITY NOT NULL,
 	PRIMARY KEY(VenueId)
 )
 GO

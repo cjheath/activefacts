@@ -233,7 +233,8 @@ module ActiveFacts
     end
 
     class SetComparisonRoles
-      identified_by :set_comparison_constraint, :role_sequence
+      identified_by :set_comparison_constraint, :ordinal
+      has_one :ordinal                            # See Ordinal.all_set_comparison_roles
       has_one :role_sequence                      # See RoleSequence.all_set_comparison_roles
       has_one :set_comparison_constraint          # See SetComparisonConstraint.all_set_comparison_roles
     end

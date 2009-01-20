@@ -420,8 +420,9 @@ module ActiveFacts
       end
 
       def extract_adjectives(reading_text, role_sequence)
-        (0...role_sequence.all_role_ref.size).each{|i|
-          role_ref = role_sequence.all_role_ref[i]
+        all_role_refs = role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}
+        (0...all_role_refs.size).each{|i|
+          role_ref = all_role_refs[i]
           role = role_ref.role
 
           word = '\b([A-Za-z][A-Za-z0-9_]*)\b'
@@ -622,12 +623,15 @@ module ActiveFacts
           #    (pi ? " (preferred id for #{pi.name})" : "") +
           #    (mc ? " (mandatory)" : "") if pi && !mc
 
-          # A TypeInheritance fact type has a UC on each role.
-          # If it's on the identification path, mark it as preferred identifier
-          role = roles.all_role_ref[0].role
-          supertype_constraint = role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) &&
-            role.concept == role.fact_type.supertype &&
-            role.fact_type.provides_identification
+          # A TypeInheritance fact type has a uniqueness constraint on each role.
+          # If this UC is on the supertype and identifies the subtype, it's preferred:
+          is_supertype_constraint =
+            roles.all_role_ref.size == 1 &&
+            (role = roles.all_role_ref.only.role) &&
+            (fact_type = role.fact_type) &&
+            fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) &&
+            role.concept == fact_type.supertype &&
+            fact_type.provides_identification
 
           pc = @constellation.PresenceConstraint(:new)
           pc.vocabulary = @vocabulary
@@ -636,7 +640,7 @@ module ActiveFacts
           pc.is_mandatory = true if mc
           pc.min_frequency = mc ? 1 : 0
           pc.max_frequency = 1 
-          pc.is_preferred_identifier = true if pi || unary_identifier || supertype_constraint
+          pc.is_preferred_identifier = true if pi || unary_identifier || is_supertype_constraint
           #puts "#{name} covers #{roles.describe} has min=#{pc.min_frequency}, max=1, preferred=#{pc.is_preferred_identifier.inspect}" if emit_special_debug
 
           #puts roles.verbalise
@@ -673,9 +677,9 @@ module ActiveFacts
           ec.vocabulary = @vocabulary
           ec.name = name
           # ec.enforcement = 
-          role_sequences.each{|rs|
-            @constellation.SetComparisonRoles(ec, rs)
-          }
+          role_sequences.each_with_index do |rs, i|
+            @constellation.SetComparisonRoles(ec, i, :role_sequence => rs)
+          end
           ec.is_mandatory = true if x_mandatory
         }
       end
@@ -699,9 +703,9 @@ module ActiveFacts
           ec.vocabulary = @vocabulary
           ec.name = name
           # ec.enforcement = 
-          role_sequences.each{|rs|
-            @constellation.SetComparisonRoles(ec, rs)
-          }
+          role_sequences.each_with_index do |rs, i|
+            @constellation.SetComparisonRoles(ec, i, :role_sequence => rs)
+          end
         }
       end
 

@@ -1,25 +1,25 @@
 CREATE TABLE Address (
 	-- Address has AddressId,
-	AddressId                               AutoCounter IDENTITY NOT NULL,
+	AddressId                               int IDENTITY NOT NULL,
 	-- maybe Address is assigned PostalCode,
-	PostalCode                              SignedInteger(32) NULL,
+	PostalCode                              int NULL,
 	-- maybe Address is in StateOrProvince and StateOrProvince has StateOrProvinceId,
-	StateOrProvinceId                       AutoCounter NULL,
+	StateOrProvinceId                       int NULL,
 	-- maybe Address is in LegislativeDistrict and LegislativeDistrict has DistrictNumber,
-	LegislativeDistrictDistrictNumber       SignedInteger(32) NULL,
+	LegislativeDistrictDistrictNumber       int NULL,
 	-- maybe Address is in LegislativeDistrict and LegislativeDistrict is for StateOrProvince and StateOrProvince has StateOrProvinceId,
-	LegislativeDistrictStateOrProvinceId    AutoCounter NULL,
+	LegislativeDistrictStateOrProvinceId    int NULL,
 	PRIMARY KEY(AddressId)
 )
 GO
 
 CREATE TABLE LegislativeDistrict (
 	-- LegislativeDistrict is for StateOrProvince and StateOrProvince has StateOrProvinceId,
-	StateOrProvinceId                       AutoCounter NOT NULL,
+	StateOrProvinceId                       int NOT NULL,
 	-- LegislativeDistrict has DistrictNumber,
-	DistrictNumber                          SignedInteger(32) NOT NULL,
+	DistrictNumber                          int NOT NULL,
 	-- Politician represents LegislativeDistrict and Politician has PoliticianId,
-	PoliticianId                            AutoCounter NOT NULL,
+	PoliticianId                            int NOT NULL,
 	PRIMARY KEY(DistrictNumber, StateOrProvinceId),
 	UNIQUE(PoliticianId)
 )
@@ -27,7 +27,7 @@ GO
 
 CREATE TABLE StateOrProvince (
 	-- StateOrProvince has StateOrProvinceId,
-	StateOrProvinceId                       AutoCounter IDENTITY NOT NULL,
+	StateOrProvinceId                       int IDENTITY NOT NULL,
 	PRIMARY KEY(StateOrProvinceId)
 )
 GO

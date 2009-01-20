@@ -167,7 +167,7 @@ module ActiveFacts
           clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
             fact_type = nil
             @symbols.embedded_presence_constraints = [] # Clear embedded_presence_constraints for each fact type
-            debug "New Fact Type for entity #{name}" do
+            debug :entity, "New Fact Type for entity #{name}" do
               clauses_for_fact_type.each do |clause|
                 type, qualifiers, reading = *clause
                 debug :reading, "Clause: #{clause.inspect}" do
@@ -179,6 +179,7 @@ module ActiveFacts
             end
 
             # Find the role that this entity type plays in the fact type, if any:
+            debug :reading, "Roles are: #{fact_type.all_role.map{|role| (role.concept == entity_type ? "*" : "") + role.concept.name }*", "}"
             player_roles = fact_type.all_role.select{|role| role.concept == entity_type }
             raise "#{role.concept.name} may only play one role in each identifying fact type" if player_roles.size > 1
             if player_role = player_roles[0]
@@ -187,11 +188,14 @@ module ActiveFacts
               raise "#{name} cannot be identified by a role in a non-binary fact type" if non_player_roles.size > 1
             elsif identification
               # This situation occurs when an objectified fact type has an entity identifier
-              raise "Entity type #{name} may only objectify a single fact type" if entity_type.fact_type
+              #raise "Entity type #{name} cannot objectify fact type #{fact_type.describe}, it already objectifies #{entity_type.fact_type.describe}" if entity_type.fact_type
+              raise "Entity type #{name} cannot objectify fact type #{identification.inspect}, it already objectifies #{entity_type.fact_type.describe}" if entity_type.fact_type
+              debug :entity, "Entity type #{name} objectifies fact type #{fact_type.describe} with distinct identifier"
 
               entity_type.fact_type = fact_type
               fact_type_identification(fact_type, name, false)
             else
+              debug :entity, "Entity type #{name} objectifies fact type #{fact_type.describe}"
               # it's an objectified fact type, such as a subtype
               entity_type.fact_type = fact_type
             end
@@ -255,13 +259,9 @@ module ActiveFacts
 
                 debug :mode, "Processing Reference Mode for #{name}#{mode_fact_type ? " with existing '#{mode_fact_type.default_reading}'" : ""}"
 
-                # WARNING: Several things here depend on the method and order of creation of roles and role sequences above
-                # But heck, that's what tests are for, right?
-
                 # Fact Type:
                 if (ft = mode_fact_type)
-                  entity_role = ft.all_role[n = (ft.all_role[0].concept == entity_type ? 0 : 1)]
-                  value_role = ft.all_role[1-n]
+                  entity_role, value_role = ft.all_role.partition{|role| role.concept == entity_type}.flatten
                 else
                   ft = @constellation.FactType(:new)
                   entity_role = @constellation.Role(ft, 0, entity_type)
@@ -271,23 +271,28 @@ module ActiveFacts
 
                 # Forward reading, if it doesn't already exist:
                 rss = entity_role.all_role_ref.map{|rr| rr.role_sequence.all_role_ref.size == 2 ? rr.role_sequence : nil }.compact
-                rs01 = rss.select{|rs| rs.all_role_ref[1].role == value_role }[0]
-                rs10 = rss.select{|rs| rs.all_role_ref[1].role == entity_role }[0]
+                # Find or create RoleSequences for the forward and reverse readings:
+                rs01 = rss.select{|rs| rs.all_role_ref.sort_by{|rr| rr.ordinal}.map(&:role) == [entity_role, value_role] }[0]
                 if !rs01
                   rs01 = @constellation.RoleSequence(:new)
                   @constellation.RoleRef(rs01, 0, :role => entity_role)
                   @constellation.RoleRef(rs01, 1, :role => value_role)
+                end
+                if rs01.all_reading.empty?
                   @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs01, :reading_text => "{0} has {1}")
                   debug :mode, "Creating new forward reading '#{name} has #{vt.name}'"
                 else
-                  debug :mode, "Using existing forward reading #{rs01.all_reading[0].expand}"
+                  debug :mode, "Using existing forward reading"
                 end
 
                 # Reverse reading:
+                rs10 = rss.select{|rs| rs.all_role_ref.sort_by{|rr| rr.ordinal}.map(&:role) == [value_role, entity_role] }[0]
                 if !rs10
                   rs10 = @constellation.RoleSequence(:new)
                   @constellation.RoleRef(rs10, 0, :role => value_role)
                   @constellation.RoleRef(rs10, 1, :role => entity_role)
+                end
+                if rs10.all_reading.empty?
                   @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs10, :reading_text => "{0} is of {1}")
                   debug :mode, "Creating new reverse reading '#{vt.name} is of #{name}'"
                 else
@@ -552,6 +557,9 @@ module ActiveFacts
 
         # Create the role sequences and their role references.
         # Each role sequence contain one RoleRef for each common binding
+        # REVISIT: This results in ordering all RoleRefs according to the order of the common_bindings.
+        # This for example means that a set constraint having joins might have the join order changed so they all match.
+        # When you create e.g. a subset constraint in NORMA, make sure that the subset roles are created in the order of the preferred readings.
         role_sequences = readings_list.map{|r| @constellation.RoleSequence(:new) }
         common_bindings.each_with_index do |binding, index|
           role_sequences.each_with_index do |rs, rsi|
@@ -572,6 +580,8 @@ module ActiveFacts
 
         #puts "subset_constraint:\n\t#{subset_readings.inspect}\n\t#{superset_readings.inspect}"
         #puts "\t#{role_sequences.map{|rs| rs.describe}.inspect}"
+        #puts "subset_role_sequence = #{role_sequences[0].describe}"
+        #puts "superset_role_sequence = #{role_sequences[1].describe}"
 
         # create the constraint:
         constraint = @constellation.SubsetConstraint(:new)
@@ -591,8 +601,8 @@ module ActiveFacts
         # Create the constraint:
         constraint = @constellation.SetExclusionConstraint(:new)
         constraint.vocabulary = @vocabulary
-        role_sequences.each do |rs|
-          @constellation.SetComparisonRoles(constraint, rs)
+        role_sequences.each_with_index do |rs, i|
+          @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
         end
         constraint.is_mandatory = quantifier[0] == 1
       end
@@ -605,8 +615,8 @@ module ActiveFacts
         # Create the constraint:
         constraint = @constellation.SetEqualityConstraint(:new)
         constraint.vocabulary = @vocabulary
-        role_sequences.each do |rs|
-          @constellation.SetComparisonRoles(constraint, rs)
+        role_sequences.each_with_index do |rs, i|
+          @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
         end
       end
 
@@ -666,6 +676,9 @@ module ActiveFacts
           rr.role = role
         end
         #puts "New external PresenceConstraint with quantifier = #{quantifier.inspect} over #{rs.describe}"
+
+        # REVISIT: Check that no existing PC spans the same roles (nor a superset nor subset?)
+
         @constellation.PresenceConstraint(
             :new,
             :name => '',
@@ -679,6 +692,8 @@ module ActiveFacts
           )
       end
 
+      # Search the supertypes of 'subtype' looking for an inheritance path to 'supertype',
+      # and returning the array of TypeInheritance fact types from supertype to subtype.
       def inheritance_path(subtype, supertype)
         direct_inheritance = subtype.all_supertype_inheritance.select{|ti| ti.supertype == supertype}
         return direct_inheritance if (direct_inheritance[0])
@@ -692,12 +707,16 @@ module ActiveFacts
       # For a given reading from the parser, find the matching declared reading, and return
       # the array of Role object in the same order as they occur in the reading.
       def invoked_fact_roles(reading)
+        # REVISIT: Possibly this special reading from the parser can be removed now?
         if (reading[0] == "!SUBTYPE!")
           subtype = reading[1][:binding].concept
           supertype = reading[2][:binding].concept
           raise "#{subtype.name} is not a subtype of #{supertype.name}" unless subtype.supertypes_transitive.include?(supertype)
           ip = inheritance_path(subtype, supertype)
-          return [ip[0].all_role[0], ip[-1].all_role[1]]
+          return [
+            ip[-1].all_role.detect{|r| r.concept == subtype},
+            ip[0].all_role.detect{|r| r.concept == supertype}
+          ]
         end
 
         bindings = reading.select{|p| Hash === p}
@@ -721,7 +740,7 @@ module ActiveFacts
                 to_match = reading.clone
                 players_to_match = players.clone
                 candidate_reading.words_and_role_refs.each do |wrr|
-                  if (RoleRef === wrr)
+                  if (wrr.is_a?(RoleRef))
                     break unless Hash === to_match.first
                     break unless binding = to_match[0][:binding]
                     # REVISIT: May need to match super- or sub-types here too!
@@ -831,7 +850,9 @@ module ActiveFacts
 
       def fact_type_identification(fact_type, name, prefer)
         if !@symbols.embedded_presence_constraints.detect{|pc| pc.max_frequency == 1}
-          first_role_sequence = fact_type.all_reading[0].role_sequence
+          # Provide a default identifier for a fact type that's lacking one (over all roles):
+          first_role_sequence = fact_type.preferred_reading.role_sequence
+          #puts "Creating PC for #{name}: #{fact_type.describe}"
           identifier = @constellation.PresenceConstraint(
               :new,
               :vocabulary => @vocabulary,
@@ -887,6 +908,7 @@ module ActiveFacts
             constraint = find_pc_over_roles(constrained_roles)
             if constraint
               debug "Setting max frequency to #{quantifier[1]} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
+              raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != quantifier[1]
               constraint.max_frequency = quantifier[1]
             else
               role_sequence = @constellation.RoleSequence(:new)
@@ -917,11 +939,11 @@ module ActiveFacts
         ring_constraints, qualifiers = qualifiers.partition{|q| RingTypes.include?(q) }
         unless ring_constraints.empty?
           # A Ring may be over a supertype/subtype pair, and this won't find that.
-          role_refs = role_sequence.all_role_ref
+          role_refs = Array(role_sequence.all_role_ref)
           role_pairs = []
           player_supertypes_by_role = role_refs.map{|rr|
               concept = rr.role.concept
-              EntityType === concept ? supertypes(concept) : [concept]
+              concept.is_a?(EntityType) ? supertypes(concept) : [concept]
             }
           role_refs.each_with_index{|rr1, i|
             player1 = rr1.role.concept
@@ -967,7 +989,7 @@ module ActiveFacts
         return nil if roles.size == 0 # Safeguard; this would chuck an exception otherwise
         roles[0].all_role_ref.each do |role_ref|
           next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
-          pc = role_ref.role_sequence.all_presence_constraint[0]
+          pc = role_ref.role_sequence.all_presence_constraint.only  # Will throw an exception if there's more than one.
           #puts "Existing PresenceConstraint matches those roles!" if pc
           return pc if pc
         end

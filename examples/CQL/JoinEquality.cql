@@ -7,7 +7,6 @@ EventId is defined as AutoCounter();
 Number is defined as UnsignedSmallInteger(32);
 Reserve is defined as VariableLengthText(20);
 Row is defined as FixedLengthText(2);
-SeatId is defined as AutoCounter();
 VenueId is defined as AutoCounter();
 
 /*
@@ -23,8 +22,6 @@ Seat is identified by Venue and Reserve and Row and Number where
 	Seat is in one Reserve,
 	Seat is in one Row,
 	Seat has one Number;
-Seat has one SeatId,
-	SeatId is of at most one Seat;
 
 Ticket is identified by Event and Seat where
 	Ticket is for one Event,

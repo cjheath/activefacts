@@ -96,8 +96,8 @@ module ActiveFacts
                       !pc.max_frequency or      # No maximum freq; cannot be a uniqueness constraint
                       pc.max_frequency != 1 or  # maximum is not 1
                       pc.role_sequence.all_role_ref.size == 1 &&        # UniquenessConstraint is over one role
-                        (pc.role_sequence.all_role_ref[0].role.fact_type.is_a?(TypeInheritance) ||      # Inheritance
-                        pc.role_sequence.all_role_ref[0].role.fact_type.all_role.size == 1)             # Unary
+                        ((fact_type = pc.role_sequence.all_role_ref.only.role.fact_type).is_a?(TypeInheritance) ||      # Inheritance
+                        fact_type.all_role.size == 1)             # Unary
                         # The preceeeding two restrictions exclude the internal UCs created within NORMA.
                     end
                   next unless pcs.size > 0
@@ -128,7 +128,7 @@ module ActiveFacts
             next nil if over != self and
               over.absorbed_via == columns[0].references[absorption_level-1] and
               (rrs = uc.role_sequence.all_role_ref).size == 1 and
-              over.absorbed_via.fact_type.all_role.include?(rrs[0].role)
+              over.absorbed_via.fact_type.all_role.include?(rrs.only.role)
 
             index = Index.new(
               uc,

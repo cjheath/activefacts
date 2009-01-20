@@ -18,10 +18,6 @@ module JoinEquality
     value_type :length => 2
   end
 
-  class SeatId < AutoCounter
-    value_type 
-  end
-
   class VenueId < AutoCounter
     value_type 
   end
@@ -42,7 +38,6 @@ module JoinEquality
     has_one :number                             # See Number.all_seat
     has_one :reserve                            # See Reserve.all_seat
     has_one :row                                # See Row.all_seat
-    one_to_one :seat_id                         # See SeatId.seat
     has_one :venue                              # See Venue.all_seat
   end
 

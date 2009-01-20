@@ -89,9 +89,10 @@ module ActiveFacts
         # Detect standard reference-mode scenarios
         ft = identifying_facts[0]
         fact_constraints = nil
+        ftr = ft.all_role.sort_by{|role| role.ordinal}
         if identifying_facts.size == 1 and
-          entity_role = ft.all_role[n = (ft.all_role[0].concept == entity_type ? 0 : 1)] and
-          value_role = ft.all_role[1-n] and
+          entity_role = ftr[n = (ftr[0].concept == entity_type ? 0 : 1)] and
+          value_role = ftr[1-n] and
           value_name = value_role.concept.name and
           residual = value_name.gsub(%r{#{entity_role.concept.name}},'') and
           residual != '' and
@@ -104,13 +105,13 @@ module ActiveFacts
           forward_reading = reverse_reading = nil
           ft.all_reading.each do |reading|
             if reading.reading_text =~ /^\{(\d)\} has \{\d\}$/
-              if reading.role_sequence.all_role_ref[$1.to_i].role == entity_role
+              if reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i}.role == entity_role
                 forward_reading = reading
               else
                 reverse_reading = reading
               end
             elsif reading.reading_text =~ /^\{(\d)\} is of \{\d\}$/
-              if reading.role_sequence.all_role_ref[$1.to_i].role == value_role
+              if reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i}.role == value_role
                 reverse_reading = reading
               else
                 forward_reading = reading
@@ -314,7 +315,7 @@ module ActiveFacts
         # Each constraint involves two or more occurrences of one or more players.
         # For each player, a subtype may be involved in the occurrences.
         # Find the common supertype of each player.
-        scrs = c.all_set_comparison_roles
+        scrs = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}
         player_count = scrs[0].role_sequence.all_role_ref.size
         role_seq_count = scrs.size
 
@@ -325,7 +326,7 @@ module ActiveFacts
         players_differ = []   # Record which players are also played by subclasses
         players = (0...player_count).map do |pi|
           # Find the common supertype of the players of the pi'th role in each sequence
-          concepts = scrs.map{|r| r.role_sequence.all_role_ref[pi].role.concept }
+          concepts = scrs.map{|r| r.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[pi].role.concept }
           player, players_differ[pi] = common_supertype(concepts)
           raise "Role sequences of #{c.class.basename} must have concepts matching #{concept.name} in position #{pi}" unless player
           player
@@ -387,14 +388,16 @@ module ActiveFacts
 
       def dump_subset_constraint(c)
         # If the role players are identical and not duplicated, we can simply say "reading1 only if reading2"
-        subset_roles = c.subset_role_sequence.all_role_ref.map{|rr| rr.role}
-        superset_roles = c.superset_role_sequence.all_role_ref.map{|rr| rr.role}
+        subset_roles, subset_fact_types =
+          c.subset_role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| [rr.role, rr.role.fact_type]}.transpose
+        superset_roles, superset_fact_types =
+          c.superset_role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| [rr.role, rr.role.fact_type]}.transpose
+
+        subset_fact_types.uniq!
+        superset_fact_types.uniq!
 
         subset_players = subset_roles.map(&:concept)
         superset_players = superset_roles.map(&:concept)
-
-        subset_fact_types = c.subset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }.uniq
-        superset_fact_types = c.superset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }.uniq
 
         # We need to ensure that if the player of any constrained role also exists
         # as the player of a role that's not a constrained role, there are different

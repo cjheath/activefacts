@@ -123,7 +123,7 @@ module ActiveFacts
           all_uniqueness_constraints.
             detect do |c|
                 c.role_sequence.all_role_ref.size == 1 and
-                c.role_sequence.all_role_ref[0].role == self
+                c.role_sequence.all_role_ref.only.role == self
             end
 
         if fact_type.entity_type

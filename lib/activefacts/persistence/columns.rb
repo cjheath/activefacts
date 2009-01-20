@@ -61,7 +61,7 @@ module ActiveFacts
               ref.to and
               ref.to.is_a?(EntityType) and
               (role_refs = ref.to.preferred_identifier.role_sequence.all_role_ref).size == 1 and
-              role_refs[0].role == ref.from_role
+              role_refs.only.role == ref.from_role
           end.
           inject([]) do |a, ref|
             names = ref.to_names
@@ -85,7 +85,7 @@ module ActiveFacts
         if names.size > 1 and
             (et = @references.last.from).is_a?(EntityType) and
             (role_refs = et.preferred_identifier.role_sequence.all_role_ref).size == 1 and
-            role_refs[0].role == @references.last.to_role and
+            role_refs.only.role == @references.last.to_role and
             names.last[0...et.name.size].downcase == et.name.downcase
           names[-1] = names.last[et.name.size..-1]
           names.pop if names.last == ''

@@ -108,10 +108,10 @@ Vocabulary contains Constraint,
 Import is where
 	Vocabulary imports imported-Vocabulary [acyclic];
 
-Feature is identified by Name and Vocabulary where
-	Feature is called one Name,
+Feature is identified by Vocabulary and Name where
 	Feature belongs to at most one Vocabulary,
-	Vocabulary contains Feature;
+	Vocabulary contains Feature,
+	Feature is called one Name;
 Correspondence is where
 	in Import imported-Feature corresponds to at most one local-Feature;
 
@@ -129,7 +129,10 @@ Population includes RoleValue,
 
 SetComparisonConstraint is a kind of SetConstraint;
 SetComparisonRoles is where
-	SetComparisonConstraint covers at least one RoleSequence;
+	SetComparisonConstraint has in Ordinal position at most one RoleSequence,
+	RoleSequence is Ordinal in SetComparisonConstraint,
+	in Ordinal position SetComparisonConstraint has RoleSequence,
+	SetComparisonConstraint has RoleSequence in at most one Ordinal position;
 
 SetEqualityConstraint is a kind of SetComparisonConstraint;
 
@@ -224,9 +227,6 @@ each combination EntityType, TypeInheritance occurs at most one time in
 	TypeInheritance provides identification;
 each FactType occurs at least one time in
 	FactType has Ordinal role played by Concept;
-each combination Name, Vocabulary occurs at most one time in
-	Name is of Constraint,
-	Vocabulary contains Constraint;
 each PresenceConstraint occurs at least one time in
 	PresenceConstraint has min-Frequency,
 	PresenceConstraint has max-Frequency,
@@ -236,3 +236,6 @@ each RoleSequence occurs at least one time in
 each ValueRange occurs at least one time in
 	ValueRange has minimum-Bound,
 	ValueRange has maximum-Bound;
+each combination Vocabulary, Name occurs at most one time in
+	Vocabulary contains Constraint,
+	Name is of Constraint;

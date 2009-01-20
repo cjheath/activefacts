@@ -122,7 +122,7 @@ module ActiveFacts
         if fact_type
 
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles
-          fact_roles = fact_type.all_role
+          fact_roles = Array(fact_type.all_role)
           debug :pi, "Looking for PI on nested fact type #{name}" do
             pi = catch :pi do
                 fact_roles[0,2].each{|r|                  # Try the first two roles of the fact type, that's enough
@@ -171,7 +171,7 @@ module ActiveFacts
               debug :pi, "PI roles must be played by one of #{all_supertypes.map(&:name)*", "}" if all_supertypes.size > 1
               all_role.each{|role|
                   next unless role.unique || fact_type
-                  ftroles = role.fact_type.all_role
+                  ftroles = Array(role.fact_type.all_role)
 
                   # Skip roles in ternary and higher fact types, they're objectified, and in unaries, they can't identify us.
                   next if ftroles.size != 2
@@ -356,7 +356,7 @@ module ActiveFacts
         reject{|s| s==' '}.                 # Remove white space
         map do |frag|                       # and go through the bits
           if frag =~ /\{([0-9]+)\}/
-            role_sequence.all_role_ref[$1.to_i]
+            role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i}
           else
             frag
           end

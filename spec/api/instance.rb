@@ -384,7 +384,7 @@ describe "An instance of every type of Concept" do
     end
   end
 
-  it "should add to has_one's conterpart role when non-identifying roles are assigned values" do
+  it "should add to has_one's counterpart role when non-identifying roles are assigned values" do
     @entities.zip(@test_role_names).each do |entity, identifying_role|
       @test_role_names.zip(@role_values).each do |role_name, value|
         next if role_name == identifying_role or !value

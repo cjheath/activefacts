@@ -18,14 +18,14 @@ include ActiveFacts::Metamodel
 
 Exceptions = {
   "Blog" => ["Author", "Comment", "Paragraph", "Post", "Topic"],
-  "DeathAsBinary" => ["Person"],
+  "JoinEquality" => ["Event", "Seat", "Ticket", "Venue"],
   "Metamodel" => ["AllowedRange", "Constraint", "Correspondence", "Derivation", "Fact", "FactType", "Feature", "Instance", "JoinPath", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "ValueRestriction"],
   "MetamodelTerms" => ["AllowedValue", "Concept", "Constraint", "Derivation", "Fact", "FactType", "Import", "Instance", "Join", "JoinRole", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Term", "Unit", "ValueRestriction"],
   "OilSupply" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
-  "OilSupplyWithCosts" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
   "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
   "SeparateSubtype" => ["Claim", "VehicleIncident"],
-  "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "TransferRequest", "Warehouse"]
+  "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "TransferRequest", "Warehouse"],
+  "RedundantDependency" => ["Address", "LegislativeDistrict", "StateOrProvince"],
 }
 
 def extract_created_tables_from_sql sql_file

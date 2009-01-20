@@ -142,15 +142,6 @@ GO
 CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameSupertypeVocabularyNameSupertypeName(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
 GO
 
-CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocabularyName, EntityTypeName) WITH SCHEMABINDING AS
-	SELECT EntityTypeVocabularyName, EntityTypeName FROM dbo.FactType
-	WHERE	EntityTypeVocabularyName IS NOT NULL
-	  AND	EntityTypeName IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
-GO
-
 CREATE VIEW dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameProvidesIdentification (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
 	SELECT TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification FROM dbo.FactType
 	WHERE	TypeInheritanceSubtypeVocabularyName IS NOT NULL
@@ -159,6 +150,15 @@ CREATE VIEW dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameProvid
 GO
 
 CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameProvidesIdentification(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
+GO
+
+CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocabularyName, EntityTypeName) WITH SCHEMABINDING AS
+	SELECT EntityTypeVocabularyName, EntityTypeName FROM dbo.FactType
+	WHERE	EntityTypeVocabularyName IS NOT NULL
+	  AND	EntityTypeName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
 GO
 
 CREATE TABLE Feature (
@@ -331,11 +331,14 @@ CREATE TABLE RoleValue (
 GO
 
 CREATE TABLE SetComparisonRoles (
-	-- SetComparisonRoles is where SetComparisonConstraint covers RoleSequence and Constraint has ConstraintId,
+	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence and Constraint has ConstraintId,
 	SetComparisonConstraintId               int NOT NULL,
-	-- SetComparisonRoles is where SetComparisonConstraint covers RoleSequence and RoleSequence has RoleSequenceId,
+	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence,
+	Ordinal                                 int NOT NULL,
+	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence and RoleSequence has RoleSequenceId,
 	RoleSequenceId                          int NOT NULL,
-	PRIMARY KEY(SetComparisonConstraintId, RoleSequenceId),
+	PRIMARY KEY(SetComparisonConstraintId, Ordinal),
+	UNIQUE(SetComparisonConstraintId, RoleSequenceId),
 	FOREIGN KEY (SetComparisonConstraintId) REFERENCES [Constraint] (ConstraintId),
 	FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
 )

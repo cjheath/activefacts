@@ -23,13 +23,12 @@ module ActiveFacts
 
       def roles_dump(o)
         o.all_role.
+          select{|role|
+            role.fact_type.all_role.size <= 2
+          }.
           sort_by{|role|
-            other_role = role.fact_type.all_role[role.fact_type.all_role[0] != role ? 0 : -1]
-            other_role ? preferred_role_name(other_role) : ""
-            #puts "\t#{role.fact_type.describe(other_role)} by #{p}"
+            preferred_role_name(role.fact_type.all_role.select{|r2| r2 != role}[0] || role)
           }.each{|role| 
-            fact_type = role.fact_type
-            next if fact_type.all_role.size > 2
             role_dump(role)
           }
       end
@@ -49,8 +48,7 @@ module ActiveFacts
           return
         end
 
-        other_role_number = fact_type.all_role[0] == role ? 1 : 0
-        other_role = fact_type.all_role[other_role_number]
+        other_role = fact_type.all_role.select{|r| r != role}[0]
         other_role_name = preferred_role_name(other_role)
         other_player = other_role.concept
 

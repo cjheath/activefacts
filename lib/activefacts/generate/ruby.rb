@@ -131,7 +131,7 @@ module ActiveFacts
       end
 
       def role_dump(role)
-        other_role = role.fact_type.all_role[role.fact_type.all_role[0] != role ? 0 : -1]
+        other_role = role.fact_type.all_role.select{|r| r != role}[0] || role
         if @ar_by_role and @ar_by_role[other_role] and @sql
           puts "    # role #{role.fact_type.describe(role)}: absorbs in through #{preferred_role_name(other_role)}: "+@ar_by_role[other_role].map(&:column_name)*", "
         end

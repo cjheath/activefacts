@@ -27,6 +27,14 @@ CREATE TABLE Asset (
 )
 GO
 
+CREATE VIEW dbo.VehicleInAsset_VIN (VehicleVIN) WITH SCHEMABINDING AS
+	SELECT VehicleVIN FROM dbo.Asset
+	WHERE	VehicleVIN IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX PK_VehicleInAsset ON dbo.VehicleInAsset_VIN(VehicleVIN)
+GO
+
 CREATE TABLE Claim (
 	-- Claim is on Policy and Policy was issued in p_year and Year has YearNr,
 	PolicyP_yearNr                          int NOT NULL,
@@ -64,7 +72,8 @@ CREATE TABLE Claim (
 	IncidentOfficerName                     varchar(256) NULL,
 	-- Claim has ClaimID,
 	ClaimID                                 int IDENTITY NOT NULL,
-	PRIMARY KEY(ClaimID)
+	PRIMARY KEY(ClaimID),
+	UNIQUE(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, P_sequence)
 )
 GO
 
@@ -101,7 +110,8 @@ CREATE TABLE CoverType (
 	CoverTypeName                           varchar NOT NULL,
 	-- CoverType has CoverTypeCode,
 	CoverTypeCode                           char NOT NULL,
-	PRIMARY KEY(CoverTypeCode)
+	PRIMARY KEY(CoverTypeCode),
+	UNIQUE(CoverTypeName)
 )
 GO
 
@@ -233,6 +243,14 @@ CREATE TABLE Party (
 )
 GO
 
+CREATE VIEW dbo.LicenseInParty_DriverLicenseNumber (DriverLicenseNumber) WITH SCHEMABINDING AS
+	SELECT DriverLicenseNumber FROM dbo.Party
+	WHERE	DriverLicenseNumber IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_LicenseInPartyByDriverLicenseNumber ON dbo.LicenseInParty_DriverLicenseNumber(DriverLicenseNumber)
+GO
+
 CREATE TABLE Policy (
 	-- maybe Policy was sold by AuthorisedRep and Party has PartyID,
 	AuthorisedRepID                         int NULL,
@@ -267,6 +285,22 @@ CREATE TABLE Product (
 )
 GO
 
+CREATE VIEW dbo.Product_ProdDescription (ProdDescription) WITH SCHEMABINDING AS
+	SELECT ProdDescription FROM dbo.Product
+	WHERE	ProdDescription IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ProductByProdDescription ON dbo.Product_ProdDescription(ProdDescription)
+GO
+
+CREATE VIEW dbo.Product_Alias (Alias) WITH SCHEMABINDING AS
+	SELECT Alias FROM dbo.Product
+	WHERE	Alias IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ProductByAlias ON dbo.Product_Alias(Alias)
+GO
+
 CREATE TABLE State (
 	-- State has StateCode,
 	StateCode                               int NOT NULL CHECK((StateCode >= 0 AND StateCode <= 9)),
@@ -274,6 +308,14 @@ CREATE TABLE State (
 	StateName                               varchar(256) NULL,
 	PRIMARY KEY(StateCode)
 )
+GO
+
+CREATE VIEW dbo.State_Name (StateName) WITH SCHEMABINDING AS
+	SELECT StateName FROM dbo.State
+	WHERE	StateName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_StateByStateName ON dbo.State_Name(StateName)
 GO
 
 CREATE TABLE ThirdParty (

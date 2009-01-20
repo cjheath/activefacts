@@ -31,4 +31,4 @@ Politician represents at most one LegislativeDistrict,
  * Constraints:
  */
 Address is in LegislativeDistrict
-	only if LegislativeDistrict is for StateOrProvince and Address is in StateOrProvince;
+	only if Address is in StateOrProvince and LegislativeDistrict is for StateOrProvince;

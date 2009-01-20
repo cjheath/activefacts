@@ -106,7 +106,7 @@ describe "Roles" do
     name.respond_to?(:all_legal_entity).should be_true
 
     #pending
-    name.all_legal_entity.should === [le]
+    Array(name.all_legal_entity).should === [le]
   end
 
   it "should instantiate subclasses sensibly" do
@@ -115,7 +115,7 @@ describe "Roles" do
     #pending
     p = c.Person("Fred", "Bloggs")
     p.related_to = "Bloggs & Co"
-    Mod::LegalEntity.should === p.related_to
+    p.related_to.should be_is_a(Mod::LegalEntity)
     bloggs.object_id.should == p.related_to.object_id
   end
 

@@ -210,7 +210,7 @@ module Metamodel
   end
 
   class Feature
-    identified_by :name, :vocabulary
+    identified_by :vocabulary, :name
     has_one :name                               # See Name.all_feature
     has_one :vocabulary                         # See Vocabulary.all_feature
   end
@@ -232,7 +232,8 @@ module Metamodel
   end
 
   class SetComparisonRoles
-    identified_by :set_comparison_constraint, :role_sequence
+    identified_by :set_comparison_constraint, :ordinal
+    has_one :ordinal                            # See Ordinal.all_set_comparison_roles
     has_one :role_sequence                      # See RoleSequence.all_set_comparison_roles
     has_one :set_comparison_constraint          # See SetComparisonConstraint.all_set_comparison_roles
   end

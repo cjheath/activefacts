@@ -152,7 +152,7 @@ module ActiveFacts
       supers = o.supertypes
       if (supers.size > 0)
         # Ignore identification by a supertype:
-        pi = nil if pi && pi.role_sequence.all_role_ref[0].role.fact_type.is_a?(TypeInheritance)
+        pi = nil if pi && pi.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(TypeInheritance) }
         subtype_dump(o, supers, pi)
       else
         non_subtype_dump(o, pi)
@@ -312,7 +312,7 @@ module ActiveFacts
           }.each{|fact_type|
             fact_type_dump_with_dependents(fact_type)
             # Objectified Fact Types may release additional fact types
-            roles += fact_type.entity_type.all_role if fact_type.entity_type
+            roles += fact_type.entity_type.all_role.sort_by{|role| role.ordinal} if fact_type.entity_type
             progress = true
           }
       end while progress
@@ -335,7 +335,7 @@ module ActiveFacts
 
       if (et = fact_type.entity_type) &&
           (pi = et.preferred_identifier) &&
-          pi.role_sequence.all_role_ref[0].role.fact_type != fact_type
+          pi.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type != fact_type }
         # debug "Dumping objectified FT #{et.name} as an entity, non-fact PI"
         entity_type_dump(et)
         released_fact_types_dump(et)
@@ -457,21 +457,14 @@ module ActiveFacts
         # Skip some PresenceConstraints:
         if PresenceConstraint === c
           # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
-          role_refs = c.role_sequence.all_role_ref
-          if role_refs.size == 0
-            constraint_banner unless heading
-            heading = true
-            puts "PresenceConstraint without roles!" 
-            next
-          end
-          fact_type0 = role_refs[0].role.fact_type
-          next if c.max_frequency == 1 &&         # Uniqueness
-            role_refs.size == fact_type0.all_role.size &&     # Same number of roles
-            fact_type0.all_role.all?{|r| role_refs.map(&:role).include? r}    # All present
+          fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
+          next if fact_types.size == 1 &&
+            c.max_frequency == 1 &&         # Uniqueness
+            fact_types[0].all_role.size == c.role_sequence.all_role_ref.size
 
           # Skip internal PresenceConstraints over TypeInheritances:
-          next if TypeInheritance === fact_type0 &&
-            !c.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type != fact_type0 }
+          next if c.role_sequence.all_role_ref.size == 1 &&
+            TypeInheritance === fact_types[0]
         end
 
         constraint_banner unless heading

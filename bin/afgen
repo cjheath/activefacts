@@ -11,6 +11,9 @@ require 'ruby-debug'
 require 'activefacts'
 require 'activefacts/vocabulary'
 
+debugger if debug :exception
+true # Ok, got the stack set up, continue to the fault
+
 arg = ARGV.shift
 
 # Load the required generator, or the default "text" generator:
