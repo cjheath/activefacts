@@ -68,7 +68,8 @@ module ActiveFacts
         path = "unknown"
         # Create a value instance we can hack if the value isn't already in this constellation
         if (c = constellation)
-          if klass === value            # Right class?
+          if value.is_a?(klass)            # Right class?
+            value = value.__getobj__ if RoleProxy === value
             vc = value.constellation rescue nil
             if (c == vc)                # Right constellation?
               # Already right class, in the right constellation
@@ -99,7 +100,8 @@ module ActiveFacts
           end
         else
           # This object's not in a constellation
-          if klass === value            # Right class?
+          if value.is_a?(klass)            # Right class?
+            value = value.__getobj__ if RoleProxy === value
             if vc = value.constellation rescue nil
               raise "REVISIT: Assigning to #{self.class.basename}.#{role_name} with constellation=#{c.inspect}: Can't dis-associate object from its constellation #{vc.object_id} yet"
             end

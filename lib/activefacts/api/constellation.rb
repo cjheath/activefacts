@@ -37,7 +37,7 @@ module ActiveFacts
       # Create a new empty Constellation over the given Vocabulary
       def initialize(vocabulary)
         @vocabulary = vocabulary
-        @instances = Hash.new{|h,k| h[k] = {} }
+        @instances = Hash.new{|h,k| h[k] = InstanceIndex.new }
       end
 
       def inspect #:nodoc:

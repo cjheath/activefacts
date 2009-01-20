@@ -2,6 +2,7 @@
 # The ActiveFacts Runtime API Concept class
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+
 module ActiveFacts
   module API
     module Vocabulary; end
@@ -192,7 +193,9 @@ module ActiveFacts
       def define_single_role_getter(role)
         class_eval do
           define_method role.name do
-            instance_variable_get("@#{role.name}") rescue nil
+            i = instance_variable_get("@#{role.name}") rescue nil
+            # i ? RoleProxy.new(i) : i
+            i
           end
         end
       end
@@ -213,12 +216,11 @@ module ActiveFacts
           define_single_role_setter(role, nullify_reference, assign_reference)
         else
           # This gets called to delete this object from the role value array in the old correspondent
-          delete_reference = lambda{|from, role_name, value| from.send(role_name).__delete(value) }
+          delete_reference = lambda{|from, role_name, value| from.send(role_name).update(value, nil) }
 
           # This gets called to replace an old value by a new one in the related role value array of a new correspondent
           replace_reference = lambda{|from, role_name, old_value, value| 
-              array = from.send(role_name)
-              array.__replace(array - [old_value].compact + [value])
+              from.send(role_name).update(old_value, value)
             }
 
           define_single_role_setter(role, delete_reference, replace_reference)
@@ -260,7 +262,7 @@ module ActiveFacts
         class_eval do
           define_method "#{role.name}" do
             unless (r = instance_variable_get(role_var = "@#{role.name}") rescue nil)
-              r = instance_variable_set(role_var, RoleValueArray.new)
+              r = instance_variable_set(role_var, RoleValues.new)
             end
             # puts "fetching #{self.class.basename}.#{role.name} array, got #{r.class}, first is #{r[0] ? r[0].verbalise : "nil"}"
             r

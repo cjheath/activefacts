@@ -64,7 +64,7 @@ module ActiveFacts
       # by hashing the values of its identifying roles
       def hash
         self.class.identifying_roles.map{|role|
-            send role
+            instance_variable_get("@#{role}")
           }.inject(0) { |h,v|
             h ^= v.hash
             h
@@ -115,8 +115,9 @@ module ActiveFacts
           # If the single arg is an instance of the correct class or a subclass,
           # use the instance's identifying_role_values
           if (args.size == 1 and
-              self === args[0])       # REVISIT: or a secondary supertype
-            return args[0].identifying_role_values
+              (arg = args[0]).is_a?(self))       # REVISIT: or a secondary supertype
+            arg = arg.__getobj__ if RoleProxy === arg
+            return arg.identifying_role_values
           end
 
           ir = identifying_roles
@@ -132,6 +133,7 @@ module ActiveFacts
             #puts "Getting identifying_role_value for #{role.player.basename} using #{arg.inspect}"
             next nil unless arg
             next !!arg unless role.counterpart  # Unary
+            arg = arg.__getobj__ if RoleProxy === arg
             if role.player === arg              # REVISIT: or a secondary supertype
               # Note that with a secondary supertype, it must still return the values of these identifying_roles
               next arg.identifying_role_values
@@ -162,7 +164,8 @@ module ActiveFacts
                 value = role_key = nil          # No value
               elsif !role.counterpart
                 value = role_key = !!arg        # Unary
-              elsif role.player === arg         # REVISIT: or a secondary supertype
+              elsif arg.is_a?(role.player)      # REVISIT: or a secondary supertype
+                arg = arg.__getobj__ if RoleProxy === arg
                 raise "Connecting values across constellations" unless arg.constellation == constellation
                 value, role_key = arg, arg.identifying_role_values
               else

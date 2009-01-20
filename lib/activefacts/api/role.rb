@@ -1,4 +1,4 @@
-## The ActiveFacts Runtime API Concept class
+#
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
@@ -39,7 +39,8 @@ module ActiveFacts
       def adapt(constellation, value) #:nodoc:
         # If the value is a compatible class, use it (if in another constellation, clone it),
         # else create a compatible object using the value as constructor parameters.
-        if @player === value  # REVISIT: may be a non-primary subtype of player
+        if value.is_a?(@player)  # REVISIT: may be a non-primary subtype of player
+          value = value.__getobj__ if RoleProxy === value
           # Check that the value is in a compatible constellation, clone if not:
           if constellation && (vc = value.constellation) && vc != constellation
             value = value.clone   # REVISIT: There's sure to be things we should reset/clone here, like non-identifying roles
@@ -65,30 +66,5 @@ module ActiveFacts
         keys.sort_by(&:to_s).inspect
       end
     end
-
-    # A RoleValueArray is an array with all mutating methods hidden.
-    # We use these for the "many" side of a 1:many relationship.
-    # Only "replace" and "delete" are actually used (so far!).
-    #
-    # Don't rely on this implementation, as it must change to support
-    # persistence.
-    #
-    class RoleValueArray < Array  #:nodoc:
-      [ :"<<", :"[]=", :clear, :collect!, :compact!, :concat, :delete,
-        :delete_at, :delete_if, :fill, :flatten!, :insert, :map!, :pop,
-        :push, :reject!, :replace, :reverse!, :shift, :shuffle!, :slice!,
-        :sort!, :uniq!, :unshift
-      ].each{|s|
-          begin
-            alias_method("__#{s}", s)
-          rescue NameError  # shuffle! is in 1.9 only
-          end
-        }
-
-      def verbalise
-        "["+map{|e| e.verbalise}*", "+"]"
-      end
-    end
-
   end
 end
