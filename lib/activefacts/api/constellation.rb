@@ -1,10 +1,12 @@
 #
-# The ActiveFacts Runtime API Constellation class
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       Constellation class
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 
 module ActiveFacts
-  module API
+  module API      #:nodoc:
     # A Constellation is a population of instances of the Concept classes of a Vocabulary.
     # Every concept class is either a Value type or an Entity type.
     #
@@ -52,7 +54,7 @@ module ActiveFacts
         end
       end
 
-      # With parameters, assert an instance of the concept whose name is the missing method.
+      # With parameters, assert an instance of the concept whose name is the missing method, identified by the values passed as *args*.
       # With no parameters, return the collection of all instances of that concept.
       def method_missing(m, *args)
         if klass = @vocabulary.const_get(m)

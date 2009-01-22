@@ -1,13 +1,19 @@
 #
-# Generate CQL from an ActiveFacts vocabulary.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Generators.
+#       Generate CQL from an ActiveFacts vocabulary.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/vocabulary'
 require 'activefacts/generate/ordered'
 
 module ActiveFacts
   module Generate #:nodoc:
+    # Generate CQL for an ActiveFacts vocabulary.
+    # Invoke as
+    #   afgen --cql <file>.cql
     class CQL < OrderedDumper
+    private
       include Metamodel
 
       def vocabulary_start(vocabulary)

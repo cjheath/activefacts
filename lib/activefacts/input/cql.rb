@@ -1,6 +1,8 @@
 #
-# Compile a CQL file into an ActiveFacts vocabulary.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Vocabulary Input.
+#       Compile a CQL file into an ActiveFacts vocabulary.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/vocabulary'
 require 'activefacts/cql/parser'
@@ -9,10 +11,11 @@ require 'ruby-debug'
 
 module ActiveFacts
   module Input #:nodoc:
-    # The CQL Input module is activated whenever afgen is called upon to process a file
-    # whose name ends in .cql. The file is parsed to a constellation and the vocabulary
-    # object defined in that file is returned.
+    # Compile CQL to an ActiveFacts vocabulary.
+    # Invoke as
+    #   afgen --<generator> <file>.cql
     class CQL
+    private
       include ActiveFacts
       include ActiveFacts::Metamodel
 
@@ -44,8 +47,9 @@ module ActiveFacts
         @filename = filename
       end
 
+    public
       # Read the input, returning a new Vocabulary:
-      def read
+      def read  #:nodoc:
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
 
         @parser = ActiveFacts::CQLParser.new
@@ -86,6 +90,7 @@ module ActiveFacts
         @vocabulary
       end
 
+    private
       def value_type(name, base_type_name, parameters, unit, ranges)
         length, scale = *parameters
 

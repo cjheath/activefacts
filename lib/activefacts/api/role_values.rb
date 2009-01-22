@@ -1,10 +1,12 @@
 #
-# A RoleValues set manages the instances involved in a many_to_one relationship.
+#       ActiveFacts Runtime API
+#       RoleValues, manages the set of instances involved in a many_to_one relationship.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 # There are two implementations here, one using an array and one using a hash.
 # The hash one has problems with keys being changed during object deletion, so
 # cannot be used yet; a fix is upcoming and will improve performance of large sets.
-#
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
   module API

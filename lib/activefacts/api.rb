@@ -1,6 +1,7 @@
 #
-# ActiveFacts runtime API.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 # The ActiveFacts API is heavily metaprogrammed, so difficult to document.
 #
@@ -13,6 +14,21 @@
 # contains the methods of the class Concept.
 #
 # A module becomes a Vocabulary when the first Concept class is defined within it.
+# A Constellation is a unique collection of Concept instances; no two instances may
+# exist of the same value of a ValueType, or having the same identifying roles for
+# an Entity type.
+#
+# Both kinds of Concepts play Roles, which are either binary or unary. Each Role
+# corresponds to an accessor method on Instances which are used to access the
+# counterpart. Roles are created by the class methods *has_one*, *one_to_one*,
+# and *maybe*. The former two create *two* roles, since the role has a counterpart
+# concept that also plays a role. In the case of a has_one role, the counterpart
+# role is a set, implemented by the RoleValues class, and the accessor method is
+# named beginning with *all_*.
+#
+# The roles of any Instance of any Concept may only be played by another Instance
+# of the counterpart Concept. There are no raw values, only instances of ValueType
+# classes.
 
 require 'activefacts/api/support'               # General support code and core patches
 require 'activefacts/api/vocabulary'            # A Ruby module may become a Vocabulary

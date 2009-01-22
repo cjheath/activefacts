@@ -1,12 +1,18 @@
 #
-# The ActiveFacts Runtime API Constellation class
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       InstanceIndex class
 #
-
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 module ActiveFacts
   module API
+    #
+    # Each Constellation maintains an InstanceIndex for each Concept in its Vocabulary.
+    # The InstanceIndex object is returned when you call @constellation.Concept with no
+    # arguments (where Concept is the concept name you're interested in)
+    #
     class InstanceIndex
-      def []=(key, val)
+      def []=(key, val)   #:nodoc:
         if RoleProxy === val
           debugger
         end
@@ -33,16 +39,18 @@ module ActiveFacts
         h.map &b
       end
 
-      def delete_if(&b)
-        h.delete_if &b
-      end
-
+      # Return an array of all the instances of this concept
       def values
         h.values
       end
 
+      # Return an array of the identifying role values arrays for all the instances of this concept
       def keys
         h.keys
+      end
+
+      def delete_if(&b)   #:nodoc:
+        h.delete_if &b
       end
 
     private

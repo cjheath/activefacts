@@ -1,15 +1,25 @@
 #
-# Generate an SQL Server schema from an ActiveFacts vocabulary.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Generators.
+#       Generate SQL for SQL Server from an ActiveFacts vocabulary.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/vocabulary'
 require 'activefacts/persistence'
 
 module ActiveFacts
   module Generate
-    class SQL
+    class SQL #:nodoc:
+      # Generate SQL for SQL Server for an ActiveFacts vocabulary.
+      # Invoke as
+      #   afgen --sql/server[=options] <file>.cql
+      # Options are comma or space separated:
+      # * delay_fks Leave all foreign keys until the end, not just those that contain forward-references
+      # * norma Translate datatypes from NORMA to SQL Server
       class SERVER
+      private
         include Metamodel
+        include Persistence
         ColumnNameMax = 40
 
         RESERVED_WORDS = %w{
@@ -98,7 +108,8 @@ module ActiveFacts
           [sql_type, length]
         end
 
-        def generate(out = $>)
+      public
+        def generate(out = $>)      #:nodoc:
           @out = out
           #go "CREATE SCHEMA #{@vocabulary.name}"
 
@@ -203,6 +214,7 @@ CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.c
           end
         end
 
+      private
         def check_clause(column_name, restrictions)
           return "" if restrictions.empty?
           # REVISIT: Merge all restrictions (later; now just use the first)

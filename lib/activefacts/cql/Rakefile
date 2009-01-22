@@ -1,3 +1,11 @@
+#
+#       ActiveFacts CQL Parser.
+#       A Rakefile to run Treetop when the ActiveFacts gem is installed.
+#       This isn't mandatory but makes it much faster to start the parser.
+#       Delete the generated files during parser development.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 task :default do
   pattern = File.dirname(__FILE__) + '**/*.treetop'
   files = Dir[pattern]

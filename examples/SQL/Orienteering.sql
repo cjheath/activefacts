@@ -48,6 +48,14 @@ CREATE TABLE Event (
 )
 GO
 
+CREATE VIEW dbo.Event_Name (EventName) WITH SCHEMABINDING AS
+	SELECT EventName FROM dbo.Event
+	WHERE	EventName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX EventNameIsOfOneEvent ON dbo.Event_Name(EventName)
+GO
+
 CREATE VIEW dbo.Event_SeriesIDNumber (SeriesID, Number) WITH SCHEMABINDING AS
 	SELECT SeriesID, Number FROM dbo.Event
 	WHERE	SeriesID IS NOT NULL
@@ -55,14 +63,6 @@ CREATE VIEW dbo.Event_SeriesIDNumber (SeriesID, Number) WITH SCHEMABINDING AS
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_EventBySeriesIDNumber ON dbo.Event_SeriesIDNumber(SeriesID, Number)
-GO
-
-CREATE VIEW dbo.Event_Name (EventName) WITH SCHEMABINDING AS
-	SELECT EventName FROM dbo.Event
-	WHERE	EventName IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX EventNameIsOfOneEvent ON dbo.Event_Name(EventName)
 GO
 
 CREATE TABLE EventControl (

@@ -1,8 +1,11 @@
 #
-# The ActiveFacts Runtime API Standard types extensions.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       Standard types extensions.
 #
-# These extensions add ActiveFacts Concept and Instance behaviour into base Ruby classes.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
+# These extensions add ActiveFacts Concept and Instance behaviour into base Ruby value classes,
+# and allow any Class to become an Entity.
 #
 require 'date'
 
@@ -37,6 +40,8 @@ class NilClass #:nodoc:
 end
 
 class Class
+  # Make this Class into a Concept and if necessary its module into a Vocabulary.
+  # The parameters are the names (Symbols) of the identifying roles.
   def identified_by *args
     raise "not an entity type" if respond_to? :value_type  # Don't make a ValueType into an EntityType
     include ActiveFacts::API::Entity

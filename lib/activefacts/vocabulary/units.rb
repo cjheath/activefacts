@@ -1,6 +1,8 @@
 #
-# ActiveFacts Runtime API Units extensions.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Vocabulary Metamodel.
+#       Extensions to the ActiveFacts Vocabulary classes for Units support
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 # REVISIT: This is not yet integrated with the Vocabulary API
 #

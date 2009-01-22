@@ -1,7 +1,8 @@
 #
 # ActiveFacts Swiss-army knife.
+# Include all that's required for a non-persistent runtime application.
 #
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 # Author: Clifford Heath.
 #
 require 'rubygems'

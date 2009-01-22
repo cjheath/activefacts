@@ -1,3 +1,9 @@
+#! env ruby
+#
+#       ActiveFacts: Generate the website's table of examples
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 Examples = %w{
   Address
   Blog
@@ -5,6 +11,7 @@ Examples = %w{
   Death
   Genealogy
   Insurance
+  JoinEquality
   Marriage
   Metamodel
   MultiInheritance
@@ -12,6 +19,7 @@ Examples = %w{
   Orienteering
   OrienteeringER
   PersonPlaysGame
+  RedundantDependency
   SchoolActivities
   SimplestUnary
   Warehousing
@@ -34,7 +42,7 @@ Examples.each {|example|
   end
   puts %Q{
 <tr>
-<td>#{example}</td>
+<td>#{example} <a href="ORM/#{example}.orm">(orm)</a></td>
 <td><a href="CQL/#{example}.cql">CQL</a></td>
 <td><a href="ruby/#{example}.rb">Ruby</a></td>
 <td><a href="SQL/#{example}.sql">SQL</a></td>

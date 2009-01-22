@@ -1,6 +1,8 @@
 #
-# The ActiveFacts Runtime API Instance extension module.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       Instance (mixin module for instances of a Concept - a class with Concept mixed in)
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 # Instance methods are extended into all instances, whether of value or entity types.
 #

@@ -1,3 +1,9 @@
+#
+#       ActiveFacts CQL Parser.
+#       Parse rules relating to Concept definitions.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 module ActiveFacts
   module CQL
     grammar Concepts
@@ -22,8 +28,8 @@ module ActiveFacts
 
       rule basetype
         is s
-	# independency?
-	identification
+        # independency?
+        identification
         { def supers; [] end
           def identifier; identification.value; end
         }
@@ -31,8 +37,8 @@ module ActiveFacts
 
       rule subtype
         subtype_prefix
-	# independency?
-	supertype_list ident:identification?
+        # independency?
+        supertype_list ident:identification?
         {
           def supers; supertype_list.value; end
           def identifier; ident.empty? ? nil : ident.value; end
@@ -41,7 +47,7 @@ module ActiveFacts
 
       # REVISIT: This doesn't work, and I don't know why.
       rule independency
-	 ('independent' S / 'separate' S / 'partitioned' S)
+         ('independent' S / 'separate' S / 'partitioned' S)
       end
 
       rule supertype_list
@@ -54,12 +60,12 @@ module ActiveFacts
       end
 
       rule identification
-	# REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
-        identified_by its s id s	  # Reference Mode
-	  { def value; {:mode => id.text_value }; end }
-	/
+        # REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
+        identified_by its s id s          # Reference Mode
+          { def value; {:mode => id.text_value }; end }
+        /
         identified_by role_list
-	  { def value; {:roles => role_list.roles }; end }
+          { def value; {:roles => role_list.roles }; end }
       end
 
       # Identified by roles... also used for constraints, beware
@@ -75,24 +81,24 @@ module ActiveFacts
           # We can't tell which word is an adjective and which is a concept here.
           # The concept might be forward-referenced, but not if adjectives are used.
           # REVISIT: This accepts double-adjective expressions (three words) but they don't work elsewhere
-	  rule lead_adj
-	    role_player_id '-'
-	  end
+          rule lead_adj
+            role_player_id '-'
+          end
 
-	  rule trail_adj
-	    '-' role_player_id
-	  end
+          rule trail_adj
+            '-' role_player_id
+          end
 
-	  rule role_player
-	    l:lead_adj? tail:(s role_player_id)+ s t:trail_adj?
-	    {
-	      def value
-		(l.empty? ? [] : [l.role_player_id.text_value]) +
-		tail.elements.map{|e| e.role_player_id.text_value } +
-		(t.empty? ? [] : [t.role_player_id.text_value])
-	      end
-	    }
-	  end
+          rule role_player
+            l:lead_adj? tail:(s role_player_id)+ s t:trail_adj?
+            {
+              def value
+                (l.empty? ? [] : [l.role_player_id.text_value]) +
+                tail.elements.map{|e| e.role_player_id.text_value } +
+                (t.empty? ? [] : [t.role_player_id.text_value])
+              end
+            }
+          end
 
           rule role_player_id
             !(role_list_sep / quantifier) id

@@ -1,7 +1,8 @@
 #
-# Read a NORMA file into an ActiveFacts vocabulary
+#       ActiveFacts Vocabulary Input.
+#       Read a NORMA file into an ActiveFacts vocabulary
 #
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 # This code uses variables prefixed with x_ when they refer to Rexml nodes.
 # Every node having an id="..." is indexed in @x_by_id[] hash before processing.
@@ -13,10 +14,12 @@ require 'activefacts/vocabulary'
 
 module ActiveFacts
   module Input
-    # The ORM Input module is activated whenever afgen is called upon to process a file
-    # whose name ends in .orm (a file from NORMA). This parser uses Rexml so it's very slow.
-    # The file is parsed to a constellation and the vocabulary object defined in that file is returned.
+    # Compile a NORMA (.orm) file to an ActiveFacts vocabulary.
+    # Invoke as
+    #   afgen --<generator> <file>.orm
+    # This parser uses Rexml so it's very slow.
     class ORM
+    private
       def self.readfile(filename)
         File.open(filename) {|file|
           self.read(file, filename)
@@ -32,7 +35,8 @@ module ActiveFacts
         @filename = filename
       end
 
-      def read
+    public
+      def read          #:nodoc:
         begin
           @document = REXML::Document.new(@file)
         rescue => e
@@ -55,6 +59,8 @@ module ActiveFacts
         read_vocabulary
         @vocabulary
       end
+
+    private
 
       def read_vocabulary
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)

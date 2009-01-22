@@ -1,15 +1,21 @@
 #
-# The ActiveFacts Runtime API Vocabulary extension module.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       Vocabulary module (mixin for any Module that contains classes having Concept mixed in)
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 # The methods of this module are extended into any module that contains
 # a Concept class (Entity type or Value type).
 #
 module ActiveFacts
   module API
+    # Vocabulary is a mixin that adds methods to any Module which has any Concept classes (ValueType or EntityType).
+    # A Vocabulary knows all the Concept classes including forward-referenced ones,
+    # and can resolve the forward references when the class is finally defined.
+    # Construction of a Constellation requires a Vocabuary as argument.
     module Vocabulary
       # With a parameter, look up a concept class by name.
-      # Without, return the hash of all concepts in this vocabulary
+      # Without, return the hash (keyed by the class' basename) of all concepts in this vocabulary
       def concept(name = nil)
         @concept ||= {}
         return @concept unless name
@@ -61,6 +67,7 @@ module ActiveFacts
             }*"\n\t"
       end
 
+=begin
       # Create or find an instance of klass in constellation using value to identify it
       def adopt(klass, constellation, value)  #:nodoc:
         puts "Adopting #{ value.verbalise rescue value.class.to_s+' '+value.inspect} as #{klass} into constellation #{constellation.object_id}"
@@ -116,6 +123,7 @@ module ActiveFacts
         # print "#{path}"; puts ", adopted as #{value.verbalise rescue value.inspect}"
         value
       end
+=end
 
     end
   end

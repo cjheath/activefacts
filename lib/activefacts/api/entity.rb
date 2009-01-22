@@ -1,12 +1,13 @@
 #
-# The ActiveFacts Runtime API Entity class
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       Entity class (a mixin module for the class Class)
 #
-# An Entity type is any Concept that isn't a value type.
-# All Entity types must have an identifier made up of one or more roles.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
   module API
+    # An Entity type is any Concept that isn't a value type.
+    # All Entity types must have an identifier made up of one or more roles.
     module Entity
       include Instance
 
@@ -108,7 +109,7 @@ module ActiveFacts
           @identifying_role_names ||= []
         end
 
-        # Return an array of Instance objects that can identify an instance of this Entity type:
+        # Convert the passed arguments into an array of Instance objects that can identify an instance of this Entity type:
         def identifying_role_values(*args)
           #puts "Getting identifying role values #{identifying_role_names.inspect} of #{basename} using #{args.inspect}"
 

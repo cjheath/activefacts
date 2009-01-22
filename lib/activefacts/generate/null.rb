@@ -1,14 +1,18 @@
 #
-# Generate text output for ActiveFacts vocabularies.
+#       ActiveFacts Generators.
+#       Generate *no* output for ActiveFacts vocabularies; i.e. just a stub
 #
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
-# Author: Clifford Heath.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/persistence'
 
 module ActiveFacts
   module Generate
+    # Generate nothing from an ActiveFacts vocabulary. This is useful to check the file can be read ok.
+    # Invoke as
+    #   afgen --null <file>.cql
     class NULL
+    private
       def initialize(vocabulary, *options)
         @vocabulary = vocabulary
         @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary

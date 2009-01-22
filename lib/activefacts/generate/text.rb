@@ -1,12 +1,16 @@
 #
-# Generate text output for ActiveFacts vocabularies.
+#       ActiveFacts Generators.
+#       Generate text output (verbalise the meta-vocabulary) for ActiveFacts vocabularies.
 #
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
-# Author: Clifford Heath.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
   module Generate
+    # Generate a text verbalisation of the metamodel constellation created for an ActiveFacts vocabulary.
+    # Invoke as
+    #   afgen --text <file>.cql
     class TEXT
+    private
       def initialize(vocabulary)
         @vocabulary = vocabulary
         @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary

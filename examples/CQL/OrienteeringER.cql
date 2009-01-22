@@ -23,9 +23,6 @@ SeriesName is defined as VariableLengthText();
 Club is where
 	Code is of the club called at most one ClubName,
 	the club called ClubName has at most one Code;
-SeriesEvent is where
-	SeriesName includes event-Number,
-	event Number is in SeriesName;
 Event is where
 	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
 EventControl is where
@@ -35,6 +32,9 @@ EventCourse is where
 	Event offers Course;
 Map is where
 	map-Name having Accessibility belongs to Club;
+SeriesEvent is where
+	SeriesName includes event-Number,
+	event Number is in SeriesName;
 
 /*
  * Constraints:

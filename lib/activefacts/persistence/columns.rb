@@ -1,4 +1,9 @@
 #
+#       ActiveFacts Relational mapping and persistence.
+#       Columns in a relational table; each is derived from a sequence of References.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 # Each Reference from a Concept creates one or more Columns.
 # A reference to a simple valuetype creates a single column, as
 # does a reference to a table entity identified by a single value.
@@ -10,15 +15,18 @@
 # table, a reference to that entity creates multiple columns,
 # a multi-part foreign key.
 #
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
-#
 
 module ActiveFacts
-  module Metamodel
+  module Persistence    #:nodoc:
 
     class Column
-      attr_reader :references
+      include Metamodel
 
+      def initialize(reference = nil) #:nodoc:
+        references << reference if reference
+      end
+
+      # A Column is created from a path through an array of References to a ValueType
       def references
         @references ||= []
       end
@@ -33,6 +41,7 @@ module ActiveFacts
         end
       end
 
+      # How many of the initial references are involved in full absorption of an EntityType into this column's table
       def absorption_level
         l = 0
         @references.detect do |ref|
@@ -42,15 +51,13 @@ module ActiveFacts
         l
       end
 
-      def initialize(reference = nil)
-        references << reference if reference
-      end
-
-      def prepend reference
+      def prepend reference           #:nodoc:
         references.insert 0, reference
         self
       end
 
+      # A Column name is a sequence of names (derived from the to_roles of the References)
+      # joined by a joiner string (pass nil to get the original array of names)
       def name(joiner = "")
         last_name = ""
         names = @references.
@@ -95,14 +102,17 @@ module ActiveFacts
         joiner ? name_array * joiner : name_array
       end
 
+      # Is this column mandatory or nullable?
       def is_mandatory
         !@references.detect{|ref| !ref.is_mandatory}
       end
 
+      # Is this column an auto-assigned value type?
       def is_auto_assigned
         (to = references[-1].to) && to.is_auto_assigned
       end
 
+      # What's the underlying SQL data type of this column?
       def type
         params = {}
         restrictions = []
@@ -126,6 +136,7 @@ module ActiveFacts
         return [vt.name, params, restrictions]
       end
 
+      # The comment is the readings from the References expressed as a join
       def comment
         @references.map do |ref|
           (ref.is_mandatory ? "" : "maybe ") +
@@ -134,13 +145,13 @@ module ActiveFacts
         end * " and "
       end
 
-      def to_s
+      def to_s  #:nodoc:
         "#{@references[0].from.name} column #{name('.')}"
       end
     end
 
     class Reference
-      def columns(excluded_supertypes)
+      def columns(excluded_supertypes)  #:nodoc:
         kind = ""
         cols = 
           if is_unary
@@ -167,16 +178,24 @@ module ActiveFacts
         end
       end
     end
+  end
 
+  module Metamodel    #:nodoc:
+    # The Concept class is defined in the metamodel; full documentation is not generated.
+    # This section shows the features relevant to relational Persistence.
     class Concept
-      attr_accessor :columns
+      # The array of columns for this Concept's table
+      def columns; @columns; end
 
-      def populate_columns
+      def populate_columns  #:nodoc:
         @columns = all_columns({})
       end
     end
 
-    class ValueType
+    # The ValueType class is defined in the metamodel; full documentation is not generated.
+    # This section shows the features relevant to relational Persistence.
+    class ValueType < Concept
+      # The identifier_columns for a ValueType can only ever be the self-value role that was injected
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
           raise "Illegal call to identifier_columns for absorbed ValueType #{name}" unless is_table
@@ -184,23 +203,27 @@ module ActiveFacts
         end
       end
 
-      def reference_columns(excluded_supertypes)
+      # When creating a foreign key to this ValueType, what columns must we include?
+      # This must be a fresh copy, because the columns will have References prepended
+      def reference_columns(excluded_supertypes)  #:nodoc:
         debug :columns, "Reference Columns for #{name}" do
           if is_table
-            [Column.new(self_value_reference)]
+            [ActiveFacts::Persistence::Column.new(self_value_reference)]
           else
-            [Column.new]
+            [ActiveFacts::Persistence::Column.new]
           end
         end
       end
 
-      def all_columns(excluded_supertypes)
+      # When absorbing this ValueType, what columns must be absorbed?
+      # This must be a fresh copy, because the columns will have References prepended.
+      def all_columns(excluded_supertypes)    #:nodoc:
         columns = []
         debug :columns, "All Columns for #{name}" do
           if is_table
             self_value_reference
           else
-            columns << Column.new
+            columns << ActiveFacts::Persistence::Column.new
           end
           references_from.each do |ref|
             debug :columns, "Columns absorbed via #{ref}" do
@@ -211,13 +234,17 @@ module ActiveFacts
         columns
       end
 
-      def self_value_reference
+      # If someone asks for this, it's because it's needed, so create it.
+      def self_value_reference  #:nodoc:
         # Make a reference for the self-value column
-        @self_value_reference ||= Reference.new(self, nil).tabulate
+        @self_value_reference ||= ActiveFacts::Persistence::Reference.new(self, nil).tabulate
       end
     end
 
-    class EntityType
+    # The EntityType class is defined in the metamodel; full documentation is not generated.
+    # This section shows the features relevant to relational Persistence.
+    class EntityType < Concept
+      # The identifier_columns for an EntityType are the columns that result from the identifying roles
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
           if absorbed_via and
@@ -235,7 +262,9 @@ module ActiveFacts
         end
       end
 
-      def reference_columns(excluded_supertypes)
+      # When creating a foreign key to this EntityType, what columns must we include (the identifier columns)?
+      # This must be a fresh copy, because the columns will have References prepended
+      def reference_columns(excluded_supertypes)    #:nodoc:
         debug :columns, "Reference Columns for #{name}" do
 
           if absorbed_via and
@@ -257,7 +286,9 @@ module ActiveFacts
         end
       end
 
-      def all_columns(excluded_supertypes)
+      # When absorbing this EntityType, what columns must be absorbed?
+      # This must be a fresh copy, because the columns will have References prepended.
+      def all_columns(excluded_supertypes)    #:nodoc:
         debug :columns, "All Columns for #{name}" do
           columns = []
           sups = supertypes
@@ -287,15 +318,18 @@ module ActiveFacts
       end
     end
 
+    # The Vocabulary class is defined in the metamodel; full documentation is not generated.
+    # This section shows the features relevant to relational Persistence.
     class Vocabulary
-      # Do things like adding ID fields and ValueType self-value columns
+      # Make schema transformations like adding ValueType self-value columns (and later, Rails-friendly ID fields).
+      # Override this method to change the transformations
       def finish_schema
         all_feature.each do |feature|
           feature.self_value_reference if feature.is_a?(ValueType) && feature.is_table
         end
       end
 
-      def populate_all_columns
+      def populate_all_columns  #:nodoc:
         # REVISIT: Is now a good time to apply schema transforms or should this be more explicit?
         finish_schema
 

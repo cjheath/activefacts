@@ -1,14 +1,15 @@
 #
-# Calculate the relational composition of a given Vocabulary
-# The composition consists of decisiona about which Concepts are tables,
-# and what columns (absorbed roled) those tables will have.
+#       ActiveFacts Relational mapping and persistence.
+#       Tables; Calculate the relational composition of a given Vocabulary.
+#       The composition consists of decisions about which Concepts are tables,
+#       and what columns (absorbed roled) those tables will have.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 # This module has the following known problems:
 #
-# * Some one-to-ones absorb in both directions (ET<->FT in Metamodel, Blog model)
-#
-# * When a subtype has no mandatory roles, we should introduce
-#   a binary (is_subtype) to indicate it's that subtype.
+# * When a subtype has no mandatory roles, we should support an optional schema transformation step
+#   that introduces a boolean (is_subtype) to indicate it's that subtype.
 #
 
 require 'activefacts/persistence/reference'
@@ -17,9 +18,12 @@ module ActiveFacts
   module Metamodel
 
     class ValueType
-      def absorbed_via; nil; end  # ValueTypes aren't absorbed in the way EntityTypes are
+      def absorbed_via  #:nodoc:
+        # ValueTypes aren't absorbed in the way EntityTypes are
+        nil
+      end
 
-      # Say whether this object is currently considered a table or not:
+      # Returns true if this ValueType is a table
       def is_table
         return @is_table if @is_table != nil
 
@@ -42,20 +46,27 @@ module ActiveFacts
         @is_table
       end
 
-      # REVISIT: Find a better way to determine AutoCounters (ValueType unary role?)
+      # Is this ValueType auto-assigned on first save to the database?
       def is_auto_assigned
-        type = self;
+        # REVISIT: Find a better way to determine AutoCounters (ValueType unary role?)
+        type = self
         type = type.supertype while type.supertype
         type.name =~ /^Auto/
       end
     end
 
     class EntityType
-      attr_accessor :absorbed_via   # A reference from an entity type that fully absorbs this one
+      # A Reference from an entity type that fully absorbs this one
+      def absorbed_via; @absorbed_via; end
+      def absorbed_via=(r) #:nodoc:
+        @absorbed_via = r
+      end
 
-      def is_auto_assigned; false; end
+      def is_auto_assigned  #:nodoc:
+        false
+      end
 
-      # Decide whether this object is currently considered a table or not:
+      # Returns true if this EntityType is a table
       def is_table
         return @is_table if @is_table != nil  # We already make a guess or decision
 
@@ -99,7 +110,7 @@ module ActiveFacts
       end
     end # EntityType class
 
-    class Role
+    class Role    #:nodoc:
       def role_type
         # TypeInheritance roles are always 1:1
         if TypeInheritance === fact_type
@@ -152,7 +163,7 @@ module ActiveFacts
         @tables
       end
 
-      def decide_tables
+      def decide_tables #:nodoc:
         # Strategy:
         # 1) Populate references for all Concepts
         # 2) Decide which Concepts must be and must not be tables

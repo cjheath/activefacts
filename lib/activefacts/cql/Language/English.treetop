@@ -1,3 +1,9 @@
+#
+#       ActiveFacts CQL Parser.
+#       Parse rules the English syntax of CQL.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 module ActiveFacts
   module CQL
     grammar Language
@@ -17,9 +23,9 @@ module ActiveFacts
       rule quantifier
         each s                    { def value; [1, nil]; end }
         / some s                  { def value; nil; end }
-	  # REVISIT: "Some" means that any prior occurrence of this role player is to be ignored; this is a new occurrence
-	  # "that" on the other hand means that this role player was *previously* designated using "some".
-	  # These distinctions are lost here
+          # REVISIT: "Some" means that any prior occurrence of this role player is to be ignored; this is a new occurrence
+          # "that" on the other hand means that this role player was *previously* designated using "some".
+          # These distinctions are lost here
         / that s                  { def value; nil; end }
         / one s                   { def value; [1, 1]; end }
         / no s                    { def value; [0, 0]; end }

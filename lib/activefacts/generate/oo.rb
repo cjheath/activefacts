@@ -1,14 +1,16 @@
 #
-# OO Generation support for the ActiveFacts API from an ActiveFacts vocabulary.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Generators.
+#       Base class for generators of class libraries in any object-oriented language that supports the ActiveFacts API.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/vocabulary'
 require 'activefacts/generate/ordered'
 
 module ActiveFacts
-
   module Generate
-    class OO < OrderedDumper
+    # Base class for generators of object-oriented class libraries for an ActiveFacts vocabulary.
+    class OO < OrderedDumper  #:nodoc:
       include Metamodel
 
       def constraints_dump(constraints_used)

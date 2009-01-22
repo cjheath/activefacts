@@ -1,68 +1,70 @@
 #
-# The ActiveFacts Runtime API RoleProxy class; experimental (i.e. not working yet)
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       RoleProxy class, still somewhat experimental
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'delegate'
 
 module ActiveFacts
   module API
-    class RoleProxy < SimpleDelegator   #:nodoc:
-      def initialize(role, o = nil)
-        @role = role    # REVISIT: Use this to implement verbalise()
+    #
+    # When you use the accessor method created by has_one, one_to_one, or maybe, you get a RoleProxy for the actual value.
+    # This behaves almost exactly as the value, but it knows through which role you fetched it.
+    # That will allow it to verbalise itself using the correct reading for that role.
+    #
+    # Don't use "SomeClass === role_value" to test the type, use "role_value.is_a?(SomeClass)" instead.
+    #
+    # In future, retrieving a value by indexing into a RoleValues array will do the same thing.
+    #
+    class RoleProxy < SimpleDelegator
+      def initialize(role, o = nil)     #:nodoc:
+        @role = role                    # REVISIT: Use this to implement verbalise()
         __setobj__(o)
       end
 
-#=begin
-      def method_missing(m, *a, &b)
+      def method_missing(m, *a, &b)     #:nodoc:
         begin
-          r = super   # Delegate first
-          # puts "Delegating #{m} to #{__getobj__.class} worked"
-          r
+          super                         # Delegate first
         rescue NoMethodError => e
-          puts "Delegating #{m} to #{__getobj__.class} failed, trying its mm"
-          r = __getobj__.method_missing(m, *a, &b)
-          puts "#{m}#method_missing worked"
-          r
+          __getobj__.method_missing(m, *a, &b)
         rescue => e
-          puts "Delegating #{m} to #{__getobj__.class} failed with #{e.class}: #{e}"
           raise
         end
       end
 
-      def class
+      def class                         #:nodoc:
         __getobj__.class
       end
 
-      def is_a? klass
+      def is_a? klass                   #:nodoc:
         __getobj__.is_a? klass
       end
 
-      def to_s
+      def to_s                          #:nodoc:
         __getobj__.to_s
       end
 
-      def hash
-        __getobj__.hash ^ self.class.hash
-      end
-
-      def object_id
+      def object_id                     #:nodoc:
         __getobj__.object_id
       end
 
-      def eql?(o)
-        # self.class == o.class and self.eql?(o) || __getobj__.eql?(o)
+      # REVISIT: Should Proxies hash and eql? the same as their wards?
+      def hash                          #:nodoc:
+        __getobj__.hash ^ self.class.hash
+      end
+
+      def eql?(o)                       #:nodoc:
         self.class == o.class and __getobj__.eql?(o)
       end
 
-      def ==(o)
+      def ==(o)                         #:nodoc:
         __getobj__.==(o)
       end
 
-      def inspect
+      def inspect                       #:nodoc:
         "Proxy:#{__getobj__.inspect}"
       end
-#=end
     end
   end
 end
-

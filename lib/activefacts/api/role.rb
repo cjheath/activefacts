@@ -1,5 +1,10 @@
 #
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts API
+#       Role class.
+#       Each accessor method created on an instance corresponds to a Role object in the instance's class.
+#       Binary fact types construct a Role at each end.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
   module API
@@ -10,12 +15,12 @@ module ActiveFacts
     # an array of the roles it plays.
     class Role
       attr_accessor :owner            # The Concept to which this role belongs
-      attr_accessor :name
-      attr_accessor :counterpart_concept           # May be a Symbol, which will be converted to a Class/Concept
+      attr_accessor :name             # The name of the role (a Symbol)
+      attr_accessor :counterpart_concept  # A Concept Class (may be temporarily a Symbol before the class is defined)
       attr_accessor :counterpart      # All roles except unaries have a binary counterpart
-      attr_accessor :unique
-      attr_accessor :mandatory
-      attr_accessor :value_restriction
+      attr_accessor :unique           # Is this role played by at most one instance, or more?
+      attr_accessor :mandatory        # In a valid fact population, is this role required to be played?
+      attr_accessor :value_restriction  # Counterpart Instances playing this role must meet these restrictions
       attr_reader :is_identifying     # Is this an identifying role for owner?
 
       def initialize(owner, counterpart_concept, counterpart, name, mandatory = false, unique = true)
@@ -28,6 +33,7 @@ module ActiveFacts
         @is_identifying = @owner.respond_to?(:identifying_role_names) && @owner.identifying_role_names.include?(@name)
       end
 
+      # Is this role a unary (created by maybe)? If so, it has no counterpart
       def unary?
         # N.B. A role with a forward reference looks unary until it is resolved.
         counterpart == nil

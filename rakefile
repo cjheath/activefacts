@@ -16,11 +16,13 @@ $hoe = Hoe.new('activefacts', ActiveFacts::VERSION) do |p|
     ['newgem', ">= #{::Newgem::VERSION}"]
   ]
   p.spec_extras[:extensions] = 'lib/activefacts/cql/Rakefile'
-  p.spec_extras[:rdoc_options] = [
-      "-x", "lib/activefacts/cql/.*.rb",
-      "-x", "lib/activefacts/vocabulary/.*.rb",
-      "-x", "lib/activefacts/persistence/.*.rb",
-    ]
+  # Magic Hoe hook to prevent the generation of diagrams:
+  ENV['NODOT'] = 'yes'
+  p.spec_extras[:rdoc_options] = %w{
+      -A has_one -A one_to_one -A maybe
+      -x lib/activefacts/cql/.*.rb
+      -x lib/activefacts/vocabulary/.*.rb
+    }
   p.clean_globs |= %w[**/.DS_Store tmp *.log]
   path = (p.rubyforge_name == p.name) ? p.rubyforge_name : "\#{p.rubyforge_name}/\#{p.name}"
   p.remote_rdoc_dir = File.join(path.gsub(/^#{p.rubyforge_name}\/?/,''), 'rdoc')

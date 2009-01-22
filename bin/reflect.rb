@@ -1,9 +1,9 @@
 #! /usr/bin/ruby
 #
-#       Test Program to reverse engineer a schema from a database.
+#       ActiveFacts: Test Program to reverse engineer a schema from a database.
 #       Connections to the database are made using ActiveRecord.
 #
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 
 require "rubygems"

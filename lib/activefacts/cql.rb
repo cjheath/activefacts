@@ -1,6 +1,8 @@
 #
-# ActiveFacts CQL loader.
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts CQL loader.
+#       Use Polyglot to patch things so you can *require* a CQL file and have it define a Ruby module.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'rubygems'
 require 'polyglot'
@@ -9,12 +11,13 @@ require 'activefacts/input/cql'
 require 'activefacts/generate/ruby'
 
 module ActiveFacts
-  # Extend the generated parser:
+  # This class has a load method for Polyglot to tell it how to _require_ a CQL file.
+  # The CQL file is parsed to a vocabulary constellation, which is generated
+  # to Ruby code and eval'd, making the generated classes available.
+  # To make this Loader available, simply
+  #   require 'activefacts/cql'
   class CQLLoader
-    # This load method for Polyglot tells it how to _require_ a CQL file.
-    # The CQL file is parsed to a vocabulary constellation, which is generated
-    # to Ruby code and eval'd, making the generated classes available.
-    def self.load(file)
+    def self.load(file) #:nodoc:
       debug "Loading #{file}" do
         vocabulary = ActiveFacts::Input::CQL.readfile(file)
 

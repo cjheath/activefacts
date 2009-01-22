@@ -1,14 +1,22 @@
 #
-# Generate Ruby for the ActiveFacts API from an ActiveFacts vocabulary.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Generators.
+#       Generate Ruby classes for the ActiveFacts API from an ActiveFacts vocabulary.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/vocabulary'
 require 'activefacts/generate/oo'
 
 module ActiveFacts
-
   module Generate
+    # Generate Ruby module containing classes for an ActiveFacts vocabulary.
+    # Invoke as
+    #   afgen --ruby[=options] <file>.cql
+    # Options are comma or space separated:
+    # * help list available options
+    # * sql Emit the sql mapping for tables/columns (REVISIT: not functional at present)
     class RUBY < OO
+    private
 
       def set_option(option)
         @sql ||= false

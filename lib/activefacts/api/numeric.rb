@@ -1,32 +1,35 @@
 #
-# The ActiveFacts Runtime API Numeric hacks to handle immediate types.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       Numeric and Date delegates and hacks to handle immediate types.
 #
-# This hack is required because Integer & Float don't support new,
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
+# These delegates are required because Integer & Float don't support new,
 # and can't be sensibly subclassed. Just delegate to an instance var.
+# Date and DateTime don't have a sensible new() method, so we monkey-patch one here.
 #
 require 'delegate'
 require 'date'
 
 # It's not possible to subclass Integer, so instead we delegate to it.
 class Int < SimpleDelegator
-  def initialize(i = nil)
+  def initialize(i = nil)               #:nodoc:
     __setobj__(Integer(i))
   end
 
-  def to_s
+  def to_s                              #:nodoc:
     __getobj__.to_s
   end
 
-  def hash
+  def hash                              #:nodoc:
     __getobj__.hash ^ self.class.hash
   end
 
-  def eql?(o)
+  def eql?(o)                           #:nodoc:
     self.class == o.class and __getobj__.eql?(Integer(o))
   end
 
-  def ==(o)
+  def ==(o)                             #:nodoc:
     __getobj__.==(o)
   end
 
@@ -37,34 +40,35 @@ end
 
 # It's not possible to subclass Float, so instead we delegate to it.
 class Real < SimpleDelegator
-  def initialize(r = nil)
+  def initialize(r = nil)                               #:nodoc:
     __setobj__(Float(r))
   end
 
-  def hash
+  def hash                              #:nodoc:
     __getobj__.hash ^ self.class.hash
   end
 
-  def to_s
+  def to_s                              #:nodoc:
     __getobj__.to_s
   end
 
-  def eql?(o)
+  def eql?(o)                           #:nodoc:
     self.class == o.class and __getobj__.eql?(Float(o))
   end
 
-  def ==(o)
+  def ==(o)                             #:nodoc:
     __getobj__.==(o)
   end
 
-  def inspect
+  def inspect                           #:nodoc:
     "#{self.class.basename}:#{__getobj__.inspect}"
   end
 end
 
 # A Date can be constructed from any Date subclass, not just using the normal date constructors.
-class ::Date #:nodoc:
+class ::Date
   class << self; alias_method :old_new, :new end
+  # Date.new cannot normally be called passing a Date as the parameter. This allows that.
   def self.new(*a, &b)
     #puts "Constructing date with #{a.inspect} from #{caller*"\n\t"}"
     if (a.size == 1 && Date === a[0])
@@ -77,8 +81,9 @@ class ::Date #:nodoc:
 end
 
 # A DateTime can be constructed from any Date or DateTime subclass
-class ::DateTime #:nodoc:
+class ::DateTime
   class << self; alias_method :old_new, :new end
+  # DateTime.new cannot normally be called passing a Date or DateTime as the parameter. This allows that.
   def self.new(*a, &b)
     #puts "Constructing DateTime with #{a.inspect} from #{caller*"\n\t"}"
     if (a.size == 1)
@@ -99,8 +104,7 @@ end
 # The AutoCounter class is an integer, but only after the value
 # has been established in the database.
 # Construct it with the value :new to get an uncommitted value.
-# You can use this new instance as a role value to identify an entity instance,
-# or anywhere else for that matter.
+# You can use this new instance as a value of any role of this type, including to identify an entity instance.
 # The assigned value will be filled out everywhere it needs to be, upon save.
 class AutoCounter
   def initialize(i = :new)
@@ -109,11 +113,13 @@ class AutoCounter
     @value = i == :new ? nil : i
   end
 
+  # Assign a definite value to an AutoCounter; this may only be done once
   def assign(i)
     raise ArgumentError if @value
     @value = i.to_i
   end
 
+  # Ask whether a definite value has been assigned
   def defined?
     !@value.nil?
   end
@@ -126,6 +132,7 @@ class AutoCounter
     end
   end
 
+  # An AutoCounter may only be used in numeric expressions after a definite value has been assigned
   def self.coerce(i)
     raise ArgumentError unless @value
     [ i.to_i, @value ]
@@ -135,15 +142,15 @@ class AutoCounter
     "\#<AutoCounter "+to_s+">"
   end
 
-  def hash
+  def hash                              #:nodoc:
     to_s.hash ^ self.class.hash
   end
 
-  def eql?(o)
+  def eql?(o)                           #:nodoc:
     self.class == o.class and to_s.eql?(o.to_s)
   end
 
-  def self.inherited(other)
+  def self.inherited(other)             #:nodoc:
     def other.identifying_role_values(*args)
       return nil if args == [:new]  # A new object has no identifying_role_values
       return new(*args)

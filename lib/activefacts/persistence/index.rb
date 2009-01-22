@@ -1,31 +1,49 @@
 #
-# An Index on a Concept is used to represent a unique constraint across roles absorbed
-# into that concept's table.
+#       ActiveFacts Relational mapping and persistence.
+#       An Index on a Concept is used to represent a unique constraint across roles absorbed
+#       into that concept's table.
 #
-# Reference objects update each concept's list of the references *to* and *from* that concept.
-#
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 
 module ActiveFacts
-  module Metamodel
+  module Persistence
     class Index
-      attr_reader :uniqueness_constraint, :on, :over, :columns, :is_primary, :is_unique
+      # The UniquenessConstraint that created this index
+      def uniqueness_constraint; @uniqueness_constraint; end
+
+      # The table that the index is on
+      def on; @on; end
+
+      # If a non-mandatory reference was absorbed, only the non-nil instances are unique.
+      # Return the Concept that was absorbed, which might differ from this Index's table.
+      def over; @over; end
+
+      # Return the array of columns in this index
+      def columns; @columns; end
+
+      # Is this index the primary key for this table?
+      def is_primary; @is_primary; end
+
+      # Is this index unique?
+      def is_unique; @is_unique; end
 
       # An Index arises from a uniqueness constraint and applies to a table,
       # but because the UC may actually be over an object absorbed into the table,
       # we must record that object also.
       # We record the columns it's over, whether it's primary (for 'over'),
       # and whether it's unique (always, at present)
-      def initialize(uc, on, over, columns, is_primary, is_unique = true)
+      def initialize(uc, on, over, columns, is_primary, is_unique = true)   #:nodoc:
         @uniqueness_constraint, @on, @over, @columns, @is_primary, @is_unique =
           uc, on, over, columns, is_primary, is_unique
       end
 
+      # The name that was assigned (perhaps implicitly by NORMA)
       def real_name
         @uniqueness_constraint.name && @uniqueness_constraint.name != '' ? @uniqueness_constraint.name : nil
       end
 
+      # This name is either the name explicitly assigned (if any) or is constructed to form a unique index name.
       def name
         uc = @uniqueness_constraint
         r = real_name
@@ -35,35 +53,41 @@ module ActiveFacts
           (uc.is_preferred_identifier ? "" : "By"+column_names*"")
       end
 
-      def abbreviated_column_names
-        columns.map{|column| column.name.sub(/^#{over.name}/,'')}
-      end
-
+      # An array of the names of the columns this index covers
       def column_names
         columns.map{|column| column.name}
       end
 
+      # An array of the names of the columns this index covers, with some lexical truncations.
+      def abbreviated_column_names
+        columns.map{|column| column.name.sub(/^#{over.name}/,'')}
+      end
+
+      # The name of a view that can be created to enforce uniqueness over non-null key values
       def view_name
         "#{over.name}#{on == over ? "" : "In"+on.name}"
       end
 
-      def to_s
+      def to_s  #:nodoc:
         name = @uniqueness_constraint.name
         colnames = @columns.map(&:name)*", "
         preferred = @uniqueness_constraint.is_preferred_identifier ? " (preferred)" : ""
         "Index #{name} on #{@on.name} over #{@over.name}(#{colnames})#{preferred}"
       end
     end
+  end
 
+  module Metamodel    #:nodoc:
     class Concept
-      attr_reader :indices
+      # An array of each Index for this table
+      def indices; @indices; end
 
-      def clear_indices
+      def clear_indices     #:nodoc:
         # Clear any previous indices
         @indices = nil
       end
 
-      def populate_indices
+      def populate_indices     #:nodoc:
         # The absorption path of a column indicates how it came to be in this table.
         # It might be a direct many:one valuetype relationship, or it might be in such
         # a relationship to an entity that was absorbed into this table (and so on).
@@ -130,7 +154,7 @@ module ActiveFacts
               (rrs = uc.role_sequence.all_role_ref).size == 1 and
               over.absorbed_via.fact_type.all_role.include?(rrs.only.role)
 
-            index = Index.new(
+            index = ActiveFacts::Persistence::Index.new(
               uc,
               self,
               over,
@@ -146,7 +170,7 @@ module ActiveFacts
     end
 
     class Vocabulary
-      def populate_all_indices
+      def populate_all_indices  #:nodoc:
         debug :index, "Populating all concept indices" do
           all_feature.each do |feature|
             next unless feature.is_a? Concept

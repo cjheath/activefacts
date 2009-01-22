@@ -1,8 +1,8 @@
 #
-# ActiveFacts runtime API.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API.
+#       Various additions or patches to Ruby built-in classes, and some global support methods
 #
-# Note that we still require facets/basicobject, see numeric.rb
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 
 class Symbol #:nodoc:

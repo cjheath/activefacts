@@ -1,17 +1,27 @@
 #
-# Generate text output for ActiveFacts vocabularies.
+#       ActiveFacts Generators.
+#       Absorption generator.
 #
-# Copyright (c) 2007 Clifford Heath. Read the LICENSE file.
-# Author: Clifford Heath.
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/persistence'
 
 module ActiveFacts
   module Generate
+    # Emit the absorption (Relational summary) for vocabulary.
+    # Not currently working, it relies on the old relational composition code.
+    # Invoke as
+    #   afgen --absorption[=options] <file>.cql"
+    # Options are comma or space separated:
+    # * no_columns Don't emit the columns
+    # * dependent Show Concepts that are not tables as well
+    # * paths Show the references paths through which each column was defined
+    # * no_identifier Don't show the identified_by columns for an EntityType
+
     class ABSORPTION
       include Metamodel
 
-      def initialize(vocabulary, *options)
+      def initialize(vocabulary, *options)  #:nodoc:
         @vocabulary = vocabulary
         @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
         @no_columns = options.include? "no_columns"
@@ -20,7 +30,7 @@ module ActiveFacts
         @no_identifier = options.include? "no_identifier"
       end
 
-      def generate(out = $>)
+      def generate(out = $>)  #:nodoc:
         no_absorption = 0
         single_absorption_vts = 0
         single_absorption_ets = 0
@@ -31,42 +41,24 @@ module ActiveFacts
           # Don't dump imported (base) ValueTypes:
           next if ValueType === o && !o.supertype
           show(o)
-
-          case o.absorption_paths.size
-          when 0; no_absorption += 1
-          when 1
-            if ValueType === o
-              single_absorption_vts += 1
-            else
-              single_absorption_ets += 1
-            end
-          else
-            if ValueType === o
-              multi_absorption_vts += 1
-            else
-              multi_absorption_ets += 1
-            end
-          end
-
         end
-        puts "#{no_absorption} concepts have no absorption paths, #{single_absorption_vts}/#{single_absorption_ets} value/entity types have only one path, #{multi_absorption_vts}/#{multi_absorption_ets} have more than one"
       end
 
-      def show concept
-        return unless concept.independent || @dependent
+      def show concept        #:nodoc:
+        return unless concept.is_table || @dependent
 
         print "#{concept.name}"
-        print " (#{concept.tentative ? "tentatively " : ""}#{concept.independent ? "in" : ""}dependent)" if @dependent
+        print " (#{concept.tentative ? "tentatively " : ""}#{concept.is_table ? "in" : ""}dependent)" if @dependent
 
         if !@no_identifier && concept.is_a?(EntityType)
           print " is identified by:\n\t#{
-              concept.absorbed_reference_roles.all_role_ref.map { |rr| rr.column_name(".") } * ",\n\t"
+"REVISIT" #              concept.references_from.to_s
             }"
         end
         print "\n"
 
         unless @no_columns
-          puts "#{ concept.absorbed_roles.all_role_ref.map do |role_ref|
+          puts "#{ concept.references_from.map do |role_ref|
               "\t#{role_ref.column_name(".")}\n"
             end*"" }"
         end

@@ -1,6 +1,8 @@
 #
-# ActiveFacts CQL parser and loader.
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts CQL Parser.
+#       The parser turns CQL strings into abstract syntax trees ready for semantic analysis.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'rubygems'
 require 'treetop'

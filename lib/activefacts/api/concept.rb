@@ -1,6 +1,8 @@
 #
-# The ActiveFacts Runtime API Concept class
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       Concept (a mixin module for the class Class)
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 
 module ActiveFacts

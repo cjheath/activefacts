@@ -1,6 +1,8 @@
 #
-# The ActiveFacts Runtime API Value extension module
-# Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
+#       ActiveFacts Runtime API
+#       Value module (mixins for ValueType classes and instances)
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 # The methods of this module are added to Value type classes.
 #

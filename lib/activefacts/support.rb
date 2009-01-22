@@ -1,3 +1,10 @@
+#
+#       ActiveFacts Support code.
+#       The debug method supports indented tracing.
+#       Set the DEBUG environment variable to enable it. Search the code to find the DEBUG keywords, or use "all".
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 #module ActiveFacts
   $debug_indent = nil
   $debug_nested = false
@@ -38,6 +45,7 @@
   end
 #end
 
+# Return all duplicate objects in the array (using hash-equality)
 class Array
   def duplicates(&b)
     inject({}) do |h,e|

@@ -1,15 +1,38 @@
+#
+#       ActiveFacts Relational mapping and persistence.
+#       A ForeignKey exists for every Reference from a Concept to another Concept that's a table.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
 module ActiveFacts
-  module Metamodel
-
+  module Persistence
     class ForeignKey
-      attr_reader :from, :to, :reference, :from_columns, :to_columns
-      def initialize(from, to, fk_ref, from_columns, to_columns)
+      # What table (Concept) is the FK from?
+      def from; @from; end
+
+      # What table (Concept) is the FK to?
+      def to; @to; end
+
+      # What reference created the FK?
+      def reference; @reference; end
+
+      # What columns in the *from* table form the FK
+      def from_columns; @from_columns; end
+
+      # What columns in the *to* table form the identifier
+      def to_columns; @to_columns; end
+
+      def initialize(from, to, fk_ref, from_columns, to_columns) #:nodoc:
         @from, @to, @fk_ref, @from_columns, @to_columns =
           from, to, fk_ref, from_columns, to_columns
       end
     end
+  end
 
+  module Metamodel    #:nodoc:
     class Concept
+      # When an EntityType is fully absorbed, its foreign keys are too.
+      # Return an Array of Reference paths for such absorbed FKs
       def all_absorbed_foreign_key_reference_path
         references_from.inject([]) do |array, ref|
           if ref.is_simple_reference
@@ -23,6 +46,7 @@ module ActiveFacts
         end
       end
 
+      # Return an array of all the foreign keys from this table
       def foreign_keys
         fk_ref_paths = all_absorbed_foreign_key_reference_path
 
@@ -78,7 +102,7 @@ module ActiveFacts
             end
             debug :fk, "to_columns in #{to.name}: #{to_columns.map { |column| column ? column.name : "OOPS!" }*", "}"
 
-            ForeignKey.new(self, to, fk_ref_path[-1], from_columns, to_columns)
+            ActiveFacts::Persistence::ForeignKey.new(self, to, fk_ref_path[-1], from_columns, to_columns)
           end
         end
       end
