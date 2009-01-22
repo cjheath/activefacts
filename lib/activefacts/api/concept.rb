@@ -35,7 +35,7 @@ module ActiveFacts
           end
           raise "Role #{basename}.#{name} is not defined" unless role
           # Bind the role if possible, but don't require it:
-          role.resolve_player(vocabulary) rescue nil unless Class === role.player
+          role.resolve_counterpart(vocabulary) rescue nil unless role.counterpart_concept.is_a?(Class)
           role
         else
           nil
@@ -96,7 +96,7 @@ module ActiveFacts
             end
 
             # Realise the roles (create accessors) of this supertype.
-            # REVISIT: The existing accessors at the other end will need to allow this class as role player
+            # REVISIT: The existing accessors at the other end will need to allow this class as role counterpart
             # REVISIT: Need to check all superclass roles recursively, unless we hit a common supertype
             #puts "Realising concept #{concept.name} in #{basename}"
             realise_supertypes(concept, all_supertypes)
@@ -121,7 +121,7 @@ module ActiveFacts
 
       # Every new role added or inherited comes through here:
       def realise_role(role) #:nodoc:
-        #puts "Realising role #{role.player.basename rescue role.player}.#{role.name} in #{basename}"
+        #puts "Realising role #{role.counterpart_concept.basename rescue role.counterpart_concept}.#{role.name} in #{basename}"
 
         if (!role.counterpart)
           # Unary role
@@ -203,7 +203,7 @@ module ActiveFacts
 
       # REVISIT: Add __add_to(constellation) and __remove(constellation) here?
       def define_single_role_accessor(role, one_to_one)
-        # puts "Defining #{basename}.#{role.name} to #{role.player.basename} (#{one_to_one ? "assigning" : "populating"} #{role.counterpart.name})"
+        # puts "Defining #{basename}.#{role.name} to #{role.counterpart_concept.basename} (#{one_to_one ? "assigning" : "populating"} #{role.counterpart.name})"
         define_single_role_getter(role)
 
         if (one_to_one)
@@ -233,8 +233,8 @@ module ActiveFacts
           define_method "#{role.name}=" do |value|
             role_var = "@#{role.name}"
 
-            # If role.player isn't bound to a class yet, bind it.
-            role.resolve_player(self.class.vocabulary) unless Class === role.player
+            # If role.counterpart_concept isn't bound to a class yet, bind it.
+            role.resolve_counterpart(self.class.vocabulary) unless role.counterpart_concept.is_a?(Class)
 
             # Get old value, and jump out early if it's unchanged:
             old = instance_variable_get(role_var) rescue nil
@@ -292,13 +292,13 @@ module ActiveFacts
       #   Role Name
       # else:
       #   Leading Adjective
-      #   Role player name (not role name)
+      #   Role counterpart_concept name (not role name)
       #   Trailing Adjective
-      # "_by_<other_role_name>" if other_role_name != this role player's name, and not other_player_this_player
+      # "_by_<other_role_name>" if other_role_name != this role counterpart_concept's name, and not other_player_this_player
       def extract_binary_params(one_to_one, args)
         # Params:
         #   role_name (Symbol)
-        #   other player (Symbol or Class)
+        #   other counterpart_concept (Symbol or Class)
         #   mandatory (:mandatory)
         #   other end role name if any (Symbol),
         role_name = nil
@@ -354,7 +354,7 @@ module ActiveFacts
         # Avoid a confusing mismatch:
         # Note that if you have a role "supervisor" and a sub-class "Supervisor", this'll bitch.
         if (Class === related && (indicated = vocabulary.concept(role_name)) && indicated != related)
-          raise "Role name #{role_name} indicates a different player #{indicated} than specified"
+          raise "Role name #{role_name} indicates a different counterpart concept #{indicated} than specified"
         end
 
         # puts "Calculating related method name for related_role_name=#{related_role_name.inspect}, related_name=#{related_name.inspect}, role_player=#{role_player.inspect}, role_name=#{role_name.inspect}:"

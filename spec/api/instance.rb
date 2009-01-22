@@ -228,8 +228,8 @@ describe "An instance of every type of Concept" do
       entity_type.identifying_role_names.each do |ir|
           role = entity_type.roles(ir)
           role.should_not be_nil
-          player = role.player
-          verbalisation.should =~ %r{\b#{player.basename}\b}
+          counterpart_concept = role.counterpart_concept
+          verbalisation.should =~ %r{\b#{counterpart_concept.basename}\b}
         end
     end
   end
@@ -252,8 +252,8 @@ describe "An instance of every type of Concept" do
       entity.class.identifying_role_names.each do |ir|
           role = entity.class.roles(ir)
           role.should_not be_nil
-          player = role.player
-          verbalisation.should =~ %r{\b#{player.basename}\b}
+          counterpart_concept = role.counterpart_concept
+          verbalisation.should =~ %r{\b#{counterpart_concept.basename}\b}
         end
     end
   end
@@ -314,8 +314,8 @@ describe "An instance of every type of Concept" do
         # Verify that the identifying role has a equivalent value (except AutoCounter):
         role_name = entity_type.identifying_role_names[0]
         role = entity_type.roles(role_name)
-        player = role.player
-        player_superclasses = [ player.superclass, player.superclass.superclass ]
+        counterpart_concept = role.counterpart_concept
+        player_superclasses = [ counterpart_concept.superclass, counterpart_concept.superclass.superclass ]
         e.send(role_name).should == klass.new(*value) unless player_superclasses.include?(AutoCounter)
       end
     end

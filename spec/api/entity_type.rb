@@ -86,7 +86,7 @@ describe "Entity Type class definitions" do
     Mod::Person.identifying_role_names.should == [:name]
   end
 
-  it "should prevent a role name from matching a concept that exists unless that concept is the player" do
+  it "should prevent a role name from matching a concept that exists unless that concept is the counterpart" do
     lambda {
         module Mod
           class LegalEntity

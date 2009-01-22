@@ -39,7 +39,7 @@ describe "Roles" do
     end
     role = Mod::Existing1.roles(:name)
     role.should_not be_nil
-    role.player.should == Mod::Name
+    role.counterpart_concept.should == Mod::Name
   end
 
   it "should inject the respective role name into the matching concept" do
@@ -63,7 +63,7 @@ describe "Roles" do
     # print "Mod::Existing2.roles = "; p Mod::Existing2.roles
     r = Mod::Existing2.roles(:given_name)
     r.should_not be_nil
-    Symbol.should === r.player
+    Symbol.should === r.counterpart_concept
     module Mod
       class GivenName < String
         value_type
@@ -72,7 +72,7 @@ describe "Roles" do
     # puts "Should resolve now:"
     r = Mod::Existing2.roles(:given_name)
     r.should_not be_nil
-    r.player.should == Mod::GivenName
+    r.counterpart_concept.should == Mod::GivenName
   end
 
   it "should handle subtyping a value type" do
@@ -84,8 +84,8 @@ describe "Roles" do
     end
     r = Mod::FamilyName.roles(:patriarch)
     r.should_not be_nil
-    r.player.should == Mod::Person
-    r.player.roles(:family_name).player.should == Mod::FamilyName
+    r.counterpart_concept.should == Mod::Person
+    r.counterpart_concept.roles(:family_name).counterpart_concept.should == Mod::FamilyName
   end
 
   it "should instantiate the matching concept on assignment" do
@@ -98,7 +98,7 @@ describe "Roles" do
     contract.second.should == acme
     end
 
-  it "should append the player into the respective role array in the matching concept" do
+  it "should append the counterpart into the respective role array in the matching concept" do
     foo = Mod::Name.new("Foo")
     le = Mod::LegalEntity.new(foo)
     le.respond_to?(:name).should be_true

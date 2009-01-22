@@ -130,15 +130,15 @@ module ActiveFacts
 
           role_args = ir.map{|role_sym| roles(role_sym)}.zip(args)
           role_args.map do |role, arg|
-            #puts "Getting identifying_role_value for #{role.player.basename} using #{arg.inspect}"
+            #puts "Getting identifying_role_value for #{role.counterpart_concept.basename} using #{arg.inspect}"
             next nil unless arg
             next !!arg unless role.counterpart  # Unary
             arg = arg.__getobj__ if RoleProxy === arg
-            if arg.is_a?(role.player)              # REVISIT: or a secondary supertype
+            if arg.is_a?(role.counterpart_concept)              # REVISIT: or a secondary supertype
               # Note that with a secondary supertype, it must still return the values of these identifying_role_names
               next arg.identifying_role_values
             end
-            role.player.identifying_role_values(*arg)
+            role.counterpart_concept.identifying_role_values(*arg)
           end
         end
 
@@ -164,12 +164,12 @@ module ActiveFacts
                 value = role_key = nil          # No value
               elsif !role.counterpart
                 value = role_key = !!arg        # Unary
-              elsif arg.is_a?(role.player)      # REVISIT: or a secondary supertype
+              elsif arg.is_a?(role.counterpart_concept)      # REVISIT: or a secondary supertype
                 arg = arg.__getobj__ if RoleProxy === arg
                 raise "Connecting values across constellations" unless arg.constellation == constellation
                 value, role_key = arg, arg.identifying_role_values
               else
-                value, role_key = role.player.assert_instance(constellation, Array(arg))
+                value, role_key = role.counterpart_concept.assert_instance(constellation, Array(arg))
               end
               key << role_key
               value
