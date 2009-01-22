@@ -764,7 +764,7 @@ module ActiveFacts
                 # we need to accumulate all possible matches to be sure
                 # there's only one, or the match is exact, or risk ambiguity.
                 debug "Reading match was #{to_match.size == 0 ? "ok" : "bad"}"
-                return candidate_reading.role_sequence.all_role_ref.map{|rr| rr.role} if to_match.size == 0
+                return candidate_reading.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.role} if to_match.size == 0
               end
             end
           end
@@ -772,7 +772,7 @@ module ActiveFacts
 
         # Hmm, that didn't work, try the subtypes of the first player.
         # When a fact type matches like this, there is an implied join to the subtype.
-        players[0].subtypes.map do |subtype|
+        players[0].subtypes.each do |subtype|
           players[0] = subtype
           fr = invoked_fact_roles_by_players(reading, players)
           return fr if fr

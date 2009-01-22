@@ -42,7 +42,10 @@ module ActiveFacts
 
         puts "#{o.name} is defined as #{o.supertype.name}#{ parameters }#{
             o.value_restriction ? " restricted to {#{
-              o.value_restriction.all_allowed_range.map{|ar|
+              o.value_restriction.all_allowed_range.sort_by{|ar|
+                    ((min = ar.value_range.minimum_bound) && min.value) ||
+                      ((max = ar.value_range.maximum_bound) && max.value)
+                  }.map{|ar|
                   # REVISIT: Need to display as string or numeric according to type here...
                   min = ar.value_range.minimum_bound
                   max = ar.value_range.maximum_bound
@@ -328,7 +331,7 @@ module ActiveFacts
           # Find the common supertype of the players of the pi'th role in each sequence
           concepts = scrs.map{|r| r.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[pi].role.concept }
           player, players_differ[pi] = common_supertype(concepts)
-          raise "Role sequences of #{c.class.basename} must have concepts matching #{concept.name} in position #{pi}" unless player
+          raise "Role sequences of #{c.class.basename} must have concepts matching #{concepts.map(&:name)*","} in position #{pi}" unless player
           player
         end
         #puts "#{c.class.basename} has players #{players.map{|p| p.name}*", "}"

@@ -9,7 +9,7 @@ ProductName is defined as VariableLengthText();
 Quantity is defined as UnsignedInteger(32);
 RefineryName is defined as VariableLengthText(80);
 RegionName is defined as VariableLengthText();
-Season is defined as VariableLengthText(6) restricted to {'Spring', 'Summer', 'Autumn', 'Winter'};
+Season is defined as VariableLengthText(6) restricted to {'Autumn', 'Spring', 'Summer', 'Winter'};
 TransportMethod is defined as VariableLengthText() restricted to {'Rail', 'Road', 'Sea'};
 YearNr is defined as SignedInteger(32);
 

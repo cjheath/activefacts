@@ -456,7 +456,7 @@ module ActiveFacts
         # REVISIT: This searches all role sequences. Perhaps we could narrow it down first instead?
         role_sequence = @constellation.RoleSequence.values.detect{|c|
           #puts "Checking RoleSequence [#{c.all_role_ref.map{|rr| rr.role.concept.name}*", "}]"
-          role_array == c.all_role_ref.map{|rr| rr.role }
+          role_array == c.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.role }
           }
         # puts "Found matching RoleSequence!" if role_sequence
         return role_sequence if role_sequence
