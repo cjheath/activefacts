@@ -17,6 +17,7 @@ describe "CQL Parser" do
     CompanyQuery
     Insurance
     OrienteeringER
+    ServiceDirector
   }
 
   #Dir["examples/CQL/Bl*.cql"].each do |cql_file|

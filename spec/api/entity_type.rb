@@ -83,7 +83,7 @@ describe "Entity Type class definitions" do
   end
 
   it "should return the identifying roles" do
-    Mod::Person.identifying_roles.should == [:name]
+    Mod::Person.identifying_role_names.should == [:name]
   end
 
   it "should prevent a role name from matching a concept that exists unless that concept is the player" do

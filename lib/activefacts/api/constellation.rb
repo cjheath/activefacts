@@ -77,7 +77,7 @@ module ActiveFacts
 
             # REVISIT: It would be better not to rely on the role name pattern here:
             single_roles, multiple_roles = klass.roles.keys.sort_by(&:to_s).partition{|r| r.to_s !~ /\Aall_/ }
-            single_roles -= klass.identifying_roles if (klass.respond_to?(:identifying_roles))
+            single_roles -= klass.identifying_role_names if (klass.respond_to?(:identifying_role_names))
             # REVISIT: Need to include superclass roles also.
 
             instances = send(concept.to_sym)

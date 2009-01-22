@@ -18,6 +18,8 @@ module ActiveFacts
       end
 
       def each &b
+        # REVISIT: Provide a configuration variable to enable this heckling during testing:
+        #@a.sort_by{rand}.each &b
         @a.each &b
       end
 

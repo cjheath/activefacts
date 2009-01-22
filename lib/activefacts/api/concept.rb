@@ -46,7 +46,7 @@ module ActiveFacts
       #
       # Example: maybe :is_ceo
       def maybe(role_name)
-        realise_role(roles[role_name] = Role.new(TrueClass, nil, role_name))
+        realise_role(roles[role_name] = Role.new(self, TrueClass, nil, role_name))
       end
 
       # Define a binary fact type relating this concept to another,
@@ -161,15 +161,16 @@ module ActiveFacts
       def define_binary_fact_type(one_to_one, role_name, related, mandatory, related_role_name)
         # puts "#{self}.#{role_name} is to #{related.inspect}, #{mandatory ? :mandatory : :optional}, related role is #{related_role_name}"
 
-        roles[role_name] = role = Role.new(related, nil, role_name, mandatory)
+        raise "#{self.class.basename} cannot have more than one role named #{role_name}" if roles[role_name]
+        roles[role_name] = role = Role.new(self, related, nil, role_name, mandatory)
 
         # There may be a forward reference here where role_name is a Symbol,
         # and the block runs later when that Symbol is bound to the concept.
         when_bound(related, self, role_name, related_role_name) do |target, definer, role_name, related_role_name|
           if (one_to_one)
-            target.roles[related_role_name] = role.counterpart = Role.new(definer, role, related_role_name, false)
+            target.roles[related_role_name] = role.counterpart = Role.new(target, definer, role, related_role_name, false)
           else
-            target.roles[related_role_name] = role.counterpart = Role.new(definer, role, related_role_name, false, false)
+            target.roles[related_role_name] = role.counterpart = Role.new(target, definer, role, related_role_name, false, false)
           end
           #puts "Realising role pair #{definer.basename}.#{role_name} <-> #{target.basename}.#{related_role_name}"
           realise_role(role)
@@ -194,7 +195,7 @@ module ActiveFacts
         class_eval do
           define_method role.name do
             i = instance_variable_get("@#{role.name}") rescue nil
-            # i ? RoleProxy.new(i) : i
+            i ? RoleProxy.new(role, i) : i
             i
           end
         end
@@ -244,7 +245,13 @@ module ActiveFacts
 
             # DEBUG: puts "assign #{self.class.basename}.#{role.name} <-> #{value.inspect}.#{role.counterpart.name}#{old ? " (was #{old.inspect})" : ""}"
 
-            # REVISIT: Defend against changing identifying roles, and decide what to do.
+            # REVISIT: A frozen-key solution could be used to allow changing identifying roles.
+            # The key would be frozen, allowing indices and counterparts to de-assign,
+            # but delay re-assignment until defrosted.
+            # That would also allow caching the identifying_role_values, a performance win.
+
+            # This allows setting and clearing identifying roles, but not changing them.
+            raise "#{self.class.basename}: illegal attempt to modify identifying role #{role.name}" if role.is_identifying && value != nil && old != nil
 
             # puts "Setting binary #{role_var} to #{value.verbalise}"
             instance_variable_set(role_var, value)

@@ -1,5 +1,5 @@
 #
-# The ActiveFacts Runtime API RoleProxy class; experimental
+# The ActiveFacts Runtime API RoleProxy class; experimental (i.e. not working yet)
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 require 'delegate'
@@ -7,11 +7,12 @@ require 'delegate'
 module ActiveFacts
   module API
     class RoleProxy < SimpleDelegator   #:nodoc:
-=begin
-      def initialize(o = nil)
+      def initialize(role, o = nil)
+        @role = role    # REVISIT: Use this to implement verbalise()
         __setobj__(o)
       end
 
+#=begin
       def method_missing(m, *a, &b)
         begin
           r = super   # Delegate first
@@ -60,7 +61,7 @@ module ActiveFacts
       def inspect
         "Proxy:#{__getobj__.inspect}"
       end
-=end
+#=end
     end
   end
 end

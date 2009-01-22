@@ -190,7 +190,9 @@ describe "An instance of every type of Concept" do
         :int_value, :real_value, :auto_counter_value, :auto_counter_value,
         :string_value, :date_value, :date_time_value,
         :int_sub_value, :real_sub_value, :auto_counter_sub_value, :auto_counter_sub_value,
-        :string_sub_value, :date_sub_value, :date_time_sub_value
+        :string_sub_value, :date_sub_value, :date_time_sub_value,
+        :int_value, :real_value, :auto_counter_value, :auto_counter_value,
+        :string_value, :date_value, :date_time_value,
       ]
     @role_values = [
         3, 3.0, 6, 7,
@@ -223,7 +225,7 @@ describe "An instance of every type of Concept" do
 
       # All identifying roles should be in the verbalisation.
       # Strictly this should be the role name, but we don't set names here.
-      entity_type.identifying_roles.each do |ir|
+      entity_type.identifying_role_names.each do |ir|
           role = entity_type.roles(ir)
           role.should_not be_nil
           player = role.player
@@ -247,7 +249,7 @@ describe "An instance of every type of Concept" do
       entity.respond_to?(:verbalise).should be_true
       verbalisation = entity.verbalise
       verbalisation.should =~ %r{\b#{entity.class.basename}\b}
-      entity.class.identifying_roles.each do |ir|
+      entity.class.identifying_role_names.each do |ir|
           role = entity.class.roles(ir)
           role.should_not be_nil
           player = role.player
@@ -272,7 +274,7 @@ describe "An instance of every type of Concept" do
       end
     end
     @entities_by_entity.each do |entity|
-      role = entity.class.roles(entity.class.identifying_roles[0])
+      role = entity.class.roles(entity.class.identifying_role_names[0])
       role_name = role.name
       entity.respond_to?(role_name).should be_true
       entity.respond_to?(:"#{role_name}=").should be_true
@@ -310,7 +312,7 @@ describe "An instance of every type of Concept" do
             e = entity_type.new(value)
           }.should_not raise_error
         # Verify that the identifying role has a equivalent value (except AutoCounter):
-        role_name = entity_type.identifying_roles[0]
+        role_name = entity_type.identifying_role_names[0]
         role = entity_type.roles(role_name)
         player = role.player
         player_superclasses = [ player.superclass, player.superclass.superclass ]
@@ -319,32 +321,61 @@ describe "An instance of every type of Concept" do
     end
   end
 
-  it "that are entities should not allow its identifying roles to be assigned" do
-    pending
-    @entities.zip(@test_role_names, @role_values).each do |entity, role_name, value|
-      lambda {
-          entity.send(:"#{role_name}=", value)
-        }.should raise_error
-    end
-    @entities_by_entity.each do |entity|
-      role = entity.class.roles(entity.class.identifying_roles[0])
-      role_name = role.name
-      lambda {
-          entity.send(:"#{role_name}=", nil)
-        }.should raise_error
-    end
-  end
-
   it "should allow its non-identifying roles to be assigned values" do
     @entities.zip(@test_role_names).each do |entity, identifying_role|
       @test_role_names.zip(@role_values).each do |role_name, value|
-        next if role_name == identifying_role
+        # No roles of ValueType instances are tested in this file:
+        raise hell unless entity.class.included_modules.include?(ActiveFacts::API::Entity)
+        next if entity.class.identifying_role_names.include?(role_name)
         lambda {
-            entity.send(:"#{role_name}=", value)
+            begin
+              entity.send(:"#{role_name}=", value)
+            rescue => e
+              raise
+            end
           }.should_not raise_error
         lambda {
             entity.send(:"one_#{role_name}=", value)
           }.should_not raise_error
+      end
+    end
+  end
+
+  it "that is an entity type should not allow its identifying roles to be re-assigned" do
+    @entities.zip(@test_role_names).each do |entity, identifying_role|
+      @test_role_names.zip(@role_values).each do |role_name, value|
+        if entity.class.identifying_role_names.include?(role_name) && entity.send(role_name) != nil && value != nil
+          lambda {
+              entity.send(:"#{role_name}=", value)
+            }.should raise_error
+        end
+        one_role = :"one_#{role_name}"
+        if entity.class.identifying_role_names.include?(one_role) && entity.send(one_role) != nil
+          lambda {
+              entity.send(:"one_#{role_name}=", value)
+            }.should raise_error
+        end
+      end
+    end
+  end
+
+  it "that is an entity type should allow its identifying roles to be assigned to and from nil" do
+    @entities.zip(@test_role_names).each do |entity, identifying_role|
+      @test_role_names.zip(@role_values).each do |role_name, value|
+        if entity.class.identifying_role_names.include?(role_name)
+          # Nullify the value first:
+          entity.send(:"#{role_name}=", nil)
+          lambda {
+              entity.send(:"#{role_name}=", value)
+            }.should_not raise_error
+        end
+        one_role = :"one_#{role_name}"
+        if entity.class.identifying_role_names.include?(one_role) && entity.send(one_role) == nil
+          entity.send(one_role, nil)
+          lambda {
+              entity.send(one_role, value)
+            }.should_not raise_error
+        end
       end
     end
   end

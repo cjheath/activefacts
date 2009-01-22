@@ -49,10 +49,10 @@ describe "AutoCounter Value Type instances" do
       }.should raise_error
   end
 
-  it "should allow its roles to be assigned" do
+  it "should not allow its identifying roles to be assigned" do
     lambda {
         @thing.thing_id = @thing_id
-      }.should_not raise_error
+      }.should raise_error
   end
 
   it "should allow an existing counter to be re-used" do

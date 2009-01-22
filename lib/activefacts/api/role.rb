@@ -9,19 +9,23 @@ module ActiveFacts
     # or _one_to_one_, and the other is created on the counterpart class. Each Concept class maintains
     # an array of the roles it plays.
     class Role
+      attr_accessor :owner            # The Concept to which this role belongs
       attr_accessor :name
+      attr_accessor :player           # May be a Symbol, which will be converted to a Class/Concept (REVISIT: Misnamed; the owner is the player. This is the counterpart role player)
       attr_accessor :counterpart      # All roles except unaries have a binary counterpart
-      attr_accessor :player           # May be a Symbol, which will be converted to a Class/Concept
       attr_accessor :unique
       attr_accessor :mandatory
       attr_accessor :value_restriction
+      attr_reader :is_identifying     # Is this an identifying role for owner?
 
-      def initialize(player, counterpart, name, mandatory = false, unique = true)
+      def initialize(owner, player, counterpart, name, mandatory = false, unique = true)
+        @owner = owner
         @player = player
         @counterpart = counterpart
         @name = name
         @mandatory = mandatory
         @unique = unique
+        @is_identifying = @owner.respond_to?(:identifying_role_names) && @owner.identifying_role_names.include?(@name)
       end
 
       def unary?

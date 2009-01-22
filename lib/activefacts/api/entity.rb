@@ -25,23 +25,23 @@ module ActiveFacts
         hash = {}
         hash = args.pop.clone if Hash === args[-1]
 
-        # Pick any missing identifying_roles out of the hash if possible:
-        while args.size < (ir = klass.identifying_roles).size
+        # Pick any missing identifying roles out of the hash if possible:
+        while args.size < (ir = klass.identifying_role_names).size
           value = hash[role = ir[args.size]]
           hash.delete(role)
           args.push value
         end
 
         # If one arg is expected but more are passed, they might be the args for the object that plays the identifying role:
-        args = [args] if klass.identifying_roles.size == 1 && args.size > 1
+        args = [args] if klass.identifying_role_names.size == 1 && args.size > 1
 
         # This should now only occur when there are too many args passed:
         raise "Wrong number of parameters to #{klass}.new, " +
-            "expect (#{klass.identifying_roles*","}) " +
-            "got (#{args.map{|a| a.to_s.inspect}*", "})" if args.size != klass.identifying_roles.size
+            "expect (#{klass.identifying_role_names*","}) " +
+            "got (#{args.map{|a| a.to_s.inspect}*", "})" if args.size != klass.identifying_role_names.size
 
         # Assign the identifying roles in order, then the other roles passed as a hash:
-        (klass.identifying_roles.zip(args) + hash.entries).each do |role_name, value|
+        (klass.identifying_role_names.zip(args) + hash.entries).each do |role_name, value|
           role = klass.roles(role_name)
           send("#{role_name}=", value)
         end
@@ -56,14 +56,14 @@ module ActiveFacts
           constellation ? " in #{constellation.inspect}" : ""
         } #{
           # REVISIT: Where there are one-to-one roles, this cycles
-          self.class.identifying_roles.map{|role| "@#{role}="+send(role).inspect }*" "
+          self.class.identifying_role_names.map{|role| "@#{role}="+send(role).inspect }*" "
         }>"
       end
 
       # When used as a hash key, the hash key of this entity instance is calculated
       # by hashing the values of its identifying roles
       def hash
-        self.class.identifying_roles.map{|role|
+        self.class.identifying_role_names.map{|role|
             instance_variable_get("@#{role}")
           }.inject(0) { |h,v|
             h ^= v.hash
@@ -75,7 +75,7 @@ module ActiveFacts
       # comparing the values of its identifying roles
       def eql?(other)
         return false unless self.class == other.class
-        self.class.identifying_roles.each{|role|
+        self.class.identifying_role_names.each{|role|
             return false unless send(role).eql?(other.send(role))
           }
         return true
@@ -84,7 +84,7 @@ module ActiveFacts
       # Verbalise this entity instance
       def verbalise(role_name = nil)
         "#{role_name || self.class.basename}(#{
-          self.class.identifying_roles.map{|role_sym|
+          self.class.identifying_role_names.map{|role_sym|
               value = send(role_sym)
               role_name = self.class.roles(role_sym).name.to_s.camelcase(true)
               value ? value.verbalise(role_name) : "nil"
@@ -94,7 +94,7 @@ module ActiveFacts
 
       # Return the array of the values of this entity instance's identifying roles
       def identifying_role_values
-        self.class.identifying_roles.map{|role|
+        self.class.identifying_role_names.map{|role|
             send(role)
           }
       end
@@ -104,13 +104,13 @@ module ActiveFacts
         include Instance::ClassMethods
 
         # Return the array of Role objects that define the identifying relationships of this Entity type:
-        def identifying_roles
-          @identifying_roles ||= []
+        def identifying_role_names
+          @identifying_role_names ||= []
         end
 
         # Return an array of Instance objects that can identify an instance of this Entity type:
         def identifying_role_values(*args)
-          #puts "Getting identifying role values #{identifying_roles.inspect} of #{basename} using #{args.inspect}"
+          #puts "Getting identifying role values #{identifying_role_names.inspect} of #{basename} using #{args.inspect}"
 
           # If the single arg is an instance of the correct class or a subclass,
           # use the instance's identifying_role_values
@@ -120,7 +120,7 @@ module ActiveFacts
             return arg.identifying_role_values
           end
 
-          ir = identifying_roles
+          ir = identifying_role_names
           args, arg_hash = ActiveFacts::extract_hash_args(ir, args)
           if args.size < ir.size
             raise "#{basename} requires all identifying values, you're missing #{ir[args.size..-1].map(&:to_sym)*', '}"
@@ -134,8 +134,8 @@ module ActiveFacts
             next nil unless arg
             next !!arg unless role.counterpart  # Unary
             arg = arg.__getobj__ if RoleProxy === arg
-            if role.player === arg              # REVISIT: or a secondary supertype
-              # Note that with a secondary supertype, it must still return the values of these identifying_roles
+            if arg.is_a?(role.player)              # REVISIT: or a secondary supertype
+              # Note that with a secondary supertype, it must still return the values of these identifying_role_names
               next arg.identifying_role_values
             end
             role.player.identifying_role_values(*arg)
@@ -155,7 +155,7 @@ module ActiveFacts
           return instance, key if instance      # A matching instance of this class
 
           # Now construct each of this object's identifying roles
-          ir = identifying_roles
+          ir = identifying_role_names
           args, arg_hash = ActiveFacts::extract_hash_args(ir, args)
           role_values = ir.map{|role_sym| roles(role_sym)}.zip(args)
           key = []    # Gather the actual key (AutoCounters are special)
@@ -186,8 +186,8 @@ module ActiveFacts
 
         def index_instance(instance, key = nil, key_roles = nil) #:nodoc:
           # Derive a new key if we didn't receive one or if the roles are different:
-          unless key && key_roles && key_roles == identifying_roles
-            key = (key_roles = identifying_roles).map do |role_name|
+          unless key && key_roles && key_roles == identifying_role_names
+            key = (key_roles = identifying_role_names).map do |role_name|
               instance.send role_name
             end
           end
@@ -210,20 +210,20 @@ module ActiveFacts
         # inherited from a superclass.
         def initialise_entity_type(*args) #:nodoc:
           #puts "Initialising entity type #{self} using #{args.inspect}"
-          @identifying_roles = superclass.identifying_roles if superclass.respond_to?(:identifying_roles)
-          # REVISIT: @identifying_roles here are the symbols passed in, not the Role objects we should use.
+          @identifying_role_names = superclass.identifying_role_names if superclass.respond_to?(:identifying_role_names)
+          # REVISIT: @identifying_role_names here are the symbols passed in, not the Role objects we should use.
           # We'd need late binding to use Role objects...
-          @identifying_roles = args if args.size > 0 || !@identifying_roles
+          @identifying_role_names = args if args.size > 0 || !@identifying_role_names
         end
 
         def inherited(other) #:nodoc:
-          other.identified_by *identifying_roles
+          other.identified_by *identifying_role_names
           vocabulary.add_concept(other)
         end
 
         # verbalise this concept
         def verbalise
-          "#{basename} = entity type known by #{identifying_roles.map{|role_sym| role_sym.to_s.camelcase(true)}*" and "};"
+          "#{basename} is identified by #{identifying_role_names.map{|role_sym| role_sym.to_s.camelcase(true)}*" and "};"
         end
       end
 
