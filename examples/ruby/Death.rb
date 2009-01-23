@@ -18,7 +18,7 @@ module Death
 
   class Death
     identified_by :is_dead
-    has_one :is_dead, Person                    # See Person.all_death_by_is_dead
+    has_one :is_dead, Person                    # See Person.all_death_as_is_dead
     has_one :cause_of_death                     # See CauseOfDeath.all_death
   end
 

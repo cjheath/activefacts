@@ -50,13 +50,13 @@ module ORMModel1
     identified_by :person
     has_one :date                               # See Date.all_birth
     has_one :person                             # See Person.all_birth
-    has_one :attending_doctor, "Doctor"         # See Doctor.all_birth_by_attending_doctor
+    has_one :attending_doctor, "Doctor"         # See Doctor.all_birth_as_attending_doctor
   end
 
   class Death
     identified_by :died
-    has_one :died, Person                       # See Person.all_death_by_died
-    has_one :death_date, Date                   # See Date.all_death_by_death_date
+    has_one :died, Person                       # See Person.all_death_as_died
+    has_one :death_date, Date                   # See Date.all_death_as_death_date
   end
 
   class Doctor < Person

@@ -16,7 +16,7 @@ module SeparateSubtype
 
   class Claim
     identified_by :claim_id
-    one_to_one :claim_id, ClaimID               # See ClaimID.claim_by_claim_id
+    one_to_one :claim_id, ClaimID               # See ClaimID.claim
   end
 
   class Driver

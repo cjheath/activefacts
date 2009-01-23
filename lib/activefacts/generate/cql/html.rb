@@ -239,7 +239,7 @@ module ActiveFacts
           @identifying_fact_text = nil
           if (o = fact_type.entity_type)
             print "#{concept o.name} #{keyword "is"}"
-            if !o.all_type_inheritance_by_subtype.empty?
+            if !o.all_type_inheritance_as_subtype.empty?
               print(keyword(" a kind of ") + o.supertypes.map(&:name).map{|n| concept n}*", ")
             end
 

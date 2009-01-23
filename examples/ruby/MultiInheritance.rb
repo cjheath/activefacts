@@ -20,12 +20,12 @@ module MultiInheritance
   end
 
   class Australian < Person
-    has_one :tfn, TFN                           # See TFN.all_australian_by_tfn
+    has_one :tfn, TFN                           # See TFN.all_australian
   end
 
   class Employee < Person
     identified_by :employee_id
-    one_to_one :employee_id, EmployeeID         # See EmployeeID.employee_by_employee_id
+    one_to_one :employee_id, EmployeeID         # See EmployeeID.employee
   end
 
   class AustralianEmployee < Employee

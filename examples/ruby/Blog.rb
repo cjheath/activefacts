@@ -37,7 +37,7 @@ module Blog
   class Author
     identified_by :author_id
     one_to_one :author_id                       # See AuthorId.author
-    one_to_one :author_name, Name               # See Name.author_by_author_name
+    one_to_one :author_name, Name               # See Name.author_as_author_name
   end
 
   class Comment
@@ -70,9 +70,9 @@ module Blog
 
   class Topic
     identified_by :topic_id
-    has_one :parent_topic, Topic                # See Topic.all_topic_by_parent_topic
+    has_one :parent_topic, Topic                # See Topic.all_topic_as_parent_topic
     one_to_one :topic_id                        # See TopicId.topic
-    one_to_one :topic_name, Name                # See Name.topic_by_topic_name
+    one_to_one :topic_name, Name                # See Name.topic_as_topic_name
   end
 
 end

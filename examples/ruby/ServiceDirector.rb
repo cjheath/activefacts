@@ -143,7 +143,7 @@ module ServiceDirector
     one_to_one :company_code, Company_Code      # See Company_Code.company
     maybe :is_client
     maybe :is_vendor
-    has_one :operating_name, Name               # See Name.all_company_by_operating_name
+    has_one :operating_name, Name               # See Name.all_company_as_operating_name
   end
 
   class Credential
@@ -151,7 +151,7 @@ module ServiceDirector
     one_to_one :credential_nr, Credential_Nr    # See Credential_Nr.credential
     has_one :data_store                         # See DataStore.all_credential
     has_one :data_store_service                 # See DataStoreService.all_credential
-    has_one :expiration_date, "Date"            # See Date.all_credential_by_expiration_date
+    has_one :expiration_date, "Date"            # See Date.all_credential_as_expiration_date
     has_one :password                           # See Password.all_credential
     has_one :user_name                          # See UserName.all_credential
     has_one :vendor                             # See Vendor.all_credential
@@ -162,25 +162,25 @@ module ServiceDirector
     has_one :client                             # See Client.all_data_store
     one_to_one :data_store_name, DataStore_Name  # See DataStore_Name.data_store
     has_one :file_host_system                   # See FileHostSystem.all_data_store
-    one_to_one :friendly_name, Name, :friendly_name  # See Name.friendly_name_by_friendly_name
+    one_to_one :friendly_name, Name             # See Name.data_store_as_friendly_name
     has_one :geocode_file                       # See GeocodeFile.all_data_store
-    has_one :heart_beat_truck_pcid, TruckPCID   # See TruckPCID.all_data_store_by_heart_beat_truck_pcid
-    one_to_one :internal_credential, Credential  # See Credential.data_store_by_internal_credential
-    has_one :major_version, Version             # See Version.all_data_store_by_major_version
-    has_one :minor_version, Version             # See Version.all_data_store_by_minor_version
-    has_one :primary_host_system, "HostSystem"  # See HostSystem.all_data_store_by_primary_host_system
-    has_one :revision_version, Version          # See Version.all_data_store_by_revision_version
-    has_one :secondary_host_system, "HostSystem"  # See HostSystem.all_data_store_by_secondary_host_system
+    has_one :heart_beat_truck_pcid, TruckPCID   # See TruckPCID.all_data_store_as_heart_beat_truck_pcid
+    one_to_one :internal_credential, Credential  # See Credential.data_store_as_internal_credential
+    has_one :major_version, Version             # See Version.all_data_store_as_major_version
+    has_one :minor_version, Version             # See Version.all_data_store_as_minor_version
+    has_one :primary_host_system, "HostSystem"  # See HostSystem.all_data_store_as_primary_host_system
+    has_one :revision_version, Version          # See Version.all_data_store_as_revision_version
+    has_one :secondary_host_system, "HostSystem"  # See HostSystem.all_data_store_as_secondary_host_system
   end
 
   class Date
     identified_by :ddmmyyyy
-    one_to_one :ddmmyyyy, DDMMYYYY              # See DDMMYYYY.date_by_ddmmyyyy
+    one_to_one :ddmmyyyy, DDMMYYYY              # See DDMMYYYY.date
   end
 
   class DateTime
     identified_by :mdyhms
-    one_to_one :mdyhms, MDYHMS                  # See MDYHMS.date_time_by_mdyhms
+    one_to_one :mdyhms, MDYHMS                  # See MDYHMS.date_time
   end
 
   class Duration
@@ -215,24 +215,24 @@ module ServiceDirector
     identified_by :network_nr
     has_one :company, :origin_network           # See Company.all_origin_network
     has_one :data_store, :tcp_proxy_network     # See DataStore.all_tcp_proxy_network
-    has_one :domain_name, Name                  # See Name.all_network_by_domain_name
-    one_to_one :ending_ip, IP                   # See IP.network_by_ending_ip
+    has_one :domain_name, Name                  # See Name.all_network_as_domain_name
+    one_to_one :ending_ip, IP                   # See IP.network_as_ending_ip
     has_one :host_system                        # See HostSystem.all_network
-    one_to_one :initial_ip, IP                  # See IP.network_by_initial_ip
+    one_to_one :initial_ip, IP                  # See IP.network_as_initial_ip
     maybe :is_ip_range
     maybe :is_ip_single
     maybe :is_ip_subnet
     has_one :netmask                            # See Netmask.all_network
     one_to_one :network_nr, Network_Nr          # See Network_Nr.network
-    has_one :private_interface_switch, "Switch", :private_network  # See Switch.all_private_network_by_private_interface_switch
-    has_one :public_interface_switch, "Switch", :public_network  # See Switch.all_public_network_by_public_interface_switch
+    has_one :private_interface_switch, "Switch", :private_network  # See Switch.all_private_network
+    has_one :public_interface_switch, "Switch", :public_network  # See Switch.all_public_network
   end
 
   class NotificationLevel
     identified_by :notification_level_nr
-    has_one :initial_delay_duration, Duration   # See Duration.all_notification_level_by_initial_delay_duration
+    has_one :initial_delay_duration, Duration   # See Duration.all_notification_level_as_initial_delay_duration
     one_to_one :notification_level_nr, NotificationLevel_Nr  # See NotificationLevel_Nr.notification_level
-    has_one :repeat_duration, Duration          # See Duration.all_notification_level_by_repeat_duration
+    has_one :repeat_duration, Duration          # See Duration.all_notification_level_as_repeat_duration
   end
 
   class NotificationType
@@ -257,11 +257,11 @@ module ServiceDirector
     has_one :duration                           # See Duration.all_recurring_schedule
     maybe :friday
     maybe :monday
-    has_one :monitor_all_exclusion, Monitor, :all_exclusion_recurring_schedule  # See Monitor.all_all_exclusion_recurring_schedule_by_monitor_all_exclusion
-    has_one :monitor_integration_exclusion, Monitor, :integration_exclusion_recurring_schedule  # See Monitor.all_integration_exclusion_recurring_schedule_by_monitor_integration_exclusion
+    has_one :monitor_all_exclusion, Monitor, :all_exclusion_recurring_schedule  # See Monitor.all_all_exclusion_recurring_schedule
+    has_one :monitor_integration_exclusion, Monitor, :integration_exclusion_recurring_schedule  # See Monitor.all_integration_exclusion_recurring_schedule
     one_to_one :recurring_schedule_id, RecurringSchedule_Id  # See RecurringSchedule_Id.recurring_schedule
     maybe :saturday
-    has_one :start_time, "Time"                 # See Time.all_recurring_schedule_by_start_time
+    has_one :start_time, "Time"                 # See Time.all_recurring_schedule_as_start_time
     maybe :sunday
     maybe :thursday
     maybe :tuesday
@@ -271,8 +271,8 @@ module ServiceDirector
   class SatalliteMessage
     identified_by :satallite_message_id
     has_one :data_store                         # See DataStore.all_satallite_message
-    has_one :group_transaction, "Transaction"   # See Transaction.all_satallite_message_by_group_transaction
-    has_one :insertion_date_time, DateTime      # See DateTime.all_satallite_message_by_insertion_date_time
+    has_one :group_transaction, "Transaction"   # See Transaction.all_satallite_message_as_group_transaction
+    has_one :insertion_date_time, DateTime      # See DateTime.all_satallite_message_as_insertion_date_time
     has_one :message_data                       # See MessageData.all_satallite_message
     has_one :message_header                     # See MessageHeader.all_satallite_message
     has_one :provider_type                      # See ProviderType.all_satallite_message
@@ -282,9 +282,9 @@ module ServiceDirector
 
   class Subscription
     identified_by :subscription_nr
-    has_one :beginning_date, Date               # See Date.all_subscription_by_beginning_date
-    one_to_one :driver_tech_subscription, Company, :driver_tech_subscription  # See Company.driver_tech_subscription_by_driver_tech_subscription
-    has_one :ending_date, Date                  # See Date.all_subscription_by_ending_date
+    has_one :beginning_date, Date               # See Date.all_subscription_as_beginning_date
+    one_to_one :driver_tech_subscription, Company, :driver_tech_subscription  # See Company.driver_tech_subscription
+    has_one :ending_date, Date                  # See Date.all_subscription_as_ending_date
     maybe :is_enabled
     one_to_one :subscription_nr, Subscription_Nr  # See Subscription_Nr.subscription
   end
@@ -296,11 +296,11 @@ module ServiceDirector
     maybe :is_backup_updates
     maybe :is_send_disabled
     maybe :is_test_vectors_enabled
-    has_one :major_version, Version             # See Version.all_switch_by_major_version
-    has_one :minor_version, Version             # See Version.all_switch_by_minor_version
-    one_to_one :monitoring_port, Port           # See Port.switch_by_monitoring_port
-    has_one :operating_port, Port               # See Port.all_switch_by_operating_port
-    has_one :revision_version, Version          # See Version.all_switch_by_revision_version
+    has_one :major_version, Version             # See Version.all_switch_as_major_version
+    has_one :minor_version, Version             # See Version.all_switch_as_minor_version
+    one_to_one :monitoring_port, Port           # See Port.switch_as_monitoring_port
+    has_one :operating_port, Port               # See Port.all_switch_as_operating_port
+    has_one :revision_version, Version          # See Version.all_switch_as_revision_version
     one_to_one :switch_id, Switch_Id            # See Switch_Id.switch
   end
 
@@ -312,7 +312,7 @@ module ServiceDirector
 
   class Time
     identified_by :hhmmss
-    one_to_one :hhmmss, HHMMSS                  # See HHMMSS.time_by_hhmmss
+    one_to_one :hhmmss, HHMMSS                  # See HHMMSS.time
   end
 
   class Transaction
@@ -323,15 +323,15 @@ module ServiceDirector
   class User
     identified_by :user_name
     maybe :is_monitor_notification_disabled
-    has_one :primary_email_address, EmailAddress  # See EmailAddress.all_user_by_primary_email_address
-    has_one :secondary_email_address, EmailAddress  # See EmailAddress.all_user_by_secondary_email_address
+    has_one :primary_email_address, EmailAddress  # See EmailAddress.all_user_as_primary_email_address
+    has_one :secondary_email_address, EmailAddress  # See EmailAddress.all_user_as_secondary_email_address
     one_to_one :user_name, User_Name            # See User_Name.user
   end
 
   class MonitorNotificationUser
     identified_by :monitor_notification_type, :notification_user
     has_one :monitor_notification_type          # See MonitorNotificationType.all_monitor_notification_user
-    has_one :notification_user, User            # See User.all_monitor_notification_user_by_notification_user
+    has_one :notification_user, User            # See User.all_monitor_notification_user_as_notification_user
     has_one :notification_level                 # See NotificationLevel.all_monitor_notification_user
   end
 
@@ -339,7 +339,7 @@ module ServiceDirector
   end
 
   class Client < Company
-    has_one :default_data_store, DataStore      # See DataStore.all_client_by_default_data_store
+    has_one :default_data_store, DataStore      # See DataStore.all_client_as_default_data_store
   end
 
   class FileHostSystem < HostSystem
@@ -350,7 +350,7 @@ module ServiceDirector
     identified_by :data_store
     has_one :data_store                         # See DataStore.all_data_store_file_host_system
     has_one :file_host_system                   # See FileHostSystem.all_data_store_file_host_system
-    one_to_one :internal_credential, Credential  # See Credential.data_store_file_host_system_by_internal_credential
+    one_to_one :internal_credential, Credential  # See Credential.data_store_file_host_system_as_internal_credential
   end
 
   class Service

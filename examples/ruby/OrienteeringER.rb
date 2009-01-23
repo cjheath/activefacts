@@ -63,7 +63,7 @@ module OrienteeringER
 
   class SeriesEvent
     identified_by :series_name, :event_number
-    has_one :event_number, Number               # See Number.all_series_event_by_event_number
+    has_one :event_number, Number               # See Number.all_series_event_as_event_number
     has_one :series_name                        # See SeriesName.all_series_event
   end
 
@@ -71,7 +71,7 @@ module OrienteeringER
     identified_by :event_id
     has_one :club                               # See Club.all_event
     has_one :date                               # See Date.all_event
-    has_one :event_id, ID                       # See ID.all_event_by_event_id
+    has_one :event_id, ID                       # See ID.all_event_as_event_id
     has_one :event_name                         # See EventName.all_event
     has_one :location                           # See Location.all_event
     has_one :map                                # See Map.all_event
@@ -95,7 +95,7 @@ module OrienteeringER
     identified_by :map_name
     has_one :accessibility                      # See Accessibility.all_map
     has_one :club                               # See Club.all_map
-    has_one :map_name, Name                     # See Name.all_map_by_map_name
+    has_one :map_name, Name                     # See Name.all_map_as_map_name
   end
 
 end

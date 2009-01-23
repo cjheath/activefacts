@@ -202,7 +202,7 @@ module ActiveFacts
         @identifying_fact_text = nil
         if (o = fact_type.entity_type)
           print "#{o.name} is"
-          if !o.all_type_inheritance_by_subtype.empty?
+          if !o.all_type_inheritance_as_subtype.empty?
             print " a kind of #{ o.supertypes.map(&:name)*", " }"
           end
 

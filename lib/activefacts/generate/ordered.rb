@@ -287,10 +287,10 @@ module ActiveFacts
                   }
               end
               # Supertypes are precursors too:
-              subtyping = o.all_type_inheritance_by_supertype
+              subtyping = o.all_type_inheritance_as_supertype
               next a if subtyping.size == 0
               subtyping.each{|ti|
-                  # debug ti.class.roles.verbalise; debug "all_type_inheritance_by_supertype"; exit
+                  # debug ti.class.roles.verbalise; debug "all_type_inheritance_as_supertype"; exit
                   s = ti.subtype
                   (precursor[s] ||= []) << o
                   (follower[o] ||= []) << s

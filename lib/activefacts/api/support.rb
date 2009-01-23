@@ -21,7 +21,7 @@ class String #:nodoc:
   end
 
   def snakecase
-    gsub(/([A-Z]+)([A-Z])/,'\1_\2').gsub(/([a-z])([A-Z])/,'\1_\2').downcase
+    gsub(/([a-z])([A-Z])/,'\1_\2').downcase
   end
 end
 

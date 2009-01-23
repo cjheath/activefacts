@@ -50,7 +50,7 @@ describe "Roles" do
       end
     end
     Mod::Name.roles(:all_existing1).should_not be_nil
-    Mod::LegalEntity.roles(:all_contract_by_first).should_not be_nil
+    Mod::LegalEntity.roles(:all_contract_as_first).should_not be_nil
   end
 
   it "should associate a role name with a matching concept after it's created" do

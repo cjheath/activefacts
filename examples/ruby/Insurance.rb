@@ -212,13 +212,13 @@ module Insurance
 
   class Asset
     identified_by :asset_id
-    one_to_one :asset_id, AssetID               # See AssetID.asset_by_asset_id
+    one_to_one :asset_id, AssetID               # See AssetID.asset
   end
 
   class Claim
     identified_by :claim_id
-    one_to_one :claim_id, ClaimID               # See ClaimID.claim_by_claim_id
-    has_one :p_sequence, ClaimSequence          # See ClaimSequence.all_claim_by_p_sequence
+    one_to_one :claim_id, ClaimID               # See ClaimID.claim
+    has_one :p_sequence, ClaimSequence          # See ClaimSequence.all_claim_as_p_sequence
     has_one :person                             # See Person.all_claim
     has_one :policy                             # See Policy.all_claim
   end
@@ -259,23 +259,23 @@ module Insurance
     has_one :description                        # See Description.all_lost_item
     has_one :incident                           # See Incident.all_lost_item
     has_one :lost_item_nr                       # See LostItemNr.all_lost_item
-    has_one :purchase_date, Date                # See Date.all_lost_item_by_purchase_date
-    has_one :purchase_place, Place              # See Place.all_lost_item_by_purchase_place
-    has_one :purchase_price, Price              # See Price.all_lost_item_by_purchase_price
+    has_one :purchase_date, Date                # See Date.all_lost_item_as_purchase_date
+    has_one :purchase_place, Place              # See Place.all_lost_item_as_purchase_place
+    has_one :purchase_price, Price              # See Price.all_lost_item_as_purchase_price
   end
 
   class Party
     identified_by :party_id
     maybe :is_a_company
-    one_to_one :party_id, PartyID               # See PartyID.party_by_party_id
-    has_one :postal_address, "Address"          # See Address.all_party_by_postal_address
+    one_to_one :party_id, PartyID               # See PartyID.party
+    has_one :postal_address, "Address"          # See Address.all_party_as_postal_address
   end
 
   class Person < Party
     has_one :address                            # See Address.all_person
-    has_one :birth_date, Date                   # See Date.all_person_by_birth_date
-    has_one :family_name, Name                  # See Name.all_person_by_family_name
-    has_one :given_name, Name                   # See Name.all_person_by_given_name
+    has_one :birth_date, Date                   # See Date.all_person_as_birth_date
+    has_one :family_name, Name                  # See Name.all_person_as_family_name
+    has_one :given_name, Name                   # See Name.all_person_as_given_name
     has_one :occupation                         # See Occupation.all_person
     has_one :title                              # See Title.all_person
   end
@@ -295,11 +295,11 @@ module Insurance
   class PoliceReport
     identified_by :incident
     one_to_one :incident                        # See Incident.police_report
-    has_one :officer_name, Name                 # See Name.all_police_report_by_officer_name
-    has_one :police_report_nr, ReportNr         # See ReportNr.all_police_report_by_police_report_nr
-    has_one :report_date_time, DateTime         # See DateTime.all_police_report_by_report_date_time
-    has_one :reporter_name, Name                # See Name.all_police_report_by_reporter_name
-    has_one :station_name, Name                 # See Name.all_police_report_by_station_name
+    has_one :officer_name, Name                 # See Name.all_police_report_as_officer_name
+    has_one :police_report_nr, ReportNr         # See ReportNr.all_police_report_as_police_report_nr
+    has_one :report_date_time, DateTime         # See DateTime.all_police_report_as_report_date_time
+    has_one :reporter_name, Name                # See Name.all_police_report_as_reporter_name
+    has_one :station_name, Name                 # See Name.all_police_report_as_station_name
   end
 
   class PolicyWording
@@ -311,7 +311,7 @@ module Insurance
     identified_by :cover_type, :policy_wording, :start_date
     has_one :cover_type                         # See CoverType.all_cover_wording
     has_one :policy_wording                     # See PolicyWording.all_cover_wording
-    has_one :start_date, Date                   # See Date.all_cover_wording_by_start_date
+    has_one :start_date, Date                   # See Date.all_cover_wording_as_start_date
   end
 
   class Product
@@ -339,20 +339,20 @@ module Insurance
     has_one :engine_number                      # See EngineNumber.all_vehicle
     has_one :finance_institution                # See FinanceInstitution.all_vehicle
     maybe :has_commercial_registration
-    has_one :model_year, "Year"                 # See Year.all_vehicle_by_model_year
+    has_one :model_year, "Year"                 # See Year.all_vehicle_as_model_year
     has_one :registration                       # See Registration.all_vehicle
     has_one :vehicle_type                       # See VehicleType.all_vehicle
-    one_to_one :vin, VIN                        # See VIN.vehicle_by_vin
+    one_to_one :vin, VIN                        # See VIN.vehicle
   end
 
   class VehicleIncident < Incident
     has_one :description                        # See Description.all_vehicle_incident
     has_one :driver                             # See Driver.all_vehicle_incident
     has_one :loss_type                          # See LossType.all_vehicle_incident
-    has_one :previous_damage_description, Description  # See Description.all_vehicle_incident_by_previous_damage_description
+    has_one :previous_damage_description, Description  # See Description.all_vehicle_incident_as_previous_damage_description
     has_one :reason                             # See Reason.all_vehicle_incident
-    has_one :towed_location, Location           # See Location.all_vehicle_incident_by_towed_location
-    has_one :weather_description, Description   # See Description.all_vehicle_incident_by_weather_description
+    has_one :towed_location, Location           # See Location.all_vehicle_incident_as_towed_location
+    has_one :weather_description, Description   # See Description.all_vehicle_incident_as_weather_description
   end
 
   class ThirdParty
@@ -360,8 +360,8 @@ module Insurance
     has_one :person                             # See Person.all_third_party
     has_one :vehicle_incident                   # See VehicleIncident.all_third_party
     has_one :insurer                            # See Insurer.all_third_party
-    has_one :model_year, "Year"                 # See Year.all_third_party_by_model_year
-    has_one :vehicle_registration, Registration  # See Registration.all_third_party_by_vehicle_registration
+    has_one :model_year, "Year"                 # See Year.all_third_party_as_model_year
+    has_one :vehicle_registration, Registration  # See Registration.all_third_party_as_vehicle_registration
     has_one :vehicle_type                       # See VehicleType.all_third_party
   end
 
@@ -375,7 +375,7 @@ module Insurance
   class Witness
     identified_by :incident, :name
     has_one :address                            # See Address.all_witness
-    has_one :contact_phone, Phone               # See Phone.all_witness_by_contact_phone
+    has_one :contact_phone, Phone               # See Phone.all_witness_as_contact_phone
     has_one :incident                           # See Incident.all_witness
     has_one :name                               # See Name.all_witness
   end
@@ -400,18 +400,18 @@ module Insurance
   end
 
   class Company < Party
-    has_one :contact_person, Person             # See Person.all_company_by_contact_person
+    has_one :contact_person, Person             # See Person.all_company_as_contact_person
   end
 
   class ContactMethods
     identified_by :person
-    has_one :business_phone, Phone              # See Phone.all_contact_methods_by_business_phone
-    has_one :contact_time, Time                 # See Time.all_contact_methods_by_contact_time
+    has_one :business_phone, Phone              # See Phone.all_contact_methods_as_business_phone
+    has_one :contact_time, Time                 # See Time.all_contact_methods_as_contact_time
     has_one :email                              # See Email.all_contact_methods
-    has_one :home_phone, Phone                  # See Phone.all_contact_methods_by_home_phone
-    has_one :mobile_phone, Phone                # See Phone.all_contact_methods_by_mobile_phone
+    has_one :home_phone, Phone                  # See Phone.all_contact_methods_as_home_phone
+    has_one :mobile_phone, Phone                # See Phone.all_contact_methods_as_mobile_phone
     one_to_one :person                          # See Person.contact_methods
-    has_one :preferred_contact_method, ContactMethod  # See ContactMethod.all_contact_methods_by_preferred_contact_method
+    has_one :preferred_contact_method, ContactMethod  # See ContactMethod.all_contact_methods_as_preferred_contact_method
   end
 
   class Contractor < Company
@@ -427,7 +427,7 @@ module Insurance
     identified_by :incident, :address
     has_one :address                            # See Address.all_damaged_property
     has_one :incident                           # See Incident.all_damaged_property
-    has_one :owner_name, Name                   # See Name.all_damaged_property_by_owner_name
+    has_one :owner_name, Name                   # See Name.all_damaged_property_as_owner_name
     has_one :phone                              # See Phone.all_damaged_property
   end
 
@@ -441,13 +441,13 @@ module Insurance
     identified_by :vehicle_incident
     has_one :driver                             # See Driver.all_driving
     has_one :vehicle_incident                   # See VehicleIncident.all_driving
-    has_one :blood_test_result, TestResult      # See TestResult.all_driving_by_blood_test_result
-    has_one :breath_test_result, TestResult     # See TestResult.all_driving_by_breath_test_result
+    has_one :blood_test_result, TestResult      # See TestResult.all_driving_as_blood_test_result
+    has_one :breath_test_result, TestResult     # See TestResult.all_driving_as_breath_test_result
     has_one :charge                             # See Charge.all_driving
-    has_one :hospital_name, Name, :hospitalised  # See Name.all_hospitalised_by_hospital_name
+    has_one :hospital_name, Name, :driver_hospitalised  # See Name.all_driver_hospitalised
     has_one :intoxication                       # See Intoxication.all_driving
-    has_one :nonconsent_reason, Reason          # See Reason.all_driving_by_nonconsent_reason
-    has_one :unlicensed_reason, Reason          # See Reason.all_driving_by_unlicensed_reason
+    has_one :nonconsent_reason, Reason          # See Reason.all_driving_as_nonconsent_reason
+    has_one :unlicensed_reason, Reason          # See Reason.all_driving_as_unlicensed_reason
   end
 
   class DrivingCharge
@@ -480,11 +480,11 @@ module Insurance
     has_one :application                        # See Application.all_policy
     has_one :authorised_rep                     # See AuthorisedRep.all_policy
     has_one :client                             # See Client.all_policy
-    has_one :itcclaimed, ITCClaimed             # See ITCClaimed.all_policy_by_itcclaimed
-    has_one :p_product, Product                 # See Product.all_policy_by_p_product
-    has_one :p_serial, PolicySerial             # See PolicySerial.all_policy_by_p_serial
-    has_one :p_state, State                     # See State.all_policy_by_p_state
-    has_one :p_year, Year                       # See Year.all_policy_by_p_year
+    has_one :itcclaimed, ITCClaimed             # See ITCClaimed.all_policy
+    has_one :p_product, Product                 # See Product.all_policy_as_p_product
+    has_one :p_serial, PolicySerial             # See PolicySerial.all_policy_as_p_serial
+    has_one :p_state, State                     # See State.all_policy_as_p_state
+    has_one :p_year, Year                       # See Year.all_policy_as_p_year
   end
 
   class Cover
@@ -503,7 +503,7 @@ module Insurance
   class UnderwritingDemerit
     identified_by :vehicle_incident, :demerit_kind
     has_one :demerit_kind                       # See DemeritKind.all_underwriting_demerit
-    has_one :occurrence_count, Count            # See Count.all_underwriting_demerit_by_occurrence_count
+    has_one :occurrence_count, Count            # See Count.all_underwriting_demerit_as_occurrence_count
     has_one :vehicle_incident                   # See VehicleIncident.all_underwriting_demerit
   end
 

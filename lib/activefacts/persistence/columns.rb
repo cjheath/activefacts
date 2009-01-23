@@ -249,8 +249,8 @@ module ActiveFacts
         debug :columns, "Identifier Columns for #{name}" do
           if absorbed_via and
             # If this is a subtype that has its own identification, use that.
-            (all_type_inheritance_by_subtype.size == 0 ||
-              all_type_inheritance_by_subtype.detect{|ti| ti.provides_identification })
+            (all_type_inheritance_as_subtype.size == 0 ||
+              all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification })
             return absorbed_via.from.identifier_columns
           end
 
@@ -269,8 +269,8 @@ module ActiveFacts
 
           if absorbed_via and
             # If this is a subtype that has its own identification, use that.
-            (all_type_inheritance_by_subtype.size == 0 ||
-              all_type_inheritance_by_subtype.detect{|ti| ti.provides_identification })
+            (all_type_inheritance_as_subtype.size == 0 ||
+              all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification })
             return absorbed_via.from.reference_columns(excluded_supertypes)
           end
 

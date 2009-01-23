@@ -58,7 +58,7 @@ module ActiveFacts
       # * role_name - a Symbol for the name of the role (this end of the relationship).
       # * other_player - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined.
       # * :mandatory - if this role may not be NULL in a valid fact population. Mandatory constraints are only enforced during validation (e.g. before saving).
-      # * :other_role_name - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>_by_<role_name>
+      # * :other_role_name - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>_as_<role_name>
       def has_one(*args)
         role_name, related, mandatory, related_role_name = extract_binary_params(false, args)
         define_binary_fact_type(false, role_name, related, mandatory, related_role_name)
@@ -71,7 +71,7 @@ module ActiveFacts
       # * role_name - a Symbol for the name of the role (this end of the relationship)
       # * other_player - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined
       # * :mandatory - if this role may not be NULL in a valid fact population. Mandatory constraints are only enforced during validation (e.g. before saving)
-      # * :other_role_name - use if the role at the other end should have a name other than the default :<concept> or :<concept>_by_<role_name>
+      # * :other_role_name - use if the role at the other end should have a name other than the default :<concept> or :<concept>_as_<role_name>
       def one_to_one(*args)
         role_name, related, mandatory, related_role_name =
           extract_binary_params(true, args)
@@ -135,7 +135,7 @@ module ActiveFacts
         end
       end
 
-      # REVISIT: Use method_missing to catch all_some_role_by_other_role_and_third_role, to sort_by those roles?
+      # REVISIT: Use method_missing to catch all_some_role_as_other_role_and_third_role, to sort_by those roles?
 
       private
 
@@ -187,7 +187,7 @@ module ActiveFacts
             #puts "Setting #{self.class.name} #{object_id}.@#{role.name} to #{(value ? true : nil).inspect}"
             instance_variable_set("@#{role.name}", value ? true : nil)
             # REVISIT: Provide a way to find all instances playing/not playing this role
-            # Analogous to true.all_thing_by_role_name...
+            # Analogous to true.all_thing_as_role_name...
           end
         end
         define_single_role_getter(role)
@@ -296,7 +296,7 @@ module ActiveFacts
       #   Leading Adjective
       #   Role counterpart_concept name (not role name)
       #   Trailing Adjective
-      # "_by_<other_role_name>" if other_role_name != this role counterpart_concept's name, and not other_player_this_player
+      # "_as_<other_role_name>" if other_role_name != this role counterpart_concept's name, and not other_player_this_player
       def extract_binary_params(one_to_one, args)
         # Params:
         #   role_name (Symbol)
@@ -315,6 +315,7 @@ module ActiveFacts
           role_name = a.to_sym
         when Class
           role_name = a.name.snakecase.to_sym
+          puts "#{a.name.snakecase} -> #{role_name}"
         else
           raise "Illegal first parameter to role: #{a.inspect}"
         end
@@ -347,8 +348,8 @@ module ActiveFacts
           args.shift
         end
 
-        if Symbol == args[0]
-          related_role_name = args.shift
+        if Symbol === args[0]
+          related_role_name = args.shift.to_s
         end
 
         reading = args[0]
@@ -359,22 +360,23 @@ module ActiveFacts
           raise "Role name #{role_name} indicates a different counterpart concept #{indicated} than specified"
         end
 
-        # puts "Calculating related method name for related_role_name=#{related_role_name.inspect}, related_name=#{related_name.inspect}, role_player=#{role_player.inspect}, role_name=#{role_name.inspect}:"
-
-        related_role_name ||= (role_player || "")  # REVISIT: Add adjectives here
-        unless one_to_one
-          related_role_name = "all_#{role_player}" +
-            if related_name == role_name.to_s || role_name.to_s == "#{role_player}_#{related_name}"
-              ""
-            else
-              "_by_#{role_name}"
-            end
+        # This code probably isn't as quick or simple as it could be, but it does work right,
+        # and that was pretty hard, because the variable naming is all over the shop. Should fix
+        # the naming first (here and in generate/oo.rb) then figure out how to speed it up.
+        # Note that oo.rb names things from the opposite end, so you wind up in a maze of mirrors.
+        other_role_method =
+          (one_to_one ? "" : "all_") +
+          (related_role_name || role_player)
+        if role_name.to_s != related_name and
+            (!related_role_name || related_role_name == role_player)
+          other_role_method += "_as_#{role_name}"
         end
+        #puts "On #{basename}: have related_role_name=#{related_role_name.inspect}, role_player=#{role_player}, role_name=#{role_name}, related_name=#{related_name.inspect} -> #{related_name}.#{other_role_method}"
 
         [ role_name,
           related,
           mandatory,
-          related_role_name.to_sym 
+          other_role_method.to_sym 
         ]
       end
 

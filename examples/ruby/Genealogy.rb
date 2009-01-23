@@ -95,7 +95,7 @@ module Genealogy
     identified_by :event_id
     has_one :certificate                        # See Certificate.all_event
     has_one :event_date                         # See EventDate.all_event
-    one_to_one :event_id, EventID               # See EventID.event_by_event_id
+    one_to_one :event_id, EventID               # See EventID.event
     has_one :event_location                     # See EventLocation.all_event
     has_one :event_type                         # See EventType.all_event
     has_one :official                           # See Official.all_event
@@ -104,14 +104,14 @@ module Genealogy
   class EventDate
     identified_by :min_year, :max_year, :month, :day
     has_one :day                                # See Day.all_event_date
-    has_one :max_year, Year                     # See Year.all_event_date_by_max_year
-    has_one :min_year, Year                     # See Year.all_event_date_by_min_year
+    has_one :max_year, Year                     # See Year.all_event_date_as_max_year
+    has_one :min_year, Year                     # See Year.all_event_date_as_min_year
     has_one :month                              # See Month.all_event_date
   end
 
   class EventType
     identified_by :event_type_id
-    one_to_one :event_type_id, EventTypeID      # See EventTypeID.event_type_by_event_type_id
+    one_to_one :event_type_id, EventTypeID      # See EventTypeID.event_type
     one_to_one :event_type_name                 # See EventTypeName.event_type
   end
 
@@ -119,23 +119,23 @@ module Genealogy
     identified_by :person_id
     has_one :address                            # See Address.all_person
     has_one :email                              # See Email.all_person
-    has_one :family_name, Name                  # See Name.all_person_by_family_name
+    has_one :family_name, Name                  # See Name.all_person_as_family_name
     has_one :gender                             # See Gender.all_person
-    has_one :given_name, Name                   # See Name.all_person_by_given_name
+    has_one :given_name, Name                   # See Name.all_person_as_given_name
     has_one :occupation                         # See Occupation.all_person
-    one_to_one :person_id, PersonID             # See PersonID.person_by_person_id
-    has_one :preferred_picture, Picture         # See Picture.all_person_by_preferred_picture
+    one_to_one :person_id, PersonID             # See PersonID.person
+    has_one :preferred_picture, Picture         # See Picture.all_person_as_preferred_picture
   end
 
   class Role
     identified_by :role_id
     one_to_one :event_role_name                 # See EventRoleName.role
-    one_to_one :role_id, RoleID                 # See RoleID.role_by_role_id
+    one_to_one :role_id, RoleID                 # See RoleID.role
   end
 
   class Source
     identified_by :source_id
-    one_to_one :source_id, SourceID             # See SourceID.source_by_source_id
+    one_to_one :source_id, SourceID             # See SourceID.source
     one_to_one :source_name                     # See SourceName.source
     has_one :user                               # See User.all_source
   end
@@ -151,12 +151,12 @@ module Genealogy
   class User
     identified_by :user_id
     has_one :email                              # See Email.all_user
-    one_to_one :user_id, UserID                 # See UserID.user_by_user_id
+    one_to_one :user_id, UserID                 # See UserID.user
   end
 
   class Friend
     identified_by :user, :other_user
-    has_one :other_user, User                   # See User.all_friend_by_other_user
+    has_one :other_user, User                   # See User.all_friend_as_other_user
     has_one :user                               # See User.all_friend
     maybe :is_confirmed
   end

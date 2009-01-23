@@ -53,7 +53,7 @@ module OilSupply
 
   class AcceptableSubstitutes
     identified_by :product, :alternate_product, :season
-    has_one :alternate_product, Product         # See Product.all_acceptable_substitutes_by_alternate_product
+    has_one :alternate_product, Product         # See Product.all_acceptable_substitutes_as_alternate_product
     has_one :product                            # See Product.all_acceptable_substitutes
     has_one :season                             # See Season.all_acceptable_substitutes
   end

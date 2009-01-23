@@ -20,7 +20,7 @@ module SubtypePI
 
   class Entrant
     identified_by :entrant_id
-    one_to_one :entrant_id, EntrantID           # See EntrantID.entrant_by_entrant_id
+    one_to_one :entrant_id, EntrantID           # See EntrantID.entrant
   end
 
   class EntrantHasGivenName
@@ -31,7 +31,7 @@ module SubtypePI
 
   class Team < Entrant
     identified_by :team_id
-    one_to_one :team_id, TeamID                 # See TeamID.team_by_team_id
+    one_to_one :team_id, TeamID                 # See TeamID.team
   end
 
   class Competitor < Entrant

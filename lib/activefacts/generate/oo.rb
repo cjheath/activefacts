@@ -80,9 +80,13 @@ module ActiveFacts
 
         # Find role name:
         role_method = preferred_role_name(role)
-        by = other_role_name != other_player.name.snakecase ? "_by_#{other_role_name}" : ""
+        as = other_role_name != other_player.name.snakecase ? "_as_#{other_role_name}" : ""
         other_role_method = one_to_one ? role_method : "all_"+role_method
-        other_role_method += by
+        # puts "---"+role.role_name if role.role_name
+        if other_role_name != other_player.name.snakecase and
+          role_method == role.concept.name.snakecase
+          other_role_method += "_as_#{other_role_name}"
+        end
 
         role_name = role_method
         role_name = nil if role_name == role.concept.name.snakecase
@@ -134,9 +138,9 @@ module ActiveFacts
             preferred_role_name(role)
           }.each{|role| 
             role_name = preferred_role_name(role)
-            by = role_name != role.concept.name.snakecase ? "_by_#{role_name}" : ""
+            as = role_name != role.concept.name.snakecase ? "_as_#{role_name}" : ""
             raise "Fact #{fact.describe} type is not objectified" unless fact.entity_type
-            other_role_method = "all_"+fact.entity_type.name.snakecase+by
+            other_role_method = "all_"+fact.entity_type.name.snakecase+as
             binary_dump(role, role_name, role.concept, false, nil, nil, other_role_method)
           }
       end

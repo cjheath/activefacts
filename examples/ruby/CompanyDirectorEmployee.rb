@@ -29,22 +29,22 @@ module CompanyDirectorEmployee
 
   class Person
     identified_by :given_name, :family_name
-    has_one :birth_date, Date                   # See Date.all_person_by_birth_date
-    has_one :family_name, Name                  # See Name.all_person_by_family_name
-    has_one :given_name, Name                   # See Name.all_person_by_given_name
+    has_one :birth_date, Date                   # See Date.all_person_as_birth_date
+    has_one :family_name, Name                  # See Name.all_person_as_family_name
+    has_one :given_name, Name                   # See Name.all_person_as_given_name
   end
 
   class Attendance
     identified_by :attendee, :meeting
-    has_one :attendee, Person                   # See Person.all_attendance_by_attendee
+    has_one :attendee, Person                   # See Person.all_attendance_as_attendee
     has_one :meeting                            # See Meeting.all_attendance
   end
 
   class Directorship
     identified_by :director, :company
     has_one :company                            # See Company.all_directorship
-    has_one :director, Person                   # See Person.all_directorship_by_director
-    has_one :appointment_date, Date             # See Date.all_directorship_by_appointment_date
+    has_one :director, Person                   # See Person.all_directorship_as_director
+    has_one :appointment_date, Date             # See Date.all_directorship_as_appointment_date
   end
 
   class Employee < Person

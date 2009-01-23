@@ -16,7 +16,7 @@ module OddIdentifier
 
   class Thing
     identified_by :thing_id
-    one_to_one :thing_id, ThingID               # See ThingID.thing_by_thing_id
+    one_to_one :thing_id, ThingID               # See ThingID.thing
   end
 
   class ThingSequence

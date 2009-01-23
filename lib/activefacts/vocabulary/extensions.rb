@@ -114,7 +114,7 @@ module ActiveFacts
       end
 
       def subtypes
-        all_value_type_by_supertype
+        all_value_type_as_supertype
       end
     end
 
@@ -264,11 +264,11 @@ module ActiveFacts
       # An array of all direct subtypes:
       def subtypes
         # REVISIT: There's no sorting here. Should there be?
-        all_type_inheritance_by_supertype.map{|ti| ti.subtype }
+        all_type_inheritance_as_supertype.map{|ti| ti.subtype }
       end
 
       def all_supertype_inheritance
-        all_type_inheritance_by_subtype.sort_by{|ti|
+        all_type_inheritance_as_subtype.sort_by{|ti|
             [ti.provides_identification ? 0 : 1, ti.supertype.name]
           }
       end
@@ -282,7 +282,7 @@ module ActiveFacts
 
       # An array of self followed by all supertypes in order:
       def supertypes_transitive
-        ([self] + all_type_inheritance_by_subtype.map{|ti|
+        ([self] + all_type_inheritance_as_subtype.map{|ti|
             # debug ti.class.roles.verbalise; exit
             ti.supertype.supertypes_transitive
           }).flatten.uniq
@@ -291,7 +291,7 @@ module ActiveFacts
       # A subtype does not have a identifying_supertype if it defines its own identifier
       def identifying_supertype
         debug "Looking for identifying_supertype of #{name}"
-        all_type_inheritance_by_subtype.detect{|ti|
+        all_type_inheritance_as_subtype.detect{|ti|
             debug "considering supertype #{ti.supertype.name}"
             next unless ti.provides_identification
             debug "found identifying supertype of #{name}, it's #{ti.supertype.name}"

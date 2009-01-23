@@ -126,8 +126,8 @@ module Metamodel
   class PresenceConstraint < Constraint
     maybe :is_mandatory
     maybe :is_preferred_identifier
-    has_one :max_frequency, Frequency           # See Frequency.all_presence_constraint_by_max_frequency
-    has_one :min_frequency, Frequency           # See Frequency.all_presence_constraint_by_min_frequency
+    has_one :max_frequency, Frequency           # See Frequency.all_presence_constraint_as_max_frequency
+    has_one :min_frequency, Frequency           # See Frequency.all_presence_constraint_as_min_frequency
     has_one :role_sequence                      # See RoleSequence.all_presence_constraint
   end
 
@@ -140,7 +140,7 @@ module Metamodel
   end
 
   class RingConstraint < Constraint
-    has_one :other_role, "Role"                 # See Role.all_ring_constraint_by_other_role
+    has_one :other_role, "Role"                 # See Role.all_ring_constraint_as_other_role
     has_one :ring_type                          # See RingType.all_ring_constraint
     has_one :role                               # See Role.all_ring_constraint
   end
@@ -162,8 +162,8 @@ module Metamodel
   end
 
   class SubsetConstraint < SetConstraint
-    has_one :subset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_by_subset_role_sequence
-    has_one :superset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_by_superset_role_sequence
+    has_one :subset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_subset_role_sequence
+    has_one :superset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
   end
 
   class Unit
@@ -176,15 +176,15 @@ module Metamodel
 
   class Derivation
     identified_by :derived_unit, :base_unit
-    has_one :base_unit, Unit                    # See Unit.all_derivation_by_base_unit
-    has_one :derived_unit, Unit                 # See Unit.all_derivation_by_derived_unit
+    has_one :base_unit, Unit                    # See Unit.all_derivation_as_base_unit
+    has_one :derived_unit, Unit                 # See Unit.all_derivation_as_derived_unit
     has_one :exponent                           # See Exponent.all_derivation
   end
 
   class ValueRange
     identified_by :minimum_bound, :maximum_bound
-    has_one :maximum_bound, Bound               # See Bound.all_value_range_by_maximum_bound
-    has_one :minimum_bound, Bound               # See Bound.all_value_range_by_minimum_bound
+    has_one :maximum_bound, Bound               # See Bound.all_value_range_as_maximum_bound
+    has_one :minimum_bound, Bound               # See Bound.all_value_range_as_minimum_bound
   end
 
   class ValueRestriction
@@ -205,7 +205,7 @@ module Metamodel
 
   class Import
     identified_by :vocabulary, :imported_vocabulary
-    has_one :imported_vocabulary, Vocabulary    # See Vocabulary.all_import_by_imported_vocabulary
+    has_one :imported_vocabulary, Vocabulary    # See Vocabulary.all_import_as_imported_vocabulary
     has_one :vocabulary                         # See Vocabulary.all_import
   end
 
@@ -218,8 +218,8 @@ module Metamodel
   class Correspondence
     identified_by :import, :imported_feature
     has_one :import                             # See Import.all_correspondence
-    has_one :imported_feature, Feature          # See Feature.all_correspondence_by_imported_feature
-    has_one :local_feature, Feature             # See Feature.all_correspondence_by_local_feature
+    has_one :imported_feature, Feature          # See Feature.all_correspondence_as_imported_feature
+    has_one :local_feature, Feature             # See Feature.all_correspondence_as_local_feature
   end
 
   class Population
@@ -258,8 +258,8 @@ module Metamodel
     has_one :concept                            # See Concept.all_role
     has_one :fact_type                          # See FactType.all_role
     has_one :ordinal                            # See Ordinal.all_role
-    has_one :role_name, Name                    # See Name.all_role_by_role_name
-    has_one :role_value_restriction, ValueRestriction  # See ValueRestriction.all_role_by_role_value_restriction
+    has_one :role_name, Name                    # See Name.all_role_as_role_name
+    has_one :role_value_restriction, ValueRestriction  # See ValueRestriction.all_role_as_role_value_restriction
   end
 
   class RoleRef
@@ -267,17 +267,17 @@ module Metamodel
     has_one :ordinal                            # See Ordinal.all_role_ref
     has_one :role                               # See Role.all_role_ref
     has_one :role_sequence                      # See RoleSequence.all_role_ref
-    has_one :leading_adjective, Adjective       # See Adjective.all_role_ref_by_leading_adjective
-    has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_by_trailing_adjective
+    has_one :leading_adjective, Adjective       # See Adjective.all_role_ref_as_leading_adjective
+    has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_as_trailing_adjective
   end
 
   class JoinPath
     identified_by :role_ref, :join_step
-    has_one :join_step, Ordinal                 # See Ordinal.all_join_path_by_join_step
+    has_one :join_step, Ordinal                 # See Ordinal.all_join_path_as_join_step
     has_one :role_ref                           # See RoleRef.all_join_path
     has_one :concept                            # See Concept.all_join_path
-    has_one :input_role, Role                   # See Role.all_join_path_by_input_role
-    has_one :output_role, Role                  # See Role.all_join_path_by_output_role
+    has_one :input_role, Role                   # See Role.all_join_path_as_input_role
+    has_one :output_role, Role                  # See Role.all_join_path_as_output_role
   end
 
   class EntityType < Concept
@@ -286,15 +286,15 @@ module Metamodel
 
   class TypeInheritance < FactType
     identified_by :subtype, :supertype
-    has_one :subtype, EntityType                # See EntityType.all_type_inheritance_by_subtype
-    has_one :supertype, EntityType              # See EntityType.all_type_inheritance_by_supertype
+    has_one :subtype, EntityType                # See EntityType.all_type_inheritance_as_subtype
+    has_one :supertype, EntityType              # See EntityType.all_type_inheritance_as_supertype
     maybe :provides_identification
   end
 
   class ValueType < Concept
     has_one :length                             # See Length.all_value_type
     has_one :scale                              # See Scale.all_value_type
-    has_one :supertype, ValueType               # See ValueType.all_value_type_by_supertype
+    has_one :supertype, ValueType               # See ValueType.all_value_type_as_supertype
     has_one :unit                               # See Unit.all_value_type
     has_one :value_restriction                  # See ValueRestriction.all_value_type
   end

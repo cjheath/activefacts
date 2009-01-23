@@ -12,7 +12,7 @@ module TaggedArticles
 
   class Tagging
     identified_by :article_id, :tag
-    has_one :article_id, ArticleID              # See ArticleID.all_tagging_by_article_id
+    has_one :article_id, ArticleID              # See ArticleID.all_tagging
     has_one :tag                                # See Tag.all_tagging
   end
 
