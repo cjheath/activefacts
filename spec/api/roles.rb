@@ -85,7 +85,7 @@ describe "Roles" do
     r = Mod::FamilyName.roles(:patriarch)
     r.should_not be_nil
     r.counterpart_concept.should == Mod::Person
-    r.counterpart_concept.roles(:family_name).counterpart_concept.should == Mod::FamilyName
+    r.counterpart_concept.roles(:family_name_as_patriarch).counterpart_concept.should == Mod::FamilyName
   end
 
   it "should instantiate the matching concept on assignment" do
