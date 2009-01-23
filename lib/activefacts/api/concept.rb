@@ -58,7 +58,7 @@ module ActiveFacts
       # * role_name - a Symbol for the name of the role (this end of the relationship).
       # * other_player - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined.
       # * :mandatory - if this role may not be NULL in a valid fact population. Mandatory constraints are only enforced during validation (e.g. before saving).
-      # * :other_role_name - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>_as_<role_name>
+      # * :other_role_name - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>\_as_<role_name>
       def has_one(*args)
         role_name, related, mandatory, related_role_name = extract_binary_params(false, args)
         define_binary_fact_type(false, role_name, related, mandatory, related_role_name)
