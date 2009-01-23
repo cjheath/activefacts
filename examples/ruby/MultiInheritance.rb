@@ -20,7 +20,7 @@ module MultiInheritance
   end
 
   class Australian < Person
-    has_one :tfn, TFN                           # See TFN.all_australian
+    one_to_one :tfn, TFN                        # See TFN.australian
   end
 
   class Employee < Person

@@ -13,7 +13,8 @@ TFN is defined as FixedLengthText(9);
 Person is identified by its Name;
 
 Australian is a kind of Person;
-Australian has at most one TFN;
+Australian has at most one TFN,
+	TFN is of one Australian;
 
 Employee is a kind of Person identified by its ID;
 

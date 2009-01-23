@@ -18,3 +18,11 @@ GO
 CREATE UNIQUE CLUSTERED INDEX PK_EmployeeInPerson ON dbo.EmployeeInPerson_ID(EmployeeID)
 GO
 
+CREATE VIEW dbo.AustralianInPerson_TFN (AustralianTFN) WITH SCHEMABINDING AS
+	SELECT AustralianTFN FROM dbo.Person
+	WHERE	AustralianTFN IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_AustralianInPersonByAustralianTFN ON dbo.AustralianInPerson_TFN(AustralianTFN)
+GO
+
