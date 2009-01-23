@@ -1,25 +1,25 @@
 CREATE TABLE Address (
 	-- Address has AddressId,
 	AddressId                               int IDENTITY NOT NULL,
-	-- maybe Address is assigned PostalCode,
-	PostalCode                              int NULL,
-	-- maybe Address is in StateOrProvince and StateOrProvince has StateOrProvinceId,
-	StateOrProvinceId                       int NULL,
 	-- maybe Address is in LegislativeDistrict and LegislativeDistrict has DistrictNumber,
 	LegislativeDistrictDistrictNumber       int NULL,
 	-- maybe Address is in LegislativeDistrict and LegislativeDistrict is for StateOrProvince and StateOrProvince has StateOrProvinceId,
 	LegislativeDistrictStateOrProvinceId    int NULL,
+	-- maybe Address is assigned PostalCode,
+	PostalCode                              int NULL,
+	-- maybe Address is in StateOrProvince and StateOrProvince has StateOrProvinceId,
+	StateOrProvinceId                       int NULL,
 	PRIMARY KEY(AddressId)
 )
 GO
 
 CREATE TABLE LegislativeDistrict (
-	-- LegislativeDistrict is for StateOrProvince and StateOrProvince has StateOrProvinceId,
-	StateOrProvinceId                       int NOT NULL,
 	-- LegislativeDistrict has DistrictNumber,
 	DistrictNumber                          int NOT NULL,
 	-- Politician represents LegislativeDistrict and Politician has PoliticianId,
 	PoliticianId                            int NOT NULL,
+	-- LegislativeDistrict is for StateOrProvince and StateOrProvince has StateOrProvinceId,
+	StateOrProvinceId                       int NOT NULL,
 	PRIMARY KEY(DistrictNumber, StateOrProvinceId),
 	UNIQUE(PoliticianId)
 )
@@ -33,11 +33,11 @@ CREATE TABLE StateOrProvince (
 GO
 
 ALTER TABLE Address
-	ADD FOREIGN KEY (StateOrProvinceId) REFERENCES StateOrProvince (StateOrProvinceId)
+	ADD FOREIGN KEY (LegislativeDistrictDistrictNumber, LegislativeDistrictStateOrProvinceId) REFERENCES LegislativeDistrict (DistrictNumber, StateOrProvinceId)
 GO
 
 ALTER TABLE Address
-	ADD FOREIGN KEY (LegislativeDistrictDistrictNumber, LegislativeDistrictStateOrProvinceId) REFERENCES LegislativeDistrict (DistrictNumber, StateOrProvinceId)
+	ADD FOREIGN KEY (StateOrProvinceId) REFERENCES StateOrProvince (StateOrProvinceId)
 GO
 
 ALTER TABLE LegislativeDistrict

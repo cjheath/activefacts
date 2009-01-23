@@ -127,7 +127,9 @@ module ActiveFacts
               column.references[0].is_simple_reference
             end
 
-            columns = table.columns.map do |column|
+            columns = table.columns.sort_by do |column|
+              column.name(nil)
+            end.map do |column|
               name = escape column.name("")
               padding = " "*(name.size >= ColumnNameMax ? 1 : ColumnNameMax-name.size)
               type, params, restrictions = column.type
@@ -156,11 +158,22 @@ module ActiveFacts
                 ")"
 
             inline_fks = []
-            table.foreign_keys.each do |fk|
+            table.foreign_keys.sort_by do |fk|
+              # Put the Foreign keys in a defined order:
+              [ fk.to.name,
+                fk.to_columns.map{|col| col.name(nil).sort},
+                fk.from_columns.map{|col| col.name(nil).sort}
+              ]
+            end.each do |fk|
+              # Put the column pairs in a defined order, sorting key pairs by to-name:
+              froms, tos = fk.from_columns.zip(fk.to_columns).sort_by { |pair|
+                pair[1].name(nil)
+              }.transpose
+
               fk_text = "FOREIGN KEY (" +
-                fk.from_columns.map{|column| column.name}*", " +
+                froms.map{|column| column.name}*", " +
                 ") REFERENCES #{escape fk.to.name} (" +
-                fk.to_columns.map{|column| column.name}*", " +
+                tos.map{|column| column.name}*", " +
                 ")"
               if !@delay_fks and              # We don't want to delay all Fks
                 (tables_emitted[fk.to] or     # The target table has been emitted
@@ -174,7 +187,10 @@ module ActiveFacts
             indices = table.indices
             inline_indices = []
             delayed_indices = []
-            indices.each do |index|
+            indices.sort_by do |index|
+              # Put the indices in a defined order:
+              index.columns.map(&:name)
+            end.each do |index|
               next if index.over == table && index.is_primary   # Already did the primary keys
               abbreviated_column_names = index.abbreviated_column_names*""
               column_names = index.column_names
@@ -219,7 +235,11 @@ CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.c
           return "" if restrictions.empty?
           # REVISIT: Merge all restrictions (later; now just use the first)
           " CHECK(" +
-            restrictions[0].all_allowed_range.map do |ar|
+            restrictions[0].all_allowed_range.sort_by do |ar|
+              # Put the allowed ranges into a defined order:
+              ((min = ar.value_range.minimum_bound) && min.value) ||
+                ((max = ar.value_range.maximum_bound) && max.value)
+            end.map do |ar|
               vr = ar.value_range
               min = vr.minimum_bound
               max = vr.maximum_bound

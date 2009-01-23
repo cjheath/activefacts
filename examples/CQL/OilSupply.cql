@@ -34,9 +34,9 @@ TransportRoute incurs at most one Cost per kl;
 
 Year is identified by its Nr;
 
-SupplyPeriod is identified by Month and Year where
-	SupplyPeriod is in one Month,
-	SupplyPeriod is in one Year;
+SupplyPeriod is identified by Year and Month where
+	SupplyPeriod is in one Year,
+	SupplyPeriod is in one Month;
 ProductionForecast is where
 	Refinery forecasts production of Product in SupplyPeriod;
 RegionalDemand is where

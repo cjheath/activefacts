@@ -1,8 +1,8 @@
 CREATE TABLE Month (
-	-- maybe Month is in Season,
-	Season                                  varchar NULL,
 	-- Month has value,
 	MonthValue                              varchar NOT NULL,
+	-- maybe Month is in Season,
+	Season                                  varchar NULL,
 	PRIMARY KEY(MonthValue)
 )
 GO
