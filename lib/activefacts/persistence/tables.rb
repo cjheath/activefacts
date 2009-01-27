@@ -310,7 +310,10 @@ module ActiveFacts
         populate_all_columns
         populate_all_indices
 
-        @tables = all_feature.select { |f| f.is_table }
+        @tables =
+          all_feature.
+          select { |f| f.is_table }.
+          sort_by { |table| table.name }
       end
     end
 

@@ -94,9 +94,13 @@ module ActiveFacts
         # The reference path is the set of absorption references and one past it.
         # Stopping here means we don't dig into the definitions of FK column counterparts.
         # Note that many columns of an object may have the same ref_path.
+        #
+        # REVISIT:
+        # Note also that this produces columns ordered for each refpath the same as the
+        # order of the columns, not the same as the columns in the PK for which they might be an FK.
         all_column_by_ref_path =
           debug :index2, "Indexing columns by ref_path" do
-            columns.inject({}) do |hash, column|
+            @columns.inject({}) do |hash, column|
               debug :index2, "References in column #{name}#{column.name}" do
                 ref_path = column.absorption_references
                 raise "No absorption_references for #{column.name} from #{column.references.map(&:to_s)*" and "}" if !ref_path || ref_path.empty?
@@ -163,7 +167,12 @@ module ActiveFacts
             )
             debug :index, index
             index
-          end.compact
+          end.
+          compact.
+          sort_by do |index|
+            # Put the indices in a defined order:
+            index.columns.map(&:name)
+          end
         end
       end
 

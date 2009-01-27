@@ -49,6 +49,7 @@ module ActiveFacts
       def update(old, value)
         @a.delete(old) if old
         @a << value if value
+        raise "Adding RoleProxy to RoleValues collection" if value && RoleProxy === value
       end
 
       def verbalise

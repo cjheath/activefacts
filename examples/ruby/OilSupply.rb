@@ -82,7 +82,7 @@ module OilSupply
   end
 
   class SupplyPeriod
-    identified_by :month, :year
+    identified_by :year, :month
     has_one :month                              # See Month.all_supply_period
     has_one :year                               # See Year.all_supply_period
   end

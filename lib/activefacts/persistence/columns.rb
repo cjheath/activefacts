@@ -185,10 +185,13 @@ module ActiveFacts
     # This section shows the features relevant to relational Persistence.
     class Concept
       # The array of columns for this Concept's table
-      def columns; @columns; end
+      def columns
+        @columns
+      end
 
       def populate_columns  #:nodoc:
-        @columns = all_columns({})
+        @columns =
+          all_columns({})
       end
     end
 

@@ -12,11 +12,9 @@ module ActiveFacts
     # arguments (where Concept is the concept name you're interested in)
     #
     class InstanceIndex
-      def []=(key, val)   #:nodoc:
-        if RoleProxy === val
-          debugger
-        end
-        h[key] = val
+      def []=(key, value)   #:nodoc:
+        raise "Adding RoleProxy to InstanceIndex" if value && RoleProxy === value
+        h[key] = value
       end
 
       def [](*args)

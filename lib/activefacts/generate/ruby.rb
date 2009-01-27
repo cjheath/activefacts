@@ -71,8 +71,12 @@ module ActiveFacts
       end
 
       def subtype_dump(o, supertypes, pi = nil)
-        puts "  class #{o.name} < #{ supertypes[0].name }"
+        primary_supertype = o && (o.identifying_supertype || o.supertypes[0])
+        secondary_supertypes = o.supertypes-[primary_supertype]
+
+        puts "  class #{o.name} < #{ primary_supertype.name }"
         puts "    identified_by #{identified_by(o, pi)}" if pi
+        puts "    supertypes "+secondary_supertypes.map(&:name)*", " if secondary_supertypes.size > 0
         puts "    table" if @sql and @tables.include? o
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)

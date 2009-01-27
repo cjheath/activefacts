@@ -29,6 +29,7 @@ module MultiInheritance
   end
 
   class AustralianEmployee < Employee
+    supertypes Australian
   end
 
 end

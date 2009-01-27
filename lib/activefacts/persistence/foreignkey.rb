@@ -106,8 +106,20 @@ module ActiveFacts
             end
             debug :fk, "to_columns in #{to.name}: #{to_columns.map { |column| column ? column.name : "OOPS!" }*", "}"
 
-            ActiveFacts::Persistence::ForeignKey.new(self, to, fk_ref_path[-1], from_columns, to_columns)
+            # Put the column pairs in a defined order, sorting key pairs by to-name:
+            froms, tos = from_columns.zip(to_columns).sort_by { |pair|
+              pair[1].name(nil)
+            }.transpose
+
+            ActiveFacts::Persistence::ForeignKey.new(self, to, fk_ref_path[-1], froms, tos)
           end
+        end.
+        sort_by do |fk|
+          # Put the foreign keys in a defined order:
+          [ fk.to.name,
+            fk.to_columns.map{|col| col.name(nil).sort},
+            fk.from_columns.map{|col| col.name(nil).sort}
+          ]
         end
       end
     end

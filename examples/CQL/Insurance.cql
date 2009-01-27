@@ -220,7 +220,7 @@ Driving is where
 Driving followed at most one Intoxication;
 Driving resulted in at most one blood-TestResult;
 Driving resulted in at most one breath-TestResult;
-Driving (as hospitalised) resulted in driver taken to at most one hospital-Name;
+Driving (as driver_hospitalised) resulted in driver taken to at most one hospital-Name;
 Driving was without owners consent for at most one nonconsent-Reason;
 Driving drove unlicenced for at most one unlicensed-Reason;
 DrivingCharge is where
