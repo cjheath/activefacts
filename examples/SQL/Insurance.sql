@@ -251,6 +251,16 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_LicenseInPartyByDriverLicenseNumber ON dbo.LicenseInParty_DriverLicenseNumber(DriverLicenseNumber)
 GO
 
+CREATE VIEW dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr (DriverLicenseNumber, DriverLicenseType, DriverYearNr) WITH SCHEMABINDING AS
+	SELECT DriverLicenseNumber, DriverLicenseType, DriverYearNr FROM dbo.Party
+	WHERE	DriverLicenseNumber IS NOT NULL
+	  AND	DriverLicenseType IS NOT NULL
+	  AND	DriverYearNr IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_LicenseInPartyByDriverLicenseNumberDriverLicenseTypeDriverYearNr ON dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr(DriverLicenseNumber, DriverLicenseType, DriverYearNr)
+GO
+
 CREATE TABLE Policy (
 	-- Application is for Policy and Application has ApplicationNr,
 	ApplicationNr                           int NOT NULL,

@@ -125,6 +125,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SubtypePI.orm</DependentUpon>
     </Compile>
+    <Compile Include="Tests.Test5.Load._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
+    </Compile>
     <Compile Include="Warehousing._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Warehousing.orm</DependentUpon>
@@ -243,6 +247,10 @@
     <None Include="SimplestUnary.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>SimplestUnary._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Tests.Test5.Load.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Tests.Test5.Load._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Warehousing.orm">
       <Generator>ORMCustomTool</Generator>
@@ -671,6 +679,23 @@
     <None Include="JoinEquality.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Tests.Test5.Load.orm')">
+    <None Include="Tests.Test5.Load.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Tests.Test5.Load.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Tests.Test5.Load.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>

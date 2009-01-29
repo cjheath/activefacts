@@ -60,6 +60,15 @@ CREATE TABLE [Constraint] (
 )
 GO
 
+CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetRoleSequenceIdSupersetRoleSequenceId (SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId) WITH SCHEMABINDING AS
+	SELECT SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId FROM dbo.[Constraint]
+	WHERE	SubsetConstraintSubsetRoleSequenceId IS NOT NULL
+	  AND	SubsetConstraintSupersetRoleSequenceId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetRoleSequenceIdSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
+GO
+
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
 	SELECT VocabularyName, Name FROM dbo.[Constraint]
 	WHERE	VocabularyName IS NOT NULL

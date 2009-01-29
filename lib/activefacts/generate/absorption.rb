@@ -48,8 +48,8 @@ module ActiveFacts
         indices = indices.clone
         indices.delete pk
         puts "#{concept.name}: #{
-            "[#{concept.indices.size} indices] "
-          } #{
+#            "[#{concept.indices.size} indices] "
+#          } #{
             concept.columns.sort_by do |column|
               column.name(nil)
             end.map do |column|

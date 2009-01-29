@@ -101,7 +101,7 @@ module ActiveFacts
         all_column_by_ref_path =
           debug :index2, "Indexing columns by ref_path" do
             @columns.inject({}) do |hash, column|
-              debug :index2, "References in column #{name}#{column.name}" do
+              debug :index2, "References in column #{name}.#{column.name}" do
                 ref_path = column.absorption_references
                 raise "No absorption_references for #{column.name} from #{column.references.map(&:to_s)*" and "}" if !ref_path || ref_path.empty?
                 (hash[ref_path] ||= []) << column
@@ -118,6 +118,8 @@ module ActiveFacts
             inject({}) do |hash, ref_path|
               ref_path.each do |ref|
                 next unless ref.to_role
+                #debug :index2, "Considering #{ref_path.map(&:to_s)*" and "} yielding columns #{all_column_by_ref_path[ref_path].map{|c| c.name(".")}*", "}"
+                #debugger if name == 'VehicleIncident' && ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
                 ref.to_role.all_role_ref.each do |role_ref|
                   all_pcs = role_ref.role_sequence.all_presence_constraint
     #puts "pcs over #{ref_path.map{|r| r.to_names}.flatten*"."}: #{role_ref.role_sequence.all_presence_constraint.map(&:describe)*"; "}" if all_pcs.size > 0
@@ -125,10 +127,8 @@ module ActiveFacts
                     reject do |pc|
                       !pc.max_frequency or      # No maximum freq; cannot be a uniqueness constraint
                       pc.max_frequency != 1 or  # maximum is not 1
-                      pc.role_sequence.all_role_ref.size == 1 &&        # UniquenessConstraint is over one role
-                        ((fact_type = pc.role_sequence.all_role_ref.only.role.fact_type).is_a?(TypeInheritance) ||      # Inheritance
-                        fact_type.all_role.size == 1)             # Unary
-                        # The preceeeding two restrictions exclude the internal UCs created within NORMA.
+                                                # Constraint is not over a unary fact type role (NORMA does this)
+                      pc.role_sequence.all_role_ref.size == 1 && ref_path[-1].to_role.fact_type.all_role.size == 1
                     end
                   next unless pcs.size > 0
                   # The columns for this ref_path support the UCs in "pcs".

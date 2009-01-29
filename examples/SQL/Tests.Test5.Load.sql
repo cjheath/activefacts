@@ -16,3 +16,12 @@ CREATE TABLE Party (
 )
 GO
 
+CREATE VIEW dbo.BirthInParty_PersonAttendingDoctorIdPersonDateYmd (PersonAttendingDoctorId, PersonDateYmd) WITH SCHEMABINDING AS
+	SELECT PersonAttendingDoctorId, PersonDateYmd FROM dbo.Party
+	WHERE	PersonAttendingDoctorId IS NOT NULL
+	  AND	PersonDateYmd IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_BirthInPartyByPersonAttendingDoctorIdPersonDateYmd ON dbo.BirthInParty_PersonAttendingDoctorIdPersonDateYmd(PersonAttendingDoctorId, PersonDateYmd)
+GO
+
