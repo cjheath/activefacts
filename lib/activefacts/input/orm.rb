@@ -101,11 +101,11 @@ module ActiveFacts
           entity_types <<
             @by_id[id] =
               entity_type =
-              @constellation.EntityType(name, @vocabulary)
+              @constellation.EntityType(@vocabulary, name)
             independent = x.attributes['IsIndependent']
             entity_type.is_independent = true if independent && independent == 'true'
             personal = x.attributes['IsPersonal']
-            entity_type.is_personal = true if personal && personal == 'true'
+            entity_type.pronoun = 'personal' if personal && personal == 'true'
   #       x_pref = x.elements.to_a("orm:PreferredIdentifier")[0]
   #       if x_pref
   #         pi_id = x_pref.attributes['ref']
@@ -139,26 +139,26 @@ module ActiveFacts
           length = 32 if type_name =~ /Integer\Z/ && length.to_i == 0 # Set default integer length
 
           # REVISIT: Need to handle standard types better here:
-          data_type = type_name != name ? @constellation.ValueType(type_name, @vocabulary) : nil
+          data_type = type_name != name ? @constellation.ValueType(@vocabulary, type_name) : nil
 
           # puts "ValueType #{name} is #{id}"
           value_types <<
             @by_id[id] =
-            vt = @constellation.ValueType(name, @vocabulary)
+            vt = @constellation.ValueType(@vocabulary, name)
           vt.supertype = data_type
           vt.length = length if length
           vt.scale = scale if scale
           independent = x.attributes['IsIndependent']
           vt.is_independent = true if independent && independent == 'true'
           personal = x.attributes['IsPersonal']
-          vt.is_personal = true if personal && personal == 'true'
+          vt.pronoun = 'personal' if personal && personal == 'true'
 
           x_ranges = x.elements.to_a("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
           next if x_ranges.size == 0
           vt.value_restriction = @constellation.ValueRestriction(:new)
           x_ranges.each{|x_range|
             v_range = value_range(x_range)
-            ar = @constellation.AllowedRange(v_range, vt.value_restriction)
+            ar = @constellation.AllowedRange(vt.value_restriction, v_range)
           }
         }
       end
@@ -317,7 +317,7 @@ module ActiveFacts
             #puts "NestedType #{name} is #{id}, nests #{fact_type.fact_type_id}"
             nested_types <<
               @by_id[id] =
-              nested_type = @constellation.EntityType(name, @vocabulary)
+              nested_type = @constellation.EntityType(@vocabulary, name)
             nested_type.fact_type = fact_type
           end
         }
@@ -390,7 +390,7 @@ module ActiveFacts
               role.role_value_restriction = @constellation.ValueRestriction(:new)
               x_ranges.each{|x_range|
                 v_range = value_range(x_range)
-                ar = @constellation.AllowedRange(v_range, role.role_value_restriction)
+                ar = @constellation.AllowedRange(role.role_value_restriction, v_range)
               }
             }
 
@@ -649,8 +649,7 @@ module ActiveFacts
           pc.is_preferred_identifier = true if pi || unary_identifier || is_supertype_constraint
           #puts "#{name} covers #{roles.describe} has min=#{pc.min_frequency}, max=1, preferred=#{pc.is_preferred_identifier.inspect}" if emit_special_debug
 
-          #puts roles.verbalise
-          #puts pc.verbalise
+          #puts roles.all_role_ref.to_a[0].role.fact_type.describe + " is subject to " + pc.describe if roles.all_role_ref.all?{|r| r.role.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance }
 
           (@constraints_by_rs[roles] ||= []) << pc
         }

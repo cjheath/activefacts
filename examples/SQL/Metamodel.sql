@@ -164,8 +164,8 @@ GO
 CREATE TABLE Feature (
 	-- maybe Concept is a subtype of Feature and Concept is independent,
 	ConceptIsIndependent                    bit NULL,
-	-- maybe Concept is a subtype of Feature and Concept is personal,
-	ConceptIsPersonal                       bit NULL,
+	-- maybe Concept is a subtype of Feature and maybe Concept uses Pronoun,
+	ConceptPronoun                          varchar NULL CHECK(ConceptPronoun = 'feminine' OR ConceptPronoun = 'masculine' OR ConceptPronoun = 'personal'),
 	-- Feature is called Name,
 	Name                                    varchar(64) NOT NULL,
 	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has Length,
@@ -204,32 +204,32 @@ CREATE TABLE Instance (
 )
 GO
 
-CREATE TABLE JoinPath (
-	-- maybe JoinPath traverses Concept and Feature is called Name,
+CREATE TABLE [Join] (
+	-- maybe Join traverses Concept and Feature is called Name,
 	ConceptName                             varchar(64) NULL,
-	-- maybe JoinPath traverses Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Join traverses Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	ConceptVocabularyName                   varchar(64) NULL,
-	-- JoinPath has input-Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	InputRoleConceptName                    varchar(64) NOT NULL,
-	-- JoinPath has input-Role and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Join has input-Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	InputRoleConceptName                    varchar(64) NULL,
+	-- maybe Join has input-Role and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	InputRoleConceptVocabularyName          varchar(64) NULL,
-	-- JoinPath has input-Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
-	InputRoleFactTypeId                     int NOT NULL,
-	-- JoinPath has input-Role and Role is where FactType has Ordinal role played by Concept,
-	InputRoleOrdinal                        int NOT NULL,
-	-- JoinPath is where RoleRef has JoinStep path,
+	-- maybe Join has input-Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	InputRoleFactTypeId                     int NULL,
+	-- maybe Join has input-Role and Role is where FactType has Ordinal role played by Concept,
+	InputRoleOrdinal                        int NULL,
+	-- Join is where RoleRef has JoinStep join,
 	JoinStep                                int NOT NULL,
-	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
-	OutputRoleConceptName                   varchar(64) NOT NULL,
-	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Join has output-Role and Role is where FactType has Ordinal role played by Concept and Feature is called Name,
+	OutputRoleConceptName                   varchar(64) NULL,
+	-- maybe Join has output-Role and Role is where FactType has Ordinal role played by Concept and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	OutputRoleConceptVocabularyName         varchar(64) NULL,
-	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
-	OutputRoleFactTypeId                    int NOT NULL,
-	-- JoinPath has output-Role and Role is where FactType has Ordinal role played by Concept,
-	OutputRoleOrdinal                       int NOT NULL,
-	-- JoinPath is where RoleRef has JoinStep path and RoleRef is where RoleSequence in Ordinal position includes Role,
+	-- maybe Join has output-Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	OutputRoleFactTypeId                    int NULL,
+	-- maybe Join has output-Role and Role is where FactType has Ordinal role played by Concept,
+	OutputRoleOrdinal                       int NULL,
+	-- Join is where RoleRef has JoinStep join and RoleRef is where RoleSequence in Ordinal position includes Role,
 	RoleRefOrdinal                          int NOT NULL,
-	-- JoinPath is where RoleRef has JoinStep path and RoleRef is where RoleSequence in Ordinal position includes Role and RoleSequence has RoleSequenceId,
+	-- Join is where RoleRef has JoinStep join and RoleRef is where RoleSequence in Ordinal position includes Role and RoleSequence has RoleSequenceId,
 	RoleRefRoleSequenceId                   int NOT NULL,
 	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep),
 	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Feature (Name, VocabularyName)
@@ -436,15 +436,15 @@ ALTER TABLE Feature
 	ADD FOREIGN KEY (ValueTypeValueRestrictionId) REFERENCES ValueRestriction (ValueRestrictionId)
 GO
 
-ALTER TABLE JoinPath
+ALTER TABLE [Join]
 	ADD FOREIGN KEY (InputRoleConceptName, InputRoleConceptVocabularyName, InputRoleFactTypeId, InputRoleOrdinal) REFERENCES Role (ConceptName, ConceptVocabularyName, FactTypeId, Ordinal)
 GO
 
-ALTER TABLE JoinPath
+ALTER TABLE [Join]
 	ADD FOREIGN KEY (OutputRoleConceptName, OutputRoleConceptVocabularyName, OutputRoleFactTypeId, OutputRoleOrdinal) REFERENCES Role (ConceptName, ConceptVocabularyName, FactTypeId, Ordinal)
 GO
 
-ALTER TABLE JoinPath
+ALTER TABLE [Join]
 	ADD FOREIGN KEY (RoleRefOrdinal, RoleRefRoleSequenceId) REFERENCES RoleRef (Ordinal, RoleSequenceId)
 GO
 

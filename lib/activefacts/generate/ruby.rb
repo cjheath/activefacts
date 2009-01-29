@@ -31,12 +31,13 @@ module ActiveFacts
       end
 
       def vocabulary_start(vocabulary)
+        puts "require 'activefacts/api'\n"
         if @sql
           require 'activefacts/persistence'
+          puts "require 'activefacts/persistence'\n"
           @tables = vocabulary.tables
         end
-        puts "require 'activefacts/api'\n\n"
-        puts "module #{vocabulary.name}\n\n"
+        puts "\nmodule #{vocabulary.name}\n\n"
       end
 
       def vocabulary_end
@@ -63,7 +64,7 @@ module ActiveFacts
 
         puts "  class #{o.name} < #{ruby_type_name}\n" +
              "    value_type #{params}\n"
-        puts "    table" if @sql and @tables.include? o
+        puts "    table" if @sql and o.is_table
         puts "    \# REVISIT: #{o.name} has restricted values\n" if o.value_restriction
         puts "    \# REVISIT: #{o.name} is in units of #{o.unit.name}\n" if o.unit
         roles_dump(o)
@@ -77,7 +78,7 @@ module ActiveFacts
         puts "  class #{o.name} < #{ primary_supertype.name }"
         puts "    identified_by #{identified_by(o, pi)}" if pi
         puts "    supertypes "+secondary_supertypes.map(&:name)*", " if secondary_supertypes.size > 0
-        puts "    table" if @sql and @tables.include? o
+        puts "    table" if @sql and o.is_table
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)
         puts "  end\n\n"
@@ -87,7 +88,7 @@ module ActiveFacts
       def non_subtype_dump(o, pi)
         puts "  class #{o.name}"
         puts "    identified_by #{identified_by(o, pi)}"
-        puts "    table" if @sql and @tables.include? o
+        puts "    table" if @sql and o.is_table
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)
         puts "  end\n\n"
@@ -111,6 +112,7 @@ module ActiveFacts
           "\n" +
           secondary_supertypes.map{|sst| "    supertype :#{sst.name}"}*"\n" +
           (pi ? "    identified_by #{identified_by(o, pi)}" : "")
+        puts "    table" if @sql and o.is_table
         fact_roles_dump(fact_type)
         roles_dump(o)
         puts "  end\n\n"
@@ -124,30 +126,8 @@ module ActiveFacts
           }*", "
       end
 
-      def roles_dump(o)
-        @ar_by_role = nil
-        if @sql and @tables.include?(o)
-          ar = o.absorbed_roles
-          @ar_by_role = ar.all_role_ref.inject({}){|h,rr|
-            input_role = (j=rr.all_join_path).size > 0 ? j[0].input_role : rr.role
-            (h[input_role] ||= []) << rr
-            h
-          }
-          #puts ar.all_role_ref.map{|rr| "\t"+rr.describe}*"\n"
-        end
-        super
-      end
-
       def unary_dump(role, role_name)
         puts "    maybe :"+role_name
-      end
-
-      def role_dump(role)
-        other_role = role.fact_type.all_role.select{|r| r != role}[0] || role
-        if @ar_by_role and @ar_by_role[other_role] and @sql
-          puts "    # role #{role.fact_type.describe(role)}: absorbs in through #{preferred_role_name(other_role)}: "+@ar_by_role[other_role].map(&:column_name)*", "
-        end
-        super
       end
 
       def binary_dump(role, role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil, other_method_name = nil)

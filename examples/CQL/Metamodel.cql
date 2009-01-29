@@ -16,6 +16,7 @@ Length is defined as UnsignedInteger(32);
 Name is defined as VariableLengthText(64);
 Numerator is defined as Decimal();
 Ordinal is defined as UnsignedSmallInteger(32);
+Pronoun is defined as VariableLengthText() restricted to {'feminine', 'masculine', 'personal'};
 RingType is defined as VariableLengthText();
 RoleSequenceId is defined as AutoCounter();
 Scale is defined as UnsignedInteger(32);
@@ -142,8 +143,8 @@ SetExclusionConstraint is mandatory;
 Alias is a kind of Feature;
 
 Concept is a kind of Feature;
+Concept uses at most one Pronoun;
 Concept is independent;
-Concept is personal;
 Instance is of one Concept;
 Role is where
 	FactType has Ordinal role played by Concept,
@@ -165,12 +166,12 @@ RoleRef is where
 	Role has Ordinal place in RoleSequence;
 RoleRef has at most one leading-Adjective;
 RoleRef has at most one trailing-Adjective;
-JoinPath is where
-	RoleRef has Ordinal (as JoinStep) path;
-JoinPath traverses at most one Concept,
-	Concept is traversed by JoinPath;
-JoinPath has one input-Role;
-JoinPath has one output-Role;
+Join is where
+	RoleRef has Ordinal (as JoinStep) join;
+Join traverses at most one Concept,
+	Concept is traversed by Join;
+Join has at most one input-Role;
+Join has at most one output-Role;
 
 EntityType is a kind of Concept;
 EntityType nests at most one FactType,
@@ -227,6 +228,9 @@ each combination EntityType, TypeInheritance occurs at most one time in
 	TypeInheritance provides identification;
 each FactType occurs at least one time in
 	FactType has Ordinal role played by Concept;
+each Join occurs at least one time in
+	Join has input-Role,
+	Join has output-Role;
 each PresenceConstraint occurs at least one time in
 	PresenceConstraint has min-Frequency,
 	PresenceConstraint has max-Frequency,

@@ -54,6 +54,11 @@ module Metamodel
     value_type :length => 32
   end
 
+  class Pronoun < String
+    value_type 
+    # REVISIT: Pronoun has restricted values
+  end
+
   class RingType < String
     value_type 
   end
@@ -250,7 +255,7 @@ module Metamodel
 
   class Concept < Feature
     maybe :is_independent
-    maybe :is_personal
+    has_one :pronoun                            # See Pronoun.all_concept
   end
 
   class Role
@@ -271,13 +276,13 @@ module Metamodel
     has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_as_trailing_adjective
   end
 
-  class JoinPath
+  class Join
     identified_by :role_ref, :join_step
-    has_one :join_step, Ordinal                 # See Ordinal.all_join_path_as_join_step
-    has_one :role_ref                           # See RoleRef.all_join_path
-    has_one :concept                            # See Concept.all_join_path
-    has_one :input_role, Role                   # See Role.all_join_path_as_input_role
-    has_one :output_role, Role                  # See Role.all_join_path_as_output_role
+    has_one :join_step, Ordinal                 # See Ordinal.all_join_as_join_step
+    has_one :role_ref                           # See RoleRef.all_join
+    has_one :concept                            # See Concept.all_join
+    has_one :input_role, Role                   # See Role.all_join_as_input_role
+    has_one :output_role, Role                  # See Role.all_join_as_output_role
   end
 
   class EntityType < Concept

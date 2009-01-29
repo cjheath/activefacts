@@ -19,7 +19,7 @@ include ActiveFacts::Metamodel
 Exceptions = {
   "Blog" => ["Author", "Comment", "Paragraph", "Post", "Topic"],
   "JoinEquality" => ["Event", "Seat", "Ticket", "Venue"],
-  "Metamodel" => ["AllowedRange", "Constraint", "Correspondence", "Derivation", "Fact", "FactType", "Feature", "Instance", "JoinPath", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "ValueRestriction"],
+  "Metamodel" => ["AllowedRange", "Constraint", "Correspondence", "Derivation", "Fact", "FactType", "Feature", "Instance", "Join", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "ValueRestriction"],
   "MetamodelTerms" => ["AllowedValue", "Concept", "Constraint", "Derivation", "Fact", "FactType", "Import", "Instance", "Join", "JoinRole", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Term", "Unit", "ValueRestriction"],
   "OilSupply" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
   "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],

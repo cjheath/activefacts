@@ -97,15 +97,15 @@ module ActiveFacts
         # Create the base type:
         base_type = nil
         if (base_type_name != name)
-          unless base_type = @constellation.ValueType[[@constellation.Name(base_type_name), @vocabulary]]
+          unless base_type = @constellation.ValueType[[@vocabulary, @constellation.Name(base_type_name)]]
             #puts "REVISIT: Creating base ValueType #{base_type_name} in #{@vocabulary.inspect}"
-            base_type = @constellation.ValueType(base_type_name, @vocabulary)
+            base_type = @constellation.ValueType(@vocabulary, base_type_name)
             return if base_type_name == name
           end
         end
 
         # Create and initialise the ValueType:
-        vt = @constellation.ValueType(name, @vocabulary)
+        vt = @constellation.ValueType(@vocabulary, name)
         vt.supertype = base_type if base_type
         vt.length = length if length
         vt.scale = scale if scale
@@ -120,7 +120,7 @@ module ActiveFacts
               min ? [min.to_s, true] : nil,
               max ? [max.to_s, true] : nil
               )
-            ar = @constellation.AllowedRange(v_range, vt.value_restriction)
+            ar = @constellation.AllowedRange(vt.value_restriction, v_range)
           end
         end
       end
@@ -130,7 +130,7 @@ module ActiveFacts
         debug :entity, "Defining Entity Type #{name}" do
           # Assert the entity:
           # If this entity was forward referenced, this won't be a new object, and will subsume its roles
-          entity_type = @constellation.EntityType(name, @vocabulary)
+          entity_type = @constellation.EntityType(@vocabulary, name)
 
           # Set up its supertypes:
           supertypes.each do |supertype_name|
@@ -162,9 +162,9 @@ module ActiveFacts
 
             # Find or Create an appropriate ValueType called "#{name}#{mode}", of the supertype "#{mode}"
             vt_name = "#{name}#{mode}"
-            unless vt = @constellation.ValueType[[vt_name, @vocabulary]]
-              base_vt = @constellation.ValueType(mode, @vocabulary)
-              vt = @constellation.ValueType(vt_name, @vocabulary, :supertype => base_vt)
+            unless vt = @constellation.ValueType[[@vocabulary, vt_name]]
+              base_vt = @constellation.ValueType(@vocabulary, mode)
+              vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
             end
           end
 
@@ -373,7 +373,7 @@ module ActiveFacts
 
       def add_supertype(entity_type, supertype_name, identifying_supertype)
         debug :supertype, "Supertype #{supertype_name}"
-        supertype = @constellation.EntityType(supertype_name, @vocabulary)
+        supertype = @constellation.EntityType(@vocabulary, supertype_name)
         inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :fact_type_id => :new)
 
         # Create a reading:
@@ -459,7 +459,7 @@ module ActiveFacts
 
           # The fact type has a name iff it's objectified as an entity type
           #puts "============= Creating entity #{name} to nominalize fact type #{fact_type.default_reading} ======================" if name
-          fact_type.entity_type = @constellation.EntityType(name, @vocabulary) if name
+          fact_type.entity_type = @constellation.EntityType(@vocabulary, name) if name
 
           # Add the identifying PresenceConstraint for this fact type:
           if fact_type.all_role.size == 1 && !fact_type.entity_type
@@ -496,7 +496,7 @@ module ActiveFacts
       # sequences. Each binding that isn't common at this top level
       # must occur more than once in each group of fact types where
       # it appears, and it forms a join between those fact types.
-      def bind_join_paths_as_role_sequences(readings_list)
+      def bind_joins_as_role_sequences(readings_list)
         @symbols = SymbolTable.new(@constellation, @vocabulary)
         fact_roles_list = []
         bindings_list = []
@@ -520,8 +520,8 @@ module ActiveFacts
         end
 
         # Each set of binding arrays in the list must share at least one common binding
-        bindings_by_join_path = bindings_list.map{|join_path| join_path.flatten}
-        common_bindings = bindings_by_join_path[1..-1].inject(bindings_by_join_path[0]) { |c, b| c & b }
+        bindings_by_join = bindings_list.map{|join| join.flatten}
+        common_bindings = bindings_by_join[1..-1].inject(bindings_by_join[0]) { |c, b| c & b }
         # Was:
         # common_bindings = bindings_list.inject(bindings_list[0]) { |common, bindings| common & bindings }
         raise "Set constraints must have at least one common role between the sets" unless common_bindings.size > 0
@@ -533,9 +533,9 @@ module ActiveFacts
         # Each element of a join path is the array of bindings for a fact type invocation.
         # Each invocation must share a binding (not one of the globally common ones) with
         # another invocation in that join path.
-        bindings_list.each_with_index do |join_path, jpnum|
+        bindings_list.each_with_index do |join, jpnum|
           # Check that this bindings array creates a complete join path:
-          join_path.each_with_index do |bindings, i|
+          join.each_with_index do |bindings, i|
             fact_type_roles = fact_roles_list[jpnum][i]
             fact_type = fact_type_roles[0].fact_type
 
@@ -543,10 +543,10 @@ module ActiveFacts
             # These bindings must be joined to some later fact type by a common binding that isn't a globally-common one:
             local_bindings = bindings-common_bindings
             next if local_bindings.size == 0  # No join path is required, as only one fact type is invoked.
-            next if i == join_path.size-1   # We already checked that the last fact type invocation is joined
+            next if i == join.size-1   # We already checked that the last fact type invocation is joined
             ok = local_bindings.detect do |local_binding|
               j = i+1
-              join_path[j..-1].detect do |other_bindings|
+              join[j..-1].detect do |other_bindings|
                 other_fact_type_roles = fact_roles_list[jpnum][j]
                 other_fact_type = other_fact_type_roles[0].fact_type
                 j += 1
@@ -568,10 +568,10 @@ module ActiveFacts
         role_sequences = readings_list.map{|r| @constellation.RoleSequence(:new) }
         common_bindings.each_with_index do |binding, index|
           role_sequences.each_with_index do |rs, rsi|
-            join_path = bindings_list[rsi]
+            join = bindings_list[rsi]
             fact_pos = nil
-            join_pos = (0...join_path.size).detect do |i|
-              fact_pos = join_path[i].index(binding)
+            join_pos = (0...join.size).detect do |i|
+              fact_pos = join[i].index(binding)
             end
             @constellation.RoleRef(rs, index).role = fact_roles_list[rsi][join_pos][fact_pos]
           end
@@ -581,7 +581,7 @@ module ActiveFacts
       end
 
       def subset_constraint(subset_readings, superset_readings)
-        role_sequences = bind_join_paths_as_role_sequences([subset_readings, superset_readings])
+        role_sequences = bind_joins_as_role_sequences([subset_readings, superset_readings])
 
         #puts "subset_constraint:\n\t#{subset_readings.inspect}\n\t#{superset_readings.inspect}"
         #puts "\t#{role_sequences.map{|rs| rs.describe}.inspect}"
@@ -601,7 +601,7 @@ module ActiveFacts
         # Exactly one or at most one, nothing else will do
         raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
 
-        role_sequences = bind_join_paths_as_role_sequences(readings_list)
+        role_sequences = bind_joins_as_role_sequences(readings_list)
 
         # Create the constraint:
         constraint = @constellation.SetExclusionConstraint(:new)
@@ -615,7 +615,7 @@ module ActiveFacts
       def equality_constraint(*readings_list)
         #puts "REVISIT: equality\n\t#{readings_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
 
-        role_sequences = bind_join_paths_as_role_sequences(readings_list)
+        role_sequences = bind_joins_as_role_sequences(readings_list)
 
         # Create the constraint:
         constraint = @constellation.SetEqualityConstraint(:new)
@@ -1018,15 +1018,15 @@ module ActiveFacts
       end
 
       def concept_by_name(name)
-        player = @constellation.Concept[[name, @vocabulary.identifying_role_values]]
+        player = @constellation.Concept[[@vocabulary.identifying_role_values, name]]
 
         # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
         if !player && %w{Date DateAndTime Time}.include?(name)
-          player = @constellation.ValueType(name, @vocabulary.identifying_role_values)
+          player = @constellation.ValueType(@vocabulary.identifying_role_values, name)
         end
 
         if (!player && @symbols.allowed_forward[name])
-          player = @constellation.EntityType(name, @vocabulary)
+          player = @constellation.EntityType(@vocabulary, name)
         end
         player
       end
@@ -1173,15 +1173,15 @@ module ActiveFacts
         # return the EntityType or ValueType this name refers to:
         def concept(name, allowed_forward = false)
           # See if the name is a defined concept in this vocabulary:
-          player = @constellation.Concept[[name, virv = @vocabulary.identifying_role_values]]
+          player = @constellation.Concept[[virv = @vocabulary.identifying_role_values, name]]
 
           # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
           if !player && %w{Date DateAndTime Time}.include?(name)
-            player = @constellation.ValueType(name, virv)
+            player = @constellation.ValueType(virv, name)
           end
 
           if !player && allowed_forward
-            player = @constellation.EntityType(name, @vocabulary)
+            player = @constellation.EntityType(@vocabulary, name)
           end
 
           player

@@ -58,7 +58,7 @@ module ActiveFacts
       end
     end
 
-    class JoinPath
+    class Join
       def column_name(joiner = '-')
         concept == input_role.concept ? input_role.preferred_reference.role_name(joiner) : Array(concept.name)
       end
@@ -72,8 +72,8 @@ module ActiveFacts
 
     class RoleRef
       def describe
-        # The reference traverses the JoinPaths in sequence to the final role:
-        all_join_path.sort_by{|jp| jp.join_step}.map{ |jp| jp.describe + "." }*"" + role_name
+        # The reference traverses the Joins in sequence to the final role:
+        all_join.sort_by{|jp| jp.join_step}.map{ |jp| jp.describe + "." }*"" + role_name
       end
 
       def role_name(joiner = "-")
@@ -86,13 +86,13 @@ module ActiveFacts
         return joiner ? Array(name_array)*joiner : Array(name_array)
       end
 
-      # Two RoleRefs are equal if they have the same role and JoinPaths with matching roles
+      # Two RoleRefs are equal if they have the same role and Joins with matching roles
       def ==(role_ref)
         RoleRef === role_ref &&
         role_ref.role == role &&
-        all_join_path.size == role_ref.all_join_path.size &&
-        !all_join_path.sort_by{|j|j.join_step}.
-          zip(role_ref.all_join_path.sort_by{|j|j.join_step}).
+        all_join.size == role_ref.all_join.size &&
+        !all_join.sort_by{|j|j.join_step}.
+          zip(role_ref.all_join.sort_by{|j|j.join_step}).
           detect{|j1,j2|
             j1.input_role != j2.input_role ||
             j1.output_role != j2.output_role
@@ -375,6 +375,16 @@ module ActiveFacts
             ((max && min != max) ? "at most #{max == 1 ? "one" : max.to_s}" : nil),
             ((max && min == max) ? "#{max == 1 ? "one" : max.to_s}" : nil)
         ].compact * " and"
+      end
+
+      def describe
+        role_sequence.describe + " occurs " + frequency + " time"
+      end
+    end
+
+    class TypeInheritance
+      def describe(role = nil)
+        "#{subtype.name} is a kind of #{supertype.name}"
       end
     end
 

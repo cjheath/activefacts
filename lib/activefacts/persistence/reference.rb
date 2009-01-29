@@ -315,7 +315,7 @@ module ActiveFacts
       end
     end
 
-    class EntityType
+    class EntityType < Concept
       def populate_references          #:nodoc:
         if fact_type && fact_type.all_role.size > 1
           # NOT: fact_type.all_role.each do |role|  # Place roles in the preferred order instead:

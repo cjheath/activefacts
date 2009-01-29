@@ -119,7 +119,9 @@ module ActiveFacts
               ref_path.each do |ref|
                 next unless ref.to_role
                 ref.to_role.all_role_ref.each do |role_ref|
-                  pcs = role_ref.role_sequence.all_presence_constraint.
+                  all_pcs = role_ref.role_sequence.all_presence_constraint
+    #puts "pcs over #{ref_path.map{|r| r.to_names}.flatten*"."}: #{role_ref.role_sequence.all_presence_constraint.map(&:describe)*"; "}" if all_pcs.size > 0
+                  pcs = all_pcs.
                     reject do |pc|
                       !pc.max_frequency or      # No maximum freq; cannot be a uniqueness constraint
                       pc.max_frequency != 1 or  # maximum is not 1

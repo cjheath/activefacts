@@ -17,8 +17,8 @@ describe "CQL Dumper" do
   setup do
     @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
     @vocabulary = @constellation.Vocabulary("TestVocab")
-    @string_type = @constellation.ValueType("String", @vocabulary)
-    @integer_type = @constellation.ValueType("Integer", @vocabulary)
+    @string_type = @constellation.ValueType(@vocabulary, "String")
+    @integer_type = @constellation.ValueType(@vocabulary, "Integer")
     @dumper = ActiveFacts::Generate::CQL.new(@constellation)
   end
 
@@ -30,7 +30,7 @@ describe "CQL Dumper" do
   end
 
   it "should dump a String ValueType" do
-    vt = @constellation.ValueType("Name", @vocabulary, :supertype => @string_type, :length => 20)
+    vt = @constellation.ValueType(@vocabulary, "Name", :supertype => @string_type, :length => 20)
     vt.supertype = @string_type
     vt.length = 20
     #p vt.class.roles.keys.sort_by{|s| s.to_s}
@@ -47,7 +47,7 @@ END
   end
 
   it "should dump an Integer ValueType" do
-    vt = @constellation.ValueType("Count", @vocabulary, :supertype => @integer_type, :length => 32)
+    vt = @constellation.ValueType(@vocabulary, "Count", :supertype => @integer_type, :length => 32)
     cql.should == <<END
 vocabulary TestVocab;
 
@@ -60,8 +60,8 @@ END
   end
 
   def value_type(name, datatype = "String", length = 0, scale = 0)
-    dt = @constellation.ValueType(datatype, @vocabulary)
-    vt = @constellation.ValueType(name, @vocabulary, :supertype => dt)
+    dt = @constellation.ValueType(@vocabulary, datatype)
+    vt = @constellation.ValueType(@vocabulary, name, :supertype => dt)
     vt.length = length if length != 0
     vt.scale = scale if scale != 0
     vt
@@ -143,8 +143,8 @@ END
   end
 
   it "should dump an named EntityType" do
-    vt = @constellation.ValueType("Name", @vocabulary, :supertype => @string_type, :length => 20)
-    et = @constellation.EntityType("Company", @vocabulary)
+    vt = @constellation.ValueType(@vocabulary, "Name", :supertype => @string_type, :length => 20)
+    et = @constellation.EntityType(@vocabulary, "Company")
 
     ft = one_to_one(et, vt, "{0} is called {1}")
 

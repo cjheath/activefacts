@@ -55,6 +55,11 @@ module ActiveFacts
       value_type :length => 32
     end
 
+    class Pronoun < String
+      value_type 
+      # REVISIT: Pronoun has restricted values
+    end
+
     class ReadingText < String
       value_type :length => 256
     end
@@ -90,7 +95,7 @@ module ActiveFacts
     end
 
     class Coefficient
-      identified_by :numerator, :denominator
+      identified_by :numerator, :denominator, :is_precise
       has_one :denominator                        # See Denominator.all_coefficient
       maybe :is_precise
       has_one :numerator                          # See Numerator.all_coefficient
@@ -175,11 +180,11 @@ module ActiveFacts
       one_to_one :unit_id                         # See UnitId.unit
     end
 
-    class UnitBasis
-      identified_by :base_unit, :derived_unit
-      has_one :base_unit, Unit                    # See Unit.all_unit_basis_as_base_unit
-      has_one :derived_unit, Unit                 # See Unit.all_unit_basis_as_derived_unit
-      has_one :exponent                           # See Exponent.all_unit_basis
+    class Derivation
+      identified_by :derived_unit, :base_unit
+      has_one :base_unit, Unit                    # See Unit.all_derivation_as_base_unit
+      has_one :derived_unit, Unit                 # See Unit.all_derivation_as_derived_unit
+      has_one :exponent                           # See Exponent.all_derivation
     end
 
     class ValueRange
@@ -194,7 +199,7 @@ module ActiveFacts
     end
 
     class AllowedRange
-      identified_by :value_range, :value_restriction
+      identified_by :value_restriction, :value_range
       has_one :value_range                        # See ValueRange.all_allowed_range
       has_one :value_restriction                  # See ValueRestriction.all_allowed_range
     end
@@ -205,19 +210,19 @@ module ActiveFacts
     end
 
     class Import
-      identified_by :imported_vocabulary, :vocabulary
+      identified_by :vocabulary, :imported_vocabulary
       has_one :imported_vocabulary, Vocabulary    # See Vocabulary.all_import_as_imported_vocabulary
       has_one :vocabulary                         # See Vocabulary.all_import
     end
 
     class Feature
-      identified_by :name, :vocabulary
+      identified_by :vocabulary, :name
       has_one :name                               # See Name.all_feature
       has_one :vocabulary                         # See Vocabulary.all_feature
     end
 
     class Correspondence
-      identified_by :imported_feature, :import
+      identified_by :import, :imported_feature
       has_one :import                             # See Import.all_correspondence
       has_one :imported_feature, Feature          # See Feature.all_correspondence_as_imported_feature
       has_one :local_feature, Feature             # See Feature.all_correspondence_as_local_feature
@@ -251,7 +256,7 @@ module ActiveFacts
 
     class Concept < Feature
       maybe :is_independent
-      maybe :is_personal
+      has_one :pronoun                            # See Pronoun.all_concept
     end
 
     class Role
@@ -272,13 +277,13 @@ module ActiveFacts
       has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_as_trailing_adjective
     end
 
-    class JoinPath
+    class Join
       identified_by :role_ref, :join_step
-      has_one :join_step, Ordinal                 # See Ordinal.all_join_path_as_join_step
-      has_one :role_ref                           # See RoleRef.all_join_path
-      has_one :concept                            # See Concept.all_join_path
-      has_one :input_role, Role                   # See Role.all_join_path_as_input_role
-      has_one :output_role, Role                  # See Role.all_join_path_as_output_role
+      has_one :join_step, Ordinal                 # See Ordinal.all_join_as_join_step
+      has_one :role_ref                           # See RoleRef.all_join
+      has_one :concept                            # See Concept.all_join
+      has_one :input_role, Role                   # See Role.all_join_as_input_role
+      has_one :output_role, Role                  # See Role.all_join_as_output_role
     end
 
     class EntityType < Concept

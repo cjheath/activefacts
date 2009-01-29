@@ -17,7 +17,7 @@ require 'activefacts/persistence/reference'
 module ActiveFacts
   module Metamodel
 
-    class ValueType
+    class ValueType < Concept
       def absorbed_via  #:nodoc:
         # ValueTypes aren't absorbed in the way EntityTypes are
         nil
@@ -55,7 +55,7 @@ module ActiveFacts
       end
     end
 
-    class EntityType
+    class EntityType < Concept
       # A Reference from an entity type that fully absorbs this one
       def absorbed_via; @absorbed_via; end
       def absorbed_via=(r) #:nodoc:
