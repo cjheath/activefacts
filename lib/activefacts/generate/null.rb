@@ -21,6 +21,7 @@ module ActiveFacts
         @indices = options.include? "indices"
       end
 
+    public
       def generate(out = $>)
         @vocabulary.tables if @tables || @columns || @indices
       end

@@ -16,6 +16,7 @@ module ActiveFacts
         @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
       end
 
+    public
       def generate(out = $>)
         out.puts @vocabulary.constellation.verbalise
       end
