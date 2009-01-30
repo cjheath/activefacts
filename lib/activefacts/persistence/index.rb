@@ -157,8 +157,8 @@ module ActiveFacts
             # Absorption through a one-to-one forms a UC that we don't need to enforce using an index:
             next nil if over != self and
               over.absorbed_via == columns[0].references[absorption_level-1] and
-              (rrs = uc.role_sequence.all_role_ref).size == 1 and
-              over.absorbed_via.fact_type.all_role.include?(rrs.only.role)
+              (rr = uc.role_sequence.all_role_ref.single) and
+              over.absorbed_via.fact_type.all_role.include?(rr.role)
 
             index = ActiveFacts::Persistence::Index.new(
               uc,

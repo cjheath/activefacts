@@ -632,8 +632,8 @@ module ActiveFacts
           # A TypeInheritance fact type has a uniqueness constraint on each role.
           # If this UC is on the supertype and identifies the subtype, it's preferred:
           is_supertype_constraint =
-            roles.all_role_ref.size == 1 &&
-            (role = roles.all_role_ref.only.role) &&
+            (rr = roles.all_role_ref.single) &&
+            (role = rr.role) &&
             (fact_type = role.fact_type) &&
             fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) &&
             role.concept == fact_type.supertype &&

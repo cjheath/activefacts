@@ -41,9 +41,8 @@ module ActiveFacts
         @a - a
       end
 
-      def only
-        raise "Asking for single role player when there's more than one" if @a.size > 1
-        @a[0]
+      def single
+        @a.size > 1 ? nil : @a[0]
       end
 
       def update(old, value)
@@ -82,9 +81,8 @@ module ActiveFacts
         @h.keys - a
       end
 
-      def only
-        raise "Asking for single role player when there's more than one" if @h.size > 1
-        @h.keys[0]
+      def single
+        @h.size > 1 ? nil : @h.keys[0]
       end
 
       def update(old, value)

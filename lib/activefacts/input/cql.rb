@@ -1,5 +1,3 @@
-#
-#       ActiveFacts Vocabulary Input.
 #       Compile a CQL file into an ActiveFacts vocabulary.
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
@@ -994,7 +992,7 @@ module ActiveFacts
         return nil if roles.size == 0 # Safeguard; this would chuck an exception otherwise
         roles[0].all_role_ref.each do |role_ref|
           next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
-          pc = role_ref.role_sequence.all_presence_constraint.only  # Will throw an exception if there's more than one.
+          pc = role_ref.role_sequence.all_presence_constraint.single  # Will return nil if there's more than one.
           #puts "Existing PresenceConstraint matches those roles!" if pc
           return pc if pc
         end

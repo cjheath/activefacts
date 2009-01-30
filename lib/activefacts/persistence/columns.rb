@@ -67,8 +67,8 @@ module ActiveFacts
               !ref.fact_type.is_a?(TypeInheritance) and
               ref.to and
               ref.to.is_a?(EntityType) and
-              (role_refs = ref.to.preferred_identifier.role_sequence.all_role_ref).size == 1 and
-              role_refs.only.role == ref.from_role
+              (role_ref = ref.to.preferred_identifier.role_sequence.all_role_ref.single) and
+              role_ref.role == ref.from_role
           end.
           inject([]) do |a, ref|
             names = ref.to_names
@@ -89,8 +89,8 @@ module ActiveFacts
             # strip it down (so turn Driver.PartyID into Driver.ID for example):
             if a.size > 0 and
                 (et = ref.from).is_a?(EntityType) and
-                (role_refs = et.preferred_identifier.role_sequence.all_role_ref).size == 1 and
-                role_refs.only.role == ref.to_role and
+                (role_ref = et.preferred_identifier.role_sequence.all_role_ref.single) and
+                role_ref.role == ref.to_role and
                 names[0][0...et.name.size].downcase == et.name.downcase
               names[0] = names[0][et.name.size..-1]
               names.shift if names[0] == ""
