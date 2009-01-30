@@ -43,7 +43,7 @@ describe "Absorption" do
         #{Prologue}
         Month is in exactly one Season;
       },
-      :tables => { "Month" => [ "MonthValue", "Season" ] }
+      :tables => { "Month" => [["Month", "Value"], ["Season"]] }
     },
 
     { :should => "absorb a one-to-one along the identification path",

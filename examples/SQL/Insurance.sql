@@ -63,17 +63,17 @@ CREATE TABLE Claim (
 	-- maybe Lodgement is where Claim was lodged by Person and Lodgement is where Claim was lodged by Person and Party has PartyID,
 	LodgementPersonID                       int NULL,
 	-- Claim has p_sequence,
-	P_sequence                              int NOT NULL CHECK((P_sequence >= 1 AND P_sequence <= 999)),
+	PSequence                               int NOT NULL CHECK((PSequence >= 1 AND PSequence <= 999)),
 	-- Claim is on Policy and Policy is for product having p_product and Product has ProductCode,
-	PolicyP_productCode                     int NOT NULL,
+	PolicyPProductCode                      int NOT NULL,
 	-- Claim is on Policy and Policy has p_serial,
-	PolicyP_serial                          int NOT NULL,
+	PolicyPSerial                           int NOT NULL,
 	-- Claim is on Policy and Policy issued in state having p_state and State has StateCode,
-	PolicyP_stateCode                       int NOT NULL,
+	PolicyPStateCode                        int NOT NULL,
 	-- Claim is on Policy and Policy was issued in p_year and Year has YearNr,
-	PolicyP_yearNr                          int NOT NULL,
+	PolicyPYearNr                           int NOT NULL,
 	PRIMARY KEY(ClaimID),
-	UNIQUE(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, P_sequence)
+	UNIQUE(PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial, PSequence)
 )
 GO
 
@@ -93,14 +93,14 @@ CREATE TABLE Cover (
 	-- Cover is where Policy provides CoverType over Asset and CoverType has CoverTypeCode,
 	CoverTypeCode                           char NOT NULL,
 	-- Cover is where Policy provides CoverType over Asset and Policy is for product having p_product and Product has ProductCode,
-	PolicyP_productCode                     int NOT NULL,
+	PolicyPProductCode                      int NOT NULL,
 	-- Cover is where Policy provides CoverType over Asset and Policy has p_serial,
-	PolicyP_serial                          int NOT NULL,
+	PolicyPSerial                           int NOT NULL,
 	-- Cover is where Policy provides CoverType over Asset and Policy issued in state having p_state and State has StateCode,
-	PolicyP_stateCode                       int NOT NULL,
+	PolicyPStateCode                        int NOT NULL,
 	-- Cover is where Policy provides CoverType over Asset and Policy was issued in p_year and Year has YearNr,
-	PolicyP_yearNr                          int NOT NULL,
-	PRIMARY KEY(PolicyP_yearNr, PolicyP_productCode, PolicyP_stateCode, PolicyP_serial, AssetID, CoverTypeCode),
+	PolicyPYearNr                           int NOT NULL,
+	PRIMARY KEY(PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial, AssetID, CoverTypeCode),
 	FOREIGN KEY (AssetID) REFERENCES Asset (AssetID)
 )
 GO
@@ -271,14 +271,14 @@ CREATE TABLE Policy (
 	-- maybe ITCClaimed is for Policy,
 	ITCClaimed                              decimal(18, 2) NULL CHECK((ITCClaimed >= 0.0 AND ITCClaimed <= 100.0)),
 	-- Policy is for product having p_product and Product has ProductCode,
-	P_productCode                           int NOT NULL,
+	PProductCode                            int NOT NULL,
 	-- Policy has p_serial,
-	P_serial                                int NOT NULL CHECK((P_serial >= 1 AND P_serial <= 99999)),
+	PSerial                                 int NOT NULL CHECK((PSerial >= 1 AND PSerial <= 99999)),
 	-- Policy issued in state having p_state and State has StateCode,
-	P_stateCode                             int NOT NULL,
+	PStateCode                              int NOT NULL,
 	-- Policy was issued in p_year and Year has YearNr,
-	P_yearNr                                int NOT NULL,
-	PRIMARY KEY(P_yearNr, P_productCode, P_stateCode, P_serial),
+	PYearNr                                 int NOT NULL,
+	PRIMARY KEY(PYearNr, PProductCode, PStateCode, PSerial),
 	FOREIGN KEY (AuthorisedRepID) REFERENCES Party (PartyID),
 	FOREIGN KEY (ClientID) REFERENCES Party (PartyID)
 )
@@ -389,7 +389,7 @@ CREATE TABLE VehicleIncident (
 	-- maybe VehicleIncident resulted from LossType and LossType has LossTypeCode,
 	LossTypeCode                            char NULL,
 	-- maybe VehicleIncident involved previous_damage-Description,
-	Previous_damageDescription              varchar(1024) NULL,
+	PreviousDamageDescription               varchar(1024) NULL,
 	-- maybe VehicleIncident was caused by Reason,
 	Reason                                  varchar NULL,
 	-- maybe VehicleIncident resulted in vehicle being towed to towed-Location,
@@ -435,7 +435,7 @@ ALTER TABLE Claim
 GO
 
 ALTER TABLE Claim
-	ADD FOREIGN KEY (PolicyP_productCode, PolicyP_serial, PolicyP_stateCode, PolicyP_yearNr) REFERENCES Policy (P_productCode, P_serial, P_stateCode, P_yearNr)
+	ADD FOREIGN KEY (PolicyPProductCode, PolicyPSerial, PolicyPStateCode, PolicyPYearNr) REFERENCES Policy (PProductCode, PSerial, PStateCode, PYearNr)
 GO
 
 ALTER TABLE ContractorAppointment
@@ -447,15 +447,15 @@ ALTER TABLE Cover
 GO
 
 ALTER TABLE Cover
-	ADD FOREIGN KEY (PolicyP_productCode, PolicyP_serial, PolicyP_stateCode, PolicyP_yearNr) REFERENCES Policy (P_productCode, P_serial, P_stateCode, P_yearNr)
+	ADD FOREIGN KEY (PolicyPProductCode, PolicyPSerial, PolicyPStateCode, PolicyPYearNr) REFERENCES Policy (PProductCode, PSerial, PStateCode, PYearNr)
 GO
 
 ALTER TABLE Policy
-	ADD FOREIGN KEY (P_productCode) REFERENCES Product (ProductCode)
+	ADD FOREIGN KEY (PProductCode) REFERENCES Product (ProductCode)
 GO
 
 ALTER TABLE Policy
-	ADD FOREIGN KEY (P_stateCode) REFERENCES State (StateCode)
+	ADD FOREIGN KEY (PStateCode) REFERENCES State (StateCode)
 GO
 
 ALTER TABLE ThirdParty

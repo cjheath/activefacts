@@ -59,7 +59,7 @@ module ActiveFacts
       # A Column name is a sequence of names (derived from the to_roles of the References)
       # joined by a joiner string (pass nil to get the original array of names)
       def name(joiner = "")
-        last_name = ""
+        last_names = []
         names = @references.
           reject do |ref|
             # Skip any object after the first which is identified by this reference
@@ -75,28 +75,32 @@ module ActiveFacts
 
             # When traversing type inheritances, keep the subtype name, not the supertype names as well:
             if a.size > 0 && ref.fact_type.is_a?(TypeInheritance)
-              a[-1] = names[0] if ref.to == ref.fact_type.subtype   # Else we already had the subtype
-              next a
+              next a if ref.to != ref.fact_type.subtype  # Did we already have the subtype?
+              last_names.size.times { a.pop }   # Remove the last names added
+            elsif last_names.last && last_names.last == names[0][0...last_names.last.size] 
+              # When Xyz is followed by XyzID, truncate that to just ID
+              names[0] = names[0][last_names.last.size..-1]
+            elsif last_names.last == names[0]
+              # Same, but where an underscore split up the words
+              names.shift
             end
 
-            # When Xyz is followed by XyzID, truncate that to just ID:
-            names[0] = names[0][last_name.size..-1] if last_name == names[0][0...last_name.size] 
-            last_name = names.last
+            # Where the last name is like a reference mode but the preceeding name isn't the identified concept,
+            # strip it down (so turn Driver.PartyID into Driver.ID for example):
+            if a.size > 0 and
+                (et = ref.from).is_a?(EntityType) and
+                (role_refs = et.preferred_identifier.role_sequence.all_role_ref).size == 1 and
+                role_refs.only.role == ref.to_role and
+                names[0][0...et.name.size].downcase == et.name.downcase
+              names[0] = names[0][et.name.size..-1]
+              names.shift if names[0] == ""
+            end
+
+            last_names = names
 
             a += names
             a
           end
-
-        # Where the last name is like a reference mode but the preceeding name isn't the identified concept,
-        # strip it down (so turn Driver.PartyID into Driver.ID for example):
-        if names.size > 1 and
-            (et = @references.last.from).is_a?(EntityType) and
-            (role_refs = et.preferred_identifier.role_sequence.all_role_ref).size == 1 and
-            role_refs.only.role == @references.last.to_role and
-            names.last[0...et.name.size].downcase == et.name.downcase
-          names[-1] = names.last[et.name.size..-1]
-          names.pop if names.last == ''
-        end
 
         name_array = names.map{|n| n.sub(/^[a-z]/){|s| s.upcase}}
         joiner ? name_array * joiner : name_array

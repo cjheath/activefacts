@@ -20,7 +20,7 @@ CREATE TABLE Event (
 	-- Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location,
 	Location                                varchar NOT NULL,
 	-- Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location and Map is where map-Name having Accessibility belongs to Club,
-	MapMapName                              varchar NOT NULL,
+	MapName                                 varchar NOT NULL,
 	-- Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location and SeriesEvent is where SeriesName includes event-Number,
 	SeriesEventEventNumber                  int NOT NULL,
 	-- Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location and SeriesEvent is where SeriesName includes event-Number,
@@ -36,11 +36,11 @@ CREATE TABLE EventControl (
 	-- EventControl is where Event includes Control which is worth PointValue,
 	Control                                 int NOT NULL,
 	-- EventControl is where Event includes Control which is worth PointValue and Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location,
-	EventEventID                            int NOT NULL,
+	EventID                                 int NOT NULL,
 	-- EventControl is where Event includes Control which is worth PointValue,
 	PointValue                              int NOT NULL,
-	PRIMARY KEY(EventEventID, Control),
-	FOREIGN KEY (EventEventID) REFERENCES Event (EventID)
+	PRIMARY KEY(EventID, Control),
+	FOREIGN KEY (EventID) REFERENCES Event (EventID)
 )
 GO
 
@@ -48,9 +48,9 @@ CREATE TABLE EventCourse (
 	-- EventCourse is where Course is available at Event,
 	Course                                  char NOT NULL,
 	-- EventCourse is where Course is available at Event and Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location,
-	EventEventID                            int NOT NULL,
-	PRIMARY KEY(Course, EventEventID),
-	FOREIGN KEY (EventEventID) REFERENCES Event (EventID)
+	EventID                                 int NOT NULL,
+	PRIMARY KEY(Course, EventID),
+	FOREIGN KEY (EventID) REFERENCES Event (EventID)
 )
 GO
 
@@ -67,6 +67,6 @@ CREATE TABLE Map (
 GO
 
 ALTER TABLE Event
-	ADD FOREIGN KEY (MapMapName) REFERENCES Map (MapName)
+	ADD FOREIGN KEY (MapName) REFERENCES Map (MapName)
 GO
 

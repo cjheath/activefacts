@@ -114,16 +114,16 @@ module ActiveFacts
       def to_names
         case
         when is_unary
-          @to_role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.split(/\s/)
+          @to_role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.split(/[_\s]/)
         when @to && !@to_role           # @to is an objectified fact type so @to_role is a phantom
-          [@to.name]
+          @to.name.split(/[_\s]/)
         when !@to_role                  # Self-value role of an independent ValueType
-          ["#{@from.name}Value"]
+          ["#{@from.name}", "Value"]
         when @to_role.role_name         # Named role
-          [@to_role.role_name]
+          @to_role.role_name.split(/[_\s]/)
         else                            # Use the name from the preferred reading
           role_ref = @to_role.preferred_reference
-          [role_ref.leading_adjective, @to_role.concept.name, role_ref.trailing_adjective].compact.map{|w| w.split(/\s/)}.flatten.reject{|s| s == ''}
+          [role_ref.leading_adjective, @to_role.concept.name, role_ref.trailing_adjective].compact.map{|w| w.split(/[_\s]/)}.flatten.reject{|s| s == ''}
         end
       end
 
