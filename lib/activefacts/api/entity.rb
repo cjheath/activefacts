@@ -219,6 +219,8 @@ module ActiveFacts
 
         def inherited(other) #:nodoc:
           other.identified_by *identifying_role_names
+          subtypes << other unless subtypes.include? other
+          #puts "#{self.name} inherited by #{other.name}"
           vocabulary.add_concept(other)
         end
 

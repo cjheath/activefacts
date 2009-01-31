@@ -121,6 +121,10 @@ module ActiveFacts
         end
       end
 
+      def subtypes
+        @subtypes ||= []
+      end
+
       # Every new role added or inherited comes through here:
       def realise_role(role) #:nodoc:
         #puts "Realising role #{role.counterpart_concept.basename rescue role.counterpart_concept}.#{role.name} in #{basename}"
@@ -137,6 +141,10 @@ module ActiveFacts
 
       # REVISIT: Use method_missing to catch all_some_role_as_other_role_and_third_role, to sort_by those roles?
 
+      def is_a? klass
+        super || supertypes_transitive.include?(klass)
+      end
+
       private
 
       def realise_supertypes(concept, all_supertypes = nil)
@@ -146,6 +154,7 @@ module ActiveFacts
         s.each {|t|
             next if all_supertypes.include? t
             realise_supertypes(t, all_supertypes)
+            t.subtypes << self
             all_supertypes << t
           }
         #puts "Realising roles of #{concept.basename} in #{basename}"
@@ -174,6 +183,7 @@ module ActiveFacts
           else
             target.roles[related_role_name] = role.counterpart = Role.new(target, definer, role, related_role_name, false, false)
           end
+          role.counterpart_concept = target
           #puts "Realising role pair #{definer.basename}.#{role_name} <-> #{target.basename}.#{related_role_name}"
           realise_role(role)
           target.realise_role(role.counterpart)
