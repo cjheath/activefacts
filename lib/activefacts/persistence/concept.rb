@@ -20,7 +20,6 @@ module ActiveFacts
             rn = role.name.to_s.split(/_/)
             columns += role.counterpart_concept.__absorb(rn, role.counterpart)
           end +
-          # REVISIT: Need to use subtypes_transitive here:
           subtypes.
             select{|subtype| !subtype.is_table}.    # Don't absorb separate subtypes
             inject([]) { |columns, subtype|
@@ -43,24 +42,29 @@ module ActiveFacts
 
       # Return an array of the absorbed columns, using prefix for name truncation
       def __absorb(prefix, except_role = nil)
-        if !@is_table && 
-          # also considered a table if the superclass isn't excluded and is (transitively) a table
-          (except_role == superclass || !is_table_subtype)
+        # also considered a table if the superclass isn't excluded and is (transitively) a table
+        if !@is_table && (except_role == superclass || !is_table_subtype)
           if is_entity_type
-            if role = fully_absorbed
-              # If this non-table is fully absorbed into another table
-              # (another table plays its single identifying role), then
-              # absorb that role only
-              return [] if role == except_role
+            if (role = fully_absorbed) && role != except_role
+              # If this non-table is fully absorbed into another table (not our caller!)
+              # (another table plays its single identifying role), then absorb that role only.
               role.counterpart_concept.__absorb(prefix + role.name.to_s.split(/_/), role.counterpart)
             else
               # Not a table -> all roles are absorbed
               roles.
                   values.
-                  select{|role| role.unique && role.counterpart != except_role }.
+                  select{|role| role.unique && role != except_role }.
                   inject([]) do |columns, role|
                 columns += role.counterpart_concept.__absorb(prefix + role.name.to_s.split(/_/), role)
-              end
+              end +
+              subtypes.          # Absorb subtype roles too!
+                select{|subtype| !subtype.is_table}.    # Don't absorb separate subtypes
+                inject([]) { |columns, subtype|
+                  sn = prefix + [subtype.basename]
+                  columns += subtype.__absorb(sn, self) # Pass self, not a role here, standing for the supertype role
+                  # puts "subtype #{subtype.name} contributed #{columns.inspect}"
+                  columns
+                }
             end
           else
             [prefix]
