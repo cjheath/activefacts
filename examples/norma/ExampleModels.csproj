@@ -33,6 +33,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbsorbSeparateSubtype._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsorbSeparateSubtype.orm</DependentUpon>
+    </Compile>
     <Compile Include="Address._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Address.orm</DependentUpon>
@@ -184,6 +188,10 @@
   <ItemGroup Condition="Exists('Units.orm')">
   </ItemGroup>
   <ItemGroup>
+    <None Include="AbsorbSeparateSubtype.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>AbsorbSeparateSubtype._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="CompanyDirectorEmployee.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirectorEmployee._ORMCustomToolReport.cs</LastGenOutput>
@@ -696,6 +704,23 @@
     <None Include="Tests.Test5.Load.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('AbsorbSeparateSubtype.orm')">
+    <None Include="AbsorbSeparateSubtype.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsorbSeparateSubtype.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="AbsorbSeparateSubtype.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsorbSeparateSubtype.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="AbsorbSeparateSubtype.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsorbSeparateSubtype.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>

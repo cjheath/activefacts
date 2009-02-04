@@ -59,12 +59,16 @@ module ActiveFacts
           case o.supertype.name
             when "VariableLengthText"; "String"
             when "Date"; "::Date"
+            when "DateTime"; "::DateTime"
+            when "Time"; "::Time"
             else o.supertype.name
           end
 
         puts "  class #{o.name} < #{ruby_type_name}\n" +
              "    value_type #{params}\n"
-        puts "    table" if @sql and o.is_table
+        if @sql and o.is_table
+          puts "    table"
+        end
         puts "    \# REVISIT: #{o.name} has restricted values\n" if o.value_restriction
         puts "    \# REVISIT: #{o.name} is in units of #{o.unit.name}\n" if o.unit
         roles_dump(o)
@@ -78,7 +82,9 @@ module ActiveFacts
         puts "  class #{o.name} < #{ primary_supertype.name }"
         puts "    identified_by #{identified_by(o, pi)}" if pi
         puts "    supertypes "+secondary_supertypes.map(&:name)*", " if secondary_supertypes.size > 0
-        puts "    table" if @sql and o.is_table
+        if @sql and o.is_table
+          puts "    table"
+        end
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)
         puts "  end\n\n"
@@ -87,8 +93,12 @@ module ActiveFacts
 
       def non_subtype_dump(o, pi)
         puts "  class #{o.name}"
+
+        # We want to name the absorption role only when it's absorbed along its single identifying role.
         puts "    identified_by #{identified_by(o, pi)}"
-        puts "    table" if @sql and o.is_table
+        if @sql and o.is_table
+          puts "    table"
+        end
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)
         puts "  end\n\n"
@@ -135,10 +145,8 @@ module ActiveFacts
         if role_name.camelcase(true) == role_player.name
           # Don't use Class name if implied by rolename
           role_reference = nil
-        elsif !@concept_types_dumped[role_player]
-          role_reference = '"'+role_player.name+'"'
         else
-          role_reference = role_player.name
+          role_reference = concept_reference(role_player)
         end
         other_role_name = ":"+other_role_name if other_role_name
 
@@ -152,6 +160,14 @@ module ActiveFacts
         line += "\# See #{role_player.name}.#{other_method_name}" if other_method_name
         puts line
         puts "    \# REVISIT: #{other_role_name} has restricted values\n" if role.role_value_restriction
+      end
+
+      def concept_reference concept
+        if !@concept_types_dumped[concept]
+          '"'+concept.name+'"'
+        else
+          role_reference = concept.name
+        end
       end
 
     end

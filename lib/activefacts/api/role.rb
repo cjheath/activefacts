@@ -30,7 +30,7 @@ module ActiveFacts
         @name = name
         @mandatory = mandatory
         @unique = unique
-        @is_identifying = @owner.respond_to?(:identifying_role_names) && @owner.identifying_role_names.include?(@name)
+        @is_identifying = @owner.is_entity_type && @owner.identifying_role_names.include?(@name)
       end
 
       # Is this role a unary (created by maybe)? If so, it has no counterpart

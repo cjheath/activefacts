@@ -14,7 +14,7 @@ module ActiveFacts
       attr_accessor :constellation
 
       def initialize(args = []) #:nodoc:
-        unless (self.class.respond_to?(:identifying_role_names))
+        unless (self.class.is_entity_type)
         #if (self.class.superclass != Object)
           # puts "constructing #{self.class.superclass} with #{args.inspect}"
           super(*args)

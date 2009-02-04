@@ -47,6 +47,10 @@ class Class
     include ActiveFacts::API::Entity
     initialise_entity_type(*args)
   end
+
+  def is_entity_type
+    respond_to?(:identifying_role_names)
+  end
 end
 
 # REVISIT: Fix these NORMA types

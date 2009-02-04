@@ -83,7 +83,7 @@ module ActiveFacts
               path = "right constellation, right class, just use it"
             else
               # We need a new object from our constellation, so copy the value.
-              if klass.respond_to?(:identifying_role_names)
+              if klass.is_entity_type
                 # Make a new entity having only the identifying roles set.
                 # Someone will complain that this is wrong, and all functional role values should also
                 # be cloned, and I'm listening... but not there yet. Why just those?
