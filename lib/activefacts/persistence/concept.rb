@@ -13,31 +13,26 @@ module ActiveFacts
         #puts "Calculating columns for #{basename}"
         return @columns if @columns
         @columns = (
-          roles.
-              values.
-              select{|role| role.unique}.
-              inject([]) do |columns, role|
+          # A separate subtype needs to have a foreign key to the supertype:
+          # REVISIT: Need keys to secondary supertypes as well, but no duplicates.
+          (superclass.is_entity_type ? superclass.__absorb([superclass.basename], self) : []) +
+          # Then absorb all normal roles:
+          roles.values.select{|role| role.unique}.inject([]) do |columns, role|
             rn = role.name.to_s.split(/_/)
-            columns += role.counterpart_concept.__absorb(rn, role.counterpart)
+            columns += role.counterpart_concept.__absorb([rn], role.counterpart)
           end +
+          # And finally all absorbed subtypes:
           subtypes.
             select{|subtype| !subtype.is_table}.    # Don't absorb separate subtypes
-            inject([]) { |columns, subtype|
-              sn = [subtype.basename]
-              columns += subtype.__absorb(sn, self) # Pass self, not a role here, standing for the supertype role
-              # puts "subtype #{subtype.name} contributed #{columns.inspect}"
-              columns
-            }
-          ).map{|col_names| col_names.uniq.map{|name| name.sub(/^[a-z]/){|c| c.upcase}}*"."}
-      end
-
-      def is_table_subtype
-        klass = superclass
-        while klass.is_entity_type
-          return true if klass.is_table
-          klass = klass.superclass
-        end
-        return false
+            inject([]) do |columns, subtype|
+              # Pass self as 2nd param here, not a role, standing for the supertype role
+              columns += subtype.__absorb([[subtype.basename]], self)
+            end
+          ).map do |col_names|
+            col_names.flatten!.uniq.map do |name|
+              name.sub(/^[a-z]/){|c| c.upcase}
+            end*"."
+          end
       end
 
       # Return an array of the absorbed columns, using prefix for name truncation
@@ -48,22 +43,30 @@ module ActiveFacts
             if (role = fully_absorbed) && role != except_role
               # If this non-table is fully absorbed into another table (not our caller!)
               # (another table plays its single identifying role), then absorb that role only.
-              role.counterpart_concept.__absorb(prefix + role.name.to_s.split(/_/), role.counterpart)
+              new_prefix = prefix + [role.name.to_s.split(/_/)]
+              role.counterpart_concept.__absorb(new_prefix, role.counterpart)
             else
               # Not a table -> all roles are absorbed
               roles.
                   values.
                   select{|role| role.unique && role != except_role }.
                   inject([]) do |columns, role|
-                columns += role.counterpart_concept.__absorb(prefix + role.name.to_s.split(/_/), role)
+                if (c = role.counterpart_concept).is_entity_type and
+                    (irn = c.identifying_role_names).size == 1 and
+                    irn[0] == role.counterpart.name
+                  new_prefix = prefix
+                else
+                  new_prefix = prefix + [role.name.to_s.split(/_/)]
+                end
+
+                columns += role.counterpart_concept.__absorb(new_prefix, role.counterpart)
               end +
               subtypes.          # Absorb subtype roles too!
                 select{|subtype| !subtype.is_table}.    # Don't absorb separate subtypes
                 inject([]) { |columns, subtype|
-                  sn = prefix + [subtype.basename]
-                  columns += subtype.__absorb(sn, self) # Pass self, not a role here, standing for the supertype role
-                  # puts "subtype #{subtype.name} contributed #{columns.inspect}"
-                  columns
+                  # Pass self as 2nd param here, not a role, standing for the supertype role
+                  new_prefix = prefix[0..-2] + [[subtype.basename]]
+                  columns += subtype.__absorb(new_prefix, self)
                 }
             end
           else
@@ -72,12 +75,27 @@ module ActiveFacts
         else
         #puts "#{@is_table ? "referencing" : "absorbing"} #{is_entity_type ? "entity" : "value"} #{basename} using #{prefix.inspect}"
           if is_entity_type
-            identifying_role_names.map{|role_name| prefix+role_name.to_s.split(/_/)}
+            ic = identifying_role_names.map{|role_name| role_name.to_s.split(/_/)}
+            if ic.size == 1 &&      # When you have e.g. Party.ID that identifies Party, just use ID.
+                ic[0].size > 1 &&
+                ic[0][0] == roles(identifying_role_names[0]).owner.basename.downcase
+              ic[0].shift
+            end
+            ic.map{|column| prefix+[column]}
           else
             # Reference to value type which is a table
-            [prefix + ["Value"]]
+            prefix + [["Value"]]
           end
         end
+      end
+
+      def is_table_subtype
+        klass = superclass
+        while klass.is_entity_type
+          return true if klass.is_table
+          klass = klass.superclass
+        end
+        return false
       end
     end
 
