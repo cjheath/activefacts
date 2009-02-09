@@ -88,7 +88,7 @@ module ActiveFacts
 
       # Two RoleRefs are equal if they have the same role and Joins with matching roles
       def ==(role_ref)
-        RoleRef === role_ref &&
+        role_ref.is_a?(ActiveFacts::Metamodel::RoleRef) &&
         role_ref.role == role &&
         all_join.size == role_ref.all_join.size &&
         !all_join.sort_by{|j|j.join_step}.
@@ -119,7 +119,6 @@ module ActiveFacts
     end
 
     class EntityType
-      include ActiveFacts
       def preferred_identifier
         if fact_type
 
@@ -161,7 +160,7 @@ module ActiveFacts
               end
             debug :pi, "Got PI #{pi.name||pi.object_id} for nested #{name}" if pi
             debug :pi, "Looking for PI on entity that nests this fact" unless pi
-            raise "Oops, pi for nested fact is #{pi.class}" unless !pi || PresenceConstraint === pi
+            raise "Oops, pi for nested fact is #{pi.class}" unless !pi || pi.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
             return pi if pi
           end
         end
@@ -228,7 +227,7 @@ module ActiveFacts
                 }
               throw :pi, nil
             end
-          raise "Oops, pi for entity is #{pi.class}" if pi && !(PresenceConstraint === pi)
+          raise "Oops, pi for entity is #{pi.class}" if pi && !pi.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
           debug :pi, "Got PI #{pi.name||pi.object_id} for #{name}" if pi
 
           if !pi
@@ -332,8 +331,8 @@ module ActiveFacts
                   la = ta = nil   # When using role names, don't add adjectives
                 end
                 fc = frequency_constraints[i]
-                fc = fc.frequency if fc && PresenceConstraint === fc
-                if Array === fc
+                fc = fc.frequency if fc && fc.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
+                if fc.is_a?(Array)
                   fc, player_name = *fc
                 else
                   player_name = player.name

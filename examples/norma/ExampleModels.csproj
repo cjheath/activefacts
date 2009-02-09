@@ -33,10 +33,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbsorbSeparateSubtype._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>AbsorbSeparateSubtype.orm</DependentUpon>
-    </Compile>
     <Compile Include="Address._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Address.orm</DependentUpon>
@@ -188,10 +184,6 @@
   <ItemGroup Condition="Exists('Units.orm')">
   </ItemGroup>
   <ItemGroup>
-    <None Include="AbsorbSeparateSubtype.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>AbsorbSeparateSubtype._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
     <None Include="CompanyDirectorEmployee.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirectorEmployee._ORMCustomToolReport.cs</LastGenOutput>

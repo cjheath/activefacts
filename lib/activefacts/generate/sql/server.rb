@@ -18,7 +18,6 @@ module ActiveFacts
       # * norma Translate datatypes from NORMA to SQL Server
       class SERVER
       private
-        include Metamodel
         include Persistence
         ColumnNameMax = 40
 

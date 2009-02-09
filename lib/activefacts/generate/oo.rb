@@ -11,8 +11,6 @@ module ActiveFacts
   module Generate
     # Base class for generators of object-oriented class libraries for an ActiveFacts vocabulary.
     class OO < OrderedDumper  #:nodoc:
-      include Metamodel
-
       def constraints_dump(constraints_used)
         # Stub, not needed.
       end
@@ -45,7 +43,7 @@ module ActiveFacts
         end
 
         # REVISIT: TypeInheritance
-        if TypeInheritance === fact_type
+        if fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
           # debug "Ignoring role #{role} in #{fact_type}, subtype fact type"
           return
         end
@@ -53,7 +51,7 @@ module ActiveFacts
         # Find any uniqueness constraint over this role:
         fact_constraints = @presence_constraints_by_fact[fact_type]
         #debug "Considering #{fact_constraints.size} fact constraints over fact role #{role.concept.name}"
-        ucs = fact_constraints.select{|c| PresenceConstraint === c && c.max_frequency == 1 }
+        ucs = fact_constraints.select{|c| c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) && c.max_frequency == 1 }
         # Emit "has_one/one_to_one..." only for functional roles here:
         #debug "Considering #{ucs.size} unique constraints over role #{role.concept.name}"
         unless ucs.find {|c|
@@ -103,7 +101,7 @@ module ActiveFacts
       end
 
       def preferred_role_name(role, is_for = nil)
-        return "" if TypeInheritance === role.fact_type
+        return "" if role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
 
         if is_for && role.fact_type.entity_type == is_for && role.fact_type.all_role.size == 1
           return role.concept.name.snakecase
@@ -142,7 +140,7 @@ module ActiveFacts
       def skip_fact_type(f)
         # REVISIT: There might be constraints we have to merge into the nested entity or subtype.  These will come up as un-handled constraints.
         !f.entity_type ||
-          TypeInheritance === f
+          f.is_a?(ActiveFacts::Metamodel::TypeInheritance)
       end
 
       # An objectified fact type has internal roles that are always "has_one":

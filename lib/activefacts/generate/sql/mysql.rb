@@ -18,7 +18,6 @@ module ActiveFacts
       # * norma Translate datatypes from NORMA to SQL Server
       class MYSQL
       private
-        include Metamodel
         include Persistence
         ColumnNameMax = 63
         DefaultCharColLength = 63

@@ -20,8 +20,6 @@ module ActiveFacts
   module Persistence    #:nodoc:
 
     class Column
-      include Metamodel
-
       def initialize(reference = nil) #:nodoc:
         references << reference if reference
       end
@@ -61,16 +59,16 @@ module ActiveFacts
       def name(joiner = "")
         last_names = []
         names = @references.
-          reject do |ref|
+          inject([]) do |a, ref|
+
             # Skip any object after the first which is identified by this reference
-            ref != @references[0] and
+            next a if ref != @references[0] and
               !ref.fact_type.is_a?(TypeInheritance) and
               ref.to and
               ref.to.is_a?(EntityType) and
               (role_ref = ref.to.preferred_identifier.role_sequence.all_role_ref.single) and
               role_ref.role == ref.from_role
-          end.
-          inject([]) do |a, ref|
+
             names = ref.to_names
 
             # When traversing type inheritances, keep the subtype name, not the supertype names as well:
@@ -278,7 +276,10 @@ module ActiveFacts
             # If this is a subtype that has its own identification, use that.
             (all_type_inheritance_as_subtype.size == 0 ||
               all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification })
-            return absorbed_via.from.reference_columns(excluded_supertypes)
+            rc = absorbed_via.from.reference_columns(excluded_supertypes)
+            # REVISIT: The absorbed_via reference gets skipped here, but not in concept.rb, which causes a mismatch
+            #rc.each{|col| col.prepend(absorbed_via)}
+            return rc
           end
 
           # REVISIT: Should have built preferred_identifier_references

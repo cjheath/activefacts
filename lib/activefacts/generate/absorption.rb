@@ -19,8 +19,6 @@ module ActiveFacts
     # * no_identifier Don't show the identified_by columns for an EntityType
 
     class ABSORPTION
-      include Metamodel
-
       def initialize(vocabulary, *options)  #:nodoc:
         @vocabulary = vocabulary
         @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary

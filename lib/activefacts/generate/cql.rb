@@ -14,8 +14,6 @@ module ActiveFacts
     #   afgen --cql <file>.cql
     class CQL < OrderedDumper
     private
-      include Metamodel
-
       def vocabulary_start(vocabulary)
         puts "vocabulary #{vocabulary.name};\n\n"
       end
@@ -342,7 +340,7 @@ module ActiveFacts
         end
         #puts "#{c.class.basename} has players #{players.map{|p| p.name}*", "}"
 
-        if (SetEqualityConstraint === c)
+        if c.is_a?(ActiveFacts::Metamodel::SetEqualityConstraint)
           # REVISIT: Need a proper approach to some/that and adjective disambiguation:
           puts \
             scrs.map{|scr|
@@ -436,13 +434,13 @@ module ActiveFacts
 
       def constraint_dump(c)
           case c
-          when PresenceConstraint
+          when ActiveFacts::Metamodel::PresenceConstraint
             dump_presence_constraint(c)
-          when RingConstraint
+          when ActiveFacts::Metamodel::RingConstraint
             dump_ring_constraint(c)
-          when SetComparisonConstraint # includes SetExclusionConstraint, SetEqualityConstraint
+          when ActiveFacts::Metamodel::SetComparisonConstraint # includes SetExclusionConstraint, SetEqualityConstraint
             dump_set_constraint(c)
-          when SubsetConstraint
+          when ActiveFacts::Metamodel::SubsetConstraint
             dump_subset_constraint(c)
           else
             "#{c.class.basename} #{c.name}: unhandled constraint type"

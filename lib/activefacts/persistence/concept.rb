@@ -15,7 +15,11 @@ module ActiveFacts
         @columns = (
           # A separate subtype needs to have a foreign key to the supertype:
           # REVISIT: Need keys to secondary supertypes as well, but no duplicates.
-          (superclass.is_entity_type ? superclass.__absorb([superclass.basename], self) : []) +
+          if superclass.is_entity_type
+            superclass.__absorb([[superclass.basename]], self)
+          else
+            []
+          end +
           # Then absorb all normal roles:
           roles.values.select{|role| role.unique}.inject([]) do |columns, role|
             rn = role.name.to_s.split(/_/)
@@ -29,7 +33,7 @@ module ActiveFacts
               columns += subtype.__absorb([[subtype.basename]], self)
             end
           ).map do |col_names|
-            col_names.flatten!.uniq.map do |name|
+            col_names.flatten.uniq.map do |name|
               name.sub(/^[a-z]/){|c| c.upcase}
             end*"."
           end
@@ -73,7 +77,7 @@ module ActiveFacts
             [prefix]
           end
         else
-        #puts "#{@is_table ? "referencing" : "absorbing"} #{is_entity_type ? "entity" : "value"} #{basename} using #{prefix.inspect}"
+          # Create a foreign key to the table
           if is_entity_type
             ic = identifying_role_names.map{|role_name| role_name.to_s.split(/_/)}
             if ic.size == 1 &&      # When you have e.g. Party.ID that identifies Party, just use ID.
@@ -84,7 +88,9 @@ module ActiveFacts
             ic.map{|column| prefix+[column]}
           else
             # Reference to value type which is a table
-            prefix + [["Value"]]
+            col = prefix.clone
+            col[-1] += ["Value"]
+            col
           end
         end
       end

@@ -172,7 +172,7 @@ module ActiveFacts
       def define_binary_fact_type(one_to_one, role_name, related, mandatory, related_role_name)
         # puts "#{self}.#{role_name} is to #{related.inspect}, #{mandatory ? :mandatory : :optional}, related role is #{related_role_name}"
 
-        raise "#{self.class.basename} cannot have more than one role named #{role_name}" if roles[role_name]
+        raise "#{name} cannot have more than one role named #{role_name}" if roles[role_name]
         roles[role_name] = role = Role.new(self, related, nil, role_name, mandatory)
 
         # There may be a forward reference here where role_name is a Symbol,
@@ -350,6 +350,7 @@ module ActiveFacts
 
         # resolve the Symbol to a Class now if possible:
         resolved = vocabulary.concept(related) rescue nil
+        #puts "#{related} resolves to #{resolved}"
         related = resolved if resolved
         # puts "related = #{related.inspect}"
 
@@ -399,7 +400,7 @@ module ActiveFacts
         when String     # Arrange for this to happen later
           vocabulary.__delay(concept, args, &block)
         else
-          raise "Delayed binding not possible for #{concept.inspect}"
+          raise "Delayed binding not possible for #{concept.class.name} #{concept.inspect}"
         end
       end
     end

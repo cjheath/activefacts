@@ -235,6 +235,7 @@ module ActiveFacts
 
         # Register ourselves with the parent module, which has become a Vocabulary:
         vocabulary = other.modspace
+        # puts "Entity.included(#{other.inspect})"
         unless vocabulary.respond_to? :concept  # Extend module with Vocabulary if necessary
           vocabulary.send :extend, Vocabulary
         end

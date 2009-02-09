@@ -10,8 +10,6 @@ module ActiveFacts
   module Generate #:nodoc:
     class OrderedDumper #:nodoc:
       # Base class for generators of object-oriented class libraries for an ActiveFacts vocabulary.
-      include Metamodel
-
       def initialize(vocabulary, *options)
         @vocabulary = vocabulary
         @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
@@ -49,13 +47,13 @@ module ActiveFacts
 
         @vocabulary.all_constraint.each { |c|
             case c
-            when PresenceConstraint
+            when ActiveFacts::Metamodel::PresenceConstraint
               fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq  # All fact types spanned by this constraint
               if fact_types.size == 1     # There's only one, save it:
                 # debug "Single-fact constraint on #{fact_types[0].fact_type_id}: #{c.name}"
                 (@presence_constraints_by_fact[fact_types[0]] ||= []) << c
               end
-            when RingConstraint
+            when ActiveFacts::Metamodel::RingConstraint
               (@ring_constraints_by_fact[c.role.fact_type] ||= []) << c
             else
               # debug "Found unhandled constraint #{c.class} #{c.name}"
@@ -67,7 +65,7 @@ module ActiveFacts
       def value_types_dump
         done_banner = false
         @vocabulary.all_feature.sort_by{|o| o.name}.each{|o|
-            next unless ValueType === o
+            next unless o.is_a?(ActiveFacts::Metamodel::ValueType)
 
             value_type_banner unless done_banner
             done_banner = true
@@ -86,7 +84,9 @@ module ActiveFacts
         precursors, followers = *build_entity_dependencies
 
         done_banner = false
-        sorted = @vocabulary.all_feature.select{|o| EntityType === o and !o.fact_type }.sort_by{|o| o.name}
+        sorted = @vocabulary.all_feature.select{|o|
+          o.is_a?(ActiveFacts::Metamodel::EntityType) and !o.fact_type
+        }.sort_by{|o| o.name}
         panic = nil
         while true do
           count_this_pass = 0
@@ -154,7 +154,7 @@ module ActiveFacts
         supers = o.supertypes
         if (supers.size > 0)
           # Ignore identification by a supertype:
-          pi = nil if pi && pi.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(TypeInheritance) }
+          pi = nil if pi && pi.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) }
           subtype_dump(o, supers, pi)
         else
           non_subtype_dump(o, pi)
@@ -222,7 +222,7 @@ module ActiveFacts
 
             constraint = fact_constraints.find{|c|  # Find a UC that spans all other Roles
                 # internal uniqueness constraints span all roles but one, the residual:
-                PresenceConstraint === c &&
+                c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) &&
                   !@constraints_used[c] &&  # Already verbalised
                   roles-c.role_sequence.all_role_ref.map(&:role) == [role]
               }
@@ -271,7 +271,7 @@ module ActiveFacts
       # The values of each hash entry are the precursors and followers (respectively) of that entity.
       def build_entity_dependencies
         @vocabulary.all_feature.inject([{},{}]) { |a, o|
-            if EntityType === o && !o.fact_type
+            if o.is_a?(ActiveFacts::Metamodel::EntityType) && !o.fact_type
               precursor = a[0]
               follower = a[1]
               blocked = false
@@ -280,7 +280,7 @@ module ActiveFacts
                 pi.role_sequence.all_role_ref.each{|rr|
                     role = rr.role
                     player = role.concept
-                    next unless EntityType === player
+                    next unless player.is_a?(ActiveFacts::Metamodel::EntityType)
                     # player is a precursor of o
                     (precursor[o] ||= []) << player if (player != o)
                     (follower[player] ||= []) << o if (player != o)
@@ -324,7 +324,7 @@ module ActiveFacts
         # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
         # These will come up as un-handled constraints:
         pcs = @presence_constraints_by_fact[f]
-        TypeInheritance === f ||
+        f.is_a?(ActiveFacts::Metamodel::TypeInheritance) ||
           (pcs && pcs.size > 0 && !pcs.detect{|c| !@constraints_used[c] })
       end
 
@@ -395,10 +395,10 @@ module ActiveFacts
         fact_collection = @vocabulary.constellation.FactType
         fact_collection.keys.select{|fact_id|
                 fact_type = fact_collection[fact_id] and
-                !(TypeInheritance === fact_type) and
+                !fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) and
                 !@fact_types_dumped[fact_type] and
                 !skip_fact_type(fact_type) and
-                !fact_type.all_role.detect{|r| r.concept.is_a?(EntityType) }
+                !fact_type.all_role.detect{|r| r.concept.is_a?(ActiveFacts::Metamodel::EntityType) }
             }.sort_by{|fact_id|
                 fact_type = fact_collection[fact_id]
                 fact_type_key(fact_type)
@@ -412,7 +412,7 @@ module ActiveFacts
 
         # REVISIT: Find out why some fact types are missed during entity dumping:
         @vocabulary.constellation.FactType.values.select{|fact_type|
-            !(TypeInheritance === fact_type)
+            !fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
           }.sort_by{|fact_type|
             fact_type_key(fact_type)
           }.each{|fact_type|
@@ -442,13 +442,13 @@ module ActiveFacts
 
       def constraint_sort_key(c)
         case c
-        when RingConstraint
+        when ActiveFacts::Metamodel::RingConstraint
           [1, c.ring_type, c.role.concept.name, c.other_role.concept.name, c.name||""]
-        when SetComparisonConstraint
+        when ActiveFacts::Metamodel::SetComparisonConstraint
           [2, c.all_set_comparison_roles.map{|scrs| scrs.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name||""]
-        when SubsetConstraint
+        when ActiveFacts::Metamodel::SubsetConstraint
           [3, [c.superset_role_sequence, c.subset_role_sequence].map{|rs| rs.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name||""]
-        when PresenceConstraint
+        when ActiveFacts::Metamodel::PresenceConstraint
           [4, c.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}, c.name||""]
         end
       end
@@ -457,7 +457,7 @@ module ActiveFacts
         heading = false
         @vocabulary.all_constraint.reject{|c| except[c]}.sort_by{ |c| constraint_sort_key(c) }.each do|c|
           # Skip some PresenceConstraints:
-          if PresenceConstraint === c
+          if c.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
             # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
             fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
             next if fact_types.size == 1 &&
@@ -466,7 +466,7 @@ module ActiveFacts
 
             # Skip internal PresenceConstraints over TypeInheritances:
             next if c.role_sequence.all_role_ref.size == 1 &&
-              TypeInheritance === fact_types[0]
+              fact_types[0].is_a?(ActiveFacts::Metamodel::TypeInheritance)
           end
 
           constraint_banner unless heading
