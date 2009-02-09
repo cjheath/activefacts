@@ -132,7 +132,7 @@ module ActiveFacts
 
       def identified_by_roles_and_facts(entity_type, identifying_roles, identifying_facts, preferred_readings)
         identifying_roles.map{|role|
-            ":"+preferred_role_name(role)
+            ":"+preferred_role_name(role, entity_type)
           }*", "
       end
 

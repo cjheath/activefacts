@@ -12,7 +12,6 @@ module OrienteeringER
 
   class Code < FixedLengthText
     value_type 
-    one_to_one :club_name                       # See ClubName.code
   end
 
   class Control < UnsignedInteger
@@ -57,8 +56,8 @@ module OrienteeringER
 
   class Club
     identified_by :code
-    has_one :club_name                          # See ClubName.all_club
-    has_one :code                               # See Code.all_club
+    one_to_one :club_name                       # See ClubName.club
+    one_to_one :code                            # See Code.club
   end
 
   class SeriesEvent
@@ -71,11 +70,11 @@ module OrienteeringER
     identified_by :event_id
     has_one :club                               # See Club.all_event
     has_one :date                               # See Date.all_event
-    has_one :event_id, ID                       # See ID.all_event_as_event_id
-    has_one :event_name                         # See EventName.all_event
+    one_to_one :event_id, ID                    # See ID.event_as_event_id
+    one_to_one :event_name                      # See EventName.event
     has_one :location                           # See Location.all_event
     has_one :map                                # See Map.all_event
-    has_one :series_event                       # See SeriesEvent.all_event
+    one_to_one :series_event                    # See SeriesEvent.event
   end
 
   class EventControl
@@ -95,7 +94,7 @@ module OrienteeringER
     identified_by :map_name
     has_one :accessibility                      # See Accessibility.all_map
     has_one :club                               # See Club.all_map
-    has_one :map_name, Name                     # See Name.all_map_as_map_name
+    one_to_one :map_name, Name                  # See Name.map_as_map_name
   end
 
 end

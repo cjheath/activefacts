@@ -22,7 +22,7 @@ module ServiceDirector
     value_type :length => 50
   end
 
-  class HHMMSS < Time
+  class HHMMSS < ::Time
     value_type 
   end
 
@@ -161,7 +161,6 @@ module ServiceDirector
     identified_by :data_store_name
     has_one :client                             # See Client.all_data_store
     one_to_one :data_store_name, DataStore_Name  # See DataStore_Name.data_store
-    has_one :file_host_system                   # See FileHostSystem.all_data_store
     one_to_one :friendly_name, Name             # See Name.data_store_as_friendly_name
     has_one :geocode_file                       # See GeocodeFile.all_data_store
     has_one :heart_beat_truck_pcid, TruckPCID   # See TruckPCID.all_data_store_as_heart_beat_truck_pcid
@@ -348,7 +347,7 @@ module ServiceDirector
 
   class DataStoreFileHostSystem
     identified_by :data_store
-    has_one :data_store                         # See DataStore.all_data_store_file_host_system
+    one_to_one :data_store                      # See DataStore.data_store_file_host_system
     has_one :file_host_system                   # See FileHostSystem.all_data_store_file_host_system
     one_to_one :internal_credential, Credential  # See Credential.data_store_file_host_system_as_internal_credential
   end

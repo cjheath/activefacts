@@ -219,7 +219,6 @@ module Insurance
     identified_by :claim_id
     one_to_one :claim_id, ClaimID               # See ClaimID.claim
     has_one :p_sequence, ClaimSequence          # See ClaimSequence.all_claim_as_p_sequence
-    has_one :person                             # See Person.all_claim
     has_one :policy                             # See Policy.all_claim
   end
 
@@ -282,7 +281,7 @@ module Insurance
 
   class Lodgement
     identified_by :claim
-    has_one :claim                              # See Claim.all_lodgement
+    one_to_one :claim                           # See Claim.lodgement
     has_one :person                             # See Person.all_lodgement
     has_one :date_time                          # See DateTime.all_lodgement
   end
@@ -347,7 +346,6 @@ module Insurance
 
   class VehicleIncident < Incident
     has_one :description                        # See Description.all_vehicle_incident
-    has_one :driver                             # See Driver.all_vehicle_incident
     has_one :loss_type                          # See LossType.all_vehicle_incident
     has_one :previous_damage_description, Description  # See Description.all_vehicle_incident_as_previous_damage_description
     has_one :reason                             # See Reason.all_vehicle_incident
@@ -440,10 +438,9 @@ module Insurance
   class Driving
     identified_by :vehicle_incident
     has_one :driver                             # See Driver.all_driving
-    has_one :vehicle_incident                   # See VehicleIncident.all_driving
+    one_to_one :vehicle_incident                # See VehicleIncident.driving
     has_one :blood_test_result, TestResult      # See TestResult.all_driving_as_blood_test_result
     has_one :breath_test_result, TestResult     # See TestResult.all_driving_as_breath_test_result
-    has_one :charge                             # See Charge.all_driving
     has_one :hospital_name, Name, :driver_hospitalised  # See Name.all_driver_hospitalised
     has_one :intoxication                       # See Intoxication.all_driving
     has_one :nonconsent_reason, Reason          # See Reason.all_driving_as_nonconsent_reason
@@ -453,7 +450,7 @@ module Insurance
   class DrivingCharge
     identified_by :driving
     has_one :charge                             # See Charge.all_driving_charge
-    has_one :driving                            # See Driving.all_driving_charge
+    one_to_one :driving                         # See Driving.driving_charge
     maybe :is_warning
   end
 
