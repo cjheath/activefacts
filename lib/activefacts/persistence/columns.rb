@@ -63,16 +63,16 @@ module ActiveFacts
 
             # Skip any object after the first which is identified by this reference
             next a if ref != @references[0] and
-              !ref.fact_type.is_a?(TypeInheritance) and
+              !ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) and
               ref.to and
-              ref.to.is_a?(EntityType) and
+              ref.to.is_a?(ActiveFacts::Metamodel::EntityType) and
               (role_ref = ref.to.preferred_identifier.role_sequence.all_role_ref.single) and
               role_ref.role == ref.from_role
 
             names = ref.to_names
 
             # When traversing type inheritances, keep the subtype name, not the supertype names as well:
-            if a.size > 0 && ref.fact_type.is_a?(TypeInheritance)
+            if a.size > 0 && ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
               next a if ref.to != ref.fact_type.subtype  # Did we already have the subtype?
               last_names.size.times { a.pop }   # Remove the last names added
             elsif last_names.last && last_names.last == names[0][0...last_names.last.size] 
@@ -86,7 +86,7 @@ module ActiveFacts
             # Where the last name is like a reference mode but the preceeding name isn't the identified concept,
             # strip it down (so turn Driver.PartyID into Driver.ID for example):
             if a.size > 0 and
-                (et = ref.from).is_a?(EntityType) and
+                (et = ref.from).is_a?(ActiveFacts::Metamodel::EntityType) and
                 (role_ref = et.preferred_identifier.role_sequence.all_role_ref.single) and
                 role_ref.role == ref.to_role and
                 names[0][0...et.name.size].downcase == et.name.downcase
@@ -303,7 +303,7 @@ module ActiveFacts
           references_from.sort_by do |ref|
             # Put supertypes first, in order, then non-subtype references, then subtypes, otherwise retaining their order:
             sups.index(ref.to) ||
-              (!ref.fact_type.is_a?(TypeInheritance) && references_from.size+references_from.index(ref)) ||
+              (!ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) && references_from.size+references_from.index(ref)) ||
               references_from.size*2+references_from.index(ref)
           end.each do |ref|
             debug :columns, "Columns absorbed via #{ref}" do
@@ -333,7 +333,7 @@ module ActiveFacts
       # Override this method to change the transformations
       def finish_schema
         all_feature.each do |feature|
-          feature.self_value_reference if feature.is_a?(ValueType) && feature.is_table
+          feature.self_value_reference if feature.is_a?(ActiveFacts::Metamodel::ValueType) && feature.is_table
         end
       end
 
@@ -343,7 +343,7 @@ module ActiveFacts
 
         debug :columns, "Populating all columns" do
           all_feature.each do |feature|
-            next if !feature.is_a?(Concept) || !feature.is_table
+            next if !feature.is_a?(ActiveFacts::Metamodel::Concept) || !feature.is_table
             debug :columns, "Populating columns for table #{feature.name}" do
               feature.populate_columns
             end
@@ -351,7 +351,7 @@ module ActiveFacts
         end
         debug :columns, "Finished columns" do
           all_feature.each do |feature|
-            next if !feature.is_a?(Concept) || !feature.is_table
+            next if !feature.is_a?(ActiveFacts::Metamodel::Concept) || !feature.is_table
             debug :columns, "Finished columns for table #{feature.name}" do
               feature.columns.each do |column|
                 debug :columns, "#{column}"
