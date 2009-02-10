@@ -60,9 +60,13 @@ class SignedInteger < Int #:nodoc:
 end
 class SignedSmallInteger < Int #:nodoc:
 end
+class SignedTinyInteger < Int #:nodoc:
+end
 class UnsignedInteger < Int #:nodoc:
 end
 class UnsignedSmallInteger < Int #:nodoc:
+end
+class UnsignedTinyInteger < Int #:nodoc:
 end
 class LargeLengthText < String #:nodoc:
 end
