@@ -37,7 +37,7 @@ module ActiveFacts
           puts "require 'activefacts/persistence'\n"
           @tables = vocabulary.tables
         end
-        puts "\nmodule #{vocabulary.name}\n\n"
+        puts "\nmodule ::#{vocabulary.name}\n\n"
       end
 
       def vocabulary_end

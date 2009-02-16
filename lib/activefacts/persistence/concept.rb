@@ -1,3 +1,5 @@
+require 'activefacts/support'
+
 module ActiveFacts
   module API
     module Concept
@@ -10,33 +12,40 @@ module ActiveFacts
       end
 
       def columns
-        #puts "Calculating columns for #{basename}"
         return @columns if @columns
-        @columns = (
-          # A separate subtype needs to have a foreign key to the supertype:
-          # REVISIT: Need keys to secondary supertypes as well, but no duplicates.
-          if superclass.is_entity_type
-            superclass.__absorb([[superclass.basename]], self)
-          else
-            []
-          end +
-          # Then absorb all normal roles:
-          roles.values.select{|role| role.unique}.inject([]) do |columns, role|
-            rn = role.name.to_s.split(/_/)
-            columns += role.counterpart_concept.__absorb([rn], role.counterpart)
-          end +
-          # And finally all absorbed subtypes:
-          subtypes.
-            select{|subtype| !subtype.is_table}.    # Don't absorb separate subtypes
-            inject([]) do |columns, subtype|
-              # Pass self as 2nd param here, not a role, standing for the supertype role
-              columns += subtype.__absorb([[subtype.basename]], self)
+        debug :persistence, "Calculating columns for #{basename}" do
+          @columns = (
+            if superclass.is_entity_type
+              # REVISIT: Need keys to secondary supertypes as well, but no duplicates.
+              debug :persistence, "Seperate subtype has a foreign key to its supertype" do
+                superclass.__absorb([[superclass.basename]], self)
+              end
+            else
+              []
+            end +
+            # Then absorb all normal roles:
+            roles.values.select{|role| role.unique}.inject([]) do |columns, role|
+              rn = role.name.to_s.split(/_/)
+              debug :persistence, "Role #{rn*'.'}" do
+                columns += role.counterpart_concept.__absorb([rn], role.counterpart)
+              end
+            end +
+            # And finally all absorbed subtypes:
+            subtypes.
+              select{|subtype| !subtype.is_table}.    # Don't absorb separate subtypes
+              inject([]) do |columns, subtype|
+                # Pass self as 2nd param here, not a role, standing for the supertype role
+                debug :persistence, "Absorbing subtype #{subtype.basename}" do
+                  columns += subtype.__absorb([[subtype.basename]], self)
+                end
+              end
+            ).map do |col_names|
+              col_names.flatten.map do |name|
+                name.downcase.sub(/^[a-z]/){|c| c.upcase}
+              end.
+              uniq*"."
             end
-          ).map do |col_names|
-            col_names.flatten.uniq.map do |name|
-              name.sub(/^[a-z]/){|c| c.upcase}
-            end*"."
-          end
+        end
       end
 
       # Return an array of the absorbed columns, using prefix for name truncation
@@ -48,30 +57,27 @@ module ActiveFacts
               # If this non-table is fully absorbed into another table (not our caller!)
               # (another table plays its single identifying role), then absorb that role only.
               new_prefix = prefix + [role.name.to_s.split(/_/)]
-              role.counterpart_concept.__absorb(new_prefix, role.counterpart)
+              debug :persistence, "Reference to #{role.name} (absorbed elsewhere)" do
+                role.counterpart_concept.__absorb(new_prefix, role.counterpart)
+              end
             else
               # Not a table -> all roles are absorbed
               roles.
                   values.
                   select{|role| role.unique && role != except_role }.
                   inject([]) do |columns, role|
-                if (c = role.counterpart_concept).is_entity_type and
-                    (irn = c.identifying_role_names).size == 1 and
-                    irn[0] == role.counterpart.name
-                  new_prefix = prefix
-                else
-                  new_prefix = prefix + [role.name.to_s.split(/_/)]
-                end
-
-                columns += role.counterpart_concept.__absorb(new_prefix, role.counterpart)
+                # REVISIT: This role might absorb its player too (e.g. DrivingCharge.is_warning)
+                columns += __absorb_role(prefix, role)
               end +
               subtypes.          # Absorb subtype roles too!
                 select{|subtype| !subtype.is_table}.    # Don't absorb separate subtypes
-                inject([]) { |columns, subtype|
+                inject([]) do |columns, subtype|
                   # Pass self as 2nd param here, not a role, standing for the supertype role
                   new_prefix = prefix[0..-2] + [[subtype.basename]]
-                  columns += subtype.__absorb(new_prefix, self)
-                }
+                  debug :persistence, "Absorbed subtype #{subtype.basename}" do
+                    columns += subtype.__absorb(new_prefix, self)
+                  end
+                end
             end
           else
             [prefix]
@@ -79,19 +85,44 @@ module ActiveFacts
         else
           # Create a foreign key to the table
           if is_entity_type
-            ic = identifying_role_names.map{|role_name| role_name.to_s.split(/_/)}
-            if ic.size == 1 &&      # When you have e.g. Party.ID that identifies Party, just use ID.
-                ic[0].size > 1 &&
-                ic[0][0] == roles(identifying_role_names[0]).owner.basename.downcase
-              ic[0].shift
+            ir = identifying_role_names.map{|role_name| roles(role_name) }
+            debug :persistence, "Reference to #{basename}" do
+              ic = identifying_role_names.map{|role_name| role_name.to_s.split(/_/)}
+              ir.inject([]) do |columns, role|
+                columns += __absorb_role(prefix, role)
+              end
             end
-            ic.map{|column| prefix+[column]}
           else
             # Reference to value type which is a table
             col = prefix.clone
+            debug :persistence, "Self-value #{col[-1]}.Value"
             col[-1] += ["Value"]
             col
           end
+        end
+      end
+
+      def __absorb_role(prefix, role)
+        if (c = role.owner).is_entity_type and
+            (irn = c.identifying_role_names).size == 1 and
+            (n = irn[0].to_s.split(/_/)).size > 1 and
+            n[0] == role.owner.basename.downcase
+          #debug :persistence, "=== #{n*"."} shortened to #{n[1..-1]*"."} ==="
+          n.shift
+          new_prefix = prefix + [n]
+        elsif (c = role.counterpart_concept).is_entity_type and
+            (irn = c.identifying_role_names).size == 1 and
+            #irn[0].to_s.split(/_/)[0] == role.owner.basename.downcase
+            irn[0] == role.counterpart.name
+          #debug :persistence, "=== #{irn[0].to_s.split(/_/)[0]} elided ==="
+          new_prefix = prefix
+        else
+          new_prefix = prefix + [role.name.to_s.split(/_/)]
+        end
+        #debug :persistence, "new_prefix is #{new_prefix*"."}"
+
+        debug :persistence, "Absorbed role #{role.name} as #{new_prefix[prefix.size..-1]*"."}" do
+          role.counterpart_concept.__absorb(new_prefix, role.counterpart)
         end
       end
 

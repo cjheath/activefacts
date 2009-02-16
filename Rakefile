@@ -1,5 +1,7 @@
 %w[rubygems rake rake/clean fileutils newgem rubigen spec spec/rake/spectask].each { |f| require f }
 
+require 'hanna/rdoctask'
+
 require File.dirname(__FILE__) + '/lib/activefacts'
 
 # Generate all the Rake tasks
@@ -19,6 +21,7 @@ $hoe = Hoe.new('activefacts', ActiveFacts::VERSION) do |p|
   # Magic Hoe hook to prevent the generation of diagrams:
   ENV['NODOT'] = 'yes'
   p.spec_extras[:rdoc_options] = %w{
+      -S -T hanna
       -A has_one -A one_to_one -A maybe
       -x lib/activefacts/cql/.*.rb
       -x lib/activefacts/vocabulary/.*.rb
