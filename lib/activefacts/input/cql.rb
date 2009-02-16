@@ -5,8 +5,6 @@
 require 'activefacts/vocabulary'
 require 'activefacts/cql/parser'
 
-require 'ruby-debug'
-
 module ActiveFacts
   module Input #:nodoc:
     # Compile CQL to an ActiveFacts vocabulary.

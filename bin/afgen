@@ -7,11 +7,13 @@
 $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'rubygems'
-require 'ruby-debug'
 require 'activefacts'
 require 'activefacts/vocabulary'
 
-debugger if debug :exception
+if ENV['DEBUG']
+  require 'ruby-debug'
+  debugger if debug :exception
+end
 true # Ok, got the stack set up, continue to the fault
 
 arg = ARGV.shift
