@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module PersonPlaysGame
+module ::PersonPlaysGame
 
   class GameCode < FixedLengthText
     value_type 

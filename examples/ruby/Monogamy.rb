@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Monogamy
+module ::Monogamy
 
   class Name < String
     value_type 

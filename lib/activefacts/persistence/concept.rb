@@ -66,7 +66,6 @@ module ActiveFacts
                   values.
                   select{|role| role.unique && role != except_role }.
                   inject([]) do |columns, role|
-                # REVISIT: This role might absorb its player too (e.g. DrivingCharge.is_warning)
                 columns += __absorb_role(prefix, role)
               end +
               subtypes.          # Absorb subtype roles too!

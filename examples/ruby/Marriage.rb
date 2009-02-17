@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Marriage
+module ::Marriage
 
   class Name < String
     value_type 

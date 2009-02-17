@@ -45,26 +45,32 @@ module ActiveFacts
       end
 
       def value_type_dump(o)
-        return if !o.supertype
-        if o.name == o.supertype.name
-            # In ActiveFacts, parameterising a ValueType will create a new datatype
-            # throw Can't handle parameterized value type of same name as its datatype" if ...
+        is_special_supertype = %w{Date Time DateAndTime}.include?(o.name)
+
+        # We map DateAndTime to DateTime; if such a ValueType exists, don't dump this one
+        return if o.name == 'DateAndTime' && o.constellation.ValueType[[[o.vocabulary.name], 'DateTime']]
+
+        return if !o.supertype && !is_special_supertype
+        if o.supertype && o.name == o.supertype.name
+          # In ActiveFacts, parameterising a ValueType will create a new datatype
+          # throw Can't handle parameterized value type of same name as its datatype" if ...
         end
 
         length = (l = o.length) && l > 0 ? ":length => #{l}" : nil
         scale = (s = o.scale) && s > 0 ? ":scale => #{s}" : nil
         params = [length,scale].compact * ", "
 
+        name = o.name
         ruby_type_name =
-          case o.supertype.name
+          case o.supertype ? o.supertype.name : o.name
             when "VariableLengthText"; "String"
             when "Date"; "::Date"
-            when "DateTime"; "::DateTime"
+            when "DateAndTime"; "::DateTime"
             when "Time"; "::Time"
             else o.supertype.name
           end
 
-        puts "  class #{o.name} < #{ruby_type_name}\n" +
+        puts "  class #{name} < #{ruby_type_name}\n" +
              "    value_type #{params}\n"
         if @sql and o.is_table
           puts "    table"

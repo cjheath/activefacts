@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Orienteering
+module ::Orienteering
 
   class Accessibility < FixedLengthText
     value_type :length => 1
@@ -23,6 +23,10 @@ module Orienteering
   class Course < String
     value_type :length => 16
     # REVISIT: Course has restricted values
+  end
+
+  class DateAndTime < ::DateTime
+    value_type 
   end
 
   class EntryID < AutoCounter
@@ -104,11 +108,11 @@ module Orienteering
     value_type :length => 40
   end
 
-  class StartTime < DateAndTime
+  class StartTime < ::DateTime
     value_type 
   end
 
-  class Time < DateAndTime
+  class Time < ::DateTime
     value_type 
   end
 

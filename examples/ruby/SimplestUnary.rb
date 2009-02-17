@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module SimplestUnary
+module ::SimplestUnary
 
   class SomeString < String
     value_type 

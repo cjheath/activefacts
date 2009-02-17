@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Warehousing
+module ::Warehousing
 
   class BinID < AutoCounter
     value_type 

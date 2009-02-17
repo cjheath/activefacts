@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Genealogy
+module ::Genealogy
 
   class Address < String
     value_type :length => 128

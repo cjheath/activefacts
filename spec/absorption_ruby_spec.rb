@@ -15,7 +15,7 @@ include ActiveFacts
 describe "Column lists from absorption compared with Ruby's" do
   ABSORPTION_RUBY_FAILURES = %w{
     Metamodel
-    Insurance
+    XXInsurance
   }
 
   # Generate and return the Ruby for the given vocabulary
@@ -29,8 +29,8 @@ describe "Column lists from absorption compared with Ruby's" do
 
   #Dir["examples/norma/Bl*.orm"].each do |orm_file|
   #Dir["examples/norma/Metamodel.orm"].each do |orm_file|
-  #Dir["examples/norma/Insu*.orm"].each do |orm_file|
-  Dir["examples/norma/[ACG]*.orm"].each do |orm_file|
+  Dir["examples/norma/Insu*.orm"].each do |orm_file|
+  #Dir["examples/norma/[ACG]*.orm"].each do |orm_file|
   #Dir["examples/norma/*.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'examples/ruby/\1.rb')
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.rb')

@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module WindowInRoomInBldg
+module ::WindowInRoomInBldg
 
   class Building < SignedInteger
     value_type :length => 32

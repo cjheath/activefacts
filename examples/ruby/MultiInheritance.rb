@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module MultiInheritance
+module ::MultiInheritance
 
   class EmployeeID < AutoCounter
     value_type 

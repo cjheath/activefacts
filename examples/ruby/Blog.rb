@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Blog
+module ::Blog
 
   class AuthorId < AutoCounter
     value_type 

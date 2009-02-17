@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module OddIdentifier
+module ::OddIdentifier
 
   class Ordinal < SignedInteger
     value_type :length => 32

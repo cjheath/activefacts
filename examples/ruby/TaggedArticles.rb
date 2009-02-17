@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module TaggedArticles
+module ::TaggedArticles
 
   class ArticleID < SignedInteger
     value_type :length => 32

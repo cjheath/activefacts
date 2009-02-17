@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module RedundantDependency
+module ::RedundantDependency
 
   class AddressId < AutoCounter
     value_type 

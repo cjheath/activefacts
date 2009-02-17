@@ -1,12 +1,12 @@
 require 'activefacts/api'
 
-module SeparateSubtype
+module ::SeparateSubtype
 
   class ClaimID < AutoCounter
     value_type 
   end
 
-  class DateTime < DateAndTime
+  class DateTime < ::DateTime
     value_type 
   end
 

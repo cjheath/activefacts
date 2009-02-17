@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Insurance
+module ::Insurance
 
   class Alias < FixedLengthText
     value_type :length => 3
@@ -56,7 +56,11 @@ module Insurance
     value_type 
   end
 
-  class DateTime < DateAndTime
+  class Date < ::Date
+    value_type 
+  end
+
+  class DateTime < ::DateTime
     value_type 
   end
 
@@ -190,6 +194,10 @@ module Insurance
   end
 
   class TestResult < String
+    value_type 
+  end
+
+  class Time < ::Time
     value_type 
   end
 

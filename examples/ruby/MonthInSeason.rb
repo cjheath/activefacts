@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module MonthInSeason
+module ::MonthInSeason
 
   class EventId < AutoCounter
     value_type 

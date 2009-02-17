@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module OneToOnes
+module ::OneToOnes
 
   class BoyID < AutoCounter
     value_type 

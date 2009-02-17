@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module JoinEquality
+module ::JoinEquality
 
   class EventId < AutoCounter
     value_type 

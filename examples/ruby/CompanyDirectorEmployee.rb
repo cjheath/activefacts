@@ -1,9 +1,13 @@
 require 'activefacts/api'
 
-module CompanyDirectorEmployee
+module ::CompanyDirectorEmployee
 
   class CompanyName < String
     value_type :length => 48
+  end
+
+  class Date < ::Date
+    value_type 
   end
 
   class EmployeeNr < SignedInteger

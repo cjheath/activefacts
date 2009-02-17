@@ -1,9 +1,13 @@
 require 'activefacts/api'
 
-module ORMModel1
+module ::ORMModel1
 
   class Accuracylevel < SignedInteger
     value_type :length => 32
+  end
+
+  class Date < ::Date
+    value_type 
   end
 
   class PartyName < String

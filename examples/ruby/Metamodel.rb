@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Metamodel
+module ::Metamodel
 
   class Adjective < String
     value_type :length => 64

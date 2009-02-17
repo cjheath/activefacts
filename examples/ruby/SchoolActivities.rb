@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module SchoolActivities
+module ::SchoolActivities
 
   class ActivityName < String
     value_type :length => 32

@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module ServiceDirector
+module ::ServiceDirector
 
   class Company_Code < FixedLengthText
     value_type :length => 5
@@ -8,6 +8,10 @@ module ServiceDirector
 
   class Credential_Nr < SignedInteger
     value_type :length => 32
+  end
+
+  class Date < ::Date
+    value_type 
   end
 
   class DDMMYYYY < ::Date
@@ -20,6 +24,10 @@ module ServiceDirector
 
   class EmailAddress < String
     value_type :length => 50
+  end
+
+  class Time < ::Time
+    value_type 
   end
 
   class HHMMSS < ::Time

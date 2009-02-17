@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module Address
+module ::Address
 
   class City < String
     value_type :length => 64

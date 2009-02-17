@@ -64,16 +64,25 @@ module ActiveFacts
 
       def value_types_dump
         done_banner = false
+        @value_type_dumped = {}
         @vocabulary.all_feature.sort_by{|o| o.name}.each{|o|
             next unless o.is_a?(ActiveFacts::Metamodel::ValueType)
 
             value_type_banner unless done_banner
             done_banner = true
 
-            value_type_dump(o)
+            value_type_chain_dump(o)
             @concept_types_dumped[o] = true
           }
         value_type_end if done_banner
+      end
+
+      # Ensure that supertype gets dumped first
+      def value_type_chain_dump(o)
+        return if @value_type_dumped[o]
+        value_type_chain_dump(o.supertype) if (o.supertype && !@value_type_dumped[o.supertype])
+        value_type_dump(o)
+        @value_type_dumped[o] = true
       end
 
       # Try to dump entity types in order of name, but we need

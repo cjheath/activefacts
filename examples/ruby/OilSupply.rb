@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module OilSupply
+module ::OilSupply
 
   class Cost < Money
     value_type 

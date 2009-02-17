@@ -1,6 +1,6 @@
 require 'activefacts/api'
 
-module SubtypePI
+module ::SubtypePI
 
   class EntrantID < AutoCounter
     value_type 
