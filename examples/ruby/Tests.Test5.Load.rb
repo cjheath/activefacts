@@ -18,7 +18,7 @@ module ::ORMModel1
     value_type 
   end
 
-  class ymd < ::Date
+  class Ymd < ::Date
     value_type 
   end
 
@@ -27,9 +27,9 @@ module ::ORMModel1
     one_to_one :accuracylevel                   # See Accuracylevel.accuracy
   end
 
-  class Date
+  class EventDate
     identified_by :ymd
-    one_to_one :ymd, ymd                        # See ymd.date
+    one_to_one :ymd                             # See ymd.event_date
   end
 
   class Party
@@ -50,7 +50,7 @@ module ::ORMModel1
 
   class Birth
     identified_by :person
-    has_one :date                               # See Date.all_birth
+    has_one :event_date                         # See EventDate.all_birth
     one_to_one :person                          # See Person.birth
     has_one :attending_doctor, "Doctor"         # See Doctor.all_birth_as_attending_doctor
   end
@@ -58,7 +58,7 @@ module ::ORMModel1
   class Death
     identified_by :person
     one_to_one :person                          # See Person.death
-    has_one :death_date, Date                   # See Date.all_death_as_death_date
+    has_one :death_event_date, EventDate        # See EventDate.all_death_as_death_event_date
   end
 
   class Doctor < Person

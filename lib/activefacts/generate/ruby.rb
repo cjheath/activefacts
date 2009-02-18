@@ -45,10 +45,10 @@ module ActiveFacts
       end
 
       def value_type_dump(o)
-        is_special_supertype = %w{Date Time DateAndTime}.include?(o.name)
+        is_special_supertype = !o.supertype && %w{Date Time DateAndTime}.include?(o.name)
 
         # We map DateAndTime to DateTime; if such a ValueType exists, don't dump this one
-        return if o.name == 'DateAndTime' && o.constellation.ValueType[[[o.vocabulary.name], 'DateTime']]
+        return if is_special_supertype && o.name == 'DateAndTime' && o.constellation.ValueType[[[o.vocabulary.name], 'DateTime']]
 
         return if !o.supertype && !is_special_supertype
         if o.supertype && o.name == o.supertype.name
@@ -70,6 +70,7 @@ module ActiveFacts
             else o.supertype.name
           end
 
+        name = name.sub(/^[a-z]/) {|i| i.upcase}
         puts "  class #{name} < #{ruby_type_name}\n" +
              "    value_type #{params}\n"
         if @sql and o.is_table
@@ -148,7 +149,7 @@ module ActiveFacts
 
       def binary_dump(role, role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil, other_method_name = nil)
         # Find whether we need the name of the other role player, and whether it's defined yet:
-        if role_name.camelcase(true) == role_player.name
+        if role_name.camelcase(true) == role_player.name.sub(/^[a-z]/) {|i| i.upcase}
           # Don't use Class name if implied by rolename
           role_reference = nil
         else

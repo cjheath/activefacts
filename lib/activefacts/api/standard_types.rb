@@ -43,7 +43,7 @@ class Class
   # Make this Class into a Concept and if necessary its module into a Vocabulary.
   # The parameters are the names (Symbols) of the identifying roles.
   def identified_by *args
-    raise "not an entity type" if respond_to? :value_type  # Don't make a ValueType into an EntityType
+    raise "#{basename} is not an entity type" if respond_to? :value_type  # Don't make a ValueType into an EntityType
     include ActiveFacts::API::Entity
     initialise_entity_type(*args)
   end
