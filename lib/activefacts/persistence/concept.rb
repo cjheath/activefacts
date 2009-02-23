@@ -17,7 +17,7 @@ module ActiveFacts
           @columns = (
             if superclass.is_entity_type
               # REVISIT: Need keys to secondary supertypes as well, but no duplicates.
-              debug :persistence, "Seperate subtype has a foreign key to its supertype" do
+              debug :persistence, "Separate subtype has a foreign key to its supertype" do
                 superclass.__absorb([[superclass.basename]], self)
               end
             else
@@ -40,10 +40,16 @@ module ActiveFacts
                 end
               end
             ).map do |col_names|
+              last = nil
               col_names.flatten.map do |name|
                 name.downcase.sub(/^[a-z]/){|c| c.upcase}
               end.
-              uniq*"."
+              reject do |n|
+                # Remove sequential duplicates:
+                dup = last == n
+                last = n
+                dup
+              end*"."
             end
         end
       end
@@ -56,9 +62,11 @@ module ActiveFacts
             if (role = fully_absorbed) && role != except_role
               # If this non-table is fully absorbed into another table (not our caller!)
               # (another table plays its single identifying role), then absorb that role only.
-              new_prefix = prefix + [role.name.to_s.split(/_/)]
+              # counterpart_concept = role.counterpart_concept
+              # This omission matches the one in columns.rb, see EntityType#reference_columns
+              # new_prefix = prefix + [role.name.to_s.split(/_/)]
               debug :persistence, "Reference to #{role.name} (absorbed elsewhere)" do
-                role.counterpart_concept.__absorb(new_prefix, role.counterpart)
+                role.counterpart_concept.__absorb(prefix, role.counterpart)
               end
             else
               # Not a table -> all roles are absorbed
@@ -85,7 +93,7 @@ module ActiveFacts
           # Create a foreign key to the table
           if is_entity_type
             ir = identifying_role_names.map{|role_name| roles(role_name) }
-            debug :persistence, "Reference to #{basename}" do
+            debug :persistence, "Reference to #{basename} with #{prefix.inspect}" do
               ic = identifying_role_names.map{|role_name| role_name.to_s.split(/_/)}
               ir.inject([]) do |columns, role|
                 columns += __absorb_role(prefix, role)
@@ -102,11 +110,15 @@ module ActiveFacts
       end
 
       def __absorb_role(prefix, role)
-        if (c = role.owner).is_entity_type and
+        if prefix.size > 0 and
+            (c = role.owner).is_entity_type and
             (irn = c.identifying_role_names).size == 1 and
             (n = irn[0].to_s.split(/_/)).size > 1 and
             n[0] == role.owner.basename.downcase
-          #debug :persistence, "=== #{n*"."} shortened to #{n[1..-1]*"."} ==="
+          #debug :persistence, "truncating transitive identifying role #{n.inspect}"
+#          REVISIT: This might be closer to what we want:
+#          n.include?(ro_name = role.owner.basename.downcase)
+#          new_prefix = prefix + [n.reject{|p| p == ro_name}]
           n.shift
           new_prefix = prefix + [n]
         elsif (c = role.counterpart_concept).is_entity_type and
@@ -114,6 +126,8 @@ module ActiveFacts
             #irn[0].to_s.split(/_/)[0] == role.owner.basename.downcase
             irn[0] == role.counterpart.name
           #debug :persistence, "=== #{irn[0].to_s.split(/_/)[0]} elided ==="
+          new_prefix = prefix
+        elsif (fa_role = fully_absorbed) && fa_role == role
           new_prefix = prefix
         else
           new_prefix = prefix + [role.name.to_s.split(/_/)]

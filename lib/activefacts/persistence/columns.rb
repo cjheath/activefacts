@@ -62,24 +62,33 @@ module ActiveFacts
           inject([]) do |a, ref|
 
             # Skip any object after the first which is identified by this reference
-            next a if ref != @references[0] and
-              !ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) and
-              ref.to and
-              ref.to.is_a?(ActiveFacts::Metamodel::EntityType) and
-              (role_ref = ref.to.preferred_identifier.role_sequence.all_role_ref.single) and
-              role_ref.role == ref.from_role
+            if ref != @references[0] and
+                !ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) and
+                ref.to and
+                ref.to.is_a?(ActiveFacts::Metamodel::EntityType) and
+                (role_ref = ref.to.preferred_identifier.role_sequence.all_role_ref.single) and
+                role_ref.role == ref.from_role
+              debug :columns, "Skipping #{ref}, identifies non-initial object"
+              next a
+            end
 
             names = ref.to_names
 
             # When traversing type inheritances, keep the subtype name, not the supertype names as well:
             if a.size > 0 && ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-              next a if ref.to != ref.fact_type.subtype  # Did we already have the subtype?
+              if ref.to != ref.fact_type.subtype  # Did we already have the subtype?
+                debug :columns, "Skipping supertype #{ref}"
+                next a
+              end
+              debug :columns, "Eliding supertype in #{ref}"
               last_names.size.times { a.pop }   # Remove the last names added
             elsif last_names.last && last_names.last == names[0][0...last_names.last.size] 
               # When Xyz is followed by XyzID, truncate that to just ID
+              debug :columns, "truncating repeated name in #{names[0]}"
               names[0] = names[0][last_names.last.size..-1]
             elsif last_names.last == names[0]
               # Same, but where an underscore split up the words
+              debug :columns, "truncating repeated name in #{names.inspect}"
               names.shift
             end
 
@@ -90,6 +99,7 @@ module ActiveFacts
                 (role_ref = et.preferred_identifier.role_sequence.all_role_ref.single) and
                 role_ref.role == ref.to_role and
                 names[0][0...et.name.size].downcase == et.name.downcase
+              debug :columns, "truncating transitive identifying role #{names.inspect}"
               names[0] = names[0][et.name.size..-1]
               names.shift if names[0] == ""
             end
@@ -273,11 +283,12 @@ module ActiveFacts
         debug :columns, "Reference Columns for #{name}" do
 
           if absorbed_via and
-            # If this is a subtype that has its own identification, use that.
+            # If this is not a subtype, or is a subtype that has its own identification, use the id.
             (all_type_inheritance_as_subtype.size == 0 ||
               all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification })
             rc = absorbed_via.from.reference_columns(excluded_supertypes)
-            # REVISIT: The absorbed_via reference gets skipped here, but not in concept.rb, which causes a mismatch
+            # The absorbed_via reference gets skipped here, ans also in concept.rb
+            debug :columns, "Skipping #{absorbed_via}"
             #rc.each{|col| col.prepend(absorbed_via)}
             return rc
           end
