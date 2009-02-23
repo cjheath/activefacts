@@ -114,12 +114,13 @@ module ActiveFacts
             (c = role.owner).is_entity_type and
             (irn = c.identifying_role_names).size == 1 and
             (n = irn[0].to_s.split(/_/)).size > 1 and
-            n[0] == role.owner.basename.downcase
+            (owner = role.owner.basename.snakecase.split(/_/)) and
+            n[0...owner.size] == owner
           #debug :persistence, "truncating transitive identifying role #{n.inspect}"
-#          REVISIT: This might be closer to what we want:
+#          REVISIT: This might be closer to what we want, except it doesn't deal with owner as an array
 #          n.include?(ro_name = role.owner.basename.downcase)
 #          new_prefix = prefix + [n.reject{|p| p == ro_name}]
-          n.shift
+          owner.size.times { n.shift }
           new_prefix = prefix + [n]
         elsif (c = role.counterpart_concept).is_entity_type and
             (irn = c.identifying_role_names).size == 1 and
