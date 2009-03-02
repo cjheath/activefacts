@@ -36,7 +36,8 @@ module ActiveFacts
       def role_dump(role)
         fact_type = role.fact_type
         if fact_type.all_role.size == 1
-          unary_dump(role, preferred_role_name(role))
+          unary_dump(role, preferred_role_name(role)) unless fact_type.entity_type
+          # REVISIT: If the objectified fact type has already been dumped, we'll get nothing.
           return
         elsif fact_type.all_role.size != 2
           return  # ternaries and higher are always objectified

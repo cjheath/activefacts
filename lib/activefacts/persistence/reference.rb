@@ -79,7 +79,7 @@ module ActiveFacts
 
       # Is this Reference from a unary Role?
       def is_unary
-        !@to && @to_role && @to_role.fact_type.all_role.size == 1
+        @to_role && @to_role.fact_type.all_role.size == 1
       end
 
       # If this Reference is to an objectified FactType, there is no *to_role*
@@ -114,7 +114,11 @@ module ActiveFacts
       def to_names
         case
         when is_unary
-          @to_role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.split(/[_\s]/)
+          if @to && @to.fact_type
+            @to.name.split(/[_\s]/)
+          else
+            @to_role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.split(/[_\s]/)
+          end
         when @to && !@to_role           # @to is an objectified fact type so @to_role is a phantom
           @to.name.split(/[_\s]/)
         when !@to_role                  # Self-value role of an independent ValueType

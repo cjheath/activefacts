@@ -166,7 +166,7 @@ module ActiveFacts
       def columns(excluded_supertypes)  #:nodoc:
         kind = ""
         cols = 
-          if is_unary
+          if is_unary && !(@to && @to.fact_type)
             kind = "unary "
             [Column.new()]
           elsif is_self_value

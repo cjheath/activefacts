@@ -61,7 +61,7 @@
 					<orm:Role ref="_2EADF5E2-7B38-4DE9-9487-DE52ABB5BB8D" />
 				</orm:PlayedRoles>
 			</orm:EntityType>
-			<orm:EntityType id="_2D4603A6-1D28-4BC7-8D1D-20EF460CD608" Name="Party" IsIndependent="true" _ReferenceMode="id">
+			<orm:EntityType id="_2D4603A6-1D28-4BC7-8D1D-20EF460CD608" Name="Party" IsIndependent="true" _ReferenceMode="Id">
 				<orm:PlayedRoles>
 					<orm:SupertypeMetaRole ref="_0C8638FC-AFD6-4503-BE25-39FB8B9A4F6A" />
 					<orm:Role ref="_5E550BD2-551E-4D0F-B9DE-C1555BD30B17" />
@@ -69,7 +69,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_D06DAF30-A593-4DE3-B0C0-2980313EEDB4" />
 			</orm:EntityType>
-			<orm:ValueType id="_FC5194B8-D9E0-489B-9BC6-06F40986E43E" Name="Partyid">
+			<orm:ValueType id="_FC5194B8-D9E0-489B-9BC6-06F40986E43E" Name="PartyId">
 				<orm:PlayedRoles>
 					<orm:Role ref="_50FA143A-21F9-4009-BB37-0D5A16C6D31F" />
 				</orm:PlayedRoles>
@@ -90,14 +90,14 @@
 				<orm:PreferredIdentifier ref="_18B1BC0F-EB47-4C08-BE6B-156623F48D7B" />
 				<orm:NestedPredicate id="_4E8B2829-6CEB-45F4-95E9-2876123FF5F6" ref="_5BF66F4B-7703-473F-A5DE-07A7C4F84B2F" />
 			</orm:ObjectifiedType>
-			<orm:EntityType id="_7F443D73-2FC8-4E60-B088-891F999F6B1D" Name="Accuracy" _ReferenceMode="level">
+			<orm:EntityType id="_7F443D73-2FC8-4E60-B088-891F999F6B1D" Name="Accuracy" _ReferenceMode="Level">
 				<orm:PlayedRoles>
 					<orm:Role ref="_AEC03ECD-5CA6-4FEB-8391-6D778A271B9E" />
 					<orm:Role ref="_0C695314-D114-4864-A10F-EA26C5F19B16" />
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_5B8F77D0-809F-42C2-840E-624A53092BD1" />
 			</orm:EntityType>
-			<orm:ValueType id="_BC073DDC-1A02-4FA1-8873-BE0C03E5EB85" Name="Accuracylevel">
+			<orm:ValueType id="_BC073DDC-1A02-4FA1-8873-BE0C03E5EB85" Name="AccuracyLevel">
 				<orm:PlayedRoles>
 					<orm:Role ref="_A5F65073-E01F-4397-90C2-821B39D699FB" />
 				</orm:PlayedRoles>
@@ -408,7 +408,7 @@
 					<orm:UniquenessConstraint ref="_64B4048E-9668-4F14-9B50-C3D31E5D69D3" />
 				</orm:InternalConstraints>
 			</orm:SubtypeFact>
-			<orm:Fact id="_93FCB283-1D3F-4385-802B-537B2E0B8799" _Name="PartyHasPartyid">
+			<orm:Fact id="_93FCB283-1D3F-4385-802B-537B2E0B8799" _Name="PartyHasPartyId">
 				<orm:FactRoles>
 					<orm:Role id="_5E550BD2-551E-4D0F-B9DE-C1555BD30B17" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_2D4603A6-1D28-4BC7-8D1D-20EF460CD608" />
@@ -551,7 +551,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_4E8B2829-6CEB-45F4-95E9-2876123FF5F6" />
 			</orm:ImpliedFact>
-			<orm:Fact id="_F6F3DE7B-6281-4AAC-A014-44A09FEDE54D" _Name="AccuracyHasAccuracylevel">
+			<orm:Fact id="_F6F3DE7B-6281-4AAC-A014-44A09FEDE54D" _Name="AccuracyHasAccuracyLevel">
 				<orm:FactRoles>
 					<orm:Role id="_AEC03ECD-5CA6-4FEB-8391-6D778A271B9E" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_7F443D73-2FC8-4E60-B088-891F999F6B1D" />
@@ -864,6 +864,10 @@
 				<orm:CustomFormatString />
 				<orm:Kind ref="_525DB434-69F1-4C06-9A7B-40525F184490" />
 			</orm:CustomReferenceMode>
+			<orm:CustomReferenceMode id="_D597A911-DF5A-4F29-9108-00808E65B4C1" Name="Level">
+				<orm:CustomFormatString />
+				<orm:Kind ref="_525DB434-69F1-4C06-9A7B-40525F184490" />
+			</orm:CustomReferenceMode>
 		</orm:CustomReferenceModes>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_3DBB08B9-E688-4637-89C6-83A9D7E53D57" FormatString="{1}" ReferenceModeType="General" />
@@ -996,9 +1000,9 @@
 		<oial:informationTypeFormats>
 			<odt:dataType id="_3D33BF7B-4870-45AA-85BB-DEB24669F511" name="ymd" />
 			<odt:dataType id="_3F27EA06-0BA1-4FB4-93A5-BEE4125C7460" name="Person died" />
-			<odt:dataType id="_6E6939C6-05A8-436F-AF63-CDC8CBCC1D5A" name="Partyid" />
+			<odt:dataType id="_6E6939C6-05A8-436F-AF63-CDC8CBCC1D5A" name="PartyId" />
 			<odt:dataType id="_5594C3B7-3406-4D9F-AE2A-41B6AF65DC7F" name="PartyName" />
-			<odt:dataType id="_1ECCCCE1-C782-471E-AF88-9A95798886DC" name="Accuracylevel" />
+			<odt:dataType id="_1ECCCCE1-C782-471E-AF88-9A95798886DC" name="AccuracyLevel" />
 		</oial:informationTypeFormats>
 		<oial:conceptTypes>
 			<oial:conceptType id="_C5DE6F63-6B6A-4B30-9803-B043E4F11F58" name="Person">
@@ -1123,8 +1127,8 @@
 		<ormtooial:ConceptTypeChildHasPathFactType id="_DBB94F4A-4C90-4726-BA47-F057EAB60B13" ConceptTypeChild="_BEC86EF3-7ED1-4295-A83B-E3EC0199BC89" PathFactType="_5FFD109D-1E12-4646-8F59-FF57AE770F50" />
 		<ormtooial:ConceptTypeChildHasPathFactType id="_D5EEB73F-EF95-47B8-9AB0-45AD089D5CF8" ConceptTypeChild="_BEC86EF3-7ED1-4295-A83B-E3EC0199BC89" PathFactType="_A9CAFF58-E876-4A28-AC63-70D9149517F2" />
 		<ormtooial:InformationTypeFormatIsForValueType id="_86D6223C-730E-40FA-9A70-C0DD43D89330" InformationTypeFormat="_1ECCCCE1-C782-471E-AF88-9A95798886DC" ValueType="_BC073DDC-1A02-4FA1-8873-BE0C03E5EB85" />
-		<ormtooial:InformationTypeFormatIsForValueType id="_D78BA32B-A03B-4334-BE94-2C93F0B3922F" InformationTypeFormat="_5594C3B7-3406-4D9F-AE2A-41B6AF65DC7F" ValueType="_9F872F80-D8B0-43C7-AAAF-4AB8221BDEAF" />
 		<ormtooial:InformationTypeFormatIsForValueType id="_6776E556-D030-43B6-A26D-62270F3CB6A0" InformationTypeFormat="_6E6939C6-05A8-436F-AF63-CDC8CBCC1D5A" ValueType="_FC5194B8-D9E0-489B-9BC6-06F40986E43E" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_D78BA32B-A03B-4334-BE94-2C93F0B3922F" InformationTypeFormat="_5594C3B7-3406-4D9F-AE2A-41B6AF65DC7F" ValueType="_9F872F80-D8B0-43C7-AAAF-4AB8221BDEAF" />
 		<ormtooial:InformationTypeFormatIsForValueType id="_6736B0E4-9F87-4BA8-B9F6-CF7178D23329" InformationTypeFormat="_3F27EA06-0BA1-4FB4-93A5-BEE4125C7460" ValueType="_62971E4F-AB50-4FE5-964D-D7CE728B9E0D" />
 		<ormtooial:InformationTypeFormatIsForValueType id="_B70A6588-F86E-433F-AB5D-F7D341F1EEB0" InformationTypeFormat="_3D33BF7B-4870-45AA-85BB-DEB24669F511" ValueType="_B967A5DE-3F06-4347-95E5-7B2ED5AB8118" />
 		<ormtooial:UniquenessIsForUniquenessConstraint id="_133D247D-3BE3-4D13-BB26-894700093112" AbstractionUniquenessConstraint="_09CF5855-74C0-4FB5-B02F-2C1F67AE6BD5" ORMUniquenessConstraint="_D06DAF30-A593-4DE3-B0C0-2980313EEDB4" />

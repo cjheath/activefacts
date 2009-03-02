@@ -13,7 +13,7 @@ include ActiveFacts
 include ActiveFacts::Metamodel
 
 describe "CQL Loader with SQL output" do
-  CQL_SQL_FAILURES = %w{
+  CQL_MYSQL_FAILURES = %w{
     Airline
     CompanyQuery
     Insurance
@@ -40,7 +40,7 @@ describe "CQL Loader with SQL output" do
     expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/MySQL/\1.sql')
 
     it "should load #{cql_file} and dump MySQL matching #{expected_file}" do
-      pending if CQL_SQL_FAILURES.include? File.basename(cql_file, ".cql")
+      pending if CQL_MYSQL_FAILURES.include? File.basename(cql_file, ".cql")
       vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
 
       # Build and save the actual file:

@@ -2,7 +2,7 @@ require 'activefacts/api'
 
 module ::ORMModel1
 
-  class Accuracylevel < SignedInteger
+  class AccuracyLevel < SignedInteger
     value_type :length => 32
   end
 
@@ -10,11 +10,11 @@ module ::ORMModel1
     value_type 
   end
 
-  class PartyName < String
+  class PartyId < AutoCounter
     value_type 
   end
 
-  class Partyid < AutoCounter
+  class PartyName < String
     value_type 
   end
 
@@ -23,8 +23,8 @@ module ::ORMModel1
   end
 
   class Accuracy
-    identified_by :accuracylevel
-    one_to_one :accuracylevel                   # See Accuracylevel.accuracy
+    identified_by :accuracy_level
+    one_to_one :accuracy_level                  # See AccuracyLevel.accuracy
   end
 
   class EventDate
@@ -33,8 +33,8 @@ module ::ORMModel1
   end
 
   class Party
-    identified_by :partyid
-    one_to_one :partyid                         # See Partyid.party
+    identified_by :party_id
+    one_to_one :party_id                        # See PartyId.party
   end
 
   class PartyMoniker
@@ -45,7 +45,6 @@ module ::ORMModel1
   end
 
   class Person < Party
-    maybe :died
   end
 
   class Birth

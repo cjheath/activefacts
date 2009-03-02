@@ -12,7 +12,6 @@ module ::Death
 
   class Person
     identified_by :person_name
-    maybe :is_dead
     one_to_one :person_name                     # See PersonName.person
   end
 
