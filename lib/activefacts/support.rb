@@ -9,6 +9,7 @@
   $debug_indent = nil
   $debug_nested = false
   $debug_keys = nil
+  $debug_available = {}
   def debug(*args, &block)
     unless $debug_indent
       # First time, initialise the tracing environment
@@ -16,13 +17,19 @@
       $debug_keys = {}
       if (e = ENV["DEBUG"])
         e.split(/[^a-zA-Z0-9]/).each{|k| $debug_keys[k.to_sym] = true }
+        if $debug_keys[:help]
+          at_exit {
+            $stderr.puts "---\nDebugging keys available: #{$debug_available.keys.map{|s| s.to_s}.sort*", "}"
+          }
+        end
       end
     end
 
     # Figure out whether this trace is enabled and nests:
     control = (!args.empty? && Symbol === args[0]) ? args.shift : :all
-    key = control.to_s.sub(/_\Z/, '')
-    enabled = $debug_nested || $debug_keys[key.to_sym]
+    key = control.to_s.sub(/_\Z/, '').to_sym
+    $debug_available[key] ||= key
+    enabled = $debug_nested || $debug_keys[key]
     nesting = control.to_s =~ /_\Z/
     old_nested = $debug_nested
     $debug_nested = nesting

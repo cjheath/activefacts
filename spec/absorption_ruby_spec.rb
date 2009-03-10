@@ -29,6 +29,7 @@ describe "Column lists from absorption compared with Ruby's" do
 
   #Dir["examples/norma/Add*.orm"].each do |orm_file|
   #Dir["examples/norma/Bl*.orm"].each do |orm_file|
+  #Dir["examples/norma/CompanyDirectorEmployee.orm"].each do |orm_file|
   #Dir["examples/norma/Death.orm"].each do |orm_file|
   #Dir["examples/norma/Genealogy*.orm"].each do |orm_file|
   #Dir["examples/norma/Insu*.orm"].each do |orm_file|

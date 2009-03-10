@@ -56,6 +56,12 @@ module ActiveFacts
 
       # A Column name is a sequence of names (derived from the to_roles of the References)
       # joined by a joiner string (pass nil to get the original array of names)
+      # The names to use is derived from the to_names of each Reference,
+      # modified by these rules:
+      # * A reference after the first one which is not a TypeInheritance but whwre the _from_ object plays the sole role in the preferred identifier of the _to_ entity is ignored,
+      # * A reference (after a name has been retained) which is a TypeInheritance retains the names of the subtype,
+      # * If the names retained so far end in XYZ and the to_names start with XYZ, remove the duplication
+      # * If we have retained the name of an entity, and this reference is the sole identifying role of an entity, and the identifying object has a name that is prefixed by the name of the object it identifies, remove the prefix and use just the suffix.
       def name(joiner = "")
         last_names = []
         names = @references.
@@ -84,7 +90,7 @@ module ActiveFacts
               last_names.size.times { a.pop }   # Remove the last names added
             elsif last_names.last && last_names.last == names[0][0...last_names.last.size] 
               # When Xyz is followed by XyzID, truncate that to just ID
-              debug :columns, "truncating repeated name in #{names[0]}"
+              debug :columns, "truncating repeated #{last_names.last} in #{names[0]}"
               names[0] = names[0][last_names.last.size..-1]
             elsif last_names.last == names[0]
               # Same, but where an underscore split up the words
@@ -92,13 +98,16 @@ module ActiveFacts
               names.shift
             end
 
-            # Where the last name is like a reference mode but the preceeding name isn't the identified concept,
-            # strip it down (so turn Driver.PartyID into Driver.ID for example):
+            # If the reference is to the single identifying role of the concept making the reference,
+            # strip the concept name from the start of the reference role
             if a.size > 0 and
                 (et = ref.from).is_a?(ActiveFacts::Metamodel::EntityType) and
+                # This instead of the next 2 would apply to all identifying roles, but breaks some examples:
+                # (role_ref = et.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role == ref.to_role}) and
                 (role_ref = et.preferred_identifier.role_sequence.all_role_ref.single) and
                 role_ref.role == ref.to_role and
                 names[0][0...et.name.size].downcase == et.name.downcase
+
               debug :columns, "truncating transitive identifying role #{names.inspect}"
               names[0] = names[0][et.name.size..-1]
               names.shift if names[0] == ""
