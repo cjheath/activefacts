@@ -28,10 +28,8 @@ describe "NORMA Loader with Ruby output" do
     output.read
   end
 
-  #Dir["examples/norma/Bl*.orm"].each do |orm_file|
-  #Dir["examples/norma/Meta*.orm"].each do |orm_file|
-  #Dir["examples/norma/[ACG]*.orm"].each do |orm_file|
-  Dir["examples/norma/*.orm"].each do |orm_file|
+  pattern = ENV["AFTESTS"] || "*"
+  Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'examples/ruby/\1.rb')
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.rb')
 

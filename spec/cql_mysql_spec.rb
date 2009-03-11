@@ -32,10 +32,8 @@ describe "CQL Loader with SQL output" do
     output.read
   end
 
-  #Dir["examples/CQL/Bl*.cql"].each do |cql_file|
-  #Dir["examples/CQL/Meta*.cql"].each do |cql_file|
-  #Dir["examples/CQL/[ACG]*.cql"].each do |cql_file|
-  Dir["examples/CQL/*.cql"].each do |cql_file|
+  pattern = ENV["AFTESTS"] || "*"
+  Dir["examples/CQL/#{pattern}.cql"].each do |cql_file|
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql}, 'spec/actual/\1.sql')
     expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/MySQL/\1.sql')
 

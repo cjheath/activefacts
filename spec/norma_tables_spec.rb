@@ -43,11 +43,8 @@ def extract_created_tables_from_sql sql_file
 end
 
 describe "Relational Composition from NORMA" do
-  #Dir["examples/norma/B*.orm"].each do |orm_file|
-  #Dir["examples/norma/Ins*.orm"].each do |orm_file|
-  #Dir["examples/norma/Meta*.orm"].each do |orm_file|
-  #Dir["examples/norma/W*.orm"].each do |orm_file|
-  Dir["examples/norma/*.orm"].each do |orm_file|
+  pattern = ENV["AFTESTS"] || "*"
+  Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_tables = Exceptions[File.basename(orm_file, ".orm")]
     if !expected_tables
       sql_file_pattern = orm_file.sub(/\.orm\Z/, '*.sql')

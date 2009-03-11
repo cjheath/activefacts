@@ -37,10 +37,8 @@ describe "CQL Loader with Ruby output" do
     output.read
   end
 
-  #Dir["examples/CQL/Bl*.cql"].each do |cql_file|
-  #Dir["examples/CQL/Meta*.cql"].each do |cql_file|
-  #Dir["examples/CQL/[ACG]*.cql"].each do |cql_file|
-  Dir["examples/CQL/*.cql"].each do |cql_file|
+  pattern = ENV["AFTESTS"] || "*"
+  Dir["examples/CQL/#{pattern}.cql"].each do |cql_file|
     expected_file = cql_file.sub(%r{/CQL/(.*).cql\Z}, '/ruby/\1.rb')
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'spec/actual/\1.rb')
 

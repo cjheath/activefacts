@@ -25,10 +25,8 @@ describe "Norma Loader" do
     output.readlines
   end
 
-  #Dir["examples/norma/Bl*.orm"].each do |orm_file|
-  #Dir["examples/norma/Meta*.orm"].each do |orm_file|
-  #Dir["examples/norma/[AC]*.orm"].each do |orm_file|
-  Dir["examples/norma/*.orm"].each do |orm_file|
+  pattern = ENV["AFTESTS"] || "*"
+  Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{/norma/(.*).orm\Z}, '/CQL/\1.cql')
 
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.cql')

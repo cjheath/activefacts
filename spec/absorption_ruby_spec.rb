@@ -27,18 +27,8 @@ describe "Column lists from absorption compared with Ruby's" do
     output.read
   end
 
-  #Dir["examples/norma/Add*.orm"].each do |orm_file|
-  #Dir["examples/norma/Bl*.orm"].each do |orm_file|
-  #Dir["examples/norma/CompanyDirectorEmployee.orm"].each do |orm_file|
-  #Dir["examples/norma/Death.orm"].each do |orm_file|
-  #Dir["examples/norma/Genealogy*.orm"].each do |orm_file|
-  #Dir["examples/norma/Insu*.orm"].each do |orm_file|
-  #Dir["examples/norma/Metamodel.orm"].each do |orm_file|
-  #Dir["examples/norma/OrienteeringER.orm"].each do |orm_file|
-  #Dir["examples/norma/Test*.orm"].each do |orm_file|
-  #Dir["examples/norma/[ACG]*.orm"].each do |orm_file|
-
-  Dir["examples/norma/*.orm"].each do |orm_file|
+  pattern = ENV["AFTESTS"] || "*"
+  Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'examples/ruby/\1.rb')
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.rb')
 

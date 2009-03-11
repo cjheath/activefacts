@@ -37,10 +37,8 @@ describe "CQL Loader" do
     output.read
   end
 
-  #Dir["examples/CQL/Bl*.cql"].each do |cql_file|
-  #Dir["examples/CQL/Meta*.cql"].each do |cql_file|
-  #Dir["examples/CQL/[ACG]*.cql"].each do |cql_file|
-  Dir["examples/CQL/*.cql"].each do |cql_file|
+  pattern = ENV["AFTESTS"] || "*"
+  Dir["examples/CQL/#{pattern}.cql"].each do |cql_file|
     actual_file = cql_file.sub(%r{examples/CQL/}, 'spec/actual/')
 
     it "should load CQL and dump valid CQL for #{cql_file}" do
