@@ -35,8 +35,9 @@ module ActiveFacts
               select{|subtype| !subtype.is_table}.    # Don't absorb separate subtypes
               inject([]) do |columns, subtype|
                 # Pass self as 2nd param here, not a role, standing for the supertype role
-                debug :persistence, "Absorbing subtype #{subtype.basename}" do
-                  columns += subtype.__absorb([[subtype.basename]], self)
+                subtype_name = subtype.basename
+                debug :persistence, "Absorbing subtype #{subtype_name}" do
+                  columns += subtype.__absorb([[subtype_name]], self)
                 end
               end
             ).map do |col_names|
@@ -112,14 +113,12 @@ module ActiveFacts
       def __absorb_role(prefix, role)
         if prefix.size > 0 and
             (c = role.owner).is_entity_type and
+            c.identifying_roles == [role] and
             (irn = c.identifying_role_names).size == 1 and
             (n = irn[0].to_s.split(/_/)).size > 1 and
             (owner = role.owner.basename.snakecase.split(/_/)) and
             n[0...owner.size] == owner
-          #debug :persistence, "truncating transitive identifying role #{n.inspect}"
-#          REVISIT: This might be closer to what we want, except it doesn't deal with owner as an array
-#          n.include?(ro_name = role.owner.basename.downcase)
-#          new_prefix = prefix + [n.reject{|p| p == ro_name}]
+          debug :persistence, "truncating transitive identifying role #{n.inspect}"
           owner.size.times { n.shift }
           new_prefix = prefix + [n]
         elsif (c = role.counterpart_concept).is_entity_type and
@@ -135,7 +134,7 @@ module ActiveFacts
         end
         #debug :persistence, "new_prefix is #{new_prefix*"."}"
 
-        debug :persistence, "Absorbed role #{role.name} as #{new_prefix[prefix.size..-1]*"."}" do
+        debug :persistence, "Absorbing role #{role.name} as #{new_prefix[prefix.size..-1]*"."}" do
           role.counterpart_concept.__absorb(new_prefix, role.counterpart)
         end
       end
@@ -157,6 +156,7 @@ module ActiveFacts
           role = roles(ir[0])
           return role if ((cp = role.counterpart_concept).is_table ||
               (cp.is_entity_type && cp.fully_absorbed))
+          return superclass if superclass.is_entity_type  # Absorbed subtype
           nil
         end
       end

@@ -109,6 +109,16 @@ module ActiveFacts
           @identifying_role_names ||= []
         end
 
+        def identifying_roles
+          debug :persistence, "Identifying roles for #{basename}" do
+            @identifying_role_names.map{|name|
+              role = roles[name] || (!superclass.is_entity_type || superclass.roles[name])
+              debug :persistence, "#{name} -> #{role ? "found" : "NOT FOUND"}"
+              role
+            }
+          end
+        end
+
         # Convert the passed arguments into an array of Instance objects that can identify an instance of this Entity type:
         def identifying_role_values(*args)
           #puts "Getting identifying role values #{identifying_role_names.inspect} of #{basename} using #{args.inspect}"
