@@ -22,12 +22,12 @@ CREATE TABLE Event (
 	-- Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location and Map is where map-Name having Accessibility belongs to Club,
 	MapName                                 varchar NOT NULL,
 	-- Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location and SeriesEvent is where SeriesName includes event-Number,
-	SeriesEventEventNumber                  int NOT NULL,
+	SeriesEventNumber                       int NOT NULL,
 	-- Event is where event-ID is SeriesEvent called EventName run by Club using Map on Date at Location and SeriesEvent is where SeriesName includes event-Number,
 	SeriesEventSeriesName                   varchar NOT NULL,
 	PRIMARY KEY(EventID),
 	UNIQUE(EventName),
-	UNIQUE(SeriesEventSeriesName, SeriesEventEventNumber),
+	UNIQUE(SeriesEventSeriesName, SeriesEventNumber),
 	FOREIGN KEY (ClubCode) REFERENCES Club (Code)
 )
 GO

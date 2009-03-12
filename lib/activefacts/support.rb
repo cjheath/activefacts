@@ -63,4 +63,35 @@ class Array
       v == 1
     end.keys
   end
+
+  # Allow indexing using a custom comparator:
+  def index value, &compare_block
+    compare_block ||= lambda{|a,b| a == b}
+    (0...size).detect{|i| compare_block[value, self[i]] }
+  end
+
+  # If any element, or sequence of elements, repeats immediately, delete the repetition.
+  # Note that this doesn't remove all re-occurrences of a subsequence, only consecutive ones.
+  # The compare_block allows a custom equality comparison.
+  def elide_repeated_subsequences &compare_block
+    compare_block ||= lambda{|a,b| a == b}
+    i = 0
+    while i < size  # Need to re-evaluate size on each loop - the array shrinks.
+      j = i
+      #puts "Looking for repetitions of #{self[i]}@[#{i}]"
+      while tail = self[j+1..-1] and k = tail.index(self[i], &compare_block)
+        length = j+1+k-i
+        #puts "Found at #{j+1+k} (subsequence of length #{j+1+k-i}), will need to repeat to #{j+k+length}"
+        if j+k+1+length <= size && compare_block[self[i, length], self[j+k+1, length]]
+          #puts "Subsequence from #{i}..#{j+k} repeats immediately at #{j+k+1}..#{j+k+length}"
+          slice!(j+k+1, length)
+          j = i
+        else
+          j += k+1
+        end
+      end
+      i += 1
+    end
+    self
+  end
 end

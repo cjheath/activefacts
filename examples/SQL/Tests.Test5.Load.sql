@@ -8,7 +8,7 @@ CREATE TABLE Party (
 	-- maybe Person is a subtype of Party and Birth is where Person was born on EventDate and maybe Birth was assisted by attending-Doctor and Party has PartyId,
 	PersonAttendingDoctorId                 int NULL,
 	-- maybe Person is a subtype of Party and Death is where Person died and maybe Death occurred on death-EventDate and EventDate has ymd,
-	PersonDeathDeathEventDateYmd            datetime NULL,
+	PersonDeathEventDateYmd                 datetime NULL,
 	-- maybe Person is a subtype of Party and Birth is where Person was born on EventDate and Birth is where Person was born on EventDate and EventDate has ymd,
 	PersonEventDateYmd                      datetime NULL,
 	PRIMARY KEY(PartyId),

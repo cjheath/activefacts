@@ -134,13 +134,13 @@ GO
 
 CREATE TABLE PunchPlacement (
 	-- PunchPlacement is where Punch is placed at EventControl and EventControl is where Event includes ControlNumber,
-	EventControlControlNumber               int NOT NULL,
+	EventControlNumber                      int NOT NULL,
 	-- PunchPlacement is where Punch is placed at EventControl and EventControl is where Event includes ControlNumber and Event has EventID,
 	EventControlEventID                     int NOT NULL,
 	-- PunchPlacement is where Punch is placed at EventControl and Punch has PunchID,
 	PunchID                                 int NOT NULL,
-	PRIMARY KEY(PunchID, EventControlEventID, EventControlControlNumber),
-	FOREIGN KEY (EventControlControlNumber, EventControlEventID) REFERENCES EventControl (ControlNumber, EventID),
+	PRIMARY KEY(PunchID, EventControlEventID, EventControlNumber),
+	FOREIGN KEY (EventControlNumber, EventControlEventID) REFERENCES EventControl (ControlNumber, EventID),
 	FOREIGN KEY (PunchID) REFERENCES Punch (PunchID)
 )
 GO

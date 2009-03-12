@@ -2,7 +2,7 @@ CREATE TABLE Address (
 	-- Address has AddressId,
 	AddressId                               int IDENTITY NOT NULL,
 	-- maybe Address is in LegislativeDistrict and LegislativeDistrict has DistrictNumber,
-	LegislativeDistrictDistrictNumber       int NULL,
+	LegislativeDistrictNumber               int NULL,
 	-- maybe Address is in LegislativeDistrict and LegislativeDistrict is for StateOrProvince and StateOrProvince has StateOrProvinceId,
 	LegislativeDistrictStateOrProvinceId    int NULL,
 	-- maybe Address is assigned PostalCode,
@@ -33,7 +33,7 @@ CREATE TABLE StateOrProvince (
 GO
 
 ALTER TABLE Address
-	ADD FOREIGN KEY (LegislativeDistrictDistrictNumber, LegislativeDistrictStateOrProvinceId) REFERENCES LegislativeDistrict (DistrictNumber, StateOrProvinceId)
+	ADD FOREIGN KEY (LegislativeDistrictNumber, LegislativeDistrictStateOrProvinceId) REFERENCES LegislativeDistrict (DistrictNumber, StateOrProvinceId)
 GO
 
 ALTER TABLE Address

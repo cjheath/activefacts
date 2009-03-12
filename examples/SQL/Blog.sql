@@ -1,8 +1,8 @@
 CREATE TABLE Author (
-	-- author-Name is of Author,
-	AuthorName                              varchar(64) NOT NULL,
 	-- Author has AuthorId,
 	AuthorId                                int IDENTITY NOT NULL,
+	-- author-Name is of Author,
+	AuthorName                              varchar(64) NOT NULL,
 	PRIMARY KEY(AuthorId),
 	UNIQUE(AuthorName)
 )
@@ -54,10 +54,10 @@ GO
 CREATE TABLE Topic (
 	-- maybe Topic belongs to parent-Topic and Topic has TopicId,
 	ParentTopicId                           int NULL,
-	-- Topic is called topic-Name,
-	TopicName                               varchar(64) NOT NULL,
 	-- Topic has TopicId,
 	TopicId                                 int IDENTITY NOT NULL,
+	-- Topic is called topic-Name,
+	TopicName                               varchar(64) NOT NULL,
 	PRIMARY KEY(TopicId),
 	UNIQUE(TopicName),
 	FOREIGN KEY (ParentTopicId) REFERENCES Topic (TopicId)

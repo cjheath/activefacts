@@ -115,19 +115,19 @@ module ActiveFacts
         case
         when is_unary
           if @to && @to.fact_type
-            @to.name.split(/[_\s]/)
+            @to.name.camelwords
           else
-            @to_role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.split(/[_\s]/)
+            @to_role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.camelwords
           end
         when @to && !@to_role           # @to is an objectified fact type so @to_role is a phantom
-          @to.name.split(/[_\s]/)
+          @to.name.camelwords
         when !@to_role                  # Self-value role of an independent ValueType
-          ["#{@from.name}", "Value"]
+          @from.name.camelwords + ["Value"]
         when @to_role.role_name         # Named role
-          @to_role.role_name.split(/[_\s]/)
+          @to_role.role_name.camelwords
         else                            # Use the name from the preferred reading
           role_ref = @to_role.preferred_reference
-          [role_ref.leading_adjective, @to_role.concept.name, role_ref.trailing_adjective].compact.map{|w| w.split(/[_\s]/)}.flatten.reject{|s| s == ''}
+          [role_ref.leading_adjective, @to_role.concept.name, role_ref.trailing_adjective].compact.map{|w| w.camelwords}.flatten.reject{|s| s == ''}
         end
       end
 

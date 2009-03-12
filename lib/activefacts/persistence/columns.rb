@@ -117,7 +117,13 @@ module ActiveFacts
 
             a += names
             a
-          end
+          end.elide_repeated_subsequences { |a, b|
+            if a.is_a?(Array)
+              a.map{|e| e.downcase} == b.map{|e| e.downcase}
+            else
+              a.downcase == b.downcase
+            end
+          }
 
         name_array = names.map{|n| n.sub(/^[a-z]/){|s| s.upcase}}
         joiner ? name_array * joiner : name_array

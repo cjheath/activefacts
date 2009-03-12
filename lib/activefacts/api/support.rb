@@ -23,6 +23,10 @@ class String #:nodoc:
   def snakecase
     gsub(/([a-z])([A-Z])/,'\1_\2').downcase
   end
+
+  def camelwords
+    gsub(/([a-z])([A-Z])/,'\1_\2').split(/[_\s]+/)
+  end
 end
 
 class Module #:nodoc:

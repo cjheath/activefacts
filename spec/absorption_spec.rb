@@ -51,7 +51,7 @@ describe "Absorption" do
         #{Prologue} #{Claim} #{Incident}
         Incident relates to loss on exactly one DateTime;
       },
-      :tables => { "Claim" => ["ClaimID", %w{Incident DateTime}]}
+      :tables => { "Claim" => [%w{Claim ID}, %w{Incident Date Time}]}
     },
 
     { :should => "absorb an objectified binary with single-role UC",
@@ -63,8 +63,8 @@ describe "Absorption" do
         Person has exactly one birth-Date;
       },
       :tables => {
-        "Claim" => ["ClaimID", %w{Lodgement DateTime}, %w{Lodgement Person ID}],
-        "Party" => ["PartyID", %w{Person Birth Date}]
+        "Claim" => [%w{Claim ID}, %w{Lodgement Date Time}, %w{Lodgement Person ID}],
+        "Party" => [%w{Party ID}, %w{Person Birth Date}]
       }
     },
 
