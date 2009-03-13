@@ -15,7 +15,8 @@ include ActiveFacts
 
 describe "Column lists from absorption compared with Ruby's" do
   ABSORPTION_RUBY_FAILURES = %w{
-    XXMetamodel
+    Metamodel
+    ServiceDirector
   }
 
   # Generate and return the Ruby for the given vocabulary

@@ -171,8 +171,8 @@ module ActiveFacts
     # the names, just as happens in Concept.populate_reference (see reference.rb)
     class Role
       def counterpart_unary_has_precedence
-        counterpart.unique and
-          counterpart_concept.is_table_subtype and
+        counterpart_concept.is_table_subtype and
+          counterpart.unique and
           owner.name.downcase < counterpart.owner.name.downcase
       end
     end
