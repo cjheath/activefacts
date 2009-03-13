@@ -308,8 +308,9 @@ module ActiveFacts
           end
 
           # Either both EntityTypes, or both ValueTypes.
-          # Make an arbitrary (but stable) decision which way to go. We might flip it later.
-          unless r.from.name < r.to.name or
+          # Make an arbitrary (but stable) decision which way to go. We might flip it later,
+          # but not frivolously; the Ruby API column name generation duplicates this logic.
+          unless r.from.name.downcase < r.to.name.downcase or
             (r.from == r.to && references_to.detect{|ref| ref.to_role == role}) # one-to-one self reference, done already
             r.tabulate
           end

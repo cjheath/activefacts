@@ -24,7 +24,9 @@ module ActiveFacts
               []
             end +
             # Then absorb all normal roles:
-            roles.values.select{|role| role.unique}.inject([]) do |columns, role|
+            roles.values.select do |role|
+              role.unique && !role.counterpart_unary_has_precedence
+            end.inject([]) do |columns, role|
               rn = role.name.to_s.split(/_/)
               debug :persistence, "Role #{rn*'.'}" do
                 columns += role.counterpart_concept.__absorb([rn], role.counterpart)
@@ -73,7 +75,9 @@ module ActiveFacts
               # Not a table -> all roles are absorbed
               roles.
                   values.
-                  select{|role| role.unique && role != except_role }.
+                  select do |role|
+                    role.unique && role != except_role && !role.counterpart_unary_has_precedence
+                  end.
                   inject([]) do |columns, role|
                 columns += __absorb_role(prefix, role)
               end +
@@ -140,6 +144,7 @@ module ActiveFacts
       end
 
       def is_table_subtype
+        return true if is_table
         klass = superclass
         while klass.is_entity_type
           return true if klass.is_table
@@ -162,11 +167,29 @@ module ActiveFacts
       end
     end
 
+    # A one-to-one can be absorbed into either table. We decide which by comparing
+    # the names, just as happens in Concept.populate_reference (see reference.rb)
+    class Role
+      def counterpart_unary_has_precedence
+        counterpart.unique and
+          counterpart_concept.is_table_subtype and
+          owner.name.downcase < counterpart.owner.name.downcase
+      end
+    end
+
   end
 end
 
 class TrueClass
   def self.__absorb(prefix, except_role = nil)
     [prefix]
+  end
+
+  def self.is_table
+    false
+  end
+
+  def self.is_table_subtype
+    false
   end
 end

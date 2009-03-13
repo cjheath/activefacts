@@ -699,23 +699,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('AbsorbSeparateSubtype.orm')">
-    <None Include="AbsorbSeparateSubtype.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>AbsorbSeparateSubtype.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="AbsorbSeparateSubtype.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>AbsorbSeparateSubtype.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="AbsorbSeparateSubtype.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>AbsorbSeparateSubtype.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
