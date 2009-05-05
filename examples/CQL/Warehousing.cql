@@ -3,18 +3,18 @@ vocabulary Warehousing;
 /*
  * Value Types
  */
-BinID is defined as AutoCounter();
-DispatchID is defined as AutoCounter();
-DispatchItemID is defined as AutoCounter();
-PartyID is defined as AutoCounter();
-ProductID is defined as AutoCounter();
-PurchaseOrderID is defined as AutoCounter();
-Quantity is defined as UnsignedInteger(32);
-ReceiptID is defined as AutoCounter();
-ReceivedItemID is defined as AutoCounter();
-SalesOrderID is defined as AutoCounter();
-TransferRequestID is defined as AutoCounter();
-WarehouseID is defined as AutoCounter();
+BinID is written as AutoCounter();
+DispatchID is written as AutoCounter();
+DispatchItemID is written as AutoCounter();
+PartyID is written as AutoCounter();
+ProductID is written as AutoCounter();
+PurchaseOrderID is written as AutoCounter();
+Quantity is written as UnsignedInteger(32);
+ReceiptID is written as AutoCounter();
+ReceivedItemID is written as AutoCounter();
+SalesOrderID is written as AutoCounter();
+TransferRequestID is written as AutoCounter();
+WarehouseID is written as AutoCounter();
 
 /*
  * Entity Types

@@ -3,8 +3,8 @@ vocabulary Death;
 /*
  * Value Types
  */
-CauseOfDeath is defined as VariableLengthText();
-PersonName is defined as VariableLengthText(40);
+CauseOfDeath is written as VariableLengthText();
+PersonName is written as VariableLengthText(40);
 
 /*
  * Entity Types

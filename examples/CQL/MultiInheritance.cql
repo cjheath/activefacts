@@ -3,9 +3,9 @@ vocabulary MultiInheritance;
 /*
  * Value Types
  */
-EmployeeID is defined as AutoCounter();
-PersonName is defined as VariableLengthText();
-TFN is defined as FixedLengthText(9);
+EmployeeID is written as AutoCounter();
+PersonName is written as VariableLengthText();
+TFN is written as FixedLengthText(9);
 
 /*
  * Entity Types

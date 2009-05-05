@@ -8,7 +8,7 @@ module ActiveFacts
   module CQL
     grammar FactTypes
       rule named_fact_type
-        s name:id ( s '=' s / defined_as / s is s where )
+        s name:id ( s '=' s / written_as / s is s where )
         anonymous_fact_type
         {
           def value

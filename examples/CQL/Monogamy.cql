@@ -3,8 +3,8 @@ vocabulary Monogamy;
 /*
  * Value Types
  */
-Name is defined as VariableLengthText();
-PersonID is defined as AutoCounter();
+Name is written as VariableLengthText();
+PersonID is written as AutoCounter();
 
 /*
  * Entity Types

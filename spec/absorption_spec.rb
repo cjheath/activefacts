@@ -12,11 +12,11 @@ require 'activefacts/persistence'
 describe "Absorption" do
   Prologue = %Q{
     vocabulary Test;
-    DateTime is defined as DateAndTime();
-    Month is defined as VariableLengthText(3);
-    Season is defined as VariableLengthText(6);
-    PartyID is defined as AutoCounter();
-    ClaimID is defined as AutoCounter();
+    DateTime is written as DateAndTime();
+    Month is written as VariableLengthText(3);
+    Season is written as VariableLengthText(6);
+    PartyID is written as AutoCounter();
+    ClaimID is written as AutoCounter();
   }
   Claim = %Q{
     Claim is identified by ClaimID where

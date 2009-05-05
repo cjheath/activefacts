@@ -88,7 +88,7 @@ module ActiveFacts
       end
 
       rule variable
-        id0:id o0:( !defined_as s id1:id )?
+        id0:id o0:( !written_as s id1:id )?
         {
           def value
             # Variable names may consist of one or two words (optional adjective and a noun):

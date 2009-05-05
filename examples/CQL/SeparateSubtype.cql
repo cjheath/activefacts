@@ -3,9 +3,9 @@ vocabulary SeparateSubtype;
 /*
  * Value Types
  */
-ClaimID is defined as AutoCounter();
-DateTime is defined as DateAndTime();
-DriverName is defined as VariableLengthText();
+ClaimID is written as AutoCounter();
+DateTime is written as DateAndTime();
+DriverName is written as VariableLengthText();
 
 /*
  * Entity Types

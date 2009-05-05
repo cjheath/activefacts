@@ -44,7 +44,7 @@ module ActiveFacts
 
                   #" restricted to {#{(allowed_values.map{|r| r.inspect}*", ").gsub('"',"'")}}")
 
-        puts "#{o.name} is defined as #{o.supertype.name}#{ parameters }#{
+        puts "#{o.name} is written as #{o.supertype.name}#{ parameters }#{
             o.value_restriction ? " restricted to {#{
               o.value_restriction.all_allowed_range.sort_by{|ar|
                     ((min = ar.value_range.minimum_bound) && min.value) ||

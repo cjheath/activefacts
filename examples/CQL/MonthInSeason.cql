@@ -3,9 +3,9 @@ vocabulary MonthInSeason;
 /*
  * Value Types
  */
-EventId is defined as AutoCounter();
-Month is defined as VariableLengthText();
-Season is defined as VariableLengthText();
+EventId is written as AutoCounter();
+Month is written as VariableLengthText();
+Season is written as VariableLengthText();
 
 /*
  * Entity Types

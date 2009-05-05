@@ -3,7 +3,7 @@ vocabulary SimplestUnary;
 /*
  * Value Types
  */
-SomeString is defined as VariableLengthText();
+SomeString is written as VariableLengthText();
 
 /*
  * Fact Types

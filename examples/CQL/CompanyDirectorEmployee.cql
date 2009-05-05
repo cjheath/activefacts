@@ -3,9 +3,9 @@ vocabulary CompanyDirectorEmployee;
 /*
  * Value Types
  */
-CompanyName is defined as VariableLengthText(48);
-EmployeeNr is defined as SignedInteger(32);
-Name is defined as VariableLengthText(48);
+CompanyName is written as VariableLengthText(48);
+EmployeeNr is written as SignedInteger(32);
+Name is written as VariableLengthText(48);
 
 /*
  * Entity Types

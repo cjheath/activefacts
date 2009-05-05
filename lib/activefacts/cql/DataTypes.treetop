@@ -9,7 +9,7 @@ module ActiveFacts
     grammar DataTypes
       rule data_type
         s name:id
-        ( s '=' s / defined_as )
+        ( s '=' s / written_as )
         base:id s
         '(' s tpl:type_parameter_list? ')' s
         u0:(!restricted u1:unit s)?

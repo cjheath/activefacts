@@ -3,10 +3,10 @@ vocabulary WindowInRoomInBldg;
 /*
  * Value Types
  */
-Building is defined as SignedInteger(32);
-RoomNumber is defined as SignedInteger(32);
-WallNumber is defined as SignedInteger(32);
-WindowNumber is defined as UnsignedInteger(32);
+Building is written as SignedInteger(32);
+RoomNumber is written as SignedInteger(32);
+WallNumber is written as SignedInteger(32);
+WindowNumber is written as UnsignedInteger(32);
 
 /*
  * Entity Types

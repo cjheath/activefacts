@@ -12,7 +12,7 @@ describe "Valid Numbers, Strings and Ranges" do
   ValidNumbersEtc = [
     "a=b();",                                   # Basic data type declaration, minimal whitespace
     "a = b ( ) ; ",                             # Basic data type declaration, maximal whitespace
-    "a is defined as b();",                     # Verbally named data type declaration
+    "a is written as b();",                     # Verbally named data type declaration
     "a=b() inch;",                              # Data type declaration with unit
     "a=b() inch ; ",                            # Data type declaration with unit
     "a=b() inch^2 ; ",                          # Data type declaration with unit and exponent

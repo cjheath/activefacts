@@ -3,8 +3,8 @@ vocabulary TaggedArticles;
 /*
  * Value Types
  */
-ArticleID is defined as SignedInteger(32);
-Tag is defined as VariableLengthText();
+ArticleID is written as SignedInteger(32);
+Tag is written as VariableLengthText();
 
 /*
  * Fact Types

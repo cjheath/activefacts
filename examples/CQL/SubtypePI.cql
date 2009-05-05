@@ -3,10 +3,10 @@ vocabulary SubtypePI;
 /*
  * Value Types
  */
-EntrantID is defined as AutoCounter();
-FamilyName is defined as VariableLengthText();
-GivenName is defined as VariableLengthText();
-TeamID is defined as AutoCounter();
+EntrantID is written as AutoCounter();
+FamilyName is written as VariableLengthText();
+GivenName is written as VariableLengthText();
+TeamID is written as AutoCounter();
 
 /*
  * Entity Types

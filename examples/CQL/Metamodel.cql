@@ -3,27 +3,27 @@ vocabulary Metamodel;
 /*
  * Value Types
  */
-Adjective is defined as VariableLengthText(64);
-ConstraintId is defined as AutoCounter();
-Denominator is defined as UnsignedInteger(32);
-Enforcement is defined as VariableLengthText(16);
-Exponent is defined as SignedSmallInteger(32);
-FactId is defined as AutoCounter();
-FactTypeId is defined as AutoCounter();
-Frequency is defined as UnsignedInteger(32);
-InstanceId is defined as AutoCounter();
-Length is defined as UnsignedInteger(32);
-Name is defined as VariableLengthText(64);
-Numerator is defined as Decimal();
-Ordinal is defined as UnsignedSmallInteger(32);
-Pronoun is defined as VariableLengthText() restricted to {'feminine', 'masculine', 'personal'};
-RingType is defined as VariableLengthText();
-RoleSequenceId is defined as AutoCounter();
-Scale is defined as UnsignedInteger(32);
-Text is defined as VariableLengthText(256);
-UnitId is defined as AutoCounter();
-Value is defined as VariableLengthText(256);
-ValueRestrictionId is defined as AutoCounter();
+Adjective is written as VariableLengthText(64);
+ConstraintId is written as AutoCounter();
+Denominator is written as UnsignedInteger(32);
+Enforcement is written as VariableLengthText(16);
+Exponent is written as SignedSmallInteger(32);
+FactId is written as AutoCounter();
+FactTypeId is written as AutoCounter();
+Frequency is written as UnsignedInteger(32);
+InstanceId is written as AutoCounter();
+Length is written as UnsignedInteger(32);
+Name is written as VariableLengthText(64);
+Numerator is written as Decimal();
+Ordinal is written as UnsignedSmallInteger(32);
+Pronoun is written as VariableLengthText() restricted to {'feminine', 'masculine', 'personal'};
+RingType is written as VariableLengthText();
+RoleSequenceId is written as AutoCounter();
+Scale is written as UnsignedInteger(32);
+Text is written as VariableLengthText(256);
+UnitId is written as AutoCounter();
+Value is written as VariableLengthText(256);
+ValueRestrictionId is written as AutoCounter();
 
 /*
  * Entity Types

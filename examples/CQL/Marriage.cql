@@ -3,7 +3,7 @@ vocabulary Marriage;
 /*
  * Value Types
  */
-Name is defined as VariableLengthText();
+Name is written as VariableLengthText();
 
 /*
  * Entity Types

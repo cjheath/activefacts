@@ -41,7 +41,7 @@ vocabulary TestVocab;
 /*
  * Value Types
  */
-Name is defined as String(20);
+Name is written as String(20);
 
 END
   end
@@ -54,7 +54,7 @@ vocabulary TestVocab;
 /*
  * Value Types
  */
-Count is defined as Integer(32);
+Count is written as Integer(32);
 
 END
   end
@@ -131,8 +131,8 @@ vocabulary TestVocab;
 /*
  * Value Types
  */
-Count is defined as Integer(32);
-Name is defined as String(20);
+Count is written as Integer(32);
+Name is written as String(20);
 
 /*
  * Fact Types
@@ -154,7 +154,7 @@ vocabulary TestVocab;
 /*
  * Value Types
  */
-Name is defined as String(20);
+Name is written as String(20);
 
 /*
  * Entity Types

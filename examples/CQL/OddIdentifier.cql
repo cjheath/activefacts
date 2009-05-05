@@ -3,9 +3,9 @@ vocabulary OddIdentifier;
 /*
  * Value Types
  */
-Ordinal is defined as SignedInteger(32);
-Text is defined as VariableLengthText();
-ThingID is defined as AutoCounter();
+Ordinal is written as SignedInteger(32);
+Text is written as VariableLengthText();
+ThingID is written as AutoCounter();
 
 /*
  * Entity Types

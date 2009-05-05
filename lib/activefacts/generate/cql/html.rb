@@ -72,7 +72,7 @@ module ActiveFacts
             ].compact
           parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : "()"
 
-          puts "#{concept o.name} #{keyword "is defined as"} #{concept o.supertype.name + parameters }#{
+          puts "#{concept o.name} #{keyword "is written as"} #{concept o.supertype.name + parameters }#{
               if (o.value_restriction)
                 keyword("restricted to")+
                 o.value_restriction.all_allowed_range.map{|ar|

@@ -3,14 +3,14 @@ vocabulary Blog;
 /*
  * Value Types
  */
-AuthorId is defined as AutoCounter();
-CommentId is defined as AutoCounter();
-Name is defined as VariableLengthText(64);
-Ordinal is defined as UnsignedInteger(32);
-PostId is defined as AutoCounter();
-Style is defined as VariableLengthText(20);
-Text is defined as LargeLengthText();
-TopicId is defined as AutoCounter();
+AuthorId is written as AutoCounter();
+CommentId is written as AutoCounter();
+Name is written as VariableLengthText(64);
+Ordinal is written as UnsignedInteger(32);
+PostId is written as AutoCounter();
+Style is written as VariableLengthText(20);
+Text is written as LargeLengthText();
+TopicId is written as AutoCounter();
 
 /*
  * Entity Types

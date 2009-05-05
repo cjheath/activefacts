@@ -3,27 +3,27 @@ vocabulary Genealogy;
 /*
  * Value Types
  */
-Address is defined as VariableLengthText(128);
-Certificate is defined as VariableLengthText(64);
-Day is defined as UnsignedInteger(32) restricted to {1..31};
-Email is defined as VariableLengthText(64);
-EventID is defined as AutoCounter();
-EventLocation is defined as VariableLengthText(128);
-EventRoleName is defined as VariableLengthText() restricted to {'Celebrant', 'Father', 'Husband', 'Mother', 'Subject', 'Wife'};
-EventTypeID is defined as AutoCounter();
-EventTypeName is defined as VariableLengthText(16) restricted to {'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'};
-Gender is defined as FixedLengthText(1) restricted to {'F', 'M'};
-Month is defined as UnsignedInteger(32) restricted to {1..12};
-Name is defined as VariableLengthText(128);
-Occupation is defined as VariableLengthText(128);
-Official is defined as VariableLengthText(64);
-PersonID is defined as AutoCounter();
-Picture is defined as PictureRawData(20);
-RoleID is defined as AutoCounter();
-SourceID is defined as AutoCounter();
-SourceName is defined as VariableLengthText(128);
-UserID is defined as AutoCounter();
-Year is defined as UnsignedInteger(32);
+Address is written as VariableLengthText(128);
+Certificate is written as VariableLengthText(64);
+Day is written as UnsignedInteger(32) restricted to {1..31};
+Email is written as VariableLengthText(64);
+EventID is written as AutoCounter();
+EventLocation is written as VariableLengthText(128);
+EventRoleName is written as VariableLengthText() restricted to {'Celebrant', 'Father', 'Husband', 'Mother', 'Subject', 'Wife'};
+EventTypeID is written as AutoCounter();
+EventTypeName is written as VariableLengthText(16) restricted to {'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'};
+Gender is written as FixedLengthText(1) restricted to {'F', 'M'};
+Month is written as UnsignedInteger(32) restricted to {1..12};
+Name is written as VariableLengthText(128);
+Occupation is written as VariableLengthText(128);
+Official is written as VariableLengthText(64);
+PersonID is written as AutoCounter();
+Picture is written as PictureRawData(20);
+RoleID is written as AutoCounter();
+SourceID is written as AutoCounter();
+SourceName is written as VariableLengthText(128);
+UserID is written as AutoCounter();
+Year is written as UnsignedInteger(32);
 
 /*
  * Entity Types
