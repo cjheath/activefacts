@@ -57,7 +57,7 @@ role_list
 
 concept
 :	entity_type
-|	data_type
+|	value_type
 |	fact_type
 ;
 
@@ -84,12 +84,12 @@ role_ref
 ;
 
 // Data Types
-data_type
-:	ID ( '=' | 'is' 'defined' 'as' ) ID parameter_list
-	dt_details
+value_type
+:	ID ( '=' | 'is' 'written' 'as' ) ID parameter_list
+	vt_details
 ;
 
-dt_details
+vt_details
 :	('in' unit)? restriction?
 ;
 

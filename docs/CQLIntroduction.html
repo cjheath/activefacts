@@ -52,7 +52,7 @@ White space and comments as used in C and C++ are allowed:
 <ul type="disc">
 
 <li><b>Concepts</b> designated by name, including <b>entity types</b>
-and <b>data types</b>.
+and <b>value types</b>.
 </li>
 
 <li><b>Fact Types</b> each designated by one or more <b>readings</b>.
@@ -73,8 +73,8 @@ and facts within a valid <b>population</b>.</li>
 
 <p>
 In ORM, concepts are called object types, divided into value types and
-entity types. Value types in ORM are slightly different from data types
-in CQL, but CQL uses the terms interchangably.
+entity types. Value types in ORM are slightly different from value types
+in CQL.
 </p>
 
 <p>A CQL file must start with a vocabulary definition, and may import elements from one or more other vocabularies.</p>
@@ -115,16 +115,16 @@ same words in lower case, where they may occur in fact type readings.
   <dd><img src="../images/syntax/concept.png"><br>
 </dl>
 
-<h3>Data Types</h3>
+<h3>Value Types</h3>
 
-<p>A Data Type is a kind of thing which has a single value that may be
+<p>A Value Type is a kind of thing which has a single value that may be
 written down, that is, a lexical type, like a number, a name, a date,
 etc.
 </p>
 
 <p>
-A data type is usually derived from another data type, where top-level
-data types are defined in an imported vocabulary.  A data type may
+A value type is usually derived from another value type, where top-level
+value types are defined in an imported vocabulary.  A value type may
 refine its supertype by the use of <b>length</b> and <b>scale</b>
 parameters where relevant. (The ability to define custom parameters is
 anticipated in a revision of the language.) A value restriction might
@@ -133,17 +133,17 @@ these restrictions are discussed below.
 </p>
 
 <dl>
-  <dt>data type:
-  <dd><img src="../images/syntax/data_type.png" class="hangleft"><br>
-  <dt>data type details:
+  <dt>value type:
+  <dd><img src="../images/syntax/value_type.png" class="hangleft"><br>
+  <dt>value type details:
   <dd><img src="../images/syntax/dt_details.png"><br>
 </dl>
 
 <p>
-Top-level data types are defined by self-reference, e.g.
+Top-level value types are defined by self-reference, e.g.
 </p>
 <pre><em>
-      Integer is defined as Integer();
+      Integer is written as Integer();
 
 </em></pre>
 
@@ -200,15 +200,15 @@ role value, for which the reference mode shorthand is provided, as in:
 </em></pre>
 
 <p>
-<em>Value</em> is assumed to be (or created as) a data type.
+<em>Value</em> is assumed to be (or created as) a value type.
 A subtype of <em>Value</em> is assumed (or created) called <em>ThingValue</em>.
-Data type parameters may not yet be provided; this is an omission that
+Value type parameters may not yet be provided; this is an omission that
 will be corrected in an early revision.
 The <em>Thing</em> is then associated in an identifying one-to-one
 fact type with <em>ThingValue</em>. The result is equivalent to saying:
 </p>
 <pre><em>
-    ThingValue is defined as Thing();
+    ThingValue is written as Thing();
     Thing is identified by ThingValue where
 	Thing has one ThingValue,
 	ThingValue is of at most one Thing;
@@ -276,7 +276,7 @@ It will be identified by its relationship with its first supertype.
 </em></pre>
 
 <pre><em>
-    ShelfLife is defined as Time() in days;
+    ShelfLife is written as Time() in days;
     Perishable has at most one ShelfLife;
     Fruit has one Price per kg;
     Apple is a kind of Fruit, Perishable;
@@ -437,14 +437,14 @@ qualifier, which is also used in outer join derivations.</p>
 
 <p>
 A value restriction may follow a role reference where the role is played
-by a data type, and this constrains the allowed values of that data
+by a value type, and this constrains the allowed values of that value
 type in this role. In addition to fact type definitions, a value or a
 value restriction may be applied include fact instances and inn
 derivations, where it has the obvious effect.
 </p>
 
-<p>In addition to the value restrictions that can apply to data
-types, a role played by a data type may be restricted to specified
+<p>In addition to the value restrictions that can apply to value
+types, a role played by a value type may be restricted to specified
 values or value ranges:</p>
 
 <dl>
@@ -599,9 +599,9 @@ name followed by a value:</p>
     Name &lsquo;Fred&rsquo;;
 </em></pre>
 
-<p>This form is allowed for any data type, or any entity type
-that&rsquo;s identified by a single data type (or an entity
-identified by a single entity identified by a single data type,
+<p>This form is allowed for any value type, or any entity type
+that&rsquo;s identified by a single value type (or an entity
+identified by a single entity identified by a single value type,
 etc). In more complex cases, it might be necessary to invoke more
 than one fact type to define the instance:</p>
 
@@ -645,7 +645,7 @@ adjectives or defined role names may be used to separate the
 roles.</p>
 
 <!--p>The values may be modified by functions, such as the built-in
-functions on the Date data type which can extract the year, month,
+functions on the Date value type which can extract the year, month,
 day, etc from the Date.</p-->
 
 <p>It&rsquo;s possible to negate any invoked fact type by inserting
@@ -711,13 +711,13 @@ given-Name&rdquo;, &ldquo;Person lives at Address&rdquo;. A
 uniqueness constraint is present in &ldquo;Person has at most
 one family-Name&rdquo;.</p>
 
-<p>Name and Date are <b>data types</b>. Data types are lexical,
+<p>Name and Date are <b>value types</b>. Value types are lexical,
 meaning that they have values that may be written down, like a
-number, a name, etc. Data types may derive (inherit) from
-another data type, and some data types allow parameters, such as
+number, a name, etc. Value types may derive (inherit) from
+another value type, and some value types allow parameters, such as
 length or scale. Values for parameters are inherited.</p>
 
-<p>A numeric data type may indicate a quantity in a defined
+<p>A numeric value type may indicate a quantity in a defined
 <b>unit</b>. Units are defined either as fundamental, or as a
 coefficient multiplied by a base unit or units, each base unit
 being raised to some integer power. A unit definition may be
