@@ -3,7 +3,7 @@
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 describe "AutoCounter Value Type instances" do
-  setup do
+  before :each do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
     module Mod
       class ThingId < AutoCounter

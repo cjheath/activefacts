@@ -3,7 +3,7 @@
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 describe "An instance of every type of Concept" do
-  setup do
+  before :each do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
     module Mod
       # These are the base value types we're going to test:

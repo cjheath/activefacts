@@ -50,12 +50,16 @@ module ::Metamodel
     value_type 
   end
 
+  class Offset < Decimal
+    value_type 
+  end
+
   class Ordinal < UnsignedSmallInteger
     value_type :length => 32
   end
 
   class Pronoun < String
-    value_type 
+    value_type :length => 20
     # REVISIT: Pronoun has restricted values
   end
 
@@ -176,7 +180,9 @@ module ::Metamodel
     has_one :coefficient                        # See Coefficient.all_unit
     maybe :is_fundamental
     has_one :name                               # See Name.all_unit
+    has_one :offset                             # See Offset.all_unit
     one_to_one :unit_id                         # See UnitId.unit
+    has_one :vocabulary                         # See Vocabulary.all_unit
   end
 
   class Derivation
@@ -208,23 +214,10 @@ module ::Metamodel
     one_to_one :name                            # See Name.vocabulary
   end
 
-  class Import
-    identified_by :vocabulary, :imported_vocabulary
-    has_one :imported_vocabulary, Vocabulary    # See Vocabulary.all_import_as_imported_vocabulary
-    has_one :vocabulary                         # See Vocabulary.all_import
-  end
-
   class Feature
     identified_by :vocabulary, :name
     has_one :name                               # See Name.all_feature
     has_one :vocabulary                         # See Vocabulary.all_feature
-  end
-
-  class Correspondence
-    identified_by :import, :imported_feature
-    has_one :import                             # See Import.all_correspondence
-    has_one :imported_feature, Feature          # See Feature.all_correspondence_as_imported_feature
-    has_one :local_feature, Feature             # See Feature.all_correspondence_as_local_feature
   end
 
   class Population
@@ -248,9 +241,6 @@ module ::Metamodel
 
   class SetExclusionConstraint < SetComparisonConstraint
     maybe :is_mandatory
-  end
-
-  class Alias < Feature
   end
 
   class Concept < Feature
@@ -302,6 +292,19 @@ module ::Metamodel
     has_one :supertype, ValueType               # See ValueType.all_value_type_as_supertype
     has_one :unit                               # See Unit.all_value_type
     has_one :value_restriction                  # See ValueRestriction.all_value_type
+  end
+
+  class Parameter
+    identified_by :name, :value_type
+    has_one :name                               # See Name.all_parameter
+    has_one :value_type                         # See ValueType.all_parameter
+  end
+
+  class ParamValue
+    identified_by :value, :parameter
+    has_one :parameter                          # See Parameter.all_param_value
+    has_one :value                              # See Value.all_param_value
+    has_one :value_type                         # See ValueType.all_param_value
   end
 
 end

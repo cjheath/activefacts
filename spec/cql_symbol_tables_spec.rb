@@ -15,7 +15,7 @@ describe "CQL Symbol table" do
   # def initialize(constellation, vocabulary)
   # def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, leading_speculative = false, trailing_speculative = false)
 
-  setup do
+  before :each do
     include ActiveFacts::Input::CQL
     @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
     @vocabulary = @constellation.Vocabulary("Test")

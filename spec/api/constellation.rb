@@ -7,7 +7,7 @@ require "ruby-debug"
 require 'activefacts/api'
 
 describe "A Constellation instance" do
-  setup do
+  before :each do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
     module Mod
       @base_types = [

@@ -78,23 +78,6 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameName ON dbo.Constraint_VocabularyNameName(VocabularyName, Name)
 GO
 
-CREATE TABLE Correspondence (
-	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Import is where Vocabulary imports imported-Vocabulary and Vocabulary is called Name,
-	ImportImportedVocabularyName            varchar(64) NOT NULL,
-	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Import is where Vocabulary imports imported-Vocabulary and Vocabulary is called Name,
-	ImportVocabularyName                    varchar(64) NOT NULL,
-	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Feature is called Name,
-	ImportedFeatureName                     varchar(64) NOT NULL,
-	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
-	ImportedFeatureVocabularyName           varchar(64) NULL,
-	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and Feature is called Name,
-	LocalFeatureName                        varchar(64) NOT NULL,
-	-- Correspondence is where in Import imported-Feature corresponds to local-Feature and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
-	LocalFeatureVocabularyName              varchar(64) NULL,
-	UNIQUE(ImportVocabularyName, ImportImportedVocabularyName, ImportedFeatureVocabularyName, ImportedFeatureName)
-)
-GO
-
 CREATE TABLE Derivation (
 	-- Derivation is where DerivedUnit is derived from BaseUnit and Unit has UnitId,
 	BaseUnitId                              int NOT NULL,
@@ -171,23 +154,23 @@ CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanc
 GO
 
 CREATE TABLE Feature (
-	-- maybe Concept is a subtype of Feature and Concept is independent,
-	ConceptIsIndependent                    bit NULL,
-	-- maybe Concept is a subtype of Feature and maybe Concept uses Pronoun,
-	ConceptPronoun                          varchar NULL CHECK(ConceptPronoun = 'feminine' OR ConceptPronoun = 'masculine' OR ConceptPronoun = 'personal'),
+	-- Concept is a subtype of Feature and Concept is independent,
+	ConceptIsIndependent                    bit NOT NULL,
+	-- Concept is a subtype of Feature and maybe Concept uses Pronoun,
+	ConceptPronoun                          varchar(20) NULL CHECK(ConceptPronoun = 'feminine' OR ConceptPronoun = 'masculine' OR ConceptPronoun = 'personal'),
 	-- Feature is called Name,
 	Name                                    varchar(64) NOT NULL,
-	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has Length,
+	-- Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has Length,
 	ValueTypeLength                         int NULL,
-	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has Scale,
+	-- Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has Scale,
 	ValueTypeScale                          int NULL,
-	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is subtype of Supertype and Feature is called Name,
+	-- Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is subtype of Supertype and Feature is called Name,
 	ValueTypeSupertypeName                  varchar(64) NULL,
-	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is subtype of Supertype and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
+	-- Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is subtype of Supertype and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
-	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is of Unit and Unit has UnitId,
+	-- Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType is of Unit and Unit has UnitId,
 	ValueTypeUnitId                         int NULL,
-	-- maybe Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has ValueRestriction and ValueRestriction has ValueRestrictionId,
+	-- Concept is a subtype of Feature and maybe ValueType is a subtype of Concept and maybe ValueType has ValueRestriction and ValueRestriction has ValueRestrictionId,
 	ValueTypeValueRestrictionId             int NULL,
 	-- maybe Feature belongs to Vocabulary and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NULL,
@@ -242,6 +225,24 @@ CREATE TABLE [Join] (
 	RoleRefRoleSequenceId                   int NOT NULL,
 	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep),
 	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Feature (Name, VocabularyName)
+)
+GO
+
+CREATE TABLE ParamValue (
+	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType,
+	ParameterName                           varchar(64) NOT NULL,
+	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType and Feature is called Name,
+	ParameterValueTypeName                  varchar(64) NOT NULL,
+	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
+	ParameterValueTypeVocabularyName        varchar(64) NULL,
+	-- ParamValue is where Value for Parameter applies to ValueType,
+	Value                                   varchar(256) NOT NULL,
+	-- ParamValue is where Value for Parameter applies to ValueType and Feature is called Name,
+	ValueTypeName                           varchar(64) NOT NULL,
+	-- ParamValue is where Value for Parameter applies to ValueType and maybe Feature belongs to Vocabulary and Vocabulary is called Name,
+	ValueTypeVocabularyName                 varchar(64) NULL,
+	UNIQUE(Value, ParameterName, ParameterValueTypeVocabularyName, ParameterValueTypeName),
+	FOREIGN KEY (ValueTypeName, ValueTypeVocabularyName) REFERENCES Feature (Name, VocabularyName)
 )
 GO
 
@@ -364,9 +365,14 @@ CREATE TABLE Unit (
 	IsFundamental                           bit NOT NULL,
 	-- Name is of Unit,
 	Name                                    varchar(64) NOT NULL,
+	-- maybe Unit has Offset,
+	Offset                                  decimal NULL,
 	-- Unit has UnitId,
 	UnitId                                  int IDENTITY NOT NULL,
-	PRIMARY KEY(UnitId)
+	-- Vocabulary includes Unit and Vocabulary is called Name,
+	VocabularyName                          varchar(64) NOT NULL,
+	PRIMARY KEY(UnitId),
+	UNIQUE(VocabularyName, Name)
 )
 GO
 
@@ -399,14 +405,6 @@ GO
 
 ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (SubsetConstraintSupersetRoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
-GO
-
-ALTER TABLE Correspondence
-	ADD FOREIGN KEY (ImportedFeatureName, ImportedFeatureVocabularyName) REFERENCES Feature (Name, VocabularyName)
-GO
-
-ALTER TABLE Correspondence
-	ADD FOREIGN KEY (LocalFeatureName, LocalFeatureVocabularyName) REFERENCES Feature (Name, VocabularyName)
 GO
 
 ALTER TABLE Derivation

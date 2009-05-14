@@ -14,7 +14,7 @@ describe "CQL Dumper" do
   def self.hide(*a,&b)
   end
 
-  setup do
+  before :each do
     @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
     @vocabulary = @constellation.Vocabulary("TestVocab")
     @string_type = @constellation.ValueType(@vocabulary, "String")

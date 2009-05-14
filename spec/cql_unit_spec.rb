@@ -100,7 +100,7 @@ describe "Valid Numbers, Strings and Ranges" do
     "a=b() restricted to { 'A'.. };",           # String range, open end
   ]
 
-  setup do
+  before :each do
     @parser = ActiveFacts::CQLParser.new
   end
 
@@ -137,7 +137,7 @@ describe "Invalid Numbers and Strings" do
     "b() restricted to { 'a'..27 };",           # Cross-typed range
   ]
 
-  setup do
+  before :each do
     @parser = ActiveFacts::CQLParser.new
   end
 
@@ -162,7 +162,7 @@ describe "Data Types" do
 #    ],
   ]
 
-  setup do
+  before :each do
     @parser = ActiveFacts::CQLParser.new
   end
 
@@ -257,7 +257,7 @@ describe "Entity Types" do
     EntityTypes_Objectified +
     EntityTypes_Subtypes
 
-  setup do
+  before :each do
     @parser = ActiveFacts::CQLParser.new
   end
 
@@ -303,7 +303,7 @@ describe "Fact Types" do
     ]
   ]
 
-  setup do
+  before :each do
     @parser = ActiveFacts::CQLParser.new
   end
 

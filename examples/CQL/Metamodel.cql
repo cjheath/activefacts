@@ -15,8 +15,9 @@ InstanceId is written as AutoCounter();
 Length is written as UnsignedInteger(32);
 Name is written as VariableLengthText(64);
 Numerator is written as Decimal();
+Offset is written as Decimal();
 Ordinal is written as UnsignedSmallInteger(32);
-Pronoun is written as VariableLengthText() restricted to {'feminine', 'masculine', 'personal'};
+Pronoun is written as VariableLengthText(20) restricted to {'feminine', 'masculine', 'personal'};
 RingType is written as VariableLengthText();
 RoleSequenceId is written as AutoCounter();
 Scale is written as UnsignedInteger(32);
@@ -89,6 +90,7 @@ Unit is identified by its Id;
 Name is of Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
+Unit has at most one Offset;
 Unit is fundamental;
 Derivation is where
 	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];
@@ -106,15 +108,13 @@ Vocabulary is identified by Name where
 	Vocabulary is called one Name;
 Vocabulary contains Constraint,
 	Constraint belongs to at most one Vocabulary;
-Import is where
-	Vocabulary imports imported-Vocabulary [acyclic];
+Vocabulary includes Unit,
+	Unit is in one Vocabulary;
 
 Feature is identified by Vocabulary and Name where
 	Feature belongs to at most one Vocabulary,
 	Vocabulary contains Feature,
 	Feature is called one Name;
-Correspondence is where
-	in Import imported-Feature corresponds to at most one local-Feature;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -139,8 +139,6 @@ SetEqualityConstraint is a kind of SetComparisonConstraint;
 
 SetExclusionConstraint is a kind of SetComparisonConstraint;
 SetExclusionConstraint is mandatory;
-
-Alias is a kind of Feature;
 
 Concept is a kind of Feature;
 Concept uses at most one Pronoun;
@@ -190,6 +188,11 @@ ValueType is of at most one Unit;
 ValueType has at most one ValueRestriction;
 ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 	Supertype is supertype of ValueType;
+Parameter is where
+	Name is a parameter of ValueType,
+	ValueType has parameter called Name;
+ParamValue is where
+	Value for Parameter applies to at most one ValueType;
 
 /*
  * Constraints:
@@ -202,8 +205,7 @@ for each Constraint exactly one of these holds:
 	SetConstraint is a subtype of Constraint,
 	RingConstraint is a subtype of Constraint;
 for each Feature exactly one of these holds:
-	Concept is a subtype of Feature,
-	Alias is a subtype of Feature;
+	Concept is a subtype of Feature;
 Instance plays RoleValue and Instance is of Concept
 	if and only if
 	RoleValue is of Role and FactType has Ordinal role played by Concept;
@@ -243,3 +245,6 @@ each ValueRange occurs at least one time in
 each combination Vocabulary, Name occurs at most one time in
 	Vocabulary contains Constraint,
 	Name is of Constraint;
+each combination Vocabulary, Name occurs at most one time in
+	Vocabulary includes Unit,
+	Name is of Unit;

@@ -70,9 +70,6 @@ describe "Absorption" do
 
   ]
 
-  setup do
-  end
-
   Tests.each do |test|
     should = test[:should]
     cql = test[:cql]

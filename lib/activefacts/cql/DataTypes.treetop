@@ -34,6 +34,15 @@ module ActiveFacts
         }
       end
 
+      rule unit_definition
+	numerator:number denominator:(s '/' s number)?
+	baseunits:(unit+ (s '/' s unit+)?) s
+	offset:(('+' / '-') s number)
+	'makes' s ('approximately' s)?
+	singular:id plural:(s '/' s id)?
+	(s '[' s 'ephemeral' s ']')?
+      end
+
       rule type_parameter_list
         head:number s tail:( ',' s number s )*
         {
