@@ -11,8 +11,12 @@ require 'activefacts'
 require 'activefacts/vocabulary'
 
 if ENV['DEBUG']
-  require 'ruby-debug'
-  debugger if debug :exception
+  begin
+    require 'ruby-debug'
+    debugger if debug :exception
+  rescue LoadError
+    # Ok, no debugger, tough luck.
+  end
 end
 true # Ok, got the stack set up, continue to the fault
 
