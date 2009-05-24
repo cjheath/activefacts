@@ -45,19 +45,7 @@ module ActiveFacts
                   #" restricted to {#{(allowed_values.map{|r| r.inspect}*", ").gsub('"',"'")}}")
 
         puts "#{o.name} is written as #{o.supertype.name}#{ parameters }#{
-            o.value_restriction ? " restricted to {#{
-              o.value_restriction.all_allowed_range.sort_by{|ar|
-                    ((min = ar.value_range.minimum_bound) && min.value) ||
-                      ((max = ar.value_range.maximum_bound) && max.value)
-                  }.map{|ar|
-                  # REVISIT: Need to display as string or numeric according to type here...
-                  min = ar.value_range.minimum_bound
-                  max = ar.value_range.maximum_bound
-
-                  (min ? min.value : "") +
-                    (min.value != (max&&max.value) ? (".." + (max ? max.value : "")) : "")
-                }*", "
-            }}" : ""
+            o.value_restriction && " "+o.value_restriction.describe
           };"
       end
 
@@ -247,7 +235,7 @@ module ActiveFacts
         roles = c.role_sequence.all_role_ref.map{|rr| rr.role }
 
         # REVISIT: If only one role is covered and it's mandatory >=1 constraint, use SOME/THAT form:
-        # each Bug SOME Tester logged THAT Bug;
+        # for each Bug SOME Tester logged THAT Bug;
         players = c.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
 
         fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq

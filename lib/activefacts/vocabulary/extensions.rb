@@ -342,7 +342,8 @@ module ActiveFacts
                   la,
                   define_role_names == false && role_name ? role_name : player_name,
                   ta,
-                  define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil
+                  define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil,
+                  (vr = role.role_value_restriction) ? vr.describe : nil
                 ].compact*" "
             }
         }
@@ -362,6 +363,24 @@ module ActiveFacts
             frag
           end
         end
+      end
+    end
+
+    class ValueRestriction
+      def describe
+        "restricted to {"+
+          all_allowed_range.sort_by{|ar|
+              ((min = ar.value_range.minimum_bound) && min.value) ||
+                ((max = ar.value_range.maximum_bound) && max.value)
+            }.map{|ar|
+            # REVISIT: Need to display as string or numeric according to type here...
+            min = ar.value_range.minimum_bound
+            max = ar.value_range.maximum_bound
+
+            (min ? min.value : "") +
+              (min.value != (max&&max.value) ? (".." + (max ? max.value : "")) : "")
+          }*", "+
+          "}"
       end
     end
 

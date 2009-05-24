@@ -168,7 +168,7 @@ Witness has at most one contact-Phone;
 
 Year is identified by its Nr;
 ThirdParty vehicle is of at most one model-Year;
-Vehicle is of one model-Year;
+Vehicle is of one model-Year restricted to {1900..2100};
 
 Address is identified by Street and City and Postcode and State where
 	Address is at one Street,
@@ -242,11 +242,11 @@ License has one LicenseNumber,
 	LicenseNumber is of at most one License;
 License is of one LicenseType,
 	LicenseType has License instance;
-License was granted in at most one Year;
+License was granted in at most one Year restricted to {1990..2100};
 License is international;
 
 Policy is identified by p_year and p_product and p_state and p_serial where
-	Policy was issued in one Year (as p_year),
+	Policy was issued in one Year (as p_year) restricted to {0..99},
 	Policy is for product having one Product (as p_product),
 	Policy issued in state having one State (as p_state),
 	Policy has one PolicySerial (as p_serial);

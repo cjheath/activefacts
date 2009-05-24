@@ -25,7 +25,7 @@ Person is identified by given-Name and family-Name where
 	given-Name is of Person,
 	family-Name is of Person,
 	Person is called at most one family-Name;
-Person was born on at most one birth-Date;
+Person was born on at most one birth-Date restricted to {'1900/01/01'..};
 Attendance is where
 	Person (as Attendee) attended Meeting,
 	Meeting was attended by Attendee;

@@ -1,7 +1,7 @@
 CREATE TABLE Party (
 	-- Party has PartyId,
 	PartyId                                 int IDENTITY NOT NULL,
-	-- maybe PartyMoniker is where Party is called PartyName and PartyMoniker has Accuracy and Accuracy has AccuracyLevel,
+	-- maybe PartyMoniker is where Party is called PartyName and PartyMoniker has Accuracy and Accuracy has AccuracyLevel restricted to {1..5},
 	PartyMonikerAccuracyLevel               int NULL CHECK((PartyMonikerAccuracyLevel >= 1 AND PartyMonikerAccuracyLevel <= 5)),
 	-- maybe PartyMoniker is where Party is called PartyName and PartyMoniker is where Party is called PartyName,
 	PartyMonikerPartyName                   varchar NULL,

@@ -37,7 +37,7 @@ CREATE TABLE Directorship (
 GO
 
 CREATE TABLE Person (
-	-- maybe Person was born on birth-Date,
+	-- maybe Person was born on birth-Date restricted to {'1900/01/01'..},
 	BirthDate                               datetime NULL CHECK(BirthDate >= '1900/01/01'),
 	-- maybe Employee is a subtype of Person and Employee has EmployeeNr,
 	EmployeeNr                              int NULL,

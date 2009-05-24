@@ -54,8 +54,8 @@ Instance is identified by its Id;
 Instance has at most one Value;
 
 PresenceConstraint is a kind of Constraint;
-PresenceConstraint has at most one max-Frequency;
-PresenceConstraint has at most one min-Frequency;
+PresenceConstraint has at most one max-Frequency restricted to {1..};
+PresenceConstraint has at most one min-Frequency restricted to {2..};
 PresenceConstraint is mandatory;
 PresenceConstraint is preferred identifier;
 
@@ -204,8 +204,6 @@ for each Constraint exactly one of these holds:
 	PresenceConstraint is a subtype of Constraint,
 	SetConstraint is a subtype of Constraint,
 	RingConstraint is a subtype of Constraint;
-for each Feature exactly one of these holds:
-	Concept is a subtype of Feature;
 Instance plays RoleValue and Instance is of Concept
 	if and only if
 	RoleValue is of Role and FactType has Ordinal role played by Concept;
@@ -222,7 +220,7 @@ for each Unit exactly one of these holds:
 	Unit is fundamental,
 	that Unit is derived from some base-Unit;
 PresenceConstraint is preferred identifier
-	only if PresenceConstraint has max-Frequency;
+	only if PresenceConstraint has max-Frequency restricted to {1..};
 ValueType has Scale
 	only if ValueType has Length;
 each combination EntityType, TypeInheritance occurs at most one time in
@@ -234,8 +232,8 @@ each Join occurs at least one time in
 	Join has input-Role,
 	Join has output-Role;
 each PresenceConstraint occurs at least one time in
-	PresenceConstraint has min-Frequency,
-	PresenceConstraint has max-Frequency,
+	PresenceConstraint has min-Frequency restricted to {2..},
+	PresenceConstraint has max-Frequency restricted to {1..},
 	PresenceConstraint is mandatory;
 each RoleSequence occurs at least one time in
 	RoleSequence in Ordinal position includes Role;
