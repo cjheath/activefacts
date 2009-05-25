@@ -3,11 +3,11 @@ vocabulary RedundantDependency;
 /*
  * Value Types
  */
-AddressId is written as AutoCounter();
+AddressId is written as AutoCounter;
 DistrictNumber is written as SignedInteger(32);
-PoliticianId is written as AutoCounter();
+PoliticianId is written as AutoCounter;
 PostalCode is written as SignedInteger(32);
-StateOrProvinceId is written as AutoCounter();
+StateOrProvinceId is written as AutoCounter;
 
 /*
  * Entity Types

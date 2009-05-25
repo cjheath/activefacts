@@ -3,7 +3,7 @@ vocabulary Death;
 /*
  * Value Types
  */
-CauseOfDeath is written as VariableLengthText();
+CauseOfDeath is written as VariableLengthText;
 PersonName is written as VariableLengthText(40);
 
 /*

@@ -10,94 +10,107 @@ require 'activefacts/cql/parser'
 
 describe "Valid Numbers, Strings and Ranges" do
   ValidNumbersEtc = [
-    "a=b();",                                   # Basic data type declaration, minimal whitespace
-    "a = b ( ) ; ",                             # Basic data type declaration, maximal whitespace
-    "a is written as b();",                     # Verbally named data type declaration
-    "a=b() inch;",                              # Data type declaration with unit
-    "a=b() inch ; ",                            # Data type declaration with unit
-    "a=b() inch^2 ; ",                          # Data type declaration with unit and exponent
+    "a is written as b;",				# Value type declaration, no params, minimal whitespace
+    "a is written as b();",				# Value type declaration, minimal whitespace
+    "a is written as b ;",				# Value type declaration, no params, trailing whitespace
+    "a is written as b ( ) ; ",				# Value type declaration, maximal whitespace
 
-    # Comments etc as whitespace
-    "\na\n= \nb\n(\n)\n;\n",                    # Basic data type declaration, newlines for whitespace
-    "\ra\r=\rb\r(\r)\r;\r",                     # Basic data type declaration, returns for whitespace
-    "\ta\t=\tb\t(\t)\t;\t",                     # Basic data type declaration, tabs for whitespace
-    " /* Plugh */ a /* Plugh */ =\n b /* *Plugh* / */ ( /* *Plugh* / */ ) /* *Plugh* / */ ; /* *Plugh* / */ ",
-    "//Plugh\na // Plugh\n = // Plugh\n b // Plugh\n ( // Plugh\n ) // Plugh\n ; // Plugh\n ",
+    # Comments and newlines, etc as whitespace
+    "\na\nis written as \nb\n(\n)\n;\n",		# Basic value type declaration, newlines for whitespace
+    "\ra\ris written as\rb\r(\r)\r;\r",			# Basic value type declaration, returns for whitespace
+    "\ta\tis written as\tb\t(\t)\t;\t",			# Basic value type declaration, tabs for whitespace
+    " /* Plugh */ a /* Plugh */ is written as\n b /* *Plugh* / */ ( /* *Plugh* / */ ) /* *Plugh* / */ ; /* *Plugh* / */ ",
+    "//Plugh\na // Plugh\n is written as // Plugh\n b // Plugh\n ( // Plugh\n ) // Plugh\n ; // Plugh\n ",
 
     # Integers
-    "a=b(0);",                                  # Integer zero
-    "a=b( 0 ) ; ",                              # Integer zero, maximal whitespace
-    "a=b(1);",                                  # Integer one
-    "a=b(-1);",                                 # Integer negative one
-    "a=b(+1);",                                 # Positive integer
-    "a=b(1e4);",                                # Integer with exponent
-    "a=b(1e-4);",                               # Integer with negative exponent
-    "a=b(-1e-4);",                              # Negative integer with negative exponent
-    "a=b(077);",                                # Octal integer
-    "a=b(0xFace8);",                            # Hexadecimal integer
-    "a=b(0,1);",                                # Two parameters
-    "a=b( 0 , 1 );",
-    "a=b(0,1,2) ;",                             # Three parameters now allowed
+    "a is written as b(0);",				# Integer zero
+    "a is written as b( 0 ) ; ",			# Integer zero, maximal whitespace
+    "a is written as b(1);",				# Integer one
+    "a is written as b(-1);",				# Integer negative one
+    "a is written as b(+1);",				# Positive integer
+    "a is written as b(1e4);",				# Integer with exponent
+    "a is written as b(1e-4);",				# Integer with negative exponent
+    "a is written as b(-1e-4);",			# Negative integer with negative exponent
+    "a is written as b(077);",				# Octal integer
+    "a is written as b(0xFace8);",			# Hexadecimal integer
+    "a is written as b(0,1);",				# Two parameters
+    "a is written as b( 0 , 1 );",
+    "a is written as b(0,1,2) ;",			# Three parameters now allowed
 
     # Reals
-    "a=b(1.0);",
-    "a=b(-1.0);",
-    "a=b(+1.0);",
-    "a=b(0.1);",
-    "a=b(-0.1);",
-    "a=b(+0.1);",
-    "a=b(0.0);",
-    "a=b(-0.0);",
-    "a=b(+0.0);",
+    "a is written as b(1.0);",
+    "a is written as b(-1.0);",
+    "a is written as b(+1.0);",
+    "a is written as b(0.1);",
+    "a is written as b(-0.1);",
+    "a is written as b(+0.1);",
+    "a is written as b(0.0);",
+    "a is written as b(-0.0);",
+    "a is written as b(+0.0);",
+
+    # Value types with units
+    "a is written as b inch;",				# Value type declaration with unit
+    "a is written as b() inch ; ",			# Value type declaration with unit and whitespace
+    "a is written as b() inch;",			# Value type declaration with unit
+    "a is written as b inch^2;",			# Value type declaration with unit and exponent
+    "a is written as b() inch^2 ; ",			# Value type declaration with unit and exponent with maximum whitespace
+    "a is written as b second^-1;",			# Value type declaration with unit and negative exponent
+    "a is written as b inch inch;",			# Value type declaration with repeated unit
+    "a is written as b inch^2/minute^-1;",		# Value type declaration with unit and divided unit with exponents
+    "a is written as b() second^-1/mm^-1 mm^-1;",       # Value type declaration with repeated divided unit
 
     # Integer value restrictions
-    "a=b()restricted to{1};",                   # Integer, minimal whitespace
-    "a=b() restricted to { 1 } ;",              # Integer, maximal whitespace
-    "a=b() restricted to {1..2};",              # Integer range, minimal whitespace
-    "a=b() restricted to { 1 .. 2 };",          # Integer range, maximal whitespace
-    "a=b() restricted to {..2};",               # Integer range with open start, minimal whitespace
-    "a=b() restricted to { .. 2 };",            # Integer range with open start, maximal whitespace
-    "a=b() restricted to { ..2,3};",            # Range followed by integer, minimal whitespace
-    "a=b() restricted to { 1,..2,3};",          # Integer, open-start range, integer, minimal whitespace
-    "a=b() restricted to { .. 2 , 3 };",        # Range followed by integer, maximal whitespace
-    "a=b() restricted to { ..2 , 3..4 };",      # Range followed by range
-    "a=b() restricted to { ..2, 3..};",         # Range followed by range with open end, minimal whitespace
-    "a=b() restricted to { ..2, 3 .. };",       # Range followed by range with open end, maximal whitespace
-    "a=b() restricted to { 1e4 } ;",            # Integer with exponent
-    "a=b() restricted to { -1e4 } ;",           # Negative integer with exponent
-    "a=b() restricted to { 1e-4 } ;",           # Integer with negative exponent
-    "a=b() restricted to { -1e-4 } ;",          # Negative integer with negative exponent
+    "a is written as b()restricted to{1};",             # Integer, minimal whitespace
+    "a is written as b() restricted to { 1 } ;",        # Integer, maximal whitespace
+    "a is written as b() restricted to {1..2};",        # Integer range, minimal whitespace
+    "a is written as b() restricted to { 1 .. 2 };",    # Integer range, maximal whitespace
+    "a is written as b() restricted to {..2};",         # Integer range with open start, minimal whitespace
+    "a is written as b() restricted to { .. 2 };",      # Integer range with open start, maximal whitespace
+    "a is written as b() restricted to { ..2,3};",      # Range followed by integer, minimal whitespace
+    "a is written as b() restricted to { 1,..2,3};",    # Integer, open-start range, integer, minimal whitespace
+    "a is written as b() restricted to { .. 2 , 3 };",  # Range followed by integer, maximal whitespace
+    "a is written as b() restricted to { ..2 , 3..4 };",# Range followed by range
+    "a is written as b() restricted to { ..2, 3..};",   # Range followed by range with open end, minimal whitespace
+    "a is written as b() restricted to { ..2, 3 .. };", # Range followed by range with open end, maximal whitespace
+    "a is written as b() restricted to { 1e4 } ;",      # Integer with exponent
+    "a is written as b() restricted to { -1e4 } ;",     # Negative integer with exponent
+    "a is written as b() restricted to { 1e-4 } ;",     # Integer with negative exponent
+    "a is written as b() restricted to { -1e-4 } ;",    # Negative integer with negative exponent
 
     # Real value restrictions
-    "a=b() restricted to {1.0};",               # Real, minimal whitespace
-    "a=b() restricted to { 1.0 } ;",            # Real, maximal whitespace
-    "a=b() restricted to { 1.0e4 } ;",          # Real with exponent
-    "a=b() restricted to { 1.0e-4 } ;",         # Real with negative exponent
-    "a=b() restricted to { -1.0e-4 } ;",        # Negative real with negative exponent
-    "a=b() restricted to { 1.1 .. 2.2 } ;",     # Real range, maximal whitespace
-    "a=b() restricted to { -1.1 .. 2.2 } ;",    # Real range, maximal whitespace
-    "a=b() restricted to { 1.1..2.2};",         # Real range, minimal whitespace
-    "a=b() restricted to { 1.1..2 } ;",         # Real-integer range
-    "a=b() restricted to { 1..2.2 } ;",         # Integer-real range
-    "a=b() restricted to { ..2.2};",            # Real range with open start
-    "a=b() restricted to { 1.1.. };",           # Real range with open end
-    "a=b() restricted to { 1.1.., 2 };",        # Real range with open end and following integer
+    "a is written as b() restricted to {1.0};",         # Real, minimal whitespace
+    "a is written as b() restricted to { 1.0 } ;",      # Real, maximal whitespace
+    "a is written as b() restricted to { 1.0e4 } ;",    # Real with exponent
+    "a is written as b() restricted to { 1.0e-4 } ;",   # Real with negative exponent
+    "a is written as b() restricted to { -1.0e-4 } ;",  # Negative real with negative exponent
+    "a is written as b() restricted to { 1.1 .. 2.2 } ;",	# Real range, maximal whitespace
+    "a is written as b() restricted to { -1.1 .. 2.2 } ;",	# Real range, maximal whitespace
+    "a is written as b() restricted to { 1.1..2.2};",   # Real range, minimal whitespace
+    "a is written as b() restricted to { 1.1..2 } ;",   # Real-integer range
+    "a is written as b() restricted to { 1..2.2 } ;",   # Integer-real range
+    "a is written as b() restricted to { ..2.2};",      # Real range with open start
+    "a is written as b() restricted to { 1.1.. };",     # Real range with open end
+    "a is written as b() restricted to { 1.1.., 2 };",  # Real range with open end and following integer
 
     # Strings and string value restrictions
-    "a=b() restricted to {''};",                # String, empty, minimal whitespace
-    "a=b() restricted to {'A'};",               # String, minimal whitespace
-    "a=b() restricted to { 'A' };",             # String, maximal whitespace
-    "a=b() restricted to { '\\b\\t\\f\\n\\r\\e\\\\' };",  # String with special escapes
-    "a=b() restricted to { ' ' };",             # String with space
-    "a=b() restricted to { '\t' };",            # String with literal tab
-    "a=b() restricted to { '\\0' };",           # String with nul character
-    "a=b() restricted to { '\\077' };",         # String with octal escape
-    "a=b() restricted to { '\\0xA9' };",        # String with hexadecimal escape
-    "a=b() restricted to { '\\0uBabe' };",      # String with unicode escape
-    "a=b() restricted to {'A'..'F'};",          # String range, minimal whitespace
-    "a=b() restricted to { 'A' .. 'F' };",      # String range, maximal whitespace
-    "a=b() restricted to { ..'F' };",           # String range, open start
-    "a=b() restricted to { 'A'.. };",           # String range, open end
+    "a is written as b() restricted to {''};",          # String, empty, minimal whitespace
+    "a is written as b() restricted to {'A'};",         # String, minimal whitespace
+    "a is written as b() restricted to { 'A' };",       # String, maximal whitespace
+    "a is written as b() restricted to { '\\b\\t\\f\\n\\r\\e\\\\' };",  # String with special escapes
+    "a is written as b() restricted to { ' ' };",       # String with space
+    "a is written as b() restricted to { '\t' };",      # String with literal tab
+    "a is written as b() restricted to { '\\0' };",     # String with nul character
+    "a is written as b() restricted to { '\\077' };",   # String with octal escape
+    "a is written as b() restricted to { '\\0xA9' };",  # String with hexadecimal escape
+    "a is written as b() restricted to { '\\0uBabe' };",# String with unicode escape
+    "a is written as b() restricted to {'A'..'F'};",    # String range, minimal whitespace
+    "a is written as b() restricted to { 'A' .. 'F' };",# String range, maximal whitespace
+    "a is written as b() restricted to { ..'F' };",     # String range, open start
+    "a is written as b() restricted to { 'A'.. };",     # String range, open end
+
+    # Value restrictions with units
+    "a is written as b() restricted to {1} inches^2/second;",    # restriction with units and exponent
+    "a is written as b() second^-1/mm^-1 mm^-1 restricted to {1} inches^2/second;",    # type with unit and restriction with units and exponent
   ]
 
   before :each do
@@ -119,22 +132,22 @@ end
 
 describe "Invalid Numbers and Strings" do
   InvalidValueTypes = [
-    "a=b(08);",                                 # Invalid octalnumber
-    "a=b(0xDice);",                             # Invalid hexadecimal
-    "a=b(- 1);",                                # Invalid negative
-    "a=b(+ 1);",                                # Invalid positive
-    "b(- 1e-4);",                               # Negative integer with negative exponent
-    "a=b(-077);",                               # Invalid negative octal
-    "a=b(-0xFace);",                            # Invalid negative hexadecimal
-    "a=b(.0);",                                 # Invalid real
-    "a=b(0.);",                                 # Invalid real
-    "b() inch ^2 ; ",                           # Illegal whitespace around unit exponent
-    "b() inch^ 2 ; ",                           # Illegal whitespace around unit exponent
-    "b() restricted to { '\\7a' };",            # String with bad octal escape
-    "b() restricted to { '\001' };",            # String with control char
-    "b() restricted to { '\n' };",              # String with literal newline
-    "b() restricted to { 0..'A' };",            # Cross-typed range
-    "b() restricted to { 'a'..27 };",           # Cross-typed range
+    "a is written as b(08);",                           # Invalid octalnumber
+    "a is written as b(0xDice);",                       # Invalid hexadecimal
+    "a is written as b(- 1);",                          # Invalid negative
+    "a is written as b(+ 1);",                          # Invalid positive
+    "b(- 1e-4);",					# Negative integer with negative exponent
+    "a is written as b(-077);",                         # Invalid negative octal
+    "a is written as b(-0xFace);",                      # Invalid negative hexadecimal
+    "a is written as b(.0);",                           # Invalid real
+    "a is written as b(0.);",                           # Invalid real
+    "b() inch ^2 ; ",					# Illegal whitespace around unit exponent
+    "b() inch^ 2 ; ",					# Illegal whitespace around unit exponent
+    "b() restricted to { '\\7a' };",			# String with bad octal escape
+    "b() restricted to { '\001' };",			# String with control char
+    "b() restricted to { '\n' };",			# String with literal newline
+    "b() restricted to { 0..'A' };",			# Cross-typed range
+    "b() restricted to { 'a'..27 };",			# Cross-typed range
   ]
 
   before :each do
@@ -154,10 +167,10 @@ end
 
 describe "Data Types" do
   DataTypes = [
-    [ "a = b(1, 2) inch restricted to { 3 .. 4 } inch ;",
+    [ "a is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
       [["a", [:data_type, "b", [ 1, 2 ], "inch", [[3, 4]]]]]
     ],
-#    [ "a c = b(1, 2) inch restricted to { 3 .. 4 } inch ;",
+#    [ "a c  is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
 #      [["a c", [:data_type, "b", [1, 2], "inch", [[3, 4]]]]]
 #    ],
   ]
@@ -182,37 +195,35 @@ end
 
 describe "Entity Types" do
   EntityTypes_RefMode = [
-=begin
-    [ "a = entity(.id):c;",                     # Entity type declaration with reference mode
+    [ "a is identified by its id;",			# Entity type declaration with reference mode
+      [["a", [:entity_type, [], {:mode=>"id"}, nil]]]
+    ],
+    [ "a is identified by its id:c;",			# Entity type declaration with reference mode and fact type(s)
       [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
-    [ "a = entity ( . id ) : c ;",              # Entity type declaration with reference mode, maximal whitespace
+    [ "a is identified by its id where c;",             # Entity type declaration with reference mode and where
       [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
-    [ "a = entity(.id) where c;",               # Entity type declaration with reference mode and where
-      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
-    ],
-=end
   ]
 
   EntityTypes_Simple = [
-    [ "a is identified by b: c;",               # Entity type declaration
+    [ "a is identified by b: c;",			# Entity type declaration
       [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
-    [ "a is identified by b where c;",            # Entity type declaration with where
+    [ "a is identified by b where c;",			# Entity type declaration with where
       [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
-    [ "a is identified by b and c: d;",   # Entity type declaration with two-part identifier
+    [ "a is identified by b and c: d;",			# Entity type declaration with two-part identifier
       [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
-    [ "a is identified by b, c: d;",              # Entity type declaration with two-part identifier
+    [ "a is identified by b, c: d;",			# Entity type declaration with two-part identifier
       [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
-    [ "a=b(); c is identified by a:d;",
+    [ "a is written as b(); c is identified by a:d;",
       [["a", [:data_type, "b", [], nil, []]],
         ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
-    [ " a = b ( ) ; c is identified by a : d ; ",
+    [ " a is written as b ( ) ; c is identified by a : d ; ",
       [["a", [:data_type, "b", [ ], nil, []]],
         ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],

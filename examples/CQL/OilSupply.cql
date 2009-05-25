@@ -3,14 +3,14 @@ vocabulary OilSupply;
 /*
  * Value Types
  */
-Cost is written as Money();
-MonthCode is written as FixedLengthText();
-ProductName is written as VariableLengthText();
+Cost is written as Money;
+MonthCode is written as FixedLengthText;
+ProductName is written as VariableLengthText;
 Quantity is written as UnsignedInteger(32);
 RefineryName is written as VariableLengthText(80);
-RegionName is written as VariableLengthText();
+RegionName is written as VariableLengthText;
 Season is written as VariableLengthText(6) restricted to {'Autumn', 'Spring', 'Summer', 'Winter'};
-TransportMethod is written as VariableLengthText() restricted to {'Rail', 'Road', 'Sea'};
+TransportMethod is written as VariableLengthText restricted to {'Rail', 'Road', 'Sea'};
 YearNr is written as SignedInteger(32);
 
 /*

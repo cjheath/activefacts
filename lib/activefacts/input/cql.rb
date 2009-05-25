@@ -109,16 +109,21 @@ module ActiveFacts
         # REVISIT: Find and apply the units
 
         if ranges.size != 0
-          vt.value_restriction = @constellation.ValueRestriction(:new)
-          ranges.each do |range|
-            min, max = Array === range ? range : [range, range]
-            v_range = @constellation.ValueRange(
-              min ? [min.to_s, true] : nil,
-              max ? [max.to_s, true] : nil
-              )
-            ar = @constellation.AllowedRange(vt.value_restriction, v_range)
-          end
+          vt.value_restriction = value_restriction ranges
         end
+      end
+
+      def value_restriction(ranges)
+        vr = @constellation.ValueRestriction(:new)
+        ranges.each do |range|
+          min, max = Array === range ? range : [range, range]
+          v_range = @constellation.ValueRange(
+            min ? [min.to_s, true] : nil,
+            max ? [max.to_s, true] : nil
+            )
+          ar = @constellation.AllowedRange(vr, v_range)
+        end
+        vr
       end
 
       def entity_type(name, supertypes, identification, clauses)
@@ -813,6 +818,7 @@ module ActiveFacts
             binding = role_phrase[:binding]
             role_name = role_phrase[:role_name]
             player = binding.concept
+            role = nil
             if (fact_type.all_reading.size == 0)           # First reading
               # Assert this role of the fact type:
               role = @constellation.Role(fact_type, fact_type.all_role.size, player)
@@ -825,6 +831,12 @@ module ActiveFacts
               raise "Role #{binding.inspect} not found in prior readings" if !role
               player = role.concept
             end
+
+            # Save a role value restriction
+            if (ranges = role_phrase[:restriction])
+              role.role_value_restriction = value_restriction(ranges)
+            end
+
             roles << role
 
             # Create the RoleRefs for the RoleSequence

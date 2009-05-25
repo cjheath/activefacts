@@ -3,14 +3,14 @@ vocabulary Blog;
 /*
  * Value Types
  */
-AuthorId is written as AutoCounter();
-CommentId is written as AutoCounter();
+AuthorId is written as AutoCounter;
+CommentId is written as AutoCounter;
 Name is written as VariableLengthText(64);
 Ordinal is written as UnsignedInteger(32);
-PostId is written as AutoCounter();
+PostId is written as AutoCounter;
 Style is written as VariableLengthText(20);
-Text is written as LargeLengthText();
-TopicId is written as AutoCounter();
+Text is written as LargeLengthText;
+TopicId is written as AutoCounter;
 
 /*
  * Entity Types

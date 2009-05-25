@@ -4,8 +4,8 @@ vocabulary SchoolActivities;
  * Value Types
  */
 ActivityName is written as VariableLengthText(32);
-SchoolName is written as VariableLengthText();
-StudentName is written as VariableLengthText();
+SchoolName is written as VariableLengthText;
+StudentName is written as VariableLengthText;
 
 /*
  * Entity Types

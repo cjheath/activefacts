@@ -40,7 +40,7 @@ module ActiveFacts
           [ o.length != 0 || o.scale != 0 ? o.length : nil,
             o.scale != 0 ? o.scale : nil
           ].compact
-        parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : "()"
+        parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : ""
 
                   #" restricted to {#{(allowed_values.map{|r| r.inspect}*", ").gsub('"',"'")}}")
 

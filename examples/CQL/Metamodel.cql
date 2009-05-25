@@ -4,27 +4,27 @@ vocabulary Metamodel;
  * Value Types
  */
 Adjective is written as VariableLengthText(64);
-ConstraintId is written as AutoCounter();
+ConstraintId is written as AutoCounter;
 Denominator is written as UnsignedInteger(32);
 Enforcement is written as VariableLengthText(16);
 Exponent is written as SignedSmallInteger(32);
-FactId is written as AutoCounter();
-FactTypeId is written as AutoCounter();
+FactId is written as AutoCounter;
+FactTypeId is written as AutoCounter;
 Frequency is written as UnsignedInteger(32);
-InstanceId is written as AutoCounter();
+InstanceId is written as AutoCounter;
 Length is written as UnsignedInteger(32);
 Name is written as VariableLengthText(64);
-Numerator is written as Decimal();
-Offset is written as Decimal();
+Numerator is written as Decimal;
+Offset is written as Decimal;
 Ordinal is written as UnsignedSmallInteger(32);
 Pronoun is written as VariableLengthText(20) restricted to {'feminine', 'masculine', 'personal'};
-RingType is written as VariableLengthText();
-RoleSequenceId is written as AutoCounter();
+RingType is written as VariableLengthText;
+RoleSequenceId is written as AutoCounter;
 Scale is written as UnsignedInteger(32);
 Text is written as VariableLengthText(256);
-UnitId is written as AutoCounter();
+UnitId is written as AutoCounter;
 Value is written as VariableLengthText(256);
-ValueRestrictionId is written as AutoCounter();
+ValueRestrictionId is written as AutoCounter;
 
 /*
  * Entity Types

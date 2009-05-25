@@ -4,11 +4,11 @@ vocabulary Address;
  * Value Types
  */
 City is written as VariableLengthText(64);
-CompanyName is written as VariableLengthText();
+CompanyName is written as VariableLengthText;
 FamilyName is written as VariableLengthText(20);
 GivenNames is written as VariableLengthText(20);
 Number is written as VariableLengthText(12);
-Postcode is written as VariableLengthText();
+Postcode is written as VariableLengthText;
 StreetLine is written as VariableLengthText(64);
 
 /*

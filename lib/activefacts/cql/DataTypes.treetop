@@ -9,10 +9,10 @@ module ActiveFacts
     grammar DataTypes
       rule data_type
         s name:id
-        ( s '=' s / written_as )
+        written_as
         base:id s
-        '(' s tpl:type_parameter_list? ')' s
-        u0:(!restricted u1:unit s)?
+	data_type_parameters
+	data_type_unit
         r:restriction?
         s ';' s
         {
@@ -20,8 +20,8 @@ module ActiveFacts
             [
               :data_type,
               base.text_value,
-              tpl.empty? ? [] : tpl.value,
-              !u0.empty? ? u0.u1.text_value : nil,
+	      data_type_parameters.values,
+              data_type_unit.unit_name,
               !r.empty? ? r.ranges : [],
             ]
           end
@@ -34,9 +34,23 @@ module ActiveFacts
         }
       end
 
+      rule data_type_parameters
+        '(' s tpl:type_parameter_list? ')' s
+	  { def values; tpl.empty? ? [] : tpl.values; end }
+	/ s
+	  { def values; []; end }
+      end
+
+      rule data_type_unit
+        !restricted units s
+	  { def unit_name; units.text_value; end }
+	/ s
+	  { def unit_name; nil; end }
+      end
+
       rule unit_definition
 	numerator:number denominator:(s '/' s number)?
-	baseunits:(unit+ (s '/' s unit+)?) s
+	units s
 	offset:(('+' / '-') s number)
 	'makes' s ('approximately' s)?
 	singular:id plural:(s '/' s id)?
@@ -46,10 +60,14 @@ module ActiveFacts
       rule type_parameter_list
         head:number s tail:( ',' s number s )*
         {
-          def value
+          def values
             [head.value] + tail.elements.map{|i| i.number.value}
           end
         }
+      end
+
+      rule units
+	(unit (s !restricted unit)* (s '/' s unit (s !restricted unit)*)?)
       end
 
       rule unit
@@ -57,7 +75,7 @@ module ActiveFacts
       end
 
       rule restriction
-        restricted s to s range_list s unit?
+        restricted s to s range_list s units?
         {
           def ranges
             range_list.ranges

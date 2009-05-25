@@ -3,8 +3,8 @@ vocabulary MultiInheritance;
 /*
  * Value Types
  */
-EmployeeID is written as AutoCounter();
-PersonName is written as VariableLengthText();
+EmployeeID is written as AutoCounter;
+PersonName is written as VariableLengthText;
 TFN is written as FixedLengthText(9);
 
 /*

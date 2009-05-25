@@ -3,19 +3,19 @@ vocabulary OrienteeringER;
 /*
  * Value Types
  */
-Accessibility is written as FixedLengthText();
-ClubName is written as VariableLengthText();
-Code is written as FixedLengthText();
+Accessibility is written as FixedLengthText;
+ClubName is written as VariableLengthText;
+Code is written as FixedLengthText;
 Control is written as UnsignedInteger(32);
-Course is written as FixedLengthText();
-Date is written as DateAndTime();
-EventName is written as VariableLengthText();
-ID is written as AutoCounter();
-Location is written as VariableLengthText();
-Name is written as VariableLengthText();
+Course is written as FixedLengthText;
+Date is written as DateAndTime;
+EventName is written as VariableLengthText;
+ID is written as AutoCounter;
+Location is written as VariableLengthText;
+Name is written as VariableLengthText;
 Number is written as SignedInteger(32);
 PointValue is written as UnsignedInteger(32);
-SeriesName is written as VariableLengthText();
+SeriesName is written as VariableLengthText;
 
 /*
  * Fact Types
