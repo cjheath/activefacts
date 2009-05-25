@@ -35,7 +35,8 @@ describe "NORMA Loader with SQL output" do
       sql_text = sql(vocabulary)
       File.open(actual_file, "w") { |f| f.write sql_text }
 
-      pending unless File.exists? expected_file
+      pending("expected output file #{expected_file} not found") unless File.exists? expected_file
+
       sql_text.should == File.open(expected_file) {|f| f.read }
       File.delete(actual_file)  # It succeeded, we don't need the file.
     end

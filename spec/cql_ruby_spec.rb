@@ -19,13 +19,11 @@ class String
 end
 
 describe "CQL Loader with Ruby output" do
-  CQL_RUBY_FAILURES = %w{
-    Airline
-    CompanyQuery
-    Insurance
-    OrienteeringER
-    Orienteering
-    ServiceDirector
+  cql_failures = {
+    "Airline" => "Contains queries, not supported",
+    "CompanyQuery" => "Contains queries, not supported",
+    "OrienteeringER" => "Large fact type reading cannot be matched",
+    "ServiceDirector" => "Constraints contain adjectives that require looser matching",
   }
 
   # Generate and return the Ruby for the given vocabulary
@@ -43,16 +41,30 @@ describe "CQL Loader with Ruby output" do
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'spec/actual/\1.rb')
 
     it "should load #{cql_file} and dump Ruby matching #{expected_file}" do
-      pending if CQL_RUBY_FAILURES.include? File.basename(cql_file, ".cql")
-      vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
+      vocabulary = nil
+      broken = cql_failures[File.basename(cql_file, ".cql")]
+      if broken
+        pending(broken) {
+          vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
+        }
+      else
+        vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
+      end
 
       # Build and save the actual file:
       ruby_text = ruby(vocabulary)
       File.open(actual_file, "w") { |f| f.write ruby_text }
 
-      pending unless File.exists? expected_file
-      ruby_text.should == File.open(expected_file) {|f| f.read }
-      File.delete(actual_file)  # It succeeded, we don't need the file.
+      pending("expected output file #{expected_file} not found") unless File.exists? expected_file
+
+#      if broken
+#        pending(broken) {
+#          ruby_text.should == File.open(expected_file) {|f| f.read }
+#        }
+#      else
+        ruby_text.should == File.open(expected_file) {|f| f.read }
+        File.delete(actual_file)  # It succeeded, we don't need the file.
+#      end
     end
   end
 end

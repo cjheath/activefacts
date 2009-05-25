@@ -14,9 +14,10 @@ require 'activefacts/generate/ruby'
 include ActiveFacts
 
 describe "Column lists from absorption compared with Ruby's" do
-  ABSORPTION_RUBY_FAILURES = %w{
-    Metamodel
-    ServiceDirector
+  ABSORPTION_RUBY_FAILURES = {
+    "Metamodel" => "Overlaps with ActiveFacts Metamodel",
+    "MetamodelTerms" => "Overlaps with ActiveFacts Metamodel",
+    "ServiceDirector" => "Lacks standard AutoTimestamp class"
   }
 
   # Generate and return the Ruby for the given vocabulary
@@ -34,7 +35,6 @@ describe "Column lists from absorption compared with Ruby's" do
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.rb')
 
     it "should load #{orm_file} and generate relational composition and Ruby with matching column names" do
-      pending if ABSORPTION_RUBY_FAILURES.include? File.basename(orm_file, ".orm")
       vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
 
       # Get the list of tables from the relational composition:
@@ -44,7 +44,20 @@ describe "Column lists from absorption compared with Ruby's" do
       # Build the Ruby and eval it:
       ruby_text = ruby(vocabulary)
       File.open(actual_file, "w") { |f| f.write ruby_text }
-      Object.send :eval, ruby_text
+
+      broken = ABSORPTION_RUBY_FAILURES[File.basename(orm_file, ".orm")]
+      eval_it = lambda { Object.send :eval, ruby_text }
+      if broken
+        pending(broken) {
+          lambda {
+            eval_it.call
+          }.should_not raise_error
+        }
+      else
+        lambda {
+            eval_it.call
+        }.should_not raise_error
+      end
 
       # Get a list of table classes in the new module, sorted by name
       mod = eval(vocabulary.name)
@@ -57,7 +70,12 @@ describe "Column lists from absorption compared with Ruby's" do
       ruby_table_names = ruby_tables.map{|c| c.basename}
 
       # Assert that the list of tables is the same:
-      ruby_table_names.should == absorption_table_names
+      tables = lambda { ruby_table_names.should == absorption_table_names }
+      if broken
+        pending { tables.call }
+      else
+        tables.call
+      end
 
       # So we get to see the full differences, figure them here and assert them to be empty:
       diffs = {}

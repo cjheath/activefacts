@@ -4,8 +4,8 @@ vocabulary OddIdentifier;
  * Value Types
  */
 Ordinal is written as SignedInteger(32);
-Text is written as VariableLengthText();
-ThingID is written as AutoCounter();
+Text is written as VariableLengthText;
+ThingID is written as AutoCounter;
 
 /*
  * Entity Types

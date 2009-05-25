@@ -200,8 +200,8 @@ ContactMethods has at most one preferred-ContactMethod;
 
 Contractor is a kind of Company;
 ContractorAppointment is where
-	Contractor is appointed to handle Claim,
-	Claim involves Contractor;
+	Claim involves Contractor,
+	Contractor is appointed to handle Claim;
 
 DamagedProperty is identified by Incident and Address where
 	Incident caused DamagedProperty,

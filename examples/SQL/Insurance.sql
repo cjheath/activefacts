@@ -78,9 +78,9 @@ CREATE TABLE Claim (
 GO
 
 CREATE TABLE ContractorAppointment (
-	-- ContractorAppointment is where Contractor is appointed to handle Claim and Claim has ClaimID,
+	-- ContractorAppointment is where Claim involves Contractor and Claim has ClaimID,
 	ClaimID                                 int NOT NULL,
-	-- ContractorAppointment is where Contractor is appointed to handle Claim and Party has PartyID,
+	-- ContractorAppointment is where Claim involves Contractor and Party has PartyID,
 	ContractorID                            int NOT NULL,
 	PRIMARY KEY(ClaimID, ContractorID),
 	FOREIGN KEY (ClaimID) REFERENCES Claim (ClaimID)
@@ -100,7 +100,7 @@ CREATE TABLE Cover (
 	PolicyPStateCode                        int NOT NULL,
 	-- Cover is where Policy provides CoverType over Asset and Policy was issued in p_year restricted to {0..99} and Year has YearNr,
 	PolicyPYearNr                           int NOT NULL,
-	PRIMARY KEY(PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial, AssetID, CoverTypeCode),
+	PRIMARY KEY(PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial, CoverTypeCode, AssetID),
 	FOREIGN KEY (AssetID) REFERENCES Asset (AssetID)
 )
 GO

@@ -493,7 +493,7 @@ module ::Insurance
   end
 
   class Cover
-    identified_by :policy, :asset, :cover_type
+    identified_by :policy, :cover_type, :asset
     has_one :asset                              # See Asset.all_cover
     has_one :cover_type                         # See CoverType.all_cover
     has_one :policy                             # See Policy.all_cover

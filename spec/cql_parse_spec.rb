@@ -12,19 +12,25 @@ require 'activefacts/generate/cql'
 include ActiveFacts
 
 describe "CQL Parser" do
-  CQLPARSE_FAILURES = %w{
-    Airline
-    CompanyQuery
-    Insurance
-    OrienteeringER
-    ServiceDirector
+  cql_failures = {
+    "Airline" => "Contains queries, unsupported",
+    "CompanyQuery" => "Contains queries, unsupported",
+    "OrienteeringER" => "Contains a long fact type that can't be matched properly",
+    "ServiceDirector" => "Contains constraints with mismatched adjectives",
   }
 
   pattern = ENV["AFTESTS"] || "*"
   Dir["examples/CQL/#{pattern}.cql"].each do |cql_file|
     it "should load CQL #{cql_file} without parse errors" do
-      pending if CQLPARSE_FAILURES.include? File.basename(cql_file, ".cql")
-      lambda { vocabulary = ActiveFacts::Input::CQL.readfile(cql_file) }.should_not raise_error
+      broken = cql_failures[File.basename(cql_file, ".cql")]
+
+      if broken
+        pending(broken) {
+          lambda { vocabulary = ActiveFacts::Input::CQL.readfile(cql_file) }.should_not raise_error
+        }
+      else
+        lambda { vocabulary = ActiveFacts::Input::CQL.readfile(cql_file) }.should_not raise_error
+      end
     end
   end
 end
