@@ -34,7 +34,7 @@ module ActiveFacts
         multi_absorption_vts = 0
         multi_absorption_ets = 0
         @vocabulary.tables
-        @vocabulary.all_feature.sort_by{|c| c.name}.each do |o|
+        @vocabulary.all_concept.sort_by{|c| c.name}.each do |o|
           next if !o.is_table
           show(o)
         end

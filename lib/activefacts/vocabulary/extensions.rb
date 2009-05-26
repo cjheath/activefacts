@@ -7,6 +7,12 @@
 module ActiveFacts
   module Metamodel
 
+    class Vocabulary
+      def all_concept
+        all_feature
+      end
+    end
+
     class FactType
       def all_reading_by_ordinal
         all_reading.sort_by{|reading| reading.ordinal}

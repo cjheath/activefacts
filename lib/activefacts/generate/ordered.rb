@@ -65,7 +65,7 @@ module ActiveFacts
       def value_types_dump
         done_banner = false
         @value_type_dumped = {}
-        @vocabulary.all_feature.sort_by{|o| o.name}.each{|o|
+        @vocabulary.all_concept.sort_by{|o| o.name}.each{|o|
             next unless o.is_a?(ActiveFacts::Metamodel::ValueType)
 
             value_type_banner unless done_banner
@@ -93,7 +93,7 @@ module ActiveFacts
         precursors, followers = *build_entity_dependencies
 
         done_banner = false
-        sorted = @vocabulary.all_feature.select{|o|
+        sorted = @vocabulary.all_concept.select{|o|
           o.is_a?(ActiveFacts::Metamodel::EntityType) and !o.fact_type
         }.sort_by{|o| o.name}
         panic = nil
@@ -279,7 +279,7 @@ module ActiveFacts
       # This returns an array of two hash tables each keyed by an EntityType.
       # The values of each hash entry are the precursors and followers (respectively) of that entity.
       def build_entity_dependencies
-        @vocabulary.all_feature.inject([{},{}]) { |a, o|
+        @vocabulary.all_concept.inject([{},{}]) { |a, o|
             if o.is_a?(ActiveFacts::Metamodel::EntityType) && !o.fact_type
               precursor = a[0]
               follower = a[1]

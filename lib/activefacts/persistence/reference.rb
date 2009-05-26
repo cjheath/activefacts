@@ -335,25 +335,22 @@ module ActiveFacts
     class Vocabulary
       def populate_all_references #:nodoc:
         debug :references, "Populating all concept references" do
-          all_feature.each do |feature|
-            next unless feature.is_a? Concept
-            feature.clear_references
-            feature.is_table = nil      # Undecided; force an attempt to decide
-            feature.tentative = true    # Uncertain
+          all_concept.each do |concept|
+            concept.clear_references
+            concept.is_table = nil      # Undecided; force an attempt to decide
+            concept.tentative = true    # Uncertain
           end
-          all_feature.each do |feature|
-            next unless feature.is_a? Concept
-            debug :references, "Populating references for #{feature.name}" do
-              feature.populate_references
+          all_concept.each do |concept|
+            debug :references, "Populating references for #{concept.name}" do
+              concept.populate_references
             end
           end
         end
         debug :references, "Finished concept references" do
-          all_feature.each do |feature|
-            next unless feature.is_a? Concept
-            next unless feature.references_from.size > 0
-            debug :references, "#{feature.name}:" do
-              feature.references_from.each do |ref|
+          all_concept.each do |concept|
+            next unless concept.references_from.size > 0
+            debug :references, "#{concept.name}:" do
+              concept.references_from.each do |ref|
                 debug :references, "#{ref}"
               end
             end

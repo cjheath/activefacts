@@ -183,25 +183,22 @@ module ActiveFacts
     class Vocabulary
       def populate_all_indices  #:nodoc:
         debug :index, "Populating all concept indices" do
-          all_feature.each do |feature|
-            next unless feature.is_a? Concept
-            feature.clear_indices
+          all_concept.each do |concept|
+            concept.clear_indices
           end
-          all_feature.each do |feature|
-            next unless feature.is_a? Concept
-            next unless feature.is_table
-            debug :index, "Populating indices for #{feature.name}" do
-              feature.populate_indices
+          all_concept.each do |concept|
+            next unless concept.is_table
+            debug :index, "Populating indices for #{concept.name}" do
+              concept.populate_indices
             end
           end
         end
         debug :index, "Finished concept indices" do
-          all_feature.each do |feature|
-            next unless feature.is_a? Concept
-            next unless feature.is_table
-            next unless feature.indices.size > 0
-            debug :index, "#{feature.name}:" do
-              feature.indices.each do |index|
+          all_concept.each do |concept|
+            next unless concept.is_table
+            next unless concept.indices.size > 0
+            debug :index, "#{concept.name}:" do
+              concept.indices.each do |index|
                 debug :index, index
               end
             end

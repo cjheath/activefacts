@@ -358,8 +358,8 @@ module ActiveFacts
       # Make schema transformations like adding ValueType self-value columns (and later, Rails-friendly ID fields).
       # Override this method to change the transformations
       def finish_schema
-        all_feature.each do |feature|
-          feature.self_value_reference if feature.is_a?(ActiveFacts::Metamodel::ValueType) && feature.is_table
+        all_concept.each do |concept|
+          concept.self_value_reference if concept.is_a?(ActiveFacts::Metamodel::ValueType) && concept.is_table
         end
       end
 
@@ -368,18 +368,18 @@ module ActiveFacts
         finish_schema
 
         debug :columns, "Populating all columns" do
-          all_feature.each do |feature|
-            next if !feature.is_a?(ActiveFacts::Metamodel::Concept) || !feature.is_table
-            debug :columns, "Populating columns for table #{feature.name}" do
-              feature.populate_columns
+          all_concept.each do |concept|
+            next if !concept.is_table
+            debug :columns, "Populating columns for table #{concept.name}" do
+              concept.populate_columns
             end
           end
         end
         debug :columns, "Finished columns" do
-          all_feature.each do |feature|
-            next if !feature.is_a?(ActiveFacts::Metamodel::Concept) || !feature.is_table
-            debug :columns, "Finished columns for table #{feature.name}" do
-              feature.columns.each do |column|
+          all_concept.each do |concept|
+            next if !concept.is_table
+            debug :columns, "Finished columns for table #{concept.name}" do
+              concept.columns.each do |column|
                 debug :columns, "#{column}"
               end
             end

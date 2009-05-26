@@ -182,19 +182,18 @@ module ActiveFacts
         populate_all_references
 
         debug :absorption, "Calculating relational composition" do
-          # Evaluate the possible independence of each concept, building an array of features of indeterminate status:
+          # Evaluate the possible independence of each concept, building an array of concepts of indeterminate status:
           undecided =
-            all_feature.select do |feature|
-              next unless feature.is_a? Concept
-              feature.is_table          # Ask it whether it thinks it should be a table
-              feature.tentative         # Selection criterion
+            all_concept.select do |concept|
+              concept.is_table          # Ask it whether it thinks it should be a table
+              concept.tentative         # Selection criterion
             end
 
           if debug :absorption, "Generating tables, #{undecided.size} undecided"
-            (all_feature-undecided).each {|feature|
-              next if ValueType === feature && !feature.is_table  # Skip unremarkable cases
+            (all_concept-undecided).each {|concept|
+              next if ValueType === concept && !concept.is_table  # Skip unremarkable cases
               debug :absorption do
-                debug :absorption, "#{feature.name} is #{feature.is_table ? "" : "not "}a table#{feature.tentative ? ", tentatively" : ""}"
+                debug :absorption, "#{concept.name} is #{concept.is_table ? "" : "not "}a table#{concept.tentative ? ", tentatively" : ""}"
               end
             }
           end
@@ -205,50 +204,50 @@ module ActiveFacts
             debug :absorption, "Starting composition pass #{pass} with #{undecided.size} undecided tables"
             possible_flips = {}         # A hash by table containing an array of references that can be flipped
             finalised =                 # Make an array of things we finalised during this pass
-              undecided.select do |feature|
-                debug :absorption, "Considering #{feature.name}:" do
-                  debug :absorption, "refs to #{feature.name} are from #{feature.references_to.map{|ref| ref.from.name}*", "}" if feature.references_to.size > 0
-                  debug :absorption, "refs from #{feature.name} are to #{feature.references_from.map{|ref| ref.to.name rescue ref.fact_type.default_reading}*", "}" if feature.references_from.size > 0
+              undecided.select do |concept|
+                debug :absorption, "Considering #{concept.name}:" do
+                  debug :absorption, "refs to #{concept.name} are from #{concept.references_to.map{|ref| ref.from.name}*", "}" if concept.references_to.size > 0
+                  debug :absorption, "refs from #{concept.name} are to #{concept.references_from.map{|ref| ref.to.name rescue ref.fact_type.default_reading}*", "}" if concept.references_from.size > 0
 
                   # Always absorb an objectified unary into its role player:
-                  if feature.fact_type && feature.fact_type.all_role.size == 1
-                    debug :absorption, "Absorb objectified unary #{feature.name} into #{feature.fact_type.entity_type.name}"
-                    feature.definitely_not_table
-                    next feature
+                  if concept.fact_type && concept.fact_type.all_role.size == 1
+                    debug :absorption, "Absorb objectified unary #{concept.name} into #{concept.fact_type.entity_type.name}"
+                    concept.definitely_not_table
+                    next concept
                   end
 
                   # If the PI contains one role only, played by an entity type that can absorb us, do that.
-                  pi_roles = feature.preferred_identifier.role_sequence.all_role_ref.map(&:role)
+                  pi_roles = concept.preferred_identifier.role_sequence.all_role_ref.map(&:role)
                   debug :absorption, "pi_roles are played by #{pi_roles.map{|role| role.concept.name}*", "}"
                   first_pi_role = pi_roles[0]
                   pi_ref = nil
                   if pi_roles.size == 1 and
-                    feature.references_to.detect{|ref| pi_ref = ref if ref.from_role == first_pi_role && ref.from.is_a?(EntityType)}
+                    concept.references_to.detect{|ref| pi_ref = ref if ref.from_role == first_pi_role && ref.from.is_a?(EntityType)}
 
-                    debug :absorption, "#{feature.name} is fully absorbed along its sole reference path into entity type #{pi_ref.from.name}"
-                    feature.definitely_not_table
-                    next feature
+                    debug :absorption, "#{concept.name} is fully absorbed along its sole reference path into entity type #{pi_ref.from.name}"
+                    concept.definitely_not_table
+                    next concept
                   end
 
                   # If there's more than one absorption path and any functional dependencies that can't absorb us, it's a table
                   non_identifying_refs_from =
-                    feature.references_from.reject{|ref|
+                    concept.references_from.reject{|ref|
                       pi_roles.include?(ref.to_role)
                     }
-                  debug :absorption, "#{feature.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
+                  debug :absorption, "#{concept.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
 
-                  if feature.references_to.size > 1 and
+                  if concept.references_to.size > 1 and
                       non_identifying_refs_from.size > 0
-                    debug :absorption, "#{feature.name} has non-identifying functional dependencies so 3NF requires it be a table"
-                    feature.definitely_table
-                    next feature
+                    debug :absorption, "#{concept.name} has non-identifying functional dependencies so 3NF requires it be a table"
+                    concept.definitely_table
+                    next concept
                   end
 
                   absorption_paths =
                     (
                       non_identifying_refs_from.reject do |ref|
                         !ref.to or ref.to.absorbed_via == ref
-                      end+feature.references_to
+                      end+concept.references_to
                     ).reject do |ref|
                       next true if !ref.to.is_table or
                         ![:one_one, :supertype, :subtype].include?(ref.role_type)
@@ -256,29 +255,29 @@ module ActiveFacts
                       # If one side is mandatory but not the other, don't absorb the mandatory side into the non-mandatory one
                       from_is_mandatory = !!ref.is_mandatory
                       to_is_mandatory = !ref.to_role || !!ref.to_role.is_mandatory
-                      bad = (to_is_mandatory != from_is_mandatory and (ref.from == feature ? from_is_mandatory : to_is_mandatory))
-                      debug :absorption, "Not absorbing mandatory #{feature.name} through #{ref}" if bad
+                      bad = (to_is_mandatory != from_is_mandatory and (ref.from == concept ? from_is_mandatory : to_is_mandatory))
+                      debug :absorption, "Not absorbing mandatory #{concept.name} through #{ref}" if bad
                       bad
                     end
 
                   # If this object can be fully absorbed, do that (might require flipping some references)
                   if absorption_paths.size > 0
-                    debug :absorption, "#{feature.name} is fully absorbed through #{absorption_paths.inspect}"
+                    debug :absorption, "#{concept.name} is fully absorbed through #{absorption_paths.inspect}"
                     absorption_paths.each do |ref|
-                      debug :absorption, "flip #{ref} so #{feature.name} can be absorbed"
-                      ref.flip if feature == ref.from
+                      debug :absorption, "flip #{ref} so #{concept.name} can be absorbed"
+                      ref.flip if concept == ref.from
                     end
-                    feature.definitely_not_table
-                    next feature
+                    concept.definitely_not_table
+                    next concept
                   end
 
                   if non_identifying_refs_from.size == 0
-#                    and (!feature.is_a?(EntityType) ||
+#                    and (!concept.is_a?(EntityType) ||
 #                      # REVISIT: The roles may be collectively but not individually mandatory.
-#                      feature.references_to.detect { |ref| !ref.from_role || ref.from_role.is_mandatory })
-                    debug :absorption, "#{feature.name} is fully absorbed in #{feature.references_to.size} places: #{feature.references_to.map{|ref| ref.from.name}*", "}"
-                    feature.definitely_not_table
-                    next feature
+#                      concept.references_to.detect { |ref| !ref.from_role || ref.from_role.is_mandatory })
+                    debug :absorption, "#{concept.name} is fully absorbed in #{concept.references_to.size} places: #{concept.references_to.map{|ref| ref.from.name}*", "}"
+                    concept.definitely_not_table
+                    next concept
                   end
 
                   false   # Failed to decide about this entity_type this time around
@@ -291,18 +290,18 @@ module ActiveFacts
 
           # A ValueType that isn't explicitly a table and isn't needed anywhere doesn't matter,
           # unless it should absorb something else (another ValueType is all it could be):
-          all_feature.each do |feature|
-            if (!feature.is_table and feature.references_to.size == 0 and feature.references_from.size > 0)
-              debug :absorption, "Making #{feature.name} a table; it has nowhere else to go and needs to absorb things"
-              feature.probably_table
+          all_concept.each do |concept|
+            if (!concept.is_table and concept.references_to.size == 0 and concept.references_from.size > 0)
+              debug :absorption, "Making #{concept.name} a table; it has nowhere else to go and needs to absorb things"
+              concept.probably_table
             end
           end
 
           # Now, evaluate all possibilities of the tentative assignments
           # Incomplete. Apparently unnecessary as well... so far. We'll see.
           if debug :absorption
-            undecided.each do |feature|
-              debug :absorption, "Unable to decide independence of #{feature.name}, going with #{feature.show_tabular}"
+            undecided.each do |concept|
+              debug :absorption, "Unable to decide independence of #{concept.name}, going with #{concept.show_tabular}"
             end
           end
         end
@@ -311,7 +310,7 @@ module ActiveFacts
         populate_all_indices
 
         @tables =
-          all_feature.
+          all_concept.
           select { |f| f.is_table }.
           sort_by { |table| table.name }
       end
