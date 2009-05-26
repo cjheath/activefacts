@@ -32,8 +32,8 @@ module ActiveFacts
       def value_type_dump(o)
         return unless o.supertype    # An imported type
         if o.name == o.supertype.name
-            # In ActiveFacts, parameterising a ValueType will create a new datatype
-            # throw Can't handle parameterized value type of same name as its datatype" if ...
+            # In ActiveFacts, parameterising a ValueType will create a new ValueType
+            # throw Can't handle parameterized value type of same name as its ValueType" if ...
         end
 
         parameters =

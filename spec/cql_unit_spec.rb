@@ -168,10 +168,10 @@ end
 describe "Data Types" do
   DataTypes = [
     [ "a is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
-      [["a", [:data_type, "b", [ 1, 2 ], "inch", [[3, 4]]]]]
+      [["a", [:value_type, "b", [ 1, 2 ], "inch", [[3, 4]]]]]
     ],
 #    [ "a c  is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
-#      [["a c", [:data_type, "b", [1, 2], "inch", [[3, 4]]]]]
+#      [["a c", [:value_type, "b", [1, 2], "inch", [[3, 4]]]]]
 #    ],
   ]
 
@@ -220,11 +220,11 @@ describe "Entity Types" do
       [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
     [ "a is written as b(); c is identified by a:d;",
-      [["a", [:data_type, "b", [], nil, []]],
+      [["a", [:value_type, "b", [], nil, []]],
         ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
     [ " a is written as b ( ) ; c is identified by a : d ; ",
-      [["a", [:data_type, "b", [ ], nil, []]],
+      [["a", [:value_type, "b", [ ], nil, []]],
         ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
     [ "a is identified by c:maybe d;",

@@ -28,7 +28,7 @@ module ActiveFacts
       attr_reader :vocabulary       # This is what we're building
       attr_reader :entity_types     # A hash by table name
       attr_reader :fact_types       # A hash by table name
-      attr_reader :data_types       # By name, e.g. "bit", "char(128)"
+      attr_reader :base_value_types       # By name, e.g. "bit", "char(128)"
       attr_reader :value_types      # By field name
       attr_reader :entity_columns     # A hash by table name yielding array
       attr_reader :entity_constraints   # A hash by table name yielding array
@@ -62,7 +62,7 @@ module ActiveFacts
         #  this FactType as Roles of a ValueType.
         #
         #  The ValueTypes are instantiated progressively as we go along.
-        #  Each uses a datatype created on first occurrence of each SQL
+        #  Each uses a base valuetype created on first occurrence of each SQL
         #  Type, and a new VT is created for each distinct parameterised
         #  type. This might result in fewer VTs than needed; we use the
         #  column name for the Role where it differs from a prior usage
@@ -89,8 +89,8 @@ module ActiveFacts
         #
         @entity_types = {}
         @fact_types = {}
-        @data_types = {}    # Base data type
-        @value_types = {}   # Named Data type with parameters defined
+        @base_value_types = {}    # Base value type
+        @value_types = {}   # Named value type with parameters defined
         @entity_columns = {}
         @entity_constraints = {}
 
@@ -154,7 +154,7 @@ module ActiveFacts
             end
           }
 
-        # Ensure we have a datatype and valuetype for each column that
+        # Ensure we have a base valuetype and valuetype for each column that
         # isn't an FK column.
         #
         # A given column name should only have one ValueType, but that
@@ -162,7 +162,7 @@ module ActiveFacts
         # first occurrence of a given refined-type, and use the Role
         # name for the column name.
 
-        # See if there's a ValueType of the same DataType and Name already
+        # See if there's a ValueType of the same base ValueType and Name already
         value_type = @value_types[c.sql_type]
         if (new_type = (!value_type || value_type.name != c.name))
           value_type = make_value_type(c.name, c.sql_type)
@@ -308,20 +308,20 @@ module ActiveFacts
       def make_value_type(name, vtype)
         # REVISIT: Consider using c.limit, c.scale, c.precision instead:
         vtparams = vtype.split(/\D+/).reject{|v| v==""}.map{|v| v.to_i}
-        dtname = vtype.sub(/\W.*/,'')
+        bvtname = vtype.sub(/\W.*/,'')
 
-        @log.puts "\t\tMaking base DataType #{dtname}" if !@data_types[dtname]
+        @log.puts "\t\tMaking base ValueType #{bvtname}" if !@base_value_types[bvtname]
         base_type =
-        data_type =
-          @data_types[dtname] ||= DataType.new(
+        base_value_type =
+          @base_value_types[bvtname] ||= ValueType.new(
             @vocabulary,
-            dtname
+            bvtname
           )
 
-        if (vtype != dtname)
-          @log.puts "\t\tMaking refined DataType #{vtype}" if !@data_types[vtype]
-          data_type =
-            @data_types[vtype] ||= DataType.new(
+        if (vtype != bvtname)
+          @log.puts "\t\tMaking refined ValueType #{vtype}" if !@base_value_types[vtype]
+          base_value_type =
+            @base_value_types[vtype] ||= ValueType.new(
               @vocabulary,
               vtype,
               base_type,
@@ -329,11 +329,11 @@ module ActiveFacts
             )
         end
 
-        # @log.puts "Making ValueType(vocabulary, #{name}, #{dtname})"
+        # @log.puts "Making ValueType(vocabulary, #{name}, #{bvtname})"
         @value_types[vtype] = ValueType.new(
             @vocabulary,
             name,
-            data_type
+            base_value_type
           )
       end
 

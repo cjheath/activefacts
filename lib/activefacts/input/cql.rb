@@ -61,7 +61,7 @@ module ActiveFacts
               case kind
               when :vocabulary
                 @vocabulary = @constellation.Vocabulary(value[0])
-              when :data_type
+              when :value_type
                 value_type *value
               when :entity_type
                 entity_type *value

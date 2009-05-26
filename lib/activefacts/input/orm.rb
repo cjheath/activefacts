@@ -139,13 +139,13 @@ module ActiveFacts
           length = 32 if type_name =~ /Integer\Z/ && length.to_i == 0 # Set default integer length
 
           # REVISIT: Need to handle standard types better here:
-          data_type = type_name != name ? @constellation.ValueType(@vocabulary, type_name) : nil
+          value_super_type = type_name != name ? @constellation.ValueType(@vocabulary, type_name) : nil
 
           # puts "ValueType #{name} is #{id}"
           value_types <<
             @by_id[id] =
             vt = @constellation.ValueType(@vocabulary, name)
-          vt.supertype = data_type
+          vt.supertype = value_super_type
           vt.length = length if length
           vt.scale = scale if scale
           independent = x.attributes['IsIndependent']

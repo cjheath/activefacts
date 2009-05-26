@@ -15,7 +15,7 @@ module ActiveFacts
       #   afgen --sql/mysql[=options] <file>.cql
       # Options are comma or space separated:
       # * delay_fks Leave all foreign keys until the end, not just those that contain forward-references
-      # * norma Translate datatypes from NORMA to SQL Server
+      # * norma Translate valuetypes from NORMA to SQL Server
       class MYSQL
       private
         include Persistence

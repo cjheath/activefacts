@@ -52,8 +52,8 @@ module ActiveFacts
 
         return if !o.supertype && !is_special_supertype
         if o.supertype && o.name == o.supertype.name
-          # In ActiveFacts, parameterising a ValueType will create a new datatype
-          # throw Can't handle parameterized value type of same name as its datatype" if ...
+          # In ActiveFacts, parameterising a ValueType will create a new ValueType
+          # throw Can't handle parameterized value type of same name as its ValueType" if ...
         end
 
         length = (l = o.length) && l > 0 ? ":length => #{l}" : nil

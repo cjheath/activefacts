@@ -6,22 +6,22 @@
 #
 module ActiveFacts
   module CQL
-    grammar DataTypes
-      rule data_type
+    grammar ValueTypes
+      rule value_type
         s name:id
         written_as
         base:id s
-	data_type_parameters
-	data_type_unit
+        value_type_parameters
+        value_type_unit
         r:restriction?
         s ';' s
         {
           def defined_type
             [
-              :data_type,
+              :value_type,
               base.text_value,
-	      data_type_parameters.values,
-              data_type_unit.unit_name,
+              value_type_parameters.values,
+              value_type_unit.unit_name,
               !r.empty? ? r.ranges : [],
             ]
           end
@@ -34,27 +34,27 @@ module ActiveFacts
         }
       end
 
-      rule data_type_parameters
+      rule value_type_parameters
         '(' s tpl:type_parameter_list? ')' s
-	  { def values; tpl.empty? ? [] : tpl.values; end }
-	/ s
-	  { def values; []; end }
+          { def values; tpl.empty? ? [] : tpl.values; end }
+        / s
+          { def values; []; end }
       end
 
-      rule data_type_unit
+      rule value_type_unit
         !restricted units s
-	  { def unit_name; units.text_value; end }
-	/ s
-	  { def unit_name; nil; end }
+          { def unit_name; units.text_value; end }
+        / s
+          { def unit_name; nil; end }
       end
 
       rule unit_definition
-	numerator:number denominator:(s '/' s number)?
-	units s
-	offset:(('+' / '-') s number)
-	'makes' s ('approximately' s)?
-	singular:id plural:(s '/' s id)?
-	(s '[' s 'ephemeral' s ']')?
+        numerator:number denominator:(s '/' s number)?
+        units s
+        offset:(('+' / '-') s number)
+        'makes' s ('approximately' s)?
+        singular:id plural:(s '/' s id)?
+        (s '[' s 'ephemeral' s ']')?
       end
 
       rule type_parameter_list
@@ -67,7 +67,7 @@ module ActiveFacts
       end
 
       rule units
-	(unit (s !restricted unit)* (s '/' s unit (s !restricted unit)*)?)
+        (unit (s !restricted unit)* (s '/' s unit (s !restricted unit)*)?)
       end
 
       rule unit

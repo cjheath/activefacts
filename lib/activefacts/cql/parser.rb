@@ -12,7 +12,7 @@ require 'activefacts/cql/LexicalRules'
 require 'activefacts/cql/Language/English'
 require 'activefacts/cql/Expressions'
 require 'activefacts/cql/Concepts'
-require 'activefacts/cql/DataTypes'
+require 'activefacts/cql/ValueTypes'
 require 'activefacts/cql/FactTypes'
 require 'activefacts/cql/CQLParser'
 
@@ -47,8 +47,8 @@ module ActiveFacts
           case kind
           when :vocabulary
             [kind, name]
-          when :data_type
-            data_type(name, value)
+          when :value_type
+            value_type(name, value)
           when :entity_type
             supertypes = value.shift
             entity_type(name, supertypes, value)
@@ -63,9 +63,9 @@ module ActiveFacts
       raise "in #{kind.to_s.camelcase(true)} definition, #{e.message}:\n\t#{node.text_value}"
     end
 
-    def data_type(name, value)
-      # REVISIT: Massage/check data type here?
-      [:data_type, name, *value]
+    def value_type(name, value)
+      # REVISIT: Massage/check value type here?
+      [:value_type, name, *value]
     end
 
     def entity_type(name, supertypes, value)
