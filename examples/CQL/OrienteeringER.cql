@@ -18,23 +18,28 @@ PointValue is written as UnsignedInteger(32);
 SeriesName is written as VariableLengthText;
 
 /*
- * Fact Types
+ * Entity Types
  */
 Club is where
 	Code is of the club called at most one ClubName,
 	the club called ClubName has at most one Code;
+
+Map is where
+	map-Name having Accessibility belongs to Club;
+
 SeriesEvent is where
 	SeriesName includes event-Number,
 	event Number is in SeriesName;
+
 Event is where
 	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
+
 EventControl is where
 	Event includes Control which is worth at most one PointValue;
+
 EventCourse is where
 	Course is available at Event,
 	Event offers Course;
-Map is where
-	map-Name having Accessibility belongs to Club;
 
 /*
  * Constraints:

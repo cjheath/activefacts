@@ -26,9 +26,11 @@ Person is identified by given-Name and family-Name where
 	family-Name is of Person,
 	Person is called at most one family-Name;
 Person was born on at most one birth-Date restricted to {'1900/01/01'..};
+
 Attendance is where
 	Person (as Attendee) attended Meeting,
 	Meeting was attended by Attendee;
+
 Directorship is where
 	Person (as Director) directs Company,
 	Company is directed by at least one Director;

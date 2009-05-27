@@ -50,7 +50,7 @@ module ActiveFacts
             when ActiveFacts::Metamodel::PresenceConstraint
               fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq  # All fact types spanned by this constraint
               if fact_types.size == 1     # There's only one, save it:
-                # debug "Single-fact constraint on #{fact_types[0].fact_type_id}: #{c.name}"
+                # debug "Single-fact constraint on #{fact_types[0].feature_id}: #{c.name}"
                 (@presence_constraints_by_fact[fact_types[0]] ||= []) << c
               end
             when ActiveFacts::Metamodel::RingConstraint
@@ -90,11 +90,11 @@ module ActiveFacts
       # if possible (it's not always, there may be loops!)
       def entity_types_dump
         # Build hash tables of precursors and followers to use:
-        precursors, followers = *build_entity_dependencies
+        @precursors, @followers = *build_entity_dependencies
 
         done_banner = false
         sorted = @vocabulary.all_concept.select{|o|
-          o.is_a?(ActiveFacts::Metamodel::EntityType) and !o.fact_type
+          o.is_a?(ActiveFacts::Metamodel::EntityType) # and !o.fact_type
         }.sort_by{|o| o.name}
         panic = nil
         while true do
@@ -105,7 +105,7 @@ module ActiveFacts
 
               # Can we do this yet?
               if (o != panic and                  # We don't *have* to do it (panic mode)
-                  (p = precursors[o]) and         # There might be...
+                  (p = @precursors[o]) and         # There might be...
                   p.size > 0)                     # precursors - still blocked
                 skipped_this_pass += 1
                 next
@@ -115,14 +115,19 @@ module ActiveFacts
               done_banner = true
 
               # We're going to emit o - remove it from precursors of others:
-              (followers[o]||[]).each{|f|
-                  precursors[f] -= [o]
+              (@followers[o]||[]).each{|f|
+                  @precursors[f] -= [o]
                 }
               count_this_pass += 1
               panic = nil
 
-              entity_type_dump(o)
-              released_fact_types_dump(o)
+              if (o.fact_type)
+                fact_type_dump_with_dependents(o.fact_type)
+                released_fact_types_dump(o)
+              else
+                entity_type_dump(o)
+                released_fact_types_dump(o)
+              end
 
               entity_type_group_end
             }
@@ -136,7 +141,7 @@ module ActiveFacts
                   ":\n\t" + bad.map{|o|
                     o.name +
                     ": " +
-                    precursors[o].map{|p| p.name}.uniq.inspect
+                    @precursors[o].map{|p| p.name}.uniq.inspect
                   } * "\n\t" + "\n"
               else
                 # Find the object that has the most followers and no fwd-ref'd supertypes:
@@ -144,7 +149,7 @@ module ActiveFacts
                 panic = sorted.
                   select{|o| !@concept_types_dumped[o] }.
                   sort_by{|o|
-                      f = followers[o] || []; 
+                      f = @followers[o] || []; 
                       o.supertypes.detect{|s| !@concept_types_dumped[s] } ? 0 : -f.size
                     }[0]
                 # debug "Panic mode, selected #{panic.name} next"
@@ -179,7 +184,7 @@ module ActiveFacts
         role_refs = pi.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
 
         # We need to get the adjectives for the roles from the identifying fact's preferred readings:
-        identifying_facts = role_refs.map{|rr| rr.role.fact_type }.uniq
+        identifying_facts = ([o.fact_type]+role_refs.map{|rr| rr.role.fact_type }).compact.uniq
         preferred_readings = identifying_facts.inject({}){|reading_hash, fact_type|
             pr = fact_type.preferred_reading
             reading_hash[fact_type] = pr
@@ -211,9 +216,9 @@ module ActiveFacts
       def expanded_reading(reading, fact_constraints, define_role_names)
         # Find all role numbers in order of occurrence in this reading:
         role_refs = reading.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
-        role_numbers = reading.reading_text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
+        role_numbers = reading.text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
         roles = role_numbers.map{|m| role_refs[m].role }
-        # debug "Considering #{reading.reading_text} having #{role_numbers.inspect}"
+        # debug "Considering #{reading.text} having #{role_numbers.inspect}"
 
         # Find the constraints that constrain frequency over each role we can verbalise:
         frequency_constraints = []
@@ -280,7 +285,7 @@ module ActiveFacts
       # The values of each hash entry are the precursors and followers (respectively) of that entity.
       def build_entity_dependencies
         @vocabulary.all_concept.inject([{},{}]) { |a, o|
-            if o.is_a?(ActiveFacts::Metamodel::EntityType) && !o.fact_type
+            if o.is_a?(ActiveFacts::Metamodel::EntityType)
               precursor = a[0]
               follower = a[1]
               blocked = false
@@ -289,12 +294,21 @@ module ActiveFacts
                 pi.role_sequence.all_role_ref.each{|rr|
                     role = rr.role
                     player = role.concept
+                    # REVISIT: If we decide to emit value types on demand, need to remove this:
                     next unless player.is_a?(ActiveFacts::Metamodel::EntityType)
                     # player is a precursor of o
                     (precursor[o] ||= []) << player if (player != o)
                     (follower[player] ||= []) << o if (player != o)
                   }
               end
+              if o.fact_type
+                o.fact_type.all_role.each do |role|
+                  next unless role.concept.is_a?(ActiveFacts::Metamodel::EntityType)
+                  (precursor[o] ||= []) << role.concept
+                  (follower[role.concept] ||= []) << o
+                end
+              end
+
               # Supertypes are precursors too:
               subtyping = o.all_type_inheritance_as_supertype
               next a if subtyping.size == 0
@@ -304,6 +318,12 @@ module ActiveFacts
                   (precursor[s] ||= []) << o
                   (follower[o] ||= []) << s
                 }
+#            REVISIT: Need to use this to order ValueTypes after their supertypes
+#            else
+#              o.all_value_type_as_supertype.each { |s|
+#                (precursor[s] ||= []) << o
+#                (follower[o] ||= []) << s
+#              }
             end
             a
           }
@@ -317,7 +337,9 @@ module ActiveFacts
           roles.map(&:fact_type).uniq.select{|fact_type|
               # The fact type hasn't already been dumped but all its role players have
               !@fact_types_dumped[fact_type] &&
-                !fact_type.all_role.detect{|r| !@concept_types_dumped[r.concept] }
+                !fact_type.all_role.detect{|r| !@concept_types_dumped[r.concept] } &&
+                !fact_type.entity_type
+#                !(fact_type.entity_type && (p = @precursors[fact_type.entity_type]) && p.size > 0)
             }.sort_by{|fact_type|
               fact_type_key(fact_type)
             }.each{|fact_type|
@@ -357,7 +379,7 @@ module ActiveFacts
 
         # debug "for fact type #{fact_type.to_s}, considering\n\t#{fact_constraints.map(&:to_s)*",\n\t"}"
         # debug "#{fact_type.name} has readings:\n\t#{fact_type.readings.map(&:name)*"\n\t"}"
-        # debug "Dumping #{fact_type.fact_type_id} as a fact type"
+        # debug "Dumping #{fact_type.feature_id} as a fact type"
 
         # Fact types that aren't nested have no names
         name = fact_type.entity_type && fact_type.entity_type.name
@@ -380,7 +402,7 @@ module ActiveFacts
               all_role_ref.
               sort_by{|role_ref| role_ref.ordinal}.
               map{|role_ref| [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-" } +
-              [pr.reading_text]
+              [pr.text]
           else
             fact_type.all_role.map{|role| role.concept.name }
           end

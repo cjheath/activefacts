@@ -51,13 +51,6 @@ module ::OilSupply
     one_to_one :product_name                    # See ProductName.product
   end
 
-  class AcceptableSubstitutes
-    identified_by :product, :alternate_product, :season
-    has_one :alternate_product, Product         # See Product.all_acceptable_substitutes_as_alternate_product
-    has_one :product                            # See Product.all_acceptable_substitutes
-    has_one :season                             # See Season.all_acceptable_substitutes
-  end
-
   class Refinery
     identified_by :refinery_name
     one_to_one :refinery_name                   # See RefineryName.refinery
@@ -79,6 +72,13 @@ module ::OilSupply
   class Year
     identified_by :year_nr
     one_to_one :year_nr                         # See YearNr.year
+  end
+
+  class AcceptableSubstitutes
+    identified_by :product, :alternate_product, :season
+    has_one :alternate_product, Product         # See Product.all_acceptable_substitutes_as_alternate_product
+    has_one :product                            # See Product.all_acceptable_substitutes
+    has_one :season                             # See Season.all_acceptable_substitutes
   end
 
   class SupplyPeriod

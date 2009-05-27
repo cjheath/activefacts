@@ -61,18 +61,18 @@ module ::Blog
     has_one :topic                              # See Topic.all_post
   end
 
-  class Paragraph
-    identified_by :post, :ordinal
-    has_one :ordinal                            # See Ordinal.all_paragraph
-    has_one :post                               # See Post.all_paragraph
-    has_one :content                            # See Content.all_paragraph
-  end
-
   class Topic
     identified_by :topic_id
     has_one :parent_topic, Topic                # See Topic.all_topic_as_parent_topic
     one_to_one :topic_id                        # See TopicId.topic
     one_to_one :topic_name, Name                # See Name.topic_as_topic_name
+  end
+
+  class Paragraph
+    identified_by :post, :ordinal
+    has_one :ordinal                            # See Ordinal.all_paragraph
+    has_one :post                               # See Post.all_paragraph
+    has_one :content                            # See Content.all_paragraph
   end
 
 end

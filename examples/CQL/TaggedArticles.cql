@@ -7,7 +7,7 @@ ArticleID is written as SignedInteger(32);
 Tag is written as VariableLengthText;
 
 /*
- * Fact Types
+ * Entity Types
  */
 Tagging is where
 	ArticleID has Tag,

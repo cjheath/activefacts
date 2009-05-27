@@ -172,16 +172,6 @@ module ::Orienteering
     has_one :post_code                          # See PostCode.all_person
   end
 
-  class Entry
-    identified_by :entry_id
-    has_one :course                             # See Course.all_entry
-    has_one :event                              # See Event.all_entry
-    has_one :person                             # See Person.all_entry
-    one_to_one :entry_id, EntryID               # See EntryID.entry
-    has_one :finish_placing, Placing            # See Placing.all_entry_as_finish_placing
-    has_one :score                              # See Score.all_entry
-  end
-
   class Punch
     identified_by :punch_id
     one_to_one :punch_id, PunchID               # See PunchID.punch
@@ -193,17 +183,27 @@ module ::Orienteering
     has_one :punch                              # See Punch.all_punch_placement
   end
 
+  class Series
+    identified_by :series_id
+    one_to_one :name, SeriesName                # See SeriesName.series_as_name
+    one_to_one :series_id, SeriesID             # See SeriesID.series
+  end
+
+  class Entry
+    identified_by :entry_id
+    has_one :course                             # See Course.all_entry
+    has_one :event                              # See Event.all_entry
+    has_one :person                             # See Person.all_entry
+    one_to_one :entry_id, EntryID               # See EntryID.entry
+    has_one :finish_placing, Placing            # See Placing.all_entry_as_finish_placing
+    has_one :score                              # See Score.all_entry
+  end
+
   class Visit
     identified_by :punch, :entry, :time
     has_one :entry                              # See Entry.all_visit
     has_one :punch                              # See Punch.all_visit
     has_one :time                               # See Time.all_visit
-  end
-
-  class Series
-    identified_by :series_id
-    one_to_one :name, SeriesName                # See SeriesName.series_as_name
-    one_to_one :series_id, SeriesID             # See SeriesID.series
   end
 
 end

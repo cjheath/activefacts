@@ -126,12 +126,6 @@ module ::Warehousing
     has_one :sales_order                        # See SalesOrder.all_sales_order_item
   end
 
-  class DirectOrderMatch
-    identified_by :purchase_order_item, :sales_order_item
-    has_one :purchase_order_item                # See PurchaseOrderItem.all_direct_order_match
-    has_one :sales_order_item                   # See SalesOrderItem.all_direct_order_match
-  end
-
   class Supplier < Party
   end
 
@@ -148,6 +142,12 @@ module ::Warehousing
   end
 
   class Customer < Party
+  end
+
+  class DirectOrderMatch
+    identified_by :purchase_order_item, :sales_order_item
+    has_one :purchase_order_item                # See PurchaseOrderItem.all_direct_order_match
+    has_one :sales_order_item                   # See SalesOrderItem.all_direct_order_match
   end
 
 end

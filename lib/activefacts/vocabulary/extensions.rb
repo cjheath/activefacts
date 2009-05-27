@@ -7,12 +7,6 @@
 module ActiveFacts
   module Metamodel
 
-    class Vocabulary
-      def all_concept
-        all_feature
-      end
-    end
-
     class FactType
       def all_reading_by_ordinal
         all_reading.sort_by{|reading| reading.ordinal}
@@ -85,7 +79,7 @@ module ActiveFacts
       def role_name(joiner = "-")
         name_array =
           if role.fact_type.all_role.size == 1
-            role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.split(/\s/)
+            role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.split(/\s/)
           else
             role.role_name || [leading_adjective, role.concept.name, trailing_adjective].compact.map{|w| w.split(/\s/)}.flatten
           end
@@ -317,7 +311,7 @@ module ActiveFacts
       #
       # define_role_names here is false (use defined names), true (define names) or nil (neither)
       def expand(frequency_constraints = [], define_role_names = false)
-        expanded = "#{reading_text}"
+        expanded = "#{text}"
         role_refs = role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
         (0...role_refs.size).each{|i|
             role_ref = role_refs[i]
@@ -359,7 +353,7 @@ module ActiveFacts
       end
 
       def words_and_role_refs
-        reading_text.
+        text.
         scan(/(?: |\{[0-9]+\}|[^{} ]+)/).   # split up the text into words
         reject{|s| s==' '}.                 # Remove white space
         map do |frag|                       # and go through the bits

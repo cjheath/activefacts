@@ -285,7 +285,7 @@ module ActiveFacts
                   @constellation.RoleRef(rs01, 1, :role => value_role)
                 end
                 if rs01.all_reading.empty?
-                  @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs01, :reading_text => "{0} has {1}")
+                  @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs01, :text => "{0} has {1}")
                   debug :mode, "Creating new forward reading '#{name} has #{vt.name}'"
                 else
                   debug :mode, "Using existing forward reading"
@@ -299,7 +299,7 @@ module ActiveFacts
                   @constellation.RoleRef(rs10, 1, :role => entity_role)
                 end
                 if rs10.all_reading.empty?
-                  @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs10, :reading_text => "{0} is of {1}")
+                  @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs10, :text => "{0} is of {1}")
                   debug :mode, "Creating new reverse reading '#{vt.name} is of #{name}'"
                 else
                   debug :mode, "Using existing reverse reading"
@@ -375,7 +375,7 @@ module ActiveFacts
       def add_supertype(entity_type, supertype_name, identifying_supertype)
         debug :supertype, "Supertype #{supertype_name}"
         supertype = @constellation.EntityType(@vocabulary, supertype_name)
-        inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :fact_type_id => :new)
+        inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :feature_id => :new)
 
         # Create a reading:
         sub_role = @constellation.Role(inheritance_fact, 0, entity_type)
@@ -383,7 +383,7 @@ module ActiveFacts
         rs = @constellation.RoleSequence(:new)
         @constellation.RoleRef(rs, 0, :role => sub_role)
         @constellation.RoleRef(rs, 1, :role => super_role)
-        @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :reading_text => "{0} is a subtype of {1}")
+        @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a subtype of {1}")
 
         if identifying_supertype
           inheritance_fact.provides_identification = true
@@ -428,7 +428,7 @@ module ActiveFacts
           supertype.all_role.each do |role|
             role.fact_type.all_role.size == 1 &&
             role.fact_type.all_reading.each do |reading|
-              if reading.reading_text == to_match
+              if reading.text == to_match
                 debug :identification, "Bound identification to unary role '#{to_match.sub(/\{0\}/, entity_type.name)}'"
                 return role
               end
@@ -742,7 +742,7 @@ module ActiveFacts
           # Oooh, a real candidate. Check the reading words.
           debug "Considering "+role.fact_type.describe do
             next unless role.fact_type.all_reading.detect do |candidate_reading|
-              debug "Considering reading"+candidate_reading.reading_text do
+              debug "Considering reading"+candidate_reading.text do
                 to_match = reading.clone
                 players_to_match = players.clone
                 candidate_reading.words_and_role_refs.each do |wrr|
@@ -1013,11 +1013,11 @@ module ActiveFacts
         ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
         defined_reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
         role_num = -1
-        defined_reading.reading_text = reading.map {|phrase|
+        defined_reading.text = reading.map {|phrase|
             Hash === phrase ? "{#{role_num += 1}}" : phrase
           }*" "
-        raise "Wrong number of players (#{role_num+1}) found in reading #{defined_reading.reading_text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
-        debug "Added reading #{defined_reading.reading_text}"
+        raise "Wrong number of players (#{role_num+1}) found in reading #{defined_reading.text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
+        debug "Added reading #{defined_reading.text}"
       end
 
       # Return an array of this entity type and all its supertypes, transitively:

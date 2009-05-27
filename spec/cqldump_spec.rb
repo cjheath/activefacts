@@ -84,7 +84,7 @@ END
     pc = @constellation.PresenceConstraint(:new, :is_mandatory => false, :is_preferred_identifier => false, :max_frequency => 1, :min_frequency => 0, :role_sequence => pcrs)
 
     # Make a new reading:
-    reading = @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs, :reading_text => reading)
+    reading = @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs, :text => reading)
 
     ft
   end
@@ -101,7 +101,7 @@ END
     rr1 = @constellation.RoleRef(rs, 1, :role => role1)
 
     # Make a new reading:
-    reading = @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs, :reading_text => reading)
+    reading = @constellation.Reading(ft, ft.all_reading.size, :role_sequence => rs, :text => reading)
 
     # Make a uniqueness constraint for the first role
     first_rs = @constellation.RoleSequence(:new)

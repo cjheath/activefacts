@@ -139,13 +139,13 @@ module ActiveFacts
             # Detect standard reference-mode readings:
             forward_reading = reverse_reading = nil
             ft.all_reading.each do |reading|
-              if reading.reading_text =~ /^\{(\d)\} has \{\d\}$/
+              if reading.text =~ /^\{(\d)\} has \{\d\}$/
                 if reading.role_sequence.all_role_ref[$1.to_i].role == entity_role
                   forward_reading = reading
                 else
                   reverse_reading = reading
                 end
-              elsif reading.reading_text =~ /^\{(\d)\} is of \{\d\}$/
+              elsif reading.text =~ /^\{(\d)\} is of \{\d\}$/
                 if reading.role_sequence.all_role_ref[$1.to_i].role == value_role
                   reverse_reading = reading
                 else
@@ -356,7 +356,7 @@ module ActiveFacts
             }
           frequency_constraints = [] unless frequency_constraints.detect{|fc| fc[0] =~ /some/ }
 
-          #$stderr.puts "fact_type roles (#{fact_type.all_role.map{|r| r.concept.name}*","}) default_reading '#{fact_type.preferred_reading.reading_text}' roles (#{fact_type.preferred_reading.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}*","}) #{frequency_constraints.inspect}"
+          #$stderr.puts "fact_type roles (#{fact_type.all_role.map{|r| r.concept.name}*","}) default_reading '#{fact_type.preferred_reading.text}' roles (#{fact_type.preferred_reading.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}*","}) #{frequency_constraints.inspect}"
 
           # REVISIT: Make sure that we refer to the constrained players by their common supertype
 

@@ -64,6 +64,13 @@ module ::OrienteeringER
     one_to_one :code                            # See Code.club
   end
 
+  class Map
+    identified_by :map_name
+    has_one :accessibility                      # See Accessibility.all_map
+    has_one :club                               # See Club.all_map
+    one_to_one :map_name, Name                  # See Name.map_as_map_name
+  end
+
   class SeriesEvent
     identified_by :series_name, :event_number
     has_one :event_number, Number               # See Number.all_series_event_as_event_number
@@ -92,13 +99,6 @@ module ::OrienteeringER
     identified_by :course, :event
     has_one :course                             # See Course.all_event_course
     has_one :event                              # See Event.all_event_course
-  end
-
-  class Map
-    identified_by :map_name
-    has_one :accessibility                      # See Accessibility.all_map
-    has_one :club                               # See Club.all_map
-    one_to_one :map_name, Name                  # See Name.map_as_map_name
   end
 
 end

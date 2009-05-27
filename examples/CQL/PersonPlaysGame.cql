@@ -12,6 +12,7 @@ PersonName is written as VariableLengthText;
 Game is identified by its Code;
 
 Person is identified by its Name;
+
 Playing is where
 	Person plays Game;
 

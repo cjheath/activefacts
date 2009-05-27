@@ -140,14 +140,6 @@ module ::Genealogy
     has_one :user                               # See User.all_source
   end
 
-  class Participation
-    identified_by :person, :role, :event, :source
-    has_one :event                              # See Event.all_participation
-    has_one :person                             # See Person.all_participation
-    has_one :role                               # See Role.all_participation
-    has_one :source                             # See Source.all_participation
-  end
-
   class User
     identified_by :user_id
     has_one :email                              # See Email.all_user
@@ -159,6 +151,14 @@ module ::Genealogy
     has_one :other_user, User                   # See User.all_friend_as_other_user
     has_one :user                               # See User.all_friend
     maybe :is_confirmed
+  end
+
+  class Participation
+    identified_by :person, :role, :event, :source
+    has_one :event                              # See Event.all_participation
+    has_one :person                             # See Person.all_participation
+    has_one :role                               # See Role.all_participation
+    has_one :source                             # See Source.all_participation
   end
 
 end

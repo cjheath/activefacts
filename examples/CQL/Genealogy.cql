@@ -67,19 +67,21 @@ Role is called one EventRoleName,
 Source is identified by its ID;
 Source has one SourceName,
 	SourceName is of at most one Source;
-Participation is where
-	Person played Role in Event according to Source,
-	Person was involved in Event according to Source in Role,
-	Source claims Person played Role in Event;
 
 User is identified by its ID;
 Email is of User,
 	User has at most one Email;
 User provided Source,
 	Source was provided by one User;
+
 Friend is where
 	User is friend of other-User [symmetric];
 Friend is confirmed;
+
+Participation is where
+	Person played Role in Event according to Source,
+	Person was involved in Event according to Source in Role,
+	Source claims Person played Role in Event;
 
 /*
  * Constraints:

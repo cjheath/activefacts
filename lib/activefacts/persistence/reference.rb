@@ -117,7 +117,7 @@ module ActiveFacts
           if @to && @to.fact_type
             @to.name.camelwords
           else
-            @to_role.fact_type.preferred_reading.reading_text.gsub(/\{[0-9]\}/,'').strip.camelwords
+            @to_role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.camelwords
           end
         when @to && !@to_role           # @to is an objectified fact type so @to_role is a phantom
           @to.name.camelwords

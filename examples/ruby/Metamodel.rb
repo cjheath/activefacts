@@ -6,10 +6,6 @@ module ::Metamodel
     value_type :length => 64
   end
 
-  class ConstraintId < AutoCounter
-    value_type 
-  end
-
   class Denominator < UnsignedInteger
     value_type :length => 32
   end
@@ -26,7 +22,7 @@ module ::Metamodel
     value_type 
   end
 
-  class FactTypeId < AutoCounter
+  class FeatureId < AutoCounter
     value_type 
   end
 
@@ -104,14 +100,6 @@ module ::Metamodel
     has_one :numerator                          # See Numerator.all_coefficient
   end
 
-  class Constraint
-    identified_by :constraint_id
-    one_to_one :constraint_id                   # See ConstraintId.constraint
-    has_one :enforcement                        # See Enforcement.all_constraint
-    has_one :name                               # See Name.all_constraint
-    has_one :vocabulary                         # See Vocabulary.all_constraint
-  end
-
   class Fact
     identified_by :fact_id
     one_to_one :fact_id                         # See FactId.fact
@@ -119,9 +107,9 @@ module ::Metamodel
     has_one :population                         # See Population.all_fact
   end
 
-  class FactType
-    identified_by :fact_type_id
-    one_to_one :fact_type_id                    # See FactTypeId.fact_type
+  class Feature
+    identified_by :feature_id
+    one_to_one :feature_id                      # See FeatureId.feature
   end
 
   class Instance
@@ -130,6 +118,85 @@ module ::Metamodel
     one_to_one :instance_id                     # See InstanceId.instance
     has_one :population                         # See Population.all_instance
     has_one :value                              # See Value.all_instance
+  end
+
+  class RoleSequence
+    identified_by :role_sequence_id
+    one_to_one :role_sequence_id                # See RoleSequenceId.role_sequence
+  end
+
+  class RoleValue
+    identified_by :instance, :fact
+    has_one :fact                               # See Fact.all_role_value
+    has_one :instance                           # See Instance.all_role_value
+    has_one :population                         # See Population.all_role_value
+    has_one :role                               # See Role.all_role_value
+  end
+
+  class Unit
+    identified_by :unit_id
+    has_one :coefficient                        # See Coefficient.all_unit
+    maybe :is_fundamental
+    has_one :name                               # See Name.all_unit
+    has_one :offset                             # See Offset.all_unit
+    one_to_one :unit_id                         # See UnitId.unit
+    has_one :vocabulary                         # See Vocabulary.all_unit
+  end
+
+  class ValueRange
+    identified_by :minimum_bound, :maximum_bound
+    has_one :maximum_bound, Bound               # See Bound.all_value_range_as_maximum_bound
+    has_one :minimum_bound, Bound               # See Bound.all_value_range_as_minimum_bound
+  end
+
+  class ValueRestriction
+    identified_by :value_restriction_id
+    one_to_one :value_restriction_id            # See ValueRestrictionId.value_restriction
+  end
+
+  class Vocabulary
+    identified_by :name
+    one_to_one :name                            # See Name.vocabulary
+  end
+
+  class AllowedRange
+    identified_by :value_restriction, :value_range
+    has_one :value_range                        # See ValueRange.all_allowed_range
+    has_one :value_restriction                  # See ValueRestriction.all_allowed_range
+  end
+
+  class Concept < Feature
+    identified_by :vocabulary, :name
+    maybe :is_independent
+    has_one :name                               # See Name.all_concept
+    has_one :pronoun                            # See Pronoun.all_concept
+    has_one :vocabulary                         # See Vocabulary.all_concept
+  end
+
+  class Constraint < Feature
+    has_one :enforcement                        # See Enforcement.all_constraint
+    has_one :name                               # See Name.all_constraint
+    has_one :vocabulary                         # See Vocabulary.all_constraint
+  end
+
+  class Derivation
+    identified_by :derived_unit, :base_unit
+    has_one :base_unit, Unit                    # See Unit.all_derivation_as_base_unit
+    has_one :derived_unit, Unit                 # See Unit.all_derivation_as_derived_unit
+    has_one :exponent                           # See Exponent.all_derivation
+  end
+
+  class EntityType < Concept
+  end
+
+  class FactType < Feature
+    one_to_one :entity_type                     # See EntityType.fact_type
+  end
+
+  class Population
+    identified_by :vocabulary, :name
+    has_one :name                               # See Name.all_population
+    has_one :vocabulary                         # See Vocabulary.all_population
   end
 
   class PresenceConstraint < Constraint
@@ -154,100 +221,6 @@ module ::Metamodel
     has_one :role                               # See Role.all_ring_constraint
   end
 
-  class RoleSequence
-    identified_by :role_sequence_id
-    one_to_one :role_sequence_id                # See RoleSequenceId.role_sequence
-  end
-
-  class RoleValue
-    identified_by :instance, :fact
-    has_one :fact                               # See Fact.all_role_value
-    has_one :instance                           # See Instance.all_role_value
-    has_one :population                         # See Population.all_role_value
-    has_one :role                               # See Role.all_role_value
-  end
-
-  class SetConstraint < Constraint
-  end
-
-  class SubsetConstraint < SetConstraint
-    has_one :subset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_subset_role_sequence
-    has_one :superset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
-  end
-
-  class Unit
-    identified_by :unit_id
-    has_one :coefficient                        # See Coefficient.all_unit
-    maybe :is_fundamental
-    has_one :name                               # See Name.all_unit
-    has_one :offset                             # See Offset.all_unit
-    one_to_one :unit_id                         # See UnitId.unit
-    has_one :vocabulary                         # See Vocabulary.all_unit
-  end
-
-  class Derivation
-    identified_by :derived_unit, :base_unit
-    has_one :base_unit, Unit                    # See Unit.all_derivation_as_base_unit
-    has_one :derived_unit, Unit                 # See Unit.all_derivation_as_derived_unit
-    has_one :exponent                           # See Exponent.all_derivation
-  end
-
-  class ValueRange
-    identified_by :minimum_bound, :maximum_bound
-    has_one :maximum_bound, Bound               # See Bound.all_value_range_as_maximum_bound
-    has_one :minimum_bound, Bound               # See Bound.all_value_range_as_minimum_bound
-  end
-
-  class ValueRestriction
-    identified_by :value_restriction_id
-    one_to_one :value_restriction_id            # See ValueRestrictionId.value_restriction
-  end
-
-  class AllowedRange
-    identified_by :value_restriction, :value_range
-    has_one :value_range                        # See ValueRange.all_allowed_range
-    has_one :value_restriction                  # See ValueRestriction.all_allowed_range
-  end
-
-  class Vocabulary
-    identified_by :name
-    one_to_one :name                            # See Name.vocabulary
-  end
-
-  class Feature
-    identified_by :vocabulary, :name
-    has_one :name                               # See Name.all_feature
-    has_one :vocabulary                         # See Vocabulary.all_feature
-  end
-
-  class Population
-    identified_by :vocabulary, :name
-    has_one :name                               # See Name.all_population
-    has_one :vocabulary                         # See Vocabulary.all_population
-  end
-
-  class SetComparisonConstraint < SetConstraint
-  end
-
-  class SetComparisonRoles
-    identified_by :set_comparison_constraint, :ordinal
-    has_one :ordinal                            # See Ordinal.all_set_comparison_roles
-    has_one :role_sequence                      # See RoleSequence.all_set_comparison_roles
-    has_one :set_comparison_constraint          # See SetComparisonConstraint.all_set_comparison_roles
-  end
-
-  class SetEqualityConstraint < SetComparisonConstraint
-  end
-
-  class SetExclusionConstraint < SetComparisonConstraint
-    maybe :is_mandatory
-  end
-
-  class Concept < Feature
-    maybe :is_independent
-    has_one :pronoun                            # See Pronoun.all_concept
-  end
-
   class Role
     identified_by :fact_type, :ordinal, :concept
     has_one :concept                            # See Concept.all_role
@@ -266,17 +239,12 @@ module ::Metamodel
     has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_as_trailing_adjective
   end
 
-  class Join
-    identified_by :role_ref, :join_step
-    has_one :join_step, Ordinal                 # See Ordinal.all_join_as_join_step
-    has_one :role_ref                           # See RoleRef.all_join
-    has_one :concept                            # See Concept.all_join
-    has_one :input_role, Role                   # See Role.all_join_as_input_role
-    has_one :output_role, Role                  # See Role.all_join_as_output_role
+  class SetConstraint < Constraint
   end
 
-  class EntityType < Concept
-    one_to_one :fact_type                       # See FactType.entity_type
+  class SubsetConstraint < SetConstraint
+    has_one :subset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_subset_role_sequence
+    has_one :superset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
   end
 
   class TypeInheritance < FactType
@@ -294,10 +262,36 @@ module ::Metamodel
     has_one :value_restriction                  # See ValueRestriction.all_value_type
   end
 
+  class Join
+    identified_by :role_ref, :join_step
+    has_one :join_step, Ordinal                 # See Ordinal.all_join_as_join_step
+    has_one :role_ref                           # See RoleRef.all_join
+    has_one :concept                            # See Concept.all_join
+    has_one :input_role, Role                   # See Role.all_join_as_input_role
+    has_one :output_role, Role                  # See Role.all_join_as_output_role
+  end
+
   class Parameter
     identified_by :name, :value_type
     has_one :name                               # See Name.all_parameter
     has_one :value_type                         # See ValueType.all_parameter
+  end
+
+  class SetComparisonConstraint < SetConstraint
+  end
+
+  class SetComparisonRoles
+    identified_by :set_comparison_constraint, :ordinal
+    has_one :ordinal                            # See Ordinal.all_set_comparison_roles
+    has_one :role_sequence                      # See RoleSequence.all_set_comparison_roles
+    has_one :set_comparison_constraint          # See SetComparisonConstraint.all_set_comparison_roles
+  end
+
+  class SetEqualityConstraint < SetComparisonConstraint
+  end
+
+  class SetExclusionConstraint < SetComparisonConstraint
+    maybe :is_mandatory
   end
 
   class ParamValue

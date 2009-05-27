@@ -11,6 +11,8 @@ ThingID is written as AutoCounter;
  * Entity Types
  */
 Thing is identified by its ID;
+
 ThingSequence is identified by Thing and Text where
 	Thing has Ordinal occurrence,
-	ThingSequence has at most one Text;
+	ThingSequence has one Text;
+

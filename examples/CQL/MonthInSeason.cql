@@ -11,6 +11,7 @@ Season is written as VariableLengthText;
  * Entity Types
  */
 Event is identified by its Id;
+
 Occurrence is where
 	Event occurred in Month;
 

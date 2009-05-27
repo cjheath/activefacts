@@ -82,10 +82,11 @@ module ActiveFacts
         # Just beware that readings having the same players will be considered to be of the same fact type, even if they're not.
 
         # Detect standard reference-mode scenarios
-        ft = identifying_facts[0]
+        external_identifying_facts = identifying_facts - [entity_type.fact_type]
+        ft = external_identifying_facts[0]
         fact_constraints = nil
-        ftr = ft.all_role.sort_by{|role| role.ordinal}
-        if identifying_facts.size == 1 and
+        ftr = ft && ft.all_role.sort_by{|role| role.ordinal}
+        if external_identifying_facts.size == 1 and
           entity_role = ftr[n = (ftr[0].concept == entity_type ? 0 : 1)] and
           value_role = ftr[1-n] and
           value_name = value_role.concept.name and
@@ -99,13 +100,13 @@ module ActiveFacts
           # Detect standard reference-mode readings:
           forward_reading = reverse_reading = nil
           ft.all_reading.each do |reading|
-            if reading.reading_text =~ /^\{(\d)\} has \{\d\}$/
+            if reading.text =~ /^\{(\d)\} has \{\d\}$/
               if reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i}.role == entity_role
                 forward_reading = reading
               else
                 reverse_reading = reading
               end
-            elsif reading.reading_text =~ /^\{(\d)\} is of \{\d\}$/
+            elsif reading.text =~ /^\{(\d)\} is of \{\d\}$/
               if reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i}.role == value_role
                 reverse_reading = reading
               else
@@ -129,6 +130,7 @@ module ActiveFacts
                 @constraints_used[pc] = true
               end
             end
+            fact_constraints += Array(@presence_constraints_by_fact[entity_type.fact_type])
 
             @fact_types_dumped[ft] = true
 
@@ -136,9 +138,15 @@ module ActiveFacts
             other_readings = ft.all_reading - [forward_reading] - [reverse_reading]
             debug :mode, "--- other_readings.size now = #{other_readings.size}" if other_readings.size > 0
 
-            fact_text = other_readings.map do |reading|
-              expanded_reading(reading, fact_constraints, true)
-            end*",\n\t"
+            fact_text = (
+              other_readings.map do |reading|
+                expanded_reading(reading, fact_constraints, true)
+              end +
+              (entity_type.fact_type ?
+                fact_readings_with_constraints(entity_type.fact_type, fact_constraints) : []
+              )
+            )*",\n\t"
+
             return " identified by its #{residual}" +
               (fact_text != "" ? " where\n\t" + fact_text : "")
           end
@@ -179,7 +187,7 @@ module ActiveFacts
 
       def non_subtype_dump(o, pi)
         print "#{o.name} is" + identified_by(o, pi)
-        print(" where\n\t"+ fact_readings(o.fact_type)) if o.fact_type
+#        print(" where\n\t"+ fact_readings(o.fact_type)) if o.fact_type
         puts ";\n"
       end
 
@@ -374,7 +382,7 @@ module ActiveFacts
           }
         frequency_constraints = [] unless frequency_constraints.detect{|fc| fc[0] != "some" }
 
-        #$stderr.puts "fact_type roles (#{fact_type.all_role.map{|r| r.concept.name}*","}) default_reading '#{fact_type.preferred_reading.reading_text}' roles (#{fact_type.preferred_reading.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}*","}) #{frequency_constraints.inspect}"
+        #$stderr.puts "fact_type roles (#{fact_type.all_role.map{|r| r.concept.name}*","}) default_reading '#{fact_type.preferred_reading.text}' roles (#{fact_type.preferred_reading.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}*","}) #{frequency_constraints.inspect}"
 
         # REVISIT: Make sure that we refer to the constrained players by their common supertype
 

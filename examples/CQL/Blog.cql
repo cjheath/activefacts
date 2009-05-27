@@ -32,12 +32,6 @@ Content provides text of Comment,
 
 Post is identified by its Id;
 Post was written by one Author;
-Paragraph is where
-	Post includes Ordinal paragraph;
-Content is of Paragraph,
-	Paragraph contains one Content;
-Paragraph has Comment,
-	Comment is on one Paragraph;
 
 Topic is identified by its Id;
 Post belongs to one Topic,
@@ -45,6 +39,13 @@ Post belongs to one Topic,
 Topic belongs to at most one parent-Topic [acyclic];
 Topic is called one topic-Name,
 	Name is of at most one Topic;
+
+Paragraph is where
+	Post includes Ordinal paragraph;
+Content is of Paragraph,
+	Paragraph contains one Content;
+Paragraph has Comment,
+	Comment is on one Paragraph;
 
 /*
  * Constraints:

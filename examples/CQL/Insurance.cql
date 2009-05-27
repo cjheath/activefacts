@@ -101,9 +101,6 @@ Person has one Title;
 Person has at most one birth-Date;
 Person has one family-Name;
 Person has one given-Name;
-Lodgement is where
-	Claim was lodged by at most one Person;
-Lodgement was made at at most one DateTime;
 
 Phone is identified by its Nr;
 
@@ -117,8 +114,6 @@ PoliceReport was by at most one reporter-Name;
 PoliceReport was at at most one station-Name;
 
 PolicyWording is identified by its Text;
-CoverWording is where
-	CoverType used PolicyWording from start-Date (as startDate);
 
 Product is identified by its Code;
 Alias is of at most one Product,
@@ -148,16 +143,12 @@ VehicleIncident was caused by at most one Reason;
 VehicleIncident involved at most one previous_damage-Description;
 VehicleIncident resulted in vehicle being towed to at most one towed-Location;
 VehicleIncident occurred during at most one weather-Description;
-ThirdParty is where
-	Person was third party in VehicleIncident;
-ThirdParty drove at most one vehicle-Registration;
 
 VehicleType is identified by Make and Model and Badge where
 	VehicleType is of one Make,
 	VehicleType is of one Model,
 	Badge is of VehicleType,
 	VehicleType has at most one Badge;
-ThirdParty vehicle is of at most one VehicleType;
 Vehicle is of one VehicleType;
 
 Witness is identified by Incident and Name where
@@ -167,7 +158,6 @@ Witness is identified by Incident and Name where
 Witness has at most one contact-Phone;
 
 Year is identified by its Nr;
-ThirdParty vehicle is of at most one model-Year;
 Vehicle is of one model-Year restricted to {1900..2100};
 
 Address is identified by Street and City and Postcode and State where
@@ -199,9 +189,13 @@ ContactMethods includes at most one mobile-Phone;
 ContactMethods has at most one preferred-ContactMethod;
 
 Contractor is a kind of Company;
+
 ContractorAppointment is where
 	Claim involves Contractor,
 	Contractor is appointed to handle Claim;
+
+CoverWording is where
+	CoverType used PolicyWording from start-Date (as startDate);
 
 DamagedProperty is identified by Incident and Address where
 	Incident caused DamagedProperty,
@@ -214,6 +208,7 @@ Dealer is a kind of Party;
 Vehicle was sold by at most one Dealer;
 
 Driver is a kind of Person;
+
 Driving is where
 	VehicleIncident involves at most one Driver,
 	Driver drove covered vehicle in at least one VehicleIncident;
@@ -222,7 +217,8 @@ Driving resulted in at most one blood-TestResult;
 Driving resulted in at most one breath-TestResult;
 Driving (as driver_hospitalised) resulted in driver taken to at most one hospital-Name;
 Driving was without owners consent for at most one nonconsent-Reason;
-Driving drove unlicenced for at most one unlicensed-Reason;
+Driving was unlicenced for at most one unlicensed-Reason;
+
 DrivingCharge is where
 	Driving resulted in at most one Charge;
 DrivingCharge is warning;
@@ -231,7 +227,6 @@ FinanceInstitution is a kind of Company;
 Vehicle is subject to finance with at most one FinanceInstitution;
 
 Insurer is a kind of Company;
-ThirdParty is insured by at most one Insurer;
 
 Investigator is a kind of Contractor;
 
@@ -244,6 +239,10 @@ License is of one LicenseType,
 	LicenseType has License instance;
 License was granted in at most one Year restricted to {1990..2100};
 License is international;
+
+Lodgement is where
+	Claim was lodged by at most one Person;
+Lodgement was made at at most one DateTime;
 
 Policy is identified by p_year and p_product and p_state and p_serial where
 	Policy was issued in one Year (as p_year) restricted to {0..99},
@@ -260,13 +259,17 @@ Policy was sold by at most one AuthorisedRep,
 	AuthorisedRep sold Policy;
 Policy belongs to one Client,
 	Client has Policy;
-Cover is where
-	Policy provides CoverType over Asset,
-	CoverType over Asset is provided by Policy;
 
 Repairer is a kind of Contractor;
 
 Solicitor is a kind of Contractor;
+
+ThirdParty is where
+	Person was third party in VehicleIncident;
+ThirdParty is insured by at most one Insurer;
+ThirdParty vehicle is of at most one VehicleType;
+ThirdParty vehicle is of at most one model-Year;
+ThirdParty drove at most one vehicle-Registration;
 
 UnderwritingDemerit is identified by VehicleIncident and DemeritKind where
 	VehicleIncident occurred despite UnderwritingDemerit,
@@ -276,6 +279,10 @@ UnderwritingDemerit is identified by VehicleIncident and DemeritKind where
 UnderwritingDemerit occurred at most one occurrence-Count times;
 
 Assessor is a kind of Contractor;
+
+Cover is where
+	Policy provides CoverType over Asset,
+	CoverType over Asset is provided by Policy;
 
 MotorPolicy is a kind of Policy;
 

@@ -236,7 +236,7 @@ module ActiveFacts
           # $stderr.puts "#{subtype.name} is a subtype of #{supertype.name}"
 
           inheritance_fact = @constellation.TypeInheritance(subtype, supertype)
-          inheritance_fact.fact_type_id = :new
+          inheritance_fact.feature_id = :new
           if x.attributes["IsPrimary"] == "true" or           # Old way
             x.attributes["PreferredIdentificationPath"] == "true"   # Newer
             # $stderr.puts "#{supertype.name} is primary supertype of #{subtype.name}"
@@ -254,11 +254,11 @@ module ActiveFacts
           @constellation.RoleRef(rs, 1).role = supertype_role
 
 #          reading = @constellation.Reading(inheritance_fact, 0)
-#          reading.reading_text = "{1} is {0}"
+#          reading.text = "{1} is {0}"
 #          reading.role_sequence = rs
 
           reading = @constellation.Reading(inheritance_fact, 0)
-          reading.reading_text = "{0} is a subtype of {1}"
+          reading.text = "{0} is a subtype of {1}"
           reading.role_sequence = rs
 
           # The required uniqueness constraints are already present in the NORMA file, don't duplicate them
@@ -310,11 +310,11 @@ module ActiveFacts
           throw "Nested fact #{fact_id} not found" if !fact_type
 
           #if is_implied
-          #    puts "Implied type #{name} (#{id}) nests #{fact_type ? fact_type.fact_type_id : "unknown"}"
+          #    puts "Implied type #{name} (#{id}) nests #{fact_type ? fact_type.feature_id : "unknown"}"
           #    @by_id[id] = fact_type
           #else
           begin
-            #puts "NestedType #{name} is #{id}, nests #{fact_type.fact_type_id}"
+            #puts "NestedType #{name} is #{id}, nests #{fact_type.feature_id}"
             nested_types <<
               @by_id[id] =
               nested_type = @constellation.EntityType(@vocabulary, name)
@@ -377,11 +377,11 @@ module ActiveFacts
             name = x.attributes['Name'] || ''
             name.gsub!(/\s/,'')
             name = nil if name.size == 0
-            #puts "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.fact_type_id} played by #{concept.name}"
+            #puts "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.feature_id} played by #{concept.name}"
 
             role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, concept)
             role.role_name = name if name
-            # puts "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x.attributes['Name']} is played by #{concept.name}, role is #{role.object_id}"
+            # puts "Fact #{fact_name} (id #{fact_type.feature_id.object_id}) role #{x.attributes['Name']} is played by #{concept.name}, role is #{role.object_id}"
 
             x_vr = x.elements.to_a("orm:ValueRestriction")
             x_vr.each{|vr|
@@ -418,14 +418,14 @@ module ActiveFacts
               reading = @constellation.Reading(fact_type, fact_type.all_reading.size)
               reading.role_sequence = role_sequence
               # REVISIT: The downcase here only needs to be the initial letter of each word, but be safe:
-              reading.reading_text = extract_adjectives(x.text, role_sequence).downcase
+              reading.text = extract_adjectives(x.text, role_sequence).downcase
             }
           }
         }
         # @vocabulary.fact_types.each{|ft| puts ft }
       end
 
-      def extract_adjectives(reading_text, role_sequence)
+      def extract_adjectives(text, role_sequence)
         all_role_refs = role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}
         (0...all_role_refs.size).each{|i|
           role_ref = all_role_refs[i]
@@ -437,22 +437,22 @@ module ActiveFacts
           role_with_adjectives_re =
             %r| ?#{leading_adjectives_re}?\{#{i}\}#{trailing_adjectives_re}? ?|
 
-          reading_text.gsub!(role_with_adjectives_re) {
+          text.gsub!(role_with_adjectives_re) {
             la = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\s+\Z/,'').strip
             ta = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\A\s+/,'').strip
-            #puts "Setting leading adj #{la.inspect} from #{reading_text.inspect} for #{role_ref.role.concept.name}" if la != ""
+            #puts "Setting leading adj #{la.inspect} from #{text.inspect} for #{role_ref.role.concept.name}" if la != ""
             # REVISIT: Dunno what's up here, but removing the "if" test makes this chuck exceptions:
             role_ref.leading_adjective = la if la != ""
             role_ref.trailing_adjective = ta if ta != ""
 
-            #puts "Reading '#{reading_text}' has role #{i} adjectives '#{la}' '#{ta}'" if la != "" || ta != ""
+            #puts "Reading '#{text}' has role #{i} adjectives '#{la}' '#{ta}'" if la != "" || ta != ""
 
             " {#{i}} "
           }
         }
-        reading_text.sub!(/\A /, '')
-        reading_text.sub!(/ \Z/, '')
-        reading_text
+        text.sub!(/\A /, '')
+        text.sub!(/ \Z/, '')
+        text
       end
 
       def get_role_sequence(role_array)

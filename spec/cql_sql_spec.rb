@@ -35,7 +35,6 @@ describe "CQL Loader with SQL output" do
     "RedundantDependency" => "Drops uniqueness constraints",
     "SeparateSubtype" => "CQL doesn't have an option for subtype separation",
     "SubtypePI" => "Names an index automatically from CQL, but explicitly from NORMA",
-    "OddIdentifier" => "Drops a mandatory constraint",
   }
 
   # Generate and return the SQL for the given vocabulary

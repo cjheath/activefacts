@@ -287,13 +287,6 @@ module ::Insurance
     has_one :title                              # See Title.all_person
   end
 
-  class Lodgement
-    identified_by :claim
-    one_to_one :claim                           # See Claim.lodgement
-    has_one :person                             # See Person.all_lodgement
-    has_one :date_time                          # See DateTime.all_lodgement
-  end
-
   class Phone
     identified_by :phone_nr
     one_to_one :phone_nr                        # See PhoneNr.phone
@@ -312,13 +305,6 @@ module ::Insurance
   class PolicyWording
     identified_by :policy_wording_text
     one_to_one :policy_wording_text             # See PolicyWordingText.policy_wording
-  end
-
-  class CoverWording
-    identified_by :cover_type, :policy_wording, :start_date
-    has_one :cover_type                         # See CoverType.all_cover_wording
-    has_one :policy_wording                     # See PolicyWording.all_cover_wording
-    has_one :start_date, Date                   # See Date.all_cover_wording_as_start_date
   end
 
   class Product
@@ -359,16 +345,6 @@ module ::Insurance
     has_one :reason                             # See Reason.all_vehicle_incident
     has_one :towed_location, Location           # See Location.all_vehicle_incident_as_towed_location
     has_one :weather_description, Description   # See Description.all_vehicle_incident_as_weather_description
-  end
-
-  class ThirdParty
-    identified_by :person, :vehicle_incident
-    has_one :person                             # See Person.all_third_party
-    has_one :vehicle_incident                   # See VehicleIncident.all_third_party
-    has_one :insurer                            # See Insurer.all_third_party
-    has_one :model_year, "Year"                 # See Year.all_third_party_as_model_year
-    has_one :vehicle_registration, Registration  # See Registration.all_third_party_as_vehicle_registration
-    has_one :vehicle_type                       # See VehicleType.all_third_party
   end
 
   class VehicleType
@@ -429,6 +405,13 @@ module ::Insurance
     has_one :contractor                         # See Contractor.all_contractor_appointment
   end
 
+  class CoverWording
+    identified_by :cover_type, :policy_wording, :start_date
+    has_one :cover_type                         # See CoverType.all_cover_wording
+    has_one :policy_wording                     # See PolicyWording.all_cover_wording
+    has_one :start_date, Date                   # See Date.all_cover_wording_as_start_date
+  end
+
   class DamagedProperty
     identified_by :incident, :address
     has_one :address                            # See Address.all_damaged_property
@@ -480,6 +463,13 @@ module ::Insurance
     has_one :year                               # See Year.all_license
   end
 
+  class Lodgement
+    identified_by :claim
+    one_to_one :claim                           # See Claim.lodgement
+    has_one :person                             # See Person.all_lodgement
+    has_one :date_time                          # See DateTime.all_lodgement
+  end
+
   class Policy
     identified_by :p_year, :p_product, :p_state, :p_serial
     has_one :application                        # See Application.all_policy
@@ -492,17 +482,20 @@ module ::Insurance
     has_one :p_year, Year                       # See Year.all_policy_as_p_year
   end
 
-  class Cover
-    identified_by :policy, :cover_type, :asset
-    has_one :asset                              # See Asset.all_cover
-    has_one :cover_type                         # See CoverType.all_cover
-    has_one :policy                             # See Policy.all_cover
-  end
-
   class Repairer < Contractor
   end
 
   class Solicitor < Contractor
+  end
+
+  class ThirdParty
+    identified_by :person, :vehicle_incident
+    has_one :person                             # See Person.all_third_party
+    has_one :vehicle_incident                   # See VehicleIncident.all_third_party
+    has_one :insurer                            # See Insurer.all_third_party
+    has_one :model_year, Year                   # See Year.all_third_party_as_model_year
+    has_one :vehicle_registration, Registration  # See Registration.all_third_party_as_vehicle_registration
+    has_one :vehicle_type                       # See VehicleType.all_third_party
   end
 
   class UnderwritingDemerit
@@ -513,6 +506,13 @@ module ::Insurance
   end
 
   class Assessor < Contractor
+  end
+
+  class Cover
+    identified_by :policy, :cover_type, :asset
+    has_one :asset                              # See Asset.all_cover
+    has_one :cover_type                         # See CoverType.all_cover
+    has_one :policy                             # See Policy.all_cover
   end
 
   class MotorPolicy < Policy

@@ -13,8 +13,7 @@ include ActiveFacts
 
 describe "Norma Loader" do
   orm_cql_failures = {
-    "OddIdentifier" => "Strange identification pattern is incorrectly verbalised to CQL",
-    "ServiceDirector" => "ORM file has incorrect role names, not corrected in order to recall this modeling error"
+#    "OddIdentifier" => "Strange identification pattern is incorrectly verbalised to CQL",  # Fixed
   }
   # Generate and return the CQL for the given vocabulary
   def cql(vocabulary)

@@ -62,8 +62,6 @@ SalesOrderItem is identified by SalesOrder and Product where
 	SalesOrderItem is for one Product;
 DispatchItem is for at most one SalesOrderItem;
 SalesOrderItem is in one Quantity;
-DirectOrderMatch is where
-	PurchaseOrderItem matches SalesOrderItem;
 
 Supplier is a kind of Party;
 PurchaseOrder is to one Supplier,
@@ -83,6 +81,9 @@ Warehouse contains at least one Bin;
 Customer is a kind of Party;
 Customer made SalesOrder,
 	SalesOrder was made by one Customer;
+
+DirectOrderMatch is where
+	PurchaseOrderItem matches SalesOrderItem;
 
 /*
  * Constraints:

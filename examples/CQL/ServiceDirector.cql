@@ -52,7 +52,7 @@ Credential has one UserName;
 
 DataStore is identified by its _Name;
 DataStore requires at least one Credential;
-DataStore (as FriendlyName) has one Friendly-Name;
+DataStore has one Friendly-Name;
 DataStore has at most one HeartBeat-TruckPCID;
 DataStore has one Internal-Credential (as InternalCredential);
 DataStore is one Major-Version;
@@ -107,17 +107,14 @@ NotificationLevel has one InitialDelay-Duration;
 NotificationLevel has one Repeat-Duration;
 
 NotificationType is identified by its _Name;
-MonitorNotificationType is where
-	Monitor has at least one NotificationType;
-MonitorNotificationType is excluded;
 
 ProviderType is identified by its _Id;
 
 RecurringSchedule is identified by its _Id;
-Monitor has AllExclusion-RecurringSchedule,
-	AllExclusion-RecurringSchedule applies to at most one Monitor;
-Monitor has IntegrationExclusion-RecurringSchedule,
-	IntegrationExclusion-RecurringSchedule applies to at most one Monitor;
+Monitor (as MonitorAllExclusion) has AllExclusion-RecurringSchedule,
+	AllExclusion-RecurringSchedule applies to at most one MonitorAllExclusion;
+Monitor (as MonitorIntegrationExclusion) has IntegrationExclusion-RecurringSchedule,
+	IntegrationExclusion-RecurringSchedule applies to at most one MonitorIntegrationExclusion;
 RecurringSchedule has one Duration;
 RecurringSchedule friday;
 RecurringSchedule monday;
@@ -147,17 +144,15 @@ Switch is one Major-Version;
 Switch is one Minor-Version;
 Switch has one Monitoring-Port;
 Switch has one Operating-Port;
-Switch is on Private-Network,
-	Private-Network connects to at most one Switch;
-Switch is on at least one Public-Network,
-	Public-Network connects to at most one Switch;
+Switch (as PrivateInterfaceSwitch) is on Private-Network,
+	Private-Network connects to at most one PrivateInterfaceSwitch;
+Switch (as PublicInterfaceSwitch) is on at least one Public-Network,
+	Network connects to at most one PublicInterfaceSwitch;
 Switch is one Revision-Version;
 Switch is backup messages;
 Switch is backup updates;
 Switch is send disabled;
 Switch is test vectors enabled;
-HostSystemRunsSwitch is where
-	HostSystem runs Switch;
 
 Time is identified by HHMMSS where
 	Time has one HHMMSS,
@@ -171,9 +166,6 @@ User is identified by its _Name;
 User has one Primary-EmailAddress;
 User has at most one Secondary-EmailAddress;
 User is monitor notification disabled;
-MonitorNotificationUser is where
-	MonitorNotificationType has Notification-User;
-MonitorNotificationUser has one NotificationLevel;
 
 Vendor is a kind of Company;
 Vendor requires at least one Credential;
@@ -185,13 +177,26 @@ DataStore belongs to one Client,
 
 FileHostSystem is a kind of HostSystem;
 FileHostSystem has one Port;
-DataStoreFileHostSystem is where
-	DataStore has at most one FileHostSystem;
-DataStoreFileHostSystem has one Internal-Credential;
+
+HostSystemRunsSwitch is where
+	HostSystem runs Switch;
+
+MonitorNotificationType is where
+	Monitor has at least one NotificationType;
+MonitorNotificationType is excluded;
+
+MonitorNotificationUser is where
+	MonitorNotificationType has Notification-User;
+MonitorNotificationUser has one NotificationLevel;
 
 Service is identified by Vendor and ServiceType where
 	Vendor provides Service,
 	Service is of one ServiceType;
+
+DataStoreFileHostSystem is where
+	DataStore has at most one FileHostSystem;
+DataStoreFileHostSystem has one Internal-Credential;
+
 DataStoreService is where
 	DataStore has Service;
 DataStoreService belongs to one Client;

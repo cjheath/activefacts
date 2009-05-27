@@ -12,6 +12,7 @@ TeamID is written as AutoCounter;
  * Entity Types
  */
 Entrant is identified by its ID;
+
 EntrantHasGivenName is where
 	Entrant has at least one GivenName,
 	GivenName is of Entrant;

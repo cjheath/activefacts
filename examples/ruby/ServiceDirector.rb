@@ -247,13 +247,6 @@ module ::ServiceDirector
     one_to_one :notification_type_name, NotificationType_Name  # See NotificationType_Name.notification_type
   end
 
-  class MonitorNotificationType
-    identified_by :monitor, :notification_type
-    has_one :monitor                            # See Monitor.all_monitor_notification_type
-    has_one :notification_type                  # See NotificationType.all_monitor_notification_type
-    maybe :is_excluded
-  end
-
   class ProviderType
     identified_by :provider_type_id
     one_to_one :provider_type_id, ProviderType_Id  # See ProviderType_Id.provider_type
@@ -311,12 +304,6 @@ module ::ServiceDirector
     one_to_one :switch_id, Switch_Id            # See Switch_Id.switch
   end
 
-  class HostSystemRunsSwitch
-    identified_by :host_system, :switch
-    has_one :host_system                        # See HostSystem.all_host_system_runs_switch
-    has_one :switch                             # See Switch.all_host_system_runs_switch
-  end
-
   class Time
     identified_by :hhmmss
     one_to_one :hhmmss, HHMMSS                  # See HHMMSS.time
@@ -335,13 +322,6 @@ module ::ServiceDirector
     one_to_one :user_name, User_Name            # See User_Name.user
   end
 
-  class MonitorNotificationUser
-    identified_by :monitor_notification_type, :notification_user
-    has_one :monitor_notification_type          # See MonitorNotificationType.all_monitor_notification_user
-    has_one :notification_user, User            # See User.all_monitor_notification_user_as_notification_user
-    has_one :notification_level                 # See NotificationLevel.all_monitor_notification_user
-  end
-
   class Vendor < Company
   end
 
@@ -353,17 +333,37 @@ module ::ServiceDirector
     has_one :port                               # See Port.all_file_host_system
   end
 
-  class DataStoreFileHostSystem
-    identified_by :data_store
-    one_to_one :data_store                      # See DataStore.data_store_file_host_system
-    has_one :file_host_system                   # See FileHostSystem.all_data_store_file_host_system
-    one_to_one :internal_credential, Credential  # See Credential.data_store_file_host_system_as_internal_credential
+  class HostSystemRunsSwitch
+    identified_by :host_system, :switch
+    has_one :host_system                        # See HostSystem.all_host_system_runs_switch
+    has_one :switch                             # See Switch.all_host_system_runs_switch
+  end
+
+  class MonitorNotificationType
+    identified_by :monitor, :notification_type
+    has_one :monitor                            # See Monitor.all_monitor_notification_type
+    has_one :notification_type                  # See NotificationType.all_monitor_notification_type
+    maybe :is_excluded
+  end
+
+  class MonitorNotificationUser
+    identified_by :monitor_notification_type, :notification_user
+    has_one :monitor_notification_type          # See MonitorNotificationType.all_monitor_notification_user
+    has_one :notification_user, User            # See User.all_monitor_notification_user_as_notification_user
+    has_one :notification_level                 # See NotificationLevel.all_monitor_notification_user
   end
 
   class Service
     identified_by :vendor, :service_type
     has_one :service_type                       # See ServiceType.all_service
     has_one :vendor                             # See Vendor.all_service
+  end
+
+  class DataStoreFileHostSystem
+    identified_by :data_store
+    one_to_one :data_store                      # See DataStore.data_store_file_host_system
+    has_one :file_host_system                   # See FileHostSystem.all_data_store_file_host_system
+    one_to_one :internal_credential, Credential  # See Credential.data_store_file_host_system_as_internal_credential
   end
 
   class DataStoreService

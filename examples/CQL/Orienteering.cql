@@ -47,12 +47,14 @@ Event has at most one Number;
 Event is held on one StartTime;
 Event starts at one start-Location,
 	Location is where Event starts;
+
 EventControl is where
 	Event includes at least one ControlNumber;
+EventControl has at most one PointValue;
+
 EventScoringMethod is where
 	ScoringMethod is used for Course of Event,
 	Course of Event uses at most one ScoringMethod;
-EventControl has at most one PointValue;
 
 Map is identified by its ID;
 Club (as Owner) owns Map,
@@ -72,22 +74,25 @@ Person has one GivenName,
 	GivenName is name of Person;
 Person has at most one PostCode;
 Person was born in at most one birth-Year;
+
+Punch is identified by its ID;
+
+PunchPlacement is where
+	Punch is placed at EventControl;
+
+Series is identified by its ID;
+Event is in at most one Series;
+Series has one SeriesName (as Name),
+	Name is of at most one Series;
+
 Entry is identified by its ID where
 	Person entered Course of Event,
 	Person entered Event in at most one Course;
 Entry received at most one Score;
 Entry finished in at most one finish-Placing;
 
-Punch is identified by its ID;
-PunchPlacement is where
-	Punch is placed at EventControl;
 Visit is where
 	Punch was visited by Entry at Time;
-
-Series is identified by its ID;
-Event is in at most one Series;
-Series has one SeriesName (as Name),
-	Name is of at most one Series;
 
 /*
  * Constraints:

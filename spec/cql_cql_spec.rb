@@ -27,7 +27,7 @@ describe "CQL Loader" do
   }
   cql_cql_failures = {
     "Insurance" => "Misses a subtype join in a constraint verbalisation",
-    "OddIdentifier" => "Doesn't support identification of object fact types using mixed external/internal roles",
+#    "OddIdentifier" => "Doesn't support identification of object fact types using mixed external/internal roles",
   }
   # Generate and return the CQL for the given vocabulary
   def cql(vocabulary)

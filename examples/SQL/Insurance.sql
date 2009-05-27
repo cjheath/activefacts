@@ -382,7 +382,7 @@ CREATE TABLE VehicleIncident (
 	DrivingIsWarning                        bit NULL,
 	-- maybe Driving is where VehicleIncident involves Driver and maybe Driving was without owners consent for nonconsent-Reason,
 	DrivingNonconsentReason                 varchar NULL,
-	-- maybe Driving is where VehicleIncident involves Driver and maybe Driving drove unlicenced for unlicensed-Reason,
+	-- maybe Driving is where VehicleIncident involves Driver and maybe Driving was unlicenced for unlicensed-Reason,
 	DrivingUnlicensedReason                 varchar NULL,
 	-- VehicleIncident is a subtype of Incident and Claim has ClaimID,
 	IncidentID                              int IDENTITY NOT NULL,
