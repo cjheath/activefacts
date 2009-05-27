@@ -144,13 +144,6 @@ module ActiveFacts
       has_one :vocabulary                         # See Vocabulary.all_unit
     end
 
-    class Derivation
-      identified_by :derived_unit, :base_unit
-      has_one :base_unit, Unit                    # See Unit.all_derivation_as_base_unit
-      has_one :derived_unit, Unit                 # See Unit.all_derivation_as_derived_unit
-      has_one :exponent                           # See Exponent.all_derivation
-    end
-
     class ValueRange
       identified_by :minimum_bound, :maximum_bound
       has_one :maximum_bound, Bound               # See Bound.all_value_range_as_maximum_bound
@@ -162,15 +155,15 @@ module ActiveFacts
       one_to_one :value_restriction_id            # See ValueRestrictionId.value_restriction
     end
 
+    class Vocabulary
+      identified_by :name
+      one_to_one :name                            # See Name.vocabulary
+    end
+
     class AllowedRange
       identified_by :value_restriction, :value_range
       has_one :value_range                        # See ValueRange.all_allowed_range
       has_one :value_restriction                  # See ValueRestriction.all_allowed_range
-    end
-
-    class Vocabulary
-      identified_by :name
-      one_to_one :name                            # See Name.vocabulary
     end
 
     class Concept < Feature
@@ -187,29 +180,18 @@ module ActiveFacts
       has_one :vocabulary                         # See Vocabulary.all_constraint
     end
 
+    class Derivation
+      identified_by :derived_unit, :base_unit
+      has_one :base_unit, Unit                    # See Unit.all_derivation_as_base_unit
+      has_one :derived_unit, Unit                 # See Unit.all_derivation_as_derived_unit
+      has_one :exponent                           # See Exponent.all_derivation
+    end
+
     class EntityType < Concept
     end
 
     class FactType < Feature
       one_to_one :entity_type                     # See EntityType.fact_type
-    end
-
-    class Role
-      identified_by :fact_type, :ordinal, :concept
-      has_one :concept                            # See Concept.all_role
-      has_one :fact_type                          # See FactType.all_role
-      has_one :ordinal                            # See Ordinal.all_role
-      has_one :role_name, Name                    # See Name.all_role_as_role_name
-      has_one :role_value_restriction, ValueRestriction  # See ValueRestriction.all_role_as_role_value_restriction
-    end
-
-    class RoleRef
-      identified_by :role_sequence, :ordinal
-      has_one :ordinal                            # See Ordinal.all_role_ref
-      has_one :role                               # See Role.all_role_ref
-      has_one :role_sequence                      # See RoleSequence.all_role_ref
-      has_one :leading_adjective, Adjective       # See Adjective.all_role_ref_as_leading_adjective
-      has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_as_trailing_adjective
     end
 
     class Population
@@ -235,9 +217,27 @@ module ActiveFacts
     end
 
     class RingConstraint < Constraint
-      has_one :other_role, Role                   # See Role.all_ring_constraint_as_other_role
+      has_one :other_role, "Role"                 # See Role.all_ring_constraint_as_other_role
       has_one :ring_type                          # See RingType.all_ring_constraint
       has_one :role                               # See Role.all_ring_constraint
+    end
+
+    class Role
+      identified_by :fact_type, :ordinal, :concept
+      has_one :concept                            # See Concept.all_role
+      has_one :fact_type                          # See FactType.all_role
+      has_one :ordinal                            # See Ordinal.all_role
+      has_one :role_name, Name                    # See Name.all_role_as_role_name
+      has_one :role_value_restriction, ValueRestriction  # See ValueRestriction.all_role_as_role_value_restriction
+    end
+
+    class RoleRef
+      identified_by :role_sequence, :ordinal
+      has_one :ordinal                            # See Ordinal.all_role_ref
+      has_one :role                               # See Role.all_role_ref
+      has_one :role_sequence                      # See RoleSequence.all_role_ref
+      has_one :leading_adjective, Adjective       # See Adjective.all_role_ref_as_leading_adjective
+      has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_as_trailing_adjective
     end
 
     class SetConstraint < Constraint
@@ -263,6 +263,15 @@ module ActiveFacts
       has_one :value_restriction                  # See ValueRestriction.all_value_type
     end
 
+    class Join
+      identified_by :role_ref, :join_step
+      has_one :join_step, Ordinal                 # See Ordinal.all_join_as_join_step
+      has_one :role_ref                           # See RoleRef.all_join
+      has_one :concept                            # See Concept.all_join
+      has_one :input_role, Role                   # See Role.all_join_as_input_role
+      has_one :output_role, Role                  # See Role.all_join_as_output_role
+    end
+
     class Parameter
       identified_by :name, :value_type
       has_one :name                               # See Name.all_parameter
@@ -284,15 +293,6 @@ module ActiveFacts
 
     class SetExclusionConstraint < SetComparisonConstraint
       maybe :is_mandatory
-    end
-
-    class Join
-      identified_by :role_ref, :join_step
-      has_one :join_step, Ordinal                 # See Ordinal.all_join_as_join_step
-      has_one :role_ref                           # See RoleRef.all_join
-      has_one :concept                            # See Concept.all_join
-      has_one :input_role, Role                   # See Role.all_join_as_input_role
-      has_one :output_role, Role                  # See Role.all_join_as_output_role
     end
 
     class ParamValue
