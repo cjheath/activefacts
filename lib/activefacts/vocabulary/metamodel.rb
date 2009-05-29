@@ -119,8 +119,10 @@ module ActiveFacts
 
     class ContextNote
       identified_by :context_note_id
-      one_to_one :constraint                      # See Constraint.context_note
+      has_one :concept                            # See Concept.all_context_note
+      has_one :constraint                         # See Constraint.all_context_note
       one_to_one :context_note_id                 # See ContextNoteId.context_note
+      has_one :fact_type                          # See FactType.all_context_note
     end
 
     class Fact
@@ -132,7 +134,6 @@ module ActiveFacts
 
     class FactType
       identified_by :fact_type_id
-      one_to_one :context_note                    # See ContextNote.fact_type
       one_to_one :fact_type_id                    # See FactTypeId.fact_type
     end
 
@@ -221,7 +222,6 @@ module ActiveFacts
 
     class Concept
       identified_by :vocabulary, :name
-      one_to_one :context_note                    # See ContextNote.concept
       maybe :is_independent
       has_one :name                               # See Name.all_concept
       has_one :pronoun                            # See Pronoun.all_concept
