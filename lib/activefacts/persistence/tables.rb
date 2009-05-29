@@ -252,11 +252,12 @@ module ActiveFacts
                       next true if !ref.to.is_table or
                         ![:one_one, :supertype, :subtype].include?(ref.role_type)
 
-                      # If one side is mandatory but not the other, don't absorb the mandatory side into the non-mandatory one
+                      # Don't absorb an object along a non-mandatory role (otherwise if it doesn't play that role, it can't exist either)
                       from_is_mandatory = !!ref.is_mandatory
                       to_is_mandatory = !ref.to_role || !!ref.to_role.is_mandatory
-                      bad = (to_is_mandatory != from_is_mandatory and (ref.from == concept ? from_is_mandatory : to_is_mandatory))
-                      debug :absorption, "Not absorbing mandatory #{concept.name} through #{ref}" if bad
+
+                      bad = !(ref.from == concept ? from_is_mandatory : to_is_mandatory)
+                      debug :absorption, "Not absorbing #{concept.name} through non-mandatory #{ref}" if bad
                       bad
                     end
 

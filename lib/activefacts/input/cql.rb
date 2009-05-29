@@ -375,7 +375,7 @@ module ActiveFacts
       def add_supertype(entity_type, supertype_name, identifying_supertype)
         debug :supertype, "Supertype #{supertype_name}"
         supertype = @constellation.EntityType(@vocabulary, supertype_name)
-        inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :feature_id => :new)
+        inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :fact_type_id => :new)
 
         # Create a reading:
         sub_role = @constellation.Role(inheritance_fact, 0, entity_type)

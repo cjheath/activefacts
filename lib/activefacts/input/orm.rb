@@ -236,7 +236,7 @@ module ActiveFacts
           # $stderr.puts "#{subtype.name} is a subtype of #{supertype.name}"
 
           inheritance_fact = @constellation.TypeInheritance(subtype, supertype)
-          inheritance_fact.feature_id = :new
+          inheritance_fact.fact_type_id = :new
           if x.attributes["IsPrimary"] == "true" or           # Old way
             x.attributes["PreferredIdentificationPath"] == "true"   # Newer
             # $stderr.puts "#{supertype.name} is primary supertype of #{subtype.name}"
@@ -310,11 +310,11 @@ module ActiveFacts
           throw "Nested fact #{fact_id} not found" if !fact_type
 
           #if is_implied
-          #    puts "Implied type #{name} (#{id}) nests #{fact_type ? fact_type.feature_id : "unknown"}"
+          #    puts "Implied type #{name} (#{id}) nests #{fact_type ? fact_type.fact_type_id : "unknown"}"
           #    @by_id[id] = fact_type
           #else
           begin
-            #puts "NestedType #{name} is #{id}, nests #{fact_type.feature_id}"
+            #puts "NestedType #{name} is #{id}, nests #{fact_type.fact_type_id}"
             nested_types <<
               @by_id[id] =
               nested_type = @constellation.EntityType(@vocabulary, name)
@@ -377,11 +377,11 @@ module ActiveFacts
             name = x.attributes['Name'] || ''
             name.gsub!(/\s/,'')
             name = nil if name.size == 0
-            #puts "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.feature_id} played by #{concept.name}"
+            #puts "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.fact_type_id} played by #{concept.name}"
 
             role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, concept)
             role.role_name = name if name
-            # puts "Fact #{fact_name} (id #{fact_type.feature_id.object_id}) role #{x.attributes['Name']} is played by #{concept.name}, role is #{role.object_id}"
+            # puts "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x.attributes['Name']} is played by #{concept.name}, role is #{role.object_id}"
 
             x_vr = x.elements.to_a("orm:ValueRestriction")
             x_vr.each{|vr|

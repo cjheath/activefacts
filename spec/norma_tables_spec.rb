@@ -19,13 +19,14 @@ include ActiveFacts::Metamodel
 Exceptions = {
   "Blog" => ["Author", "Comment", "Paragraph", "Post", "Topic"],
   "JoinEquality" => ["Event", "Seat", "Ticket", "Venue"],
-  "Metamodel" => ["AllowedRange", "Derivation", "Fact", "Feature", "Instance", "Join", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "ValueRestriction"],
+  "Metamodel" => ["AllowedRange", "Concept", "Constraint", "ContextNote", "Derivation", "Fact", "FactType", "Instance", "Join", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "ValueRestriction" ],
   "MetamodelTerms" => ["AllowedRange", "Concept", "Constraint", "Derivation", "Fact", "FactType", "Import", "Instance", "Join", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Term", "Unit", "ValueRestriction"],
   "OilSupply" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
   "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
   "SeparateSubtype" => ["Claim", "VehicleIncident"],
   "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "TransferRequest", "Warehouse"],
-  "RedundantDependency" => ["Address", "LegislativeDistrict", "StateOrProvince"],
+  "OrienteeringER" => ["Club", "Event", "EventControl", "EventCourse", "Map", "SeriesEvent"],
+  "RedundantDependency" => ["Address", "Politician", "StateOrProvince"],
 }
 
 def extract_created_tables_from_sql sql_file

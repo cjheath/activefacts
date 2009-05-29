@@ -6,6 +6,14 @@ module ::Metamodel
     value_type :length => 64
   end
 
+  class ConstraintId < AutoCounter
+    value_type 
+  end
+
+  class ContextNoteId < AutoCounter
+    value_type 
+  end
+
   class Denominator < UnsignedInteger
     value_type :length => 32
   end
@@ -22,7 +30,7 @@ module ::Metamodel
     value_type 
   end
 
-  class FeatureId < AutoCounter
+  class FactTypeId < AutoCounter
     value_type 
   end
 
@@ -100,6 +108,22 @@ module ::Metamodel
     has_one :numerator                          # See Numerator.all_coefficient
   end
 
+  class Constraint
+    identified_by :constraint_id
+    one_to_one :constraint_id                   # See ConstraintId.constraint
+    has_one :enforcement                        # See Enforcement.all_constraint
+    has_one :name                               # See Name.all_constraint
+    has_one :vocabulary                         # See Vocabulary.all_constraint
+  end
+
+  class ContextNote
+    identified_by :context_note_id
+    has_one :concept                            # See Concept.all_context_note
+    has_one :constraint                         # See Constraint.all_context_note
+    one_to_one :context_note_id                 # See ContextNoteId.context_note
+    has_one :fact_type                          # See FactType.all_context_note
+  end
+
   class Fact
     identified_by :fact_id
     one_to_one :fact_id                         # See FactId.fact
@@ -107,9 +131,9 @@ module ::Metamodel
     has_one :population                         # See Population.all_fact
   end
 
-  class Feature
-    identified_by :feature_id
-    one_to_one :feature_id                      # See FeatureId.feature
+  class FactType
+    identified_by :fact_type_id
+    one_to_one :fact_type_id                    # See FactTypeId.fact_type
   end
 
   class Instance
@@ -118,6 +142,28 @@ module ::Metamodel
     one_to_one :instance_id                     # See InstanceId.instance
     has_one :population                         # See Population.all_instance
     has_one :value                              # See Value.all_instance
+  end
+
+  class PresenceConstraint < Constraint
+    maybe :is_mandatory
+    maybe :is_preferred_identifier
+    has_one :max_frequency, Frequency           # See Frequency.all_presence_constraint_as_max_frequency
+    has_one :min_frequency, Frequency           # See Frequency.all_presence_constraint_as_min_frequency
+    has_one :role_sequence                      # See RoleSequence.all_presence_constraint
+  end
+
+  class Reading
+    identified_by :fact_type, :ordinal
+    has_one :fact_type                          # See FactType.all_reading
+    has_one :ordinal                            # See Ordinal.all_reading
+    has_one :role_sequence                      # See RoleSequence.all_reading
+    has_one :text                               # See Text.all_reading
+  end
+
+  class RingConstraint < Constraint
+    has_one :other_role, "Role"                 # See Role.all_ring_constraint_as_other_role
+    has_one :ring_type                          # See RingType.all_ring_constraint
+    has_one :role                               # See Role.all_ring_constraint
   end
 
   class RoleSequence
@@ -131,6 +177,14 @@ module ::Metamodel
     has_one :instance                           # See Instance.all_role_value
     has_one :population                         # See Population.all_role_value
     has_one :role                               # See Role.all_role_value
+  end
+
+  class SetConstraint < Constraint
+  end
+
+  class SubsetConstraint < SetConstraint
+    has_one :subset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_subset_role_sequence
+    has_one :superset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
   end
 
   class Unit
@@ -165,18 +219,12 @@ module ::Metamodel
     has_one :value_restriction                  # See ValueRestriction.all_allowed_range
   end
 
-  class Concept < Feature
+  class Concept
     identified_by :vocabulary, :name
     maybe :is_independent
     has_one :name                               # See Name.all_concept
     has_one :pronoun                            # See Pronoun.all_concept
     has_one :vocabulary                         # See Vocabulary.all_concept
-  end
-
-  class Constraint < Feature
-    has_one :enforcement                        # See Enforcement.all_constraint
-    has_one :name                               # See Name.all_constraint
-    has_one :vocabulary                         # See Vocabulary.all_constraint
   end
 
   class Derivation
@@ -187,38 +235,13 @@ module ::Metamodel
   end
 
   class EntityType < Concept
-  end
-
-  class FactType < Feature
-    one_to_one :entity_type                     # See EntityType.fact_type
+    one_to_one :fact_type                       # See FactType.entity_type
   end
 
   class Population
     identified_by :vocabulary, :name
     has_one :name                               # See Name.all_population
     has_one :vocabulary                         # See Vocabulary.all_population
-  end
-
-  class PresenceConstraint < Constraint
-    maybe :is_mandatory
-    maybe :is_preferred_identifier
-    has_one :max_frequency, Frequency           # See Frequency.all_presence_constraint_as_max_frequency
-    has_one :min_frequency, Frequency           # See Frequency.all_presence_constraint_as_min_frequency
-    has_one :role_sequence                      # See RoleSequence.all_presence_constraint
-  end
-
-  class Reading
-    identified_by :fact_type, :ordinal
-    has_one :fact_type                          # See FactType.all_reading
-    has_one :ordinal                            # See Ordinal.all_reading
-    has_one :role_sequence                      # See RoleSequence.all_reading
-    has_one :text                               # See Text.all_reading
-  end
-
-  class RingConstraint < Constraint
-    has_one :other_role, "Role"                 # See Role.all_ring_constraint_as_other_role
-    has_one :ring_type                          # See RingType.all_ring_constraint
-    has_one :role                               # See Role.all_ring_constraint
   end
 
   class Role
@@ -239,12 +262,21 @@ module ::Metamodel
     has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_as_trailing_adjective
   end
 
-  class SetConstraint < Constraint
+  class SetComparisonConstraint < SetConstraint
   end
 
-  class SubsetConstraint < SetConstraint
-    has_one :subset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_subset_role_sequence
-    has_one :superset_role_sequence, RoleSequence  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
+  class SetComparisonRoles
+    identified_by :set_comparison_constraint, :ordinal
+    has_one :ordinal                            # See Ordinal.all_set_comparison_roles
+    has_one :role_sequence                      # See RoleSequence.all_set_comparison_roles
+    has_one :set_comparison_constraint          # See SetComparisonConstraint.all_set_comparison_roles
+  end
+
+  class SetEqualityConstraint < SetComparisonConstraint
+  end
+
+  class SetExclusionConstraint < SetComparisonConstraint
+    maybe :is_mandatory
   end
 
   class TypeInheritance < FactType
@@ -275,23 +307,6 @@ module ::Metamodel
     identified_by :name, :value_type
     has_one :name                               # See Name.all_parameter
     has_one :value_type                         # See ValueType.all_parameter
-  end
-
-  class SetComparisonConstraint < SetConstraint
-  end
-
-  class SetComparisonRoles
-    identified_by :set_comparison_constraint, :ordinal
-    has_one :ordinal                            # See Ordinal.all_set_comparison_roles
-    has_one :role_sequence                      # See RoleSequence.all_set_comparison_roles
-    has_one :set_comparison_constraint          # See SetComparisonConstraint.all_set_comparison_roles
-  end
-
-  class SetEqualityConstraint < SetComparisonConstraint
-  end
-
-  class SetExclusionConstraint < SetComparisonConstraint
-    maybe :is_mandatory
   end
 
   class ParamValue

@@ -4,11 +4,13 @@ vocabulary Metamodel;
  * Value Types
  */
 Adjective is written as VariableLengthText(64);
+ConstraintId is written as AutoCounter;
+ContextNoteId is written as AutoCounter;
 Denominator is written as UnsignedInteger(32);
 Enforcement is written as VariableLengthText(16);
 Exponent is written as SignedSmallInteger(32);
 FactId is written as AutoCounter;
-FeatureId is written as AutoCounter;
+FactTypeId is written as AutoCounter;
 Frequency is written as UnsignedInteger(32);
 InstanceId is written as AutoCounter;
 Length is written as UnsignedInteger(32);
@@ -38,20 +40,58 @@ Coefficient is identified by Numerator and Denominator and Coefficient is precis
 	Coefficient has one Denominator,
 	Coefficient is precise;
 
+Constraint is identified by its Id;
+Constraint requires at most one Enforcement,
+	Enforcement applies to Constraint;
+Name is of Constraint,
+	Constraint is called at most one Name;
+
+ContextNote is identified by its Id;
+Constraint has ContextNote,
+	ContextNote applies to at most one Constraint;
+
 Fact is identified by its Id;
 
-Feature is identified by its Id;
+FactType is identified by its Id;
+Fact is of one FactType;
+FactType has ContextNote,
+	ContextNote applies to at most one FactType;
 
 Instance is identified by its Id;
 Instance has at most one Value;
 
+PresenceConstraint is a kind of Constraint;
+PresenceConstraint has at most one max-Frequency restricted to {1..};
+PresenceConstraint has at most one min-Frequency restricted to {2..};
+PresenceConstraint is mandatory;
+PresenceConstraint is preferred identifier;
+
+Reading is identified by FactType and Ordinal where
+	FactType has at least one Reading,
+	Reading is for one FactType,
+	Reading is in one Ordinal position,
+	Ordinal reading for fact type is Reading;
+Reading has one Text;
+
+RingConstraint is a kind of Constraint;
+RingConstraint is of one RingType;
+
 RoleSequence is identified by its Id;
+PresenceConstraint covers one RoleSequence;
+Reading is in one RoleSequence,
+	RoleSequence is for Reading;
 
 RoleValue is identified by Instance and Fact where
 	Instance plays RoleValue,
 	RoleValue is of one Instance,
 	RoleValue fulfils one Fact,
 	Fact includes at least one RoleValue;
+
+SetConstraint is a kind of Constraint;
+
+SubsetConstraint is a kind of SetConstraint;
+SubsetConstraint covers one subset-RoleSequence;
+SubsetConstraint covers one superset-RoleSequence;
 
 Unit is identified by its Id;
 Name is of Unit,
@@ -68,38 +108,31 @@ ValueRestriction is identified by its Id;
 
 Vocabulary is identified by Name where
 	Vocabulary is called one Name;
+Vocabulary contains Constraint,
+	Constraint belongs to at most one Vocabulary;
 Vocabulary includes Unit,
 	Unit is in one Vocabulary;
 
 AllowedRange is where
 	ValueRestriction allows at least one ValueRange;
 
-Concept is a kind of Feature identified by Vocabulary and Name where
+Concept is identified by Vocabulary and Name where
 	Concept belongs to at most one Vocabulary,
 	Vocabulary contains Concept,
 	Concept is called one Name;
+Concept has ContextNote,
+	ContextNote applies to at most one Concept;
 Concept uses at most one Pronoun;
 Concept is independent;
 Instance is of one Concept;
-
-Constraint is a kind of Feature;
-Constraint requires at most one Enforcement,
-	Enforcement applies to Constraint;
-Name is of Constraint,
-	Constraint is called at most one Name;
-Vocabulary contains Constraint,
-	Constraint belongs to at most one Vocabulary;
 
 Derivation is where
 	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];
 Derivation has at most one Exponent;
 
 EntityType is a kind of Concept;
-
-FactType is a kind of Feature;
 EntityType nests at most one FactType,
 	FactType is nested as at most one EntityType;
-Fact is of one FactType;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -112,25 +145,6 @@ Population includes Instance,
 	Instance belongs to one Population;
 Population includes RoleValue,
 	RoleValue belongs to one Population;
-
-PresenceConstraint is a kind of Constraint;
-PresenceConstraint covers one RoleSequence;
-PresenceConstraint has at most one max-Frequency restricted to {1..};
-PresenceConstraint has at most one min-Frequency restricted to {2..};
-PresenceConstraint is mandatory;
-PresenceConstraint is preferred identifier;
-
-Reading is identified by FactType and Ordinal where
-	FactType has at least one Reading,
-	Reading is for one FactType,
-	Reading is in one Ordinal position,
-	Ordinal reading for fact type is Reading;
-Reading is in one RoleSequence,
-	RoleSequence is for Reading;
-Reading has one Text;
-
-RingConstraint is a kind of Constraint;
-RingConstraint is of one RingType;
 
 Role is where
 	FactType has Ordinal role played by Concept,
@@ -154,11 +168,18 @@ RoleRef is where
 RoleRef has at most one leading-Adjective;
 RoleRef has at most one trailing-Adjective;
 
-SetConstraint is a kind of Constraint;
+SetComparisonConstraint is a kind of SetConstraint;
 
-SubsetConstraint is a kind of SetConstraint;
-SubsetConstraint covers one subset-RoleSequence;
-SubsetConstraint covers one superset-RoleSequence;
+SetComparisonRoles is where
+	SetComparisonConstraint has in Ordinal position at most one RoleSequence,
+	RoleSequence is Ordinal in SetComparisonConstraint,
+	in Ordinal position SetComparisonConstraint has RoleSequence,
+	SetComparisonConstraint has RoleSequence in at most one Ordinal position;
+
+SetEqualityConstraint is a kind of SetComparisonConstraint;
+
+SetExclusionConstraint is a kind of SetComparisonConstraint;
+SetExclusionConstraint is mandatory;
 
 TypeInheritance is a kind of FactType identified by Subtype and Supertype where
 	EntityType (as Subtype) is subtype of super-EntityType (as Supertype) [acyclic],
@@ -186,19 +207,6 @@ Parameter is where
 	Name is a parameter of ValueType,
 	ValueType has parameter called Name;
 
-SetComparisonConstraint is a kind of SetConstraint;
-
-SetComparisonRoles is where
-	SetComparisonConstraint has in Ordinal position at most one RoleSequence,
-	RoleSequence is Ordinal in SetComparisonConstraint,
-	in Ordinal position SetComparisonConstraint has RoleSequence,
-	SetComparisonConstraint has RoleSequence in at most one Ordinal position;
-
-SetEqualityConstraint is a kind of SetComparisonConstraint;
-
-SetExclusionConstraint is a kind of SetComparisonConstraint;
-SetExclusionConstraint is mandatory;
-
 ParamValue is where
 	Value for Parameter applies to at most one ValueType;
 
@@ -212,6 +220,10 @@ for each Constraint exactly one of these holds:
 	PresenceConstraint is a subtype of Constraint,
 	SetConstraint is a subtype of Constraint,
 	RingConstraint is a subtype of Constraint;
+for each ContextNote exactly one of these holds:
+	Concept has ContextNote,
+	FactType has ContextNote,
+	Constraint has ContextNote;
 Instance plays RoleValue and Instance is of Concept
 	if and only if
 	RoleValue is of Role and FactType has Ordinal role played by Concept;
