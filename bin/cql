@@ -36,6 +36,7 @@ while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
           p result.value
         rescue => e
           puts e.to_s+":"
+	  puts e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
           p result  # In case the root is changed and there's no value()
         end
         #p parser.definition(result)

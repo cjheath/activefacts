@@ -31,6 +31,9 @@ module ActiveFacts
 
       def value_type_dump(o)
         return unless o.supertype    # An imported type
+
+        # REVISIT: A ValueType that is only used as a reference mode need not be emitted here. We haven't detected this situation yet however...
+
         if o.name == o.supertype.name
             # In ActiveFacts, parameterising a ValueType will create a new ValueType
             # throw Can't handle parameterized value type of same name as its ValueType" if ...
@@ -89,7 +92,9 @@ module ActiveFacts
         if external_identifying_facts.size == 1 and
           entity_role = ftr[n = (ftr[0].concept == entity_type ? 0 : 1)] and
           value_role = ftr[1-n] and
-          value_name = value_role.concept.name and
+          value_player = value_role.concept and
+          value_player.is_a?(ActiveFacts::Metamodel::ValueType) and
+          value_name = value_player.name and
           residual = value_name.gsub(%r{#{entity_role.concept.name}},'') and
           residual != '' and
           residual != value_name
@@ -147,7 +152,10 @@ module ActiveFacts
               )
             )*",\n\t"
 
-            return " identified by its #{residual}" +
+            restriction = value_role.role_value_restriction || value_player.value_restriction
+            # REVISIT: If both restrictions apply and differ, we can't use a reference mode
+            restriction_text = restriction ? " "+restriction.describe : ""
+            return " identified by its #{residual}#{restriction_text}" +
               (fact_text != "" ? " where\n\t" + fact_text : "")
           end
         end

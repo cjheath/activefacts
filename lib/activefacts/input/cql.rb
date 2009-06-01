@@ -167,6 +167,10 @@ module ActiveFacts
               base_vt = @constellation.ValueType(@vocabulary, mode)
               vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
             end
+            # REVISIT: If we do this, it gets emitted twice when we generate CQL. The generator should detect that the restriction is the same and not emit it.
+            #if (ranges = identification[:restriction])
+            #  vt.value_restriction = value_restriction(ranges)
+            #end
           end
 
           identifying_fact_types = {}
@@ -184,7 +188,7 @@ module ActiveFacts
               end
             end
 
-            # Find the role that this entity type plays in the fact type, if any:
+# Find the role that this entity type plays in the fact type, if any:
             debug :reading, "Roles are: #{fact_type.all_role.map{|role| (role.concept == entity_type ? "*" : "") + role.concept.name }*", "}"
             player_roles = fact_type.all_role.select{|role| role.concept == entity_type }
             raise "#{role.concept.name} may only play one role in each identifying fact type" if player_roles.size > 1
@@ -219,7 +223,7 @@ module ActiveFacts
                 # not the order the fact types were defined:
                 identifying_roles = id_role_names.map do |names|
                   unless (role = bind_unary_fact_type(entity_type, names))
-                    player, binding = @symbols.bind(names)
+player, binding = @symbols.bind(names)
                     role = @symbols.roles_by_binding[binding] 
                     raise "identifying role #{names*"-"} not found in fact types for #{name}" unless role
                   end
@@ -273,6 +277,11 @@ module ActiveFacts
                   entity_role = @constellation.Role(ft, 0, entity_type)
                   value_role = @constellation.Role(ft, 1, vt)
                   debug :mode, "Creating new fact type to identify #{name}"
+                end
+
+                # REVISIT: The restriction applies only to the value role. There is good reason to apply it above to the value type as well.
+                if (ranges = identification[:restriction])
+                  value_role.role_value_restriction = value_restriction(ranges)
                 end
 
                 # Forward reading, if it doesn't already exist:
