@@ -13,7 +13,7 @@ module ActiveFacts
         {
           def value
             f = anonymous_fact_type.value
-            f[0] = name.text_value
+            f[0] = name.value
             f
           end
         }
@@ -126,8 +126,8 @@ module ActiveFacts
         (('some'/'that') S)? subtype:id s subtype_prefix (('some'/'that') S)? supertype:id
         {
           def value
-            [{:subtype => subtype.text_value, :supertype => supertype.text_value }]
-            # [subtype.text_value, "is", "a", "subtype", "of", supertype.text_value].map{|w| {:word => w}}
+            [{:subtype => subtype.value, :supertype => supertype.value }]
+            # [subtype.value, "is", "a", "subtype", "of", supertype.value].map{|w| {:word => w}}
           end
         }
       end
@@ -150,13 +150,13 @@ module ActiveFacts
             quantifier = !q.empty? && q.value   # "some" quantifier has nil value
 
             r[:quantifier] = quantifier if quantifier
-            r[:leading_adjective] = adj0.a.text_value unless adj0.empty?
+            r[:leading_adjective] = adj0.a.value unless adj0.empty?
 
-            r[:word] = player.text_value
+            r[:word] = player.value
 
-            r[:trailing_adjective] = adj1.a.a.text_value unless adj1.empty?
+            r[:trailing_adjective] = adj1.a.a.value unless adj1.empty?
             r[:function] = func.value if !func.empty?
-            r[:role_name] = role_name.r.text_value unless role_name.empty?
+            r[:role_name] = role_name.r.value unless role_name.empty?
             r[:restriction] = lr.ranges if !lr.empty? && lr.respond_to?(:ranges)
             r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
 
@@ -174,6 +174,7 @@ module ActiveFacts
 
       rule role_word
         !non_role_word id
+        { def value; id.value; end }
       end
 
       rule non_role_word

@@ -37,7 +37,7 @@ module ActiveFacts
       s vocabulary S id s ';' s
       {
         def value
-          [ id.text_value, [ :vocabulary ] ]
+          [ id.value, [ :vocabulary ] ]
         end
       }
     end
@@ -46,18 +46,18 @@ module ActiveFacts
       s import S id alias_list ';' s
       {
         def value
-          puts "import #{id.text_value}: not implemented"
-          [ id.text_value, [ :import ], alias_list.value ]
+          puts "import #{id.value}: not implemented"
+          [ id.value, [ :import ], alias_list.value ]
         end
       }
     end
 
     # REVISIT: Need a way to define equivalent readings for fact types here (and in the metamodel)
     rule alias_list
-      ( s ',' s alias S aliase_from:id S as S alias_to:id s )*
+      ( s ',' s alias S aliased_from:id S as S alias_to:id s )*
       {
         def value
-          elements.inject({}){|h, e| h[e.aliase_from.text_value] = e.alias_to; h }
+          elements.inject({}){|h, e| h[e.aliased_from.value] = e.alias_to; h }
         end
       }
     end

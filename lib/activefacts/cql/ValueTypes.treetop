@@ -19,7 +19,7 @@ module ActiveFacts
           def defined_type
             [
               :value_type,
-              base.text_value,
+              base.value,
               value_type_parameters.values,
               value_type_unit.unit_name,
               !r.empty? ? r.ranges : [],
@@ -27,7 +27,7 @@ module ActiveFacts
           end
 
           def value
-            [ name.text_value,
+            [ name.value,
               defined_type
             ]
           end

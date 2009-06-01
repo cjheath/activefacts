@@ -140,6 +140,7 @@ module ActiveFacts
 
       rule id
         alpha alphanumeric*
+        { def value; text_value; end }
       end
 
       rule alpha

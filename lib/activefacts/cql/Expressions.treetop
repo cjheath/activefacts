@@ -30,14 +30,14 @@ module ActiveFacts
       end
 
       rule sum
-        t0:term s tail:( o:add_op s t1:term s )*
+        t0:term s tail:( op:add_op s t1:term s )*
         {
           def value
             return t0.value if tail.empty?
             [ :"+",
               *([t0.value] +
                 tail.elements.map{|e|
-                    e.o.text_value == '-' ? [ :"-", e.t1.value ] : e.t1.value
+                    e.op.text_value == '-' ? [ :"-", e.t1.value ] : e.t1.value
                   }
               )
             ]
@@ -50,14 +50,14 @@ module ActiveFacts
       end
 
       rule term
-        f0:factor s tail:( o:mul_op s f1:factor s )*
+        f0:factor s tail:( op:mul_op s f1:factor s )*
         {
           def value
             return f0.value if tail.empty?
             [ :"*",
               *([f0.value] +
                 tail.elements.map{|e|
-                    e.o.text_value != '*' ? [ :"-", e.f1.value ] : e.f1.value
+                    e.op.text_value != '*' ? [ :"-", e.f1.value ] : e.f1.value
                   }
               )
             ]
@@ -92,8 +92,8 @@ module ActiveFacts
         {
           def value
             # Variable names may consist of one or two words (optional adjective and a noun):
-            r = [ :variable, id0.text_value ]
-            r += [ o0.id1.text_value ] unless o0.empty?
+            r = [ :variable, id0.value ]
+            r += [ o0.id1.value ] unless o0.empty?
             r
           end
         }
@@ -103,7 +103,7 @@ module ActiveFacts
         '.' s func:id s param_list:( '(' s params:( p0:expression s tail:( ',' s p1:expression s )* )? ')' s )?
         {
           def value
-            r = [ :"(", func.text_value ]
+            r = [ :"(", func.value ]
             return r if param_list.empty? || param_list.params.empty?
             r += [ param_list.params.p0.value ]
             param_list.params.tail.elements.each{|e|

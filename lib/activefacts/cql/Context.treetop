@@ -1,0 +1,42 @@
+#
+#       ActiveFacts CQL Parser.
+#       Parse rules relating to definition context.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
+module ActiveFacts
+  module CQL
+    grammar Context
+      rule context
+        (according_to people ',')? (because / as_opposed_to / so_that / to_avoid) discussion (',' as_agreed_by)?
+      end
+
+      # in English.treetop:
+
+      rule according_to
+        according to
+      end
+
+      rule as_opposed_to
+        as opposed to
+      end
+
+      rule so_that
+        so that
+      end
+
+      rule to_avoid
+        to avoid
+      end
+
+      rule as_agreed_by
+        as agreed (on date)? by people
+      end
+
+      rule people
+        person (s ',' s person)*
+      end
+
+    end
+  end
+end

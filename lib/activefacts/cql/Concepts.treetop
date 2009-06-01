@@ -21,7 +21,7 @@ module ActiveFacts
         ';' s
         {
           def value
-            [ name.text_value, [ :entity_type, sup.supers, sup.identifier, ec.empty? ? nil : ec.conditions ] ]
+            [ name.value, [ :entity_type, sup.supers, sup.identifier, ec.empty? ? nil : ec.conditions ] ]
           end
         }
       end
@@ -54,7 +54,7 @@ module ActiveFacts
         primary:id s
         alternate_supertypes:( ',' s !identified_by name:id s )*
         { def value
-            [primary.text_value]+alternate_supertypes.elements.map{|sup| sup.name.text_value}
+            [primary.value]+alternate_supertypes.elements.map{|sup| sup.name.value}
           end
         }
       end
@@ -62,7 +62,7 @@ module ActiveFacts
       rule identification
         # REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
         identified_by its s id s r:restriction?          # Reference Mode; restriction may be needed for the ValueType
-          { def value; {:mode => id.text_value, :restriction => (r.text_value.empty? ? nil : r.ranges) }; end }
+          { def value; {:mode => id.value, :restriction => (r.text_value.empty? ? nil : r.ranges) }; end }
         /
         identified_by role_list
           { def value; {:roles => role_list.roles }; end }
@@ -93,15 +93,16 @@ module ActiveFacts
             l:lead_adj? tail:(s role_player_id)+ s t:trail_adj?
             {
               def value
-                (l.empty? ? [] : [l.role_player_id.text_value]) +
-                tail.elements.map{|e| e.role_player_id.text_value } +
-                (t.empty? ? [] : [t.role_player_id.text_value])
+                (l.empty? ? [] : [l.role_player_id.value]) +
+                tail.elements.map{|e| e.role_player_id.value } +
+                (t.empty? ? [] : [t.role_player_id.value])
               end
             }
           end
 
           rule role_player_id
             !(role_list_sep / quantifier) id
+            { def value; id.value; end }
           end
 
           rule role_list_sep

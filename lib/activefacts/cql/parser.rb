@@ -60,7 +60,8 @@ module ActiveFacts
         end
       end
     rescue => e
-      raise "in #{kind.to_s.camelcase(true)} definition, #{e.message}:\n\t#{node.text_value}"
+      raise "in #{kind.to_s.camelcase(true)} definition, #{e.message}:\n\t#{node.text_value}" +
+        (ENV['DEBUG'] =~ /\bexception\b/ ? "\nfrom\t"+e.backtrace*"\n\t" : "")
     end
 
     def value_type(name, value)
