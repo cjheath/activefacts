@@ -7,6 +7,11 @@ module ActiveFacts
       value_type :length => 64
     end
 
+    class Assimilation < String
+      value_type 
+      # REVISIT: Assimilation has restricted values
+    end
+
     class ConstraintId < AutoCounter
       value_type 
     end
@@ -284,6 +289,7 @@ module ActiveFacts
       identified_by :subtype, :supertype
       has_one :subtype, EntityType                # See EntityType.all_type_inheritance_as_subtype
       has_one :supertype, EntityType              # See EntityType.all_type_inheritance_as_supertype
+      has_one :assimilation                       # See Assimilation.all_type_inheritance
       maybe :provides_identification
     end
 

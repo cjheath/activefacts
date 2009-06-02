@@ -56,6 +56,18 @@ module ActiveFacts
         reading << " [#{(ring.ring_type.scan(/[A-Z][a-z]*/)*", ").downcase}]"
       end
 
+      def mapping_pragma(entity_type)
+        ti = entity_type.all_type_inheritance_as_subtype
+        assimilation = ti.map{|t| t.assimilation }.compact[0]
+        return "" unless entity_type.is_independent || assimilation
+        " [" +
+          [
+            entity_type.is_independent ? "independent" : nil,
+            assimilation || nil
+          ].compact*", " +
+        "]"
+      end
+
       def identified_by_roles_and_facts(entity_type, identifying_roles, identifying_facts, preferred_readings)
         identifying_role_names = identifying_roles.map{|role|
             preferred_role_ref = preferred_readings[role.fact_type].role_sequence.all_role_ref.detect{|reading_rr|
@@ -155,7 +167,7 @@ module ActiveFacts
             restriction = value_role.role_value_restriction || value_player.value_restriction
             # REVISIT: If both restrictions apply and differ, we can't use a reference mode
             restriction_text = restriction ? " "+restriction.describe : ""
-            return " identified by its #{residual}#{restriction_text}" +
+            return " identified by its #{residual}#{restriction_text}#{mapping_pragma(entity_type)}" +
               (fact_text != "" ? " where\n\t" + fact_text : "")
           end
         end
@@ -167,6 +179,7 @@ module ActiveFacts
             }.flatten*",\n\t"
 
         " identified by #{ identifying_role_names*" and " }" +
+          mapping_pragma(entity_type) +
           " where\n\t"+@identifying_fact_text
       end
 
@@ -187,7 +200,10 @@ module ActiveFacts
         print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " }"
         if pi
           print identified_by(o, pi)
+        else
+          print mapping_pragma(o)
         end
+
         # If there's a preferred_identifier for this subtype, identifying readings were emitted
         print((pi ? "," : " where") + "\n\t" + fact_readings(o.fact_type)) if o.fact_type
         puts ";\n"
@@ -213,6 +229,7 @@ module ActiveFacts
           pi = fact_type.entity_type.preferred_identifier
           if pi && primary_supertype && primary_supertype.preferred_identifier != pi
             print identified_by(o, pi)
+            # REVISIT: This *has* to be wrong. When you fix it, remember mapping_pragmas!
             print ";\n"
           end
         end

@@ -68,14 +68,14 @@ CoverType is identified by its Code;
 CoverType has one CoverTypeName,
 	CoverTypeName is of at most one CoverType;
 
-DemeritKind is identified by its Name;
+DemeritKind is identified by its Name [independent];
 
 Incident is identified by Claim where
 	Claim concerns at most one Incident,
 	Incident is of one Claim;
 Incident relates to loss on one DateTime;
 
-Liability is identified by its Code;
+Liability is identified by its Code restricted to {'D', 'L', 'R', 'U'};
 
 LossType is identified by its Code;
 LossType implies at most one Liability;
@@ -115,7 +115,7 @@ PoliceReport was at at most one station-Name;
 
 PolicyWording is identified by its Text;
 
-Product is identified by its Code;
+Product is identified by its Code restricted to {1..99};
 Alias is of at most one Product,
 	Product has at most one Alias;
 ProdDescription is of at most one Product,
@@ -123,7 +123,7 @@ ProdDescription is of at most one Product,
 
 Registration is identified by its Nr;
 
-State is identified by its Code;
+State is identified by its Code restricted to {0..9} [independent];
 StateName is of at most one State,
 	State has at most one StateName;
 
@@ -136,7 +136,7 @@ Vehicle is of at most one Colour;
 Vehicle has at most one EngineNumber;
 Vehicle has commercial registration;
 
-VehicleIncident is a kind of Incident;
+VehicleIncident is a kind of Incident [separate];
 VehicleIncident has at most one Description;
 VehicleIncident resulted from at most one LossType;
 VehicleIncident was caused by at most one Reason;

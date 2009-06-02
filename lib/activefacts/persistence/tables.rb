@@ -88,8 +88,7 @@ module ActiveFacts
         # Subtypes are not a table unless partitioned or separate
         # REVISIT: Support partitioned subtypes here
         if (!supertypes.empty?)
-          av = all_supertype_inheritance[0]
-          return @is_table = false
+          return @is_table = all_supertype_inheritance.detect{|ti| ti.assimilation} != nil
         end
 
         # If the preferred_identifier includes an auto_assigned ValueType
@@ -169,7 +168,7 @@ module ActiveFacts
         # 2) Decide which Concepts must be and must not be tables
         #  a. Concepts labelled is_independent are tables (See the is_table methods above)
         #  b. Entity types having no references to them must be tables
-        #  c. subtypes are not tables unless marked is_independent (separate) or partitioned (not yet impl)
+        #  c. subtypes are not tables unless marked with assimilation = separate or partitioned
         #  d. ValueTypes are never tables unless they can have references (to other ValueTypes)
         #  e. An EntityType having an identifying AutoInc field must be a table unless it has exactly one reference
         #  f. An EntityType whose only reference is through its single preferred_identifier role gets absorbed

@@ -9,7 +9,7 @@ PersonName is written as VariableLengthText(40);
 /*
  * Entity Types
  */
-Person is identified by its Name;
+Person is identified by its Name [independent];
 
 Death is where
 	Person is dead;

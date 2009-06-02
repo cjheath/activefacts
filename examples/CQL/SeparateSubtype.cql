@@ -18,7 +18,7 @@ Incident is identified by Claim where
 	Claim concerns at most one Incident;
 Incident occurred on at most one DateTime;
 
-VehicleIncident is a kind of Incident;
+VehicleIncident is a kind of Incident [separate];
 VehicleIncident occured while at most one Driver was in charge;
 
 /*

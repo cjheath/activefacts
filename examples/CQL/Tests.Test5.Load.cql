@@ -17,7 +17,7 @@ EventDate is identified by ymd where
 	EventDate has one ymd,
 	ymd is of at most one EventDate;
 
-Party is identified by its Id;
+Party is identified by its Id [independent];
 
 PartyMoniker is where
 	Party is called at most one PartyName;

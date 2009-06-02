@@ -4,6 +4,7 @@ vocabulary Metamodel;
  * Value Types
  */
 Adjective is written as VariableLengthText(64);
+Assimilation is written as VariableLengthText restricted to {'partitioned', 'separate'};
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 Denominator is written as UnsignedInteger(32);
@@ -117,7 +118,7 @@ AllowedRange is where
 	ValueRestriction allows at least one ValueRange;
 
 Concept is identified by Vocabulary and Name where
-	Concept belongs to at most one Vocabulary,
+	Concept belongs to one Vocabulary,
 	Vocabulary contains Concept,
 	Concept is called one Name;
 Concept has ContextNote,
@@ -184,6 +185,8 @@ SetExclusionConstraint is mandatory;
 TypeInheritance is a kind of FactType identified by Subtype and Supertype where
 	EntityType (as Subtype) is subtype of super-EntityType (as Supertype) [acyclic],
 	Supertype is supertype of Subtype;
+Assimilation applies to TypeInheritance,
+	TypeInheritance uses at most one Assimilation;
 TypeInheritance provides identification;
 
 ValueType is a kind of Concept;

@@ -23,18 +23,15 @@ describe "CQL Loader with SQL output" do
     "Blog" => "Drops uniqueness constraints",
     "CompanyDirectorEmployee" => "Names an index automatically from CQL, but explicitly from NORMA",
     "Insurance" => "CQL doesn't have an option for subtype separation",
-    "JoinEquality" => "CQL doesn't have an option for independant concepts",
-    "Marriage" => "CQL doesn't have an option for independant concepts",
     "Metamodel" =>
         "Names an index automatically from CQL, but explicitly from NORMA" + " " +
         "Drops uniqueness constraints",
-    "OneToOnes" => "CQL doesn't have an option for independant concepts",
     "Orienteering" =>
         "Names an index automatically from CQL, but explicitly from NORMA" + " " +
         "Drops uniqueness constraints",
     "RedundantDependency" => "Drops uniqueness constraints",
-    "SeparateSubtype" => "CQL doesn't have an option for subtype separation",
     "SubtypePI" => "Names an index automatically from CQL, but explicitly from NORMA",
+    "Tests.Test5.Load" => "Names an index automatically from CQL, but explicitly from NORMA",
   }
 
   # Generate and return the SQL for the given vocabulary

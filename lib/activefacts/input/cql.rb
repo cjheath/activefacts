@@ -87,7 +87,7 @@ module ActiveFacts
       end
 
     private
-      def value_type(name, base_type_name, parameters, unit, ranges)
+      def value_type(name, base_type_name, parameters, unit, ranges, mapping_pragmas)
         length, scale = *parameters
 
         # Create the base type:
@@ -126,16 +126,17 @@ module ActiveFacts
         vr
       end
 
-      def entity_type(name, supertypes, identification, clauses)
+      def entity_type(name, supertypes, identification, mapping_pragmas, clauses)
         #puts "Entity Type #{name}, supertypes #{supertypes.inspect}, id #{identification.inspect}, clauses = #{clauses.inspect}"
         debug :entity, "Defining Entity Type #{name}" do
           # Assert the entity:
           # If this entity was forward referenced, this won't be a new object, and will subsume its roles
           entity_type = @constellation.EntityType(@vocabulary, name)
+          entity_type.is_independent = true if (mapping_pragmas.include? 'independent')
 
           # Set up its supertypes:
           supertypes.each do |supertype_name|
-            add_supertype(entity_type, supertype_name, !identification && supertype_name == supertypes[0])
+            add_supertype(entity_type, supertype_name, !identification && supertype_name == supertypes[0], mapping_pragmas)
           end
 
           # Use a two-pass algorithm for entity fact types...
@@ -381,10 +382,14 @@ player, binding = @symbols.bind(names)
         end
       end
 
-      def add_supertype(entity_type, supertype_name, identifying_supertype)
+      def add_supertype(entity_type, supertype_name, identifying_supertype, mapping_pragmas)
         debug :supertype, "Supertype #{supertype_name}"
         supertype = @constellation.EntityType(@vocabulary, supertype_name)
         inheritance_fact = @constellation.TypeInheritance(entity_type, supertype, :fact_type_id => :new)
+
+        assimilations = mapping_pragmas.select { |p| ['absorbed', 'separate', 'partitioned'].include? p}
+        raise "Conflicting assimilation pragmas #{assimilations*", "}" if assimilations.size > 1
+        inheritance_fact.assimilation = assimilations[0]
 
         # Create a reading:
         sub_role = @constellation.Role(inheritance_fact, 0, entity_type)

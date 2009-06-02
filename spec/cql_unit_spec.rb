@@ -10,32 +10,32 @@ require 'activefacts/cql/parser'
 
 describe "Valid Numbers, Strings and Ranges" do
   ValidNumbersEtc = [
-    "a is written as b;",				# Value type declaration, no params, minimal whitespace
-    "a is written as b();",				# Value type declaration, minimal whitespace
-    "a is written as b ;",				# Value type declaration, no params, trailing whitespace
-    "a is written as b ( ) ; ",				# Value type declaration, maximal whitespace
+    "a is written as b;",                               # Value type declaration, no params, minimal whitespace
+    "a is written as b();",                             # Value type declaration, minimal whitespace
+    "a is written as b ;",                              # Value type declaration, no params, trailing whitespace
+    "a is written as b ( ) ; ",                         # Value type declaration, maximal whitespace
 
     # Comments and newlines, etc as whitespace
-    "\na\nis written as \nb\n(\n)\n;\n",		# Basic value type declaration, newlines for whitespace
-    "\ra\ris written as\rb\r(\r)\r;\r",			# Basic value type declaration, returns for whitespace
-    "\ta\tis written as\tb\t(\t)\t;\t",			# Basic value type declaration, tabs for whitespace
+    "\na\nis written as \nb\n(\n)\n;\n",                # Basic value type declaration, newlines for whitespace
+    "\ra\ris written as\rb\r(\r)\r;\r",                 # Basic value type declaration, returns for whitespace
+    "\ta\tis written as\tb\t(\t)\t;\t",                 # Basic value type declaration, tabs for whitespace
     " /* Plugh */ a /* Plugh */ is written as\n b /* *Plugh* / */ ( /* *Plugh* / */ ) /* *Plugh* / */ ; /* *Plugh* / */ ",
     "//Plugh\na // Plugh\n is written as // Plugh\n b // Plugh\n ( // Plugh\n ) // Plugh\n ; // Plugh\n ",
 
     # Integers
-    "a is written as b(0);",				# Integer zero
-    "a is written as b( 0 ) ; ",			# Integer zero, maximal whitespace
-    "a is written as b(1);",				# Integer one
-    "a is written as b(-1);",				# Integer negative one
-    "a is written as b(+1);",				# Positive integer
-    "a is written as b(1e4);",				# Integer with exponent
-    "a is written as b(1e-4);",				# Integer with negative exponent
-    "a is written as b(-1e-4);",			# Negative integer with negative exponent
-    "a is written as b(077);",				# Octal integer
-    "a is written as b(0xFace8);",			# Hexadecimal integer
-    "a is written as b(0,1);",				# Two parameters
+    "a is written as b(0);",                            # Integer zero
+    "a is written as b( 0 ) ; ",                        # Integer zero, maximal whitespace
+    "a is written as b(1);",                            # Integer one
+    "a is written as b(-1);",                           # Integer negative one
+    "a is written as b(+1);",                           # Positive integer
+    "a is written as b(1e4);",                          # Integer with exponent
+    "a is written as b(1e-4);",                         # Integer with negative exponent
+    "a is written as b(-1e-4);",                        # Negative integer with negative exponent
+    "a is written as b(077);",                          # Octal integer
+    "a is written as b(0xFace8);",                      # Hexadecimal integer
+    "a is written as b(0,1);",                          # Two parameters
     "a is written as b( 0 , 1 );",
-    "a is written as b(0,1,2) ;",			# Three parameters now allowed
+    "a is written as b(0,1,2) ;",                       # Three parameters now allowed
 
     # Reals
     "a is written as b(1.0);",
@@ -49,14 +49,14 @@ describe "Valid Numbers, Strings and Ranges" do
     "a is written as b(+0.0);",
 
     # Value types with units
-    "a is written as b inch;",				# Value type declaration with unit
-    "a is written as b() inch ; ",			# Value type declaration with unit and whitespace
-    "a is written as b() inch;",			# Value type declaration with unit
-    "a is written as b inch^2;",			# Value type declaration with unit and exponent
-    "a is written as b() inch^2 ; ",			# Value type declaration with unit and exponent with maximum whitespace
-    "a is written as b second^-1;",			# Value type declaration with unit and negative exponent
-    "a is written as b inch inch;",			# Value type declaration with repeated unit
-    "a is written as b inch^2/minute^-1;",		# Value type declaration with unit and divided unit with exponents
+    "a is written as b inch;",                          # Value type declaration with unit
+    "a is written as b() inch ; ",                      # Value type declaration with unit and whitespace
+    "a is written as b() inch;",                        # Value type declaration with unit
+    "a is written as b inch^2;",                        # Value type declaration with unit and exponent
+    "a is written as b() inch^2 ; ",                    # Value type declaration with unit and exponent with maximum whitespace
+    "a is written as b second^-1;",                     # Value type declaration with unit and negative exponent
+    "a is written as b inch inch;",                     # Value type declaration with repeated unit
+    "a is written as b inch^2/minute^-1;",              # Value type declaration with unit and divided unit with exponents
     "a is written as b() second^-1/mm^-1 mm^-1;",       # Value type declaration with repeated divided unit
 
     # Integer value restrictions
@@ -83,8 +83,8 @@ describe "Valid Numbers, Strings and Ranges" do
     "a is written as b() restricted to { 1.0e4 } ;",    # Real with exponent
     "a is written as b() restricted to { 1.0e-4 } ;",   # Real with negative exponent
     "a is written as b() restricted to { -1.0e-4 } ;",  # Negative real with negative exponent
-    "a is written as b() restricted to { 1.1 .. 2.2 } ;",	# Real range, maximal whitespace
-    "a is written as b() restricted to { -1.1 .. 2.2 } ;",	# Real range, maximal whitespace
+    "a is written as b() restricted to { 1.1 .. 2.2 } ;",       # Real range, maximal whitespace
+    "a is written as b() restricted to { -1.1 .. 2.2 } ;",      # Real range, maximal whitespace
     "a is written as b() restricted to { 1.1..2.2};",   # Real range, minimal whitespace
     "a is written as b() restricted to { 1.1..2 } ;",   # Real-integer range
     "a is written as b() restricted to { 1..2.2 } ;",   # Integer-real range
@@ -136,18 +136,18 @@ describe "Invalid Numbers and Strings" do
     "a is written as b(0xDice);",                       # Invalid hexadecimal
     "a is written as b(- 1);",                          # Invalid negative
     "a is written as b(+ 1);",                          # Invalid positive
-    "b(- 1e-4);",					# Negative integer with negative exponent
+    "b(- 1e-4);",                                       # Negative integer with negative exponent
     "a is written as b(-077);",                         # Invalid negative octal
     "a is written as b(-0xFace);",                      # Invalid negative hexadecimal
     "a is written as b(.0);",                           # Invalid real
     "a is written as b(0.);",                           # Invalid real
-    "b() inch ^2 ; ",					# Illegal whitespace around unit exponent
-    "b() inch^ 2 ; ",					# Illegal whitespace around unit exponent
-    "b() restricted to { '\\7a' };",			# String with bad octal escape
-    "b() restricted to { '\001' };",			# String with control char
-    "b() restricted to { '\n' };",			# String with literal newline
-    "b() restricted to { 0..'A' };",			# Cross-typed range
-    "b() restricted to { 'a'..27 };",			# Cross-typed range
+    "b() inch ^2 ; ",                                   # Illegal whitespace around unit exponent
+    "b() inch^ 2 ; ",                                   # Illegal whitespace around unit exponent
+    "b() restricted to { '\\7a' };",                    # String with bad octal escape
+    "b() restricted to { '\001' };",                    # String with control char
+    "b() restricted to { '\n' };",                      # String with literal newline
+    "b() restricted to { 0..'A' };",                    # Cross-typed range
+    "b() restricted to { 'a'..27 };",                   # Cross-typed range
   ]
 
   before :each do
@@ -165,10 +165,10 @@ describe "Invalid Numbers and Strings" do
   end
 end
 
-describe "Data Types" do
-  DataTypes = [
+describe "Value Types" do
+  ValueTypes = [
     [ "a is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
-      [["a", [:value_type, "b", [ 1, 2 ], "inch", [[3, 4]]]]]
+      [["a", [:value_type, "b", [ 1, 2 ], "inch", [[3, 4]], []]]]
     ],
 #    [ "a c  is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
 #      [["a c", [:value_type, "b", [1, 2], "inch", [[3, 4]]]]]
@@ -179,7 +179,7 @@ describe "Data Types" do
     @parser = ActiveFacts::CQLParser.new
   end
 
-  DataTypes.each do |c|
+  ValueTypes.each do |c|
     source, ast = *c
     it "should parse #{source.inspect}" do
       result = @parser.parse_all(source, :definition)
@@ -195,40 +195,40 @@ end
 
 describe "Entity Types" do
   EntityTypes_RefMode = [
-    [ "a is identified by its id;",			# Entity type declaration with reference mode
-      [["a", [:entity_type, [], {:mode=>"id"}, nil]]]
+    [ "a is identified by its id;",                     # Entity type declaration with reference mode
+      [["a", [:entity_type, [], {:mode=>"id", :restriction=>nil}, [], nil]]]
     ],
-    [ "a is identified by its id:c;",			# Entity type declaration with reference mode and fact type(s)
-      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
+    [ "a is identified by its id:c;",                   # Entity type declaration with reference mode and fact type(s)
+      [["a", [:entity_type, [], {:mode=>"id", :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
     [ "a is identified by its id where c;",             # Entity type declaration with reference mode and where
-      [["a", [:entity_type, [], {:mode=>"id"}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
+      [["a", [:entity_type, [], {:mode=>"id", :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
   ]
 
   EntityTypes_Simple = [
-    [ "a is identified by b: c;",			# Entity type declaration
-      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
+    [ "a is identified by b: c;",                       # Entity type declaration
+      [["a", [:entity_type, [], {:roles=>[["b"]]}, [], [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
-    [ "a is identified by b where c;",			# Entity type declaration with where
-      [["a", [:entity_type, [], {:roles=>[["b"]]}, [[:fact_clause, [], [{:word=>"c"}]]]]]]
+    [ "a is identified by b where c;",                  # Entity type declaration with where
+      [["a", [:entity_type, [], {:roles=>[["b"]]}, [], [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
-    [ "a is identified by b and c: d;",			# Entity type declaration with two-part identifier
-      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
+    [ "a is identified by b and c: d;",                 # Entity type declaration with two-part identifier
+      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [], [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
-    [ "a is identified by b, c: d;",			# Entity type declaration with two-part identifier
-      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
+    [ "a is identified by b, c: d;",                    # Entity type declaration with two-part identifier
+      [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [], [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
     [ "a is written as b(); c is identified by a:d;",
-      [["a", [:value_type, "b", [], nil, []]],
-        ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
+      [["a", [:value_type, "b", [], nil, [], []]],
+        ["c", [:entity_type, [], {:roles=>[["a"]]}, [], [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
     [ " a is written as b ( ) ; c is identified by a : d ; ",
-      [["a", [:value_type, "b", [ ], nil, []]],
-        ["c", [:entity_type, [], {:roles=>[["a"]]}, [[:fact_clause, [], [{:word=>"d"}]]]]]]
+      [["a", [:value_type, "b", [], nil, [], []]],
+        ["c", [:entity_type, [], {:roles=>[["a"]]}, [], [[:fact_clause, [], [{:word=>"d"}]]]]]]
     ],
     [ "a is identified by c:maybe d;",
-      [["a", [:entity_type, [], {:roles=>[["c"]]}, [[:fact_clause, ["maybe"], [{:word=>"d"}]]]]]]
+      [["a", [:entity_type, [], {:roles=>[["c"]]}, [], [[:fact_clause, ["maybe"], [{:word=>"d"}]]]]]]
     ],
   ]
 
@@ -243,22 +243,22 @@ describe "Entity Types" do
 
   EntityTypes_Subtypes = [
     [ "Employee is a kind of Person;",
-      [["Employee", [:entity_type, ["Person"], nil, nil]]]
+      [["Employee", [:entity_type, ["Person"], nil, [], nil]]]
     ],
     [ "Employee is a subtype of Person;",
-      [["Employee", [:entity_type, ["Person"], nil, nil]]]
+      [["Employee", [:entity_type, ["Person"], nil, [], nil]]]
     ],
     [ "AustralianEmployee is a subtype of Employee, Australian;",
-      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], nil, nil]]]
+      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], nil, [], nil]]]
     ],
     [ "Employee is a kind of Person identified by EmployeeNumber;",
-      [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
+      [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, [], nil]]]
     ],
     [ "Employee is a subtype of Person identified by EmployeeNumber;",
-      [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, nil]]]
+      [["Employee", [:entity_type, ["Person"], {:roles=>[["EmployeeNumber"]]}, [], nil]]]
     ],
     [ "AustralianEmployee is a subtype of Employee, Australian identified by TaxFileNumber;",
-      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], {:roles=>[["TaxFileNumber"]]}, nil]]]
+      [["AustralianEmployee", [:entity_type, ["Employee", "Australian"], {:roles=>[["TaxFileNumber"]]}, [], nil]]]
     ],
   ]
 

@@ -398,7 +398,8 @@ CREATE TABLE VehicleIncident (
 	WeatherDescription                      varchar(1024) NULL,
 	PRIMARY KEY(IncidentID),
 	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID),
-	FOREIGN KEY (LossTypeCode) REFERENCES LossType (LossTypeCode)
+	FOREIGN KEY (LossTypeCode) REFERENCES LossType (LossTypeCode),
+	FOREIGN KEY (DrivingDriverID) REFERENCES Party (PartyID)
 )
 GO
 

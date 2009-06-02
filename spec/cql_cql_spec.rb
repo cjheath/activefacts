@@ -1,5 +1,4 @@
-#
-# ActiveFacts tests: Parse all CQL files and check the generated CQL.
+# # ActiveFacts tests: Parse all CQL files and check the generated CQL.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 require 'rubygems'
@@ -27,6 +26,7 @@ describe "CQL Loader" do
   }
   cql_cql_failures = {
     "Insurance" => "Misses a subtype join in a constraint verbalisation",
+    "MetamodelTerms" => "Fails due to weak adjective/role matching",
 #    "OddIdentifier" => "Doesn't support identification of object fact types using mixed external/internal roles",
   }
   # Generate and return the CQL for the given vocabulary

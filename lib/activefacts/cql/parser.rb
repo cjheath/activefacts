@@ -71,12 +71,12 @@ module ActiveFacts
 
     def entity_type(name, supertypes, value)
       #print "entity_type parameters for #{name}: "; p value
-      identification, clauses = *value
+      identification, mapping_pragmas, clauses = *value
       clauses ||= []
 
       # raise "Entity type clauses must all be fact types" if clauses.detect{|c| c[0] != :fact_clause }
 
-      [:entity_type, name, supertypes, identification, clauses]
+      [:entity_type, name, supertypes, identification, mapping_pragmas, clauses]
     end
 
     def fact_type(name, value)

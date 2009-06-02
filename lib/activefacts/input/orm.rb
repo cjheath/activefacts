@@ -216,14 +216,10 @@ module ActiveFacts
           name = nil if name.size == 0
           # puts "FactType #{name || id}"
 
-          mapping = @x_mappings.detect{ |m| m.attributes['ref'] == id }
-          mapping_choice = mapping ? mapping.parent.attributes['AbsorptionChoice'] : 'Absorbed'
-
           x_subtype_role = x.elements['orm:FactRoles/orm:SubtypeMetaRole']
           subtype_role_id = x_subtype_role.attributes['id']
           subtype_id = x_subtype_role.elements['orm:RolePlayer'].attributes['ref']
           subtype = @by_id[subtype_id]
-          subtype.is_independent = true if mapping_choice == 'Separate'
           # REVISIT: Provide a way in the metamodel of handling Partition, (and mapping choices that vary for each supertype?)
 
           x_supertype_role = x.elements['orm:FactRoles/orm:SupertypeMetaRole']
@@ -242,6 +238,9 @@ module ActiveFacts
             # $stderr.puts "#{supertype.name} is primary supertype of #{subtype.name}"
             inheritance_fact.provides_identification = true
           end
+          mapping = @x_mappings.detect{ |m| m.attributes['ref'] == id }
+          mapping_choice = mapping ? mapping.parent.attributes['AbsorptionChoice'] : 'Absorbed'
+          inheritance_fact.assimilation = mapping_choice.downcase if mapping_choice != 'Absorbed'
           facts << @by_id[id] = inheritance_fact
 
           # Create the new Roles so we can find constraints on them:

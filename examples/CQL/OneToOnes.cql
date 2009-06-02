@@ -9,9 +9,9 @@ GirlID is written as AutoCounter;
 /*
  * Entity Types
  */
-Boy is identified by its ID;
+Boy is identified by its ID [independent];
 
-Girl is identified by its ID;
+Girl is identified by its ID [independent];
 Girl is going out with at most one Boy,
 	Boy is going out with at most one Girl;
 

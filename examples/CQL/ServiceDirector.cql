@@ -85,7 +85,7 @@ Monitor is identified by its _Id;
 Monitor monitors one DataStore;
 Monitor is disabled;
 
-MonitoringApplication is identified by its _Name;
+MonitoringApplication is identified by its _Name [independent];
 Monitor is owned by one MonitoringApplication;
 
 Network is identified by its _Nr;
@@ -106,7 +106,7 @@ NotificationLevel is identified by its _Nr;
 NotificationLevel has one InitialDelay-Duration;
 NotificationLevel has one Repeat-Duration;
 
-NotificationType is identified by its _Name;
+NotificationType is identified by its _Name [independent];
 
 ProviderType is identified by its _Id;
 
@@ -167,10 +167,10 @@ User has one Primary-EmailAddress;
 User has at most one Secondary-EmailAddress;
 User is monitor notification disabled;
 
-Vendor is a kind of Company;
+Vendor is a kind of Company [separate];
 Vendor requires at least one Credential;
 
-Client is a kind of Company;
+Client is a kind of Company [separate];
 Client has at most one default-DataStore;
 DataStore belongs to one Client,
 	Client uses DataStore;
