@@ -20,7 +20,7 @@ describe "CQL Loader with SQL output" do
     "ServiceDirector" => "Doesn't parse some constraints due to mis-matched adjectives"
   }
   cql_mysql_failures = {
-    "XXInsurance" => ""
+    "Metamodel" => "An index to enforce uniqueness on the nesting fact type isn't emitted",
   }
 
   # Generate and return the SQL for the given vocabulary
