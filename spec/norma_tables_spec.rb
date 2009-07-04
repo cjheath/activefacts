@@ -25,6 +25,7 @@ Exceptions = {
   "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
   "SeparateSubtype" => ["Claim", "VehicleIncident"],
   "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "TransferRequest", "Warehouse"],
+  "Portfolio" => ["AnnualDepreciation", "Attachment", "Collateral", "DepreciationSchedule", "Disposal", "Expenditure", "OwnedItem", "Revenue", "Transaction", "Valuation"],
   "OrienteeringER" => ["Club", "Event", "EventControl", "EventCourse", "Map", "SeriesEvent"],
   "RedundantDependency" => ["Address", "Politician", "StateOrProvince"],
 }

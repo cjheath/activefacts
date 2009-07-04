@@ -233,7 +233,7 @@ describe "Entity Types" do
   ]
 
   EntityTypes_Objectified = [
-    [ "Director = Person directs Company, Company is directed by Person;",
+    [ "Director is where Person directs Company, Company is directed by Person;",
       [["Director", [:fact_type, [[:fact_clause, [], [{:word=>"Person"}, {:word=>"directs"}, {:word=>"Company"}]], [:fact_clause, [], [{:word=>"Company"}, {:word=>"is"}, {:word=>"directed"}, {:word=>"by"}, {:word=>"Person"}]]], []]]]
     ],
     [ "Director: Person directs company;",
@@ -336,6 +336,38 @@ describe "Fact Types" do
 
       result.value.should == ast if ast
       puts result.map{|d| d.value}.inspect unless ast
+    end
+  end
+
+  Constraints = [
+    [ "each combination FamilyName, GivenName occurs at most one time in Competitor has FamilyName, Competitor has GivenName;",
+      [nil, [:constraint, :presence, [["FamilyName"], ["GivenName"]], [nil, 1], [[[{:word=>"Competitor"}, {:word=>"has"}, {:word=>"FamilyName"}]], [[{:word=>"Competitor"}, {:word=>"has"}, {:word=>"GivenName"}]]]]]
+    ],
+  ]
+
+  before :each do
+    @parser = ActiveFacts::CQLParser.new
+  end
+
+  Constraints.each do |c|
+    source, ast, definition = *c
+    it "should parse #{source.inspect}" do
+      definitions = @parser.parse_all(source, :definition)
+
+      puts @parser.failure_reason unless definitions
+
+      definitions.should_not be_nil
+      result = definitions[-1]
+
+      if (definition)
+        result.definition.should == definition
+      else
+        #p @parser.definition(result)
+      end
+
+      result.value.should == ast if ast
+
+      result.value.inspect unless ast
     end
   end
 end
