@@ -54,13 +54,13 @@ module ActiveFacts
       end
 
       # An array of the names of the columns this index covers
-      def column_names
-        columns.map{|column| column.name}
+      def column_names(joiner = "")
+        columns.map{|column| column.name(joiner)}
       end
 
       # An array of the names of the columns this index covers, with some lexical truncations.
-      def abbreviated_column_names
-        columns.map{|column| column.name.sub(/^#{over.name}/,'')}
+      def abbreviated_column_names(joiner = "")
+        columns.map{|column| column.name(joiner).sub(/^#{over.name}/,'')}
       end
 
       # The name of a view that can be created to enforce uniqueness over non-null key values
