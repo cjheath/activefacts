@@ -92,6 +92,7 @@ module ActiveFacts
               # When Xyz is followed by XyzID, truncate that to just ID
               debug :columns, "truncating repeated #{last_names.last} in #{names[0]}"
               names[0] = names[0][last_names.last.size..-1]
+              names.shift if names[0] == ''
             elsif last_names.last == names[0]
               # Same, but where an underscore split up the words
               debug :columns, "truncating repeated name in #{names.inspect}"
