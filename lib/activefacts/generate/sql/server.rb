@@ -49,6 +49,7 @@ module ActiveFacts
           @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
           @delay_fks = options.include? "delay_fks"
           @norma = options.include? "norma"
+          @underscore = options.include?("underscore") ? "_" : ""
         end
 
         def puts s
@@ -102,7 +103,7 @@ module ActiveFacts
             when "PictureRawData"; "image"
             when "VariableLengthRawData"; "varbinary"
             when "BIT"; "bit"
-            else raise "SQL type unknown for NORMA type #{type}"
+            else type # raise "SQL type unknown for NORMA type #{type}"
             end
           [sql_type, length]
         end
@@ -116,7 +117,7 @@ module ActiveFacts
           delayed_foreign_keys = []
 
           @vocabulary.tables.each do |table|
-            puts "CREATE TABLE #{escape table.name} ("
+            puts "CREATE TABLE #{escape table.name(@underscore)} ("
 
             pk = table.identifier_columns
             identity_column = pk[0] if pk.size == 1 && pk[0].is_auto_assigned
@@ -128,8 +129,8 @@ module ActiveFacts
 
             # We sort the columns here, not in the persistence layer, because it affects
             # the ordering of columns in an index :-(.
-            columns = table.columns.sort_by { |column| column.name(nil) }.map do |column|
-              name = escape column.name("")
+            columns = table.columns.sort_by { |column| column.name(@underscore) }.map do |column|
+              name = escape column.name(@underscore)
               padding = " "*(name.size >= ColumnNameMax ? 1 : ColumnNameMax-name.size)
               type, params, restrictions = column.type
               restrictions = [] if (fk_columns.include?(column))  # Don't enforce VT restrictions on FK columns
@@ -153,22 +154,22 @@ module ActiveFacts
             end.flatten
 
             pk_def = (pk.detect{|column| !column.is_mandatory} ? "UNIQUE(" : "PRIMARY KEY(") +
-                pk.map{|column| escape column.name("")}*", " +
+                pk.map{|column| escape column.name(@underscore)}*", " +
                 ")"
 
             inline_fks = []
             table.foreign_keys.each do |fk|
               fk_text = "FOREIGN KEY (" +
-                fk.from_columns.map{|column| column.name}*", " +
-                ") REFERENCES #{escape fk.to.name} (" +
-                fk.to_columns.map{|column| column.name}*", " +
+                fk.from_columns.map{|column| column.name(@underscore)}*", " +
+                ") REFERENCES #{escape fk.to.name(@underscore)} (" +
+                fk.to_columns.map{|column| column.name(@underscore)}*", " +
                 ")"
               if !@delay_fks and              # We don't want to delay all Fks
                 (tables_emitted[fk.to] or     # The target table has been emitted
                 fk.to == table && !fk.to_columns.detect{|column| !column.is_mandatory})   # The reference columns already have the required indexes
                 inline_fks << fk_text
               else
-                delayed_foreign_keys << ("ALTER TABLE #{escape fk.from.name}\n\tADD " + fk_text)
+                delayed_foreign_keys << ("ALTER TABLE #{escape fk.from.name(@underscore)}\n\tADD " + fk_text)
               end
             end
 
@@ -177,8 +178,8 @@ module ActiveFacts
             delayed_indices = []
             indices.each do |index|
               next if index.over == table && index.is_primary   # Already did the primary keys
-              abbreviated_column_names = index.abbreviated_column_names*""
-              column_names = index.column_names
+              abbreviated_column_names = index.abbreviated_column_names(@underscore)*""
+              column_names = index.column_names(@underscore)
               column_name_list = column_names.map{|n| escape(n)}*", "
               if index.columns.all?{|column| column.is_mandatory}
                 inline_indices << "UNIQUE(#{column_name_list})"
@@ -186,17 +187,17 @@ module ActiveFacts
                 view_name = escape "#{index.view_name}_#{abbreviated_column_names}"
                 delayed_indices <<
 %Q{CREATE VIEW dbo.#{view_name} (#{column_name_list}) WITH SCHEMABINDING AS
-\tSELECT #{column_name_list} FROM dbo.#{escape index.on.name}
+\tSELECT #{column_name_list} FROM dbo.#{escape index.on.name(@underscore)}
 \tWHERE\t#{
   index.columns.
     select{|column| !column.is_mandatory }.
     map{|column|
-      escape(column.name) + " IS NOT NULL"
+      escape(column.name(@underscore)) + " IS NOT NULL"
     }*"\n\t  AND\t"
 }
 GO
 
-CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.columns.map{|column| column.name}*", "})
+CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.columns.map{|column| column.name(@underscore)}*", "})
 }
               end
             end
