@@ -148,9 +148,9 @@ Population includes RoleValue,
 	RoleValue belongs to one Population;
 
 Role is where
-	FactType has Ordinal role played by Concept,
-	Concept plays role in FactType in Ordinal place,
-	Concept plays Ordinal role in FactType;
+	FactType has Ordinal place played by at most one Concept,
+	Concept participates in FactType in Ordinal place,
+	Concept plays Ordinal place in FactType;
 Role is of RingConstraint,
 	RingConstraint has at most one Role;
 Role has at most one role-Name,
@@ -229,10 +229,10 @@ for each ContextNote exactly one of these holds:
 	Constraint has ContextNote;
 Instance plays RoleValue and Instance is of Concept
 	if and only if
-	RoleValue is of Role and FactType has Ordinal role played by Concept;
+	RoleValue is of Role and FactType has Ordinal place played by Concept;
 RoleValue fulfils Fact and Fact is of FactType
 	if and only if
-	RoleValue is of Role and FactType has Ordinal role played by Concept;
+	RoleValue is of Role and FactType has Ordinal place played by Concept;
 for each SetComparisonConstraint exactly one of these holds:
 	SetExclusionConstraint is a subtype of SetComparisonConstraint,
 	SetEqualityConstraint is a subtype of SetComparisonConstraint;
@@ -250,7 +250,7 @@ each combination EntityType, TypeInheritance occurs at most one time in
 	EntityType is subtype of super-EntityType,
 	TypeInheritance provides identification;
 each FactType occurs at least one time in
-	FactType has Ordinal role played by Concept;
+	FactType has Ordinal place played by Concept;
 each Join occurs at least one time in
 	Join has input-Role,
 	Join has output-Role;

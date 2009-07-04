@@ -275,8 +275,8 @@ player, binding = @symbols.bind(names)
                   entity_role, value_role = ft.all_role.partition{|role| role.concept == entity_type}.flatten
                 else
                   ft = @constellation.FactType(:new)
-                  entity_role = @constellation.Role(ft, 0, entity_type)
-                  value_role = @constellation.Role(ft, 1, vt)
+                  entity_role = @constellation.Role(ft, 0, :concept => entity_type)
+                  value_role = @constellation.Role(ft, 1, :concept => vt)
                   debug :mode, "Creating new fact type to identify #{name}"
                 end
 
@@ -392,8 +392,8 @@ player, binding = @symbols.bind(names)
         inheritance_fact.assimilation = assimilations[0]
 
         # Create a reading:
-        sub_role = @constellation.Role(inheritance_fact, 0, entity_type)
-        super_role = @constellation.Role(inheritance_fact, 1, supertype)
+        sub_role = @constellation.Role(inheritance_fact, 0, :concept => entity_type)
+        super_role = @constellation.Role(inheritance_fact, 1, :concept => supertype)
         rs = @constellation.RoleSequence(:new)
         @constellation.RoleRef(rs, 0, :role => sub_role)
         @constellation.RoleRef(rs, 1, :role => super_role)
@@ -835,7 +835,7 @@ player, binding = @symbols.bind(names)
             role = nil
             if (fact_type.all_reading.size == 0)           # First reading
               # Assert this role of the fact type:
-              role = @constellation.Role(fact_type, fact_type.all_role.size, player)
+              role = @constellation.Role(fact_type, fact_type.all_role.size, :concept => player)
               role.role_name = role_name if role_name
               debug "Concept #{player.name} found, created role #{role.describe} by binding #{binding.inspect}"
               @symbols.roles_by_binding[binding] = role

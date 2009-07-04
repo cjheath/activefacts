@@ -257,12 +257,12 @@ module ActiveFacts
           end
           mapping = @x_mappings.detect{ |m| m['ref'] == id }
           mapping_choice = mapping ? mapping.parent['AbsorptionChoice'] : 'Absorbed'
-          inheritance_fact.assimilation = mapping_choice.downcase if mapping_choice != 'Absorbed'
+          inheritance_fact.assimilation = mapping_choice.downcase.sub(/partition/, 'partitioned') if mapping_choice != 'Absorbed'
           facts << @by_id[id] = inheritance_fact
 
           # Create the new Roles so we can find constraints on them:
-          subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, subtype)
-          supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, supertype)
+          subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, :concept => subtype)
+          supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, :concept => supertype)
 
           # Create readings, so constraints can be verbalised for example:
           rs = @constellation.RoleSequence(:new)
@@ -395,7 +395,7 @@ module ActiveFacts
             name = nil if name.size == 0
             #puts "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.fact_type_id} played by #{concept.name}"
 
-            role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, concept)
+            role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :concept => concept)
             role.role_name = name if name
             # puts "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x['Name']} is played by #{concept.name}, role is #{role.object_id}"
 

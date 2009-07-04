@@ -133,10 +133,10 @@ CREATE TABLE Punch (
 GO
 
 CREATE TABLE PunchPlacement (
-	-- PunchPlacement is where Punch is placed at EventControl and EventControl is where Event includes ControlNumber,
-	EventControlNumber                      int NOT NULL,
 	-- PunchPlacement is where Punch is placed at EventControl and EventControl is where Event includes ControlNumber and Event has EventID,
 	EventControlEventID                     int NOT NULL,
+	-- PunchPlacement is where Punch is placed at EventControl and EventControl is where Event includes ControlNumber,
+	EventControlNumber                      int NOT NULL,
 	-- PunchPlacement is where Punch is placed at EventControl and Punch has PunchID,
 	PunchID                                 int NOT NULL,
 	PRIMARY KEY(PunchID, EventControlEventID, EventControlNumber),

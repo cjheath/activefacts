@@ -251,7 +251,7 @@ module ActiveFacts
     end
 
     class Role
-      identified_by :fact_type, :ordinal, :concept
+      identified_by :fact_type, :ordinal
       has_one :concept                            # See Concept.all_role
       has_one :fact_type                          # See FactType.all_role
       has_one :ordinal                            # See Ordinal.all_role

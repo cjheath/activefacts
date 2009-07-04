@@ -109,6 +109,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>PersonPlaysGame.orm</DependentUpon>
     </Compile>
+    <Compile Include="Portfolio._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Portfolio.orm</DependentUpon>
+    </Compile>
     <Compile Include="RedundantDependency._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>RedundantDependency.orm</DependentUpon>
@@ -243,6 +247,10 @@
     <None Include="PersonPlaysGame.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>PersonPlaysGame._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Portfolio.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Portfolio._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="RedundantDependency.orm">
       <Generator>ORMCustomTool</Generator>
@@ -705,6 +713,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Portfolio.orm')">
+    <None Include="Portfolio.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Portfolio.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Portfolio.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Portfolio.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Portfolio.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Portfolio.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -56,23 +56,15 @@ CREATE TABLE [Constraint] (
 	PresenceConstraintMinFrequency          int NULL CHECK(PresenceConstraintMinFrequency >= 2),
 	-- maybe PresenceConstraint is a subtype of Constraint and PresenceConstraint covers RoleSequence and RoleSequence has RoleSequenceId,
 	PresenceConstraintRoleSequenceId        int NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and Concept is called Name,
-	RingConstraintOtherRoleConceptName      varchar(64) NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	RingConstraintOtherRoleConceptVocabularyName varchar(64) NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal place played by Concept and FactType has FactTypeId,
 	RingConstraintOtherRoleFactTypeId       int NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept,
+	-- maybe RingConstraint is a subtype of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal place played by Concept,
 	RingConstraintOtherRoleOrdinal          int NULL,
 	-- maybe RingConstraint is a subtype of Constraint and RingConstraint is of RingType,
 	RingConstraintRingType                  varchar NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and Concept is called Name,
-	RingConstraintRoleConceptName           varchar(64) NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	RingConstraintRoleConceptVocabularyName varchar(64) NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal place played by Concept and FactType has FactTypeId,
 	RingConstraintRoleFactTypeId            int NULL,
-	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role played by Concept,
+	-- maybe RingConstraint is a subtype of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal place played by Concept,
 	RingConstraintRoleOrdinal               int NULL,
 	-- maybe SetConstraint is a subtype of Constraint and maybe SetComparisonConstraint is a subtype of SetConstraint and maybe SetExclusionConstraint is a subtype of SetComparisonConstraint and SetExclusionConstraint is mandatory,
 	SetExclusionConstraintIsMandatory       bit NULL,
@@ -224,23 +216,15 @@ CREATE TABLE [Join] (
 	ConceptName                             varchar(64) NULL,
 	-- maybe Join traverses Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
 	ConceptVocabularyName                   varchar(64) NULL,
-	-- maybe Join has input-Role and Role is where FactType has Ordinal role played by Concept and Concept is called Name,
-	InputRoleConceptName                    varchar(64) NULL,
-	-- maybe Join has input-Role and Role is where FactType has Ordinal role played by Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	InputRoleConceptVocabularyName          varchar(64) NULL,
-	-- maybe Join has input-Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	-- maybe Join has input-Role and Role is where FactType has Ordinal place played by Concept and FactType has FactTypeId,
 	InputRoleFactTypeId                     int NULL,
-	-- maybe Join has input-Role and Role is where FactType has Ordinal role played by Concept,
+	-- maybe Join has input-Role and Role is where FactType has Ordinal place played by Concept,
 	InputRoleOrdinal                        int NULL,
 	-- Join is where RoleRef has JoinStep join,
 	JoinStep                                int NOT NULL,
-	-- maybe Join has output-Role and Role is where FactType has Ordinal role played by Concept and Concept is called Name,
-	OutputRoleConceptName                   varchar(64) NULL,
-	-- maybe Join has output-Role and Role is where FactType has Ordinal role played by Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	OutputRoleConceptVocabularyName         varchar(64) NULL,
-	-- maybe Join has output-Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	-- maybe Join has output-Role and Role is where FactType has Ordinal place played by Concept and FactType has FactTypeId,
 	OutputRoleFactTypeId                    int NULL,
-	-- maybe Join has output-Role and Role is where FactType has Ordinal role played by Concept,
+	-- maybe Join has output-Role and Role is where FactType has Ordinal place played by Concept,
 	OutputRoleOrdinal                       int NULL,
 	-- Join is where RoleRef has JoinStep join and RoleRef is where RoleSequence in Ordinal position includes Role,
 	RoleRefOrdinal                          int NOT NULL,
@@ -284,19 +268,19 @@ CREATE TABLE Reading (
 GO
 
 CREATE TABLE Role (
-	-- Role is where FactType has Ordinal role played by Concept and Concept is called Name,
+	-- Role is where FactType has Ordinal place played by Concept and Concept is called Name,
 	ConceptName                             varchar(64) NOT NULL,
-	-- Role is where FactType has Ordinal role played by Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- Role is where FactType has Ordinal place played by Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
 	ConceptVocabularyName                   varchar(64) NOT NULL,
-	-- Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	-- Role is where FactType has Ordinal place played by Concept and FactType has FactTypeId,
 	FactTypeId                              int NOT NULL,
-	-- Role is where FactType has Ordinal role played by Concept,
+	-- Role is where FactType has Ordinal place played by Concept,
 	Ordinal                                 int NOT NULL,
 	-- maybe Role has role-Name,
 	RoleName                                varchar(64) NULL,
 	-- maybe Role has role-ValueRestriction and ValueRestriction has ValueRestrictionId,
 	RoleValueRestrictionId                  int NULL,
-	PRIMARY KEY(FactTypeId, Ordinal, ConceptVocabularyName, ConceptName),
+	PRIMARY KEY(FactTypeId, Ordinal),
 	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
@@ -307,21 +291,17 @@ CREATE TABLE RoleRef (
 	LeadingAdjective                        varchar(64) NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role,
 	Ordinal                                 int NOT NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role played by Concept and Concept is called Name,
-	RoleConceptName                         varchar(64) NOT NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role played by Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	RoleConceptVocabularyName               varchar(64) NOT NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal place played by Concept and FactType has FactTypeId,
 	RoleFactTypeId                          int NOT NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role played by Concept,
+	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal place played by Concept,
 	RoleOrdinal                             int NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and RoleSequence has RoleSequenceId,
 	RoleSequenceId                          int NOT NULL,
 	-- maybe RoleRef has trailing-Adjective,
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
-	UNIQUE(RoleFactTypeId, RoleOrdinal, RoleConceptVocabularyName, RoleConceptName, RoleSequenceId),
-	FOREIGN KEY (RoleConceptName, RoleConceptVocabularyName, RoleFactTypeId, RoleOrdinal) REFERENCES Role (ConceptName, ConceptVocabularyName, FactTypeId, Ordinal)
+	UNIQUE(RoleFactTypeId, RoleOrdinal, RoleSequenceId),
+	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 )
 GO
 
@@ -341,18 +321,14 @@ CREATE TABLE RoleValue (
 	PopulationName                          varchar(64) NOT NULL,
 	-- Population includes RoleValue and maybe Vocabulary includes Population and Vocabulary is called Name,
 	PopulationVocabularyName                varchar(64) NULL,
-	-- RoleValue is of Role and Role is where FactType has Ordinal role played by Concept and Concept is called Name,
-	RoleConceptName                         varchar(64) NOT NULL,
-	-- RoleValue is of Role and Role is where FactType has Ordinal role played by Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	RoleConceptVocabularyName               varchar(64) NOT NULL,
-	-- RoleValue is of Role and Role is where FactType has Ordinal role played by Concept and FactType has FactTypeId,
+	-- RoleValue is of Role and Role is where FactType has Ordinal place played by Concept and FactType has FactTypeId,
 	RoleFactTypeId                          int NOT NULL,
-	-- RoleValue is of Role and Role is where FactType has Ordinal role played by Concept,
+	-- RoleValue is of Role and Role is where FactType has Ordinal place played by Concept,
 	RoleOrdinal                             int NOT NULL,
 	PRIMARY KEY(InstanceId, FactId),
 	FOREIGN KEY (FactId) REFERENCES Fact (FactId),
 	FOREIGN KEY (InstanceId) REFERENCES Instance (InstanceId),
-	FOREIGN KEY (RoleConceptName, RoleConceptVocabularyName, RoleFactTypeId, RoleOrdinal) REFERENCES Role (ConceptName, ConceptVocabularyName, FactTypeId, Ordinal)
+	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 )
 GO
 
@@ -412,11 +388,11 @@ ALTER TABLE Concept
 GO
 
 ALTER TABLE [Constraint]
-	ADD FOREIGN KEY (RingConstraintOtherRoleConceptName, RingConstraintOtherRoleConceptVocabularyName, RingConstraintOtherRoleFactTypeId, RingConstraintOtherRoleOrdinal) REFERENCES Role (ConceptName, ConceptVocabularyName, FactTypeId, Ordinal)
+	ADD FOREIGN KEY (RingConstraintOtherRoleFactTypeId, RingConstraintOtherRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE [Constraint]
-	ADD FOREIGN KEY (RingConstraintRoleConceptName, RingConstraintRoleConceptVocabularyName, RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal) REFERENCES Role (ConceptName, ConceptVocabularyName, FactTypeId, Ordinal)
+	ADD FOREIGN KEY (RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE [Constraint]
@@ -448,11 +424,11 @@ ALTER TABLE Fact
 GO
 
 ALTER TABLE [Join]
-	ADD FOREIGN KEY (InputRoleConceptName, InputRoleConceptVocabularyName, InputRoleFactTypeId, InputRoleOrdinal) REFERENCES Role (ConceptName, ConceptVocabularyName, FactTypeId, Ordinal)
+	ADD FOREIGN KEY (InputRoleFactTypeId, InputRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE [Join]
-	ADD FOREIGN KEY (OutputRoleConceptName, OutputRoleConceptVocabularyName, OutputRoleFactTypeId, OutputRoleOrdinal) REFERENCES Role (ConceptName, ConceptVocabularyName, FactTypeId, Ordinal)
+	ADD FOREIGN KEY (OutputRoleFactTypeId, OutputRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE [Join]
