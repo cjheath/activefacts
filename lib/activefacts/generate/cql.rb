@@ -352,11 +352,13 @@ module ActiveFacts
         # puts "#{c.class.basename} has #{role_seq_count} scr's: #{scrs.map{|scr| "("+scr.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}*", "+")"}*", "}"
 
         players_differ = []   # Record which players are also played by subclasses
-        players = (0...player_count).map do |pi|
-          # Find the common supertype of the players of the pi'th role in each sequence
-          concepts = scrs.map{|r| r.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[pi].role.concept }
-          player, players_differ[pi] = common_supertype(concepts)
-          raise "Role sequences of #{c.class.basename} must have concepts matching #{concepts.map(&:name)*","} in position #{pi}" unless player
+        players = (0...player_count).map do |pindex|
+          # Find the common supertype of the players of the pindex'th role in each sequence
+          concepts = scrs.map do |r|
+            r.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[pindex].role.concept
+          end
+          player, players_differ[pindex] = common_supertype(concepts)
+          raise "Role sequences of #{c.class.basename} must have concepts matching #{concepts.map(&:name)*","} in position #{pindex}" unless player
           player
         end
         #puts "#{c.class.basename} has players #{players.map{|p| p.name}*", "}"
