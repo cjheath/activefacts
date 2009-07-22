@@ -196,13 +196,16 @@ end
 describe "Entity Types" do
   EntityTypes_RefMode = [
     [ "a is identified by its id;",                     # Entity type declaration with reference mode
-      [["a", [:entity_type, [], {:mode=>"id", :restriction=>nil}, [], nil]]]
+      [["a", [:entity_type, [], {:mode=>"id", :parameters=> [], :restriction=>nil}, [], nil]]]
+    ],
+    [ "a is identified by its number(12);",                     # Entity type declaration with reference mode
+      [["a", [:entity_type, [], {:mode=>"number", :parameters => [12], :restriction=>nil}, [], nil]]]
     ],
     [ "a is identified by its id:c;",                   # Entity type declaration with reference mode and fact type(s)
-      [["a", [:entity_type, [], {:mode=>"id", :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}]]]]]]
+      [["a", [:entity_type, [], {:mode=>"id", :parameters=> [], :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
     [ "a is identified by its id where c;",             # Entity type declaration with reference mode and where
-      [["a", [:entity_type, [], {:mode=>"id", :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}]]]]]]
+      [["a", [:entity_type, [], {:mode=>"id", :parameters=> [], :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}]]]]]]
     ],
   ]
 

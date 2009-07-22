@@ -8,7 +8,10 @@ module ActiveFacts
   module CQL
     grammar FactTypes
       rule named_fact_type
-        s name:id ( s '=' s / written_as / s is s where )
+        s name:id
+        ( written_as      # REVISIT: What on earth was I thinking when I wrote this?
+        / s is s where    # REVISIT: Need a place to put mapping pragmas like [independent]
+        )
         anonymous_fact_type
         {
           def value
@@ -71,6 +74,7 @@ module ActiveFacts
       end
 
       rule clause
+        # REVISIT: No context for comparisons, yet
         (comparison / fact_clause)
         {
           def clause
@@ -80,7 +84,7 @@ module ActiveFacts
       end
 
       rule fact_clause
-        s q:qualifier? s reading s p:post_qualifiers? s
+        s q:qualifier? s reading s p:post_qualifiers? s context?
         {
           def body
             [ :fact_clause,

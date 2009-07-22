@@ -14,6 +14,7 @@ require 'activefacts/cql/Expressions'
 require 'activefacts/cql/Concepts'
 require 'activefacts/cql/ValueTypes'
 require 'activefacts/cql/FactTypes'
+require 'activefacts/cql/Context'
 require 'activefacts/cql/CQLParser'
 
 module ActiveFacts

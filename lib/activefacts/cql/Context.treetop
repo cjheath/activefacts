@@ -8,35 +8,22 @@ module ActiveFacts
   module CQL
     grammar Context
       rule context
-        (according_to people ',')? (because / as_opposed_to / so_that / to_avoid) discussion (',' as_agreed_by)?
+	'('
+	who_says? s context_type discussion (',' as_agreed_by)? s
+	')'
       end
 
-      # in English.treetop:
-
-      rule according_to
-        according to
+      rule who_says
+        according_to people s ','
       end
 
-      rule as_opposed_to
-        as opposed to
+      rule context_type
+	because / as_opposed_to / so_that / to_avoid
       end
 
-      rule so_that
-        so that
+      rule discussion
+	'(' discussion ')' / (!( [()] / ',' as_agreed_by) .)*
       end
-
-      rule to_avoid
-        to avoid
-      end
-
-      rule as_agreed_by
-        as agreed (on date)? by people
-      end
-
-      rule people
-        person (s ',' s person)*
-      end
-
     end
   end
 end

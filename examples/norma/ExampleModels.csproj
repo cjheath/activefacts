@@ -77,6 +77,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>MonthInSeason.orm</DependentUpon>
     </Compile>
+    <Compile Include="Moon._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Moon.orm</DependentUpon>
+    </Compile>
     <Compile Include="MultiInheritance._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>MultiInheritance.orm</DependentUpon>
@@ -116,6 +120,10 @@
     <Compile Include="RedundantDependency._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>RedundantDependency.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Richmond-ORMModel-v0.9._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Richmond-ORMModel-v0.9.orm</DependentUpon>
     </Compile>
     <Compile Include="SchoolActivities._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -224,6 +232,10 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>MonthInSeason._ORMCustomToolReport.cs</LastGenOutput>
     </None>
+    <None Include="Moon.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Moon._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="MultiInheritance.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>MultiInheritance._ORMCustomToolReport.cs</LastGenOutput>
@@ -255,6 +267,10 @@
     <None Include="RedundantDependency.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>RedundantDependency._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Richmond-ORMModel-v0.9.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Richmond-ORMModel-v0.9._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="SeparateSubtype.orm">
       <Generator>ORMCustomTool</Generator>
@@ -730,6 +746,40 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Portfolio.orm</DependentUpon>
       <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Richmond-ORMModel-v0.9.orm')">
+    <None Include="Richmond-ORMModel-v0.9.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Richmond-ORMModel-v0.9.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Richmond-ORMModel-v0.9.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Richmond-ORMModel-v0.9.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Richmond-ORMModel-v0.9.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Richmond-ORMModel-v0.9.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Moon.orm')">
+    <None Include="Moon.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Moon.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Moon.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Moon.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Moon.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Moon.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -72,7 +72,7 @@ module ActiveFacts
               end
             }
         / derived_variable
-        / '(' s sum s ')' s                   { def value; sum.value; end }
+        / !context '(' s sum s ')' s                   { def value; sum.value; end }
       end
 
       rule derived_variable

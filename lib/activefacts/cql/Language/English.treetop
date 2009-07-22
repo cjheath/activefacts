@@ -47,6 +47,38 @@ module ActiveFacts
         / number s                { def value; number.value; end }
       end
 
+      rule according_to
+        'according' S to
+      end
+
+      rule because
+        'because' S
+      end
+
+      rule as_opposed_to
+        as S 'opposed' S to
+      end
+
+      rule so_that
+        'so' S that
+      end
+
+      rule to_avoid
+        to s 'avoid' !alphanumeric
+      end
+
+      rule as_agreed_by
+        as 'agreed' s ('on' S date)? by people
+      end
+
+      rule people
+        person s (',' s !context_type person s)*
+      end
+
+      rule person
+	s id (s id)*
+      end
+
       rule acyclic 'acyclic' !alphanumeric end
       rule alias 'alias' !alphanumeric end 
       rule all 'all' !alphanumeric end
