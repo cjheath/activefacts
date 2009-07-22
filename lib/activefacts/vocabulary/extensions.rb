@@ -13,7 +13,9 @@ module ActiveFacts
       end
 
       def preferred_reading
-        all_reading_by_ordinal[0]
+        p = all_reading_by_ordinal[0]
+        raise "No reading for (#{all_role.map{|r| r.concept.name}*", "})" unless p
+        p
       end
 
       def describe(highlight = nil)
