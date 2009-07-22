@@ -58,7 +58,7 @@ module ActiveFacts
         # Find the Vocabulary and do some setup:
         root = @document.root
         #p((root.methods-0.methods).sort.grep(/name/))
-        if root.name == "ORM2" && root.namespace == "ormRoot"
+        if root.name == "ORM2" && root.namespace.prefix == "ormRoot"
           x_models = root.xpath('orm:ORMModel')
           throw "No vocabulary found" unless x_models.size == 1
           @x_model = x_models[0]
