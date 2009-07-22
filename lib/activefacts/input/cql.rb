@@ -167,6 +167,11 @@ module ActiveFacts
             unless vt = @constellation.ValueType[[@vocabulary, vt_name]]
               base_vt = @constellation.ValueType(@vocabulary, mode)
               vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
+              if parameters = identification[:parameters]
+                length, scale = *parameters
+                vt.length = length if length
+                vt.scale = scale if scale
+              end
             end
             # REVISIT: If we do this, it gets emitted twice when we generate CQL. The generator should detect that the restriction is the same and not emit it.
             #if (ranges = identification[:restriction])
