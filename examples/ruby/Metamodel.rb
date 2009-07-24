@@ -19,8 +19,21 @@ module ::Metamodel
     value_type 
   end
 
+  class ContextNoteKind < String
+    value_type 
+    # REVISIT: ContextNoteKind has restricted values
+  end
+
+  class Date < ::Date
+    value_type 
+  end
+
   class Denominator < UnsignedInteger
     value_type :length => 32
+  end
+
+  class Discussion < String
+    value_type 
   end
 
   class Enforcement < String
@@ -65,6 +78,10 @@ module ::Metamodel
 
   class Ordinal < UnsignedSmallInteger
     value_type :length => 32
+  end
+
+  class PersonName < String
+    value_type 
   end
 
   class Pronoun < String
@@ -126,6 +143,8 @@ module ::Metamodel
     has_one :concept                            # See Concept.all_context_note
     has_one :constraint                         # See Constraint.all_context_note
     one_to_one :context_note_id                 # See ContextNoteId.context_note
+    has_one :context_note_kind                  # See ContextNoteKind.all_context_note
+    has_one :discussion                         # See Discussion.all_context_note
     has_one :fact_type                          # See FactType.all_context_note
   end
 
@@ -147,6 +166,11 @@ module ::Metamodel
     one_to_one :instance_id                     # See InstanceId.instance
     has_one :population                         # See Population.all_instance
     has_one :value                              # See Value.all_instance
+  end
+
+  class Person
+    identified_by :person_name
+    one_to_one :person_name                     # See PersonName.person
   end
 
   class PresenceConstraint < Constraint
@@ -218,6 +242,12 @@ module ::Metamodel
     one_to_one :name                            # See Name.vocabulary
   end
 
+  class Agreement
+    identified_by :context_note
+    one_to_one :context_note                    # See ContextNote.agreement
+    has_one :date                               # See Date.all_agreement
+  end
+
   class AllowedRange
     identified_by :value_restriction, :value_range
     has_one :value_range                        # See ValueRange.all_allowed_range
@@ -230,6 +260,18 @@ module ::Metamodel
     has_one :name                               # See Name.all_concept
     has_one :pronoun                            # See Pronoun.all_concept
     has_one :vocabulary                         # See Vocabulary.all_concept
+  end
+
+  class ContextAccordingTo
+    identified_by :context_note, :person
+    has_one :context_note                       # See ContextNote.all_context_according_to
+    has_one :person                             # See Person.all_context_according_to
+  end
+
+  class ContextAgreedBy
+    identified_by :agreement, :person
+    has_one :agreement                          # See Agreement.all_context_agreed_by
+    has_one :person                             # See Person.all_context_agreed_by
   end
 
   class Derivation

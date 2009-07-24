@@ -7,7 +7,9 @@ Adjective is written as VariableLengthText(64);
 Assimilation is written as VariableLengthText restricted to {'partitioned', 'separate'};
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
+ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
 Denominator is written as UnsignedInteger(32);
+Discussion is written as VariableLengthText;
 Enforcement is written as VariableLengthText(16);
 Exponent is written as SignedSmallInteger(32);
 FactId is written as AutoCounter;
@@ -19,6 +21,7 @@ Name is written as VariableLengthText(64);
 Numerator is written as Decimal;
 Offset is written as Decimal;
 Ordinal is written as UnsignedSmallInteger(32);
+PersonName is written as VariableLengthText;
 Pronoun is written as VariableLengthText(20) restricted to {'feminine', 'masculine', 'personal'};
 RingType is written as VariableLengthText;
 RoleSequenceId is written as AutoCounter;
@@ -50,6 +53,10 @@ Name is of Constraint,
 ContextNote is identified by its Id;
 Constraint has ContextNote,
 	ContextNote applies to at most one Constraint;
+ContextNote has one ContextNoteKind,
+	ContextNoteKind is of ContextNote;
+ContextNote has one Discussion,
+	Discussion is for ContextNote;
 
 Fact is identified by its Id;
 
@@ -60,6 +67,8 @@ FactType has ContextNote,
 
 Instance is identified by its Id;
 Instance has at most one Value;
+
+Person is identified by its Name;
 
 PresenceConstraint is a kind of Constraint;
 PresenceConstraint has at most one max-Frequency restricted to {1..};
@@ -114,6 +123,11 @@ Vocabulary contains Constraint,
 Vocabulary includes Unit,
 	Unit is in one Vocabulary;
 
+Agreement is identified by ContextNote where
+	ContextNote was added by at most one Agreement,
+	Agreement covers one ContextNote;
+Agreement was on at most one Date;
+
 AllowedRange is where
 	ValueRestriction allows at least one ValueRange;
 
@@ -126,6 +140,14 @@ Concept has ContextNote,
 Concept uses at most one Pronoun;
 Concept is independent;
 Instance is of one Concept;
+
+ContextAccordingTo is where
+	ContextNote is according to Person,
+	Person claims ContextNote;
+
+ContextAgreedBy is where
+	Agreement was reached by Person,
+	Person agreed on Agreement;
 
 Derivation is where
 	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];

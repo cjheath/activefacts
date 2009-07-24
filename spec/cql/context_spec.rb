@@ -19,7 +19,7 @@ describe "Business Context Notes" do
       [["Person", [:value_type, "Person", [], nil, [], []]], [nil, [:constraint, :presence, [["Person"]], [1, 1], [[[{:word=>"Person"}, {:word=>"is"}, {:word=>"employed"}]], [[{:word=>"Person"}, {:word=>"is"}, {:word=>"unemployed"}]]], [nil, "because", "it can be no other way!", []]]]]
     ],
     [ 'each Person occurs one time in Person is employed, Person is unemployed (as opposed to blah!);',
-      [["Person", [:value_type, "Person", [], nil, [], []]], [nil, [:constraint, :presence, [["Person"]], [1, 1], [[[{:word=>"Person"}, {:word=>"is"}, {:word=>"employed"}]], [[{:word=>"Person"}, {:word=>"is"}, {:word=>"unemployed"}]]], [nil, "as_opposed", " blah!", []]]]]
+      [["Person", [:value_type, "Person", [], nil, [], []]], [nil, [:constraint, :presence, [["Person"]], [1, 1], [[[{:word=>"Person"}, {:word=>"is"}, {:word=>"employed"}]], [[{:word=>"Person"}, {:word=>"is"}, {:word=>"unemployed"}]]], [nil, "as_opposed_to", " blah!", []]]]]
     ],
     [ 'for each Person at least one of these holds: Person is employed, Person is a bad credit risk (so that blah);',
       [["Person", [:value_type, "Person", [], nil, [], []]], [nil, [:constraint, :set, [["Person"]], [1, nil], [[[{:word=>"Person"}, {:word=>"is"}, {:word=>"employed"}]], [[{:word=>"Person"}, {:word=>"is"}, {:word=>"a"}, {:word=>"bad"}, {:word=>"credit"}, {:word=>"risk"}]]], [nil, "so_that", " blah", []]]]]

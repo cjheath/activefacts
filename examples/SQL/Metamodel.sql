@@ -96,7 +96,27 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameName ON dbo.Constraint_VocabularyNameName(VocabularyName, Name)
 GO
 
+CREATE TABLE ContextAccordingTo (
+	-- ContextAccordingTo is where ContextNote is according to Person and ContextNote has ContextNoteId,
+	ContextNoteId                           int NOT NULL,
+	-- ContextAccordingTo is where ContextNote is according to Person and Person has PersonName,
+	PersonName                              varchar NOT NULL,
+	PRIMARY KEY(ContextNoteId, PersonName)
+)
+GO
+
+CREATE TABLE ContextAgreedBy (
+	-- ContextAgreedBy is where Agreement was reached by Person and ContextNote has ContextNoteId,
+	AgreementContextNoteId                  int NOT NULL,
+	-- ContextAgreedBy is where Agreement was reached by Person and Person has PersonName,
+	PersonName                              varchar NOT NULL,
+	PRIMARY KEY(AgreementContextNoteId, PersonName)
+)
+GO
+
 CREATE TABLE ContextNote (
+	-- maybe ContextNote was added by Agreement and maybe Agreement was on Date,
+	AgreementDate                           datetime NULL,
 	-- maybe Concept has ContextNote and Concept is called Name,
 	ConceptName                             varchar(64) NULL,
 	-- maybe Concept has ContextNote and Concept belongs to Vocabulary and Vocabulary is called Name,
@@ -105,6 +125,10 @@ CREATE TABLE ContextNote (
 	ConstraintId                            int NULL,
 	-- ContextNote has ContextNoteId,
 	ContextNoteId                           int IDENTITY NOT NULL,
+	-- ContextNote has ContextNoteKind,
+	ContextNoteKind                         varchar NOT NULL CHECK(ContextNoteKind = 'as_opposed_to' OR ContextNoteKind = 'because' OR ContextNoteKind = 'so_that' OR ContextNoteKind = 'to_avoid'),
+	-- ContextNote has Discussion,
+	Discussion                              varchar NOT NULL,
 	-- maybe FactType has ContextNote and FactType has FactTypeId,
 	FactTypeId                              int NULL,
 	PRIMARY KEY(ContextNoteId),
@@ -405,6 +429,14 @@ GO
 
 ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (SubsetConstraintSupersetRoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
+GO
+
+ALTER TABLE ContextAccordingTo
+	ADD FOREIGN KEY (ContextNoteId) REFERENCES ContextNote (ContextNoteId)
+GO
+
+ALTER TABLE ContextAgreedBy
+	ADD FOREIGN KEY (AgreementContextNoteId) REFERENCES ContextNote (ContextNoteId)
 GO
 
 ALTER TABLE ContextNote
