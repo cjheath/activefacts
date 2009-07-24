@@ -113,17 +113,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>PersonPlaysGame.orm</DependentUpon>
     </Compile>
-    <Compile Include="Portfolio._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Portfolio.orm</DependentUpon>
-    </Compile>
     <Compile Include="RedundantDependency._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>RedundantDependency.orm</DependentUpon>
-    </Compile>
-    <Compile Include="Richmond-ORMModel-v0.9._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Richmond-ORMModel-v0.9.orm</DependentUpon>
     </Compile>
     <Compile Include="SchoolActivities._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -260,17 +252,9 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>PersonPlaysGame._ORMCustomToolReport.cs</LastGenOutput>
     </None>
-    <None Include="Portfolio.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>Portfolio._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
     <None Include="RedundantDependency.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>RedundantDependency._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
-    <None Include="Richmond-ORMModel-v0.9.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>Richmond-ORMModel-v0.9._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="SeparateSubtype.orm">
       <Generator>ORMCustomTool</Generator>
@@ -731,40 +715,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('Portfolio.orm')">
-    <None Include="Portfolio.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Portfolio.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Portfolio.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Portfolio.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Portfolio.MySQL.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Portfolio.orm</DependentUpon>
-      <ORMGenerator>DDILtoMySQL</ORMGenerator>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="Exists('Richmond-ORMModel-v0.9.orm')">
-    <None Include="Richmond-ORMModel-v0.9.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Richmond-ORMModel-v0.9.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Richmond-ORMModel-v0.9.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Richmond-ORMModel-v0.9.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Richmond-ORMModel-v0.9.SQLStandard.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Richmond-ORMModel-v0.9.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('Moon.orm')">
     <None Include="Moon.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -781,6 +731,8 @@
       <DependentUpon>Moon.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Richmond-ORMModel-v0.9.orm')">
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

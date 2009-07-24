@@ -84,13 +84,14 @@ module ActiveFacts
       end
 
       rule fact_clause
-        s q:qualifier? s reading s p:post_qualifiers? s context?
+        s q:qualifier? s reading s p:post_qualifiers? s c:context?
         {
           def body
             [ :fact_clause,
               (q.empty? ? [] : [ q.text_value ]) +
                 (p.empty? ? [] : p.list),
-              reading.value
+              reading.value,
+              c.empty? ? nil : c.value 
             ]
           end
         }

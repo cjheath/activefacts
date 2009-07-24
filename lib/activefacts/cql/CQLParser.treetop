@@ -75,28 +75,28 @@ module ActiveFacts
     rule presence_constraint
       s 'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s 'in' s
       readings_list s
-      context? ';' s
-      { def value; [ nil, [ :constraint, :presence, role_list.roles, quantifier.value, readings_list.value ] ]; end }
-    end
-
-    rule subset_constraint
-      s readings s only s if s r2:readings s
-      context? ';' s
-      { def value; [ nil, [ :constraint, :subset, readings.value, r2.value ] ]; end }
+      c:context? ';' s
+      { def value; [ nil, [ :constraint, :presence, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value ] ]; end }
     end
 
     # set (exclusion, mandatory exclusion, complex equality) constraint
     rule set_constraint
       s 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
       readings_list s
-      context? ';' s
-      { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, *readings_list.value ] ]; end }
+      c:context? ';' s
+      { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value  ] ]; end }
+    end
+
+    rule subset_constraint
+      s readings s only s if s r2:readings s
+      c:context? ';' s
+      { def value; [ nil, [ :constraint, :subset, [readings.value, r2.value], c.empty? ? nil : c.value ] ]; end }
     end
 
     rule equality_constraint
       s readings s tail:( if s and s only s if s readings s)+
-      context? ';' s
-      { def value; [ nil, [ :constraint, :equality, *([readings.value] + tail.elements.map{|e| e.readings.value }) ] ]; end }
+      c:context? ';' s
+      { def value; [ nil, [ :constraint, :equality, [readings.value] + tail.elements.map{|e| e.readings.value }, c.empty? ? nil : c.value ]]; end }
     end
 
     rule readings_list

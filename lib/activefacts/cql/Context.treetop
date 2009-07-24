@@ -8,21 +8,26 @@ module ActiveFacts
   module CQL
     grammar Context
       rule context
-	'('
-	who_says? s context_type discussion (',' as_agreed_by)? s
-	')'
+        '('
+        w:who_says? s context_type discussion agreed:(',' a:as_agreed_by)? s
+        ')'
+        { def value; [ w.empty? ? nil : w.value, context_type.value, discussion.text_value, agreed.empty? ? [] : agreed.a.value]; end }
       end
 
       rule who_says
         according_to people s ','
+        { def value; people.value; end }
       end
 
       rule context_type
-	because / as_opposed_to / so_that / to_avoid
+        because         { def value; 'because'; end } /
+        as_opposed_to   { def value; 'as_opposed'; end } /
+        so_that         { def value; 'so_that'; end } /
+        to_avoid        { def value; 'to_avoid'; end }
       end
 
       rule discussion
-	'(' discussion ')' / (!( [()] / ',' as_agreed_by) .)*
+        '(' discussion ')' / (!( [()] / ',' as_agreed_by) .)*
       end
     end
   end

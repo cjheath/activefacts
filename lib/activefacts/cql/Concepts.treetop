@@ -17,7 +17,7 @@ module ActiveFacts
       rule entity_type
         s name:id s
         sup:(basetype / subtype)
-	mapping_pragmas
+        mapping_pragmas
         ec:entity_conditions?
         ';' s
         {
@@ -122,16 +122,16 @@ module ActiveFacts
           end
 
       rule mapping_pragmas
-	'[' s h:mapping_pragma t:(s ',' s mapping_pragma)* s ']' s
-	  { def value; [h.value] + t.elements.map{|e| e.mapping_pragma.value}; end }
-	/
-	''
-	  { def value; []; end }
+        '[' s h:mapping_pragma t:(s ',' s mapping_pragma)* s ']' s
+          { def value; [h.value] + t.elements.map{|e| e.mapping_pragma.value}; end }
+        /
+        ''
+          { def value; []; end }
       end
 
       rule mapping_pragma
-	(independent / separate / partitioned / personal / feminine / masculine)
-	  { def value; text_value; end }
+        (independent / separate / partitioned / personal / feminine / masculine)
+          { def value; text_value; end }
       end
 
       rule entity_conditions

@@ -68,15 +68,22 @@ module ActiveFacts
       end
 
       rule as_agreed_by
-        as 'agreed' s ('on' S date)? by people
+        s as s 'agreed' s d:('on' S date)? by s people
+        { def value; [ d.empty? ? nil : d.date.value, people.value ]; end }
+      end
+
+      rule date
+        s d:(!(by/')') .)+
+        { def value; d.text_value.strip; end }
       end
 
       rule people
-        person s (',' s !context_type person s)*
+        s h:person s t:(',' s !context_type person s)*
+        { def value; [h.text_value] + t.elements.map{|e| e.person.text_value }; end }
       end
 
       rule person
-	s id (s id)*
+        id (s id)*
       end
 
       rule acyclic 'acyclic' !alphanumeric end

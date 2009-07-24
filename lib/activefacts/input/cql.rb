@@ -185,7 +185,7 @@ module ActiveFacts
             @symbols.embedded_presence_constraints = [] # Clear embedded_presence_constraints for each fact type
             debug :entity, "New Fact Type for entity #{name}" do
               clauses_for_fact_type.each do |clause|
-                type, qualifiers, reading = *clause
+                type, qualifiers, reading, context = *clause
                 debug :reading, "Clause: #{clause.inspect}" do
                   f = bind_fact_reading(fact_type, qualifiers, reading)
                   identifying_fact_types[f] = true
@@ -472,7 +472,7 @@ player, binding = @symbols.bind(names)
           @symbols.bind_roles_in_clauses(clauses)
 
           clauses.each do |clause|
-            kind, qualifiers, reading = *clause
+            kind, qualifiers, reading, context = *clause
 
             fact_type = bind_fact_reading(fact_type, qualifiers, reading)
           end
@@ -496,10 +496,10 @@ player, binding = @symbols.bind(names)
         case type = value.shift
         when :presence
           presence_constraint *value
-        when :subset
-          subset_constraint *value
         when :set
           set_constraint *value
+        when :subset
+          subset_constraint *value
         when :equality
           equality_constraint *value
         else
@@ -600,52 +600,7 @@ player, binding = @symbols.bind(names)
         role_sequences
       end
 
-      def subset_constraint(subset_readings, superset_readings)
-        role_sequences = bind_joins_as_role_sequences([subset_readings, superset_readings])
-
-        #puts "subset_constraint:\n\t#{subset_readings.inspect}\n\t#{superset_readings.inspect}"
-        #puts "\t#{role_sequences.map{|rs| rs.describe}.inspect}"
-        #puts "subset_role_sequence = #{role_sequences[0].describe}"
-        #puts "superset_role_sequence = #{role_sequences[1].describe}"
-
-        # create the constraint:
-        constraint = @constellation.SubsetConstraint(:new)
-        constraint.vocabulary = @vocabulary
-        #constraint.name = nil
-        #constraint.enforcement = 
-        constraint.subset_role_sequence = role_sequences[0]
-        constraint.superset_role_sequence = role_sequences[1]
-      end
-
-      def set_constraint(constrained_roles, quantifier, *readings_list)
-        # Exactly one or at most one, nothing else will do
-        raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
-
-        role_sequences = bind_joins_as_role_sequences(readings_list)
-
-        # Create the constraint:
-        constraint = @constellation.SetExclusionConstraint(:new)
-        constraint.vocabulary = @vocabulary
-        role_sequences.each_with_index do |rs, i|
-          @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
-        end
-        constraint.is_mandatory = quantifier[0] == 1
-      end
-
-      def equality_constraint(*readings_list)
-        #puts "REVISIT: equality\n\t#{readings_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
-
-        role_sequences = bind_joins_as_role_sequences(readings_list)
-
-        # Create the constraint:
-        constraint = @constellation.SetEqualityConstraint(:new)
-        constraint.vocabulary = @vocabulary
-        role_sequences.each_with_index do |rs, i|
-          @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
-        end
-      end
-
-      def presence_constraint(constrained_role_names, quantifier, readings)
+      def presence_constraint(constrained_role_names, quantifier, readings, context)
         raise "REVISIT: Join presence constraints not supported yet" if readings[0].size > 1
         readings = readings.map{|r| r[0] }
         #p readings
@@ -715,6 +670,51 @@ player, binding = @symbols.bind(names)
             :is_preferred_identifier => false,
             :is_mandatory => quantifier[0] && quantifier[0] > 0
           )
+      end
+
+      def set_constraint(constrained_roles, quantifier, readings_list, context)
+        # Exactly one or at most one, nothing else will do
+        raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
+
+        role_sequences = bind_joins_as_role_sequences(readings_list)
+
+        # Create the constraint:
+        constraint = @constellation.SetExclusionConstraint(:new)
+        constraint.vocabulary = @vocabulary
+        role_sequences.each_with_index do |rs, i|
+          @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
+        end
+        constraint.is_mandatory = quantifier[0] == 1
+      end
+
+      def subset_constraint(readings_list, context)
+        role_sequences = bind_joins_as_role_sequences(readings_list)
+
+        #puts "subset_constraint:\n\t#{subset_readings.inspect}\n\t#{superset_readings.inspect}"
+        #puts "\t#{role_sequences.map{|rs| rs.describe}.inspect}"
+        #puts "subset_role_sequence = #{role_sequences[0].describe}"
+        #puts "superset_role_sequence = #{role_sequences[1].describe}"
+
+        # create the constraint:
+        constraint = @constellation.SubsetConstraint(:new)
+        constraint.vocabulary = @vocabulary
+        #constraint.name = nil
+        #constraint.enforcement = 
+        constraint.subset_role_sequence = role_sequences[0]
+        constraint.superset_role_sequence = role_sequences[1]
+      end
+
+      def equality_constraint(readings_list, context)
+        #puts "REVISIT: equality\n\t#{readings_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
+
+        role_sequences = bind_joins_as_role_sequences(readings_list)
+
+        # Create the constraint:
+        constraint = @constellation.SetEqualityConstraint(:new)
+        constraint.vocabulary = @vocabulary
+        role_sequences.each_with_index do |rs, i|
+          @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
+        end
       end
 
       # Search the supertypes of 'subtype' looking for an inheritance path to 'supertype',
@@ -908,7 +908,7 @@ player, binding = @symbols.bind(names)
       def clauses_by_fact_type(clauses)
         clause_group_by_role_players = {}
         clauses.inject([]) do |clause_groups, clause|
-          type, qualifiers, reading = *clause
+          type, qualifiers, reading, context = *clause
 
           debug "Clause: #{clause.inspect}"
           roles = reading.map do |phrase|
