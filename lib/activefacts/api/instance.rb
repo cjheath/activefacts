@@ -28,9 +28,9 @@ module ActiveFacts
       end
 
       # De-assign all functional roles and remove from constellation, if any.
-      def delete
+      def deny
         # Delete from the constellation first, so it can remember our identifying role values
-        @constellation.delete(self) if @constellation
+        @constellation.__deny(self) if @constellation
 
         # Now, for all roles (from this class and all supertypes), assign nil to all functional roles
         # The counterpart roles get cleared automatically.

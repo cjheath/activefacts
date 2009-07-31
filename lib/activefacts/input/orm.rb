@@ -382,7 +382,7 @@ module ActiveFacts
               role_name = x['Name']
               other_role.role_name = role_name if role_name && role_name != ''
 
-              concept.delete    # Delete our object for the implicit boolean ValueType
+              concept.deny    # Delete our object for the implicit boolean ValueType
               @by_id.delete(ref)    # and de-index it from our list
               next
             end

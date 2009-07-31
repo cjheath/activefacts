@@ -21,7 +21,7 @@ module ActiveFacts
     # its existence. This is done using method_missing; @constellation.Thing(3) creates
     # an instance (or returns the existing instance) of Thing identified by the value 3.
     #
-    # You can ##delete any instance, and that removes it from the constellation (will delete
+    # You can instance##deny any instance, and that removes it from the constellation (will delete
     # it from the database when the constellation is saved), and nullifies any references
     # to it.
     #
@@ -46,12 +46,22 @@ module ActiveFacts
         "Constellation:#{object_id}"
       end
 
+      def deny(instance)
+        instance.deny
+      end
+
+      def binding
+        super
+      end
+
       # This method removes the given instance from this constellation's indexes
-      def delete(instance) #:nodoc:
+      def __deny(instance) #:nodoc:
         # REVISIT: Need to search, as key values are gone already. Is there a faster way?
         ([instance.class]+instance.class.supertypes_transitive).each do |klass|
           @instances[klass].delete_if{|k,v| v == instance }
         end
+        # REVISIT: Need to nullify all the roles this object plays.
+        # If mandatory on the counterpart side, this may/must propagate the delete (without mutual recursion!)
       end
 
       # With parameters, assert an instance of the concept whose name is the missing method, identified by the values passed as *args*.
