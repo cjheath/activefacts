@@ -160,6 +160,7 @@ module ActiveFacts
         line = "    #{one_to_one ? "one_to_one" : "has_one" } " +
                 [ ":"+role_name,
                   role_reference,
+                  role.is_mandatory ? ":mandatory" : nil,
                   readings,
                   other_role_name
                 ].compact*", "+"  "

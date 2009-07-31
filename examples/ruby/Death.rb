@@ -12,7 +12,7 @@ module ::Death
 
   class Person
     identified_by :person_name
-    one_to_one :person_name                     # See PersonName.person
+    one_to_one :person_name, :mandatory         # See PersonName.person
   end
 
   class Death

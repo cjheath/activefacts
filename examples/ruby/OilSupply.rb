@@ -42,23 +42,23 @@ module ::OilSupply
 
   class Month
     identified_by :month_code
-    one_to_one :month_code                      # See MonthCode.month
-    has_one :season                             # See Season.all_month
+    one_to_one :month_code, :mandatory          # See MonthCode.month
+    has_one :season, :mandatory                 # See Season.all_month
   end
 
   class Product
     identified_by :product_name
-    one_to_one :product_name                    # See ProductName.product
+    one_to_one :product_name, :mandatory        # See ProductName.product
   end
 
   class Refinery
     identified_by :refinery_name
-    one_to_one :refinery_name                   # See RefineryName.refinery
+    one_to_one :refinery_name, :mandatory       # See RefineryName.refinery
   end
 
   class Region
     identified_by :region_name
-    one_to_one :region_name                     # See RegionName.region
+    one_to_one :region_name, :mandatory         # See RegionName.region
   end
 
   class TransportRoute
@@ -71,7 +71,7 @@ module ::OilSupply
 
   class Year
     identified_by :year_nr
-    one_to_one :year_nr                         # See YearNr.year
+    one_to_one :year_nr, :mandatory             # See YearNr.year
   end
 
   class AcceptableSubstitutes
@@ -83,8 +83,8 @@ module ::OilSupply
 
   class SupplyPeriod
     identified_by :year, :month
-    has_one :month                              # See Month.all_supply_period
-    has_one :year                               # See Year.all_supply_period
+    has_one :month, :mandatory                  # See Month.all_supply_period
+    has_one :year, :mandatory                   # See Year.all_supply_period
   end
 
   class ProductionForecast
@@ -93,7 +93,7 @@ module ::OilSupply
     has_one :refinery                           # See Refinery.all_production_forecast
     has_one :supply_period                      # See SupplyPeriod.all_production_forecast
     has_one :cost                               # See Cost.all_production_forecast
-    has_one :quantity                           # See Quantity.all_production_forecast
+    has_one :quantity, :mandatory               # See Quantity.all_production_forecast
   end
 
   class RegionalDemand

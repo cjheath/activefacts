@@ -16,7 +16,7 @@ module ::MultiInheritance
 
   class Person
     identified_by :person_name
-    one_to_one :person_name                     # See PersonName.person
+    one_to_one :person_name, :mandatory         # See PersonName.person
   end
 
   class Australian < Person
@@ -25,7 +25,7 @@ module ::MultiInheritance
 
   class Employee < Person
     identified_by :employee_id
-    one_to_one :employee_id, EmployeeID         # See EmployeeID.employee
+    one_to_one :employee_id, EmployeeID, :mandatory  # See EmployeeID.employee
   end
 
   class AustralianEmployee < Employee

@@ -24,24 +24,24 @@ module ::ORMModel1
 
   class Accuracy
     identified_by :accuracy_level
-    one_to_one :accuracy_level                  # See AccuracyLevel.accuracy
+    one_to_one :accuracy_level, :mandatory      # See AccuracyLevel.accuracy
   end
 
   class EventDate
     identified_by :ymd
-    one_to_one :ymd                             # See ymd.event_date
+    one_to_one :ymd, :mandatory                 # See ymd.event_date
   end
 
   class Party
     identified_by :party_id
-    one_to_one :party_id                        # See PartyId.party
+    one_to_one :party_id, :mandatory            # See PartyId.party
   end
 
   class PartyMoniker
     identified_by :party
     one_to_one :party                           # See Party.party_moniker
     has_one :party_name                         # See PartyName.all_party_moniker
-    has_one :accuracy                           # See Accuracy.all_party_moniker
+    has_one :accuracy, :mandatory               # See Accuracy.all_party_moniker
   end
 
   class Person < Party
@@ -50,7 +50,7 @@ module ::ORMModel1
   class Birth
     identified_by :person
     has_one :event_date                         # See EventDate.all_birth
-    one_to_one :person                          # See Person.birth
+    one_to_one :person, :mandatory              # See Person.birth
     has_one :attending_doctor, "Doctor"         # See Doctor.all_birth_as_attending_doctor
   end
 

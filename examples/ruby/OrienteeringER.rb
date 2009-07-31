@@ -79,9 +79,9 @@ module ::OrienteeringER
 
   class Event
     identified_by :event_id
-    has_one :club                               # See Club.all_event
+    has_one :club, :mandatory                   # See Club.all_event
     has_one :date                               # See Date.all_event
-    one_to_one :event_id, ID                    # See ID.event_as_event_id
+    one_to_one :event_id, ID, :mandatory        # See ID.event_as_event_id
     one_to_one :event_name                      # See EventName.event
     has_one :location                           # See Location.all_event
     has_one :map                                # See Map.all_event
@@ -91,7 +91,7 @@ module ::OrienteeringER
   class EventControl
     identified_by :event, :control
     has_one :control                            # See Control.all_event_control
-    has_one :event                              # See Event.all_event_control
+    has_one :event, :mandatory                  # See Event.all_event_control
     has_one :point_value                        # See PointValue.all_event_control
   end
 

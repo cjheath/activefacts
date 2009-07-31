@@ -16,12 +16,12 @@ module ::SchoolActivities
 
   class Activity
     identified_by :activity_name
-    one_to_one :activity_name                   # See ActivityName.activity
+    one_to_one :activity_name, :mandatory       # See ActivityName.activity
   end
 
   class School
     identified_by :school_name
-    one_to_one :school_name                     # See SchoolName.school
+    one_to_one :school_name, :mandatory         # See SchoolName.school
   end
 
   class SchoolActivity
@@ -32,8 +32,8 @@ module ::SchoolActivities
 
   class Student
     identified_by :student_name
-    has_one :school                             # See School.all_student
-    one_to_one :student_name                    # See StudentName.student
+    has_one :school, :mandatory                 # See School.all_student
+    one_to_one :student_name, :mandatory        # See StudentName.student
   end
 
   class StudentParticipation

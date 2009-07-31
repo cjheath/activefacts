@@ -95,7 +95,7 @@ module ::Genealogy
     identified_by :event_id
     has_one :certificate                        # See Certificate.all_event
     has_one :event_date                         # See EventDate.all_event
-    one_to_one :event_id, EventID               # See EventID.event
+    one_to_one :event_id, EventID, :mandatory   # See EventID.event
     has_one :event_location                     # See EventLocation.all_event
     has_one :event_type                         # See EventType.all_event
     has_one :official                           # See Official.all_event
@@ -111,8 +111,8 @@ module ::Genealogy
 
   class EventType
     identified_by :event_type_id
-    one_to_one :event_type_id, EventTypeID      # See EventTypeID.event_type
-    one_to_one :event_type_name                 # See EventTypeName.event_type
+    one_to_one :event_type_id, EventTypeID, :mandatory  # See EventTypeID.event_type
+    one_to_one :event_type_name, :mandatory     # See EventTypeName.event_type
   end
 
   class Person
@@ -123,27 +123,27 @@ module ::Genealogy
     has_one :gender                             # See Gender.all_person
     has_one :given_name, Name                   # See Name.all_person_as_given_name
     has_one :occupation                         # See Occupation.all_person
-    one_to_one :person_id, PersonID             # See PersonID.person
+    one_to_one :person_id, PersonID, :mandatory  # See PersonID.person
     has_one :preferred_picture, Picture         # See Picture.all_person_as_preferred_picture
   end
 
   class Role
     identified_by :role_id
-    one_to_one :event_role_name                 # See EventRoleName.role
-    one_to_one :role_id, RoleID                 # See RoleID.role
+    one_to_one :event_role_name, :mandatory     # See EventRoleName.role
+    one_to_one :role_id, RoleID, :mandatory     # See RoleID.role
   end
 
   class Source
     identified_by :source_id
-    one_to_one :source_id, SourceID             # See SourceID.source
-    one_to_one :source_name                     # See SourceName.source
-    has_one :user                               # See User.all_source
+    one_to_one :source_id, SourceID, :mandatory  # See SourceID.source
+    one_to_one :source_name, :mandatory         # See SourceName.source
+    has_one :user, :mandatory                   # See User.all_source
   end
 
   class User
     identified_by :user_id
     has_one :email                              # See Email.all_user
-    one_to_one :user_id, UserID                 # See UserID.user
+    one_to_one :user_id, UserID, :mandatory     # See UserID.user
   end
 
   class Friend
@@ -155,8 +155,8 @@ module ::Genealogy
 
   class Participation
     identified_by :person, :role, :event, :source
-    has_one :event                              # See Event.all_participation
-    has_one :person                             # See Person.all_participation
+    has_one :event, :mandatory                  # See Event.all_participation
+    has_one :person, :mandatory                 # See Person.all_participation
     has_one :role                               # See Role.all_participation
     has_one :source                             # See Source.all_participation
   end

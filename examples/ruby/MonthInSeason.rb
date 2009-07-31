@@ -17,7 +17,7 @@ module ::MonthInSeason
 
   class Event
     identified_by :event_id
-    one_to_one :event_id                        # See EventId.event
+    one_to_one :event_id, :mandatory            # See EventId.event
   end
 
   class Occurrence

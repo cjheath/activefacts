@@ -12,8 +12,8 @@ module ::Monogamy
 
   class Person
     identified_by :person_id
-    has_one :name                               # See Name.all_person
-    one_to_one :person_id, PersonID             # See PersonID.person
+    has_one :name, :mandatory                   # See Name.all_person
+    one_to_one :person_id, PersonID, :mandatory  # See PersonID.person
   end
 
   class Boy < Person

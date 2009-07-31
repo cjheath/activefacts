@@ -215,42 +215,42 @@ module ::Insurance
 
   class Application
     identified_by :application_nr
-    one_to_one :application_nr                  # See ApplicationNr.application
+    one_to_one :application_nr, :mandatory      # See ApplicationNr.application
   end
 
   class Asset
     identified_by :asset_id
-    one_to_one :asset_id, AssetID               # See AssetID.asset
+    one_to_one :asset_id, AssetID, :mandatory   # See AssetID.asset
   end
 
   class Claim
     identified_by :claim_id
-    one_to_one :claim_id, ClaimID               # See ClaimID.claim
-    has_one :p_sequence, ClaimSequence          # See ClaimSequence.all_claim_as_p_sequence
-    has_one :policy                             # See Policy.all_claim
+    one_to_one :claim_id, ClaimID, :mandatory   # See ClaimID.claim
+    has_one :p_sequence, ClaimSequence, :mandatory  # See ClaimSequence.all_claim_as_p_sequence
+    has_one :policy, :mandatory                 # See Policy.all_claim
   end
 
   class CoverType
     identified_by :cover_type_code
-    one_to_one :cover_type_code                 # See CoverTypeCode.cover_type
-    one_to_one :cover_type_name                 # See CoverTypeName.cover_type
+    one_to_one :cover_type_code, :mandatory     # See CoverTypeCode.cover_type
+    one_to_one :cover_type_name, :mandatory     # See CoverTypeName.cover_type
   end
 
   class DemeritKind
     identified_by :demerit_kind_name
-    one_to_one :demerit_kind_name               # See DemeritKindName.demerit_kind
+    one_to_one :demerit_kind_name, :mandatory   # See DemeritKindName.demerit_kind
   end
 
   class Incident
     identified_by :claim
-    has_one :address                            # See Address.all_incident
-    one_to_one :claim                           # See Claim.incident
-    has_one :date_time                          # See DateTime.all_incident
+    has_one :address, :mandatory                # See Address.all_incident
+    one_to_one :claim, :mandatory               # See Claim.incident
+    has_one :date_time, :mandatory              # See DateTime.all_incident
   end
 
   class Liability
     identified_by :liability_code
-    one_to_one :liability_code                  # See LiabilityCode.liability
+    one_to_one :liability_code, :mandatory      # See LiabilityCode.liability
   end
 
   class LossType
@@ -258,14 +258,14 @@ module ::Insurance
     maybe :involves_driving
     maybe :is_single_vehicle_incident
     has_one :liability                          # See Liability.all_loss_type
-    one_to_one :loss_type_code                  # See LossTypeCode.loss_type
+    one_to_one :loss_type_code, :mandatory      # See LossTypeCode.loss_type
   end
 
   class LostItem
     identified_by :incident, :lost_item_nr
-    has_one :description                        # See Description.all_lost_item
-    has_one :incident                           # See Incident.all_lost_item
-    has_one :lost_item_nr                       # See LostItemNr.all_lost_item
+    has_one :description, :mandatory            # See Description.all_lost_item
+    has_one :incident, :mandatory               # See Incident.all_lost_item
+    has_one :lost_item_nr, :mandatory           # See LostItemNr.all_lost_item
     has_one :purchase_date, Date                # See Date.all_lost_item_as_purchase_date
     has_one :purchase_place, Place              # See Place.all_lost_item_as_purchase_place
     has_one :purchase_price, Price              # See Price.all_lost_item_as_purchase_price
@@ -274,27 +274,27 @@ module ::Insurance
   class Party
     identified_by :party_id
     maybe :is_a_company
-    one_to_one :party_id, PartyID               # See PartyID.party
+    one_to_one :party_id, PartyID, :mandatory   # See PartyID.party
     has_one :postal_address, "Address"          # See Address.all_party_as_postal_address
   end
 
   class Person < Party
     has_one :address                            # See Address.all_person
     has_one :birth_date, Date                   # See Date.all_person_as_birth_date
-    has_one :family_name, Name                  # See Name.all_person_as_family_name
-    has_one :given_name, Name                   # See Name.all_person_as_given_name
+    has_one :family_name, Name, :mandatory      # See Name.all_person_as_family_name
+    has_one :given_name, Name, :mandatory       # See Name.all_person_as_given_name
     has_one :occupation                         # See Occupation.all_person
-    has_one :title                              # See Title.all_person
+    has_one :title, :mandatory                  # See Title.all_person
   end
 
   class Phone
     identified_by :phone_nr
-    one_to_one :phone_nr                        # See PhoneNr.phone
+    one_to_one :phone_nr, :mandatory            # See PhoneNr.phone
   end
 
   class PoliceReport
     identified_by :incident
-    one_to_one :incident                        # See Incident.police_report
+    one_to_one :incident, :mandatory            # See Incident.police_report
     has_one :officer_name, Name                 # See Name.all_police_report_as_officer_name
     has_one :police_report_nr, ReportNr         # See ReportNr.all_police_report_as_police_report_nr
     has_one :report_date_time, DateTime         # See DateTime.all_police_report_as_report_date_time
@@ -304,24 +304,24 @@ module ::Insurance
 
   class PolicyWording
     identified_by :policy_wording_text
-    one_to_one :policy_wording_text             # See PolicyWordingText.policy_wording
+    one_to_one :policy_wording_text, :mandatory  # See PolicyWordingText.policy_wording
   end
 
   class Product
     identified_by :product_code
     one_to_one :alias                           # See Alias.product
     one_to_one :prod_description                # See ProdDescription.product
-    one_to_one :product_code                    # See ProductCode.product
+    one_to_one :product_code, :mandatory        # See ProductCode.product
   end
 
   class Registration
     identified_by :registration_nr
-    one_to_one :registration_nr                 # See RegistrationNr.registration
+    one_to_one :registration_nr, :mandatory     # See RegistrationNr.registration
   end
 
   class State
     identified_by :state_code
-    one_to_one :state_code                      # See StateCode.state
+    one_to_one :state_code, :mandatory          # See StateCode.state
     one_to_one :state_name                      # See StateName.state
   end
 
@@ -332,10 +332,10 @@ module ::Insurance
     has_one :engine_number                      # See EngineNumber.all_vehicle
     has_one :finance_institution                # See FinanceInstitution.all_vehicle
     maybe :has_commercial_registration
-    has_one :model_year, "Year"                 # See Year.all_vehicle_as_model_year
-    has_one :registration                       # See Registration.all_vehicle
-    has_one :vehicle_type                       # See VehicleType.all_vehicle
-    one_to_one :vin, VIN                        # See VIN.vehicle
+    has_one :model_year, "Year", :mandatory     # See Year.all_vehicle_as_model_year
+    has_one :registration, :mandatory           # See Registration.all_vehicle
+    has_one :vehicle_type, :mandatory           # See VehicleType.all_vehicle
+    one_to_one :vin, VIN, :mandatory            # See VIN.vehicle
   end
 
   class VehicleIncident < Incident
@@ -350,29 +350,29 @@ module ::Insurance
   class VehicleType
     identified_by :make, :model, :badge
     has_one :badge                              # See Badge.all_vehicle_type
-    has_one :make                               # See Make.all_vehicle_type
-    has_one :model                              # See Model.all_vehicle_type
+    has_one :make, :mandatory                   # See Make.all_vehicle_type
+    has_one :model, :mandatory                  # See Model.all_vehicle_type
   end
 
   class Witness
     identified_by :incident, :name
     has_one :address                            # See Address.all_witness
     has_one :contact_phone, Phone               # See Phone.all_witness_as_contact_phone
-    has_one :incident                           # See Incident.all_witness
-    has_one :name                               # See Name.all_witness
+    has_one :incident, :mandatory               # See Incident.all_witness
+    has_one :name, :mandatory                   # See Name.all_witness
   end
 
   class Year
     identified_by :year_nr
-    one_to_one :year_nr                         # See YearNr.year
+    one_to_one :year_nr, :mandatory             # See YearNr.year
   end
 
   class Address
     identified_by :street, :city, :postcode, :state
-    has_one :city                               # See City.all_address
+    has_one :city, :mandatory                   # See City.all_address
     has_one :postcode                           # See Postcode.all_address
     has_one :state                              # See State.all_address
-    has_one :street                             # See Street.all_address
+    has_one :street, :mandatory                 # See Street.all_address
   end
 
   class AuthorisedRep < Party
@@ -382,7 +382,7 @@ module ::Insurance
   end
 
   class Company < Party
-    has_one :contact_person, Person             # See Person.all_company_as_contact_person
+    has_one :contact_person, Person, :mandatory  # See Person.all_company_as_contact_person
   end
 
   class ContactMethods
@@ -392,7 +392,7 @@ module ::Insurance
     has_one :email                              # See Email.all_contact_methods
     has_one :home_phone, Phone                  # See Phone.all_contact_methods_as_home_phone
     has_one :mobile_phone, Phone                # See Phone.all_contact_methods_as_mobile_phone
-    one_to_one :person                          # See Person.contact_methods
+    one_to_one :person, :mandatory              # See Person.contact_methods
     has_one :preferred_contact_method, ContactMethod  # See ContactMethod.all_contact_methods_as_preferred_contact_method
   end
 
@@ -414,7 +414,7 @@ module ::Insurance
 
   class DamagedProperty
     identified_by :incident, :address
-    has_one :address                            # See Address.all_damaged_property
+    has_one :address, :mandatory                # See Address.all_damaged_property
     has_one :incident                           # See Incident.all_damaged_property
     has_one :owner_name, Name                   # See Name.all_damaged_property_as_owner_name
     has_one :phone                              # See Phone.all_damaged_property
@@ -428,7 +428,7 @@ module ::Insurance
 
   class Driving
     identified_by :vehicle_incident
-    has_one :driver                             # See Driver.all_driving
+    has_one :driver, :mandatory                 # See Driver.all_driving
     one_to_one :vehicle_incident                # See VehicleIncident.driving
     has_one :blood_test_result, TestResult      # See TestResult.all_driving_as_blood_test_result
     has_one :breath_test_result, TestResult     # See TestResult.all_driving_as_breath_test_result
@@ -456,10 +456,10 @@ module ::Insurance
 
   class License
     identified_by :driver
-    one_to_one :driver                          # See Driver.license
+    one_to_one :driver, :mandatory              # See Driver.license
     maybe :is_international
-    one_to_one :license_number                  # See LicenseNumber.license
-    has_one :license_type                       # See LicenseType.all_license
+    one_to_one :license_number, :mandatory      # See LicenseNumber.license
+    has_one :license_type, :mandatory           # See LicenseType.all_license
     has_one :year                               # See Year.all_license
   end
 
@@ -472,14 +472,14 @@ module ::Insurance
 
   class Policy
     identified_by :p_year, :p_product, :p_state, :p_serial
-    has_one :application                        # See Application.all_policy
+    has_one :application, :mandatory            # See Application.all_policy
     has_one :authorised_rep                     # See AuthorisedRep.all_policy
-    has_one :client                             # See Client.all_policy
+    has_one :client, :mandatory                 # See Client.all_policy
     has_one :itcclaimed, ITCClaimed             # See ITCClaimed.all_policy
-    has_one :p_product, Product                 # See Product.all_policy_as_p_product
-    has_one :p_serial, PolicySerial             # See PolicySerial.all_policy_as_p_serial
-    has_one :p_state, State                     # See State.all_policy_as_p_state
-    has_one :p_year, Year                       # See Year.all_policy_as_p_year
+    has_one :p_product, Product, :mandatory     # See Product.all_policy_as_p_product
+    has_one :p_serial, PolicySerial, :mandatory  # See PolicySerial.all_policy_as_p_serial
+    has_one :p_state, State, :mandatory         # See State.all_policy_as_p_state
+    has_one :p_year, Year, :mandatory           # See Year.all_policy_as_p_year
   end
 
   class Repairer < Contractor
@@ -500,9 +500,9 @@ module ::Insurance
 
   class UnderwritingDemerit
     identified_by :vehicle_incident, :demerit_kind
-    has_one :demerit_kind                       # See DemeritKind.all_underwriting_demerit
+    has_one :demerit_kind, :mandatory           # See DemeritKind.all_underwriting_demerit
     has_one :occurrence_count, Count            # See Count.all_underwriting_demerit_as_occurrence_count
-    has_one :vehicle_incident                   # See VehicleIncident.all_underwriting_demerit
+    has_one :vehicle_incident, :mandatory       # See VehicleIncident.all_underwriting_demerit
   end
 
   class Assessor < Contractor

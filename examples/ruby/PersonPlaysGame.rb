@@ -12,12 +12,12 @@ module ::PersonPlaysGame
 
   class Game
     identified_by :game_code
-    one_to_one :game_code                       # See GameCode.game
+    one_to_one :game_code, :mandatory           # See GameCode.game
   end
 
   class Person
     identified_by :person_name
-    one_to_one :person_name                     # See PersonName.person
+    one_to_one :person_name, :mandatory         # See PersonName.person
   end
 
   class Playing

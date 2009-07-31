@@ -41,7 +41,7 @@ module ActiveFacts
           rs.all_presence_constraint.detect{|pc|
             pc.max_frequency == 1
           }
-        }
+        } ? true : false
       end
 
       def is_mandatory
@@ -51,7 +51,7 @@ module ActiveFacts
           rs.all_presence_constraint.detect{|pc|
             pc.min_frequency and pc.min_frequency >= 1 and pc.is_mandatory
           }
-        }
+        } ? true : false
       end
 
       # Return the RoleRef to this role from its fact type's preferred_reading

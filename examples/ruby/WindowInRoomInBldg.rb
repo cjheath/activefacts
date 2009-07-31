@@ -20,15 +20,15 @@ module ::WindowInRoomInBldg
 
   class Room
     identified_by :building, :room_number
-    has_one :building                           # See Building.all_room
-    has_one :room_number                        # See RoomNumber.all_room
+    has_one :building, :mandatory               # See Building.all_room
+    has_one :room_number, :mandatory            # See RoomNumber.all_room
   end
 
   class Window
     identified_by :room, :wall_number, :window_number
-    has_one :room                               # See Room.all_window
-    has_one :wall_number                        # See WallNumber.all_window
-    has_one :window_number                      # See WindowNumber.all_window
+    has_one :room, :mandatory                   # See Room.all_window
+    has_one :wall_number, :mandatory            # See WallNumber.all_window
+    has_one :window_number, :mandatory          # See WindowNumber.all_window
   end
 
 end

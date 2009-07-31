@@ -20,14 +20,14 @@ module ::CompanyDirectorEmployee
 
   class Company
     identified_by :company_name
-    one_to_one :company_name                    # See CompanyName.company
+    one_to_one :company_name, :mandatory        # See CompanyName.company
     maybe :is_listed
   end
 
   class Meeting
     identified_by :date, :is_board_meeting, :company
-    has_one :company                            # See Company.all_meeting
-    has_one :date                               # See Date.all_meeting
+    has_one :company, :mandatory                # See Company.all_meeting
+    has_one :date, :mandatory                   # See Date.all_meeting
     maybe :is_board_meeting
   end
 
@@ -35,7 +35,7 @@ module ::CompanyDirectorEmployee
     identified_by :given_name, :family_name
     has_one :birth_date, Date                   # See Date.all_person_as_birth_date
     has_one :family_name, Name                  # See Name.all_person_as_family_name
-    has_one :given_name, Name                   # See Name.all_person_as_given_name
+    has_one :given_name, Name, :mandatory       # See Name.all_person_as_given_name
   end
 
   class Attendance
@@ -46,15 +46,15 @@ module ::CompanyDirectorEmployee
 
   class Directorship
     identified_by :director, :company
-    has_one :company                            # See Company.all_directorship
+    has_one :company, :mandatory                # See Company.all_directorship
     has_one :director, Person                   # See Person.all_directorship_as_director
-    has_one :appointment_date, Date             # See Date.all_directorship_as_appointment_date
+    has_one :appointment_date, Date, :mandatory  # See Date.all_directorship_as_appointment_date
   end
 
   class Employee < Person
     identified_by :employee_nr
-    has_one :company                            # See Company.all_employee
-    one_to_one :employee_nr                     # See EmployeeNr.employee
+    has_one :company, :mandatory                # See Company.all_employee
+    one_to_one :employee_nr, :mandatory         # See EmployeeNr.employee
     has_one :manager                            # See Manager.all_employee
   end
 
