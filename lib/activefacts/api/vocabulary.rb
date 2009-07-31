@@ -31,7 +31,21 @@ module ActiveFacts
         return (const_get("#{name}::#{camel}") rescue nil)
       end
 
-      def add_concept(klass)  #:nodoc:
+      # Create a new constellation over this vocabulary
+      def constellation
+        Constellation.new(self)
+      end
+
+      def verbalise
+        "Vocabulary #{name}:\n\t" +
+          @concept.keys.sort.map{|concept|
+              c = @concept[concept]
+              __bind(c.basename)
+              c.verbalise + "\n\t\t// Roles played: " + c.roles.verbalise
+            }*"\n\t"
+      end
+
+      def __add_concept(klass)  #:nodoc:
         name = klass.basename
         __bind(name)
         # puts "Adding concept #{name} to #{self.name}"
@@ -57,15 +71,6 @@ module ActiveFacts
             }
           @delayed.delete(concept_name)
         end
-      end
-
-      def verbalise
-        "Vocabulary #{name}:\n\t" +
-          @concept.keys.sort.map{|concept|
-              c = @concept[concept]
-              __bind(c.basename)
-              c.verbalise + "\n\t\t// Roles played: " + c.roles.verbalise
-            }*"\n\t"
       end
 
     end

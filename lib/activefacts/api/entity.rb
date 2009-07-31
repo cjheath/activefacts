@@ -231,7 +231,7 @@ module ActiveFacts
           other.identified_by *identifying_role_names
           subtypes << other unless subtypes.include? other
           #puts "#{self.name} inherited by #{other.name}"
-          vocabulary.add_concept(other)
+          vocabulary.__add_concept(other)
         end
 
         # verbalise this concept
@@ -249,7 +249,7 @@ module ActiveFacts
         unless vocabulary.respond_to? :concept  # Extend module with Vocabulary if necessary
           vocabulary.send :extend, Vocabulary
         end
-        vocabulary.add_concept(other)
+        vocabulary.__add_concept(other)
       end
     end
   end

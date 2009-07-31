@@ -38,6 +38,7 @@ module ActiveFacts
           klass.roles.each do |role_name, role|
             next if role.unary?
             next if !role.unique
+
             send "#{role.name}=", nil
           end
         end

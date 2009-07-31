@@ -106,7 +106,7 @@ module ActiveFacts
           #puts "REVISIT: ValueType #{self} < #{self.superclass} was inherited by #{other}; not implemented" #+"from #{caller*"\n\t"}"
           # Copy the type parameters here, etc?
           other.send :realise_supertypes, self
-          vocabulary.add_concept(other)
+          vocabulary.__add_concept(other)
           super
         end
       end
@@ -122,7 +122,7 @@ module ActiveFacts
         unless vocabulary.respond_to? :concept  # Extend module with Vocabulary if necessary
           vocabulary.send :extend, Vocabulary
         end
-        vocabulary.add_concept(other)
+        vocabulary.__add_concept(other)
       end
     end
   end

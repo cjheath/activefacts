@@ -20,10 +20,11 @@ module ActiveFacts
     # As a result, you cannot "create" an object in a constellation - you merely _assert_
     # its existence. This is done using method_missing; @constellation.Thing(3) creates
     # an instance (or returns the existing instance) of Thing identified by the value 3.
+    # You can also use the populate() method to apply a block of assertions.
     #
-    # You can instance##deny any instance, and that removes it from the constellation (will delete
-    # it from the database when the constellation is saved), and nullifies any references
-    # to it.
+    # You can instance##deny any instance, and that removes it from the constellation (will
+    # delete it from the database when the constellation is saved), and nullifies any
+    # references to it.
     #
     # A Constellation may or not be valid according to the vocabulary's constraints,
     # but it may also represent a portion of a larger population (a database) with
@@ -39,44 +40,26 @@ module ActiveFacts
       # Create a new empty Constellation over the given Vocabulary
       def initialize(vocabulary)
         @vocabulary = vocabulary
-        @instances = Hash.new{|h,k| h[k] = InstanceIndex.new }
+        @instances = Hash.new do |h,k|
+          raise "A constellation over #{@vocabulary.name} can only index instances of concepts in that vocabulary, not #{k.inspect}" unless k.is_a?(Class) and k.modspace == vocabulary
+          h[k] = InstanceIndex.new
+        end
       end
 
       def inspect #:nodoc:
         "Constellation:#{object_id}"
       end
 
-      def deny(instance)
-        instance.deny
+      # Evaluate assertions against the population of this Constellation
+      def populate *args, &block
+        # REVISIT: Use args for something? Like options to enable/disable validation?
+        instance_eval(&block)
       end
 
-      def binding
-        super
-      end
-
-      # This method removes the given instance from this constellation's indexes
-      def __deny(instance) #:nodoc:
-        # REVISIT: Need to search, as key values are gone already. Is there a faster way?
-        ([instance.class]+instance.class.supertypes_transitive).each do |klass|
-          @instances[klass].delete_if{|k,v| v == instance }
-        end
-        # REVISIT: Need to nullify all the roles this object plays.
-        # If mandatory on the counterpart side, this may/must propagate the delete (without mutual recursion!)
-      end
-
-      # With parameters, assert an instance of the concept whose name is the missing method, identified by the values passed as *args*.
-      # With no parameters, return the collection of all instances of that concept.
-      def method_missing(m, *args)
-        if klass = @vocabulary.const_get(m)
-          if args.size == 0
-            # Return the collection of all instances of this class in the constellation:
-            @instances[klass]
-          else
-            # Assert a new ground fact (concept instance) of the specified class, identified by args:
-            # REVISIT: create a constructor method here instead?
-            instance, key = klass.assert_instance(self, args)
-            instance
-          end
+      # Delete instances from the constellation, nullifying (or cascading) the roles each plays
+      def deny(*instances)
+        Array(instances).each do |i|
+          i.deny
         end
       end
 
@@ -112,6 +95,33 @@ module ActiveFacts
                   s
                 } * "\n"
           }.compact*"\n"
+      end
+
+      # This method removes the given instance from this constellation's indexes
+      # It must be called before the identifying roles get deleted or nullified.
+      def __deny(instance) #:nodoc:
+        # REVISIT: Need to search, as key values are gone already. Is there a faster way?
+        ([instance.class]+instance.class.supertypes_transitive).each do |klass|
+          @instances[klass].delete_if{|k,v| v == instance }
+        end
+        # REVISIT: Need to nullify all the roles this object plays.
+        # If mandatory on the counterpart side, this may/must propagate the delete (without mutual recursion!)
+      end
+
+      # With parameters, assert an instance of the concept whose name is the missing method, identified by the values passed as *args*.
+      # With no parameters, return the collection of all instances of that concept.
+      def method_missing(m, *args)
+        if klass = @vocabulary.const_get(m)
+          if args.size == 0
+            # Return the collection of all instances of this class in the constellation:
+            @instances[klass]
+          else
+            # Assert a new ground fact (concept instance) of the specified class, identified by args:
+            # REVISIT: create a constructor method here instead?
+            instance, key = klass.assert_instance(self, args)
+            instance
+          end
+        end
       end
     end
   end
