@@ -20,8 +20,21 @@ module ActiveFacts
       value_type 
     end
 
+    class ContextNoteKind < String
+      value_type 
+      # REVISIT: ContextNoteKind has restricted values
+    end
+
+    class Date < ::Date
+      value_type 
+    end
+
     class Denominator < UnsignedInteger
       value_type :length => 32
+    end
+
+    class Discussion < String
+      value_type 
     end
 
     class Enforcement < String
@@ -68,6 +81,10 @@ module ActiveFacts
       value_type :length => 32
     end
 
+    class PersonName < String
+      value_type 
+    end
+
     class Pronoun < String
       value_type :length => 20
       # REVISIT: Pronoun has restricted values
@@ -104,19 +121,19 @@ module ActiveFacts
     class Bound
       identified_by :value, :is_inclusive
       maybe :is_inclusive
-      has_one :value                              # See Value.all_bound
+      has_one :value                  # See Value.all_bound
     end
 
     class Coefficient
       identified_by :numerator, :denominator, :is_precise
-      has_one :denominator                        # See Denominator.all_coefficient
+      has_one :denominator            # See Denominator.all_coefficient
       maybe :is_precise
-      has_one :numerator                          # See Numerator.all_coefficient
+      has_one :numerator              # See Numerator.all_coefficient
     end
 
     class Constraint
       identified_by :constraint_id
-      one_to_one :constraint_id                   # See ConstraintId.constraint
+      one_to_one :constraint_id       # See ConstraintId.constraint
       has_one :enforcement                        # See Enforcement.all_constraint
       has_one :name                               # See Name.all_constraint
       has_one :vocabulary                         # See Vocabulary.all_constraint
@@ -126,28 +143,35 @@ module ActiveFacts
       identified_by :context_note_id
       has_one :concept                            # See Concept.all_context_note
       has_one :constraint                         # See Constraint.all_context_note
-      one_to_one :context_note_id                 # See ContextNoteId.context_note
+      one_to_one :context_note_id     # See ContextNoteId.context_note
+      has_one :context_note_kind      # See ContextNoteKind.all_context_note
+      has_one :discussion             # See Discussion.all_context_note
       has_one :fact_type                          # See FactType.all_context_note
     end
 
     class Fact
       identified_by :fact_id
-      one_to_one :fact_id                         # See FactId.fact
-      has_one :fact_type                          # See FactType.all_fact
-      has_one :population                         # See Population.all_fact
+      one_to_one :fact_id             # See FactId.fact
+      has_one :fact_type              # See FactType.all_fact
+      has_one :population             # See Population.all_fact
     end
 
     class FactType
       identified_by :fact_type_id
-      one_to_one :fact_type_id                    # See FactTypeId.fact_type
+      one_to_one :fact_type_id        # See FactTypeId.fact_type
     end
 
     class Instance
       identified_by :instance_id
-      has_one :concept                            # See Concept.all_instance
-      one_to_one :instance_id                     # See InstanceId.instance
-      has_one :population                         # See Population.all_instance
+      has_one :concept                # See Concept.all_instance
+      one_to_one :instance_id         # See InstanceId.instance
+      has_one :population             # See Population.all_instance
       has_one :value                              # See Value.all_instance
+    end
+
+    class Person
+      identified_by :person_name
+      one_to_one :person_name         # See PersonName.person
     end
 
     class PresenceConstraint < Constraint
@@ -155,34 +179,34 @@ module ActiveFacts
       maybe :is_preferred_identifier
       has_one :max_frequency, Frequency           # See Frequency.all_presence_constraint_as_max_frequency
       has_one :min_frequency, Frequency           # See Frequency.all_presence_constraint_as_min_frequency
-      has_one :role_sequence                      # See RoleSequence.all_presence_constraint
+      has_one :role_sequence          # See RoleSequence.all_presence_constraint
     end
 
     class Reading
       identified_by :fact_type, :ordinal
-      has_one :fact_type                          # See FactType.all_reading
-      has_one :ordinal                            # See Ordinal.all_reading
-      has_one :role_sequence                      # See RoleSequence.all_reading
-      has_one :text                               # See Text.all_reading
+      has_one :fact_type              # See FactType.all_reading
+      has_one :ordinal                # See Ordinal.all_reading
+      has_one :role_sequence          # See RoleSequence.all_reading
+      has_one :text                   # See Text.all_reading
     end
 
     class RingConstraint < Constraint
       has_one :other_role, "Role"                 # See Role.all_ring_constraint_as_other_role
-      has_one :ring_type                          # See RingType.all_ring_constraint
+      has_one :ring_type              # See RingType.all_ring_constraint
       has_one :role                               # See Role.all_ring_constraint
     end
 
     class RoleSequence
       identified_by :role_sequence_id
-      one_to_one :role_sequence_id                # See RoleSequenceId.role_sequence
+      one_to_one :role_sequence_id    # See RoleSequenceId.role_sequence
     end
 
     class RoleValue
       identified_by :instance, :fact
-      has_one :fact                               # See Fact.all_role_value
-      has_one :instance                           # See Instance.all_role_value
-      has_one :population                         # See Population.all_role_value
-      has_one :role                               # See Role.all_role_value
+      has_one :fact                   # See Fact.all_role_value
+      has_one :instance               # See Instance.all_role_value
+      has_one :population             # See Population.all_role_value
+      has_one :role                   # See Role.all_role_value
     end
 
     class SetConstraint < Constraint
@@ -197,10 +221,10 @@ module ActiveFacts
       identified_by :unit_id
       has_one :coefficient                        # See Coefficient.all_unit
       maybe :is_fundamental
-      has_one :name                               # See Name.all_unit
+      has_one :name                   # See Name.all_unit
       has_one :offset                             # See Offset.all_unit
-      one_to_one :unit_id                         # See UnitId.unit
-      has_one :vocabulary                         # See Vocabulary.all_unit
+      one_to_one :unit_id             # See UnitId.unit
+      has_one :vocabulary             # See Vocabulary.all_unit
     end
 
     class ValueRange
@@ -211,26 +235,44 @@ module ActiveFacts
 
     class ValueRestriction
       identified_by :value_restriction_id
-      one_to_one :value_restriction_id            # See ValueRestrictionId.value_restriction
+      one_to_one :value_restriction_id  # See ValueRestrictionId.value_restriction
     end
 
     class Vocabulary
       identified_by :name
-      one_to_one :name                            # See Name.vocabulary
+      one_to_one :name                # See Name.vocabulary
+    end
+
+    class Agreement
+      identified_by :context_note
+      one_to_one :context_note        # See ContextNote.agreement
+      has_one :date                               # See Date.all_agreement
     end
 
     class AllowedRange
       identified_by :value_restriction, :value_range
       has_one :value_range                        # See ValueRange.all_allowed_range
-      has_one :value_restriction                  # See ValueRestriction.all_allowed_range
+      has_one :value_restriction      # See ValueRestriction.all_allowed_range
     end
 
     class Concept
       identified_by :vocabulary, :name
       maybe :is_independent
-      has_one :name                               # See Name.all_concept
+      has_one :name                   # See Name.all_concept
       has_one :pronoun                            # See Pronoun.all_concept
-      has_one :vocabulary                         # See Vocabulary.all_concept
+      has_one :vocabulary             # See Vocabulary.all_concept
+    end
+
+    class ContextAccordingTo
+      identified_by :context_note, :person
+      has_one :context_note                       # See ContextNote.all_context_according_to
+      has_one :person                             # See Person.all_context_according_to
+    end
+
+    class ContextAgreedBy
+      identified_by :agreement, :person
+      has_one :agreement                          # See Agreement.all_context_agreed_by
+      has_one :person                             # See Person.all_context_agreed_by
     end
 
     class Derivation
@@ -246,14 +288,14 @@ module ActiveFacts
 
     class Population
       identified_by :vocabulary, :name
-      has_one :name                               # See Name.all_population
+      has_one :name                   # See Name.all_population
       has_one :vocabulary                         # See Vocabulary.all_population
     end
 
     class Role
       identified_by :fact_type, :ordinal
       has_one :concept                            # See Concept.all_role
-      has_one :fact_type                          # See FactType.all_role
+      has_one :fact_type              # See FactType.all_role
       has_one :ordinal                            # See Ordinal.all_role
       has_one :role_name, Name                    # See Name.all_role_as_role_name
       has_one :role_value_restriction, ValueRestriction  # See ValueRestriction.all_role_as_role_value_restriction
@@ -263,7 +305,7 @@ module ActiveFacts
       identified_by :role_sequence, :ordinal
       has_one :ordinal                            # See Ordinal.all_role_ref
       has_one :role                               # See Role.all_role_ref
-      has_one :role_sequence                      # See RoleSequence.all_role_ref
+      has_one :role_sequence          # See RoleSequence.all_role_ref
       has_one :leading_adjective, Adjective       # See Adjective.all_role_ref_as_leading_adjective
       has_one :trailing_adjective, Adjective      # See Adjective.all_role_ref_as_trailing_adjective
     end
