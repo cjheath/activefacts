@@ -335,21 +335,21 @@ module ::ServiceDirector
 
   class HostSystemRunsSwitch
     identified_by :host_system, :switch
-    has_one :host_system                        # See HostSystem.all_host_system_runs_switch
-    has_one :switch                             # See Switch.all_host_system_runs_switch
+    has_one :host_system, :mandatory            # See HostSystem.all_host_system_runs_switch
+    has_one :switch, :mandatory                 # See Switch.all_host_system_runs_switch
   end
 
   class MonitorNotificationType
     identified_by :monitor, :notification_type
     has_one :monitor, :mandatory                # See Monitor.all_monitor_notification_type
-    has_one :notification_type                  # See NotificationType.all_monitor_notification_type
+    has_one :notification_type, :mandatory      # See NotificationType.all_monitor_notification_type
     maybe :is_excluded
   end
 
   class MonitorNotificationUser
     identified_by :monitor_notification_type, :notification_user
-    has_one :monitor_notification_type          # See MonitorNotificationType.all_monitor_notification_user
-    has_one :notification_user, User            # See User.all_monitor_notification_user_as_notification_user
+    has_one :monitor_notification_type, :mandatory  # See MonitorNotificationType.all_monitor_notification_user
+    has_one :notification_user, User, :mandatory  # See User.all_monitor_notification_user_as_notification_user
     has_one :notification_level, :mandatory     # See NotificationLevel.all_monitor_notification_user
   end
 
@@ -361,14 +361,14 @@ module ::ServiceDirector
 
   class DataStoreFileHostSystem
     identified_by :data_store
-    one_to_one :data_store                      # See DataStore.data_store_file_host_system
-    has_one :file_host_system                   # See FileHostSystem.all_data_store_file_host_system
+    one_to_one :data_store, :mandatory          # See DataStore.data_store_file_host_system
+    has_one :file_host_system, :mandatory       # See FileHostSystem.all_data_store_file_host_system
     one_to_one :internal_credential, Credential, :mandatory  # See Credential.data_store_file_host_system_as_internal_credential
   end
 
   class DataStoreService
     identified_by :service, :data_store
-    has_one :data_store                         # See DataStore.all_data_store_service
+    has_one :data_store, :mandatory             # See DataStore.all_data_store_service
     has_one :service, :mandatory                # See Service.all_data_store_service
     has_one :client, :mandatory                 # See Client.all_data_store_service
     one_to_one :subscription, :mandatory, :data_store_service_subscription  # See Subscription.data_store_service_subscription

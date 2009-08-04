@@ -63,9 +63,9 @@ module ::OilSupply
 
   class TransportRoute
     identified_by :transport_method, :refinery, :region
-    has_one :refinery                           # See Refinery.all_transport_route
-    has_one :region                             # See Region.all_transport_route
-    has_one :transport_method                   # See TransportMethod.all_transport_route
+    has_one :refinery, :mandatory               # See Refinery.all_transport_route
+    has_one :region, :mandatory                 # See Region.all_transport_route
+    has_one :transport_method, :mandatory       # See TransportMethod.all_transport_route
     has_one :cost                               # See Cost.all_transport_route
   end
 
@@ -76,9 +76,9 @@ module ::OilSupply
 
   class AcceptableSubstitutes
     identified_by :product, :alternate_product, :season
-    has_one :alternate_product, Product         # See Product.all_acceptable_substitutes_as_alternate_product
-    has_one :product                            # See Product.all_acceptable_substitutes
-    has_one :season                             # See Season.all_acceptable_substitutes
+    has_one :alternate_product, Product, :mandatory  # See Product.all_acceptable_substitutes_as_alternate_product
+    has_one :product, :mandatory                # See Product.all_acceptable_substitutes
+    has_one :season, :mandatory                 # See Season.all_acceptable_substitutes
   end
 
   class SupplyPeriod
@@ -89,18 +89,18 @@ module ::OilSupply
 
   class ProductionForecast
     identified_by :refinery, :product, :supply_period
-    has_one :product                            # See Product.all_production_forecast
-    has_one :refinery                           # See Refinery.all_production_forecast
-    has_one :supply_period                      # See SupplyPeriod.all_production_forecast
+    has_one :product, :mandatory                # See Product.all_production_forecast
+    has_one :refinery, :mandatory               # See Refinery.all_production_forecast
+    has_one :supply_period, :mandatory          # See SupplyPeriod.all_production_forecast
     has_one :cost                               # See Cost.all_production_forecast
     has_one :quantity, :mandatory               # See Quantity.all_production_forecast
   end
 
   class RegionalDemand
     identified_by :region, :product, :supply_period
-    has_one :product                            # See Product.all_regional_demand
-    has_one :region                             # See Region.all_regional_demand
-    has_one :supply_period                      # See SupplyPeriod.all_regional_demand
+    has_one :product, :mandatory                # See Product.all_regional_demand
+    has_one :region, :mandatory                 # See Region.all_regional_demand
+    has_one :supply_period, :mandatory          # See SupplyPeriod.all_regional_demand
     has_one :quantity                           # See Quantity.all_regional_demand
   end
 

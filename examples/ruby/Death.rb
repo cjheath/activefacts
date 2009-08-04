@@ -17,7 +17,7 @@ module ::Death
 
   class Death
     identified_by :person
-    one_to_one :person                          # See Person.death
+    one_to_one :person, :mandatory              # See Person.death
     has_one :cause_of_death                     # See CauseOfDeath.all_death
   end
 

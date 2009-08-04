@@ -401,15 +401,15 @@ module ::Insurance
 
   class ContractorAppointment
     identified_by :claim, :contractor
-    has_one :claim                              # See Claim.all_contractor_appointment
-    has_one :contractor                         # See Contractor.all_contractor_appointment
+    has_one :claim, :mandatory                  # See Claim.all_contractor_appointment
+    has_one :contractor, :mandatory             # See Contractor.all_contractor_appointment
   end
 
   class CoverWording
     identified_by :cover_type, :policy_wording, :start_date
-    has_one :cover_type                         # See CoverType.all_cover_wording
-    has_one :policy_wording                     # See PolicyWording.all_cover_wording
-    has_one :start_date, Date                   # See Date.all_cover_wording_as_start_date
+    has_one :cover_type, :mandatory             # See CoverType.all_cover_wording
+    has_one :policy_wording, :mandatory         # See PolicyWording.all_cover_wording
+    has_one :start_date, Date, :mandatory       # See Date.all_cover_wording_as_start_date
   end
 
   class DamagedProperty
@@ -429,7 +429,7 @@ module ::Insurance
   class Driving
     identified_by :vehicle_incident
     has_one :driver, :mandatory                 # See Driver.all_driving
-    one_to_one :vehicle_incident                # See VehicleIncident.driving
+    one_to_one :vehicle_incident, :mandatory    # See VehicleIncident.driving
     has_one :blood_test_result, TestResult      # See TestResult.all_driving_as_blood_test_result
     has_one :breath_test_result, TestResult     # See TestResult.all_driving_as_breath_test_result
     has_one :hospital_name, Name, :driver_hospitalised  # See Name.all_driver_hospitalised
@@ -440,8 +440,8 @@ module ::Insurance
 
   class DrivingCharge
     identified_by :driving
-    has_one :charge                             # See Charge.all_driving_charge
-    one_to_one :driving                         # See Driving.driving_charge
+    has_one :charge, :mandatory                 # See Charge.all_driving_charge
+    one_to_one :driving, :mandatory             # See Driving.driving_charge
     maybe :is_warning
   end
 
@@ -465,8 +465,8 @@ module ::Insurance
 
   class Lodgement
     identified_by :claim
-    one_to_one :claim                           # See Claim.lodgement
-    has_one :person                             # See Person.all_lodgement
+    one_to_one :claim, :mandatory               # See Claim.lodgement
+    has_one :person, :mandatory                 # See Person.all_lodgement
     has_one :date_time                          # See DateTime.all_lodgement
   end
 
@@ -490,8 +490,8 @@ module ::Insurance
 
   class ThirdParty
     identified_by :person, :vehicle_incident
-    has_one :person                             # See Person.all_third_party
-    has_one :vehicle_incident                   # See VehicleIncident.all_third_party
+    has_one :person, :mandatory                 # See Person.all_third_party
+    has_one :vehicle_incident, :mandatory       # See VehicleIncident.all_third_party
     has_one :insurer                            # See Insurer.all_third_party
     has_one :model_year, Year                   # See Year.all_third_party_as_model_year
     has_one :vehicle_registration, Registration  # See Registration.all_third_party_as_vehicle_registration
@@ -510,9 +510,9 @@ module ::Insurance
 
   class Cover
     identified_by :policy, :cover_type, :asset
-    has_one :asset                              # See Asset.all_cover
-    has_one :cover_type                         # See CoverType.all_cover
-    has_one :policy                             # See Policy.all_cover
+    has_one :asset, :mandatory                  # See Asset.all_cover
+    has_one :cover_type, :mandatory             # See CoverType.all_cover
+    has_one :policy, :mandatory                 # See Policy.all_cover
   end
 
   class MotorPolicy < Policy

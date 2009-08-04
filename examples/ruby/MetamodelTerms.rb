@@ -187,12 +187,22 @@ module ::Metamodel
     has_one :ordinal, :mandatory                # See Ordinal.all_reading
     has_one :role_sequence, :mandatory          # See RoleSequence.all_reading
     has_one :text, :mandatory                   # See Text.all_reading
+    has_one :vocabulary, :mandatory             # See Vocabulary.all_reading
   end
 
   class RingConstraint < Constraint
     has_one :other_role, "Role"                 # See Role.all_ring_constraint_as_other_role
     has_one :ring_type, :mandatory              # See RingType.all_ring_constraint
     has_one :role                               # See Role.all_ring_constraint
+  end
+
+  class Role
+    identified_by :fact_type, :ordinal
+    has_one :fact_type, :mandatory              # See FactType.all_role
+    has_one :ordinal, :mandatory                # See Ordinal.all_role
+    has_one :concept                            # See Concept.all_role
+    has_one :role_name, "Term"                  # See Term.all_role_as_role_name
+    has_one :role_value_restriction, "ValueRestriction"  # See ValueRestriction.all_role_as_role_value_restriction
   end
 
   class RoleSequence
@@ -254,14 +264,6 @@ module ::Metamodel
     has_one :value_restriction, :mandatory      # See ValueRestriction.all_allowed_range
   end
 
-  class Concept
-    identified_by :vocabulary, :name
-    maybe :is_independent
-    has_one :name, :mandatory                   # See Name.all_concept
-    has_one :pronoun                            # See Pronoun.all_concept
-    has_one :vocabulary, :mandatory             # See Vocabulary.all_concept
-  end
-
   class ContextAccordingTo
     identified_by :context_note, :person
     has_one :context_note, :mandatory           # See ContextNote.all_context_according_to
@@ -281,23 +283,10 @@ module ::Metamodel
     has_one :exponent                           # See Exponent.all_derivation
   end
 
-  class EntityType < Concept
-    one_to_one :fact_type                       # See FactType.entity_type
-  end
-
   class Population
     identified_by :vocabulary, :name
     has_one :name, :mandatory                   # See Name.all_population
     has_one :vocabulary                         # See Vocabulary.all_population
-  end
-
-  class Role
-    identified_by :fact_type, :ordinal
-    has_one :concept, :mandatory                # See Concept.all_role
-    has_one :fact_type, :mandatory              # See FactType.all_role
-    has_one :ordinal, :mandatory                # See Ordinal.all_role
-    has_one :role_name, Name                    # See Name.all_role_as_role_name
-    has_one :role_value_restriction, ValueRestriction  # See ValueRestriction.all_role_as_role_value_restriction
   end
 
   class RoleRef
@@ -326,6 +315,33 @@ module ::Metamodel
     maybe :is_mandatory
   end
 
+  class Term
+    identified_by :vocabulary, :name
+    has_one :name, :mandatory                   # See Name.all_term
+    has_one :vocabulary, :mandatory             # See Vocabulary.all_term
+    has_one :concept, :secondary_term           # See Concept.all_secondary_term
+  end
+
+  class Concept
+    identified_by :term
+    maybe :is_independent
+    has_one :pronoun                            # See Pronoun.all_concept
+    one_to_one :term, :mandatory                # See Term.concept
+  end
+
+  class EntityType < Concept
+    one_to_one :fact_type                       # See FactType.entity_type
+  end
+
+  class Join
+    identified_by :role_ref, :join_step
+    has_one :join_step, Ordinal, :mandatory     # See Ordinal.all_join_as_join_step
+    has_one :role_ref, :mandatory               # See RoleRef.all_join
+    has_one :concept                            # See Concept.all_join
+    has_one :input_role, Role                   # See Role.all_join_as_input_role
+    has_one :output_role, Role                  # See Role.all_join_as_output_role
+  end
+
   class TypeInheritance < FactType
     identified_by :subtype, :supertype
     has_one :subtype, EntityType, :mandatory    # See EntityType.all_type_inheritance_as_subtype
@@ -340,15 +356,6 @@ module ::Metamodel
     has_one :supertype, ValueType               # See ValueType.all_value_type_as_supertype
     has_one :unit                               # See Unit.all_value_type
     has_one :value_restriction                  # See ValueRestriction.all_value_type
-  end
-
-  class Join
-    identified_by :role_ref, :join_step
-    has_one :join_step, Ordinal, :mandatory     # See Ordinal.all_join_as_join_step
-    has_one :role_ref, :mandatory               # See RoleRef.all_join
-    has_one :concept                            # See Concept.all_join
-    has_one :input_role, Role                   # See Role.all_join_as_input_role
-    has_one :output_role, Role                  # See Role.all_join_as_output_role
   end
 
   class Parameter

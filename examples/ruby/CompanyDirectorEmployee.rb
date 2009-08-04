@@ -40,14 +40,14 @@ module ::CompanyDirectorEmployee
 
   class Attendance
     identified_by :attendee, :meeting
-    has_one :attendee, Person                   # See Person.all_attendance_as_attendee
-    has_one :meeting                            # See Meeting.all_attendance
+    has_one :attendee, Person, :mandatory       # See Person.all_attendance_as_attendee
+    has_one :meeting, :mandatory                # See Meeting.all_attendance
   end
 
   class Directorship
     identified_by :director, :company
     has_one :company, :mandatory                # See Company.all_directorship
-    has_one :director, Person                   # See Person.all_directorship_as_director
+    has_one :director, Person, :mandatory       # See Person.all_directorship_as_director
     has_one :appointment_date, Date, :mandatory  # See Date.all_directorship_as_appointment_date
   end
 

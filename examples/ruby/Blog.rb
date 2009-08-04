@@ -70,8 +70,8 @@ module ::Blog
 
   class Paragraph
     identified_by :post, :ordinal
-    has_one :ordinal                            # See Ordinal.all_paragraph
-    has_one :post                               # See Post.all_paragraph
+    has_one :ordinal, :mandatory                # See Ordinal.all_paragraph
+    has_one :post, :mandatory                   # See Post.all_paragraph
     has_one :content, :mandatory                # See Content.all_paragraph
   end
 

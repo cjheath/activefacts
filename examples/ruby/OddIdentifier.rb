@@ -21,8 +21,8 @@ module ::OddIdentifier
 
   class ThingSequence
     identified_by :thing, :text
-    has_one :ordinal                            # See Ordinal.all_thing_sequence
-    has_one :thing                              # See Thing.all_thing_sequence
+    has_one :ordinal, :mandatory                # See Ordinal.all_thing_sequence
+    has_one :thing, :mandatory                  # See Thing.all_thing_sequence
     has_one :text, :mandatory                   # See Text.all_thing_sequence
   end
 

@@ -98,7 +98,7 @@ module ActiveFacts
         role_name = role_method
         role_name = nil if role_name == role.concept.name.snakecase
 
-        binary_dump(role, other_role_name, other_player, one_to_one, nil, role_name, other_role_method)
+        binary_dump(role, other_role_name, other_player, role.is_mandatory, one_to_one, nil, role_name, other_role_method)
       end
 
       def preferred_role_name(role, is_for = nil)
@@ -161,7 +161,7 @@ module ActiveFacts
             other_role_method = (one_to_one ? "" : "all_") + 
               fact_type.entity_type.name.snakecase +
               as
-            binary_dump(role, role_name, role.concept, one_to_one, nil, nil, other_role_method)
+            binary_dump(role, role_name, role.concept, true, one_to_one, nil, nil, other_role_method)
           }
       end
 

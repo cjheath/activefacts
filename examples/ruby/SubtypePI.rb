@@ -26,7 +26,7 @@ module ::SubtypePI
   class EntrantHasGivenName
     identified_by :entrant, :given_name
     has_one :entrant, :mandatory                # See Entrant.all_entrant_has_given_name
-    has_one :given_name                         # See GivenName.all_entrant_has_given_name
+    has_one :given_name, :mandatory             # See GivenName.all_entrant_has_given_name
   end
 
   class Team < Entrant

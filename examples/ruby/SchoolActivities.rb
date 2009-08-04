@@ -26,8 +26,8 @@ module ::SchoolActivities
 
   class SchoolActivity
     identified_by :school, :activity
-    has_one :activity                           # See Activity.all_school_activity
-    has_one :school                             # See School.all_school_activity
+    has_one :activity, :mandatory               # See Activity.all_school_activity
+    has_one :school, :mandatory                 # See School.all_school_activity
   end
 
   class Student
@@ -38,9 +38,9 @@ module ::SchoolActivities
 
   class StudentParticipation
     identified_by :student, :activity
-    has_one :activity                           # See Activity.all_student_participation
-    has_one :school                             # See School.all_student_participation
-    has_one :student                            # See Student.all_student_participation
+    has_one :activity, :mandatory               # See Activity.all_student_participation
+    has_one :school, :mandatory                 # See School.all_student_participation
+    has_one :student, :mandatory                # See Student.all_student_participation
   end
 
 end

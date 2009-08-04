@@ -146,8 +146,8 @@ module ::Warehousing
 
   class DirectOrderMatch
     identified_by :purchase_order_item, :sales_order_item
-    has_one :purchase_order_item                # See PurchaseOrderItem.all_direct_order_match
-    has_one :sales_order_item                   # See SalesOrderItem.all_direct_order_match
+    has_one :purchase_order_item, :mandatory    # See PurchaseOrderItem.all_direct_order_match
+    has_one :sales_order_item, :mandatory       # See SalesOrderItem.all_direct_order_match
   end
 
 end

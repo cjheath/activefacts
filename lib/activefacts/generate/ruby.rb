@@ -147,7 +147,7 @@ module ActiveFacts
         puts "    maybe :"+role_name
       end
 
-      def binary_dump(role, role_name, role_player, one_to_one = nil, readings = nil, other_role_name = nil, other_method_name = nil)
+      def binary_dump(role, role_name, role_player, mandatory = nil, one_to_one = nil, readings = nil, other_role_name = nil, other_method_name = nil)
         # Find whether we need the name of the other role player, and whether it's defined yet:
         if role_name.camelcase(true) == role_player.name.sub(/^[a-z]/) {|i| i.upcase}
           # Don't use Class name if implied by rolename
@@ -160,7 +160,7 @@ module ActiveFacts
         line = "    #{one_to_one ? "one_to_one" : "has_one" } " +
                 [ ":"+role_name,
                   role_reference,
-                  role.is_mandatory ? ":mandatory" : nil,
+                  mandatory ? ":mandatory" : nil,
                   readings,
                   other_role_name
                 ].compact*", "+"  "

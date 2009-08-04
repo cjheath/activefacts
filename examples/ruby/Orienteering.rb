@@ -141,16 +141,16 @@ module ::Orienteering
 
   class EventControl
     identified_by :event, :control_number
-    has_one :control_number                     # See ControlNumber.all_event_control
+    has_one :control_number, :mandatory         # See ControlNumber.all_event_control
     has_one :event, :mandatory                  # See Event.all_event_control
     has_one :point_value                        # See PointValue.all_event_control
   end
 
   class EventScoringMethod
     identified_by :course, :event
-    has_one :course                             # See Course.all_event_scoring_method
-    has_one :event                              # See Event.all_event_scoring_method
-    has_one :scoring_method                     # See ScoringMethod.all_event_scoring_method
+    has_one :course, :mandatory                 # See Course.all_event_scoring_method
+    has_one :event, :mandatory                  # See Event.all_event_scoring_method
+    has_one :scoring_method, :mandatory         # See ScoringMethod.all_event_scoring_method
   end
 
   class Map
@@ -180,7 +180,7 @@ module ::Orienteering
   class PunchPlacement
     identified_by :punch, :event_control
     has_one :event_control, :mandatory          # See EventControl.all_punch_placement
-    has_one :punch                              # See Punch.all_punch_placement
+    has_one :punch, :mandatory                  # See Punch.all_punch_placement
   end
 
   class Series
@@ -191,9 +191,9 @@ module ::Orienteering
 
   class Entry
     identified_by :entry_id
-    has_one :course                             # See Course.all_entry
-    has_one :event                              # See Event.all_entry
-    has_one :person                             # See Person.all_entry
+    has_one :course, :mandatory                 # See Course.all_entry
+    has_one :event, :mandatory                  # See Event.all_entry
+    has_one :person, :mandatory                 # See Person.all_entry
     one_to_one :entry_id, EntryID, :mandatory   # See EntryID.entry
     has_one :finish_placing, Placing            # See Placing.all_entry_as_finish_placing
     has_one :score                              # See Score.all_entry
@@ -201,9 +201,9 @@ module ::Orienteering
 
   class Visit
     identified_by :punch, :entry, :time
-    has_one :entry                              # See Entry.all_visit
-    has_one :punch                              # See Punch.all_visit
-    has_one :time                               # See Time.all_visit
+    has_one :entry, :mandatory                  # See Entry.all_visit
+    has_one :punch, :mandatory                  # See Punch.all_visit
+    has_one :time, :mandatory                   # See Time.all_visit
   end
 
 end

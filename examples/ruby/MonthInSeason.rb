@@ -22,8 +22,8 @@ module ::MonthInSeason
 
   class Occurrence
     identified_by :event, :month
-    has_one :event                              # See Event.all_occurrence
-    has_one :month                              # See Month.all_occurrence
+    has_one :event, :mandatory                  # See Event.all_occurrence
+    has_one :month, :mandatory                  # See Month.all_occurrence
   end
 
 end
