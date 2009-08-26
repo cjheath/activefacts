@@ -501,6 +501,7 @@ player, binding = @symbols.bind(names)
           @symbols = SymbolTable.new(@constellation, @vocabulary)
           @symbols.bind_roles_in_clauses(clauses)
 
+          bound_instances = {}  # Instances indexed by binding
           facts =
             clauses.map do |clause|
               kind, qualifiers, phrases, context = *clause
@@ -508,7 +509,9 @@ player, binding = @symbols.bind(names)
               # OR be bound to an entity type identified by the phrases
               # Any clause that has one binding and no other word is a value instance or simply-identified entity type
               if phrases.size == 1 && Hash === (phrase = phrases[0])
-                instance_identified_by_literal(population, phrase[:binding].concept, phrase[:literal])
+                binding = phrase[:binding]
+                i = instance_identified_by_literal(population, binding.concept, phrase[:literal])
+                bound_instances[binding] = i
               else
                 [phrases, *bind_fact_reading(nil, qualifiers, phrases)]
               end
@@ -524,14 +527,35 @@ player, binding = @symbols.bind(names)
               phrases, fact_type, reading = *fact
 
               # This is a fact type we bound; see if we can create the fact instance yet
-              bare_bindings = phrases.select{|w| w.is_a?(Hash) && !w[:literal]}
+              bare_roles = phrases.select{|w| w.is_a?(Hash) && !w[:literal]}
               # REVISIT: Bare bindings might be bound to instances we created
               debugger
-              if bare_bindings.size == 0
+              if bare_roles.size == 0
                 # All bindings in this fact type contain literals; create the fact type
                 progress = true
+              elsif bare_roles.size == 1 and
+                binding = bare_roles[0][:binding]
+                (e = binding.concept).is_a?(EntityType) &&
+                  (rrs = e.preferred_identifier.role_sequence.all_role_ref).size == 1 &&
+                  (identifying_role = rrs.single.role).fact_type == fact_type
+                # This reading provides the identifying literal for the EntityType e
+                raise "REVISIT: entity identified by fact instance is incomplete"
+=begin
+                # REVISIT: Check these instances don't already exist
+                identifying_instance = instance_identified_by_literal(population, ...) # REVISIT: Get the identifying_instance
+                @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :population => population, :role => identifying_role)
+                instance = @constellation.Instance(:new, :concept => e, :population => population)
+                fact = @constellation.Fact(:new, :fact_type => fact_type, :population => population)
+                @constellation.RoleValue(:instance => instance, :fact => fact, :population => population, :role => role)
+=end
+                progress = true
+                bound_instances[binding] = instance
+              elsif !bare_roles.detect{|b| !bound_instances[b[:binding]] }
+                debugger
+                # All bare bindings are to objects that are now bound
+                progress = true
               else
-                p bare_bindings
+                p bare_roles
                 raise "REVISIT: Not yet implemented; forward reference in facts"
               end
               fact
@@ -544,31 +568,35 @@ player, binding = @symbols.bind(names)
         end
       end
 
+      def entity_identified_by_literal(population, concept, literal)
+        # A literal that identifies an entity type means the entity type has only one identifying role
+        # That role is played either by a value type, or by another similarly single-identified entity type
+        debug "Creating instance identified by '#{literal}' of EntityType #{concept.name}#{population.name.size>0 ? " in "+population.name.inspect : ''}" do
+          identifying_role_refs = concept.preferred_identifier.role_sequence.all_role_ref
+          raise "Single literal cannot satisfy multiple identifying roles for #{concept.name}" if identifying_role_refs.size > 1
+          role = identifying_role_refs.single.role
+          identifying_instance = instance_identified_by_literal(population, role.concept, literal)
+          instance = identifying_instance.all_role_value.detect { |rv|
+            next false unless rv.population == population         # Not this population
+            next false unless rv.fact.fact_type == role.fact_type # Not this fact type
+            other_role_value = (rv.fact.all_role_value-[rv])[0]
+            other_role_value.instance.concept == concept          # Is it this concept?
+          }
+          debug "This entity already exists" if instance
+          unless instance
+            fact = @constellation.Fact(:new, :fact_type => role.fact_type, :population => population)
+            instance = @constellation.Instance(:new, :concept => concept, :population => population)
+            # The identifying fact type has two roles; create both role instances:
+            @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :population => population, :role => role)
+            @constellation.RoleValue(:instance => instance, :fact => fact, :population => population, :role => (role.fact_type.all_role-[role])[0])
+          end
+          instance
+        end
+      end
+
       def instance_identified_by_literal(population, concept, literal)
         if concept.is_a?(EntityType)
-          # A literal that identifies an entity type means the entity type has only one identifying role
-          # That role is played either by a value type, or by another similarly single-identified entity type
-          debug "Creating instance identified by '#{literal}' of EntityType #{concept.name}#{population.name.size>0 ? " in "+population.name.inspect : ''}" do
-            identifying_role_refs = concept.preferred_identifier.role_sequence.all_role_ref
-            raise "Single literal cannot satisfy multiple identifying roles for #{concept.name}" if identifying_role_refs.size > 1
-            role = identifying_role_refs.single.role
-            identifying_instance = instance_identified_by_literal(population, role.concept, literal)
-            instance = identifying_instance.all_role_value.detect { |rv|
-              next false unless rv.population == population         # Not this population
-              next false unless rv.fact.fact_type == role.fact_type # Not this fact type
-              other_role_value = (rv.fact.all_role_value-[rv])[0]
-              other_role_value.instance.concept == concept          # Is it this concept?
-            }
-            debug "This entity already exists" if instance
-            unless instance
-              fact = @constellation.Fact(:new, :fact_type => role.fact_type, :population => population)
-              instance = @constellation.Instance(:new, :concept => concept, :population => population)
-              # The identifying fact type has two roles; create both role instances:
-              @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :population => population, :role => role)
-              @constellation.RoleValue(:instance => instance, :fact => fact, :population => population, :role => (role.fact_type.all_role-[role])[0])
-            end
-            instance
-          end
+          entity_identified_by_literal(population, concept, literal)
         else
           debug "Creating instance #{literal.inspect} of ValueType #{concept.name}#{population.name.size>0 ? " in "+population.name.inspect : ''}" do
             instance = concept.all_instance.detect { |instance|
@@ -909,8 +937,47 @@ player, binding = @symbols.bind(names)
               } roles found for non-initial reading of #{fact_type.describe}"
           end
 
-          # REVISIT: If the first reading is a re-iteration of an existing fact type, find and use the existing fact type
-          # This will require loading the @symbols.roles_by_binding using a SymbolTable
+          # If the reading is the first and is an invocation of an existing fact type,
+          # find and return the existing fact type and reading.
+          if !fact_type
+            bindings = role_phrases.map{|phrase| phrase[:binding]}
+            bindings_by_name = bindings.sort_by{|b| [b.concept.name, b.leading_adjective||'', b.trailing_adjective||'']}
+            bound_concepts_by_name = bindings_by_name.map{|b| b.concept}
+            reading = nil
+            first_role =
+              bindings[0].concept.all_role.detect do |role|
+                next if role.fact_type.all_role.size != bindings.size       # Wrong arity
+                concepts = role.fact_type.all_role.map{|r| r.concept }
+                next unless bound_concepts_by_name == concepts.sort_by{|c| c.name}  # Wrong players
+                matching_reading =
+                  role.fact_type.all_reading.detect do |reading|
+                    reading_role_refs = reading.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}
+                    reading_concepts = reading_role_refs.map{|rr| rr.role.concept}
+                    elements = reading.text.scan(/\{[0-9]+\}|\w+/)
+                    next false if elements.zip(phrases).detect do |element, phrase|
+                      if element =~ /\A\{([0-9]+)\}\Z/    # Must be a role player; need a matching binding
+                        !phrase.is_a?(Hash) or
+                          !(binding = phrase[:binding]) or
+                          (role_ref = reading_role_refs[$1.to_i]).role.concept != binding.concept or
+=begin
+                          # REVISIT: This loose matching fails on the Metamodel with RingConstraints.
+                          # Need "best match" semantics, or some way to know that these adjectives are "extra" to the readings.
+                          (la = role_ref.leading_adjective) && binding[:leading_adjective] != la or
+                          (ta = role_ref.trailing_adjective) && binding[:trailing_adjective] != ta
+=end
+                          role_ref.leading_adjective != binding[:leading_adjective] or
+                          role_ref.trailing_adjective != binding[:trailing_adjective]
+                      else
+                        element != phrase
+                      end
+                    end
+                    debug :reading, "'#{reading.expand}' matches #{phrases.inspect}!"
+                    true     # There was no mismatch
+                  end
+                matching_reading # This role was in a matching fact type!
+              end
+            return [first_role.fact_type, reading] if first_role
+          end
 
           fact_type ||= @constellation.FactType(:new)
 
