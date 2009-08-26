@@ -143,13 +143,13 @@ module ActiveFacts
 
           # Use a two-pass algorithm for entity fact types...
           # The first step is to find all role references and definitions in the clauses
-          # After bind_roles, each item in the reading part of each clause is either:
+          # After bind_roles, each phrase in each clause is either:
           # * a string, which is a linking word, or
           # * the phrase hash augmented with a :binding=>Binding
           @symbols = SymbolTable.new(@constellation, @vocabulary)
           @symbols.bind_roles_in_clauses(clauses, identification ? identification[:roles] : nil)
 
-          # Next arrange the readings according to what fact they belong to,
+          # Next arrange the clauses according to what fact they belong to,
           # then process each fact type using normal fact type processing.
           # That way if we find a fact type here having none of the players being the
           # entity type, we know it's an objectified fact type. The CQL syntax might make
@@ -187,9 +187,9 @@ module ActiveFacts
             @symbols.embedded_presence_constraints = [] # Clear embedded_presence_constraints for each fact type
             debug :entity, "New Fact Type for entity #{name}" do
               clauses_for_fact_type.each do |clause|
-                type, qualifiers, reading, context = *clause
+                type, qualifiers, phrases, context = *clause
                 debug :reading, "Clause: #{clause.inspect}" do
-                  f, r = *bind_fact_reading(fact_type, qualifiers, reading)
+                  f, r = *bind_fact_reading(fact_type, qualifiers, phrases)
                   identifying_fact_types[f] = true
                   fact_type ||= f
                 end
@@ -464,7 +464,7 @@ player, binding = @symbols.bind(names)
           fact_type = nil
 
           #
-          # The first step is to find all role references and definitions in the reading clauses.
+          # The first step is to find all role references and definitions in the phrases
           # This also:
           # * deletes any adjectives that were used but not hyphenated
           # * changes each linking word phrase into a simple String
@@ -474,9 +474,9 @@ player, binding = @symbols.bind(names)
           @symbols.bind_roles_in_clauses(clauses)
 
           clauses.each do |clause|
-            kind, qualifiers, reading, context = *clause
+            kind, qualifiers, phrases, context = *clause
 
-            fact_type, r = *bind_fact_reading(fact_type, qualifiers, reading)
+            fact_type, r = *bind_fact_reading(fact_type, qualifiers, phrases)
           end
 
           # The fact type has a name iff it's objectified as an entity type
@@ -503,14 +503,14 @@ player, binding = @symbols.bind(names)
 
           facts =
             clauses.map do |clause|
-              kind, qualifiers, reading, context = *clause
-              # Every bound word (term) in each reading must have a literal
-              # OR be bound to an entity type identified by the readings
+              kind, qualifiers, phrases, context = *clause
+              # Every bound word (term) in the phrases must have a literal
+              # OR be bound to an entity type identified by the phrases
               # Any clause that has one binding and no other word is a value instance or simply-identified entity type
-              if reading.size == 1 && Hash === reading[0]
-                instance_identified_by_literal(population, reading[0][:binding].concept, reading[0][:literal])
+              if phrases.size == 1 && Hash === (phrase = phrases[0])
+                instance_identified_by_literal(population, phrase[:binding].concept, phrase[:literal])
               else
-                {reading => bind_fact_reading(nil, qualifiers, reading)}
+                [phrases, *bind_fact_reading(nil, qualifiers, phrases)]
               end
             end
 
@@ -520,12 +520,11 @@ player, binding = @symbols.bind(names)
           while progress
             progress = false
             facts.map! do |fact|
-              next fact unless fact.is_a?(Hash)
-              reading_phrases = fact.keys[0]
-              fact_type, reading = *fact.values[0]
+              next fact unless fact.is_a?(Array)
+              phrases, fact_type, reading = *fact
 
               # This is a fact type we bound; see if we can create the fact instance yet
-              bare_bindings = reading_phrases.select{|w| w.is_a?(Hash) && !w[:literal]}
+              bare_bindings = phrases.select{|w| w.is_a?(Hash) && !w[:literal]}
               # REVISIT: Bare bindings might be bound to instances we created
               debugger
               if bare_bindings.size == 0
@@ -599,35 +598,30 @@ player, binding = @symbols.bind(names)
         end
       end
 
-      # The readings list is an array of an array of fact types.
+      # The joins list is an array of an array of fact types.
       # The fact types contain roles played by concepts, where each
       # concept plays more than one role. In fact, a concept may
       # occur in more than one binding, and each binding plays more
       # than one role. The bindings that are common to all fact types
-      # in each array in the readings list form the constrained role
+      # in each array in the joins list form the constrained role
       # sequences. Each binding that isn't common at this top level
       # must occur more than once in each group of fact types where
       # it appears, and it forms a join between those fact types.
-      def bind_joins_as_role_sequences(readings_list)
+      def bind_joins_as_role_sequences(joins_list)
         @symbols = SymbolTable.new(@constellation, @vocabulary)
         fact_roles_list = []
         bindings_list = []
-        readings_list.each_with_index do |readings, index|
-          # readings is an array of readings
-          @symbols.bind_roles_in_readings(readings)
+        joins_list.each_with_index do |joins, index|
+          # joins is an array of phrase arrays, each for one reading
+          @symbols.bind_roles_in_phrases_list(joins)
 
-          # Was:
-          # fact_roles_list[index] = invoked_fact_roles(readings[0])
-          # raise "Fact type reading not found for #{readings[0].inspect}" unless fact_roles_list[index]
-          # bindings_list[index] = readings[0].map{|phrase| Hash === phrase ? phrase[:binding] : nil}.compact
-
-          fact_roles_list << readings.map do |reading|
-            ifr = invoked_fact_roles(reading)
-            raise "Fact type reading not found for #{reading.inspect}" unless ifr
+          fact_roles_list << joins.map do |phrases|
+            ifr = invoked_fact_roles(phrases)
+            raise "Fact type reading not found for #{phrases.inspect}" unless ifr
             ifr
           end
-          bindings_list << readings.map do |reading|
-            reading.map{ |phrase| Hash === phrase ? phrase[:binding] : nil}.compact
+          bindings_list << joins.map do |phrases|
+            phrases.map{ |phrase| Hash === phrase ? phrase[:binding] : nil}.compact
           end
         end
 
@@ -677,7 +671,7 @@ player, binding = @symbols.bind(names)
         # REVISIT: This results in ordering all RoleRefs according to the order of the common_bindings.
         # This for example means that a set constraint having joins might have the join order changed so they all match.
         # When you create e.g. a subset constraint in NORMA, make sure that the subset roles are created in the order of the preferred readings.
-        role_sequences = readings_list.map{|r| @constellation.RoleSequence(:new) }
+        role_sequences = joins_list.map{|r| @constellation.RoleSequence(:new) }
         common_bindings.each_with_index do |binding, index|
           role_sequences.each_with_index do |rs, rsi|
             join = bindings_list[rsi]
@@ -692,10 +686,10 @@ player, binding = @symbols.bind(names)
         role_sequences
       end
 
-      def presence_constraint(constrained_role_names, quantifier, readings, context)
-        raise "REVISIT: Join presence constraints not supported yet" if readings[0].size > 1
-        readings = readings.map{|r| r[0] }
-        #p readings
+      def presence_constraint(constrained_role_names, quantifier, phrases_list, context)
+        raise "REVISIT: Join presence constraints not supported yet" if phrases_list[0].size > 1
+        phrases_list = phrases_list.map{|r| r[0] }
+        #p phrases_list
 
         @symbols = SymbolTable.new(@constellation, @vocabulary)
 
@@ -710,20 +704,20 @@ player, binding = @symbols.bind(names)
         #puts "Constrained bindings are #{constrained_bindings.inspect}"
         #puts "Constrained bindings object_id's are #{constrained_bindings.map{|b|b.object_id.to_s}*","}"
 
-        # Find players for all the concepts in all readings:
-        @symbols.bind_roles_in_readings(readings)
+        # Find players for all the concepts in all phrases_list:
+        @symbols.bind_roles_in_phrases_list(phrases_list)
 
         constrained_roles = []
         unmatched_roles = constrained_role_names.clone
-        readings.each do |reading|
-          # puts reading.inspect
+        phrases_list.each do |phrases|
+          # puts phrases.inspect
 
-          # If this succeeds, the reading found matches the roles in our phrases
-          fact_roles = invoked_fact_roles(reading)
-          raise "Fact type reading not found for #{reading.inspect}" unless fact_roles
+          # If this succeeds, the phrases found matches the roles in our phrases
+          fact_roles = invoked_fact_roles(phrases)
+          raise "Fact type reading not found for #{phrases.inspect}" unless fact_roles
 
           # Look for the constrained role(s); the bindings will be the same
-          matched_bindings = reading.select{|p| Hash === p}.map{|p| p[:binding]}
+          matched_bindings = phrases.select{|p| Hash === p}.map{|p| p[:binding]}
           #puts "matched_bindings = #{matched_bindings.inspect}"
           #puts "matched_bindings object_id's are #{matched_bindings.map{|b|b.object_id.to_s}*","}}"
           matched_bindings.each_with_index{|b, pos|
@@ -764,11 +758,11 @@ player, binding = @symbols.bind(names)
           )
       end
 
-      def set_constraint(constrained_roles, quantifier, readings_list, context)
+      def set_constraint(constrained_roles, quantifier, joins_list, context)
         # Exactly one or at most one, nothing else will do
         raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
 
-        role_sequences = bind_joins_as_role_sequences(readings_list)
+        role_sequences = bind_joins_as_role_sequences(joins_list)
 
         # Create the constraint:
         constraint = @constellation.SetExclusionConstraint(:new)
@@ -779,8 +773,8 @@ player, binding = @symbols.bind(names)
         constraint.is_mandatory = quantifier[0] == 1
       end
 
-      def subset_constraint(readings_list, context)
-        role_sequences = bind_joins_as_role_sequences(readings_list)
+      def subset_constraint(joins_list, context)
+        role_sequences = bind_joins_as_role_sequences(joins_list)
 
         #puts "subset_constraint:\n\t#{subset_readings.inspect}\n\t#{superset_readings.inspect}"
         #puts "\t#{role_sequences.map{|rs| rs.describe}.inspect}"
@@ -796,10 +790,10 @@ player, binding = @symbols.bind(names)
         constraint.superset_role_sequence = role_sequences[1]
       end
 
-      def equality_constraint(readings_list, context)
-        #puts "REVISIT: equality\n\t#{readings_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
+      def equality_constraint(joins_list, context)
+        #puts "REVISIT: equality\n\t#{joins_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
 
-        role_sequences = bind_joins_as_role_sequences(readings_list)
+        role_sequences = bind_joins_as_role_sequences(joins_list)
 
         # Create the constraint:
         constraint = @constellation.SetEqualityConstraint(:new)
@@ -821,13 +815,13 @@ player, binding = @symbols.bind(names)
         return nil
       end
 
-      # For a given reading from the parser, find the matching declared reading, and return
+      # For a given phrase array from the parser, find the matching declared reading, and return
       # the array of Role object in the same order as they occur in the reading.
-      def invoked_fact_roles(reading)
+      def invoked_fact_roles(phrases)
         # REVISIT: Possibly this special reading from the parser can be removed now?
-        if (reading[0] == "!SUBTYPE!")
-          subtype = reading[1][:binding].concept
-          supertype = reading[2][:binding].concept
+        if (phrases[0] == "!SUBTYPE!")
+          subtype = phrases[1][:binding].concept
+          supertype = phrases[2][:binding].concept
           raise "#{subtype.name} is not a subtype of #{supertype.name}" unless subtype.supertypes_transitive.include?(supertype)
           ip = inheritance_path(subtype, supertype)
           return [
@@ -836,12 +830,12 @@ player, binding = @symbols.bind(names)
           ]
         end
 
-        bindings = reading.select{|p| Hash === p}
+        bindings = phrases.select{|p| Hash === p}
         players = bindings.map{|p| p[:binding].concept }
-        invoked_fact_roles_by_players(reading, players)
+        invoked_fact_roles_by_players(phrases, players)
       end
 
-      def invoked_fact_roles_by_players(reading, players)
+      def invoked_fact_roles_by_players(phrases, players)
         players[0].all_role.each do |role|
           # Does this fact type have the right number of roles?
           next if role.fact_type.all_role.size != players.size
@@ -854,7 +848,7 @@ player, binding = @symbols.bind(names)
           debug "Considering "+role.fact_type.describe do
             next unless role.fact_type.all_reading.detect do |candidate_reading|
               debug "Considering reading"+candidate_reading.text do
-                to_match = reading.clone
+                to_match = phrases.clone
                 players_to_match = players.clone
                 candidate_reading.words_and_role_refs.each do |wrr|
                   if (wrr.is_a?(RoleRef))
@@ -891,7 +885,7 @@ player, binding = @symbols.bind(names)
         # When a fact type matches like this, there is an implied join to the subtype.
         players[0].subtypes.each do |subtype|
           players[0] = subtype
-          fr = invoked_fact_roles_by_players(reading, players)
+          fr = invoked_fact_roles_by_players(phrases, players)
           return fr if fr
         end
 
@@ -900,9 +894,9 @@ player, binding = @symbols.bind(names)
         nil
       end
 
-      def bind_fact_reading(fact_type, qualifiers, reading)
-        reading = debug :reading, "Processing reading #{reading.inspect}" do
-          role_phrases = reading.select do |phrase|
+      def bind_fact_reading(fact_type, qualifiers, phrases)
+        reading = debug :reading, "Processing reading #{phrases.inspect}" do
+          role_phrases = phrases.select do |phrase|
             Hash === phrase && phrase[:binding]
           end
 
@@ -967,7 +961,7 @@ player, binding = @symbols.bind(names)
           process_qualifiers(role_sequence, qualifiers)
 
           # Save the first role sequence to be used for a default PresenceConstraint
-          add_reading(fact_type, role_sequence, reading)
+          add_reading(fact_type, role_sequence, phrases)
         end
         [fact_type, reading]
       end
@@ -1000,10 +994,10 @@ player, binding = @symbols.bind(names)
       def clauses_by_fact_type(clauses)
         clause_group_by_role_players = {}
         clauses.inject([]) do |clause_groups, clause|
-          type, qualifiers, reading, context = *clause
+          type, qualifiers, phrases, context = *clause
 
           debug "Clause: #{clause.inspect}"
-          roles = reading.map do |phrase|
+          roles = phrases.map do |phrase|
             Hash === phrase ? phrase[:binding] : nil
           end.compact
 
@@ -1120,16 +1114,16 @@ player, binding = @symbols.bind(names)
         nil
       end
 
-      def add_reading(fact_type, role_sequence, reading)
+      def add_reading(fact_type, role_sequence, phrases)
         ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
-        defined_reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
+        reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
         role_num = -1
-        defined_reading.text = reading.map {|phrase|
+        reading.text = phrases.map {|phrase|
             Hash === phrase ? "{#{role_num += 1}}" : phrase
           }*" "
-        raise "Wrong number of players (#{role_num+1}) found in reading #{defined_reading.text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
-        debug "Added reading #{defined_reading.text}"
-        defined_reading
+        raise "Wrong number of players (#{role_num+1}) found in reading #{reading.text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
+        debug "Added reading #{reading.text}"
+        reading
       end
 
       # Return an array of this entity type and all its supertypes, transitively:
@@ -1309,14 +1303,14 @@ player, binding = @symbols.bind(names)
 
         def bind_roles_in_clauses(clauses, identification = [])
           identification ||= []
-          bind_roles_in_readings(
-              clauses.map{|clause| clause[2]},    # Extract the readings
+          bind_roles_in_phrases_list(
+              clauses.map{|clause| clause[2]},    # Extract the phrases
               single_word_identifiers = identification.map{|i| i.size == 1 ? i[0] : nil}.compact.uniq
             )
         end
 
         #
-        # Walk through all phrases of all readings identifying role players.
+        # Walk through all phrases identifying role players.
         # Each role player phrase gets a :binding key added to it.
         #
         # Any adjectives that the parser didn't recognise are merged with their players here,
@@ -1324,18 +1318,18 @@ player, binding = @symbols.bind(names)
         #
         # Other words are turned from phrases (hashes) into simple strings.
         #
-        def bind_roles_in_readings(readings, allowed_forwards = [])
+        def bind_roles_in_phrases_list(phrases_list, allowed_forwards = [])
           disallow_loose_binding = allowed_forwards.inject({}) { |h, v| h[v] = true; h }
-          readings.each do |reading|
-            debug :bind, "Binding a reading"
+          phrases_list.each do |phrases|
+            debug :bind, "Binding phrases"
 
-            if (reading.size == 1 && reading[0][:subtype])
+            if (phrases.size == 1 && phrases[0][:subtype])
               # REVISIT: Handle a subtype reading here
-              subtype_name = reading[0][:subtype]
-              supertype_name = reading[0][:supertype]
+              subtype_name = phrases[0][:subtype]
+              supertype_name = phrases[0][:supertype]
               subtype, subtype_binding = bind(subtype_name)
               supertype, supertype_binding = bind(supertype_name)
-              reading.replace([
+              phrases.replace([
                   "!SUBTYPE!",
                   {:word => subtype, :binding => subtype_binding },
                   {:word => supertype, :binding => supertype_binding }
@@ -1346,7 +1340,7 @@ player, binding = @symbols.bind(names)
 
             phrase_numbers_used_speculatively = []
             disallow_loose_binding_this_reading = disallow_loose_binding.clone
-            reading.each_with_index do |phrase, index|
+            phrases.each_with_index do |phrase, index|
               la = phrase[:leading_adjective]
               player_name = phrase[:word]
               ta = phrase[:trailing_adjective]
@@ -1355,11 +1349,11 @@ player, binding = @symbols.bind(names)
               # We use the preceeding phrase and/or following phrase speculatively if they're simple words:
               preceeding_phrase = nil
               following_phrase = nil
-              if !la && index > 0 && (preceeding_phrase = reading[index-1])
+              if !la && index > 0 && (preceeding_phrase = phrases[index-1])
                 preceeding_phrase = nil unless String === preceeding_phrase || preceeding_phrase.keys == [:word]
                 la = preceeding_phrase[:word] if Hash === preceeding_phrase
               end
-              if !ta && (following_phrase = reading[index+1])
+              if !ta && (following_phrase = phrases[index+1])
                 following_phrase = nil unless following_phrase.keys == [:word]
                 ta = following_phrase[:word] if following_phrase
               end
@@ -1374,7 +1368,7 @@ player, binding = @symbols.bind(names)
                   role_name,
                   allowed_forward,
                   !!preceeding_phrase, !!following_phrase,
-                  reading == readings[0] ? nil : disallow_loose_binding_this_reading  # Never allow loose binding on the first reading
+                  phrases == phrases_list[0] ? nil : disallow_loose_binding_this_reading  # Never allow loose binding on the first reading
                 )
               disallow_loose_binding_this_reading[player.name] = true if player
 
@@ -1397,15 +1391,15 @@ player, binding = @symbols.bind(names)
               else
                 raise "Internal error; role #{phrase.inspect} not matched" unless phrase.keys == [:word]
                 # Just a linking word
-                reading[index] = phrase[:word]
+                phrases[index] = phrase[:word]
               end
               debug :bind, "Bound phrase: #{phrase.inspect}" + " -> " + (player ? player.name+", "+binding.inspect : phrase[:word].inspect)
 
             end
             phrase_numbers_used_speculatively.each do |index|
-              reading.delete_at(index)
+              phrases.delete_at(index)
             end
-            debug :bind, "Bound reading: #{reading.inspect}"
+            debug :bind, "Bound phrases: #{phrases.inspect}"
           end
         end
       end # of SymbolTable class
