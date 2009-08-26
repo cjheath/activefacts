@@ -30,14 +30,9 @@ module ActiveFacts
         s ';' s
         {
           def value
-            [
-              nil,    # Anonymous fact type
-              [
-                :fact_type,
-                [ f0.body, *ftail.elements.map{|e| e.f1.body } ],
-                !ctail.empty? ? ctail.c.condition_list : []
-              ]
-            ]
+	    defined_readings = [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
+	    conditions = !ctail.empty? ? ctail.c.condition_list : []
+            [ nil, [ :fact_type, defined_readings, conditions ] ]
           end
         }
       end

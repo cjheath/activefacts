@@ -69,6 +69,8 @@ module ActiveFacts
                 fact_type *value
               when :constraint
                 constraint *value
+              when :fact
+                fact *value
               else
                 print "="*20+" unhandled declaration type: "; p kind, value
               end
@@ -187,7 +189,7 @@ module ActiveFacts
               clauses_for_fact_type.each do |clause|
                 type, qualifiers, reading, context = *clause
                 debug :reading, "Clause: #{clause.inspect}" do
-                  f = bind_fact_reading(fact_type, qualifiers, reading)
+                  f, r = *bind_fact_reading(fact_type, qualifiers, reading)
                   identifying_fact_types[f] = true
                   fact_type ||= f
                 end
@@ -474,7 +476,7 @@ player, binding = @symbols.bind(names)
           clauses.each do |clause|
             kind, qualifiers, reading, context = *clause
 
-            fact_type = bind_fact_reading(fact_type, qualifiers, reading)
+            fact_type, r = *bind_fact_reading(fact_type, qualifiers, reading)
           end
 
           # The fact type has a name iff it's objectified as an entity type
@@ -489,6 +491,96 @@ player, binding = @symbols.bind(names)
           end
 
           # REVISIT: Process the fact derivation conditions, if any
+        end
+      end
+
+      def fact(population_name, clauses) 
+        debug "Processing clauses for fact" do
+          population_name ||= ''
+          population = @constellation.Population(@vocabulary, population_name)
+          @symbols = SymbolTable.new(@constellation, @vocabulary)
+          @symbols.bind_roles_in_clauses(clauses)
+
+          facts =
+            clauses.map do |clause|
+              kind, qualifiers, reading, context = *clause
+              # Every bound word (term) in each reading must have a literal
+              # OR be bound to an entity type identified by the readings
+              # Any clause that has one binding and no other word is a value instance or simply-identified entity type
+              if reading.size == 1 && Hash === reading[0]
+                instance_identified_by_literal(population, reading[0][:binding].concept, reading[0][:literal])
+              else
+                {reading => bind_fact_reading(nil, qualifiers, reading)}
+              end
+            end
+
+          # Because the fact types may include forward references, we must process the list repeatedly
+          # until we make no further progress. Any remaining
+          progress = true
+          while progress
+            progress = false
+            facts.map! do |fact|
+              next fact unless fact.is_a?(Hash)
+              reading_phrases = fact.keys[0]
+              fact_type, reading = *fact.values[0]
+
+              # This is a fact type we bound; see if we can create the fact instance yet
+              bare_bindings = reading_phrases.select{|w| w.is_a?(Hash) && !w[:literal]}
+              # REVISIT: Bare bindings might be bound to instances we created
+              debugger
+              if bare_bindings.size == 0
+                # All bindings in this fact type contain literals; create the fact type
+                progress = true
+              else
+                p bare_bindings
+                raise "REVISIT: Not yet implemented; forward reference in facts"
+              end
+              fact
+            end
+          end
+          incomplete = facts.select{|ft| !ft.is_a?(Instance) && ft.is_a?(Fact)}
+          if incomplete.size > 0
+            raise "Fact type readings #{incomplete.inspect} contain too few identifying literals"
+          end
+        end
+      end
+
+      def instance_identified_by_literal(population, concept, literal)
+        if concept.is_a?(EntityType)
+          # A literal that identifies an entity type means the entity type has only one identifying role
+          # That role is played either by a value type, or by another similarly single-identified entity type
+          debug "Creating instance identified by '#{literal}' of EntityType #{concept.name}#{population.name.size>0 ? " in "+population.name.inspect : ''}" do
+            identifying_role_refs = concept.preferred_identifier.role_sequence.all_role_ref
+            raise "Single literal cannot satisfy multiple identifying roles for #{concept.name}" if identifying_role_refs.size > 1
+            role = identifying_role_refs.single.role
+            identifying_instance = instance_identified_by_literal(population, role.concept, literal)
+            instance = identifying_instance.all_role_value.detect { |rv|
+              next false unless rv.population == population         # Not this population
+              next false unless rv.fact.fact_type == role.fact_type # Not this fact type
+              other_role_value = (rv.fact.all_role_value-[rv])[0]
+              other_role_value.instance.concept == concept          # Is it this concept?
+            }
+            debug "This entity already exists" if instance
+            unless instance
+              fact = @constellation.Fact(:new, :fact_type => role.fact_type, :population => population)
+              instance = @constellation.Instance(:new, :concept => concept, :population => population)
+              # The identifying fact type has two roles; create both role instances:
+              @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :population => population, :role => role)
+              @constellation.RoleValue(:instance => instance, :fact => fact, :population => population, :role => (role.fact_type.all_role-[role])[0])
+            end
+            instance
+          end
+        else
+          debug "Creating instance #{literal.inspect} of ValueType #{concept.name}#{population.name.size>0 ? " in "+population.name.inspect : ''}" do
+            instance = concept.all_instance.detect { |instance|
+              instance.population == population && instance.value == literal
+            }
+            debug "This value already exists" if instance
+            unless instance
+              instance = @constellation.Instance(:new, :concept => concept, :population => population, :value => literal)
+            end
+            instance
+          end
         end
       end
 
@@ -809,7 +901,7 @@ player, binding = @symbols.bind(names)
       end
 
       def bind_fact_reading(fact_type, qualifiers, reading)
-        debug :reading, "Processing reading #{reading.inspect}" do
+        reading = debug :reading, "Processing reading #{reading.inspect}" do
           role_phrases = reading.select do |phrase|
             Hash === phrase && phrase[:binding]
           end
@@ -877,7 +969,7 @@ player, binding = @symbols.bind(names)
           # Save the first role sequence to be used for a default PresenceConstraint
           add_reading(fact_type, role_sequence, reading)
         end
-        fact_type
+        [fact_type, reading]
       end
 
       def fact_type_identification(fact_type, name, prefer)
@@ -1037,6 +1129,7 @@ player, binding = @symbols.bind(names)
           }*" "
         raise "Wrong number of players (#{role_num+1}) found in reading #{defined_reading.text} over #{fact_type.describe}" if role_num+1 != fact_type.all_role.size
         debug "Added reading #{defined_reading.text}"
+        defined_reading
       end
 
       # Return an array of this entity type and all its supertypes, transitively:

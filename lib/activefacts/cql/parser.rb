@@ -81,9 +81,26 @@ module ActiveFacts
     end
 
     def fact_type(name, value)
-      defined_readings, *clauses = value
+      defined_readings, clauses = value
 
-      [:fact_type, name, defined_readings, clauses]
+      if clauses.empty? && includes_literals(defined_readings)
+        [:fact, nil, defined_readings]
+      elsif defined_readings.size == 1 &&
+          (popname = defined_readings[0][2]).size == 1 &&
+          popname[0].keys == [:word] &&
+          includes_literals(clauses)
+        [:fact, popname[0][:word], clauses]
+      else
+        [:fact_type, name, defined_readings, clauses]
+      end
+    end
+
+    def includes_literals(clauses)
+      clauses.detect do |clause|
+        raise "alternate clauses are not yet supported" if clause[0] == :"||"
+        fc, qualifiers, reading, context_note = *clause
+        reading.detect{|w| w[:literal]}
+      end
     end
 
   end
