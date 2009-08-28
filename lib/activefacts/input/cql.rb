@@ -944,39 +944,53 @@ player, binding = @symbols.bind(names)
             bindings_by_name = bindings.sort_by{|b| [b.concept.name, b.leading_adjective||'', b.trailing_adjective||'']}
             bound_concepts_by_name = bindings_by_name.map{|b| b.concept}
             reading = nil
-            first_role =
-              bindings[0].concept.all_role.detect do |role|
-                next if role.fact_type.all_role.size != bindings.size       # Wrong arity
-                concepts = role.fact_type.all_role.map{|r| r.concept }
-                next unless bound_concepts_by_name == concepts.sort_by{|c| c.name}  # Wrong players
-                matching_reading =
-                  role.fact_type.all_reading.detect do |reading|
-                    reading_role_refs = reading.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}
-                    reading_concepts = reading_role_refs.map{|rr| rr.role.concept}
-                    elements = reading.text.scan(/\{[0-9]+\}|\w+/)
-                    next false if elements.zip(phrases).detect do |element, phrase|
-                      if element =~ /\A\{([0-9]+)\}\Z/    # Must be a role player; need a matching binding
-                        !phrase.is_a?(Hash) or
-                          !(binding = phrase[:binding]) or
-                          (role_ref = reading_role_refs[$1.to_i]).role.concept != binding.concept or
+            first_role = nil
+            debug :reading, "Looking for existing fact type to match #{phrases.inspect}" do
+              first_role =
+                bindings[0].concept.all_role.detect do |role|
+                  next if role.fact_type.all_role.size != bindings.size       # Wrong arity
+                  concepts = role.fact_type.all_role.map{|r| r.concept }
+                  next unless bound_concepts_by_name == concepts.sort_by{|c| c.name}  # Wrong players
+                  matching_reading =
+                    role.fact_type.all_reading.detect do |reading|
+                    debug :reading, "Considering #{reading.expand}"
+                      reading_role_refs = reading.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}
+                      reading_concepts = reading_role_refs.map{|rr| rr.role.concept}
+                      elements = reading.text.scan(/\{[0-9]+\}|\w+/)
+                      next false if elements.zip(phrases).detect do |element, phrase|
+                        if element =~ /\A\{([0-9]+)\}\Z/    # Must be a role player; need a matching binding
+                          !phrase.is_a?(Hash) or
+                            !(binding = phrase[:binding]) or
+                            (role_ref = reading_role_refs[$1.to_i]).role.concept != binding.concept or
 =begin
-                          # REVISIT: This loose matching fails on the Metamodel with RingConstraints.
-                          # Need "best match" semantics, or some way to know that these adjectives are "extra" to the readings.
-                          (la = role_ref.leading_adjective) && binding[:leading_adjective] != la or
-                          (ta = role_ref.trailing_adjective) && binding[:trailing_adjective] != ta
+                            # REVISIT: This loose matching fails on the Metamodel with RingConstraints.
+                            # Need "best match" semantics, or some way to know that these adjectives are "extra" to the readings.
+                            (la = role_ref.leading_adjective) && binding[:leading_adjective] != la or
+                            (ta = role_ref.trailing_adjective) && binding[:trailing_adjective] != ta
 =end
-                          role_ref.leading_adjective != binding[:leading_adjective] or
-                          role_ref.trailing_adjective != binding[:trailing_adjective]
-                      else
-                        element != phrase
+                            role_ref.leading_adjective != binding[:leading_adjective] or
+                            role_ref.trailing_adjective != binding[:trailing_adjective]
+                        else
+                          element != phrase
+                        end
                       end
+                      debug :reading, "'#{reading.expand}' matches!"
+                      true     # There was no mismatch
                     end
-                    debug :reading, "'#{reading.expand}' matches #{phrases.inspect}!"
-                    true     # There was no mismatch
-                  end
-                matching_reading # This role was in a matching fact type!
+                  matching_reading # This role was in a matching fact type!
+                end
+            end
+
+            if first_role
+              fact_type = first_role.fact_type
+
+              # Remember the roles for each binding, for subsequent readings:
+              reading.role_sequence.all_role_ref.each_with_index do |rr, index|
+                @symbols.roles_by_binding[bindings[index]] = rr.role
               end
-            return [first_role.fact_type, reading] if first_role
+
+              return [fact_type, reading]
+            end
           end
 
           fact_type ||= @constellation.FactType(:new)
