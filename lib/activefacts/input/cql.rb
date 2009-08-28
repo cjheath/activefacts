@@ -524,15 +524,20 @@ player, binding = @symbols.bind(names)
               phrases.map! do |phrase|
                 next phrase unless l = phrase[:literal]
                 binding = phrase[:binding]
-                bound_instances[binding] =
-                  instance_identified_by_literal(population, binding.concept, l)
+                debug :instance, "Making #{binding.concept.class.basename} #{binding.concept.name} using #{l.inspect}" do
+                  bound_instances[binding] =
+                    instance_identified_by_literal(population, binding.concept, l)
+                end
                 phrase
               end
 
               if phrases.size == 1 && Hash === (phrase = phrases[0])
                 binding = phrase[:binding]
-                bound_instances[binding] =
-                  instance_identified_by_literal(population, binding.concept, phrase[:literal])
+                l = phrase[:literal]
+                debug :instance, "Making(2) #{binding.concept.class.basename} #{binding.concept.name} using #{l.inspect}" do
+                  bound_instances[binding] =
+                    instance_identified_by_literal(population, binding.concept, l)
+                end
               else
                 [phrases, *bind_fact_reading(nil, qualifiers, phrases)]
               end
@@ -544,72 +549,111 @@ player, binding = @symbols.bind(names)
           pass = 0
           while progress
             progress = false
-            #debug "Pass #{pass += 1}"
-            facts.map! do |fact|
-              next fact unless fact.is_a?(Array)
-              phrases, fact_type, reading = *fact
+            pass += 1
+            debug :instance, "Pass #{pass}" do
+              facts.map! do |fact|
+                next fact unless fact.is_a?(Array)
+                phrases, fact_type, reading = *fact
 
-              # This is a fact type we bound; see if we can create the fact instance yet
+                # This is a fact type we bound; see if we can create the fact instance yet
 
-              bare_roles = phrases.select{|w| w.is_a?(Hash) && !w[:literal] && !bound_instances[w[:binding]]}
-              # REVISIT: Bare bindings might be bound to instances we created
+                bare_roles = phrases.select{|w| w.is_a?(Hash) && !w[:literal] && !bound_instances[w[:binding]]}
+                # REVISIT: Bare bindings might be bound to instances we created
 
-              case
-              when bare_roles.size == 0
-                debug :instance, "All bindings in this fact type contain instances; create the fact type"
-                instances = phrases.select{|p| p.is_a?(Hash)}.map{|p| bound_instances[p[:binding]]}
+                debug :instance, "Considering '#{fact_type.preferred_reading.expand}' with bare roles: #{bare_roles.map{|role| role[:binding].concept.name}*", "} "
 
-                # Check that this fact doesn't already exist
-                fact = fact_type.all_fact.detect{|f|
-                  # Get the role values of this fact in the order of the reading we just bound
-                  role_values_in_reading_order = f.all_role_value.sort_by do |rv|
-                    reading.role_sequence.all_role_ref.detect{|rr| rr.role == rv.role}.ordinal
+                case
+                when bare_roles.size == 0
+                  debug :instance, "All bindings in '#{fact_type.preferred_reading.expand}' contain instances; create the fact type"
+                  instances = phrases.select{|p| p.is_a?(Hash)}.map{|p| bound_instances[p[:binding]]}
+                  debug :instance, "Instances are #{instances.map{|i| "#{i.concept.name} #{i.value.inspect}"}*", "}"
+
+                  # Check that this fact doesn't already exist
+                  fact = fact_type.all_fact.detect{|f|
+                    # Get the role values of this fact in the order of the reading we just bound
+                    role_values_in_reading_order = f.all_role_value.sort_by do |rv|
+                      reading.role_sequence.all_role_ref.detect{|rr| rr.role == rv.role}.ordinal
+                    end
+                    # If all this fact's role values are played by the bound instances, it's the same fact
+                    !role_values_in_reading_order.zip(instances).detect{|rv, i| rv.instance != i }
+                  }
+                  unless fact
+                    fact = @constellation.Fact(:new, :fact_type => fact_type, :population => population)
+                    @constellation.Instance(:new, :concept => fact_type.entity_type, :fact => fact, :population => population)
+                    reading.role_sequence.all_role_ref.zip(instances).each do |rr, instance|
+                      debug :instance, "New fact has #{instance.concept.name} role #{instance.value.inspect}"
+                      @constellation.RoleValue(:fact => fact, :instance => instance, :role => rr.role, :population => population)
+                    end
+                  else
+                    debug :instance, "Found existing fact type instance"
                   end
-                  # If all this fact's role values are played by the bound instances, it's the same fact
-                  !role_values_in_reading_order.zip(instances).detect{|rv, i| rv.instance != i }
-                }
-                unless fact
-                  fact = @constellation.Fact(:new, :fact_type => fact_type, :population => population)
-                  reading.role_sequence.all_role_ref.zip(instances).each do |rr, instance|
-                    @constellation.RoleValue(:fact => fact, :instance => instance, :role => rr.role, :population => population)
+                  progress = true
+                  next fact
+
+                # If we have one bare role (no literal or instance) played by an entity type,
+                # and the bound fact type participates in the identifier, we might now be able
+                # to create the entity instance.
+                when bare_roles.size == 1 &&
+                  (binding = bare_roles[0][:binding]) &&
+                  (e = binding.concept).is_a?(EntityType) &&
+                  e.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
+
+                  # Check this instance doesn't already exist already:
+                  identifying_binding = (phrases.select{|p| Hash === p}.map{|p|p[:binding]}-[binding])[0]
+                  identifying_instance = bound_instances[identifying_binding]
+
+                  debug :instance, "This clause associates a new #{binding.concept.name} with a #{identifying_binding.concept.name}#{identifying_instance ? " which exists" : ""}"
+
+                  identifying_role_ref = e.preferred_identifier.role_sequence.all_role_ref.detect { |rr|
+                      rr.role.fact_type == fact_type && rr.role.concept == identifying_binding.concept
+                    }
+                  unless identifying_role_ref
+                    debug :instance, "Failed to find a #{identifying_instance.concept.name}"
+                    next fact # We can't do this yet
                   end
-                  @constellation.Instance(:new, :concept => fact_type.entity_type, :fact => fact, :population => population)
+                  role_value = identifying_instance.all_role_value.detect do |rv|
+                    rv.fact.fact_type == identifying_role_ref.role.fact_type
+                  end
+                  if role_value
+                    instance = (role_value.fact.all_role_value.to_a-[role_value])[0].instance
+                    debug :instance, "Found existing instance (of #{instance.concept.name}) from a previous definition"
+                    bound_instances[binding] = instance
+                    progress = true
+                    next role_value.instance
+                  end
+
+                  pi_role_refs = e.preferred_identifier.role_sequence.all_role_ref
+                  # For each pi role, we have to find the fact clause, which contains the binding we need.
+                  # Then we have to create an instance of each fact
+                  identifiers =
+                    pi_role_refs.map do |rr|
+                      fact_a = facts.detect{|f| f.is_a?(Array) && f[1] == rr.role.fact_type}
+                      identifying_binding = fact_a[0].detect{|phrase| phrase.is_a?(Hash) && phrase[:binding] != binding}[:binding]
+                      identifying_instance = bound_instances[identifying_binding]
+
+                      [rr, fact_a, identifying_binding, identifying_instance]
+                    end
+                  if identifiers.detect{ |i| !i[3] }  # Not all required facts are bound yet
+                    debug :instance, "Can't go through with creating #{binding.concept.name}; not all the facts are in"
+                    next fact
+                  end
+
+                  debug :instance, "Going ahead with creating #{binding.concept.name} using #{identifiers.size} roles"
+                  instance = @constellation.Instance(:new, :concept => e, :population => population)
+                  bound_instances[binding] = instance
+                  identifiers.each do |rr, fact_a, identifying_binding, identifying_instance|
+                    # This reading provides the identifying literal for the EntityType e
+                    id_fact = @constellation.Fact(:new, :fact_type => rr.role.fact_type, :population => population)
+                    role = (rr.role.fact_type.all_role.to_a-[rr.role])[0]
+                    @constellation.RoleValue(:instance => instance, :fact => id_fact, :population => population, :role => role)
+                    @constellation.RoleValue(:instance => identifying_instance, :fact => id_fact, :role => rr.role, :population => population)
+                    true
+                  end
+
+                  progress = true
                 end
-                progress = true
-                next fact
-
-              # If we have one bare (no literal) role played by an entity type,
-              # and the bound fact type is the simple identifier,
-              # we can now create the entity instance.
-              when bare_roles.size == 1 &&
-                (binding = bare_roles[0][:binding]) &&
-                (e = binding.concept).is_a?(EntityType) &&
-                  (rrs = e.preferred_identifier.role_sequence.all_role_ref).size == 1 &&
-                  (identifying_role = rrs.single.role).fact_type == fact_type
-                debug :instance, "This clause provides the identifying value for a new entity"
-
-                # Any bindings other than the bare binding (which is for the entity being declared)
-                # must now have an entry in bound_instances[binding]. These instances play the
-                # identifying roles in the fact types
-                identifying_binding = (phrases.select{|p| Hash === p}.map{|p|p[:binding]}-[binding])[0]
-                identifying_instance = bound_instances[identifying_binding]
-
-                # REVISIT: Check this instance doesn't already exist
-                role_value = identifying_instance.all_role_value.detect do |rv|
-                  rv.fact.fact_type == identifying_role.fact_type
-                end
-                next role_value.instance if role_value
-
-                # This reading provides the identifying literal for the EntityType e
-                fact = @constellation.Fact(:new, :fact_type => fact_type, :population => population)
-                @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :role => identifying_role, :population => population)
-                instance = @constellation.Instance(:new, :concept => e, :population => population)
-                role = (fact_type.all_role.to_a-[identifying_role])[0]
-                @constellation.RoleValue(:instance => instance, :fact => fact, :population => population, :role => role)
-                bound_instances[binding] = instance
-                progress = true
+                fact
               end
-              fact
             end
           end
           incomplete = facts.select{|ft| !ft.is_a?(Instance) && !ft.is_a?(Fact)}
@@ -637,20 +681,22 @@ player, binding = @symbols.bind(names)
       def entity_identified_by_literal(population, concept, literal)
         # A literal that identifies an entity type means the entity type has only one identifying role
         # That role is played either by a value type, or by another similarly single-identified entity type
-        debug "Creating instance identified by '#{literal}' of EntityType #{concept.name}#{population.name.size>0 ? " in "+population.name.inspect : ''}" do
+        debug "Making EntityType #{concept.name} identified by '#{literal}' #{population.name.size>0 ? " in "+population.name.inspect : ''}" do
           identifying_role_refs = concept.preferred_identifier.role_sequence.all_role_ref
           raise "Single literal cannot satisfy multiple identifying roles for #{concept.name}" if identifying_role_refs.size > 1
           role = identifying_role_refs.single.role
           identifying_instance = instance_identified_by_literal(population, role.concept, literal)
+          existing_instance = nil
           instance_rv = identifying_instance.all_role_value.detect { |rv|
             next false unless rv.population == population         # Not this population
             next false unless rv.fact.fact_type == role.fact_type # Not this fact type
             other_role_value = (rv.fact.all_role_value-[rv])[0]
+            existing_instance = other_role_value.instance
             other_role_value.instance.concept == concept          # Is it this concept?
           }
           if instance_rv
-            instance = instance_rv.instance
-            debug "This entity already exists"
+            instance = existing_instance
+            debug :instance, "This #{concept.name} entity already exists"
           else
             fact = @constellation.Fact(:new, :fact_type => role.fact_type, :population => population)
             instance = @constellation.Instance(:new, :concept => concept, :population => population)
@@ -666,11 +712,11 @@ player, binding = @symbols.bind(names)
         if concept.is_a?(EntityType)
           entity_identified_by_literal(population, concept, literal)
         else
-          debug "Creating instance #{literal.inspect} of ValueType #{concept.name}#{population.name.size>0 ? " in "+population.name.inspect : ''}" do
+          debug :instance, "Making ValueType #{concept.name} #{literal.inspect} #{population.name.size>0 ? " in "+population.name.inspect : ''}" do
             instance = concept.all_instance.detect { |instance|
               instance.population == population && instance.value == literal
             }
-            debug "This value already exists" if instance
+            debug :instance, "This #{concept.name} value already exists" if instance
             unless instance
               instance = @constellation.Instance(:new, :concept => concept, :population => population, :value => literal)
             end

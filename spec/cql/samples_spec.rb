@@ -118,27 +118,37 @@ describe "Sample data" do
       end*", "
   end
 
+  def instance_data(populations)
+    populations = @vocabulary.constellation.Population
+    populations.keys.sort.map do |popname|
+      popvalue = populations[popname]
+      {
+        :instances => popvalue.all_instance.map { |i| instance_name(i) }.sort,
+        :facts => popvalue.all_fact.map { |fact| instance_name(fact) }.sort
+      }
+    end
+  end
+
   Samples.each do |c|
     source, expected = *Array(c)
     it "should handle #{source.inspect}" do
       @text = SamplePrefix+source
       @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
-
-      populations = @vocabulary.constellation.Population
-      result =
-        populations.keys.sort.map do |popname|
-          popvalue = populations[popname]
-          {
-            :instances => popvalue.all_instance.map { |i| instance_name(i) }.sort,
-            :facts => popvalue.all_fact.map { |fact| instance_name(fact) }.sort
-          }
-        end
+      result = instance_data(@vocabulary)
 
       if expected
-        result.should == expected
+        result[0].should == expected[0]
       else
-        puts "#{source}:\n\t#{result.inspect}"
+        pending "#{source}:\n\t#{result.inspect}"
       end
+    end
+
+    it "should de-duplicate #{source.inspect}" do
+      # Make sure you don't get anything duplicated
+      @text = SamplePrefix+source+source
+      @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+      result = instance_data(@vocabulary)
+      result[0].should == expected[0]
     end
   end
 end
