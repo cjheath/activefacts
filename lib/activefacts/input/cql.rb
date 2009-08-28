@@ -146,24 +146,6 @@ module ActiveFacts
             add_supertype(entity_type, supertype_name, !identification && supertype_name == supertypes[0], mapping_pragmas)
           end
 
-          # Use a two-pass algorithm for entity fact types...
-          # The first step is to find all role references and definitions in the clauses
-          # After bind_roles, each phrase in each clause is either:
-          # * a string, which is a linking word, or
-          # * the phrase hash augmented with a :binding=>Binding
-          @symbols = SymbolTable.new(@constellation, @vocabulary)
-          @symbols.bind_roles_in_clauses(clauses, identification ? identification[:roles] : nil)
-
-          # Next arrange the clauses according to what fact they belong to,
-          # then process each fact type using normal fact type processing.
-          # That way if we find a fact type here having none of the players being the
-          # entity type, we know it's an objectified fact type. The CQL syntax might make
-          # us come here with such a case when the fact type is a subtype of some entity type,
-          # such as occurs in the Metamodel with TypeInheritance.
-
-          # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
-          @symbols.allowed_forward = (ir = identification && identification[:roles]) ? ir.inject({}){|h, i| h[i[0]] = true; h} : {}
-
           # If we're using a common identification mode, find or create the necessary ValueTypes first:
           vt_name = vt = nil
           if identification && identification[:mode]
@@ -185,6 +167,24 @@ module ActiveFacts
             #  vt.value_restriction = value_restriction(ranges)
             #end
           end
+
+          # Use a two-pass algorithm for entity fact types...
+          # The first step is to find all role references and definitions in the clauses
+          # After bind_roles, each phrase in each clause is either:
+          # * a string, which is a linking word, or
+          # * the phrase hash augmented with a :binding=>Binding
+          @symbols = SymbolTable.new(@constellation, @vocabulary)
+          @symbols.bind_roles_in_clauses(clauses, identification ? identification[:roles] : nil)
+
+          # Next arrange the clauses according to what fact they belong to,
+          # then process each fact type using normal fact type processing.
+          # That way if we find a fact type here having none of the players being the
+          # entity type, we know it's an objectified fact type. The CQL syntax might make
+          # us come here with such a case when the fact type is a subtype of some entity type,
+          # such as occurs in the Metamodel with TypeInheritance.
+
+          # N.B. This doesn't allow forward identification by roles with adjectives (see the i[0]):
+          @symbols.allowed_forward = (ir = identification && identification[:roles]) ? ir.inject({}){|h, i| h[i[0]] = true; h} : {}
 
           identifying_fact_types = {}
           clauses_by_fact_type(clauses).each do |clauses_for_fact_type|

@@ -14,8 +14,6 @@ describe "Sample data" do
 
   CompanyName is written as String;
   Company is identified by its Name;
-
-  PersonName is written as Name;
   Person is identified by its Name where Person is called PersonName;
   Directorship is where
       Company is directed by Person;
