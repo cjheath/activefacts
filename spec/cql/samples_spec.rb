@@ -9,7 +9,7 @@ require 'activefacts/api/support'
 require 'activefacts/input/cql'
 
 describe "Sample data" do
-  Prefix = %q{
+  SamplePrefix = %q{
   vocabulary V;
 
   CompanyName is written as String;
@@ -123,7 +123,7 @@ describe "Sample data" do
   Samples.each do |c|
     source, expected = *Array(c)
     it "should handle #{source.inspect}" do
-      @text = Prefix+source
+      @text = SamplePrefix+source
       @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
 
       populations = @vocabulary.constellation.Population

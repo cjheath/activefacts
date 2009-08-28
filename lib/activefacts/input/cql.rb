@@ -409,7 +409,15 @@ player, binding = @symbols.bind(names)
         rs = @constellation.RoleSequence(:new)
         @constellation.RoleRef(rs, 0, :role => sub_role)
         @constellation.RoleRef(rs, 1, :role => super_role)
-        @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a subtype of {1}")
+        @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a kind of {1}")
+        @constellation.Reading(inheritance_fact, 1, :role_sequence => rs, :text => "{0} is a subtype of {1}")
+
+        rs2 = @constellation.RoleSequence(:new)
+        @constellation.RoleRef(rs2, 0, :role => super_role)
+        @constellation.RoleRef(rs2, 1, :role => sub_role)
+        #n = 'aeiouh'.include?(sub_role.concept.name.downcase[0]) ? 'n' : ''
+        @constellation.Reading(inheritance_fact, 2, :role_sequence => rs2, :text => "{0} is a {1}")
+        @constellation.Reading(inheritance_fact, 3, :role_sequence => rs2, :text => "{0} is an {1}")
 
         if identifying_supertype
           inheritance_fact.provides_identification = true
@@ -554,7 +562,7 @@ player, binding = @symbols.bind(names)
                 # Check that this fact doesn't already exist
                 fact = fact_type.all_fact.detect{|f|
                   # Get the role values of this fact in the order of the reading we just bound
-                  role_values_in_reading_order = !f.all_role_value.sort_by do |rv|
+                  role_values_in_reading_order = f.all_role_value.sort_by do |rv|
                     reading.role_sequence.all_role_ref.detect{|rr| rr.role == rv.role}.ordinal
                   end
                   # If all this fact's role values are played by the bound instances, it's the same fact
@@ -606,7 +614,22 @@ player, binding = @symbols.bind(names)
           end
           incomplete = facts.select{|ft| !ft.is_a?(Instance) && !ft.is_a?(Fact)}
           if incomplete.size > 0
-            raise "Fact type readings #{incomplete.inspect} contain too few identifying literals"
+            # Provide a readable description of the problem here, by showing each binding with no instance
+            missing_bindings = incomplete.map do |f|
+              phrases = f[0]
+              phrases.select{|p|
+                p.is_a?(Hash) and binding = p[:binding] and !bound_instances[binding]
+              }.map{|phrase| phrase[:binding]}
+            end.flatten.uniq
+            raise "Not enough facts are given to identify #{
+                missing_bindings.map do |b|
+                  [ b.leading_adjective, b.concept.name, b.trailing_adjective ].compact*" " +
+                  " (need #{b.concept.preferred_identifier.role_sequence.all_role_ref.map do |rr|
+                      [ rr.leading_adjective, rr.role.role_name || rr.role.concept.name, rr.trailing_adjective ].compact*" "
+                    end*", "
+                  })"
+                end*", "
+              }"
           end
         end
       end
@@ -1006,7 +1029,8 @@ player, binding = @symbols.bind(names)
                         if element =~ /\A\{([0-9]+)\}\Z/    # Must be a role player; need a matching binding
                           !phrase.is_a?(Hash) or
                             !(binding = phrase[:binding]) or
-                            (role_ref = reading_role_refs[$1.to_i]).role.concept != binding.concept or
+                            !(role_ref = reading_role_refs[$1.to_i]) or   # If we fail here, it's an error!
+                            role_ref.role.concept != binding.concept or
 =begin
                             # REVISIT: This loose matching fails on the Metamodel with RingConstraints.
                             # Need "best match" semantics, or some way to know that these adjectives are "extra" to the readings.
@@ -1448,21 +1472,6 @@ player, binding = @symbols.bind(names)
           disallow_loose_binding = allowed_forwards.inject({}) { |h, v| h[v] = true; h }
           phrases_list.each do |phrases|
             debug :bind, "Binding phrases"
-
-            if (phrases.size == 1 && phrases[0][:subtype])
-              # REVISIT: Handle a subtype reading here
-              subtype_name = phrases[0][:subtype]
-              supertype_name = phrases[0][:supertype]
-              subtype, subtype_binding = bind(subtype_name)
-              supertype, supertype_binding = bind(supertype_name)
-              phrases.replace([
-                  "!SUBTYPE!",
-                  {:word => subtype, :binding => subtype_binding },
-                  {:word => supertype, :binding => supertype_binding }
-                ]
-              )
-              next
-            end
 
             phrase_numbers_used_speculatively = []
             disallow_loose_binding_this_reading = disallow_loose_binding.clone

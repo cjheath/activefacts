@@ -298,7 +298,7 @@ for each MotorPolicy exactly one of these holds:
 	MotorFleetPolicy is a subtype of MotorPolicy;
 Party is a company
 	if and only if
-	Company is a kind of Party and Company has contact-Person;
+	Party is a Company and Company has contact-Person;
 each ContactMethods occurs at least one time in
 	ContactMethods includes mobile-Phone,
 	ContactMethods includes home-Phone,
