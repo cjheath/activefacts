@@ -66,6 +66,7 @@ FactType has ContextNote,
 	ContextNote applies to at most one FactType;
 
 Instance is identified by its Id;
+Instance objectifies at most one Fact;
 Instance has at most one Value;
 
 Person is identified by its Name;
@@ -249,6 +250,9 @@ for each ContextNote exactly one of these holds:
 	Concept has ContextNote,
 	FactType has ContextNote,
 	Constraint has ContextNote;
+for each Instance at most one of these holds:
+	Instance has Value,
+	Instance objectifies Fact;
 Instance plays RoleValue and Instance is of Concept
 	if and only if
 	RoleValue is of Role and FactType has Ordinal place played by Concept;
@@ -271,6 +275,8 @@ ValueType has Scale
 each combination EntityType, TypeInheritance occurs at most one time in
 	EntityType is subtype of super-EntityType,
 	TypeInheritance provides identification;
+each Fact occurs at most one time in
+	Instance objectifies Fact;
 each FactType occurs at least one time in
 	FactType has Ordinal place played by Concept;
 each Join occurs at least one time in

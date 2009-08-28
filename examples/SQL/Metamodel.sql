@@ -222,6 +222,8 @@ CREATE TABLE Instance (
 	ConceptName                             varchar(64) NOT NULL,
 	-- Instance is of Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
 	ConceptVocabularyName                   varchar(64) NOT NULL,
+	-- maybe Instance objectifies Fact and Fact has FactId,
+	FactId                                  int NULL,
 	-- Instance has InstanceId,
 	InstanceId                              int IDENTITY NOT NULL,
 	-- Population includes Instance and Population has Name,
@@ -231,8 +233,17 @@ CREATE TABLE Instance (
 	-- maybe Instance has Value,
 	Value                                   varchar(256) NULL,
 	PRIMARY KEY(InstanceId),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName)
+	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
+	FOREIGN KEY (FactId) REFERENCES Fact (FactId)
 )
+GO
+
+CREATE VIEW dbo.Instance_FactId (FactId) WITH SCHEMABINDING AS
+	SELECT FactId FROM dbo.Instance
+	WHERE	FactId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
 CREATE TABLE [Join] (

@@ -164,6 +164,7 @@ module ActiveFacts
     class Instance
       identified_by :instance_id
       has_one :concept, :mandatory                # See Concept.all_instance
+      one_to_one :fact                            # See Fact.instance
       one_to_one :instance_id, :mandatory         # See InstanceId.instance
       has_one :population, :mandatory             # See Population.all_instance
       has_one :value                              # See Value.all_instance

@@ -312,7 +312,7 @@ module ActiveFacts
       # REVISIT: This should probably be changed to be the fact role sequence.
       #
       # define_role_names here is false (use defined names), true (define names) or nil (neither)
-      def expand(frequency_constraints = [], define_role_names = false)
+      def expand(frequency_constraints = [], define_role_names = false, literals = [])
         expanded = "#{text}"
         role_refs = role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
         (0...role_refs.size).each{|i|
@@ -339,13 +339,16 @@ module ActiveFacts
                 else
                   player_name = player.name
                 end
+                literal = literals[i]
                 [
                   fc ? fc : nil,
                   la,
                   define_role_names == false && role_name ? role_name : player_name,
                   ta,
                   define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil,
-                  (vr = role.role_value_restriction) ? vr.describe : nil
+                  # Can't have both a literal and a restriction, but we don't enforce that here:
+                  (vr = role.role_value_restriction) ? vr.describe : nil,
+                  literal ? literal : nil
                 ].compact*" "
             }
         }

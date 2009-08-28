@@ -23,6 +23,12 @@ module ActiveFacts
           :irreflexive => [:symmetric]
         }
 
+      def initialize(file, filename = "stdin")
+        @file = file
+        @filename = filename
+      end
+
+    public
       # Open the specified file and read it:
       def self.readfile(filename)
         File.open(filename) {|file|
@@ -35,15 +41,14 @@ module ActiveFacts
 
       # Read the specified input stream:
       def self.read(file, filename = "stdin")
-        CQL.new(file.read, filename).read
+        readstring(file.read, filename)
       end 
 
-      def initialize(file, filename = "stdin")
-        @file = file
-        @filename = filename
-      end
+      # Read the specified input stream:
+      def self.readstring(str, filename = "string")
+        CQL.new(str, filename).read
+      end 
 
-    public
       # Read the input, returning a new Vocabulary:
       def read  #:nodoc:
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
@@ -480,7 +485,7 @@ player, binding = @symbols.bind(names)
           end
 
           # The fact type has a name iff it's objectified as an entity type
-          #puts "============= Creating entity #{name} to nominalize fact type #{fact_type.default_reading} ======================" if name
+          #puts "============= Creating entity type #{name} to nominalize fact type #{fact_type.default_reading} ======================" if name
           fact_type.entity_type = @constellation.EntityType(@vocabulary, name) if name
 
           # Add the identifying PresenceConstraint for this fact type:
@@ -508,10 +513,18 @@ player, binding = @symbols.bind(names)
               # Every bound word (term) in the phrases must have a literal
               # OR be bound to an entity type identified by the phrases
               # Any clause that has one binding and no other word is a value instance or simply-identified entity type
+              phrases.map! do |phrase|
+                next phrase unless l = phrase[:literal]
+                binding = phrase[:binding]
+                bound_instances[binding] =
+                  instance_identified_by_literal(population, binding.concept, l)
+                phrase
+              end
+
               if phrases.size == 1 && Hash === (phrase = phrases[0])
                 binding = phrase[:binding]
-                i = instance_identified_by_literal(population, binding.concept, phrase[:literal])
-                bound_instances[binding] = i
+                bound_instances[binding] =
+                  instance_identified_by_literal(population, binding.concept, phrase[:literal])
               else
                 [phrases, *bind_fact_reading(nil, qualifiers, phrases)]
               end
@@ -520,48 +533,78 @@ player, binding = @symbols.bind(names)
           # Because the fact types may include forward references, we must process the list repeatedly
           # until we make no further progress. Any remaining
           progress = true
+          pass = 0
           while progress
             progress = false
+            #debug "Pass #{pass += 1}"
             facts.map! do |fact|
               next fact unless fact.is_a?(Array)
               phrases, fact_type, reading = *fact
 
               # This is a fact type we bound; see if we can create the fact instance yet
-              bare_roles = phrases.select{|w| w.is_a?(Hash) && !w[:literal]}
+
+              bare_roles = phrases.select{|w| w.is_a?(Hash) && !w[:literal] && !bound_instances[w[:binding]]}
               # REVISIT: Bare bindings might be bound to instances we created
-              debugger
-              if bare_roles.size == 0
-                # All bindings in this fact type contain literals; create the fact type
+
+              case
+              when bare_roles.size == 0
+                debug :instance, "All bindings in this fact type contain instances; create the fact type"
+                instances = phrases.select{|p| p.is_a?(Hash)}.map{|p| bound_instances[p[:binding]]}
+
+                # Check that this fact doesn't already exist
+                fact = fact_type.all_fact.detect{|f|
+                  # Get the role values of this fact in the order of the reading we just bound
+                  role_values_in_reading_order = !f.all_role_value.sort_by do |rv|
+                    reading.role_sequence.all_role_ref.detect{|rr| rr.role == rv.role}.ordinal
+                  end
+                  # If all this fact's role values are played by the bound instances, it's the same fact
+                  !role_values_in_reading_order.zip(instances).detect{|rv, i| rv.instance != i }
+                }
+                unless fact
+                  fact = @constellation.Fact(:new, :fact_type => fact_type, :population => population)
+                  reading.role_sequence.all_role_ref.zip(instances).each do |rr, instance|
+                    @constellation.RoleValue(:fact => fact, :instance => instance, :role => rr.role, :population => population)
+                  end
+                  @constellation.Instance(:new, :concept => fact_type.entity_type, :fact => fact, :population => population)
+                end
                 progress = true
-              elsif bare_roles.size == 1 and
-                binding = bare_roles[0][:binding]
+                next fact
+
+              # If we have one bare (no literal) role played by an entity type,
+              # and the bound fact type is the simple identifier,
+              # we can now create the entity instance.
+              when bare_roles.size == 1 &&
+                (binding = bare_roles[0][:binding]) &&
                 (e = binding.concept).is_a?(EntityType) &&
                   (rrs = e.preferred_identifier.role_sequence.all_role_ref).size == 1 &&
                   (identifying_role = rrs.single.role).fact_type == fact_type
+                debug :instance, "This clause provides the identifying value for a new entity"
+
+                # Any bindings other than the bare binding (which is for the entity being declared)
+                # must now have an entry in bound_instances[binding]. These instances play the
+                # identifying roles in the fact types
+                identifying_binding = (phrases.select{|p| Hash === p}.map{|p|p[:binding]}-[binding])[0]
+                identifying_instance = bound_instances[identifying_binding]
+
+                # REVISIT: Check this instance doesn't already exist
+                role_value = identifying_instance.all_role_value.detect do |rv|
+                  rv.fact.fact_type == identifying_role.fact_type
+                end
+                next role_value.instance if role_value
+
                 # This reading provides the identifying literal for the EntityType e
-                raise "REVISIT: entity identified by fact instance is incomplete"
-=begin
-                # REVISIT: Check these instances don't already exist
-                identifying_instance = instance_identified_by_literal(population, ...) # REVISIT: Get the identifying_instance
-                @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :population => population, :role => identifying_role)
-                instance = @constellation.Instance(:new, :concept => e, :population => population)
                 fact = @constellation.Fact(:new, :fact_type => fact_type, :population => population)
+                @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :role => identifying_role, :population => population)
+                instance = @constellation.Instance(:new, :concept => e, :population => population)
+                role = (fact_type.all_role.to_a-[identifying_role])[0]
                 @constellation.RoleValue(:instance => instance, :fact => fact, :population => population, :role => role)
-=end
-                progress = true
                 bound_instances[binding] = instance
-              elsif !bare_roles.detect{|b| !bound_instances[b[:binding]] }
-                debugger
-                # All bare bindings are to objects that are now bound
                 progress = true
-              else
-                p bare_roles
-                raise "REVISIT: Not yet implemented; forward reference in facts"
               end
               fact
             end
           end
-          incomplete = facts.select{|ft| !ft.is_a?(Instance) && ft.is_a?(Fact)}
+          incomplete = facts.select{|ft| !ft.is_a?(Instance) && !ft.is_a?(Fact)}
           if incomplete.size > 0
             raise "Fact type readings #{incomplete.inspect} contain too few identifying literals"
           end
@@ -576,14 +619,16 @@ player, binding = @symbols.bind(names)
           raise "Single literal cannot satisfy multiple identifying roles for #{concept.name}" if identifying_role_refs.size > 1
           role = identifying_role_refs.single.role
           identifying_instance = instance_identified_by_literal(population, role.concept, literal)
-          instance = identifying_instance.all_role_value.detect { |rv|
+          instance_rv = identifying_instance.all_role_value.detect { |rv|
             next false unless rv.population == population         # Not this population
             next false unless rv.fact.fact_type == role.fact_type # Not this fact type
             other_role_value = (rv.fact.all_role_value-[rv])[0]
             other_role_value.instance.concept == concept          # Is it this concept?
           }
-          debug "This entity already exists" if instance
-          unless instance
+          if instance_rv
+            instance = instance_rv.instance
+            debug "This entity already exists"
+          else
             fact = @constellation.Fact(:new, :fact_type => role.fact_type, :population => population)
             instance = @constellation.Instance(:new, :concept => concept, :population => population)
             # The identifying fact type has two roles; create both role instances:

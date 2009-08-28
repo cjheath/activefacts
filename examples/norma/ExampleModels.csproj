@@ -41,6 +41,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Blog.orm</DependentUpon>
     </Compile>
+    <Compile Include="Booking._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Booking.orm</DependentUpon>
+    </Compile>
     <Compile Include="CompanyDirectorEmployee._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
@@ -192,6 +196,10 @@
   <ItemGroup Condition="Exists('Units.orm')">
   </ItemGroup>
   <ItemGroup>
+    <None Include="Booking.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Booking._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="CompanyDirectorEmployee.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirectorEmployee._ORMCustomToolReport.cs</LastGenOutput>
@@ -733,6 +741,23 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('Richmond-ORMModel-v0.9.orm')">
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Booking.orm')">
+    <None Include="Booking.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Booking.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Booking.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Booking.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Booking.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Booking.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
