@@ -82,9 +82,20 @@ module ActiveFacts
     # set (exclusion, mandatory exclusion, complex equality) constraint
     rule set_constraint
       s 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
-      readings_list s
-      c:context? ';' s
-      { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value  ] ]; end }
+	readings_list s
+	c:context? ';' s
+	{ def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value  ] ]; end }
+      /
+      s r1:readings s or s r2:readings exclusion:( but s not s both s )? c:context? ';' s
+	{ def value;
+	    [ nil, [ :constraint, :set,
+	      nil,  # No roles names, rely on the join
+	      exclusion.text_value.empty? ? [1, 1] : [1,nil],
+	      [r1.value, r2.value],
+	      c.empty? ? nil : c.value
+	    ] ];
+	  end
+	}
     end
 
     rule subset_constraint
