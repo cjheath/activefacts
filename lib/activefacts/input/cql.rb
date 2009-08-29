@@ -406,6 +406,7 @@ player, binding = @symbols.bind(names)
         # Create a reading:
         sub_role = @constellation.Role(inheritance_fact, 0, :concept => entity_type)
         super_role = @constellation.Role(inheritance_fact, 1, :concept => supertype)
+
         rs = @constellation.RoleSequence(:new)
         @constellation.RoleRef(rs, 0, :role => sub_role)
         @constellation.RoleRef(rs, 1, :role => super_role)
@@ -415,9 +416,9 @@ player, binding = @symbols.bind(names)
         rs2 = @constellation.RoleSequence(:new)
         @constellation.RoleRef(rs2, 0, :role => super_role)
         @constellation.RoleRef(rs2, 1, :role => sub_role)
-        #n = 'aeiouh'.include?(sub_role.concept.name.downcase[0]) ? 'n' : ''
-        @constellation.Reading(inheritance_fact, 2, :role_sequence => rs2, :text => "{0} is a {1}")
-        @constellation.Reading(inheritance_fact, 3, :role_sequence => rs2, :text => "{0} is an {1}")
+        n = 'aeiouh'.include?(sub_role.concept.name.downcase[0]) ? 1 : 0
+        @constellation.Reading(inheritance_fact, 2+n, :role_sequence => rs2, :text => "{0} is a {1}")
+        @constellation.Reading(inheritance_fact, 3-n, :role_sequence => rs2, :text => "{0} is an {1}")
 
         if identifying_supertype
           inheritance_fact.provides_identification = true

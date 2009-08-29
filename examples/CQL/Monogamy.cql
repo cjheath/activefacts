@@ -21,6 +21,4 @@ Girl (as Girlfriend) is going out with at most one Boy (as Boyfriend) [symmetric
 /*
  * Constraints:
  */
-for each Person exactly one of these holds:
-	Girl is a subtype of Person,
-	Boy is a subtype of Person;
+either Person is a Girl or Person is a Boy but not both;

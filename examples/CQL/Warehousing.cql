@@ -88,12 +88,8 @@ DirectOrderMatch is where
 /*
  * Constraints:
  */
-for each DispatchItem exactly one of these holds:
-	DispatchItem is for TransferRequest,
-	DispatchItem is for SalesOrderItem;
-for each ReceivedItem exactly one of these holds:
-	ReceivedItem is for PurchaseOrderItem,
-	ReceivedItem is for TransferRequest;
+either DispatchItem is for TransferRequest or DispatchItem is for SalesOrderItem but not both;
+either ReceivedItem is for PurchaseOrderItem or ReceivedItem is for TransferRequest but not both;
 PurchaseOrderItem matches SalesOrderItem
 	only if PurchaseOrderItem is for Product and SalesOrderItem is for Product;
 each Bin occurs at most one time in

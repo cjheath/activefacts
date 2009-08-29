@@ -25,9 +25,7 @@ Competitor has one FamilyName;
 /*
  * Constraints:
  */
-for each Entrant exactly one of these holds:
-	Competitor is a subtype of Entrant,
-	Team is a subtype of Entrant;
+either Entrant is a Competitor or Entrant is a Team but not both;
 each combination FamilyName, GivenName occurs at most one time in
 	Competitor has FamilyName,
 	Entrant has GivenName;

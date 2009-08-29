@@ -239,35 +239,25 @@ ParamValue is where
 /*
  * Constraints:
  */
-for each Concept exactly one of these holds:
-	EntityType is a subtype of Concept,
-	ValueType is a subtype of Concept;
+either Concept is an EntityType or Concept is a ValueType but not both;
 for each Constraint exactly one of these holds:
-	PresenceConstraint is a subtype of Constraint,
-	SetConstraint is a subtype of Constraint,
-	RingConstraint is a subtype of Constraint;
+	PresenceConstraint is a kind of Constraint,
+	SetConstraint is a kind of Constraint,
+	RingConstraint is a kind of Constraint;
 for each ContextNote exactly one of these holds:
 	Concept has ContextNote,
 	FactType has ContextNote,
 	Constraint has ContextNote;
-for each Instance at most one of these holds:
-	Instance has Value,
-	Instance objectifies Fact;
+either Instance has Value or Instance objectifies Fact;
 Instance plays RoleValue and Instance is of Concept
 	if and only if
 	RoleValue is of Role and FactType has Ordinal place played by Concept;
 RoleValue fulfils Fact and Fact is of FactType
 	if and only if
 	RoleValue is of Role and FactType has Ordinal place played by Concept;
-for each SetComparisonConstraint exactly one of these holds:
-	SetExclusionConstraint is a subtype of SetComparisonConstraint,
-	SetEqualityConstraint is a subtype of SetComparisonConstraint;
-for each SetConstraint exactly one of these holds:
-	SetComparisonConstraint is a subtype of SetConstraint,
-	SubsetConstraint is a subtype of SetConstraint;
-for each Unit exactly one of these holds:
-	Unit is fundamental,
-	that Unit is derived from some base-Unit;
+either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConstraint is a SetEqualityConstraint but not both;
+either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
+either Unit is fundamental or that Unit is derived from some base-Unit but not both;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency restricted to {1..};
 ValueType has Scale

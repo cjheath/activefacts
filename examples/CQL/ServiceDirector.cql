@@ -206,9 +206,7 @@ DataStoreService (as DataStoreServiceSubscription) has one Subscription;
 /*
  * Constraints:
  */
-for each Company exactly one of these holds:
-	Company is client,
-	Company is vendor;
+either Company is client or Company is vendor but not both;
 for each Credential exactly one of these holds:
 	DataStore requires Credential,
 	DataStoreService requires Credential,
@@ -221,9 +219,7 @@ Network is ip_subnet
 Network has Ending-IP
 	if and only if
 	Network is ip_range;
-for each Network at most one of these holds:
-	Network is ip_single,
-	Network has Ending-IP;
+either Network is ip_single or Network has Ending-IP;
 for each Network exactly one of these holds:
 	HostSystem uses Network,
 	Company has Origin-Network,
@@ -235,9 +231,7 @@ for each Network exactly one of these holds:
 Switch is on Private-Network
 	if and only if
 	DataStore has Legacy-Switch;
-for each Switch exactly one of these holds:
-	HostSystem runs Switch,
-	DataStore has Legacy-Switch;
+either HostSystem runs Switch or DataStore has Legacy-Switch but not both;
 Client has default-DataStore
 	only if DataStore belongs to Client;
 Network uses Domain-Name

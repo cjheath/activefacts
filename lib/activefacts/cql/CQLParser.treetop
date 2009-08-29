@@ -86,11 +86,11 @@ module ActiveFacts
 	c:context? ';' s
 	{ def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value  ] ]; end }
       /
-      s r1:readings s or s r2:readings exclusion:( but s not s both s )? c:context? ';' s
+      s either? s r1:readings s or s r2:readings exclusion:( but s not s both s )? c:context? ';' s
 	{ def value;
 	    [ nil, [ :constraint, :set,
 	      nil,  # No roles names, rely on the join
-	      exclusion.text_value.empty? ? [1, 1] : [1,nil],
+	      exclusion.text_value.empty? ? [nil, 1] : [1,1],
 	      [r1.value, r2.value],
 	      c.empty? ? nil : c.value
 	    ] ];

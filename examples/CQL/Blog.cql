@@ -50,6 +50,4 @@ Paragraph has Comment,
 /*
  * Constraints:
  */
-for each Content exactly one of these holds:
-	Content provides text of Comment,
-	Content is of Paragraph;
+either Content provides text of Comment or Content is of Paragraph but not both;

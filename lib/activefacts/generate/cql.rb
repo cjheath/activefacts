@@ -372,22 +372,42 @@ module ActiveFacts
           return
         end
 
-        mode = c.is_mandatory ? "exactly one" : "at most one"
-        puts "for each #{players.map{|p| p.name}*", "} #{mode} of these holds:\n\t" +
-          (scrs.map do |scr|
-            constrained_roles = scr.role_sequence.all_role_ref.map{|rr| rr.role }
-            fact_types = constrained_roles.map{|r| r.fact_type }.uniq
+        if scrs.size == 2
+          puts "either " +
+            ( scrs.map do |scr|
+                constrained_roles = scr.role_sequence.all_role_ref.map{|rr| rr.role }
+                fact_types = constrained_roles.map{|r| r.fact_type }.uniq
 
-            fact_types.map do |fact_type|
-              # REVISIT: future: Use "THAT" and "SOME" only when:
-              # - the role player occurs twice in the reading, or
-              # - is a subclass of the constrained concept, or
-              reading = fact_type.preferred_reading
-              expand_constrained(reading, constrained_roles, players, players_differ)
-            end * " and "
+                fact_types.map do |fact_type|
+                  # Choose a reading that starts with the input role (constrained role if none)
+                  reading = fact_type.all_reading.sort_by{|r| r.ordinal}.detect do |r|
+                      first_reading_role = r.role_sequence.all_role_ref.detect{|rr| rr.ordinal == 0}.role
+                      constrained_roles.include?(first_reading_role)
+                    end
+                  reading ||= fact_type.preferred_reading
+                  expand_constrained(reading, constrained_roles, players, players_differ)
+                end * " and "
+              end*" or "
+            ) +
+            (c.is_mandatory ? " but not both;" : ";")
+        else
+          mode = c.is_mandatory ? "exactly one" : "at most one"
+          puts "for each #{players.map{|p| p.name}*", "} #{mode} of these holds:\n\t" +
+            (scrs.map do |scr|
+              constrained_roles = scr.role_sequence.all_role_ref.map{|rr| rr.role }
+              fact_types = constrained_roles.map{|r| r.fact_type }.uniq
 
-          end*",\n\t"
-          )+';'
+              fact_types.map do |fact_type|
+                # REVISIT: future: Use "THAT" and "SOME" only when:
+                # - the role player occurs twice in the reading, or
+                # - is a subclass of the constrained concept, or
+                reading = fact_type.preferred_reading
+                expand_constrained(reading, constrained_roles, players, players_differ)
+              end * " and "
+
+            end*",\n\t"
+            )+';'
+        end
       end
 
       # Expand this reading using (in)definite articles where needed

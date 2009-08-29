@@ -266,16 +266,17 @@ module ActiveFacts
 
           # Create readings, so constraints can be verbalised for example:
           rs = @constellation.RoleSequence(:new)
-          @constellation.RoleRef(rs, 0).role = subtype_role
-          @constellation.RoleRef(rs, 1).role = supertype_role
+          @constellation.RoleRef(rs, 0, :role => subtype_role)
+          @constellation.RoleRef(rs, 1, :role => supertype_role)
+          @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a kind of {1}")
+          @constellation.Reading(inheritance_fact, 1, :role_sequence => rs, :text => "{0} is a subtype of {1}")
 
-#          reading = @constellation.Reading(inheritance_fact, 0)
-#          reading.text = "{1} is {0}"
-#          reading.role_sequence = rs
-
-          reading = @constellation.Reading(inheritance_fact, 0)
-          reading.text = "{0} is a subtype of {1}"
-          reading.role_sequence = rs
+          rs2 = @constellation.RoleSequence(:new)
+          @constellation.RoleRef(rs2, 0, :role => supertype_role)
+          @constellation.RoleRef(rs2, 1, :role => subtype_role)
+          n = 'aeiouh'.include?(subtype_role.concept.name.downcase[0]) ? 1 : 0
+          @constellation.Reading(inheritance_fact, 2+n, :role_sequence => rs2, :text => "{0} is a {1}")
+          @constellation.Reading(inheritance_fact, 3-n, :role_sequence => rs2, :text => "{0} is an {1}")
 
           # The required uniqueness constraints are already present in the NORMA file, don't duplicate them
 =begin

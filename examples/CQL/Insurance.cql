@@ -293,9 +293,7 @@ MotorFleetPolicy is a kind of MotorPolicy;
 /*
  * Constraints:
  */
-for each MotorPolicy exactly one of these holds:
-	SingleMotorPolicy is a subtype of MotorPolicy,
-	MotorFleetPolicy is a subtype of MotorPolicy;
+either MotorPolicy is a SingleMotorPolicy or MotorPolicy is a MotorFleetPolicy but not both;
 Party is a company
 	if and only if
 	Party is a Company and Company has contact-Person;

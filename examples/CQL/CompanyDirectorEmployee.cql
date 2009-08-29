@@ -48,6 +48,4 @@ Manager is ceo;
 /*
  * Constraints:
  */
-for each Employee exactly one of these holds:
-	that Employee is ceo,
-	that Employee is supervised by some Manager;
+either that Employee is ceo or that Employee is supervised by some Manager but not both;
