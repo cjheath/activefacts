@@ -1,9 +1,9 @@
 CREATE TABLE Entrant (
-	-- maybe Competitor is a subtype of Entrant and Competitor has FamilyName,
+	-- maybe Competitor is a kind of Entrant and Competitor has FamilyName,
 	CompetitorFamilyName                    varchar NULL,
 	-- Entrant has EntrantID,
 	EntrantID                               int IDENTITY NOT NULL,
-	-- maybe Team is a subtype of Entrant and Team has TeamID,
+	-- maybe Team is a kind of Entrant and Team has TeamID,
 	TeamID                                  int NULL,
 	PRIMARY KEY(EntrantID)
 )

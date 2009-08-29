@@ -10,7 +10,7 @@ GO
 CREATE TABLE VehicleIncident (
 	-- maybe VehicleIncident occured while Driver was in charge and Driver has DriverName,
 	DriverName                              varchar NULL,
-	-- VehicleIncident is a subtype of Incident and Claim has ClaimID,
+	-- VehicleIncident is a kind of Incident and Claim has ClaimID,
 	IncidentID                              int IDENTITY NOT NULL,
 	PRIMARY KEY(IncidentID),
 	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID)
