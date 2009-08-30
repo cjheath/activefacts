@@ -70,7 +70,7 @@ module ActiveFacts
 	  unit_coefficient units s o:unit_offset?
 	)
         q:(approximately / ephemeral)? s
-	';'
+	';' s
 	{ def value
 	    r = { :coefficient => u.unit_coefficient.value,
 		  :offset => u.o.text_value.empty? ? 0 : u.unit_offset.value,
@@ -80,7 +80,7 @@ module ActiveFacts
 	    r[:plural] = u.plural.p.text_value unless u.plural.text_value.empty?
 	    r[:approximately] = true if q.text_value == 'approximately' || !u.a.text_value.empty?
 	    r[:ephemeral] = true if q.text_value == 'ephemeral'
-	    r
+	    [ nil, [ :unit, r ] ]
 	  end
 	}
       end
@@ -119,7 +119,7 @@ module ActiveFacts
       rule unit
         unit_name:id pow:('^' '-'? [0-9])?
 	{ def value
-	    [unit_name.text_value, Integer(pow.text_value[1..-1])]
+	    [unit_name.text_value, pow.text_value.empty? ? 1 : Integer(pow.text_value[1..-1])]
 	  end
 	  def inverse
 	    a = value

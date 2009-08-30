@@ -55,8 +55,12 @@ module ActiveFacts
             entity_type(name, supertypes, value)
           when :fact_type
             f = fact_type(name, value)
+          when :unit
+            ast
           when :constraint
             ast
+          else
+            raise "CQL: internal error, unknown definition kind"
           end
         end
       end

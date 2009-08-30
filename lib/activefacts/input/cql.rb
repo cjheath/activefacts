@@ -59,8 +59,8 @@ module ActiveFacts
         # parse_all returns an array of the block's non-nil return values.
         result = @parser.parse_all(@file, :definition) do |node|
             begin
-              kind, *value = @parser.definition(node)
-              #print "Parsed '#{node.text_value}'"
+              kind, *value = d = @parser.definition(node)
+              #print "Parsed '#{node.text_value}' (#{kind.inspect})"
               #print " to "; p value
               raise "Definition of #{kind} must be in a vocabulary" if kind != :vocabulary and !@vocabulary
               case kind
@@ -76,6 +76,8 @@ module ActiveFacts
                 constraint *value
               when :fact
                 fact *value
+              when :unit
+                unit *value
               else
                 print "="*20+" unhandled declaration type: "; p kind, value
               end
@@ -447,6 +449,50 @@ player, binding = @symbols.bind(names)
         pc2.min_frequency = 0
         pc2.max_frequency = 1
         pc2.is_preferred_identifier = inheritance_fact.provides_identification
+      end
+
+      def unit params
+        singular = params[:singular]
+        plural = params[:plural]
+        base_units = *params[:base]
+        denominator = params[:coefficient][:denominator]
+        numerator = params[:coefficient][:numerator]
+        offset = params[:offset]
+        approximately = params[:approximately]
+        ephemeral = params[:ephemeral]
+
+        if (numerator.to_f / denominator.to_i != 1.0)
+          coefficient = @constellation.Coefficient(
+              :numerator => numerator.to_f,
+              :denominator => denominator.to_i,
+              :is_precise => !approximately
+            )
+        else
+          coefficient = nil
+        end
+        offset = offset.to_f
+        offset = nil if offset == 0
+        debug :units, "Defining new unit #{singular}#{plural ? "/"+plural : ""}" do
+          debug :units, "Coefficient is #{coefficient.numerator}#{coefficient.denominator != 1 ? "/#{coefficient.denominator}" : ""} #{coefficient.is_precise ? "exactly" : "approximately"}" if coefficient
+          debug :units, "Offset is #{offset}" if offset
+          raise "Redefinition of unit #{singular}" if @constellation.Unit.values.detect{|u| u.name == singular}
+          raise "Redefinition of unit #{plural}" if @constellation.Unit.values.detect{|u| u.name == plural}
+          unit = @constellation.Unit(:new,
+              :name => singular,
+              # :plural => plural,
+              :coefficient => coefficient,
+              :offset => offset,
+              :is_fundamental => base_units.empty?,
+              #:is_ephemeral => ephemeral,
+              :vocabulary => @vocabulary
+            )
+          base_units.each do |base_unit, exponent|
+            base = @constellation.Unit.values.detect{|u| u.name == base_unit}
+            debug :units, "Base unit #{base_unit}^#{exponent} #{base ? "" : "(implicitly fundamental)"}"
+            base ||= @constellation.Unit(:new, :name => base_unit, :is_fundamental => true, :vocabulary => @vocabulary)
+            @constellation.Derivation(:derived_unit => unit, :base_unit => base, :exponent => exponent)
+          end
+        end
       end
 
       # If one of the words is the name of the entity type, and the other
