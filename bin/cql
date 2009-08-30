@@ -9,6 +9,16 @@ require 'activefacts'
 require 'activefacts/cql/parser'
 require 'readline'
 
+if ENV['DEBUG']
+  begin
+    require 'ruby-debug'
+    debugger if debug :exception
+  rescue LoadError
+    # Ok, no debugger, tough luck.
+  end
+end
+true # Ok, got the stack set up, continue to the fault
+
 puts "This is a stub for the CQL interactive commandline. At the moment it only parses CQL and shows the parse trees."
 
 parser = ActiveFacts::CQLParser.new
