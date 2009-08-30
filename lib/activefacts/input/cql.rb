@@ -454,7 +454,7 @@ player, binding = @symbols.bind(names)
       def unit params
         singular = params[:singular]
         plural = params[:plural]
-        base_units = *params[:base]
+        base_units = params[:base]
         denominator = params[:coefficient][:denominator]
         numerator = params[:coefficient][:numerator]
         offset = params[:offset]

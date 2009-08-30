@@ -123,7 +123,7 @@ module ActiveFacts
       end
 
       rule exponent
-        ( [Ee] '-'? [0-9]+ )
+        ( [Ee] [-+]? [0-9]+ )
       end
 
       rule hexnumber

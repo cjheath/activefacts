@@ -12,7 +12,7 @@ module ActiveFacts
         written_as
         base:id s
         value_type_parameters
-        value_type_unit
+        units
         r:restriction?
 	mapping_pragmas
         s ';' s
@@ -22,7 +22,7 @@ module ActiveFacts
               :value_type,
               base.value,
               value_type_parameters.values,
-              value_type_unit.unit_name,
+              units.value,
               (!r.empty? ? r.ranges : []),
 	      mapping_pragmas.value
             ]
@@ -52,13 +52,6 @@ module ActiveFacts
         }
       end
 
-      rule value_type_unit
-        !restricted units s
-          { def unit_name; units.text_value; end }
-        / s
-          { def unit_name; nil; end }
-      end
-
       rule unit_definition
 	u:(
 	  unit_coefficient units s o:unit_offset?
@@ -73,7 +66,7 @@ module ActiveFacts
 	';' s
 	{ def value
 	    r = { :coefficient => u.unit_coefficient.value,
-		  :offset => u.o.text_value.empty? ? 0 : u.unit_offset.value,
+		  :offset => u.o.text_value.empty? ? 0 : u.o.value,
 		  :base => u.units.value,
 		  :singular => u.singular.text_value,
 		}
@@ -104,10 +97,14 @@ module ActiveFacts
       end
 
       rule units
-        unit tail:(s !non_unit unit)* div:(s '/' s unit tail:(s !non_unit unit)*)?
+	'' u:(!non_unit unit s tail:(!non_unit unit s)* div:('/' s unit s tail:(!non_unit unit s)*)?)?
 	{ def value
-	    tail.elements.inject([unit.value]) { |a, e| a << e.unit.value } +
-	      (div.text_value.empty? ? [] : div.tail.elements.inject([div.unit.inverse]) { |a, e| a << e.unit.inverse })
+	    if u.text_value.empty?
+	      []
+	    else
+	      u.tail.elements.inject([u.unit.value]) { |a, e| a << e.unit.value } +
+		(u.div.text_value.empty? ? [] : u.div.tail.elements.inject([u.div.unit.inverse]) { |a, e| a << e.unit.inverse })
+	    end
 	  end
 	}
       end
@@ -130,10 +127,10 @@ module ActiveFacts
       end
 
       rule restriction
-        restricted s to s range_list s units?
+        restricted s to s range_list s units
         {
           def ranges
-            range_list.ranges
+            range_list.ranges	# REVISIT: Use the units here
           end
         }
       end
