@@ -248,7 +248,9 @@ for each ContextNote exactly one of these holds:
 	Concept has ContextNote,
 	FactType has ContextNote,
 	Constraint has ContextNote;
-either Instance has Value or Instance objectifies Fact;
+for each Instance at most one of these holds:
+	Instance has Value,
+	Instance objectifies Fact;
 Instance plays RoleValue and Instance is of Concept
 	if and only if
 	RoleValue is of Role and FactType has Ordinal place played by Concept;
@@ -269,18 +271,14 @@ each Fact occurs at most one time in
 	Instance objectifies Fact;
 each FactType occurs at least one time in
 	FactType has Ordinal place played by Concept;
-each Join occurs at least one time in
-	Join has input-Role,
-	Join has output-Role;
+either Join has input-Role or Join has output-Role;
 each PresenceConstraint occurs at least one time in
 	PresenceConstraint has min-Frequency restricted to {2..},
 	PresenceConstraint has max-Frequency restricted to {1..},
 	PresenceConstraint is mandatory;
 each RoleSequence occurs at least one time in
 	RoleSequence in Ordinal position includes Role;
-each ValueRange occurs at least one time in
-	ValueRange has minimum-Bound,
-	ValueRange has maximum-Bound;
+either ValueRange has minimum-Bound or ValueRange has maximum-Bound;
 each combination Vocabulary, Name occurs at most one time in
 	Vocabulary contains Constraint,
 	Name is of Constraint;

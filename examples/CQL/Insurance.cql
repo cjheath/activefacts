@@ -305,6 +305,4 @@ each ContactMethods occurs at least one time in
 each combination Policy, ClaimSequence occurs at most one time in
 	Claim is on Policy,
 	Claim has ClaimSequence;
-each Witness occurs at least one time in
-	Witness lives at Address,
-	Witness has contact-Phone;
+either Witness lives at Address or Witness has contact-Phone;

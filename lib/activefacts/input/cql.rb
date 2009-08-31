@@ -948,18 +948,36 @@ player, binding = @symbols.bind(names)
       end
 
       def set_constraint(constrained_roles, quantifier, joins_list, context)
-        # Exactly one or at most one, nothing else will do
-        raise "Set comparison constraint must use 'at most' or 'exactly' one" if quantifier[1] != 1
-
         role_sequences = bind_joins_as_role_sequences(joins_list)
 
-        # Create the constraint:
-        constraint = @constellation.SetExclusionConstraint(:new)
-        constraint.vocabulary = @vocabulary
-        role_sequences.each_with_index do |rs, i|
-          @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
+        if quantifier[1] == nil
+          # create a presence constraint instead if we get quantifier = [N,nil] (at least N)
+          # We massage the bound role sequences to make this work.
+          raise "either/or constraint must have one common role" if role_sequences.size != 2 || role_sequences[0].all_role_ref.size != 1
+          second_role = role_sequences[1].all_role_ref.single.role
+          second_role_ref = @constellation.RoleRef(:role_sequence => role_sequences[0], :ordinal => 1, :role => second_role)
+          @constellation.deny(role_sequences[1].all_role_ref.single)
+          @constellation.deny(role_sequences[1])
+          @constellation.PresenceConstraint(
+              :new,
+              :name => '',
+              :enforcement => '',
+              :vocabulary => @vocabulary,
+              :role_sequence => role_sequences[0],
+              :min_frequency => quantifier[0],
+              :max_frequency => nil,
+              :is_preferred_identifier => false,
+              :is_mandatory => true
+            )
+        else
+          # Create a normal (mandatory) exclusion constraint:
+          constraint = @constellation.SetExclusionConstraint(:new)
+          constraint.vocabulary = @vocabulary
+          role_sequences.each_with_index do |rs, i|
+            @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
+          end
+          constraint.is_mandatory = quantifier[0] == 1
         end
-        constraint.is_mandatory = quantifier[0] == 1
       end
 
       def subset_constraint(joins_list, context)

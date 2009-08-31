@@ -219,7 +219,9 @@ Network is ip_subnet
 Network has Ending-IP
 	if and only if
 	Network is ip_range;
-either Network is ip_single or Network has Ending-IP;
+for each Network at most one of these holds:
+	Network is ip_single,
+	Network has Ending-IP;
 for each Network exactly one of these holds:
 	HostSystem uses Network,
 	Company has Origin-Network,

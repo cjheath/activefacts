@@ -265,55 +265,25 @@ module ActiveFacts
       end
 
       def dump_presence_constraint(c)
-        roles = c.role_sequence.all_role_ref.map{|rr| rr.role }
-
-        # REVISIT: If only one role is covered and it's mandatory >=1 constraint, use SOME/THAT form:
-        # for each Bug SOME Tester logged THAT Bug;
-        players = c.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
-
-        fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
-        puts \
-          "each #{players.size > 1 ? "combination " : ""}#{players*", "} occurs #{c.frequency} time in\n\t"+
-          "#{fact_types.map{|ft| ft.default_reading([], nil)}*",\n\t"}" +
-            ";"
-
-=begin
-          # More than one fact type involved, an external constraint.
-            fact_type = rr.role.fact_type
-          # or all facts are binary and the counterparts of the roles are.
-          puts "// REVISIT: " +
-          if (player = roleplayer_subclass(roles))
-            "#{player.name} must play #{c.frequency} of "
-          else
-            counterparts = roles.map{|r|
-                r.fact_type.all_role[r.fact_type.all_role[0] != r ? 0 : -1]
-              }
-            player = roleplayer_subclass(counterparts)
-            "#{c.frequency} #{player ? player.name : "UNKNOWN" } exists for each "
-          end +
-          "#{
-              c.role_sequence.all_role_ref.map{|rr|
-                "'#{rr.role.fact_type.default_reading([], nil)}'"
-              }*", "
-            }"
-=end
-
-=begin
-        puts \
-          "FOR each #{players*", "}" +
-          (c.role_sequence.all_role_ref.size > 1 ? " "+c.frequency+" of these holds" : "") + "\n\t"+
-          "#{c.role_sequence.all_role_ref.map{|rr|
-            role = rr.role
-            fact_type = role.fact_type
-            some_that = Array.new(fact_type.all_role.size, "some")
-            c.role_sequence.all_role_ref.each{|rr2|
-              next if rr2.role.fact_type != fact_type
-              some_that[fact_type.all_role.index(role)] = "that"
-            }
-            rr.role.fact_type.default_reading(some_that, nil)
-          }*",\n\t"}" +
-          ";"
-=end
+        if c.min_frequency == 1 && c.max_frequency == nil and c.role_sequence.all_role_ref.size == 2
+          # REVISIT: Implement the "either... or" syntax for a simple external mandatory constraint
+          puts \
+            "either #{
+              c.role_sequence.all_role_ref.map { |rr|
+                rr.role.fact_type.default_reading([], nil)
+              }*" or "
+            };"
+        else
+          # REVISIT: If only one role is covered and it's mandatory >=1 constraint, use SOME/THAT form:
+          # for each Bug SOME Tester logged THAT Bug;
+          roles = c.role_sequence.all_role_ref.map{|rr| rr.role }
+          players = c.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
+          fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
+          puts \
+            "each #{players.size > 1 ? "combination " : ""}#{players*", "} occurs #{c.frequency} time in\n\t"+
+            "#{fact_types.map{|ft| ft.default_reading([], nil)}*",\n\t"}" +
+              ";"
+        end
       end
 
       # Find the common supertype of these concepts.
@@ -372,7 +342,7 @@ module ActiveFacts
           return
         end
 
-        if scrs.size == 2
+        if scrs.size == 2 && c.is_mandatory
           puts "either " +
             ( scrs.map do |scr|
                 constrained_roles = scr.role_sequence.all_role_ref.map{|rr| rr.role }
@@ -389,7 +359,7 @@ module ActiveFacts
                 end * " and "
               end*" or "
             ) +
-            (c.is_mandatory ? " but not both;" : ";")
+            " but not both;"
         else
           mode = c.is_mandatory ? "exactly one" : "at most one"
           puts "for each #{players.map{|p| p.name}*", "} #{mode} of these holds:\n\t" +

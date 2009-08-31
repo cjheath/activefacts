@@ -100,9 +100,7 @@ Visit is where
 Event is in Series
 	if and only if
 	Event has Number;
-each Event occurs at least one time in
-	Event is called EventName,
-	Event is in Series;
+either Event is called EventName or Event is in Series;
 each EventControl occurs at least one time in
 	Punch is placed at EventControl;
 each combination GivenName, FamilyName occurs at most one time in
