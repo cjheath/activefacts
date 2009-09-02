@@ -12,15 +12,15 @@ module ::Monogamy
 
   class Person
     identified_by :person_id
-    has_one :name, :mandatory                   # See Name.all_person
-    one_to_one :person_id, PersonID, :mandatory  # See PersonID.person
+    has_one :name, :mandatory => true           # See Name.all_person
+    one_to_one :person_id, :class => PersonID, :mandatory => true  # See PersonID.person
   end
 
   class Boy < Person
   end
 
   class Girl < Person
-    one_to_one :boyfriend, Boy, :girlfriend     # See Boy.girlfriend
+    one_to_one :boyfriend, :class => Boy, :counterpart => :girlfriend  # See Boy.girlfriend
   end
 
 end

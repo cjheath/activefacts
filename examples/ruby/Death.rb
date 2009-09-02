@@ -12,12 +12,12 @@ module ::Death
 
   class Person
     identified_by :person_name
-    one_to_one :person_name, :mandatory         # See PersonName.person
+    one_to_one :person_name, :mandatory => true  # See PersonName.person
   end
 
   class Death
     identified_by :person
-    one_to_one :person, :mandatory              # See Person.death
+    one_to_one :person, :mandatory => true      # See Person.death
     has_one :cause_of_death                     # See CauseOfDeath.all_death
   end
 

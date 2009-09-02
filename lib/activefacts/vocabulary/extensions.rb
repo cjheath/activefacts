@@ -387,6 +387,32 @@ module ActiveFacts
           }*", "+
           "}"
       end
+
+      def to_s
+        if all_allowed_range.size > 1
+        "[" +
+          all_allowed_range.sort_by do |ar|
+              ((min = ar.value_range.minimum_bound) && min.value) ||
+                ((max = ar.value_range.maximum_bound) && max.value)
+          end.map do |ar|
+            ar.to_s
+          end*", " +
+        "]"
+        else
+          all_allowed_range.single.to_s
+        end
+      end
+    end
+
+    class AllowedRange
+      def to_s
+        min = value_range.minimum_bound
+        max = value_range.maximum_bound
+        # REVISIT: The result here is meant to work in Ruby, but open-ended ranges will fail.
+        # Can handle numeric ones using INFINITY (1.0/0, -1.0/0), but strings???
+        (min ? min.value : "") +
+          (min.value != (max&&max.value) ? (".." + (max ? max.value : "")) : "")
+      end
     end
 
     class PresenceConstraint

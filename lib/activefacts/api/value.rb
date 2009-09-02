@@ -52,6 +52,12 @@ module ActiveFacts
           end
         end
 
+        class_eval do
+          define_method :restrict do |*value_ranges|
+            @value_ranges = *value_ranges
+          end
+        end
+
         # verbalise this ValueType
         def verbalise
           # REVISIT: Add length and scale here, if set

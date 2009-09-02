@@ -16,16 +16,16 @@ module ::MultiInheritance
 
   class Person
     identified_by :person_name
-    one_to_one :person_name, :mandatory         # See PersonName.person
+    one_to_one :person_name, :mandatory => true  # See PersonName.person
   end
 
   class Australian < Person
-    one_to_one :tfn, TFN                        # See TFN.australian
+    one_to_one :tfn, :class => TFN              # See TFN.australian
   end
 
   class Employee < Person
     identified_by :employee_id
-    one_to_one :employee_id, EmployeeID, :mandatory  # See EmployeeID.employee
+    one_to_one :employee_id, :class => EmployeeID, :mandatory => true  # See EmployeeID.employee
   end
 
   class AustralianEmployee < Employee

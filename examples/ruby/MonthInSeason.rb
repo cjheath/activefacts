@@ -17,13 +17,13 @@ module ::MonthInSeason
 
   class Event
     identified_by :event_id
-    one_to_one :event_id, :mandatory            # See EventId.event
+    one_to_one :event_id, :mandatory => true    # See EventId.event
   end
 
   class Occurrence
     identified_by :event, :month
-    has_one :event, :mandatory                  # See Event.all_occurrence
-    has_one :month, :mandatory                  # See Month.all_occurrence
+    has_one :event, :mandatory => true          # See Event.all_occurrence
+    has_one :month, :mandatory => true          # See Month.all_occurrence
   end
 
 end

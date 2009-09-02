@@ -20,22 +20,22 @@ module ::SubtypePI
 
   class Entrant
     identified_by :entrant_id
-    one_to_one :entrant_id, EntrantID, :mandatory  # See EntrantID.entrant
+    one_to_one :entrant_id, :class => EntrantID, :mandatory => true  # See EntrantID.entrant
   end
 
   class EntrantHasGivenName
     identified_by :entrant, :given_name
-    has_one :entrant, :mandatory                # See Entrant.all_entrant_has_given_name
-    has_one :given_name, :mandatory             # See GivenName.all_entrant_has_given_name
+    has_one :entrant, :mandatory => true        # See Entrant.all_entrant_has_given_name
+    has_one :given_name, :mandatory => true     # See GivenName.all_entrant_has_given_name
   end
 
   class Team < Entrant
     identified_by :team_id
-    one_to_one :team_id, TeamID, :mandatory     # See TeamID.team
+    one_to_one :team_id, :class => TeamID, :mandatory => true  # See TeamID.team
   end
 
   class Competitor < Entrant
-    has_one :family_name, :mandatory            # See FamilyName.all_competitor
+    has_one :family_name, :mandatory => true    # See FamilyName.all_competitor
   end
 
 end

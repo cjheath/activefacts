@@ -24,27 +24,27 @@ module ::JoinEquality
 
   class Event
     identified_by :event_id
-    one_to_one :event_id, :mandatory            # See EventId.event
-    has_one :venue, :mandatory                  # See Venue.all_event
+    one_to_one :event_id, :mandatory => true    # See EventId.event
+    has_one :venue, :mandatory => true          # See Venue.all_event
   end
 
   class Venue
     identified_by :venue_id
-    one_to_one :venue_id, :mandatory            # See VenueId.venue
+    one_to_one :venue_id, :mandatory => true    # See VenueId.venue
   end
 
   class Seat
     identified_by :venue, :reserve, :row, :number
-    has_one :number, :mandatory                 # See Number.all_seat
-    has_one :reserve, :mandatory                # See Reserve.all_seat
-    has_one :row, :mandatory                    # See Row.all_seat
-    has_one :venue, :mandatory                  # See Venue.all_seat
+    has_one :number, :mandatory => true         # See Number.all_seat
+    has_one :reserve, :mandatory => true        # See Reserve.all_seat
+    has_one :row, :mandatory => true            # See Row.all_seat
+    has_one :venue, :mandatory => true          # See Venue.all_seat
   end
 
   class Ticket
     identified_by :event, :seat
-    has_one :event, :mandatory                  # See Event.all_ticket
-    has_one :seat, :mandatory                   # See Seat.all_ticket
+    has_one :event, :mandatory => true          # See Event.all_ticket
+    has_one :seat, :mandatory => true           # See Seat.all_ticket
   end
 
 end

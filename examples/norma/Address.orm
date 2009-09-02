@@ -242,6 +242,13 @@
 					</orm:Role>
 					<orm:Role id="_7C2E52F7-47C0-413C-8F2A-4A477E54B497" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_8A615C32-1F5B-44EF-AA4A-7278B04750D7" />
+						<orm:ValueRestriction>
+							<orm:RoleValueConstraint id="_0A249AAE-25AD-4DA4-8B29-54760212A3A6" Name="RoleValueConstraint1">
+								<orm:ValueRanges>
+									<orm:ValueRange id="_49A9E0A8-DBD0-41C9-AF3B-EAF9643A8998" MinValue="1000" MaxValue="9999" MinInclusion="NotSet" MaxInclusion="NotSet" />
+								</orm:ValueRanges>
+							</orm:RoleValueConstraint>
+						</orm:ValueRestriction>
 					</orm:Role>
 				</orm:FactRoles>
 				<orm:ReadingOrders>
@@ -472,16 +479,6 @@
 			</orm:Fact>
 		</orm:Facts>
 		<orm:Constraints>
-			<orm:SubsetConstraint id="_3C18AA95-1013-423E-87C2-A036EF319771" Name="SubsetConstraint1">
-				<orm:RoleSequences>
-					<orm:RoleSequence id="_D4279EB4-47E9-43FD-9B29-B5426DEF4A13">
-						<orm:Role id="_1ED818D7-D12F-4CC5-BBD7-B654D4762241" ref="_819DFD3D-F400-4D2F-A57C-AA7EF9946C2A" />
-					</orm:RoleSequence>
-					<orm:RoleSequence id="_931603EC-31B7-4A28-952C-2FDBBF34328A">
-						<orm:Role id="_DF0BFF90-F406-4433-BD86-CA1ED0E99275" ref="_1F5B5E56-3A10-45BE-84EC-D509FBC83C9D" />
-					</orm:RoleSequence>
-				</orm:RoleSequences>
-			</orm:SubsetConstraint>
 			<orm:MandatoryConstraint id="_4733EB7A-431A-48F4-9C90-9F36EB554808" Name="PersonMustHaveFamilyName" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_EB734602-18DA-405E-A146-AB47B20A6B55" ref="_D6EE6716-CE6D-4E60-AE87-4DF950146818" />
@@ -697,6 +694,16 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_210362C4-4FC6-4B97-A95B-2563B2C3D66C" />
 			</orm:MandatoryConstraint>
+			<orm:SubsetConstraint id="_3C18AA95-1013-423E-87C2-A036EF319771" Name="SubsetConstraint1">
+				<orm:RoleSequences>
+					<orm:RoleSequence id="_D4279EB4-47E9-43FD-9B29-B5426DEF4A13">
+						<orm:Role id="_1ED818D7-D12F-4CC5-BBD7-B654D4762241" ref="_819DFD3D-F400-4D2F-A57C-AA7EF9946C2A" />
+					</orm:RoleSequence>
+					<orm:RoleSequence id="_931603EC-31B7-4A28-952C-2FDBBF34328A">
+						<orm:Role id="_DF0BFF90-F406-4433-BD86-CA1ED0E99275" ref="_1F5B5E56-3A10-45BE-84EC-D509FBC83C9D" />
+					</orm:RoleSequence>
+				</orm:RoleSequences>
+			</orm:SubsetConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:VariableLengthTextDataType id="_0491E1C9-8539-4C49-8EAB-7E14CB85A7C4" />
@@ -803,6 +810,9 @@
 					<ormDiagram:ReadingShape id="_8AE596BD-F79F-4712-B5B3-F5A906A07451" IsExpanded="true" AbsoluteBounds="3.2802202816431718, 3.2461405612404155, 0.49587446451187134, 0.12950302660465241">
 						<ormDiagram:Subject ref="_2683A8C9-F3C9-45D8-900A-8C0876260282" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:ValueConstraintShape id="_0D2B6636-BF0B-4819-A539-95E095780F14" IsExpanded="true" AbsoluteBounds="3.7241091706355411, 2.8079971323410682, 0.77391672134399414, 0.12950302660465241">
+						<ormDiagram:Subject ref="_0A249AAE-25AD-4DA4-8B29-54760212A3A6" />
+					</ormDiagram:ValueConstraintShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_B0E71BA7-148B-4EB1-96E4-00F7AAACA32A" />
 			</ormDiagram:FactTypeShape>

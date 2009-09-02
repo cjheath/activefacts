@@ -12,7 +12,7 @@ module ::Genealogy
 
   class Day < UnsignedInteger
     value_type :length => 32
-    # REVISIT: Day has restricted values
+    restrict 1..31
   end
 
   class Email < String
@@ -29,7 +29,7 @@ module ::Genealogy
 
   class EventRoleName < String
     value_type 
-    # REVISIT: EventRoleName has restricted values
+    restrict 'Subject', 'Father', 'Mother', 'Husband', 'Wife', 'Celebrant'
   end
 
   class EventTypeID < AutoCounter
@@ -38,17 +38,17 @@ module ::Genealogy
 
   class EventTypeName < String
     value_type :length => 16
-    # REVISIT: EventTypeName has restricted values
+    restrict 'Birth', 'Christening', 'Marriage', 'Divorce', 'Death', 'Burial'
   end
 
   class Gender < FixedLengthText
     value_type :length => 1
-    # REVISIT: Gender has restricted values
+    restrict 'M', 'F'
   end
 
   class Month < UnsignedInteger
     value_type :length => 32
-    # REVISIT: Month has restricted values
+    restrict 1..12
   end
 
   class Name < String
@@ -95,7 +95,7 @@ module ::Genealogy
     identified_by :event_id
     has_one :certificate                        # See Certificate.all_event
     has_one :event_date                         # See EventDate.all_event
-    one_to_one :event_id, EventID, :mandatory   # See EventID.event
+    one_to_one :event_id, :class => EventID, :mandatory => true  # See EventID.event
     has_one :event_location                     # See EventLocation.all_event
     has_one :event_type                         # See EventType.all_event
     has_one :official                           # See Official.all_event
@@ -104,61 +104,61 @@ module ::Genealogy
   class EventDate
     identified_by :min_year, :max_year, :month, :day
     has_one :day                                # See Day.all_event_date
-    has_one :max_year, Year                     # See Year.all_event_date_as_max_year
-    has_one :min_year, Year                     # See Year.all_event_date_as_min_year
+    has_one :max_year, :class => Year           # See Year.all_event_date_as_max_year
+    has_one :min_year, :class => Year           # See Year.all_event_date_as_min_year
     has_one :month                              # See Month.all_event_date
   end
 
   class EventType
     identified_by :event_type_id
-    one_to_one :event_type_id, EventTypeID, :mandatory  # See EventTypeID.event_type
-    one_to_one :event_type_name, :mandatory     # See EventTypeName.event_type
+    one_to_one :event_type_id, :class => EventTypeID, :mandatory => true  # See EventTypeID.event_type
+    one_to_one :event_type_name, :mandatory => true  # See EventTypeName.event_type
   end
 
   class Person
     identified_by :person_id
     has_one :address                            # See Address.all_person
     has_one :email                              # See Email.all_person
-    has_one :family_name, Name                  # See Name.all_person_as_family_name
+    has_one :family_name, :class => Name        # See Name.all_person_as_family_name
     has_one :gender                             # See Gender.all_person
-    has_one :given_name, Name                   # See Name.all_person_as_given_name
+    has_one :given_name, :class => Name         # See Name.all_person_as_given_name
     has_one :occupation                         # See Occupation.all_person
-    one_to_one :person_id, PersonID, :mandatory  # See PersonID.person
-    has_one :preferred_picture, Picture         # See Picture.all_person_as_preferred_picture
+    one_to_one :person_id, :class => PersonID, :mandatory => true  # See PersonID.person
+    has_one :preferred_picture, :class => Picture  # See Picture.all_person_as_preferred_picture
   end
 
   class Role
     identified_by :role_id
-    one_to_one :event_role_name, :mandatory     # See EventRoleName.role
-    one_to_one :role_id, RoleID, :mandatory     # See RoleID.role
+    one_to_one :event_role_name, :mandatory => true  # See EventRoleName.role
+    one_to_one :role_id, :class => RoleID, :mandatory => true  # See RoleID.role
   end
 
   class Source
     identified_by :source_id
-    one_to_one :source_id, SourceID, :mandatory  # See SourceID.source
-    one_to_one :source_name, :mandatory         # See SourceName.source
-    has_one :user, :mandatory                   # See User.all_source
+    one_to_one :source_id, :class => SourceID, :mandatory => true  # See SourceID.source
+    one_to_one :source_name, :mandatory => true  # See SourceName.source
+    has_one :user, :mandatory => true           # See User.all_source
   end
 
   class User
     identified_by :user_id
     has_one :email                              # See Email.all_user
-    one_to_one :user_id, UserID, :mandatory     # See UserID.user
+    one_to_one :user_id, :class => UserID, :mandatory => true  # See UserID.user
   end
 
   class Friend
     identified_by :user, :other_user
-    has_one :other_user, User, :mandatory       # See User.all_friend_as_other_user
-    has_one :user, :mandatory                   # See User.all_friend
+    has_one :other_user, :class => User, :mandatory => true  # See User.all_friend_as_other_user
+    has_one :user, :mandatory => true           # See User.all_friend
     maybe :is_confirmed
   end
 
   class Participation
     identified_by :person, :role, :event, :source
-    has_one :event, :mandatory                  # See Event.all_participation
-    has_one :person, :mandatory                 # See Person.all_participation
-    has_one :role, :mandatory                   # See Role.all_participation
-    has_one :source, :mandatory                 # See Source.all_participation
+    has_one :event, :mandatory => true          # See Event.all_participation
+    has_one :person, :mandatory => true         # See Person.all_participation
+    has_one :role, :mandatory => true           # See Role.all_participation
+    has_one :source, :mandatory => true         # See Source.all_participation
   end
 
 end

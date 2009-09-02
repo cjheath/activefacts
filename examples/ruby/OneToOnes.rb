@@ -12,13 +12,13 @@ module ::OneToOnes
 
   class Boy
     identified_by :boy_id
-    one_to_one :boy_id, BoyID, :mandatory       # See BoyID.boy
+    one_to_one :boy_id, :class => BoyID, :mandatory => true  # See BoyID.boy
   end
 
   class Girl
     identified_by :girl_id
     one_to_one :boy                             # See Boy.girl
-    one_to_one :girl_id, GirlID, :mandatory     # See GirlID.girl
+    one_to_one :girl_id, :class => GirlID, :mandatory => true  # See GirlID.girl
   end
 
 end

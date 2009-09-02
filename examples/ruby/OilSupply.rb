@@ -28,12 +28,12 @@ module ::OilSupply
 
   class Season < String
     value_type :length => 6
-    # REVISIT: Season has restricted values
+    restrict 'Spring', 'Summer', 'Autumn', 'Winter'
   end
 
   class TransportMethod < String
     value_type 
-    # REVISIT: TransportMethod has restricted values
+    restrict 'Rail', 'Road', 'Sea'
   end
 
   class YearNr < SignedInteger
@@ -42,65 +42,65 @@ module ::OilSupply
 
   class Month
     identified_by :month_code
-    one_to_one :month_code, :mandatory          # See MonthCode.month
-    has_one :season, :mandatory                 # See Season.all_month
+    one_to_one :month_code, :mandatory => true  # See MonthCode.month
+    has_one :season, :mandatory => true         # See Season.all_month
   end
 
   class Product
     identified_by :product_name
-    one_to_one :product_name, :mandatory        # See ProductName.product
+    one_to_one :product_name, :mandatory => true  # See ProductName.product
   end
 
   class Refinery
     identified_by :refinery_name
-    one_to_one :refinery_name, :mandatory       # See RefineryName.refinery
+    one_to_one :refinery_name, :mandatory => true  # See RefineryName.refinery
   end
 
   class Region
     identified_by :region_name
-    one_to_one :region_name, :mandatory         # See RegionName.region
+    one_to_one :region_name, :mandatory => true  # See RegionName.region
   end
 
   class TransportRoute
     identified_by :transport_method, :refinery, :region
-    has_one :refinery, :mandatory               # See Refinery.all_transport_route
-    has_one :region, :mandatory                 # See Region.all_transport_route
-    has_one :transport_method, :mandatory       # See TransportMethod.all_transport_route
+    has_one :refinery, :mandatory => true       # See Refinery.all_transport_route
+    has_one :region, :mandatory => true         # See Region.all_transport_route
+    has_one :transport_method, :mandatory => true  # See TransportMethod.all_transport_route
     has_one :cost                               # See Cost.all_transport_route
   end
 
   class Year
     identified_by :year_nr
-    one_to_one :year_nr, :mandatory             # See YearNr.year
+    one_to_one :year_nr, :mandatory => true     # See YearNr.year
   end
 
   class AcceptableSubstitutes
     identified_by :product, :alternate_product, :season
-    has_one :alternate_product, Product, :mandatory  # See Product.all_acceptable_substitutes_as_alternate_product
-    has_one :product, :mandatory                # See Product.all_acceptable_substitutes
-    has_one :season, :mandatory                 # See Season.all_acceptable_substitutes
+    has_one :alternate_product, :class => Product, :mandatory => true  # See Product.all_acceptable_substitutes_as_alternate_product
+    has_one :product, :mandatory => true        # See Product.all_acceptable_substitutes
+    has_one :season, :mandatory => true         # See Season.all_acceptable_substitutes
   end
 
   class SupplyPeriod
     identified_by :year, :month
-    has_one :month, :mandatory                  # See Month.all_supply_period
-    has_one :year, :mandatory                   # See Year.all_supply_period
+    has_one :month, :mandatory => true          # See Month.all_supply_period
+    has_one :year, :mandatory => true           # See Year.all_supply_period
   end
 
   class ProductionForecast
     identified_by :refinery, :product, :supply_period
-    has_one :product, :mandatory                # See Product.all_production_forecast
-    has_one :refinery, :mandatory               # See Refinery.all_production_forecast
-    has_one :supply_period, :mandatory          # See SupplyPeriod.all_production_forecast
+    has_one :product, :mandatory => true        # See Product.all_production_forecast
+    has_one :refinery, :mandatory => true       # See Refinery.all_production_forecast
+    has_one :supply_period, :mandatory => true  # See SupplyPeriod.all_production_forecast
     has_one :cost                               # See Cost.all_production_forecast
-    has_one :quantity, :mandatory               # See Quantity.all_production_forecast
+    has_one :quantity, :mandatory => true       # See Quantity.all_production_forecast
   end
 
   class RegionalDemand
     identified_by :region, :product, :supply_period
-    has_one :product, :mandatory                # See Product.all_regional_demand
-    has_one :region, :mandatory                 # See Region.all_regional_demand
-    has_one :supply_period, :mandatory          # See SupplyPeriod.all_regional_demand
+    has_one :product, :mandatory => true        # See Product.all_regional_demand
+    has_one :region, :mandatory => true         # See Region.all_regional_demand
+    has_one :supply_period, :mandatory => true  # See SupplyPeriod.all_regional_demand
     has_one :quantity                           # See Quantity.all_regional_demand
   end
 

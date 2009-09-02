@@ -16,17 +16,17 @@ module ::SeparateSubtype
 
   class Claim
     identified_by :claim_id
-    one_to_one :claim_id, ClaimID, :mandatory   # See ClaimID.claim
+    one_to_one :claim_id, :class => ClaimID, :mandatory => true  # See ClaimID.claim
   end
 
   class Driver
     identified_by :driver_name
-    one_to_one :driver_name, :mandatory         # See DriverName.driver
+    one_to_one :driver_name, :mandatory => true  # See DriverName.driver
   end
 
   class Incident
     identified_by :claim
-    one_to_one :claim, :mandatory               # See Claim.incident
+    one_to_one :claim, :mandatory => true       # See Claim.incident
     has_one :date_time                          # See DateTime.all_incident
   end
 

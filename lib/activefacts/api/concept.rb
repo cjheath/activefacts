@@ -54,27 +54,31 @@ module ActiveFacts
       # Define a binary fact type relating this concept to another,
       # with a uniqueness constraint only on this concept's role.
       # This method creates two accessor methods, one in this concept and one in the other concept.
-      # Parameters after the role_name may be omitted if not required:
-      # * role_name - a Symbol for the name of the role (this end of the relationship).
-      # * other_player - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined.
-      # * :mandatory - if this role may not be NULL in a valid fact population. Mandatory constraints are only enforced during validation (e.g. before saving).
-      # * :other_role_name - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>\_as_<role_name>
-      def has_one(*args)
-        role_name, related, mandatory, related_role_name = extract_binary_params(false, args)
+      # * role_name is a Symbol for the name of the role (this end of the relationship)
+      # Options contain optional keys:
+      # * :class - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined.
+      # * :mandatory - if this role may not be NULL in a valid fact population, say :mandatory => true. Mandatory constraints are only enforced during validation (e.g. before saving).
+      # * :counterpart - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>\_as_<role_name>
+      # * :reading - for verbalisation. Not used yet.
+      # * :restrict - a list of values or ranges which this role may take. Not used yet.
+      def has_one(role_name, options = {})
+        role_name, related, mandatory, related_role_name = extract_binary_params(false, role_name, options)
         define_binary_fact_type(false, role_name, related, mandatory, related_role_name)
       end
 
       # Define a binary fact type joining this concept to another,
       # with uniqueness constraints in both directions, i.e. a one-to-one relationship
       # This method creates two accessor methods, one in this concept and one in the other concept.
-      # Parameters after the role_name may be omitted if not required:
-      # * role_name - a Symbol for the name of the role (this end of the relationship)
-      # * other_player - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined
-      # * :mandatory - if this role may not be NULL in a valid fact population. Mandatory constraints are only enforced during validation (e.g. before saving)
-      # * :other_role_name - use if the role at the other end should have a name other than the default :<concept> or :<concept>_as_<role_name>
-      def one_to_one(*args)
+      # * role_name is a Symbol for the name of the role (this end of the relationship)
+      # Options contain optional keys:
+      # * :class - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined.
+      # * :mandatory - if this role may not be NULL in a valid fact population, say :mandatory => true. Mandatory constraints are only enforced during validation (e.g. before saving).
+      # * :counterpart - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>\_as_<role_name>
+      # * :reading - for verbalisation. Not used yet.
+      # * :restrict - a list of values or ranges which this role may take. Not used yet.
+      def one_to_one(role_name, options = {})
         role_name, related, mandatory, related_role_name =
-          extract_binary_params(true, args)
+          extract_binary_params(true, role_name, options)
         define_binary_fact_type(true, role_name, related, mandatory, related_role_name)
       end
 
@@ -291,6 +295,16 @@ module ActiveFacts
 
       # Extract the parameters to a role definition and massage them into the right shape.
       #
+      # The first parameter, role_name, is mandatory. It may be a Symbol, a String or a Class.
+      # New proposed input options:
+      # :class => the related class (Class object or Symbol). Not allowed if role_name was a class.
+      # :mandatory => true. There must be a related object for this object to be valid.
+      # :counterpart => Symbol/String. The name of the counterpart role. Will be to_s.snakecase'd and maybe augmented with "all_" and/or "_as_<role_name>"
+      # :reading => "forward/reverse". Forward and reverse readings. Must include MARKERS for the player names. May include adjectives. REVISIT: define MARKERS!
+      # LATER:
+      # :order => :local_role OR lambda{} (for sort_by)
+      # :restriction => Range or Array of Range/value or respond_to?(include?)
+      #
       # This function returns an array:
       # [ role_name,
       # related,
@@ -307,46 +321,34 @@ module ActiveFacts
       #   Role counterpart_concept name (not role name)
       #   Trailing Adjective
       # "_as_<other_role_name>" if other_role_name != this role counterpart_concept's name, and not other_player_this_player
-      def extract_binary_params(one_to_one, args)
-        # Params:
-        #   role_name (Symbol)
+      def extract_binary_params(one_to_one, role_name, options)
+        # Options:
         #   other counterpart_concept (Symbol or Class)
         #   mandatory (:mandatory)
         #   other end role name if any (Symbol),
-        role_name = nil
         related = nil
         mandatory = false
         related_role_name = nil
         role_player = self.basename.snakecase
 
-        # Get the role name first:
-        case a = args.shift
-        when Symbol, String
-          role_name = a.to_sym
-        when Class
-          role_name = a.name.snakecase.to_sym
-          puts "#{a.name.snakecase} -> #{role_name}"
-        else
-          raise "Illegal first parameter to role: #{a.inspect}"
-        end
-        # puts "role_name = #{role_name.inspect}"
+        role_name = a.name.snakecase.to_sym if Class === role_name
+        role_name = role_name.to_sym
 
         # The related class might be forward-referenced, so handle a Symbol/String instead of a Class.
-        case related_name = a = args.shift
+        related_name = options.delete(:class)
+        case related_name
+        when nil
+          related = role_name # No :class provided, assume it matches the role_name
+          related_name ||= role_name.to_s
         when Class
-          related = a
-          related_name = a.basename
-        when :mandatory, Numeric
-          args.unshift(a)       # Oops, undo.
-          related_name =
-          related = role_name
+          related = related_name
+          related_name = related_name.basename.to_s.snakecase
         when Symbol, String
-          related = a
+          related = related_name
+          related_name = related_name.to_s.snakecase
         else
-          related = role_name
+          raise "Invalid type for :class option on :#{role_name}"
         end
-        related_name ||= role_name
-        related_name = related_name.to_s.snakecase
 
         # resolve the Symbol to a Class now if possible:
         resolved = vocabulary.concept(related) rescue nil
@@ -354,16 +356,16 @@ module ActiveFacts
         related = resolved if resolved
         # puts "related = #{related.inspect}"
 
-        if args[0] == :mandatory
+        if options.delete(:mandatory) == true
           mandatory = true
-          args.shift
         end
 
-        if Symbol === args[0]
-          related_role_name = args.shift.to_s
-        end
+        related_role_name = related_role_name.to_s if related_role_name = options.delete(:counterpart)
 
-        reading = args[0]
+        reading = options.delete(:reading)        # REVISIT: Implement verbalisation
+        restriction = options.delete(:restrict)   # REVISIT: Implement role value restrictions
+
+        raise "Unrecognised options on #{role_name}: #{options.keys.inspect}" unless options.empty?
 
         # Avoid a confusing mismatch:
         # Note that if you have a role "supervisor" and a sub-class "Supervisor", this'll bitch.

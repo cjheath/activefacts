@@ -76,7 +76,7 @@ module ActiveFacts
         if @sql and o.is_table
           puts "    table"
         end
-        puts "    \# REVISIT: #{o.name} has restricted values\n" if o.value_restriction
+        puts "    restrict #{o.value_restriction.all_allowed_range.map{|ar| ar.to_s}*", "}\n" if o.value_restriction
         puts "    \# REVISIT: #{o.name} is in units of #{o.unit.name}\n" if o.unit
         roles_dump(o)
         puts "  end\n\n"
@@ -153,21 +153,22 @@ module ActiveFacts
           # Don't use Class name if implied by rolename
           role_reference = nil
         else
-          role_reference = concept_reference(role_player)
+          role_reference = ":class => "+concept_reference(role_player)
         end
-        other_role_name = ":"+other_role_name if other_role_name
+        other_role_name = ":counterpart => :"+other_role_name if other_role_name
 
         line = "    #{one_to_one ? "one_to_one" : "has_one" } " +
                 [ ":"+role_name,
                   role_reference,
-                  mandatory ? ":mandatory" : nil,
+                  mandatory ? ":mandatory => true" : nil,
                   readings,
-                  other_role_name
+                  other_role_name,
+                  (vr = role.role_value_restriction) ? ":restrict => #{vr}" : nil
                 ].compact*", "+"  "
         line += " "*(48-line.length) if line.length < 48
         line += "\# See #{role_player.name}.#{other_method_name}" if other_method_name
         puts line
-        puts "    \# REVISIT: #{other_role_name} has restricted values\n" if role.role_value_restriction
+        #puts "    \# REVISIT: #{other_role_name} has values restricted to #{role.role_value_restriction}\n" if role.role_value_restriction
       end
 
       def concept_reference concept

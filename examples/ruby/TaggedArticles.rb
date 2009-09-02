@@ -12,8 +12,8 @@ module ::TaggedArticles
 
   class Tagging
     identified_by :article_id, :tag
-    has_one :article_id, ArticleID, :mandatory  # See ArticleID.all_tagging
-    has_one :tag, :mandatory                    # See Tag.all_tagging
+    has_one :article_id, :class => ArticleID, :mandatory => true  # See ArticleID.all_tagging
+    has_one :tag, :mandatory => true            # See Tag.all_tagging
   end
 
 end
