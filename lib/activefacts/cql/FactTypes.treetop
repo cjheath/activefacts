@@ -127,7 +127,7 @@ module ActiveFacts
         player:role_word !'-' s?
         adj1:( '-' a:(a:role_word s)? )?
         func:function_call?
-        role_name:( '(' s as S r:id s ')' s )?
+        role_id:(role_name / subscript )?
         lr:( literal / restriction )?
         !non_role
         {
@@ -142,13 +142,23 @@ module ActiveFacts
 
             r[:trailing_adjective] = adj1.a.a.value unless adj1.empty?
             r[:function] = func.value if !func.empty?
-            r[:role_name] = role_name.r.value unless role_name.empty?
+            r[:role_name] = role_id.value unless role_id.empty?
             r[:restriction] = lr.ranges if !lr.empty? && lr.respond_to?(:ranges)
             r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
 
             r
           end
         }
+      end
+
+      rule role_name
+	'(' s as S r:id s ')' s
+	{ def value; r.value; end }
+      end
+
+      rule subscript
+	'(' i:([1-9] [0-9]*) ')' s 
+	{ def value; i.text_value.to_i; end }
       end
 
       rule non_role
