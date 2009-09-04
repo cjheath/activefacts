@@ -10,11 +10,12 @@ module ActiveFacts
       rule value_type
         s name:id
         written_as
+                &{|e| input.context.value_type(e[1].text_value); true }
         base:id s
         value_type_parameters
         units
         r:restriction?
-	mapping_pragmas
+        mapping_pragmas
         s ';' s
         {
           def defined_type
@@ -24,7 +25,7 @@ module ActiveFacts
               value_type_parameters.values,
               units.value,
               (!r.empty? ? r.ranges : []),
-	      mapping_pragmas.value
+              mapping_pragmas.value
             ]
           end
 
@@ -53,84 +54,84 @@ module ActiveFacts
       end
 
       rule unit_definition
-	u:(
-	  unit_coefficient units s o:unit_offset?
-	  converts s a:(approximately s)? to s
-	  singular:id s plural:('/' s p:id s)?
-	/
-	  singular:id s plural:('/' s p:id s)?
-	  converts s a:(approximately s)? to s
-	  unit_coefficient units s o:unit_offset?
-	)
+        u:(
+          unit_coefficient units s o:unit_offset?
+          converts s a:(approximately s)? to s
+          singular:id s plural:('/' s p:id s)?
+        /
+          singular:id s plural:('/' s p:id s)?
+          converts s a:(approximately s)? to s
+          unit_coefficient units s o:unit_offset?
+        )
         q:(approximately / ephemeral)? s
-	';' s
-	{ def value
-	    r = { :coefficient => u.unit_coefficient.value,
-		  :offset => u.o.text_value.empty? ? 0 : u.o.value,
-		  :base => u.units.value,
-		  :singular => u.singular.text_value,
-		}
-	    r[:plural] = u.plural.p.text_value unless u.plural.text_value.empty?
-	    r[:approximately] = true if q.text_value == 'approximately' || !u.a.text_value.empty?
-	    r[:ephemeral] = true if q.text_value == 'ephemeral'
-	    [ nil, [ :unit, r ] ]
-	  end
-	}
+        ';' s
+        { def value
+            r = { :coefficient => u.unit_coefficient.value,
+                  :offset => u.o.text_value.empty? ? 0 : u.o.value,
+                  :base => u.units.value,
+                  :singular => u.singular.text_value,
+                }
+            r[:plural] = u.plural.p.text_value unless u.plural.text_value.empty?
+            r[:approximately] = true if q.text_value == 'approximately' || !u.a.text_value.empty?
+            r[:ephemeral] = true if q.text_value == 'ephemeral'
+            [ nil, [ :unit, r ] ]
+          end
+        }
       end
 
       rule unit_coefficient
         numerator:number denominator:(s '/' s number)? s
-	{ def value
-	    { :numerator => numerator.text_value,
-	      :denominator => (denominator.text_value.empty? ? "1" : denominator.number.text_value)
-	    }
-	  end
-	}
+        { def value
+            { :numerator => numerator.text_value,
+              :denominator => (denominator.text_value.empty? ? "1" : denominator.number.text_value)
+            }
+          end
+        }
       end
 
       rule unit_offset
         sign:[-+] s number s
-	{ def value
-	    sign.text_value == '-' ? "-"+number.text_value : number.text_value
-	  end
-	}
+        { def value
+            sign.text_value == '-' ? "-"+number.text_value : number.text_value
+          end
+        }
       end
 
       rule units
-	'' u:(!non_unit unit s tail:(!non_unit unit s)* div:('/' s unit s tail:(!non_unit unit s)*)?)?
-	{ def value
-	    if u.text_value.empty?
-	      []
-	    else
-	      u.tail.elements.inject([u.unit.value]) { |a, e| a << e.unit.value } +
-		(u.div.text_value.empty? ? [] : u.div.tail.elements.inject([u.div.unit.inverse]) { |a, e| a << e.unit.inverse })
-	    end
-	  end
-	}
+        '' u:(!non_unit unit s tail:(!non_unit unit s)* div:('/' s unit s tail:(!non_unit unit s)*)?)?
+        { def value
+            if u.text_value.empty?
+              []
+            else
+              u.tail.elements.inject([u.unit.value]) { |a, e| a << e.unit.value } +
+                (u.div.text_value.empty? ? [] : u.div.tail.elements.inject([u.div.unit.inverse]) { |a, e| a << e.unit.inverse })
+            end
+          end
+        }
       end
 
       rule non_unit
-	restricted / converts / approximately / ephemeral
+        restricted / converts / approximately / ephemeral
       end
 
       rule unit
         unit_name:id pow:('^' '-'? [0-9])?
-	{ def value
-	    [unit_name.text_value, pow.text_value.empty? ? 1 : Integer(pow.text_value[1..-1])]
-	  end
-	  def inverse
-	    a = value
-	    a[1] = -a[1]
-	    a
-	  end
-	}
+        { def value
+            [unit_name.text_value, pow.text_value.empty? ? 1 : Integer(pow.text_value[1..-1])]
+          end
+          def inverse
+            a = value
+            a[1] = -a[1]
+            a
+          end
+        }
       end
 
       rule restriction
         restricted s to s range_list s units
         {
           def ranges
-            range_list.ranges	# REVISIT: Use the units here
+            range_list.ranges   # REVISIT: Use the units here
           end
         }
       end

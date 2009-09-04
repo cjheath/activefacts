@@ -64,6 +64,10 @@ module ActiveFacts
         @vocabulary
       end
 
+      def context
+        @context ||= Context.new(self)
+      end
+
     private
       def value_type(name, base_type_name, parameters, unit, ranges, mapping_pragmas)
         length, scale = *parameters
@@ -1291,7 +1295,7 @@ player, binding = @symbols.bind(names)
           role_pairs = []
           player_supertypes_by_role = role_refs.map{|rr|
               concept = rr.role.concept
-              concept.is_a?(EntityType) ? supertypes(concept) : [concept]
+              concept.is_a?(ActiveFacts::Metamodel::EntityType) ? supertypes(concept) : [concept]
             }
           role_refs.each_with_index{|rr1, i|
             player1 = rr1.role.concept
@@ -1618,6 +1622,34 @@ player, binding = @symbols.bind(names)
           end
         end
       end # of SymbolTable class
+
+      # The Context manages some key information revealed or needed during parsing
+      class Context
+        def initialize(compiler)
+          @compiler = compiler
+          @vocabularies = {}
+        end
+
+        def vocabulary(v)
+          # puts "Parser has started work on vocabulary #{v}"
+          @vocabularies[v] = @terms = {}
+        end
+
+        def entity_type(c)
+          # puts "Parser has started work on entity_type #{c}"
+          @terms[c] = true
+        end
+
+        def value_type(c)
+          # puts "Parser has started work on value_type #{c}"
+          @terms[c] = true
+        end
+
+        def objectified_fact_type(c)
+          # puts "Parser has started work on objectified_fact_type #{c}"
+          @terms[c] = true
+        end
+      end
 
     end
   end

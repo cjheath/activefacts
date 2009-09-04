@@ -23,6 +23,12 @@ module ActiveFacts
     class Parser < CQLParser
       include ActiveFacts
 
+      class BlackHole
+        def method_missing(m, *p, &b)
+          self    # Make all calls vanish
+        end
+      end
+
       class InputProxy < Object
         attr_reader :context
 
@@ -35,6 +41,10 @@ module ActiveFacts
           @input.length
         end
 
+        def size
+          length
+        end
+
         def [](*a)
           @input[*a]
         end
@@ -42,6 +52,15 @@ module ActiveFacts
         def index(*a)
           @input.index(*a)
         end
+      end
+
+      def context
+        @context ||= BlackHole.new
+      end
+
+      def parse(input, options = {})
+        input = InputProxy.new(input, context) unless input.respond_to?(:context)
+        super(input, options)
       end
 
       # Repeatedly parse rule_name until all input is consumed,
@@ -53,7 +72,7 @@ module ActiveFacts
         self.consume_all_input = false
         results = []
         begin
-          node = parse(InputProxy.new(input, self), :index => @index)
+          node = parse(InputProxy.new(input, context), :index => @index)
           return nil unless node
           node = block.call(node) if block
           results << node if node

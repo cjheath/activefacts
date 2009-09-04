@@ -17,6 +17,7 @@ module ActiveFacts
       rule entity_type
         s name:id s
         sup:(basetype / subtype)
+                &{|e| input.context.entity_type(e[1].text_value); true }
         mapping_pragmas
         ec:entity_conditions?
         ';' s

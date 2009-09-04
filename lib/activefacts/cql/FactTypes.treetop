@@ -10,8 +10,9 @@ module ActiveFacts
       rule named_fact_type
         s name:id
         ( written_as      # REVISIT: What on earth was I thinking when I wrote this?
-        / s is s where    # REVISIT: Need a place to put mapping pragmas like [independent]
+        / s is s mapping_pragmas where    # REVISIT: Need a place to put mapping pragmas like [independent]
         )
+                &{|e| input.context.objectified_fact_type(e[1].text_value); true }
         anonymous_fact_type
         {
           def value
@@ -30,8 +31,8 @@ module ActiveFacts
         s ';' s
         {
           def value
-	    readings = [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
-	    conditions = !ctail.empty? ? ctail.c.condition_list : []
+            readings = [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
+            conditions = !ctail.empty? ? ctail.c.condition_list : []
             [ nil, [ :fact_type, readings, conditions ] ]
           end
         }
@@ -152,13 +153,13 @@ module ActiveFacts
       end
 
       rule role_name
-	'(' s as S r:id s ')' s
-	{ def value; r.value; end }
+        '(' s as S r:id s ')' s
+        { def value; r.value; end }
       end
 
       rule subscript
-	'(' i:([1-9] [0-9]*) ')' s 
-	{ def value; i.text_value.to_i; end }
+        '(' i:([1-9] [0-9]*) ')' s 
+        { def value; i.text_value.to_i; end }
       end
 
       rule non_role
@@ -181,7 +182,7 @@ module ActiveFacts
         / or
         / quantifier
         / restriction
-	/ but
+        / but
       end
 
     end
