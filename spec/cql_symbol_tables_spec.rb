@@ -19,7 +19,7 @@ describe "CQL Symbol table" do
     include ActiveFacts::Input::CQL
     @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
     @vocabulary = @constellation.Vocabulary("Test")
-    @symbols = ActiveFacts::Input::CQL::SymbolTable.new(@constellation, @vocabulary)
+    @symbols = ActiveFacts::CQL::Compiler::SymbolTable.new(@constellation, @vocabulary)
   end
 
   Definitions = [
