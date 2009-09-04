@@ -28,7 +28,7 @@ module ::OilSupply
 
   class Season < String
     value_type :length => 6
-    restrict 'Spring', 'Summer', 'Autumn', 'Winter'
+    restrict 'Autumn', 'Spring', 'Summer', 'Winter'
   end
 
   class TransportMethod < String

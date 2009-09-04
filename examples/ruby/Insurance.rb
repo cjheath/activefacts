@@ -41,7 +41,7 @@ module ::Insurance
 
   class ContactMethod < FixedLengthText
     value_type :length => 1
-    restrict 'H', 'B', 'M'
+    restrict 'B', 'H', 'M'
   end
 
   class Count < UnsignedInteger
@@ -91,7 +91,7 @@ module ::Insurance
 
   class LiabilityCode < FixedLengthText
     value_type :length => 1
-    restrict 'L', 'R', 'U', 'D'
+    restrict 'D', 'L', 'R', 'U'
   end
 
   class LicenseNumber < String

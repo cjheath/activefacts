@@ -76,7 +76,7 @@ module ActiveFacts
         if @sql and o.is_table
           puts "    table"
         end
-        puts "    restrict #{o.value_restriction.all_allowed_range.map{|ar| ar.to_s}*", "}\n" if o.value_restriction
+        puts "    restrict #{o.value_restriction.all_allowed_range_sorted.map{|ar| ar.to_s}*", "}\n" if o.value_restriction
         puts "    \# REVISIT: #{o.name} is in units of #{o.unit.name}\n" if o.unit
         roles_dump(o)
         puts "  end\n\n"

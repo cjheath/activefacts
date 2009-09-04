@@ -2,6 +2,8 @@
 # ActiveFacts tests: Roles of concept classes in the Runtime API
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+require 'activefacts/api'
+
 describe "Roles" do
   before :each do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
@@ -15,16 +17,16 @@ describe "Roles" do
       end
       class Contract
         identified_by :first, :second
-        has_one :first, LegalEntity
-        has_one :second, LegalEntity
+        has_one :first, :class => LegalEntity
+        has_one :second, :class => LegalEntity
       end
       class Person < LegalEntity
         # identified_by         # No identifier needed, inherit from superclass
         # New identifier:
         identified_by :family, :given
-        has_one :family, Name
-        has_one :given, Name
-        has_one :related_to, LegalEntity
+        has_one :family, :class => Name
+        has_one :given, :class => Name
+        has_one :related_to, :class => LegalEntity
       end
     end
     # print "concept: "; p Mod.concept
@@ -79,7 +81,7 @@ describe "Roles" do
     module Mod
       class FamilyName < Name
         value_type
-        one_to_one :patriarch, Person
+        one_to_one :patriarch, :class => Person
       end
     end
     r = Mod::FamilyName.roles(:patriarch)

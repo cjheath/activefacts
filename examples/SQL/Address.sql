@@ -1,8 +1,8 @@
 CREATE TABLE Company (
 	-- maybe Company has head office at Address and Address is in City,
 	AddressCity                             varchar(64) NULL,
-	-- maybe Company has head office at Address and maybe Address is in Postcode,
-	AddressPostcode                         varchar NULL,
+	-- maybe Company has head office at Address and maybe Address is in Postcode restricted to {1000..9999},
+	AddressPostcode                         varchar NULL CHECK((AddressPostcode >= 1000 AND AddressPostcode <= 9999)),
 	-- maybe Company has head office at Address and Address is at Street and Street includes first-StreetLine,
 	AddressStreetFirstStreetLine            varchar(64) NULL,
 	-- maybe Company has head office at Address and maybe Address is at street-Number,
@@ -20,8 +20,8 @@ GO
 CREATE TABLE Person (
 	-- maybe Person lives at Address and Address is in City,
 	AddressCity                             varchar(64) NULL,
-	-- maybe Person lives at Address and maybe Address is in Postcode,
-	AddressPostcode                         varchar NULL,
+	-- maybe Person lives at Address and maybe Address is in Postcode restricted to {1000..9999},
+	AddressPostcode                         varchar NULL CHECK((AddressPostcode >= 1000 AND AddressPostcode <= 9999)),
 	-- maybe Person lives at Address and Address is at Street and Street includes first-StreetLine,
 	AddressStreetFirstStreetLine            varchar(64) NULL,
 	-- maybe Person lives at Address and maybe Address is at street-Number,

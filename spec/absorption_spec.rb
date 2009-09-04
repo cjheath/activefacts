@@ -75,8 +75,8 @@ describe "Absorption" do
     cql = test[:cql]
     expected_tables = test[:tables]
     it "should #{should}" do
-      @compiler = ActiveFacts::Input::CQL.new(cql, should)
-      @vocabulary = @compiler.read
+      @compiler = ActiveFacts::CQL::Compiler.new(cql, should)
+      @vocabulary = @compiler.vocabulary
 
       # puts cql
 

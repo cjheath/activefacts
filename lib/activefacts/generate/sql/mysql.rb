@@ -231,11 +231,7 @@ module ActiveFacts
           return "" if restrictions.empty?
           # REVISIT: Merge all restrictions (later; now just use the first)
           " CHECK(" +
-            restrictions[0].all_allowed_range.sort_by do |ar|
-              # Put the allowed ranges into a defined order:
-              ((min = ar.value_range.minimum_bound) && min.value) ||
-                ((max = ar.value_range.maximum_bound) && max.value)
-            end.map do |ar|
+            restrictions[0].all_allowed_range_sorted.map do |ar|
               vr = ar.value_range
               min = vr.minimum_bound
               max = vr.maximum_bound

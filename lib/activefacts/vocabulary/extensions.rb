@@ -388,6 +388,13 @@ module ActiveFacts
           "}"
       end
 
+      def all_allowed_range_sorted
+        all_allowed_range.sort_by{|ar|
+            ((min = ar.value_range.minimum_bound) && min.value) ||
+              ((max = ar.value_range.maximum_bound) && max.value)
+          }
+      end
+
       def to_s
         if all_allowed_range.size > 1
         "[" +

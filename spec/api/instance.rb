@@ -2,6 +2,8 @@
 # ActiveFacts tests: Value instances in the Runtime API
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+require 'activefacts/api'
+
 describe "An instance of every type of Concept" do
   before :each do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
@@ -45,7 +47,7 @@ describe "An instance of every type of Concept" do
               @role_names.map do |role_name|
                 %Q{
             has_one :#{role_name}
-            one_to_one :one_#{role_name}, #{role_name.to_s.camelcase(true)}}
+            one_to_one :one_#{role_name}, :class => #{role_name.to_s.camelcase(true)}}
               end*""
             }
           end
@@ -55,7 +57,7 @@ describe "An instance of every type of Concept" do
               @role_names.map do |role_name|
                 %Q{
             has_one :#{role_name}
-            one_to_one :one_#{role_name}, #{role_name.to_s.camelcase(true)}}
+            one_to_one :one_#{role_name}, :class => #{role_name.to_s.camelcase(true)}}
               end*""
             }
           end

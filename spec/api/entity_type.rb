@@ -2,6 +2,8 @@
 # ActiveFacts tests: Entity classes in the Runtime API
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+require 'activefacts/api'
+
 describe "Entity Type class definitions" do
   before :each do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
@@ -13,7 +15,7 @@ describe "Entity Type class definitions" do
       end
       class Person < LegalEntity
         identified_by :name
-        has_one :name, Name
+        has_one :name, :class => Name
       end
     end
   end

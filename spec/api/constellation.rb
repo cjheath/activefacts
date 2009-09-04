@@ -50,7 +50,7 @@ describe "A Constellation instance" do
         identified_by :name, :family_name     # REVISIT: want a way to role_alias :name, :given_name
         supertypes SurrogateId
 
-        has_one :family_name, :Name
+        has_one :family_name, :class => Name
       end
     end
     @constellation = ActiveFacts::API::Constellation.new(Mod)

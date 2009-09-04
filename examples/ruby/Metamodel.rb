@@ -8,7 +8,7 @@ module ::Metamodel
 
   class Assimilation < String
     value_type 
-    restrict 'separate', 'partitioned'
+    restrict 'partitioned', 'separate'
   end
 
   class ConstraintId < AutoCounter
@@ -21,7 +21,7 @@ module ::Metamodel
 
   class ContextNoteKind < String
     value_type 
-    restrict 'because', 'as_opposed_to', 'so_that', 'to_avoid'
+    restrict 'as_opposed_to', 'because', 'so_that', 'to_avoid'
   end
 
   class Date < ::Date
@@ -86,7 +86,7 @@ module ::Metamodel
 
   class Pronoun < String
     value_type :length => 20
-    restrict 'personal', 'masculine', 'feminine'
+    restrict 'feminine', 'masculine', 'personal'
   end
 
   class RingType < String

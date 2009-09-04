@@ -29,7 +29,7 @@ module ::Genealogy
 
   class EventRoleName < String
     value_type 
-    restrict 'Subject', 'Father', 'Mother', 'Husband', 'Wife', 'Celebrant'
+    restrict 'Celebrant', 'Father', 'Husband', 'Mother', 'Subject', 'Wife'
   end
 
   class EventTypeID < AutoCounter
@@ -38,12 +38,12 @@ module ::Genealogy
 
   class EventTypeName < String
     value_type :length => 16
-    restrict 'Birth', 'Christening', 'Marriage', 'Divorce', 'Death', 'Burial'
+    restrict 'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'
   end
 
   class Gender < FixedLengthText
     value_type :length => 1
-    restrict 'M', 'F'
+    restrict 'F', 'M'
   end
 
   class Month < UnsignedInteger

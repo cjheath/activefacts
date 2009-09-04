@@ -47,7 +47,7 @@ module ::Orienteering
 
   class Gender < FixedLengthText
     value_type :length => 1
-    restrict 'M', 'F'
+    restrict 'F', 'M'
   end
 
   class GivenName < String
@@ -97,7 +97,7 @@ module ::Orienteering
 
   class ScoringMethod < String
     value_type :length => 32
-    restrict 'Score', 'Scatter', 'Special'
+    restrict 'Scatter', 'Score', 'Special'
   end
 
   class SeriesID < AutoCounter
