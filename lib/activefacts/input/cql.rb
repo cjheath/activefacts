@@ -4,6 +4,7 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/cql/parser'
+#require 'activefacts/cql/compiler'
 
 module ActiveFacts
   module Input #:nodoc:
@@ -53,7 +54,7 @@ module ActiveFacts
       def read  #:nodoc:
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
 
-        @parser = ActiveFacts::CQLParser.new
+        @parser = ActiveFacts::CQL::Parser.new
 
         # The syntax tree created from each parsed CQL statement gets passed to the block.
         # parse_all returns an array of the block's non-nil return values.

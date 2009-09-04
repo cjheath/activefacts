@@ -21,7 +21,7 @@ true # Ok, got the stack set up, continue to the fault
 
 puts "This is a stub for the CQL interactive commandline. At the moment it only parses CQL and shows the parse trees."
 
-parser = ActiveFacts::CQLParser.new
+parser = ActiveFacts::CQL::Parser.new
 parser.root = :definition
 statement = nil
 while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])

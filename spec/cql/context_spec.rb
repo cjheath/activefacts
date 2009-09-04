@@ -53,7 +53,7 @@ describe "Business Context Notes" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQLParser.new
+    @parser = ActiveFacts::CQL::Parser.new
   end
 
   Notes.each do |c|

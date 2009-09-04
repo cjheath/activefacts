@@ -114,7 +114,7 @@ describe "Valid Numbers, Strings and Ranges" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQLParser.new
+    @parser = ActiveFacts::CQL::Parser.new
   end
 
   ValidNumbersEtc.each do |c|
@@ -151,7 +151,7 @@ describe "Invalid Numbers and Strings" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQLParser.new
+    @parser = ActiveFacts::CQL::Parser.new
   end
 
   InvalidValueTypes.each do |c|
@@ -176,7 +176,7 @@ describe "Value Types" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQLParser.new
+    @parser = ActiveFacts::CQL::Parser.new
   end
 
   ValueTypes.each do |c|
@@ -272,7 +272,7 @@ describe "Entity Types" do
     EntityTypes_Subtypes
 
   before :each do
-    @parser = ActiveFacts::CQLParser.new
+    @parser = ActiveFacts::CQL::Parser.new
   end
 
   EntityTypes.each do |c|
@@ -318,7 +318,7 @@ describe "Fact Types" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQLParser.new
+    @parser = ActiveFacts::CQL::Parser.new
   end
 
   FactTypes.each do |c|
@@ -349,7 +349,7 @@ describe "Fact Types" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQLParser.new
+    @parser = ActiveFacts::CQL::Parser.new
   end
 
   Constraints.each do |c|
