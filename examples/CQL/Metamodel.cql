@@ -109,6 +109,7 @@ Name is of Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
 Unit has at most one Offset;
+Unit is ephemeral;
 Unit is fundamental;
 
 ValueRange is identified by minimum-Bound and maximum-Bound where

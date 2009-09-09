@@ -388,6 +388,8 @@ CREATE TABLE Unit (
 	CoefficientIsPrecise                    bit NULL,
 	-- maybe Unit has Coefficient and Coefficient has Numerator,
 	CoefficientNumerator                    decimal NULL,
+	-- Unit is ephemeral,
+	IsEphemeral                             bit NOT NULL,
 	-- Unit is fundamental,
 	IsFundamental                           bit NOT NULL,
 	-- Name is of Unit,

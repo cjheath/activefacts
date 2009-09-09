@@ -456,7 +456,7 @@ player, binding = @symbols.bind(names)
               :coefficient => coefficient,
               :offset => offset,
               :is_fundamental => base_units.empty?,
-              #:is_ephemeral => ephemeral,
+              :is_ephemeral => ephemeral,
               :vocabulary => @vocabulary
             )
           base_units.each do |base_unit, exponent|
@@ -464,6 +464,14 @@ player, binding = @symbols.bind(names)
             debug :units, "Base unit #{base_unit}^#{exponent} #{base ? "" : "(implicitly fundamental)"}"
             base ||= @constellation.Unit(:new, :name => base_unit, :is_fundamental => true, :vocabulary => @vocabulary)
             @constellation.Derivation(:derived_unit => unit, :base_unit => base, :exponent => exponent)
+          end
+          if plural
+            plural_unit = @constellation.Unit(:new,
+                :name => plural,
+                :is_fundamental => false,
+                :vocabulary => @vocabulary
+              )
+            @constellation.Derivation(:derived_unit => plural_unit, :base_unit => unit, :exponent => 1)
           end
         end
       end
@@ -615,7 +623,7 @@ player, binding = @symbols.bind(names)
                 # to create the entity instance.
                 when bare_roles.size == 1 &&
                   (binding = bare_roles[0][:binding]) &&
-                  (e = binding.concept).is_a?(EntityType) &&
+                  (e = binding.concept).is_a?(ActiveFacts::Metamodel::EntityType) &&
                   e.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
 
                   # Check this instance doesn't already exist already:
@@ -676,7 +684,7 @@ player, binding = @symbols.bind(names)
               end
             end
           end
-          incomplete = facts.select{|ft| !ft.is_a?(Instance) && !ft.is_a?(Fact)}
+          incomplete = facts.select{|ft| !ft.is_a?(ActiveFacts::Metamodel::Instance) && !ft.is_a?(ActiveFacts::Metamodel::Fact)}
           if incomplete.size > 0
             # Provide a readable description of the problem here, by showing each binding with no instance
             missing_bindings = incomplete.map do |f|
@@ -729,7 +737,7 @@ player, binding = @symbols.bind(names)
       end
 
       def instance_identified_by_literal(population, concept, literal)
-        if concept.is_a?(EntityType)
+        if concept.is_a?(ActiveFacts::Metamodel::EntityType)
           entity_identified_by_literal(population, concept, literal)
         else
           debug :instance, "Making ValueType #{concept.name} #{literal.inspect} #{population.name.size>0 ? " in "+population.name.inspect : ''}" do
@@ -1625,6 +1633,7 @@ player, binding = @symbols.bind(names)
 
       # The Context manages some key information revealed or needed during parsing
       class Context
+        # REVISIT; This class is "work in progress", supporting semantic predicates from Treetop.
         def initialize(compiler)
           @compiler = compiler
           @vocabularies = {}
@@ -1632,22 +1641,61 @@ player, binding = @symbols.bind(names)
 
         def vocabulary(v)
           # puts "Parser has started work on vocabulary #{v}"
-          @vocabularies[v] = @terms = {}
+          @vocabularies[v] = {}
+          @terms = {}
+          true
         end
 
         def entity_type(c)
-          # puts "Parser has started work on entity_type #{c}"
+          #puts "Parser has started work on entity_type '#{c}'"
           @terms[c] = true
+          true
         end
 
         def value_type(c)
-          # puts "Parser has started work on value_type #{c}"
+          #puts "Parser has started work on value_type '#{c}'"
           @terms[c] = true
+          true
         end
 
         def objectified_fact_type(c)
-          # puts "Parser has started work on objectified_fact_type #{c}"
+          #puts "Parser has started work on objectified_fact_type '#{c}'"
           @terms[c] = true
+          true
+        end
+
+        def reset_role_names
+          # puts "\tresetting role names #{@role_names.keys.sort*", "}" if @role_names && @role_names.size > 0
+          @role_names = {}
+          true
+        end
+
+        def role_name(r)
+          #puts "\tadding role name '#{r}'"
+          @role_names[r] = true
+          true
+        end
+
+        def term?(t)
+          #puts "term?(#{t})"
+          false
+        end
+
+        def global_term?(t)
+          #puts "global_term?(#{t})"
+          false
+        end
+
+        def term_starts(s)
+          #p s
+          #debugger
+          true
+        end
+
+        def term_continues(s)
+          #p s
+          #debugger
+          true
         end
       end
 

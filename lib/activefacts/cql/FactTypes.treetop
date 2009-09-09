@@ -8,16 +8,16 @@ module ActiveFacts
   module CQL
     grammar FactTypes
       rule named_fact_type
-        s name:id
+        s term_definition_name
         ( written_as      # REVISIT: What on earth was I thinking when I wrote this?
         / s is s mapping_pragmas where    # REVISIT: Need a place to put mapping pragmas like [independent]
         )
-                &{|e| input.context.objectified_fact_type(e[1].text_value); true }
+                &{|e| input.context.objectified_fact_type(e[1].value); true }
         anonymous_fact_type
         {
           def value
             f = anonymous_fact_type.value
-            f[0] = name.value
+            f[0] = term_definition_name.value
             f
           end
         }

@@ -8,9 +8,9 @@ module ActiveFacts
   module CQL
     grammar ValueTypes
       rule value_type
-        s name:id
+        s term_definition_name
         written_as
-                &{|e| input.context.value_type(e[1].text_value); true }
+                &{|e| input.context.value_type(e[1].value); true }
         base:id s
         value_type_parameters
         units
@@ -30,7 +30,7 @@ module ActiveFacts
           end
 
           def value
-            [ name.value,
+            [ term_definition_name.value,
               defined_type
             ]
           end

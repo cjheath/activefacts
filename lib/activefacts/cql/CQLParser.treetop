@@ -10,118 +10,119 @@ module ActiveFacts
       include LexicalRules
       include Language        # One of the language modules provides this module
       include Expressions
+      include Terms
       include Concepts
       include ValueTypes
       include FactTypes
       include Context
 
       rule cql_file
-	s seq:definition*
-	{
-	  def definitions
-	    seq.elements.map{|e|
-		e.value rescue $stderr.puts "Can't call value() on #{e.inspect}"
-	      }
-	  end
-	}
+        s seq:definition*
+        {
+          def definitions
+            seq.elements.map{|e|
+                e.value rescue $stderr.puts "Can't call value() on #{e.inspect}"
+              }
+          end
+        }
       end
 
       # Each definition has a value() method that returns an array like
       # either [name, [kind, definition]] or [name, kind]:
       rule definition
-	vocabulary_definition
-	/ import_definition
-	/ constraint
-	/ unit_definition
-	/ concept
+        vocabulary_definition
+        / import_definition
+        / constraint
+        / unit_definition
+        / concept
       end
 
       rule vocabulary_definition
-	s vocabulary S id s ';' s &{|e| input.context.vocabulary(e[3].text_value); true }
-	{
-	  def value
-	    [ id.value, [ :vocabulary ] ]
-	  end
-	}
+        s vocabulary S id s ';' s &{|e| input.context.vocabulary(e[3].text_value); true }
+        {
+          def value
+            [ id.value, [ :vocabulary ] ]
+          end
+        }
       end
 
       rule import_definition
-	s import S id alias_list ';' s
-	{
-	  def value
-	    puts "import #{id.value}: not implemented"
-	    [ id.value, [ :import ], alias_list.value ]
-	  end
-	}
+        s import S id alias_list ';' s
+        {
+          def value
+            puts "import #{id.value}: not implemented"
+            [ id.value, [ :import ], alias_list.value ]
+          end
+        }
       end
 
       # REVISIT: Need a way to define equivalent readings for fact types here (and in the metamodel)
       rule alias_list
-	( s ',' s alias S aliased_from:id S as S alias_to:id s )*
-	{
-	  def value
-	    elements.inject({}){|h, e| h[e.aliased_from.value] = e.alias_to; h }
-	  end
-	}
+        ( s ',' s alias S aliased_from:id S as S alias_to:id s )*
+        {
+          def value
+            elements.inject({}){|h, e| h[e.aliased_from.value] = e.alias_to; h }
+          end
+        }
       end
 
       rule constraint
-	subset_constraint /
-	equality_constraint /
-	set_constraint /
-	presence_constraint
-	# REVISIT: / value_constraint
+        subset_constraint /
+        equality_constraint /
+        set_constraint /
+        presence_constraint
+        # REVISIT: / value_constraint
       end
 
       # presence constraint:
       rule presence_constraint
-	s 'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s 'in' s
-	readings_list s
-	c:context? ';' s
-	{ def value; [ nil, [ :constraint, :presence, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value ] ]; end }
+        s 'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s 'in' s
+        readings_list s
+        c:context? ';' s
+        { def value; [ nil, [ :constraint, :presence, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value ] ]; end }
       end
 
       # set (exclusion, mandatory exclusion, complex equality) constraint
       rule set_constraint
-	s 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
-	  readings_list s
-	  c:context? ';' s
-	  { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value  ] ]; end }
-	/
-	s either? s r1:readings s or s r2:readings exclusion:(but s not s both s)? c:context? ';' s
-	  { def value;
-	      [ nil, [ :constraint, :set,
-		nil,  # No roles names, rely on the join
-		exclusion.text_value.empty? ?
-		  [1, nil] :	# At least one (meaning 1 or 2/more)
-		  [1,1],		# Exactly one (1 and only 1)
-		[r1.value, r2.value],
-		c.empty? ? nil : c.value
-	      ] ];
-	    end
-	  }
+        s 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s ':' s
+          readings_list s
+          c:context? ';' s
+          { def value; [ nil, [ :constraint, :set, role_list.roles, quantifier.value, readings_list.value, c.empty? ? nil : c.value  ] ]; end }
+        /
+        s either? s r1:readings s or s r2:readings exclusion:(but s not s both s)? c:context? ';' s
+          { def value;
+              [ nil, [ :constraint, :set,
+                nil,  # No roles names, rely on the join
+                exclusion.text_value.empty? ?
+                  [1, nil] :    # At least one (meaning 1 or 2/more)
+                  [1,1],                # Exactly one (1 and only 1)
+                [r1.value, r2.value],
+                c.empty? ? nil : c.value
+              ] ];
+            end
+          }
       end
 
       rule subset_constraint
-	s readings s only s if s r2:readings s
-	c:context? ';' s
-	{ def value; [ nil, [ :constraint, :subset, [readings.value, r2.value], c.empty? ? nil : c.value ] ]; end }
+        s readings s only s if s r2:readings s
+        c:context? ';' s
+        { def value; [ nil, [ :constraint, :subset, [readings.value, r2.value], c.empty? ? nil : c.value ] ]; end }
       end
 
       rule equality_constraint
-	s readings s tail:( if s and s only s if s readings s)+
-	c:context? ';' s
-	{ def value; [ nil, [ :constraint, :equality, [readings.value] + tail.elements.map{|e| e.readings.value }, c.empty? ? nil : c.value ]]; end }
+        s readings s tail:( if s and s only s if s readings s)+
+        c:context? ';' s
+        { def value; [ nil, [ :constraint, :equality, [readings.value] + tail.elements.map{|e| e.readings.value }, c.empty? ? nil : c.value ]]; end }
       end
 
       rule readings_list
-	readings tail:( ',' s readings )*
-	{ def value; [readings.value]+tail.elements.map{|e| e.readings.value }; end }
+        readings tail:( ',' s readings )*
+        { def value; [readings.value]+tail.elements.map{|e| e.readings.value }; end }
       end
 
       rule readings
-	reading s tail:( and s reading s )*
-	{ def value; [reading.value]+tail.elements.map{|e| e.reading.value }; end }
+        reading s tail:( and s reading s )*
+        { def value; [reading.value]+tail.elements.map{|e| e.reading.value }; end }
       end
 
     end

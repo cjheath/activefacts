@@ -30,7 +30,7 @@ module ActiveFacts
       end
 
       rule sum
-        t0:term s tail:( op:add_op s t1:term s )*
+        t0:product s tail:( op:add_op s t1:product s )*
         {
           def value
             return t0.value if tail.empty?
@@ -49,7 +49,7 @@ module ActiveFacts
         '+' / '-'
       end
 
-      rule term
+      rule product
         f0:factor s tail:( op:mul_op s f1:factor s )*
         {
           def value

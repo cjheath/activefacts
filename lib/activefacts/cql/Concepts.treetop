@@ -8,16 +8,17 @@ module ActiveFacts
   module CQL
     grammar Concepts
       rule concept
-        entity_type
-        / value_type
+        value_type
+	/ term_prescan
+        / entity_type
         / named_fact_type
         / anonymous_fact_type
       end
 
       rule entity_type
-        s name:id s
+        s term_definition_name
         sup:(basetype / subtype)
-                &{|e| input.context.entity_type(e[1].text_value); true }
+                &{|e| input.context.entity_type(e[1].value); true }
         mapping_pragmas
         ec:entity_conditions?
         ';' s
@@ -27,7 +28,7 @@ module ActiveFacts
           end
 
           def value
-            [ name.value,
+            [ term_definition_name.value,
               defined_type
             ]
           end
