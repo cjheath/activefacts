@@ -2,8 +2,7 @@
 # ActiveFacts tests: Test the relational absorption by compiling CQL fragments.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
-require 'rubygems'
-require 'treetop'
+
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/input/cql'

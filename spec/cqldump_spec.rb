@@ -2,7 +2,7 @@
 # ActiveFacts tests: Test the generated CQL for some simple cases.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
-require 'rubygems'
+
 require 'stringio'
 require 'activefacts/support'
 require 'activefacts/vocabulary'

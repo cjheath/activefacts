@@ -34,7 +34,7 @@ SQL is.
   p.post_install_message = 'For more information on ActiveFacts, see http://dataconstellation.com/ActiveFacts'
   p.rubyforge_name       = "cjheath@rubyforge.org"
   p.extra_deps         = [
-    ['treetop','>= 1.2.4'],
+    ['treetop','>= 1.4.1'],
   ]
   p.extra_dev_deps = [
     ['newgem', ">= #{::Newgem::VERSION}"]

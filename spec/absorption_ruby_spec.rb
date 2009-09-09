@@ -1,9 +1,8 @@
-
-
+#
 # ActiveFacts tests: Compare column lists created by aborption and by generated Ruby.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
-require 'rubygems'
+
 require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/support'

@@ -1,7 +1,9 @@
-# # ActiveFacts tests: Parse all CQL files and check the generated CQL.
+#
+# ActiveFacts tests: Parse all CQL files and check the generated CQL.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
-require 'rubygems'
+
+require 'spec/spec_helper'
 require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/support'
@@ -9,13 +11,6 @@ require 'activefacts/input/cql'
 require 'activefacts/generate/cql'
 
 include ActiveFacts
-
-class String
-  def strip_comments()
-    c_comment = %r{/\*((?!\*/).)*\*/}m
-    gsub(c_comment, '').gsub(%r{\n\n+},"\n")
-  end
-end
 
 describe "CQL Loader" do
   cql_failures = {
@@ -56,16 +51,15 @@ describe "CQL Loader" do
       # Build and save the actual file:
       cql_text = cql(vocabulary)
       File.open(actual_file, "w") { |f| f.write cql_text }
+      expected_text = File.open(cql_file) {|f| f.read }
 
-      expected_text = File.open(cql_file) {|f| f.read.strip_comments }.scan(/.*?\n/)
-      stripped_and_split = cql_text.strip_comments.scan(/.*?\n/)
       broken = cql_cql_failures[File.basename(actual_file, ".cql")]
       if broken
         pending(broken) {
-          stripped_and_split.should == expected_text
+          cql_text.should_not differ_from(expected_text)
         }
       else
-        stripped_and_split.should == expected_text
+        cql_text.should_not differ_from(expected_text)
         File.delete(actual_file)  # It succeeded, we don't need the file.
       end
     end

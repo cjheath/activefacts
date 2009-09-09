@@ -2,7 +2,8 @@
 # ActiveFacts tests: Parse all CQL files and check the generated SQL.
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
-require 'rubygems'
+
+require 'spec/spec_helper'
 require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/support'
@@ -65,13 +66,14 @@ describe "CQL Loader with SQL output" do
 
       pending("expected output file #{expected_file} not found") unless File.exists? expected_file
 
+      expected_text = File.open(expected_file) {|f| f.read }
       broken = cql_sql_failures[File.basename(cql_file, ".cql")]
       if broken
         pending(broken) {
-          sql_text.should == File.open(expected_file) {|f| f.read }
+          sql_text.should_not differ_from(expected_text)
         }
       else
-        sql_text.should == File.open(expected_file) {|f| f.read }
+        sql_text.should_not differ_from(expected_text)
         File.delete(actual_file)  # It succeeded, we don't need the file.
       end
     end

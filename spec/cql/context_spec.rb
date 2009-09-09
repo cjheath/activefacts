@@ -2,8 +2,7 @@
 # ActiveFacts CQL Business Context Note tests
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
-require 'rubygems'
-require 'treetop'
+
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/parser'
