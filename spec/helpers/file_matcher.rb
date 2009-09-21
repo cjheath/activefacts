@@ -3,11 +3,11 @@ require 'diff/lcs'
 module FileMatcher
   class BeDifferent
     def initialize(expected)
-      @expected = expected.scan(/[^\r\n]+/)
+      @expected = expected.scan(/[^\n]+/)
     end
 
     def matches?(actual)
-      actual_lines = actual.scan(/[^\r\n]+/)
+      actual_lines = actual.scan(/[^\n]+/)
       differences = Diff::LCS::diff(@expected, actual_lines)
       @diff = differences.map do |chunk|
           added_at = (add = chunk.detect{|d| d.action == '+'}) && add.position+1
