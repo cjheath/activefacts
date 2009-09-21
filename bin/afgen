@@ -13,7 +13,7 @@ require 'activefacts/vocabulary'
 if ENV['DEBUG']
   begin
     require 'ruby-debug'
-    debugger if debug :exception
+    Debugger.start(:post_mortem => true)	# Stop when an exception is thrown, but before it's rescued
   rescue LoadError
     # Ok, no debugger, tough luck.
   end
