@@ -17,28 +17,23 @@ FactTypeId is written as AutoCounter;
 Frequency is written as UnsignedInteger(32);
 InstanceId is written as AutoCounter;
 Length is written as UnsignedInteger(32);
+Literal is written as VariableLengthText;
 Name is written as VariableLengthText(64);
 Numerator is written as Decimal;
 Offset is written as Decimal;
 Ordinal is written as UnsignedSmallInteger(32);
 PersonName is written as VariableLengthText;
-Pronoun is written as VariableLengthText(20) restricted to {'feminine', 'masculine', 'personal'};
+Pronoun is written as VariableLengthText(20) restricted to {'feminine', 'masculine', 'neuter', 'personal'};
 RingType is written as VariableLengthText;
 RoleSequenceId is written as AutoCounter;
 Scale is written as UnsignedInteger(32);
 Text is written as VariableLengthText(256);
 UnitId is written as AutoCounter;
-Value is written as VariableLengthText(256);
 ValueRestrictionId is written as AutoCounter;
 
 /*
  * Entity Types
  */
-Bound is identified by Value and Bound is inclusive where
-	Bound has one Value,
-	Value is of at least one Bound,
-	Bound is inclusive;
-
 Coefficient is identified by Numerator and Denominator and Coefficient is precise where
 	Coefficient has one Numerator,
 	Coefficient has one Denominator,
@@ -67,7 +62,6 @@ FactType has ContextNote,
 
 Instance is identified by its Id;
 Instance objectifies at most one Fact;
-Instance has at most one Value;
 
 Person is identified by its Name;
 
@@ -87,6 +81,15 @@ Reading has one Text;
 RingConstraint is a kind of Constraint;
 RingConstraint is of one RingType;
 
+Role is where
+	FactType has at least one Ordinal role;
+Role is of RingConstraint,
+	RingConstraint has at most one Role;
+Role has at most one role-Name,
+	role-Name is name of at least one Role;
+other-Role is of RingConstraint,
+	RingConstraint has at most one other-Role;
+
 RoleSequence is identified by its Id;
 PresenceConstraint covers one RoleSequence;
 Reading is in one RoleSequence,
@@ -97,6 +100,7 @@ RoleValue is identified by Instance and Fact where
 	RoleValue is of one Instance,
 	RoleValue fulfils one Fact,
 	Fact includes at least one RoleValue;
+RoleValue is of one Role;
 
 SetConstraint is a kind of Constraint;
 
@@ -112,11 +116,17 @@ Unit has at most one Offset;
 Unit is ephemeral;
 Unit is fundamental;
 
-ValueRange is identified by minimum-Bound and maximum-Bound where
-	ValueRange has at most one minimum-Bound,
-	ValueRange has at most one maximum-Bound;
+Value is identified by Literal and Value is a string and Unit where
+	Value is represented by one Literal,
+	Literal represents Value,
+	Value is a string,
+	Value is in at most one Unit,
+	Unit is of Value;
+Instance has at most one Value;
 
 ValueRestriction is identified by its Id;
+Role has at most one role-ValueRestriction,
+	ValueRestriction applies to Role;
 
 Vocabulary is identified by Name where
 	Vocabulary is called one Name;
@@ -130,8 +140,10 @@ Agreement is identified by ContextNote where
 	Agreement covers one ContextNote;
 Agreement was on at most one Date;
 
-AllowedRange is where
-	ValueRestriction allows at least one ValueRange;
+Bound is identified by Value and Bound is inclusive where
+	Bound has one Value,
+	Value is of at least one Bound,
+	Bound is inclusive;
 
 Concept is identified by Vocabulary and Name where
 	Concept belongs to one Vocabulary,
@@ -140,6 +152,8 @@ Concept is identified by Vocabulary and Name where
 Concept has ContextNote,
 	ContextNote applies to at most one Concept;
 Concept uses at most one Pronoun;
+Concept plays Role,
+	Role is played by one Concept;
 Concept is independent;
 Instance is of one Concept;
 
@@ -171,20 +185,6 @@ Population includes Instance,
 Population includes RoleValue,
 	RoleValue belongs to one Population;
 
-Role is where
-	FactType has Ordinal place played by at most one Concept,
-	Concept participates in FactType in Ordinal place,
-	Concept plays Ordinal place in FactType;
-Role is of RingConstraint,
-	RingConstraint has at most one Role;
-Role has at most one role-Name,
-	role-Name is name of at least one Role;
-Role has at most one role-ValueRestriction,
-	ValueRestriction applies to Role;
-RoleValue is of one Role;
-other-Role is of RingConstraint,
-	RingConstraint has at most one other-Role;
-
 RoleRef is where
 	RoleSequence in Ordinal position includes at most one Role,
 	Role is in RoleSequence in at most one Ordinal place,
@@ -213,6 +213,10 @@ Assimilation applies to TypeInheritance,
 	TypeInheritance uses at most one Assimilation;
 TypeInheritance provides identification;
 
+ValueRange is identified by minimum-Bound and maximum-Bound where
+	ValueRange has at most one minimum-Bound,
+	ValueRange has at most one maximum-Bound;
+
 ValueType is a kind of Concept;
 ValueType has at most one Length,
 	Length is of ValueType;
@@ -222,6 +226,9 @@ ValueType is of at most one Unit;
 ValueType has at most one ValueRestriction;
 ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 	Supertype is supertype of ValueType;
+
+AllowedRange is where
+	ValueRestriction allows at least one ValueRange;
 
 Join is where
 	RoleRef has Ordinal (as JoinStep) join;
@@ -254,10 +261,10 @@ for each Instance at most one of these holds:
 	Instance objectifies Fact;
 Instance plays RoleValue and Instance is of Concept
 	if and only if
-	RoleValue is of Role and FactType has Ordinal place played by Concept;
+	RoleValue is of Role and Concept plays Role;
 RoleValue fulfils Fact and Fact is of FactType
 	if and only if
-	RoleValue is of Role and FactType has Ordinal place played by Concept;
+	RoleValue is of Role and FactType has Ordinal role;
 either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConstraint is a SetEqualityConstraint but not both;
 either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
 either Unit is fundamental or that Unit is derived from some base-Unit but not both;
@@ -270,8 +277,6 @@ each combination EntityType, TypeInheritance occurs at most one time in
 	TypeInheritance provides identification;
 each Fact occurs at most one time in
 	Instance objectifies Fact;
-each FactType occurs at least one time in
-	FactType has Ordinal place played by Concept;
 either Join has input-Role or Join has output-Role;
 each PresenceConstraint occurs at least one time in
 	PresenceConstraint has min-Frequency restricted to {2..},
