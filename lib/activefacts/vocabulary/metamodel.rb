@@ -9,7 +9,7 @@ module ActiveFacts
 
     class Assimilation < String
       value_type 
-      restrict 'separate', 'partitioned'
+      restrict 'partitioned', 'separate'
     end
 
     class ConstraintId < AutoCounter
@@ -22,7 +22,7 @@ module ActiveFacts
 
     class ContextNoteKind < String
       value_type 
-      restrict 'because', 'as_opposed_to', 'so_that', 'to_avoid'
+      restrict 'as_opposed_to', 'because', 'so_that', 'to_avoid'
     end
 
     class Date < ::Date
@@ -65,6 +65,10 @@ module ActiveFacts
       value_type :length => 32
     end
 
+    class Literal < String
+      value_type 
+    end
+
     class Name < String
       value_type :length => 64
     end
@@ -87,7 +91,7 @@ module ActiveFacts
 
     class Pronoun < String
       value_type :length => 20
-      restrict 'personal', 'masculine', 'feminine'
+      restrict 'feminine', 'masculine', 'neuter', 'personal'
     end
 
     class RingType < String
@@ -110,18 +114,8 @@ module ActiveFacts
       value_type 
     end
 
-    class Value < String
-      value_type :length => 256
-    end
-
     class ValueRestrictionId < AutoCounter
       value_type 
-    end
-
-    class Bound
-      identified_by :value, :is_inclusive
-      maybe :is_inclusive
-      has_one :value, :mandatory => true          # See Value.all_bound
     end
 
     class Coefficient
@@ -197,6 +191,15 @@ module ActiveFacts
       has_one :role                               # See Role.all_ring_constraint
     end
 
+    class Role
+      identified_by :fact_type, :ordinal
+      has_one :fact_type, :mandatory => true      # See FactType.all_role
+      has_one :ordinal, :mandatory => true        # See Ordinal.all_role
+      has_one :concept, :mandatory => true        # See Concept.all_role
+      has_one :role_name, :class => Name          # See Name.all_role_as_role_name
+      has_one :role_value_restriction, :class => "ValueRestriction"  # See ValueRestriction.all_role_as_role_value_restriction
+    end
+
     class RoleSequence
       identified_by :role_sequence_id
       one_to_one :role_sequence_id, :mandatory => true  # See RoleSequenceId.role_sequence
@@ -229,10 +232,11 @@ module ActiveFacts
       has_one :vocabulary, :mandatory => true     # See Vocabulary.all_unit
     end
 
-    class ValueRange
-      identified_by :minimum_bound, :maximum_bound
-      has_one :maximum_bound, :class => Bound     # See Bound.all_value_range_as_maximum_bound
-      has_one :minimum_bound, :class => Bound     # See Bound.all_value_range_as_minimum_bound
+    class Value
+      identified_by :literal, :is_a_string, :unit
+      maybe :is_a_string
+      has_one :literal, :mandatory => true        # See Literal.all_value
+      has_one :unit                               # See Unit.all_value
     end
 
     class ValueRestriction
@@ -251,10 +255,10 @@ module ActiveFacts
       has_one :date                               # See Date.all_agreement
     end
 
-    class AllowedRange
-      identified_by :value_restriction, :value_range
-      has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
-      has_one :value_restriction, :mandatory => true  # See ValueRestriction.all_allowed_range
+    class Bound
+      identified_by :value, :is_inclusive
+      maybe :is_inclusive
+      has_one :value, :mandatory => true          # See Value.all_bound
     end
 
     class Concept
@@ -294,15 +298,6 @@ module ActiveFacts
       has_one :vocabulary                         # See Vocabulary.all_population
     end
 
-    class Role
-      identified_by :fact_type, :ordinal
-      has_one :concept, :mandatory => true        # See Concept.all_role
-      has_one :fact_type, :mandatory => true      # See FactType.all_role
-      has_one :ordinal, :mandatory => true        # See Ordinal.all_role
-      has_one :role_name, :class => Name          # See Name.all_role_as_role_name
-      has_one :role_value_restriction, :class => ValueRestriction  # See ValueRestriction.all_role_as_role_value_restriction
-    end
-
     class RoleRef
       identified_by :role_sequence, :ordinal
       has_one :ordinal, :mandatory => true        # See Ordinal.all_role_ref
@@ -337,12 +332,24 @@ module ActiveFacts
       maybe :provides_identification
     end
 
+    class ValueRange
+      identified_by :minimum_bound, :maximum_bound
+      has_one :maximum_bound, :class => Bound     # See Bound.all_value_range_as_maximum_bound
+      has_one :minimum_bound, :class => Bound     # See Bound.all_value_range_as_minimum_bound
+    end
+
     class ValueType < Concept
       has_one :length                             # See Length.all_value_type
       has_one :scale                              # See Scale.all_value_type
       has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
       has_one :unit                               # See Unit.all_value_type
       has_one :value_restriction                  # See ValueRestriction.all_value_type
+    end
+
+    class AllowedRange
+      identified_by :value_restriction, :value_range
+      has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
+      has_one :value_restriction, :mandatory => true  # See ValueRestriction.all_allowed_range
     end
 
     class Join

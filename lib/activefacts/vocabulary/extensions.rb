@@ -347,7 +347,6 @@ module ActiveFacts
                   ta,
                   define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil,
                   # Can't have both a literal and a restriction, but we don't enforce that here:
-                  (vr = role.role_value_restriction) ? vr.describe : nil,
                   literal ? literal : nil
                 ].compact*" "
             }
@@ -374,36 +373,21 @@ module ActiveFacts
     class ValueRestriction
       def describe
         "restricted to {"+
-          all_allowed_range.sort_by{|ar|
-              ((min = ar.value_range.minimum_bound) && min.value) ||
-                ((max = ar.value_range.maximum_bound) && max.value)
-            }.map{|ar|
-            # REVISIT: Need to display as string or numeric according to type here...
-            min = ar.value_range.minimum_bound
-            max = ar.value_range.maximum_bound
-
-            (min ? min.value : "") +
-              (min.value != (max&&max.value) ? (".." + (max ? max.value : "")) : "")
-          }*", "+
+          all_allowed_range_sorted.map{|ar| ar.to_s(false) }*", "+
           "}"
       end
 
       def all_allowed_range_sorted
         all_allowed_range.sort_by{|ar|
-            ((min = ar.value_range.minimum_bound) && min.value) ||
-              ((max = ar.value_range.maximum_bound) && max.value)
+            ((min = ar.value_range.minimum_bound) && min.value.literal) ||
+              ((max = ar.value_range.maximum_bound) && max.value.literal)
           }
       end
 
       def to_s
         if all_allowed_range.size > 1
         "[" +
-          all_allowed_range.sort_by do |ar|
-              ((min = ar.value_range.minimum_bound) && min.value) ||
-                ((max = ar.value_range.maximum_bound) && max.value)
-          end.map do |ar|
-            ar.to_s
-          end*", " +
+          all_allowed_range.sorted.map { |ar| ar.to_s(true) }*", " +
         "]"
         else
           all_allowed_range.single.to_s
@@ -412,13 +396,43 @@ module ActiveFacts
     end
 
     class AllowedRange
-      def to_s
+      def to_s(infinity = true)
         min = value_range.minimum_bound
         max = value_range.maximum_bound
-        # REVISIT: The result here is meant to work in Ruby, but open-ended ranges will fail.
-        # Can handle numeric ones using INFINITY (1.0/0, -1.0/0), but strings???
-        (min ? min.value : "") +
-          (min.value != (max&&max.value) ? (".." + (max ? max.value : "")) : "")
+        # Open-ended string ranges will fail in Ruby
+
+        if min = value_range.minimum_bound
+          min = min.value
+          if min.is_a_string
+            min_literal = min.literal.inspect.gsub(/\A"|"\Z/,"'")   # Escape string characters
+          else
+            min_literal = min.literal
+          end
+        else
+          min_literal = infinity ? "INFINITY" : ""
+        end
+        if max = value_range.maximum_bound
+          max = max.value
+          if max.is_a_string
+            max_literal = max.literal.inspect.gsub(/\A"|"\Z/,"'")   # Escape string characters
+          else
+            max_literal = max.literal
+          end
+        else
+          max_literal = infinity ? "INFINITY" : ""
+        end
+
+        min_literal +
+          (min_literal != (max&&max_literal) ? (".." + max_literal) : "")
+      end
+    end
+
+    class Value
+      def to_s
+        (is_a_string ? literal.inspect.gsub(/\A"|"\Z/,"'") : literal) + (unit ? " " + unit.name : "")
+      end
+      def inspect
+        to_s
       end
     end
 

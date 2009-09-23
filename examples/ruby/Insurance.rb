@@ -412,14 +412,6 @@ module ::Insurance
     has_one :start_date, :class => Date, :mandatory => true  # See Date.all_cover_wording_as_start_date
   end
 
-  class DamagedProperty
-    identified_by :incident, :address
-    has_one :address, :mandatory => true        # See Address.all_damaged_property
-    has_one :incident                           # See Incident.all_damaged_property
-    has_one :owner_name, :class => Name         # See Name.all_damaged_property_as_owner_name
-    has_one :phone                              # See Phone.all_damaged_property
-  end
-
   class Dealer < Party
   end
 
@@ -442,7 +434,7 @@ module ::Insurance
     identified_by :driving
     has_one :charge, :mandatory => true         # See Charge.all_driving_charge
     one_to_one :driving, :mandatory => true     # See Driving.driving_charge
-    maybe :is_warning
+    maybe :is_a_warning
   end
 
   class FinanceInstitution < Company
@@ -480,6 +472,14 @@ module ::Insurance
     has_one :p_serial, :class => PolicySerial, :mandatory => true  # See PolicySerial.all_policy_as_p_serial
     has_one :p_state, :class => State, :mandatory => true  # See State.all_policy_as_p_state
     has_one :p_year, :class => Year, :mandatory => true  # See Year.all_policy_as_p_year
+  end
+
+  class PropertyDamage
+    identified_by :incident, :address
+    has_one :address, :mandatory => true        # See Address.all_property_damage
+    has_one :incident                           # See Incident.all_property_damage
+    has_one :owner_name, :class => Name         # See Name.all_property_damage_as_owner_name
+    has_one :phone                              # See Phone.all_property_damage
   end
 
   class Repairer < Contractor

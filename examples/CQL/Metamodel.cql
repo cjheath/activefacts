@@ -269,7 +269,7 @@ either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConst
 either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
 either Unit is fundamental or that Unit is derived from some base-Unit but not both;
 PresenceConstraint is preferred identifier
-	only if PresenceConstraint has max-Frequency restricted to {1..};
+	only if PresenceConstraint has max-Frequency;
 ValueType has Scale
 	only if ValueType has Length;
 each combination EntityType, TypeInheritance occurs at most one time in
@@ -279,8 +279,8 @@ each Fact occurs at most one time in
 	Instance objectifies Fact;
 either Join has input-Role or Join has output-Role;
 each PresenceConstraint occurs at least one time in
-	PresenceConstraint has min-Frequency restricted to {2..},
-	PresenceConstraint has max-Frequency restricted to {1..},
+	PresenceConstraint has min-Frequency,
+	PresenceConstraint has max-Frequency,
 	PresenceConstraint is mandatory;
 each RoleSequence occurs at least one time in
 	RoleSequence in Ordinal position includes Role;

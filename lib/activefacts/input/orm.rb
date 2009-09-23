@@ -178,23 +178,12 @@ module ActiveFacts
       def value_range(x_range)
         min = x_range['MinValue']
         max = x_range['MaxValue']
-        q = "'"
-        min = case min
-          when ""; nil
-          when /[^0-9\.]/; q+min+q
-          when /\./; Float(min)
-          else Integer(min)
-          end
-        max = case max
-          when ""; nil
-          when /[^0-9\.]/; q+max+q
-          when /\./; Float(max)
-          else Integer(max)
-          end
+
+        strings = is_a_string(min) || is_a_string(max)
         # ValueRange takes a minimum and/or a maximum Bound, each takes value and whether inclusive
         @constellation.ValueRange(
-            min ? [min.to_s, true] : nil,
-            max ? [max.to_s, true] : nil
+            min && min != '' ? [[min, strings, nil], true] : nil,
+            max && max != '' ? [[max, strings, nil], true] : nil
           )
       end
 
@@ -807,7 +796,7 @@ module ActiveFacts
           vt = @by_id[vt_id]
           throw "ValueType #{vtname} not found" unless vt
 
-          i = Instance.new(vt, v.text)
+          i = Instance.new(vt, [v.text, is_a_string(v.text), nil])
           @by_id[id] = i
           # show_xmlobj(v)
         }
@@ -834,7 +823,7 @@ module ActiveFacts
             throw "EntityType #{etname} not found" unless et
           end
 
-          instance = Instance.new(et)
+          instance = Instance.new(et, nil)
           @by_id[id] = instance
           # puts "Made new EntityType #{etname}"
         }
@@ -918,6 +907,11 @@ module ActiveFacts
           last_fact = Fact.new(population, last_fact_type, *fact_roles)
         end
 
+      end
+
+      # Detect numeric data and denote it as a string:
+      def is_a_string(value)
+        value =~ /[^ \d.]/
       end
 
       def read_rest

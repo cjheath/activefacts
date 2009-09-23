@@ -100,8 +100,8 @@ module ActiveFacts
         ranges.each do |range|
           min, max = Array === range ? range : [range, range]
           v_range = @constellation.ValueRange(
-            min ? [min.to_s, true] : nil,
-            max ? [max.to_s, true] : nil
+            min ? [[String === min ? eval(min) : min.to_s, String === min, nil], true] : nil,
+            max ? [[String === max ? eval(max) : max.to_s, String === max, nil], true] : nil
             )
           ar = @constellation.AllowedRange(vr, v_range)
         end
@@ -741,12 +741,26 @@ player, binding = @symbols.bind(names)
           entity_identified_by_literal(population, concept, literal)
         else
           debug :instance, "Making ValueType #{concept.name} #{literal.inspect} #{population.name.size>0 ? " in "+population.name.inspect : ''}" do
-            instance = concept.all_instance.detect { |instance|
-              instance.population == population && instance.value == literal
-            }
+
+            is_a_string = String === literal
+            instance = @constellation.Instance.detect do |key, i|
+                # REVISIT: And same unit
+                i.population == population &&
+                  i.value &&
+                  i.value.literal == literal &&
+                  i.value.is_a_string == is_a_string
+              end
+            #instance = concept.all_instance.detect { |instance|
+            #  instance.population == population && instance.value == literal
+            #}
             debug :instance, "This #{concept.name} value already exists" if instance
             unless instance
-              instance = @constellation.Instance(:new, :concept => concept, :population => population, :value => literal)
+              instance = @constellation.Instance(
+                  :new,
+                  :concept => concept,
+                  :population => population,
+                  :value => [literal.to_s, is_a_string, nil]
+                )
             end
             instance
           end

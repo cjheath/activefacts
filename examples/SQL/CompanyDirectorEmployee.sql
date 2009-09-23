@@ -37,7 +37,7 @@ CREATE TABLE Directorship (
 GO
 
 CREATE TABLE Person (
-	-- maybe Person was born on birth-Date restricted to {'1900/01/01'..},
+	-- maybe Person was born on birth-Date,
 	BirthDate                               datetime NULL CHECK(BirthDate >= '1900/01/01'),
 	-- maybe Employee is a kind of Person and Employee works at Company and Company is called CompanyName,
 	EmployeeCompanyName                     varchar(48) NULL,

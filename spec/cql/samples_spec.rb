@@ -81,14 +81,15 @@ describe "Sample data" do
       reading_roles = reading.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.role }
       role_values_in_reading_order = fact.all_role_value.sort_by{|rv| reading_roles.index(rv.role) }
       instance_verbalisations = role_values_in_reading_order.map do |rv|
-        rv.instance.value ? "'#{rv.instance.value}'" : nil
+        next nil unless v = rv.instance.value
+        v.to_s
       end
       return reading.expand([], false, instance_verbalisations)
       # REVISIT: Include the instance_names of all role players
     end
 
     if i.concept.is_a?(ActiveFacts::Metamodel::ValueType)
-      return "#{i.concept.name} '#{i.value}'"
+      return "#{i.concept.name} #{i.value}"
     end
 
     if i.concept.fact_type      # An instance of an objectified fact type

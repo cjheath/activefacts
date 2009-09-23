@@ -37,6 +37,11 @@ module ActiveFacts
         h.map &b
       end
 
+      def detect &b
+        r = h.detect &b
+        r ? r[1] : nil
+      end
+
       # Return an array of all the instances of this concept
       def values
         h.values

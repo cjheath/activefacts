@@ -217,6 +217,14 @@ CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.c
         end
 
       private
+        def sql_value(value)
+          value.is_a_string ? sql_string(value.literal) : value.literal
+        end
+
+        def sql_string(str)
+          "'" + str.gsub(/'/,"''") + "'"
+        end
+
         def check_clause(column_name, restrictions)
           return "" if restrictions.empty?
           # REVISIT: Merge all restrictions (later; now just use the first)
@@ -225,12 +233,12 @@ CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.c
               vr = ar.value_range
               min = vr.minimum_bound
               max = vr.maximum_bound
-              if (min && max && max.value == min.value)
-                "#{column_name} = #{min.value}"
+              if (min && max && max.value.literal == min.value.literal)
+                "#{column_name} = #{sql_value(min.value)}"
               else
                 inequalities = [
-                  min && "#{column_name} >#{min.is_inclusive ? "=" : ""} #{min.value}",
-                  max && "#{column_name} <#{max.is_inclusive ? "=" : ""} #{max.value}"
+                  min && "#{column_name} >#{min.is_inclusive ? "=" : ""} #{sql_value(min.value)}",
+                  max && "#{column_name} <#{max.is_inclusive ? "=" : ""} #{sql_value(max.value)}"
                 ].compact
                 inequalities.size > 1 ? "(" + inequalities*" AND " + ")" : inequalities[0]
               end

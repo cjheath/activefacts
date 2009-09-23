@@ -197,13 +197,6 @@ ContractorAppointment is where
 CoverWording is where
 	CoverType used PolicyWording from start-Date (as startDate);
 
-DamagedProperty is identified by Incident and Address where
-	Incident caused DamagedProperty,
-	DamagedProperty was damaged in at most one Incident,
-	DamagedProperty is at one Address;
-DamagedProperty owner has contact at most one Phone;
-DamagedProperty belongs to at most one owner-Name;
-
 Dealer is a kind of Party;
 Vehicle was sold by at most one Dealer;
 
@@ -221,7 +214,7 @@ Driving was unlicenced for at most one unlicensed-Reason;
 
 DrivingCharge is where
 	Driving resulted in at most one Charge;
-DrivingCharge is warning;
+DrivingCharge is a warning;
 
 FinanceInstitution is a kind of Company;
 Vehicle is subject to finance with at most one FinanceInstitution;
@@ -259,6 +252,14 @@ Policy was sold by at most one AuthorisedRep,
 	AuthorisedRep sold Policy;
 Policy belongs to one Client,
 	Client has Policy;
+
+PropertyDamage is identified by Incident and Address where
+	Incident caused PropertyDamage,
+	PropertyDamage was damaged in at most one Incident,
+	PropertyDamage is at one Address,
+	Address is of PropertyDamage;
+PropertyDamage owner has contact at most one Phone;
+PropertyDamage belongs to at most one owner-Name;
 
 Repairer is a kind of Contractor;
 

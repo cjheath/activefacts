@@ -11,7 +11,7 @@ CREATE TABLE Asset (
 	VehicleFinanceInstitutionID             int NULL,
 	-- maybe Vehicle is a kind of Asset and Vehicle has commercial registration,
 	VehicleHasCommercialRegistration        bit NULL,
-	-- maybe Vehicle is a kind of Asset and Vehicle is of model-Year restricted to {1900..2100} and Year has YearNr,
+	-- maybe Vehicle is a kind of Asset and Vehicle is of model-Year and Year has YearNr,
 	VehicleModelYearNr                      int NULL,
 	-- maybe Vehicle is a kind of Asset and Registration is of Vehicle and Registration has RegistrationNr,
 	VehicleRegistrationNr                   char(8) NULL,
@@ -70,7 +70,7 @@ CREATE TABLE Claim (
 	PolicyPSerial                           int NOT NULL,
 	-- Claim is on Policy and Policy issued in state having p_state and State has StateCode,
 	PolicyPStateCode                        int NOT NULL,
-	-- Claim is on Policy and Policy was issued in p_year restricted to {0..99} and Year has YearNr,
+	-- Claim is on Policy and Policy was issued in p_year and Year has YearNr,
 	PolicyPYearNr                           int NOT NULL,
 	PRIMARY KEY(ClaimID),
 	UNIQUE(PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial, PSequence)
@@ -98,7 +98,7 @@ CREATE TABLE Cover (
 	PolicyPSerial                           int NOT NULL,
 	-- Cover is where Policy provides CoverType over Asset and Policy issued in state having p_state and State has StateCode,
 	PolicyPStateCode                        int NOT NULL,
-	-- Cover is where Policy provides CoverType over Asset and Policy was issued in p_year restricted to {0..99} and Year has YearNr,
+	-- Cover is where Policy provides CoverType over Asset and Policy was issued in p_year and Year has YearNr,
 	PolicyPYearNr                           int NOT NULL,
 	PRIMARY KEY(PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial, CoverTypeCode, AssetID),
 	FOREIGN KEY (AssetID) REFERENCES Asset (AssetID)
@@ -124,26 +124,6 @@ CREATE TABLE CoverWording (
 	StartDate                               datetime NOT NULL,
 	PRIMARY KEY(CoverTypeCode, PolicyWordingText, StartDate),
 	FOREIGN KEY (CoverTypeCode) REFERENCES CoverType (CoverTypeCode)
-)
-GO
-
-CREATE TABLE DamagedProperty (
-	-- DamagedProperty is at Address and Address is in City,
-	AddressCity                             varchar NOT NULL,
-	-- DamagedProperty is at Address and maybe Address is in Postcode,
-	AddressPostcode                         varchar NULL,
-	-- DamagedProperty is at Address and maybe Address is in State and State has StateCode,
-	AddressStateCode                        int NULL CHECK((AddressStateCode >= 0 AND AddressStateCode <= 9)),
-	-- DamagedProperty is at Address and Address is at Street,
-	AddressStreet                           varchar(256) NOT NULL,
-	-- maybe Incident caused DamagedProperty and Claim has ClaimID,
-	IncidentID                              int NULL,
-	-- maybe DamagedProperty belongs to owner-Name,
-	OwnerName                               varchar(256) NULL,
-	-- maybe DamagedProperty owner has contact Phone and Phone has PhoneNr,
-	PhoneNr                                 varchar NULL,
-	UNIQUE(IncidentID, AddressStreet, AddressCity, AddressPostcode, AddressStateCode),
-	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID)
 )
 GO
 
@@ -194,7 +174,7 @@ CREATE TABLE Party (
 	DriverLicenseNumber                     varchar NULL,
 	-- maybe Person is a kind of Party and maybe Driver is a kind of Person and maybe Driver holds License and License is of LicenseType,
 	DriverLicenseType                       varchar NULL,
-	-- maybe Person is a kind of Party and maybe Driver is a kind of Person and maybe Driver holds License and maybe License was granted in Year restricted to {1990..2100} and Year has YearNr,
+	-- maybe Person is a kind of Party and maybe Driver is a kind of Person and maybe Driver holds License and maybe License was granted in Year and Year has YearNr,
 	DriverYearNr                            int NULL,
 	-- Party is a company,
 	IsACompany                              bit NOT NULL,
@@ -276,7 +256,7 @@ CREATE TABLE Policy (
 	PSerial                                 int NOT NULL CHECK((PSerial >= 1 AND PSerial <= 99999)),
 	-- Policy issued in state having p_state and State has StateCode,
 	PStateCode                              int NOT NULL,
-	-- Policy was issued in p_year restricted to {0..99} and Year has YearNr,
+	-- Policy was issued in p_year and Year has YearNr,
 	PYearNr                                 int NOT NULL,
 	PRIMARY KEY(PYearNr, PProductCode, PStateCode, PSerial),
 	FOREIGN KEY (AuthorisedRepID) REFERENCES Party (PartyID),
@@ -309,6 +289,26 @@ CREATE VIEW dbo.Product_ProdDescription (ProdDescription) WITH SCHEMABINDING AS
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ProductByProdDescription ON dbo.Product_ProdDescription(ProdDescription)
+GO
+
+CREATE TABLE PropertyDamage (
+	-- PropertyDamage is at Address and Address is in City,
+	AddressCity                             varchar NOT NULL,
+	-- PropertyDamage is at Address and maybe Address is in Postcode,
+	AddressPostcode                         varchar NULL,
+	-- PropertyDamage is at Address and maybe Address is in State and State has StateCode,
+	AddressStateCode                        int NULL CHECK((AddressStateCode >= 0 AND AddressStateCode <= 9)),
+	-- PropertyDamage is at Address and Address is at Street,
+	AddressStreet                           varchar(256) NOT NULL,
+	-- maybe Incident caused PropertyDamage and Claim has ClaimID,
+	IncidentID                              int NULL,
+	-- maybe PropertyDamage belongs to owner-Name,
+	OwnerName                               varchar(256) NULL,
+	-- maybe PropertyDamage owner has contact Phone and Phone has PhoneNr,
+	PhoneNr                                 varchar NULL,
+	UNIQUE(IncidentID, AddressStreet, AddressCity, AddressPostcode, AddressStateCode),
+	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID)
+)
 GO
 
 CREATE TABLE State (
@@ -378,8 +378,8 @@ CREATE TABLE VehicleIncident (
 	DrivingHospitalName                     varchar(256) NULL,
 	-- maybe Driving is where VehicleIncident involves Driver and maybe Driving followed Intoxication,
 	DrivingIntoxication                     varchar NULL,
-	-- maybe Driving is where VehicleIncident involves Driver and maybe DrivingCharge is where Driving resulted in Charge and DrivingCharge is warning,
-	DrivingIsWarning                        bit NULL,
+	-- maybe Driving is where VehicleIncident involves Driver and maybe DrivingCharge is where Driving resulted in Charge and DrivingCharge is a warning,
+	DrivingIsAWarning                       bit NULL,
 	-- maybe Driving is where VehicleIncident involves Driver and maybe Driving was without owners consent for nonconsent-Reason,
 	DrivingNonconsentReason                 varchar NULL,
 	-- maybe Driving is where VehicleIncident involves Driver and maybe Driving was unlicenced for unlicensed-Reason,

@@ -45,8 +45,6 @@ module ActiveFacts
           ].compact
         parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : ""
 
-                  #" restricted to {#{(allowed_values.map{|r| r.inspect}*", ").gsub('"',"'")}}")
-
         puts "#{o.name} is written as #{o.supertype.name}#{ parameters }#{
             o.value_restriction && " "+o.value_restriction.describe
           };"

@@ -64,6 +64,10 @@ module ::Metamodel
     value_type :length => 32
   end
 
+  class Literal < String
+    value_type 
+  end
+
   class Name < String
     value_type :length => 64
   end
@@ -86,7 +90,7 @@ module ::Metamodel
 
   class Pronoun < String
     value_type :length => 20
-    restrict 'feminine', 'masculine', 'personal'
+    restrict 'feminine', 'masculine', 'neuter', 'personal'
   end
 
   class RingType < String
@@ -109,18 +113,8 @@ module ::Metamodel
     value_type 
   end
 
-  class Value < String
-    value_type :length => 256
-  end
-
   class ValueRestrictionId < AutoCounter
     value_type 
-  end
-
-  class Bound
-    identified_by :value, :is_inclusive
-    maybe :is_inclusive
-    has_one :value, :mandatory => true          # See Value.all_bound
   end
 
   class Coefficient
@@ -163,6 +157,7 @@ module ::Metamodel
   class Instance
     identified_by :instance_id
     has_one :concept, :mandatory => true        # See Concept.all_instance
+    one_to_one :fact                            # See Fact.instance
     one_to_one :instance_id, :mandatory => true  # See InstanceId.instance
     has_one :population, :mandatory => true     # See Population.all_instance
     has_one :value                              # See Value.all_instance
@@ -187,7 +182,6 @@ module ::Metamodel
     has_one :ordinal, :mandatory => true        # See Ordinal.all_reading
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_reading
     has_one :text, :mandatory => true           # See Text.all_reading
-    has_one :vocabulary, :mandatory => true     # See Vocabulary.all_reading
   end
 
   class RingConstraint < Constraint
@@ -200,8 +194,7 @@ module ::Metamodel
     identified_by :fact_type, :ordinal
     has_one :fact_type, :mandatory => true      # See FactType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
-    has_one :concept                            # See Concept.all_role
-    has_one :role_name, :class => "Term"        # See Term.all_role_as_role_name
+    has_one :concept, :mandatory => true        # See Concept.all_role
     has_one :role_value_restriction, :class => "ValueRestriction"  # See ValueRestriction.all_role_as_role_value_restriction
   end
 
@@ -229,6 +222,7 @@ module ::Metamodel
   class Unit
     identified_by :unit_id
     has_one :coefficient                        # See Coefficient.all_unit
+    maybe :is_ephemeral
     maybe :is_fundamental
     has_one :name, :mandatory => true           # See Name.all_unit
     has_one :offset                             # See Offset.all_unit
@@ -236,10 +230,11 @@ module ::Metamodel
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_unit
   end
 
-  class ValueRange
-    identified_by :minimum_bound, :maximum_bound
-    has_one :maximum_bound, :class => Bound     # See Bound.all_value_range_as_maximum_bound
-    has_one :minimum_bound, :class => Bound     # See Bound.all_value_range_as_minimum_bound
+  class Value
+    identified_by :literal, :is_a_string, :unit
+    maybe :is_a_string
+    has_one :literal, :mandatory => true        # See Literal.all_value
+    has_one :unit                               # See Unit.all_value
   end
 
   class ValueRestriction
@@ -258,10 +253,10 @@ module ::Metamodel
     has_one :date                               # See Date.all_agreement
   end
 
-  class AllowedRange
-    identified_by :value_restriction, :value_range
-    has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
-    has_one :value_restriction, :mandatory => true  # See ValueRestriction.all_allowed_range
+  class Bound
+    identified_by :value, :is_inclusive
+    maybe :is_inclusive
+    has_one :value, :mandatory => true          # See Value.all_bound
   end
 
   class ContextAccordingTo
@@ -295,6 +290,7 @@ module ::Metamodel
     has_one :role, :mandatory => true           # See Role.all_role_ref
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
     has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
+    has_one :role_term, :class => "Term"        # See Term.all_role_ref_as_role_term
     has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
   end
 
@@ -319,13 +315,25 @@ module ::Metamodel
     identified_by :vocabulary, :name
     has_one :name, :mandatory => true           # See Name.all_term
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_term
-    has_one :concept, :counterpart => :secondary_term  # See Concept.all_secondary_term
+  end
+
+  class ValueRange
+    identified_by :minimum_bound, :maximum_bound
+    has_one :maximum_bound, :class => Bound     # See Bound.all_value_range_as_maximum_bound
+    has_one :minimum_bound, :class => Bound     # See Bound.all_value_range_as_minimum_bound
+  end
+
+  class AllowedRange
+    identified_by :value_restriction, :value_range
+    has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
+    has_one :value_restriction, :mandatory => true  # See ValueRestriction.all_allowed_range
   end
 
   class Concept
     identified_by :term
     maybe :is_independent
     has_one :pronoun                            # See Pronoun.all_concept
+    one_to_one :term                            # See Term.concept
     one_to_one :term, :mandatory => true        # See Term.concept
   end
 
