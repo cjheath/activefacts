@@ -123,18 +123,21 @@ module ActiveFacts
       # When we have an expression, we will come down here perhaps multiple times,
       # but find no way out as soon as we hit the trailing non_role.
       rule role
-        q:quantifier?
+        q:(quantifier enforcement)?
         adj0:(a:role_word '-' s)?
         player:role_word !'-' s?
         adj1:( '-' a:(a:role_word s)? )?
         func:function_call?
         role_id:(role_name / subscript )?
-        lr:( literal / restriction )?
+        lr:( literal / restriction enforcement )?
         !non_role
         {
           def value
             r = {}
-            quantifier = !q.empty? && q.value   # "some" quantifier has nil value
+            if !q.empty?
+	      quantifier = q.quantifier.value   # "some" quantifier has nil value
+	      r[:quantifier_restriction] = q.enforcement.value
+	    end
 
             r[:quantifier] = quantifier if quantifier
             r[:leading_adjective] = adj0.a.value unless adj0.empty?
@@ -144,7 +147,10 @@ module ActiveFacts
             r[:trailing_adjective] = adj1.a.a.value unless adj1.empty?
             r[:function] = func.value if !func.empty?
             r[:role_name] = role_id.value unless role_id.empty?
-            r[:restriction] = lr.ranges if !lr.empty? && lr.respond_to?(:ranges)
+	    if !lr.empty? && lr.respond_to?(:restriction)
+	      r[:restriction] = lr.restriction.ranges
+	      r[:restriction_enforcement] = lr.enforcement.value
+	    end
             r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
 
             r

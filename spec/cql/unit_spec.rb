@@ -167,7 +167,7 @@ end
 describe "Value Types" do
   ValueTypes = [
     [ "a is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
-      [["a", [:value_type, "b", [ 1, 2 ], [["inch", 1]], [[3, 4]], []]]]
+      [["a", [:value_type, "b", [1, 2], [["inch", 1]], [[3, 4]], [], []]]]
     ],
 #    [ "a c  is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
 #      [["a c", [:value_type, "b", [1, 2], "inch", [[3, 4]]]]]
@@ -195,16 +195,16 @@ end
 describe "Entity Types" do
   EntityTypes_RefMode = [
     [ "a is identified by its id;",                     # Entity type declaration with reference mode
-      [["a", [:entity_type, [], {:mode=>"id", :parameters=> [], :restriction=>nil}, [], nil]]]
+      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :restriction=>nil}, [], nil]]] 
     ],
     [ "a is identified by its number(12);",                     # Entity type declaration with reference mode
-      [["a", [:entity_type, [], {:mode=>"number", :parameters => [12], :restriction=>nil}, [], nil]]]
+      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"number", :parameters=>[12], :restriction=>nil}, [], nil]]]
     ],
     [ "a is identified by its id:c;",                   # Entity type declaration with reference mode and fact type(s)
-      [["a", [:entity_type, [], {:mode=>"id", :parameters=> [], :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}], nil]]]]]
+      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}], nil]]]]]
     ],
     [ "a is identified by its id where c;",             # Entity type declaration with reference mode and where
-      [["a", [:entity_type, [], {:mode=>"id", :parameters=> [], :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}], nil]]]]]
+      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :restriction=>nil}, [], [[:fact_clause, [], [{:word=>"c"}], nil]]]]]
     ],
   ]
 
@@ -222,12 +222,10 @@ describe "Entity Types" do
       [["a", [:entity_type, [], {:roles=>[["b"], ["c"]]}, [], [[:fact_clause, [], [{:word=>"d"}], nil]]]]]
     ],
     [ "a is written as b(); c is identified by a:d;",
-      [["a", [:value_type, "b", [], [], [], []]],
-        ["c", [:entity_type, [], {:roles=>[["a"]]}, [], [[:fact_clause, [], [{:word=>"d"}], nil]]]]]
+      [["a", [:value_type, "b", [], [], [], [], nil]], ["c", [:entity_type, [], {:roles=>[["a"]]}, [], [[:fact_clause, [], [{:word=>"d"}], nil]]]]]
     ],
     [ " a is written as b ( ) ; c is identified by a : d ; ",
-      [["a", [:value_type, "b", [], [], [], []]],
-        ["c", [:entity_type, [], {:roles=>[["a"]]}, [], [[:fact_clause, [], [{:word=>"d"}], nil]]]]]
+      [["a", [:value_type, "b", [], [], [], [], nil]], ["c", [:entity_type, [], {:roles=>[["a"]]}, [], [[:fact_clause, [], [{:word=>"d"}], nil]]]]]
     ],
     [ "a is identified by c:maybe d;",
       [["a", [:entity_type, [], {:roles=>[["c"]]}, [], [[:fact_clause, ["maybe"], [{:word=>"d"}], nil]]]]]
@@ -343,7 +341,7 @@ describe "Fact Types" do
 
   Constraints = [
     [ "each combination FamilyName, GivenName occurs at most one time in Competitor has FamilyName, Competitor has GivenName;",
-      [nil, [:constraint, :presence, [["FamilyName"], ["GivenName"]], [nil, 1], [[[{:word=>"Competitor"}, {:word=>"has"}, {:word=>"FamilyName"}]], [[{:word=>"Competitor"}, {:word=>"has"}, {:word=>"GivenName"}]]], nil]]
+      [nil, [:constraint, :presence, [["FamilyName"], ["GivenName"]], [nil, 1], [[[{:word=>"Competitor"}, {:word=>"has"}, {:word=>"FamilyName"}]], [[{:word=>"Competitor"}, {:word=>"has"}, {:word=>"GivenName"}]]], nil, []]]
     ],
   ]
 

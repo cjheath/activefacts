@@ -53,6 +53,14 @@ module ActiveFacts
         def index(*a)
           @input.index(*a)
         end
+
+        def line_of(x)
+          @input.line_of(x)
+        end
+
+        def column_of(x)
+          @input.column_of(x)
+        end
       end
 
       def context

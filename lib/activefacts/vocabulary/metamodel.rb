@@ -7,6 +7,10 @@ module ActiveFacts
       value_type :length => 64
     end
 
+    class AgentName < String
+      value_type 
+    end
+
     class Assimilation < String
       value_type 
       restrict 'partitioned', 'separate'
@@ -37,7 +41,7 @@ module ActiveFacts
       value_type 
     end
 
-    class Enforcement < String
+    class EnforcementCode < String
       value_type :length => 16
     end
 
@@ -85,10 +89,6 @@ module ActiveFacts
       value_type :length => 32
     end
 
-    class PersonName < String
-      value_type 
-    end
-
     class Pronoun < String
       value_type :length => 20
       restrict 'feminine', 'masculine', 'neuter', 'personal'
@@ -114,8 +114,9 @@ module ActiveFacts
       value_type 
     end
 
-    class ValueRestrictionId < AutoCounter
-      value_type 
+    class Agent
+      identified_by :agent_name
+      one_to_one :agent_name, :mandatory => true  # See AgentName.agent
     end
 
     class Coefficient
@@ -143,6 +144,12 @@ module ActiveFacts
       has_one :fact_type                          # See FactType.all_context_note
     end
 
+    class Enforcement
+      identified_by :enforcement_code
+      has_one :agent                              # See Agent.all_enforcement
+      one_to_one :enforcement_code, :mandatory => true  # See EnforcementCode.enforcement
+    end
+
     class Fact
       identified_by :fact_id
       one_to_one :fact_id, :mandatory => true     # See FactId.fact
@@ -162,11 +169,6 @@ module ActiveFacts
       one_to_one :instance_id, :mandatory => true  # See InstanceId.instance
       has_one :population, :mandatory => true     # See Population.all_instance
       has_one :value                              # See Value.all_instance
-    end
-
-    class Person
-      identified_by :person_name
-      one_to_one :person_name, :mandatory => true  # See PersonName.person
     end
 
     class PresenceConstraint < Constraint
@@ -239,9 +241,7 @@ module ActiveFacts
       has_one :unit                               # See Unit.all_value
     end
 
-    class ValueRestriction
-      identified_by :value_restriction_id
-      one_to_one :value_restriction_id, :mandatory => true  # See ValueRestrictionId.value_restriction
+    class ValueRestriction < Constraint
     end
 
     class Vocabulary
@@ -270,15 +270,15 @@ module ActiveFacts
     end
 
     class ContextAccordingTo
-      identified_by :context_note, :person
+      identified_by :context_note, :agent
+      has_one :agent, :mandatory => true          # See Agent.all_context_according_to
       has_one :context_note, :mandatory => true   # See ContextNote.all_context_according_to
-      has_one :person, :mandatory => true         # See Person.all_context_according_to
     end
 
     class ContextAgreedBy
-      identified_by :agreement, :person
+      identified_by :agreement, :agent
+      has_one :agent, :mandatory => true          # See Agent.all_context_agreed_by
       has_one :agreement, :mandatory => true      # See Agreement.all_context_agreed_by
-      has_one :person, :mandatory => true         # See Person.all_context_agreed_by
     end
 
     class Derivation

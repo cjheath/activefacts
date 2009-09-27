@@ -14,7 +14,7 @@ module ActiveFacts
         base:id s
         value_type_parameters
         units
-        r:restriction?
+        r:(restriction enforcement)?
         mapping_pragmas
         s ';' s
         {
@@ -24,8 +24,9 @@ module ActiveFacts
               base.value,
               value_type_parameters.values,
               units.value,
-              (!r.empty? ? r.ranges : []),
-              mapping_pragmas.value
+              (!r.empty? ? r.restriction.ranges : []),
+              mapping_pragmas.value,
+              (!r.empty? ? r.enforcement.value : nil)
             ]
           end
 

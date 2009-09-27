@@ -69,7 +69,7 @@ module ActiveFacts
       end
 
     private
-      def value_type(name, base_type_name, parameters, unit, ranges, mapping_pragmas)
+      def value_type(name, base_type_name, parameters, unit, ranges, mapping_pragmas, enforcement)
         length, scale = *parameters
 
         # Create the base type:
@@ -91,11 +91,11 @@ module ActiveFacts
         # REVISIT: Find and apply the units
 
         if ranges.size != 0
-          vt.value_restriction = value_restriction ranges
+          vt.value_restriction = value_restriction(ranges, enforcement)
         end
       end
 
-      def value_restriction(ranges)
+      def value_restriction(ranges, enforcement)
         vr = @constellation.ValueRestriction(:new)
         ranges.each do |range|
           min, max = Array === range ? range : [range, range]
@@ -105,7 +105,13 @@ module ActiveFacts
             )
           ar = @constellation.AllowedRange(vr, v_range)
         end
+        apply_enforcement(vr, enforcement) if enforcement
         vr
+      end
+
+      def apply_enforcement(constraint, enforcement)
+        constraint.enforcement = enforcement[0]
+        constraint.enforcement.agent = enforcement[1] if enforcement[1]
       end
 
       def entity_type(name, supertypes, identification, mapping_pragmas, clauses)
@@ -139,7 +145,7 @@ module ActiveFacts
             end
             # REVISIT: If we do this, it gets emitted twice when we generate CQL. The generator should detect that the restriction is the same and not emit it.
             #if (ranges = identification[:restriction])
-            #  vt.value_restriction = value_restriction(ranges)
+            #  vt.value_restriction = value_restriction(ranges, identification[:enforcement])
             #end
           end
 
@@ -269,7 +275,7 @@ player, binding = @symbols.bind(names)
 
                 # REVISIT: The restriction applies only to the value role. There is good reason to apply it above to the value type as well.
                 if (ranges = identification[:restriction])
-                  value_role.role_value_restriction = value_restriction(ranges)
+                  value_role.role_value_restriction = value_restriction(ranges, identification[:enforcement])
                 end
 
                 # Forward reading, if it doesn't already exist:
@@ -315,10 +321,9 @@ player, binding = @symbols.bind(names)
                   debug :mode, "Using existing EntityType role sequence"
                 end
                 if (rs0.all_presence_constraint.size == 0)
-                  @constellation.PresenceConstraint(
+                  constraint = @constellation.PresenceConstraint(
                     :new,
                     :name => '',
-                    :enforcement => '',
                     :vocabulary => @vocabulary,
                     :role_sequence => rs0,
                     :min_frequency => 1,
@@ -344,10 +349,9 @@ player, binding = @symbols.bind(names)
                   debug :mode, "Using existing ValueType role sequence"
                 end
                 if (rs1.all_presence_constraint.size == 0)
-                  @constellation.PresenceConstraint(
+                  constraint = @constellation.PresenceConstraint(
                     :new,
                     :name => '',
-                    :enforcement => '',
                     :vocabulary => @vocabulary,
                     :role_sequence => rs1,
                     :min_frequency => 0,
@@ -870,7 +874,7 @@ player, binding = @symbols.bind(names)
         role_sequences
       end
 
-      def presence_constraint(constrained_role_names, quantifier, phrases_list, context)
+      def presence_constraint(constrained_role_names, quantifier, phrases_list, context, enforcement)
         raise "REVISIT: Join presence constraints not supported yet" if phrases_list[0].size > 1
         phrases_list = phrases_list.map{|r| r[0] }
         #p phrases_list
@@ -929,10 +933,9 @@ player, binding = @symbols.bind(names)
 
         # REVISIT: Check that no existing PC spans the same roles (nor a superset nor subset?)
 
-        @constellation.PresenceConstraint(
+        constraint = @constellation.PresenceConstraint(
             :new,
             :name => '',
-            :enforcement => '',
             :vocabulary => @vocabulary,
             :role_sequence => rs,
             :min_frequency => quantifier[0],
@@ -940,9 +943,10 @@ player, binding = @symbols.bind(names)
             :is_preferred_identifier => false,
             :is_mandatory => quantifier[0] && quantifier[0] > 0
           )
+        apply_enforcement(constraint, enforcement) if enforcement
       end
 
-      def set_constraint(constrained_roles, quantifier, joins_list, context)
+      def set_constraint(constrained_roles, quantifier, joins_list, context, enforcement)
         role_sequences = bind_joins_as_role_sequences(joins_list)
 
         if quantifier[1] == nil
@@ -953,10 +957,9 @@ player, binding = @symbols.bind(names)
           second_role_ref = @constellation.RoleRef(:role_sequence => role_sequences[0], :ordinal => 1, :role => second_role)
           @constellation.deny(role_sequences[1].all_role_ref.single)
           @constellation.deny(role_sequences[1])
-          @constellation.PresenceConstraint(
+          constraint = @constellation.PresenceConstraint(
               :new,
               :name => '',
-              :enforcement => '',
               :vocabulary => @vocabulary,
               :role_sequence => role_sequences[0],
               :min_frequency => quantifier[0],
@@ -964,6 +967,7 @@ player, binding = @symbols.bind(names)
               :is_preferred_identifier => false,
               :is_mandatory => true
             )
+          apply_enforcement(constraint, enforcement) if enforcement
         else
           # Create a normal (mandatory) exclusion constraint:
           constraint = @constellation.SetExclusionConstraint(:new)
@@ -971,11 +975,12 @@ player, binding = @symbols.bind(names)
           role_sequences.each_with_index do |rs, i|
             @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
           end
+          apply_enforcement(constraint, enforcement) if enforcement
           constraint.is_mandatory = quantifier[0] == 1
         end
       end
 
-      def subset_constraint(joins_list, context)
+      def subset_constraint(joins_list, context, enforcement)
         role_sequences = bind_joins_as_role_sequences(joins_list)
 
         #puts "subset_constraint:\n\t#{subset_readings.inspect}\n\t#{superset_readings.inspect}"
@@ -990,10 +995,11 @@ player, binding = @symbols.bind(names)
         #constraint.enforcement = 
         constraint.subset_role_sequence = role_sequences[0]
         constraint.superset_role_sequence = role_sequences[1]
+        apply_enforcement(constraint, enforcement) if enforcement
       end
 
-      def equality_constraint(joins_list, context)
-        #puts "REVISIT: equality\n\t#{joins_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
+      def equality_constraint(joins_list, context, enforcement)
+        #puts "equality\n\t#{joins_list.map{|rl| rl.inspect}*"\n\tif and only if\n\t"}"
 
         role_sequences = bind_joins_as_role_sequences(joins_list)
 
@@ -1003,6 +1009,7 @@ player, binding = @symbols.bind(names)
         role_sequences.each_with_index do |rs, i|
           @constellation.SetComparisonRoles(constraint, i, :role_sequence => rs)
         end
+        apply_enforcement(constraint, enforcement) if enforcement
       end
 
       # Search the supertypes of 'subtype' looking for an inheritance path to 'supertype',
@@ -1195,7 +1202,7 @@ player, binding = @symbols.bind(names)
 
             # Save a role value restriction
             if (ranges = role_phrase[:restriction])
-              role.role_value_restriction = value_restriction(ranges)
+              role.role_value_restriction = value_restriction(ranges, role_phrase[:restriction_enforcement])
             end
 
             roles << role

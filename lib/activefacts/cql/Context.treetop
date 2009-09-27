@@ -15,8 +15,8 @@ module ActiveFacts
       end
 
       rule who_says
-        according_to people s ','
-        { def value; people.value; end }
+        according_to agents s ','
+        { def value; agents.value; end }
       end
 
       rule context_type

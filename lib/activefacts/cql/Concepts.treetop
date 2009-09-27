@@ -69,8 +69,16 @@ module ActiveFacts
 
       rule identification
         # REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
-        identified_by its s id value_type_parameters r:restriction?          # Reference Mode; restriction may be needed for the ValueType
-          { def value; {:mode => id.value, :restriction => (r.text_value.empty? ? nil : r.ranges), :parameters => value_type_parameters.values }; end }
+        identified_by its s id value_type_parameters
+	r:(restriction enforcement)?          # Reference Mode; restriction may be needed for the ValueType
+          { def value
+	      { :mode => id.value,
+	        :restriction => (r.text_value.empty? ? nil : r.restriction.ranges),
+	        :enforcement => (r.text_value.empty? ? nil : r.enforcement.value),
+		:parameters => value_type_parameters.values
+	      }
+	    end
+	  }
         /
         identified_by role_list
           { def value; {:roles => role_list.roles }; end }
