@@ -1,0 +1,117 @@
+#
+#       ActiveFacts CQL Parser.
+#       Parse rules relating to Term names
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
+module ActiveFacts
+  module CQL
+    grammar Terms
+      rule term_definition_name
+        id s
+         t:(!non_term_def id s)*
+        { def value
+            t.elements.inject([
+              id.value
+            ]){|a, e| a << e.id.value}*' '
+          end
+        }
+      end
+
+      rule non_term_def
+        entity_prefix
+        / written_as                        # Value type
+        / is s mapping_pragmas where        # Objectified type
+        / non_role_word
+      end
+
+      rule entity_prefix
+        is s identified_by / subtype_prefix
+      end
+
+      rule prescan
+        s (
+          term_definition_name s entity_prefix
+            &{|e| input.context.entity_type(e[0].value); true }
+          /
+          term_definition_name written_as
+                &{|e| input.context.value_type(e[0].value); true }
+          /
+          term_definition_name s is s mapping_pragmas where
+                &{|e| input.context.objectified_fact_type(e[0].value); true }
+        )?
+        prescan_rest
+        &{|s|
+          @terminal_failures = []
+          @max_terminal_failure_index = start_index
+
+          # puts "========== prescan is complete on #{(s.map{|e|e.text_value}*" ").inspect} =========="
+          false # REVISIT: Wipe any terminal failures that were added? Can there be anything relevant?
+        }
+      end
+
+      # Do a first-pass mainly lexical analysis, looking only for role name definitions
+      # For use in detecting terms later.
+      # REVISIT: and adjectives
+      rule prescan_rest
+        &{ input.context.reset_role_names }
+        (
+          context                           # Context notes have different lexical conventions
+          / role_name                       # A role name definition
+            &{|s| input.context.role_name(s[0].value) }
+                                            # Adjective definitions
+          / new_adjective_term
+          / global_term                     # If we see A B - C D, don't recognise B as a new adjective for C D.
+          / id
+          / range                           # Covers all numbers and strings
+          / comparator                      # handle two-character operators
+          / S                               # White space and comments, must precede / and *
+          / [-+{}\[\].,:^/%*()]             # All other punctuation and operators
+        )* [?;] s
+      end
+
+      rule new_adjective_term
+        !global_term adj:id '-' s global_term
+          &{|s| input.context.new_leading_adjective_term(s[1].value, s[4].value) }          # Definitely a new leading adjective for this term
+        /
+        global_term s '-' !global_term adj:id
+          &{|s| input.context.new_trailing_adjective_term(s[4].value, s[1].value) }         # Definitely a new trailing adjective for this term
+      end
+
+      # This is the rule to use after the prescan; it only succeeds on a complete term or role reference
+      rule term
+        s head:id             &{|s| w = s[1].text_value; input.context.term_starts(w) }
+        tail:(s '-'? s w:id  &{|s| w = s[3].text_value; input.context.term_continues(w) } )*
+        { def value
+            name = tail.elements.inject(head.value) { |t, e| "#{t} #{e.w.value}" }
+            #puts "Detected term #{name.inspect}"
+            name
+          end
+        }
+      end
+
+      rule global_term
+        # This rule shouldn't be used outside the prescan, it will memoize the wrong things.
+        head:id    &{|s| input.context.term_starts(s[0].text_value) }
+        tail:(s w:id &{|s| input.context.term_continues(s[1].text_value) } )*
+        { def value
+            tail.elements.inject(head.value) { |t, e| "#{t} #{e.w.value}" }
+          end
+        }
+      end
+
+      rule non_role_word
+        # These words are illegal in (but maybe ok following) a reading where a role word is expected:
+        and
+        / where
+        / if
+        / only
+        / or
+        / quantifier
+        / restriction
+        / but
+      end
+
+    end
+  end
+end

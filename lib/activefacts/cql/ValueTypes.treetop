@@ -10,8 +10,7 @@ module ActiveFacts
       rule value_type
         s term_definition_name
         written_as
-                &{|e| input.context.value_type(e[1].value); true }
-        base:id s
+        base:(term/id) s
         value_type_parameters
         units
         r:(restriction enforcement)?

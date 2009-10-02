@@ -32,9 +32,9 @@ module ActiveFacts
       rule definition
         vocabulary_definition
         / import_definition
-	/ prescan
+        / prescan           # Always fails, but its side-effects are needed in the following
         / constraint
-        / unit_definition
+        / unit_definition   # REVISIT: Move this above the prescan?
         / concept
       end
 

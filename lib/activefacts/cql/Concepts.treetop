@@ -17,7 +17,6 @@ module ActiveFacts
       rule entity_type
         s term_definition_name
         sup:(basetype / subtype)
-                &{|e| input.context.entity_type(e[1].value); true }
         mapping_pragmas
         ec:entity_conditions?
         ';' s
@@ -59,20 +58,17 @@ module ActiveFacts
       end
 
       rule supertype_list
-        primary:id s
-        alternate_supertypes:( ',' s !identified_by name:id s )*
-        { def value
-            [primary.value]+alternate_supertypes.elements.map{|sup| sup.name.value}
-          end
-        }
+        primary:term s
+        alternate_supertypes:( ',' s !identified_by name:term s )*
+        { def value; alternate_supertypes.elements.inject([primary.value]) { |a, sup| a << sup.name.value }; end }
       end
 
       rule identification
         # REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
-        identified_by its s id value_type_parameters
+        identified_by its s i:(term/id) value_type_parameters
 	r:(restriction enforcement)?          # Reference Mode; restriction may be needed for the ValueType
           { def value
-	      { :mode => id.value,
+	      { :mode => i.value,
 	        :restriction => (r.text_value.empty? ? nil : r.restriction.ranges),
 	        :enforcement => (r.text_value.empty? ? nil : r.enforcement.value),
 		:parameters => value_type_parameters.values
@@ -86,53 +82,28 @@ module ActiveFacts
 
       # Identified by roles... also used for constraints, beware
       rule role_list 
-        head:role_player s tail:( ( and S / ',' s ) role:role_player s )*
-        {
-          def roles
-            [head.value] + tail.elements.map{|i| i.role.value}
+        head:term_or_unary s tail:( ( and S / ',' s ) term_or_unary s )*
+        { def roles
+            tail.elements.inject([head.value]) { |a, e| a << e.term_or_unary.value }
           end
         }
       end
 
-          # We can't tell which word is an adjective and which is a concept here.
-          # The concept might be forward-referenced, but not if adjectives are used.
-          # REVISIT: This accepts double-adjective expressions (three words) but they don't work elsewhere
-          rule lead_adj
-            role_player_id '-'
+      rule term_or_unary
+        prefix:(s !(term/non_role_word) id s)*
+          term s
+          suffix:(s !(term/non_role_word) id)* s
+          # &{|s| puts "term_or_unary: '#{input[s[0].interval.first...index]}'"; debugger; true }
+        { def value
+            prefix.elements.inject([]) { |a, e| a << e.id.value } +
+              suffix.elements.inject([term.value]) { |a, e| a << e.id.value }
           end
-
-          rule trail_adj
-            '-' role_player_id
-          end
-
-          rule role_player
-            l:lead_adj? tail:(s role_player_id)+ s t:trail_adj?
-            {
-              def value
-                (l.empty? ? [] : [l.role_player_id.value]) +
-                tail.elements.map{|e| e.role_player_id.value } +
-                (t.empty? ? [] : [t.role_player_id.value])
-              end
-            }
-          end
-
-          rule role_player_id
-            !(role_list_sep / quantifier) id
-            { def value; id.value; end }
-          end
-
-          rule role_list_sep
-            (where / and / 'occurs')
-          end
-
-          rule reference_mode
-            # REVISIT: Adopt ORM2-style reference mode patterns here
-            '(' s '.' s mode_name:id s ')' s
-          end
+        }
+      end
 
       rule mapping_pragmas
         '[' s h:mapping_pragma t:(s ',' s mapping_pragma)* s ']' s
-          { def value; [h.value] + t.elements.map{|e| e.mapping_pragma.value}; end }
+          { def value; t.elements.inject([h.value]) { |a, e| a << e.mapping_pragma.value }; end }
         /
         ''
           { def value; []; end }

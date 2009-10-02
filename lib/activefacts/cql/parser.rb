@@ -90,11 +90,13 @@ module ActiveFacts
       end
 
       def definition(node)
+        node.value rescue debugger
+
         name, ast = *node.value
         kind, *value = *ast
 
         begin
-          debug "CQL: Processing definition #{[kind, name].compact*" "}" do
+          debug :ast, "CQL: Processing definition #{[kind, name].compact*" "}: #{value.inspect}" do
             case kind
             when :vocabulary
               [kind, name]

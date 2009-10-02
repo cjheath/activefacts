@@ -76,24 +76,12 @@ module ActiveFacts
       end
 
       rule derived_variable
-        variable s p:function_call*
+        variable:term s p:function_call*
         {
           def value
-            r = variable.value
+            r = [:variable, variable.value]
             # Apply the function_call operators in order:
             p.elements.each{|p| r = [ p.value, r ] }
-            r
-          end
-        }
-      end
-
-      rule variable
-        id0:id o0:( !written_as s id1:id )?
-        {
-          def value
-            # Variable names may consist of one or two words (optional adjective and a noun):
-            r = [ :variable, id0.value ]
-            r += [ o0.id1.value ] unless o0.empty?
             r
           end
         }

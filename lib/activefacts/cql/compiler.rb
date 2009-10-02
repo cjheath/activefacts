@@ -185,7 +185,7 @@ module ActiveFacts
 # Find the role that this entity type plays in the fact type, if any:
             debug :reading, "Roles are: #{fact_type.all_role.map{|role| (role.concept == entity_type ? "*" : "") + role.concept.name }*", "}"
             player_roles = fact_type.all_role.select{|role| role.concept == entity_type }
-            raise "#{role.concept.name} may only play one role in each identifying fact type" if player_roles.size > 1
+            raise "#{player_roles[0].concept.name} may only play one role in each of its identifying fact types" if player_roles.size > 1
             if player_role = player_roles[0]
               non_player_roles = fact_type.all_role-[player_role]
 
@@ -1669,19 +1669,31 @@ player, binding = @symbols.bind(names)
 
         def entity_type(c)
           #puts "Parser has started work on entity_type '#{c}'"
-          @terms[c] = true
+          index_global_name(c)
           true
         end
 
         def value_type(c)
           #puts "Parser has started work on value_type '#{c}'"
-          @terms[c] = true
+          index_global_name(c)
           true
         end
 
         def objectified_fact_type(c)
           #puts "Parser has started work on objectified_fact_type '#{c}'"
-          @terms[c] = true
+          index_global_name(c)
+          true
+        end
+
+        def new_leading_adjective_term(adj, term)
+          # puts "\tnew leading adjective term '#{adj}- #{term}'"
+          index_role_name("#{adj} #{term}", term)
+          true
+        end
+
+        def new_trailing_adjective_term(adj, term)
+          # puts "\tnew trailing adjective term '#{term} -#{adj}'"
+          index_role_name("#{term} #{adj}", term)
           true
         end
 
@@ -1693,8 +1705,32 @@ player, binding = @symbols.bind(names)
 
         def role_name(r)
           #puts "\tadding role name '#{r}'"
-          @role_names[r] = true
+          index_role_name(r, true)      # REVISIT: Find out what term this role name applies to so it can be properly indexed
           true
+        end
+
+        def index_global_name(name)
+          index_name(@terms ||= {}, name) # && puts("new global name '#{name}'")
+        end
+
+        def index_role_name(name, term)
+          index_name(@role_names ||= {}, name, term) # && puts("new role name '#{name}'")
+        end
+
+        def index_name(index, name, value = true)
+          added = false
+          words = name.scan(/\w+/)
+          words.inject([]) do |a, n|
+            # Build all prefixes up to the full term
+            a + [a[-1] ? "#{a[-1]} #{n}" : n]
+          end.each do |a|
+            unless index[a] && index[a][name]
+              #puts "Adding #{a} -> #{name}"
+              added = true
+            end
+            (index[a] ||= {})[name] = value
+          end
+          added
         end
 
         def term?(t)
@@ -1708,15 +1744,33 @@ player, binding = @symbols.bind(names)
         end
 
         def term_starts(s)
-          #p s
-          #debugger
-          true
+          @term = s
+          debugger unless @terms && @role_names
+          t = @terms[s] || @role_names[s]
+          # puts "Found complete term '#{@term}'" if t && t[s]
+          t
+        end
+
+        def global_term_starts(s)
+          @term = s
+          t = @terms[s]
+          # puts "found complete global term: #{s}" if t[s]
+          t
         end
 
         def term_continues(s)
-          #p s
-          #debugger
-          true
+          @term = "#{@term} #{s}"
+          (t = @terms[@term]) || (t = @role_names[@term])
+=begin
+          if t
+            if t[@term]
+              puts "Found complete multi-word term '#{@term}'"
+            else
+              puts "term_continues: #{@term_prefix}"
+            end
+          end
+=end
+          t
         end
       end
 

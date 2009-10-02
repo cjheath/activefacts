@@ -9,10 +9,7 @@ module ActiveFacts
     grammar FactTypes
       rule named_fact_type
         s term_definition_name
-        ( written_as      # REVISIT: What on earth was I thinking when I wrote this?
-        / s is s mapping_pragmas where    # REVISIT: Need a place to put mapping pragmas like [independent]
-        )
-                &{|e| input.context.objectified_fact_type(e[1].value); true }
+        s is s mapping_pragmas where    # REVISIT: Need a place to put mapping pragmas like [independent]
         anonymous_fact_type
         {
           def value
@@ -111,7 +108,15 @@ module ActiveFacts
       end
 
       rule reading
-        role+
+        (
+          role    # A role reference containing a term, perhaps with attached paraphernalia
+          /       # A hyphenated non-term
+          s i1:id '-' i2:id
+                  # REVISIT: Soon I'll be able to remove this :word wrapping
+            { def value; { :word => [i1.value, i2.value]*"-" }; end }
+          /       # A normal non-term
+          s id { def value; { :word => id.value }; end }
+        )+
         {
           def value
             elements.map{|r| r.value}
@@ -124,13 +129,11 @@ module ActiveFacts
       # but find no way out as soon as we hit the trailing non_role.
       rule role
         q:(quantifier enforcement)?
-        adj0:(a:role_word '-' s)?
-        player:role_word !'-' s?
-        adj1:( '-' a:(a:role_word s)? )?
+        player:term
         func:function_call?
         role_id:(role_name / subscript )?
         lr:( literal / restriction enforcement )?
-        !non_role
+        !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
           def value
             r = {}
@@ -140,11 +143,11 @@ module ActiveFacts
 	    end
 
             r[:quantifier] = quantifier if quantifier
-            r[:leading_adjective] = adj0.a.value unless adj0.empty?
+#            r[:leading_adjective] = adj0.a.value unless adj0.empty?
 
             r[:word] = player.value
 
-            r[:trailing_adjective] = adj1.a.a.value unless adj1.empty?
+#            r[:trailing_adjective] = adj1.a.a.value unless adj1.empty?
             r[:function] = func.value if !func.empty?
             r[:role_name] = role_id.value unless role_id.empty?
 	    if !lr.empty? && lr.respond_to?(:restriction)
@@ -159,6 +162,7 @@ module ActiveFacts
       end
 
       rule role_name
+        # REVISIT: Multiword role names?
         '(' s as S r:id s ')' s
         { def value; r.value; end }
       end
@@ -169,26 +173,10 @@ module ActiveFacts
       end
 
       rule non_role
-        # Any of these is illegal in or following a reading:
+        # Any of these is illegal in or following a reading (they indicate a comparison is coming). Later, this will change:
         comparator
         / add_op
         / mul_op
-      end
-
-      rule role_word
-        !non_role_word id
-        { def value; id.value; end }
-      end
-
-      rule non_role_word
-        # These words are illegal in (but maybe ok following) a reading where a role word is expected:
-        and
-        / if
-        / only
-        / or
-        / quantifier
-        / restriction
-        / but
       end
 
     end
