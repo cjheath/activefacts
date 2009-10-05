@@ -32,21 +32,22 @@ module ActiveFacts
       rule prescan
         s (
           term_definition_name s entity_prefix
-            &{|e| input.context.entity_type(e[0].value); true }
+            &{|e| input.context.object_type(e[0].value, "entity type"); true }
           /
           term_definition_name written_as
-                &{|e| input.context.value_type(e[0].value); true }
+                &{|e| input.context.object_type(e[0].value, "value type"); true }
           /
           term_definition_name s is s mapping_pragmas where
-                &{|e| input.context.objectified_fact_type(e[0].value); true }
+                &{|e| input.context.object_type(e[0].value, "objectified_fact_type"); true }
         )?
         prescan_rest
         &{|s|
+	  # Wipe any terminal failures that were added:
           @terminal_failures = []
           @max_terminal_failure_index = start_index
 
           # puts "========== prescan is complete on #{(s.map{|e|e.text_value}*" ").inspect} =========="
-          false # REVISIT: Wipe any terminal failures that were added? Can there be anything relevant?
+          false
         }
       end
 
@@ -71,11 +72,11 @@ module ActiveFacts
       end
 
       rule new_adjective_term
-        !global_term adj:id '-' s global_term
-          &{|s| input.context.new_leading_adjective_term(s[1].value, s[4].value) }          # Definitely a new leading adjective for this term
+        !global_term adj:id '-' s global_term	  # Definitely a new leading adjective for this term
+          &{|s| input.context.new_leading_adjective_term(s[1].value, s[4].value) }
         /
-        global_term s '-' !global_term adj:id
-          &{|s| input.context.new_trailing_adjective_term(s[4].value, s[1].value) }         # Definitely a new trailing adjective for this term
+        global_term s '-' !global_term adj:id	  # Definitely a new trailing adjective for this term
+          &{|s| input.context.new_trailing_adjective_term(s[4].value, s[1].value) }
       end
 
       # This is the rule to use after the prescan; it only succeeds on a complete term or role reference

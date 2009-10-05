@@ -26,6 +26,7 @@ module ActiveFacts
 
       class BlackHole
         def method_missing(m, *p, &b)
+          # puts "black hole #{m}(#{p.map{|q| q.inspect}*', '})"
           self    # Make all calls vanish
         end
       end

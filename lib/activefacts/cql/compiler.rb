@@ -1657,64 +1657,60 @@ player, binding = @symbols.bind(names)
         # REVISIT; This class is "work in progress", supporting semantic predicates from Treetop.
         def initialize(compiler)
           @compiler = compiler
-          @vocabularies = {}
         end
 
-        def vocabulary(v)
-          # puts "Parser has started work on vocabulary #{v}"
-          @vocabularies[v] = {}
-          @terms = {}
-          true
-        end
-
-        def entity_type(c)
-          #puts "Parser has started work on entity_type '#{c}'"
-          index_global_name(c)
-          true
-        end
-
-        def value_type(c)
-          #puts "Parser has started work on value_type '#{c}'"
-          index_global_name(c)
-          true
-        end
-
-        def objectified_fact_type(c)
-          #puts "Parser has started work on objectified_fact_type '#{c}'"
+        def object_type(c, kind)
+          debug :context, "Parser has started work on #{kind} '#{c}'"
           index_global_name(c)
           true
         end
 
         def new_leading_adjective_term(adj, term)
-          # puts "\tnew leading adjective term '#{adj}- #{term}'"
+          debug :context, "\tnew leading adjective term '#{adj}- #{term}'"
           index_role_name("#{adj} #{term}", term)
           true
         end
 
         def new_trailing_adjective_term(adj, term)
-          # puts "\tnew trailing adjective term '#{term} -#{adj}'"
+          debug :context, "\tnew trailing adjective term '#{term} -#{adj}'"
           index_role_name("#{term} #{adj}", term)
           true
         end
 
         def reset_role_names
-          # puts "\tresetting role names #{@role_names.keys.sort*", "}" if @role_names && @role_names.size > 0
+          debug :context, "\tresetting role names #{@role_names.keys.sort*", "}" if @role_names && @role_names.size > 0
           @role_names = {}
           true
         end
 
         def role_name(r)
-          #puts "\tadding role name '#{r}'"
+          debug :context, "\tadding role name '#{r}'"
           index_role_name(r, true)      # REVISIT: Find out what term this role name applies to so it can be properly indexed
           true
         end
 
+        def term_starts(s)
+          @term = s
+          debugger unless @terms && @role_names
+          t = @terms[s] || @role_names[s]
+          debug :context, "Found complete single-word term '#{@term}'" if t && t[s]
+          t
+        end
+
+        def term_continues(s)
+          @term = "#{@term} #{s}"
+          (w, t = "term", @terms[@term]) || (w, t = "role_name", @role_names[@term])
+          debug :context, "Multi-word #{w} #{t[@term] ? 'ends' : 'continues'} to #{@term.inspect}"
+          t
+        end
+
+      private
         def index_global_name(name)
-          index_name(@terms ||= {}, name) # && puts("new global name '#{name}'")
+          index_name(@terms ||= {}, name) && debug(:context, "new global name '#{name}'")
         end
 
         def index_role_name(name, term)
-          index_name(@role_names ||= {}, name, term) # && puts("new role name '#{name}'")
+          index_name(@role_names ||= {}, name, term) && debug(:context, "new role name '#{name}'")
         end
 
         def index_name(index, name, value = true)
@@ -1731,46 +1727,6 @@ player, binding = @symbols.bind(names)
             (index[a] ||= {})[name] = value
           end
           added
-        end
-
-        def term?(t)
-          #puts "term?(#{t})"
-          false
-        end
-
-        def global_term?(t)
-          #puts "global_term?(#{t})"
-          false
-        end
-
-        def term_starts(s)
-          @term = s
-          debugger unless @terms && @role_names
-          t = @terms[s] || @role_names[s]
-          # puts "Found complete term '#{@term}'" if t && t[s]
-          t
-        end
-
-        def global_term_starts(s)
-          @term = s
-          t = @terms[s]
-          # puts "found complete global term: #{s}" if t[s]
-          t
-        end
-
-        def term_continues(s)
-          @term = "#{@term} #{s}"
-          (t = @terms[@term]) || (t = @role_names[@term])
-=begin
-          if t
-            if t[@term]
-              puts "Found complete multi-word term '#{@term}'"
-            else
-              puts "term_continues: #{@term_prefix}"
-            end
-          end
-=end
-          t
         end
       end
 

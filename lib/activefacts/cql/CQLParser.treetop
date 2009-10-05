@@ -39,7 +39,7 @@ module ActiveFacts
       end
 
       rule vocabulary_definition
-        s vocabulary S id s ';' s &{|e| input.context.vocabulary(e[3].text_value); true }
+        s vocabulary S id s ';' s
         {
           def value
             [ id.value, [ :vocabulary ] ]
