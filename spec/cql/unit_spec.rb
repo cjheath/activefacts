@@ -7,9 +7,38 @@ require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/parser'
 
+require 'ruby-debug'
+
+=begin
+module Treetop::Runtime
+  class SyntaxNode
+    # Uncomment and add methods here to find methods missing
+    def value
+      debugger
+    end
+  end
+end
+=end
+
+
+# The test parser regards any word starting with an upper-case letter as a pre-existing term
+class TestParser < ActiveFacts::CQL::Parser
+  def context
+    @context ||= Context.new
+  end     
+
+  class Context < ActiveFacts::CQL::Parser::Context
+    def term_starts?(s)
+      return true if super
+      first = s[0,1] and first.upcase == first
+    end
+  end
+end
+
 describe "Valid Numbers, Strings and Ranges" do
   ValidNumbersEtc = [
     "a is written as b;",                               # Value type declaration, no params, minimal whitespace
+    "a is written as B;",                               # Value type declaration, no params, minimal whitespace
     "a is written as b();",                             # Value type declaration, minimal whitespace
     "a is written as b ;",                              # Value type declaration, no params, trailing whitespace
     "a is written as b ( ) ; ",                         # Value type declaration, maximal whitespace
@@ -113,7 +142,7 @@ describe "Valid Numbers, Strings and Ranges" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQL::Parser.new
+    @parser = TestParser.new
   end
 
   ValidNumbersEtc.each do |c|
@@ -150,7 +179,7 @@ describe "Invalid Numbers and Strings" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQL::Parser.new
+    @parser = TestParser.new
   end
 
   InvalidValueTypes.each do |c|
@@ -175,7 +204,7 @@ describe "Value Types" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQL::Parser.new
+    @parser = TestParser.new
   end
 
   ValueTypes.each do |c|
@@ -269,7 +298,7 @@ describe "Entity Types" do
     EntityTypes_Subtypes
 
   before :each do
-    @parser = ActiveFacts::CQL::Parser.new
+    @parser = TestParser.new
   end
 
   EntityTypes.each do |c|
@@ -291,31 +320,37 @@ end
 
 describe "Fact Types" do
   FactTypes = [
-    [ "Director is old: Person directs company, Person is of age, age > 60;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Director"}, {:word=>"is"}, {:word=>"old"}], nil]], [[:fact_clause, [], [{:word=>"Person"}, {:word=>"directs"}, {:word=>"company"}], nil], [:fact_clause, [], [{:word=>"Person"}, {:word=>"is"}, {:word=>"of"}, {:word=>"age"}], nil], [">", [:variable, "age"], 60]]]]
+    [ "Director is old: Person directs company, Person is of Age, Age > 60;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Director"}, {:word=>"is"}, {:word=>"old"}], nil]], [[:fact_clause, [], [{:word=>"Person"}, {:word=>"directs"}, {:word=>"company"}], nil], [:fact_clause, [], [{:word=>"Person"}, {:word=>"is"}, {:word=>"of"}, {:word=>"Age"}], nil], [">", [:variable, "Age"], 60]]]]
     ],
-    [ "a: maybe a has completely- green b -totally [transitive, acyclic], b -c = 2;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"a"}], nil]], [[:fact_clause, ["maybe", "transitive", "acyclic"], [{:word=>"a"}, {:word=>"has"}, {:leading_adjective=>"completely", :word=>"green"}, {:trailing_adjective=>"totally", :word=>"b"}], nil], ["=", [:+, [:variable, "b"], [:-, [:variable, "c"]]], 2]]]]
+    [ "a: maybe a has completely- B [transitive, acyclic], B -c = 2;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"a"}], nil]], [[:fact_clause, ["maybe", "transitive", "acyclic"], [{:word=>"a"}, {:word=>"has"}, {:word=>"completely B"}], nil], ["=", [:variable, "B c"], 2]]]]
+    ],
+    [ "a: maybe a has completely- green B [transitive, acyclic], B -c = 2;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"a"}], nil]], [[:fact_clause, ["maybe", "transitive", "acyclic"], [{:word=>"a"}, {:word=>"has"}, {:word=>"completely green B"}], nil], ["=", [:variable, "B c"], 2]]]]
+    ],
+    [ "a: maybe a has B green -totally [transitive, acyclic], B -c = 2;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"a"}], nil]], [[:fact_clause, ["maybe", "transitive", "acyclic"], [{:word=>"a"}, {:word=>"has"}, {:word=>"B green totally"}], nil], ["=", [:variable, "B c"], 2]]]]
     ],
     [ "Person is independent: Person has taxable- Income, taxable Income >= 20000 dollars;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Person"}, {:word=>"is"}, {:word=>"independent"}], nil]], [[:fact_clause, [], [{:word=>"Person"}, {:word=>"has"}, {:leading_adjective=>"taxable", :word=>"Income"}], nil], [">=", [:variable, "taxable", "Income"], [20000, "dollars"]]]]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Person"}, {:word=>"is"}, {:word=>"independent"}], nil]], [[:fact_clause, [], [{:word=>"Person"}, {:word=>"has"}, {:word=>"taxable Income"}], nil], [">=", [:variable, "taxable Income"], [20000, "dollars"]]]]]
     ],
-    [ "Window requires toughening: Window has width-mm, Window has height-mm, width mm * height mm >= 10 foot^2;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Window"}, {:word=>"requires"}, {:word=>"toughening"}], nil]], [[:fact_clause, [], [{:word=>"Window"}, {:word=>"has"}, {:leading_adjective=>"width", :word=>"mm"}], nil], [:fact_clause, [], [{:word=>"Window"}, {:word=>"has"}, {:leading_adjective=>"height", :word=>"mm"}], nil], [">=", [:*, [:variable, "width", "mm"], [:variable, "height", "mm"]], [10, "foot^2"]]]]]
+    [ "Window requires toughening: Window has Width -mm, Window has Height -mm, Width mm * Height mm >= 10 foot^2;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Window"}, {:word=>"requires"}, {:word=>"toughening"}], nil]], [[:fact_clause, [], [{:word=>"Window"}, {:word=>"has"}, {:word=>"Width mm"}], nil], [:fact_clause, [], [{:word=>"Window"}, {:word=>"has"}, {:word=>"Height mm"}], nil], [">=", [:*, [:variable, "Width mm"], [:variable, "Height mm"]], [10, "foot^2"]]]]]
     ],
     # REVISIT: Test all quantifiers
     # REVISIT: Test all post-qualifiers
     # REVISIT: Test functions
-    [ "AnnualIncome is where Person has total- Income in Year: Person has total- Income.sum(), Income was earned in current- time.Year() (as Year);",
-      ["AnnualIncome", [:fact_type, [[:fact_clause, [], [{:word=>"Person"}, {:word=>"has"}, {:leading_adjective=>"total", :word=>"Income"}, {:word=>"in"}, {:word=>"Year"}], nil]], [[:fact_clause, [], [{:word=>"Person"}, {:word=>"has"}, {:leading_adjective=>"total", :function=>[:"(", "sum"], :word=>"Income"}], nil], [:fact_clause, [], [{:word=>"Income"}, {:word=>"was"}, {:word=>"earned"}, {:word=>"in"}, {:role_name=>"Year", :leading_adjective=>"current", :function=>[:"(", "Year"], :word=>"time"}], nil]]]]
+    [ "AnnualIncome is where Person has total- Income in Year: Person has total- Income.sum(), Income was earned in current- Time.Year() (as Year);",
+      ["AnnualIncome", [:fact_type, [[:fact_clause, [], [{:word=>"Person"}, {:word=>"has"}, {:word=>"total Income"}, {:word=>"in"}, {:word=>"Year"}], nil]], [[:fact_clause, [], [{:word=>"Person"}, {:word=>"has"}, {:function=>[:"(", "sum"], :word=>"total Income"}], nil], [:fact_clause, [], [{:word=>"Income"}, {:word=>"was"}, {:word=>"earned"}, {:word=>"in"}, {:function=>[:"(", "Year"], :role_name=>"Year", :word=>"current Time"}], nil]]]]
     ],
-    [ "a is interesting : b- c -d has e- f -g;",
-      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"a"}, {:word=>"is"}, {:word=>"interesting"}], nil]], [[:fact_clause, [], [{:leading_adjective=>"b", :trailing_adjective=>"d", :word=>"c"}, {:word=>"has"}, {:leading_adjective=>"e", :trailing_adjective=>"g", :word=>"f"}], nil]]]]
+    [ "a is interesting : b- C has F -g;",
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"a"}, {:word=>"is"}, {:word=>"interesting"}], nil]], [[:fact_clause, [], [{:word=>"b C"}, {:word=>"has"}, {:word=>"F g"}], nil]]]]
     ]
   ]
 
   before :each do
-    @parser = ActiveFacts::CQL::Parser.new
+    @parser = TestParser.new
   end
 
   FactTypes.each do |c|
@@ -338,7 +373,9 @@ describe "Fact Types" do
       puts result.map{|d| d.value}.inspect unless ast
     end
   end
+end
 
+describe "Constraint" do
   Constraints = [
     [ "each combination FamilyName, GivenName occurs at most one time in Competitor has FamilyName, Competitor has GivenName;",
       [nil, [:constraint, :presence, [["FamilyName"], ["GivenName"]], [nil, 1], [[[{:word=>"Competitor"}, {:word=>"has"}, {:word=>"FamilyName"}]], [[{:word=>"Competitor"}, {:word=>"has"}, {:word=>"GivenName"}]]], nil, []]]
@@ -346,7 +383,7 @@ describe "Fact Types" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQL::Parser.new
+    @parser = TestParser.new
   end
 
   Constraints.each do |c|

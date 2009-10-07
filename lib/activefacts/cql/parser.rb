@@ -24,10 +24,72 @@ module ActiveFacts
     class Parser < CQLParser
       include ActiveFacts
 
-      class BlackHole
-        def method_missing(m, *p, &b)
-          # puts "black hole #{m}(#{p.map{|q| q.inspect}*', '})"
-          self    # Make all calls vanish
+      # The Context manages some key information revealed or needed during parsing
+      # These methods are semantic predicates; if they return false this parse rule will fail.
+      class Context
+        def initialize
+          @terms = {}
+          @role_names = {}
+        end
+
+        def object_type(name, kind)
+          index_name(@terms, name) && debug(:context, "new #{kind} '#{name}'")
+          true
+        end
+
+        def reset_role_names
+          debug :context, "\tresetting role names #{@role_names.keys.sort*", "}" if @role_names && @role_names.size > 0
+          @role_names = {}
+        end
+
+        def new_leading_adjective_term(adj, term)
+          index_name(@role_names, "#{adj} #{term}", term) && debug(:context, "new role '#{adj}- #{term}'")
+          true
+        end
+
+        def new_trailing_adjective_term(adj, term)
+          index_name(@role_names, n = "#{term} #{adj}", term) && debug(:context, "new role '#{term} -#{adj}'")
+          true
+        end
+
+        def role_name(name)
+          index_name(@role_names, name) && debug(:context, "new role '#{name}'")
+          true
+        end
+
+        def term_starts?(s)
+          @term = s
+          t = @terms[s] || @role_names[s]
+          debug :context, "Term #{t[s] ? "is" : "starts"} '#{@term}'" if t
+          t
+        end
+
+        def term_continues?(s)
+          @term = "#{@term} #{s}"
+          if t = @terms[@term]
+            w = "term"
+          else
+            t = @role_names[@term]
+            w = "role_name"
+          end
+          debug :context, "Multi-word #{w} #{t[@term] ? 'ends at' : 'continues to'} #{@term.inspect}" if t
+          t
+        end
+
+      private
+        # Index the name by all prefixes
+        def index_name(index, name, value = true)
+          added = false
+          words = name.scan(/\w+/)
+          words.inject("") do |n, w|
+            # Index all prefixes up to the full term
+            n = n.empty? ? w : "#{n} #{w}"
+            index[n] ||= {}
+            added = true unless index[n][name]
+            index[n][name] = value    # Save all possible completions of this prefix
+            n
+          end
+          added
         end
       end
 
@@ -65,7 +127,7 @@ module ActiveFacts
       end
 
       def context
-        @context ||= BlackHole.new
+        @context ||= Context.new
       end
 
       def parse(input, options = {})

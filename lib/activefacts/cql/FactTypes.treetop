@@ -115,11 +115,14 @@ module ActiveFacts
                   # REVISIT: Soon I'll be able to remove this :word wrapping
             { def value; { :word => [i1.value, i2.value]*"-" }; end }
           /       # A normal non-term
-          s id { def value; { :word => id.value }; end }
+          s !non_role_word id
+	  { def value; { :word => id.value }; end }
         )+
         {
           def value
-            elements.map{|r| r.value}
+            elements.map{|r|
+	      r.value
+	    }
           end
         }
       end
@@ -130,7 +133,7 @@ module ActiveFacts
       rule role
         q:(quantifier enforcement)?
         player:term
-        func:function_call?
+        func:function_call? s
         role_id:(role_name / subscript )?
         lr:( literal / restriction enforcement )?
         !non_role     # If we integrate fact_clauses with comparisons, this can go.

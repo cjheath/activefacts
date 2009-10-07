@@ -58,8 +58,8 @@ module ActiveFacts
       end
 
       rule supertype_list
-        primary:term s
-        alternate_supertypes:( ',' s !identified_by name:term s )*
+        primary:id s
+        alternate_supertypes:( ',' s !identified_by name:id s )*
         { def value; alternate_supertypes.elements.inject([primary.value]) { |a, sup| a << sup.name.value }; end }
       end
 
@@ -76,7 +76,8 @@ module ActiveFacts
 	    end
 	  }
         /
-        identified_by role_list
+        identified_by
+	role_list
           { def value; {:roles => role_list.roles }; end }
       end
 
@@ -90,13 +91,9 @@ module ActiveFacts
       end
 
       rule term_or_unary
-        prefix:(s !(term/non_role_word) id s)*
-          term s
-          suffix:(s !(term/non_role_word) id)* s
-          # &{|s| puts "term_or_unary: '#{input[s[0].interval.first...index]}'"; debugger; true }
+        words:(s !non_role_word id)* s
         { def value
-            prefix.elements.inject([]) { |a, e| a << e.id.value } +
-              suffix.elements.inject([term.value]) { |a, e| a << e.id.value }
+	    words.elements.map {|w| w.id.text_value }
           end
         }
       end

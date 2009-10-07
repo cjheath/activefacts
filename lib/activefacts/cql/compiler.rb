@@ -1652,81 +1652,10 @@ player, binding = @symbols.bind(names)
         end
       end # of SymbolTable class
 
-      # The Context manages some key information revealed or needed during parsing
-      class Context
-        # REVISIT; This class is "work in progress", supporting semantic predicates from Treetop.
+      class Context < Parser::Context
         def initialize(compiler)
           @compiler = compiler
-        end
-
-        def object_type(c, kind)
-          debug :context, "Parser has started work on #{kind} '#{c}'"
-          index_global_name(c)
-          true
-        end
-
-        def new_leading_adjective_term(adj, term)
-          debug :context, "\tnew leading adjective term '#{adj}- #{term}'"
-          index_role_name("#{adj} #{term}", term)
-          true
-        end
-
-        def new_trailing_adjective_term(adj, term)
-          debug :context, "\tnew trailing adjective term '#{term} -#{adj}'"
-          index_role_name("#{term} #{adj}", term)
-          true
-        end
-
-        def reset_role_names
-          debug :context, "\tresetting role names #{@role_names.keys.sort*", "}" if @role_names && @role_names.size > 0
-          @role_names = {}
-          true
-        end
-
-        def role_name(r)
-          debug :context, "\tadding role name '#{r}'"
-          index_role_name(r, true)      # REVISIT: Find out what term this role name applies to so it can be properly indexed
-          true
-        end
-
-        def term_starts(s)
-          @term = s
-          debugger unless @terms && @role_names
-          t = @terms[s] || @role_names[s]
-          debug :context, "Found complete single-word term '#{@term}'" if t && t[s]
-          t
-        end
-
-        def term_continues(s)
-          @term = "#{@term} #{s}"
-          (w, t = "term", @terms[@term]) || (w, t = "role_name", @role_names[@term])
-          debug :context, "Multi-word #{w} #{t[@term] ? 'ends' : 'continues'} to #{@term.inspect}"
-          t
-        end
-
-      private
-        def index_global_name(name)
-          index_name(@terms ||= {}, name) && debug(:context, "new global name '#{name}'")
-        end
-
-        def index_role_name(name, term)
-          index_name(@role_names ||= {}, name, term) && debug(:context, "new role name '#{name}'")
-        end
-
-        def index_name(index, name, value = true)
-          added = false
-          words = name.scan(/\w+/)
-          words.inject([]) do |a, n|
-            # Build all prefixes up to the full term
-            a + [a[-1] ? "#{a[-1]} #{n}" : n]
-          end.each do |a|
-            unless index[a] && index[a][name]
-              #puts "Adding #{a} -> #{name}"
-              added = true
-            end
-            (index[a] ||= {})[name] = value
-          end
-          added
+          super()
         end
       end
 

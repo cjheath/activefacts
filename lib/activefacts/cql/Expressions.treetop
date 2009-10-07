@@ -8,7 +8,8 @@ module ActiveFacts
   module CQL
     grammar Expressions
       rule comparison
-        e1:expression s comparator s e2:expression
+        e1:expression s
+	comparator s e2:expression
         {
           def body
             [ comparator.text_value,
