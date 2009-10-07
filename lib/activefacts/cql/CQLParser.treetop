@@ -76,8 +76,8 @@ module ActiveFacts
       end
 
       rule enforcement
-	s '(' s otherwise s action s agent? s ')' s
-	  { def value; [action.text_value, agent.empty? ? nil : agent.text_value]; end }
+	s '(' s otherwise s action s a:agent? s ')' s
+	  { def value; [action.text_value, a.empty? ? nil : a.text_value]; end }
 	/
 	''
 	  { def value; []; end }

@@ -111,11 +111,11 @@ module ActiveFacts
         (
           role    # A role reference containing a term, perhaps with attached paraphernalia
           /       # A hyphenated non-term
-          s i1:id '-' i2:id
+          i1:id '-' i2:id s
                   # REVISIT: Soon I'll be able to remove this :word wrapping
             { def value; { :word => [i1.value, i2.value]*"-" }; end }
           /       # A normal non-term
-          s !non_role_word id
+          !non_role_word id s
 	  { def value; { :word => id.value }; end }
         )+
         {

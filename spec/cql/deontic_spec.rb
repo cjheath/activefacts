@@ -7,8 +7,22 @@ require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/parser'
 
+# The test parser regards any word starting with an upper-case letter as a pre-existing term
+class TestParser < ActiveFacts::CQL::Parser
+  def context
+    @context ||= Context.new
+  end     
+
+  class Context < ActiveFacts::CQL::Parser::Context
+    def term_starts?(s)
+      return true if super
+      first = s[0,1] and first.upcase == first
+    end
+  end
+end
+
 describe "Deontic Constraints" do
-  Prefix = %q{
+  DeonticPrefix = %q{
     Person is written as Person;
   }
   Cases = [
@@ -46,14 +60,14 @@ describe "Deontic Constraints" do
   ]
 
   before :each do
-    @parser = ActiveFacts::CQL::Parser.new
+    @parser = TestParser.new
   end
 
   Cases.each do |c|
     source, ast = *c
     it "should parse #{source.inspect}" do
       #debugger
-      result = @parser.parse_all(Prefix+source, :definition)
+      result = @parser.parse_all(DeonticPrefix+source, :definition)
 
       unless result
         debugger

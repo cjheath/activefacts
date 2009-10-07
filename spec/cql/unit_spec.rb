@@ -7,8 +7,6 @@ require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/parser'
 
-require 'ruby-debug'
-
 =begin
 module Treetop::Runtime
   class SyntaxNode
@@ -19,7 +17,6 @@ module Treetop::Runtime
   end
 end
 =end
-
 
 # The test parser regards any word starting with an upper-case letter as a pre-existing term
 class TestParser < ActiveFacts::CQL::Parser
@@ -320,6 +317,9 @@ end
 
 describe "Fact Types" do
   FactTypes = [
+    [ "Foo has at most one Bar, Bar is of one Foo restricted to {1..10};",
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Foo"}, {:word=>"has"}, {:quantifier_restriction=>[], :word=>"Bar", :quantifier=>[nil, 1]}], nil], [:fact_clause, [], [{:word=>"Bar"}, {:word=>"is"}, {:word=>"of"}, {:restriction=>[[1, 10]], :quantifier_restriction=>[], :word=>"Foo", :quantifier=>[1, 1], :restriction_enforcement=>[]}], nil]], []]]
+    ],
     [ "Director is old: Person directs company, Person is of Age, Age > 60;",
       [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Director"}, {:word=>"is"}, {:word=>"old"}], nil]], [[:fact_clause, [], [{:word=>"Person"}, {:word=>"directs"}, {:word=>"company"}], nil], [:fact_clause, [], [{:word=>"Person"}, {:word=>"is"}, {:word=>"of"}, {:word=>"Age"}], nil], [">", [:variable, "Age"], 60]]]]
     ],

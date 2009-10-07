@@ -128,7 +128,7 @@ module ActiveFacts
       end
 
       rule restriction
-        restricted s to s range_list s units
+	restricted s to s range_list s units
         {
           def ranges
             range_list.ranges   # REVISIT: Use the units here

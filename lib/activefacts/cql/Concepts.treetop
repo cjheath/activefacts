@@ -17,6 +17,11 @@ module ActiveFacts
       rule entity_type
         s term_definition_name
         sup:(basetype / subtype)
+	  &{|s|
+	    mode = (i = s[2].identifier) && Hash === i && i[:mode]
+	    input.context.object_type(s[1].value+mode, "identification mode type") if mode
+	    true
+	  }
         mapping_pragmas
         ec:entity_conditions?
         ';' s
