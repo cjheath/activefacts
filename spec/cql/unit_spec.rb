@@ -6,6 +6,7 @@
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/parser'
+require File.dirname(__FILE__) + '/../helpers/test_parser'
 
 =begin
 module Treetop::Runtime
@@ -17,20 +18,6 @@ module Treetop::Runtime
   end
 end
 =end
-
-# The test parser regards any word starting with an upper-case letter as a pre-existing term
-class TestParser < ActiveFacts::CQL::Parser
-  def context
-    @context ||= Context.new
-  end     
-
-  class Context < ActiveFacts::CQL::Parser::Context
-    def term_starts?(s)
-      return true if super
-      first = s[0,1] and first.upcase == first
-    end
-  end
-end
 
 describe "Valid Numbers, Strings and Ranges" do
   ValidNumbersEtc = [

@@ -64,10 +64,6 @@ module ActiveFacts
         @vocabulary
       end
 
-      def context
-        @context ||= Context.new(self)
-      end
-
     private
       def value_type(name, base_type_name, parameters, unit, ranges, mapping_pragmas, enforcement)
         length, scale = *parameters
@@ -1651,13 +1647,6 @@ player, binding = @symbols.bind(names)
           end
         end
       end # of SymbolTable class
-
-      class Context < Parser::Context
-        def initialize(compiler)
-          @compiler = compiler
-          super()
-        end
-      end
 
     end
   end

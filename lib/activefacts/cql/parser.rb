@@ -20,6 +20,12 @@ require 'activefacts/cql/CQLParser'
 
 module ActiveFacts
   module CQL
+    module Terms
+      class SavedContext < Treetop::Runtime::SyntaxNode
+        attr_accessor :context
+      end
+    end
+
     # Extend the generated parser:
     class Parser < CQLParser
       include ActiveFacts
@@ -27,7 +33,10 @@ module ActiveFacts
       # The Context manages some key information revealed or needed during parsing
       # These methods are semantic predicates; if they return false this parse rule will fail.
       class Context
-        def initialize
+        attr_reader :term, :global_term
+
+        def initialize(parser)
+          @parser = parser
           @terms = {}
           @role_names = {}
         end
@@ -57,23 +66,40 @@ module ActiveFacts
           true
         end
 
-        def term_starts?(s)
-          @term = s
-          t = @terms[s] || @role_names[s]
-          debug :context, "Term #{t[s] ? "is" : "starts"} '#{@term}'" if t
+        def term_starts?(s, context_saver)
+          @term_part = s
+          @context_saver = context_saver
+          t = @terms[s] || @role_names[s] || system_term(s)
+          if t
+            @global_term = @term = @term_part
+            @context_saver.context = {:term => @term, :global_term => @global_term }
+            debug :context, "Term #{t[s] ? "is" : "starts"} '#{@term_part}'"
+          end
           t
         end
 
         def term_continues?(s)
-          @term = "#{@term} #{s}"
-          if t = @terms[@term]
+          @term_part = "#{@term_part} #{s}"
+          if t = @terms[@term_part]
             w = "term"
           else
-            t = @role_names[@term]
+            t = @role_names[@term_part]
             w = "role_name"
           end
-          debug :context, "Multi-word #{w} #{t[@term] ? 'ends at' : 'continues to'} #{@term.inspect}" if t
+          if t
+            debug :context, "Multi-word #{w} #{t[@term_part] ? 'ends at' : 'continues to'} #{@term_part.inspect}"
+
+            # Record the name of the full term and the underlying global term:
+            @global_term = t[@term_part] == true ? @term_part : t
+            @term = @term_part if t[@term_part]
+            debug :context, "saving continued context #{@term}/{@global_term}"
+            @context_saver.context = {:term => "#{@term}", :global_term => "#{@global_term}" }
+          end
           t
+        end
+
+        def system_term(s)
+          false
         end
 
       private
@@ -127,7 +153,7 @@ module ActiveFacts
       end
 
       def context
-        @context ||= Context.new
+        @context ||= Context.new(self)
       end
 
       def parse(input, options = {})
@@ -153,9 +179,12 @@ module ActiveFacts
       end
 
       def definition(node)
-        node.value rescue debugger
-
-        name, ast = *node.value
+        name, ast =
+          *begin
+            node.value
+          rescue => e
+            debugger
+          end
         kind, *value = *ast
 
         begin
@@ -205,10 +234,11 @@ module ActiveFacts
         if conditions.empty? && includes_literals(clauses)
           [:fact, nil, clauses]
         elsif clauses.size == 1 &&
-            (popname = clauses[0][2]).size == 1 &&
-            popname[0].keys == [:word] &&
-            includes_literals(conditions)
-          [:fact, popname[0][:word], conditions]
+            (popname = clauses[0][2]).size == 1 &&  # A single "clause" of one item
+            popname[0].is_a?(Hash) &&               # which is a term
+            popname[0].keys == [:word] &&           # No adjectives
+            includes_literals(conditions)           # But has a literal
+          [:fact, popname[0][:word], conditions]    # It's a fact, not a fact type
         else
           [:fact_type, name, clauses, conditions]
         end

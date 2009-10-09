@@ -6,20 +6,7 @@
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/parser'
-
-# The test parser regards any word starting with an upper-case letter as a pre-existing term
-class TestParser < ActiveFacts::CQL::Parser
-  def context
-    @context ||= Context.new
-  end     
-
-  class Context < ActiveFacts::CQL::Parser::Context
-    def term_starts?(s)
-      return true if super
-      first = s[0,1] and first.upcase == first
-    end
-  end
-end
+require File.dirname(__FILE__) + '/../helpers/test_parser'
 
 describe "Business Context Notes" do
   # (according_to people ',')? (because / as_opposed_to / so_that / to_avoid) discussion (',' as_agreed_by)? s

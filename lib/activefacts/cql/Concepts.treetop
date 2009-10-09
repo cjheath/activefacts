@@ -18,6 +18,7 @@ module ActiveFacts
         s term_definition_name
         sup:(basetype / subtype)
 	  &{|s|
+	    # There's an implicit type when we use an identification mode, register it:
 	    mode = (i = s[2].identifier) && Hash === i && i[:mode]
 	    input.context.object_type(s[1].value+mode, "identification mode type") if mode
 	    true
