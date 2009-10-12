@@ -71,8 +71,11 @@ module ActiveFacts
           @context_saver = context_saver
           t = @terms[s] || @role_names[s] || system_term(s)
           if t
-            @global_term = @term = @term_part
-            @context_saver.context = {:term => @term, :global_term => @global_term }
+            # s is a prefix of the keys of t.
+            if t[s]
+              @global_term = @term = @term_part
+              @context_saver.context = {:term => @term, :global_term => @global_term }
+            end
             debug :context, "Term #{t[s] ? "is" : "starts"} '#{@term_part}'"
           end
           t
@@ -90,12 +93,18 @@ module ActiveFacts
             debug :context, "Multi-word #{w} #{t[@term_part] ? 'ends at' : 'continues to'} #{@term_part.inspect}"
 
             # Record the name of the full term and the underlying global term:
-            @global_term = t[@term_part] == true ? @term_part : t
-            @term = @term_part if t[@term_part]
-            debug :context, "saving continued context #{@term}/{@global_term}"
-            @context_saver.context = {:term => "#{@term}", :global_term => "#{@global_term}" }
+            if t[@term_part]
+              @term = @term_part if t[@term_part]
+              @global_term = (t = t[@term_part]) == true ? @term_part : t
+              debug :context, "saving context #{@term}/{@global_term}"
+              @context_saver.context = {:term => @term, :global_term => @global_term }
+            end
           end
           t
+        end
+
+        def term_complete?
+          (t = @terms[@term_part] or t = @role_names[@term_part]) and t[@term_part]
         end
 
         def system_term(s)
@@ -184,6 +193,7 @@ module ActiveFacts
             node.value
           rescue => e
             debugger
+            p e
           end
         kind, *value = *ast
 
@@ -204,6 +214,7 @@ module ActiveFacts
             when :constraint
               ast
             else
+              debugger
               raise "CQL: internal error, unknown definition kind"
             end
           end

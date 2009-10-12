@@ -112,11 +112,10 @@ module ActiveFacts
           role    # A role reference containing a term, perhaps with attached paraphernalia
           /       # A hyphenated non-term
           i1:id '-' i2:id s
-                  # REVISIT: Soon I'll be able to remove this :word wrapping
-            { def value; { :word => [i1.value, i2.value]*"-" }; end }
+            { def value; [i1.value, i2.value]*"-"; end }
           /       # A normal non-term
           !non_role_word id s
-	  { def value; { :word => id.value }; end }
+	  { def value; id.value; end }
         )+
         {
           def value
@@ -139,18 +138,14 @@ module ActiveFacts
         !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
           def value
-            r = {}
+            r = player.structure # has keys :word, :term, :leading_adjective, :trailing_adjective
+
             if !q.empty?
 	      quantifier = q.quantifier.value   # "some" quantifier has nil value
 	      r[:quantifier_restriction] = q.enforcement.value
 	    end
 
             r[:quantifier] = quantifier if quantifier
-#            r[:leading_adjective] = adj0.a.value unless adj0.empty?
-
-            r[:word] = player.value
-
-#            r[:trailing_adjective] = adj1.a.a.value unless adj1.empty?
             r[:function] = func.value if !func.empty?
             r[:role_name] = role_id.value unless role_id.empty?
 	    if !lr.empty? && lr.respond_to?(:restriction)
