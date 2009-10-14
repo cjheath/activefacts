@@ -104,7 +104,8 @@ module ActiveFacts
         end
 
         def term_complete?
-          (t = @terms[@term_part] or t = @role_names[@term_part]) and t[@term_part]
+          system_term(@term) or
+            ((t = @terms[@term] or t = @role_names[@term]) and t[@term])
         end
 
         def system_term(s)
