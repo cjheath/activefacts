@@ -39,6 +39,7 @@ module ActiveFacts
           @parser = parser
           @terms = {}
           @role_names = {}
+          @allowed_forward_terms = []
         end
 
         def object_type(name, kind)
@@ -49,6 +50,10 @@ module ActiveFacts
         def reset_role_names
           debug :context, "\tresetting role names #{@role_names.keys.sort*", "}" if @role_names && @role_names.size > 0
           @role_names = {}
+        end
+
+        def allowed_forward_terms(terms)
+          @allowed_forward_terms = terms
         end
 
         def new_leading_adjective_term(adj, term)
@@ -77,6 +82,11 @@ module ActiveFacts
               @context_saver.context = {:term => @term, :global_term => @global_term }
             end
             debug :context, "Term #{t[s] ? "is" : "starts"} '#{@term_part}'"
+          elsif @allowed_forward_terms.include?(@term_part)
+            @term = @term_part
+            @context_saver.context = {:term => @term, :global_term => @term }
+            debug :context, "Term #{s} is an allowed forward"
+            return true
           end
           t
         end
@@ -104,6 +114,7 @@ module ActiveFacts
         end
 
         def term_complete?
+          @allowed_forward_terms.include?(@term) or
           system_term(@term) or
             ((t = @terms[@term] or t = @role_names[@term]) and t[@term])
         end

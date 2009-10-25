@@ -84,6 +84,7 @@ module ActiveFacts
         /
         identified_by
 	role_list
+	  &{|s| input.context.allowed_forward_terms(s[1].roles.map{|words| words.size == 1 ? words[0] : nil}.compact); true }
           { def value; {:roles => role_list.roles }; end }
       end
 
