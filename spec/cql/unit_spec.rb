@@ -307,6 +307,9 @@ describe "Fact Types" do
     [ "Foo has at most one Bar, Bar is of one Foo restricted to {1..10};",
       [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Foo", :term=>"Foo"}, "has", {:quantifier_restriction=>[], :word=>"Bar", :term=>"Bar", :quantifier=>[nil, 1]}], nil], [:fact_clause, [], [{:word=>"Bar", :term=>"Bar"}, "is", "of", {:restriction=>[[1, 10]], :quantifier_restriction=>[], :word=>"Foo", :term=>"Foo", :quantifier=>[1, 1], :restriction_enforcement=>[]}], nil]], []]]
     ],
+    [ "Bar(1) is related to Bar(2), primary-Bar(1) has secondary-Bar(2);",
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Bar", :term=>"Bar", :role_name=>1}, "is", "related", "to", {:word=>"Bar", :term=>"Bar", :role_name=>2}], nil], [:fact_clause, [], [{:leading_adjective=>"primary", :word=>"primary Bar", :term=>"Bar", :role_name=>1}, "has", {:leading_adjective=>"secondary", :word=>"secondary Bar", :term=>"Bar", :role_name=>2}], nil]], []]]
+    ],
     [ "Director is old: Person directs company, Person is of Age, Age > 60;",
       [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Director", :term=>"Director"}, "is", "old"], nil]], [[:fact_clause, [], [{:word=>"Person", :term=>"Person"}, "directs", "company"], nil], [:fact_clause, [], [{:word=>"Person", :term=>"Person"}, "is", "of", {:word=>"Age", :term=>"Age"}], nil], [">", [:variable, "Age"], 60]]]]
     ],
