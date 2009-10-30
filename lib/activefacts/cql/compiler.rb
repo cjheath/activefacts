@@ -17,11 +17,15 @@ module ActiveFacts
         :irreflexive => [:symmetric]
       }
 
-      def initialize(string, filename = "stdin")
-        @string = string          # The contents of the input string
+      def initialize(input, filename = "stdin")
         @filename = filename
-
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
+
+        compile(input)
+      end
+
+      def compile(input)
+        @string = input
 
         # The syntax tree created from each parsed CQL statement gets passed to the block.
         # parse_all returns an array of the block's non-nil return values.
@@ -480,6 +484,7 @@ module ActiveFacts
       end
 
       # Record the concepts that play a role in these clauses
+      # After this, each phrase will have [:player] member that refers to the Concept
       def resolve_players(clauses)
         # Find the term for each role name:
         terms_by_role_names = {}
@@ -540,6 +545,7 @@ module ActiveFacts
         players = phrases.select{|phrase| phrase.is_a?(Hash)}.map{|phrase| phrase[:player]}
         players_sorted_by_name = players.sort_by{|p| p.name}
         player_having_fewest_roles = players.sort_by{|p| p.all_role.size}[0]
+        # REVISIT: Note: we will need to handle implicit subtyping joins here.
         player_having_fewest_roles.all_role.each do |role|
           next unless role.fact_type.all_role.size == players.size
           next unless role.fact_type.all_role.map{|r| r.concept}.sort_by{|p| p.name} == players_sorted_by_name
@@ -553,8 +559,8 @@ module ActiveFacts
 
       def reading_matches_phrases(reading, phrases)
         phrase_num = 0
-        absorbed_adjectives = []
-        reading.split(/\s+/).each do |element|
+        player_details = []    # An array of items for each role, describing any side-effects of the match.
+        reading.text.split(/\s+/).each do |element|
           if element !~ /\{(\d+)\}/
             # Just a word; it must match
             return nil unless phrases[phrase_num] == element
@@ -569,6 +575,7 @@ module ActiveFacts
               phrase_num += 1
               if phrase.is_a?(Hash)
                 next_player_phrase = phrase
+                next_player_phrase_num = phrase_num-1
                 break
               else
                 intervening_words << phrase
@@ -576,11 +583,13 @@ module ActiveFacts
             end
 
             # The next player must match:
+            # REVISIT: Note: we will need to handle implicit subtyping joins here.
             player = role_ref.role.concept
             return nil unless next_player_phrase and next_player_phrase[:player] == player
 
             # It's the right player. Do the adjectives match?
 
+            absorbed_precursors = 0
             if la = role_ref.leading_adjective and !la.empty?
               # The leading adjectives must match, one way or another
               la = la.split(/\s+/)
@@ -594,15 +603,10 @@ module ActiveFacts
               # If not, the phrase's leading_adjectives must *end* with the reading's
               return nil if phrase_la[-la.size..-1] != la
               # The leading adjectives and the player matched! Check the trailing adjectives.
-              unless intervening_words.empty?
-                absorbed_adjectives += {
-                  :into => next_player_phrase[:leading_adjective],
-                  :from => phrase_num-1-intervening_words.size,   # Index of first intervening word
-                  :to => phrase_num-1                             # Index of last intervening word
-                }
-              end
+              absorbed_precursors = intervening_words.size
             end
 
+            absorbed_followers = 0
             if ta = role_ref.trailing_adjective and !ta.empty?
               ta = ta.split(/\s+/)  # These are the trailing adjectives to match
 
@@ -614,35 +618,109 @@ module ActiveFacts
                 i += 1
               end
               return nil if ta != phrase_ta[0,ta.size]
-              if i > 0
-                absorbed_adjectives += {
-                  :into => next_player_phrase[:trailing_adjective],
-                  :from => phrase_num,    # Index of first intervening word
-                  :to => phrase_num+i-1   # Index of last intervening word
-                }
-              end
+              absorbed_followers = i
               phrase_num += i # Skip following words that were consumed as trailing adjectives
             end
-            # The phrases matched this reading's next role_ref
+
+            # The phrases matched this reading's next role_ref, save data to apply the side-effects:
+            # puts "Saving player #{next_player_phrase[:term]} with #{role_ref ? "a" : "no" } role_ref"
+            player_details << [next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers]
           end
         end
 
-        # This match has side-effects, namely that any intervening_words and following words
-        # that were consumed as adjectives are rolled in to the phrase[:leading_adjective]
-        # and phrase[:trailing_adjective].
-        # However, we couldn't do that until the whole reading had matched.
-        unless absorbed_adjectives.empty?
-          raise "REVISIT: Not absorbing matched adjectives as required"
+        # Enact the side-effects of this match (delete the consumed adjectives):
+        player_details.reverse.each do |phrase, role_ref, num, precursors, followers|
+          phrase[:role_ref] = role_ref    # Used if no extra adjectives were used
+
+          # Where this phrase has leading or trailing adjectives that are in excess of those of
+          # the role_ref, those must be local, and we'll need to extract them.
+
+          if rra = role_ref.trailing_adjective
+            #p role_ref.trailing_adjective
+
+            # These adjective(s) matched either an adjective here, or a follower word, or both.
+            if a = phrase[:trailing_adjective]
+              if a.size >= rra.size
+                a.slice!(0, rra.size+1) # Remove the matched adjectives and the space (if any)
+                phrase.delete(:trailing_adjective) if a.empty?
+              end
+            elsif followers > 0
+              phrase.delete(:trailing_adjective)
+              phrases.slice!(num+1, followers)
+            end
+          end
+
+          if rra = role_ref.leading_adjective
+            #p role_ref.leading_adjective
+
+            # These adjective(s) matched either an adjective here, or a precursor word, or both.
+            if a = phrase[:leading_adjective]
+              if a.size >= rra.size
+                a.slice!(-rra.size, 1000) # Remove the matched adjectives and the space
+                a.slice!(0,1) if a[0,1] == ' '
+                phrase.delete(:leading_adjective) if a.empty?
+              end
+            elsif precursors > 0
+              phrase.delete(:leading_adjective)
+              phrases.slice!(num-precursors, precursors)
+            end
+          end
+
+          # If we have remaining adjectives, the role_ref cannot be used
+          # we need a new RoleSequence and RoleRefs for the underlying roles.
+          # if (phrase[:leading_adjective] or phrase[:trailing_adjective])
         end
+
         true
       end
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      def make_reading_for_fact_type(fact_type, clause)
+        role_sequence = @constellation.RoleSequence(:new)
+        reading_words = []
+        kind, qualifiers, phrases, context = *clause
+        #puts "Making new fact reading for #{phrases.inspect}"
+        phrases.each do |phrase|
+          if phrase.is_a?(Hash)
+            index = role_sequence.all_role_ref.size
+            roles = fact_type.all_role.select{|r| r.concept == phrase[:player]}
+            raise "REVISIT: This doesn't work if a concept plays more than one role" if roles.size > 1
+            # Can annotate the phrase during binding perhaps:
+            role = phrase[:role] || roles[0]
+            raise "Role player #{phrase[:player].name} not found for reading" unless role
+            rr = @constellation.RoleRef(role_sequence, index, :role => role)
+            if la = phrase[:leading_adjective]
+              # If we have used one or more adjective to match an existing reading, that has already been removed.
+              rr.leading_adjective = la
+            end
+            if ta = phrase[:trailing_adjective]
+              rr.trailing_adjective = ta
+            end
+            reading_words << "{#{index}}"
+          else
+            reading_words << phrase
+          end
+        end
+        @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => role_sequence, :text => reading_words*" ")
+      end
+
+      def make_default_identifier_for_fact_type(fact_type)
+        pc = @constellation.PresenceConstraint(
+            :new,
+            :vocabulary => @vocabulary,
+            :name => '',
+            :role_sequence => fact_type.all_reading.detect{|r| r.ordinal == 0}.role_sequence,
+            :is_preferred_identifier => true,
+            :max_frequency => 1
+          )
+      end
 
       def fact_type(name, clauses, conditions) 
         debug "Processing clauses for fact type" do
           fact_type = nil
 
-          # REVISIT: role names defined in the conditions aren't handled here
+          # REVISIT: Any role names defined in the conditions aren't handled here, only those in the clauses
+
           resolve_players(clauses)
 
           cbt = clauses_by_terms(clauses)
@@ -663,14 +741,88 @@ module ActiveFacts
           # We know the role players are the same in all clauses, but we haven't matched them up.
           # If any player is duplicated and isn't used with consistent adjectives, we must use
           # loose adjective binding or require subscripts
-          terms = cbt.keys[0]
+          terms = cbt.keys[0]     # This is the sorted array of player's names
           if terms.uniq.size < terms.size
             raise "REVISIT: disambiguate duplicate roles of (#{player_names*', '})"
           end
 
-          debugger
-          puts unmatched_clauses.inspect  # These clauses don't match existing readings of any fact type
-          puts matched_clauses.inspect    # These clauses match existing readings of the fact_type
+          # Make a new fact type if we didn't match any reading
+          if !fact_type
+            fact_type = @constellation.FactType(:new)
+            kind, qualifiers, phrases, context = *unmatched_clauses[0]
+            # puts "Making new fact type for #{phrases.inspect}"
+            phrases.each do |phrase|
+              next unless phrase.is_a?(Hash)
+              @constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase[:player])
+            end
+          end
+
+          # Make new readings for all unmatched clauses
+          unmatched_clauses.each do |clause|
+            make_reading_for_fact_type(fact_type, clause)
+          end
+
+          if matched_clauses.size == 0
+            # REVISIT: This isn't the thing to do long term; it needs to be added if we find no other constraint
+            make_default_identifier_for_fact_type(fact_type)
+            @constellation.EntityType(@vocabulary, "Blah", :fact_type => fact_type)
+          end
+
+          matched_clauses.each do |clause|
+            # When we have existing clauses that match, we might have matched using additional adjectives.
+            # These adjectives have been removed from the phrases. If there are any remaining adjectives,
+            # we need to make a new RoleSequence, otherwise we can use the existing one.
+            kind, qualifiers, phrases, context = clause
+            role_phrases = []
+            role_sequence = nil
+            reading_words = []
+            new_role_sequence_needed = false
+            phrases.each do |phrase|
+              if phrase.is_a?(Hash)
+                role_phrases << phrase
+                reading_words << "{#{phrase[:role_ref].ordinal}}"
+                new_role_sequence_needed = true if phrase[:leading_adjective] ||
+                    phrase[:trailing_adjective] ||
+                    phrase[:role_name]
+              else
+                reading_words << phrase
+                false
+              end
+            end
+
+            reading_text = reading_words*" "
+            if new_role_sequence_needed
+              role_sequence = @constellation.RoleSequence(:new)
+              #extra_adjectives = []
+              role_phrases.each_with_index do |rp, i|
+                role_ref = @constellation.RoleRef(role_sequence, i, :role => rp[:role_ref].role)
+                if a = rp[:leading_adjective]
+                  role_ref.leading_adjective = a
+                  #extra_adjectives << a+"-"
+                end
+                if a = rp[:trailing_adjective]
+                  role_ref.trailing_adjective = a
+                  #extra_adjectives << "-"+a
+                end
+                if a = rp[:role_name]
+                  #extra_adjectives << "(as #{a})"
+                end
+              end
+              #puts "Making new role sequence for #{reading_words*" "} due to #{extra_adjectives.inspect}"
+            else
+              # Use existing RoleSequence
+              role_sequence = role_phrases[0][:role_ref].role_sequence
+              if role_sequence.all_reading.detect{|r| r.text == reading_text }
+                role_sequence = nil
+                #puts "No need to re-create identical reading for #{reading_words*" "}"
+              else
+                #puts "Using existing role sequence for #{reading_words*" "}"
+              end
+            end
+            if role_sequence
+              @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => role_sequence, :text => reading_words*" ")
+            end
+          end
 
 =begin
           #
@@ -1134,43 +1286,6 @@ module ActiveFacts
           end
           clause_groups
         end
-      end
-
-      # For each fact reading there may be embedded mandatory, uniqueness or frequency constraints:
-      def create_embedded_presence_constraints(fact_type, role_phrases, roles)
-        embedded_presence_constraints = []
-        role_phrases.zip(roles).each_with_index do |role_pair, index|
-          role_phrase, role = *role_pair
-
-          next unless quantifier = role_phrase[:quantifier]
-
-          debug "Processing embedded constraint #{quantifier.inspect} on #{role.concept.name} in #{fact_type.describe}" do
-            constrained_roles = roles.clone
-            constrained_roles.delete_at(index)
-            constraint = find_pc_over_roles(constrained_roles)
-            if constraint
-              debug "Setting max frequency to #{quantifier[1]} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
-              raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != quantifier[1]
-              constraint.max_frequency = quantifier[1]
-            else
-              role_sequence = @constellation.RoleSequence(:new)
-              constrained_roles.each_with_index do |constrained_role, i|
-                role_ref = @constellation.RoleRef(role_sequence, i, :role => constrained_role)
-              end
-              constraint = @constellation.PresenceConstraint(
-                  :new,
-                  :vocabulary => @vocabulary,
-                  :role_sequence => role_sequence,
-                  :is_mandatory => quantifier[0] && quantifier[0] > 0,  # REVISIT: Check "maybe" qualifier?
-                  :max_frequency => quantifier[1],
-                  :min_frequency => quantifier[0]
-                )
-              embedded_presence_constraints << constraint
-              debug "Made new PC min=#{quantifier[0].inspect} max=#{quantifier[1].inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
-            end
-          end
-        end
-        @symbols.embedded_presence_constraints += embedded_presence_constraints
       end
 
     end

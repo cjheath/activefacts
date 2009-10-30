@@ -351,6 +351,43 @@ module ActiveFacts
         [fact_type, reading]
       end
 
+      # For each fact reading there may be embedded mandatory, uniqueness or frequency constraints:
+      def create_embedded_presence_constraints(fact_type, role_phrases, roles)
+        embedded_presence_constraints = []
+        role_phrases.zip(roles).each_with_index do |role_pair, index|
+          role_phrase, role = *role_pair
+
+          next unless quantifier = role_phrase[:quantifier]
+
+          debug "Processing embedded constraint #{quantifier.inspect} on #{role.concept.name} in #{fact_type.describe}" do
+            constrained_roles = roles.clone
+            constrained_roles.delete_at(index)
+            constraint = find_pc_over_roles(constrained_roles)
+            if constraint
+              debug "Setting max frequency to #{quantifier[1]} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
+              raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != quantifier[1]
+              constraint.max_frequency = quantifier[1]
+            else
+              role_sequence = @constellation.RoleSequence(:new)
+              constrained_roles.each_with_index do |constrained_role, i|
+                role_ref = @constellation.RoleRef(role_sequence, i, :role => constrained_role)
+              end
+              constraint = @constellation.PresenceConstraint(
+                  :new,
+                  :vocabulary => @vocabulary,
+                  :role_sequence => role_sequence,
+                  :is_mandatory => quantifier[0] && quantifier[0] > 0,  # REVISIT: Check "maybe" qualifier?
+                  :max_frequency => quantifier[1],
+                  :min_frequency => quantifier[0]
+                )
+              embedded_presence_constraints << constraint
+              debug "Made new PC min=#{quantifier[0].inspect} max=#{quantifier[1].inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
+            end
+          end
+        end
+        @symbols.embedded_presence_constraints += embedded_presence_constraints
+      end
+
       def process_qualifiers(role_sequence, qualifiers)
         return unless qualifiers.size > 0
         qualifiers.sort!
