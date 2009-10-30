@@ -704,6 +704,61 @@ module ActiveFacts
         @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => role_sequence, :text => reading_words*" ")
       end
 
+      def role_sequence_for_matched_reading(fact_type, clause)
+        # When we have existing clauses that match, we might have matched using additional adjectives.
+        # These adjectives have been removed from the phrases. If there are any remaining adjectives,
+        # we need to make a new RoleSequence, otherwise we can use the existing one.
+        kind, qualifiers, phrases, context = clause
+        role_phrases = []
+        role_sequence = nil
+        reading_words = []
+        new_role_sequence_needed = false
+        phrases.each do |phrase|
+          if phrase.is_a?(Hash)
+            role_phrases << phrase
+            reading_words << "{#{phrase[:role_ref].ordinal}}"
+            new_role_sequence_needed = true if phrase[:leading_adjective] ||
+                phrase[:trailing_adjective] ||
+                phrase[:role_name]
+          else
+            reading_words << phrase
+            false
+          end
+        end
+
+        reading_text = reading_words*" "
+        if new_role_sequence_needed
+          role_sequence = @constellation.RoleSequence(:new)
+          #extra_adjectives = []
+          role_phrases.each_with_index do |rp, i|
+            role_ref = @constellation.RoleRef(role_sequence, i, :role => rp[:role_ref].role)
+            if a = rp[:leading_adjective]
+              role_ref.leading_adjective = a
+              #extra_adjectives << a+"-"
+            end
+            if a = rp[:trailing_adjective]
+              role_ref.trailing_adjective = a
+              #extra_adjectives << "-"+a
+            end
+            if a = rp[:role_name]
+              #extra_adjectives << "(as #{a})"
+            end
+          end
+          #puts "Making new role sequence for #{reading_words*" "} due to #{extra_adjectives.inspect}"
+        else
+          # Use existing RoleSequence
+          role_sequence = role_phrases[0][:role_ref].role_sequence
+          if role_sequence.all_reading.detect{|r| r.text == reading_text }
+            #puts "No need to re-create identical reading for #{reading_words*" "}"
+            return role_sequence
+          else
+            #puts "Using existing role sequence for #{reading_words*" "}"
+          end
+        end
+        @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => role_sequence, :text => reading_words*" ")
+        role_sequence
+      end
+
       def make_default_identifier_for_fact_type(fact_type)
         pc = @constellation.PresenceConstraint(
             :new,
@@ -724,8 +779,8 @@ module ActiveFacts
           resolve_players(clauses)
 
           cbt = clauses_by_terms(clauses)
-          player_names = cbt.keys[0]
-          raise "Subsequent fact type clauses must involve the same players as the first (#{player_names*', '})" unless cbt.size == 1
+          terms = cbt.keys[0]     # This is the sorted array of player's names
+          raise "Subsequent fact type clauses must involve the same players as the first (#{terms*', '})" unless cbt.size == 1
 
           # Find whether any clause matches an existing fact type.
           # Ensure that for any such clauses all match the same fact type.
@@ -740,10 +795,9 @@ module ActiveFacts
 
           # We know the role players are the same in all clauses, but we haven't matched them up.
           # If any player is duplicated and isn't used with consistent adjectives, we must use
-          # loose adjective binding or require subscripts
-          terms = cbt.keys[0]     # This is the sorted array of player's names
+          # loose adjective binding or require subscripts.
           if terms.uniq.size < terms.size
-            raise "REVISIT: disambiguate duplicate roles of (#{player_names*', '})"
+            raise "REVISIT: disambiguate duplicate roles of (#{terms*', '})"
           end
 
           # Make a new fact type if we didn't match any reading
@@ -762,66 +816,14 @@ module ActiveFacts
             make_reading_for_fact_type(fact_type, clause)
           end
 
+          matched_clauses.each do |clause|
+            role_sequence_for_matched_reading(fact_type, clause)
+          end
+
           if matched_clauses.size == 0
             # REVISIT: This isn't the thing to do long term; it needs to be added if we find no other constraint
             make_default_identifier_for_fact_type(fact_type)
             @constellation.EntityType(@vocabulary, "Blah", :fact_type => fact_type)
-          end
-
-          matched_clauses.each do |clause|
-            # When we have existing clauses that match, we might have matched using additional adjectives.
-            # These adjectives have been removed from the phrases. If there are any remaining adjectives,
-            # we need to make a new RoleSequence, otherwise we can use the existing one.
-            kind, qualifiers, phrases, context = clause
-            role_phrases = []
-            role_sequence = nil
-            reading_words = []
-            new_role_sequence_needed = false
-            phrases.each do |phrase|
-              if phrase.is_a?(Hash)
-                role_phrases << phrase
-                reading_words << "{#{phrase[:role_ref].ordinal}}"
-                new_role_sequence_needed = true if phrase[:leading_adjective] ||
-                    phrase[:trailing_adjective] ||
-                    phrase[:role_name]
-              else
-                reading_words << phrase
-                false
-              end
-            end
-
-            reading_text = reading_words*" "
-            if new_role_sequence_needed
-              role_sequence = @constellation.RoleSequence(:new)
-              #extra_adjectives = []
-              role_phrases.each_with_index do |rp, i|
-                role_ref = @constellation.RoleRef(role_sequence, i, :role => rp[:role_ref].role)
-                if a = rp[:leading_adjective]
-                  role_ref.leading_adjective = a
-                  #extra_adjectives << a+"-"
-                end
-                if a = rp[:trailing_adjective]
-                  role_ref.trailing_adjective = a
-                  #extra_adjectives << "-"+a
-                end
-                if a = rp[:role_name]
-                  #extra_adjectives << "(as #{a})"
-                end
-              end
-              #puts "Making new role sequence for #{reading_words*" "} due to #{extra_adjectives.inspect}"
-            else
-              # Use existing RoleSequence
-              role_sequence = role_phrases[0][:role_ref].role_sequence
-              if role_sequence.all_reading.detect{|r| r.text == reading_text }
-                role_sequence = nil
-                #puts "No need to re-create identical reading for #{reading_words*" "}"
-              else
-                #puts "Using existing role sequence for #{reading_words*" "}"
-              end
-            end
-            if role_sequence
-              @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => role_sequence, :text => reading_words*" ")
-            end
           end
 
 =begin
