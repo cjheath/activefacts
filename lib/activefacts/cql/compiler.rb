@@ -109,8 +109,9 @@ module ActiveFacts
       end
 
       def apply_enforcement(constraint, enforcement)
-        constraint.enforcement = enforcement[0]
-        constraint.enforcement.agent = enforcement[1] if enforcement[1]
+        action, agent = *enforcement
+        constraint.enforcement = action
+        constraint.enforcement.agent = agent if agent
       end
 
       def entity_type(name, supertypes, identification, mapping_pragmas, clauses)
@@ -781,7 +782,7 @@ module ActiveFacts
             :name => fact_type.entity_type ? fact_type.entity_type.name+"PK" : '',
             :role_sequence => fact_type.preferred_reading.role_sequence,
             :is_preferred_identifier => true,
-            :max_frequency => 1
+            :max_frequency => 1,
             :is_preferred_identifier => prefer
           )
       end
@@ -899,6 +900,8 @@ module ActiveFacts
                 )
               embedded_presence_constraints << constraint
               debug :constraint, "Made new PC min=#{quantifier[0].inspect} max=#{quantifier[1].inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
+              enforcement = role_phrase[:quantifier_restriction]
+              apply_enforcement(constraint, enforcement) if enforcement
             end
           end
         end
