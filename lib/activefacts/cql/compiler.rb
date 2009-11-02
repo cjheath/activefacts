@@ -774,14 +774,15 @@ module ActiveFacts
         role_sequence
       end
 
-      def make_default_identifier_for_fact_type(fact_type)
-        pc = @constellation.PresenceConstraint(
+      def make_default_identifier_for_fact_type(fact_type, prefer = true)
+        @constellation.PresenceConstraint(
             :new,
             :vocabulary => @vocabulary,
-            :name => '',
-            :role_sequence => fact_type.all_reading.detect{|r| r.ordinal == 0}.role_sequence,
+            :name => fact_type.entity_type ? fact_type.entity_type.name+"PK" : '',
+            :role_sequence => fact_type.preferred_reading.role_sequence,
             :is_preferred_identifier => true,
             :max_frequency => 1
+            :is_preferred_identifier => prefer
           )
       end
 
@@ -971,6 +972,8 @@ module ActiveFacts
             role_sequence_for_matched_reading(fact_type, clause)
           end
 
+          # REVISIT: Create ring constraints here
+
           debug :constraint, "making embedded presence constraints" do
             (matched_clauses + unmatched_clauses).each do |clause|
               kind, qualifiers, phrases, context = *clause
@@ -980,41 +983,13 @@ module ActiveFacts
             end
           end
 
-          unless fact_type.all_role.detect{|r| r.all_role_ref.detect{|rr| rr.role_sequence.all_presence_constraint.detect{|pc| pc.max_frequency == 1}} }
-            raise "Fact type has no embedded uniqueness constraints"  # Note that a ternary may have UCs but still need to be objectified
-            # REVISIT: This isn't the thing to do long term; it needs to be added if we find no other constraint
+          @constellation.EntityType(@vocabulary, name, :fact_type => fact_type) if name
+
+          # If there's no alethic uniqueness constraint over the fact type yet, create one
+          unless fact_type.all_role.detect{|r| r.all_role_ref.detect{|rr| rr.role_sequence.all_presence_constraint.detect{|pc| pc.max_frequency == 1 && !pc.enforcement}} }
+            # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
             make_default_identifier_for_fact_type(fact_type)
-            @constellation.EntityType(@vocabulary, "Blah", :fact_type => fact_type)
           end
-
-=begin
-          #
-          # The first step is to find all role references and definitions in the phrases
-          # This also:
-          # * deletes any adjectives that were used but not hyphenated
-          # * changes each linking word phrase into a simple String
-          # * adds a :binding key to each bound role
-          #
-          @symbols = SymbolTable.new(@constellation, @vocabulary)
-          @symbols.bind_roles_in_clauses(clauses)
-
-          clauses.each do |clause|
-            kind, qualifiers, phrases, context = *clause
-
-            fact_type, r = *bind_fact_reading(fact_type, qualifiers, phrases)
-          end
-
-          # The fact type has a name iff it's objectified as an entity type
-          #puts "============= Creating entity type #{name} to nominalize fact type #{fact_type.default_reading} ======================" if name
-          fact_type.entity_type = @constellation.EntityType(@vocabulary, name) if name
-
-          # Add the identifying PresenceConstraint for this fact type:
-          if fact_type.all_role.size == 1 && !fact_type.entity_type
-            # All is well, unaries don't need an identifying PC unless objectified
-          else
-            fact_type_identification(fact_type, name, true)
-          end
-=end
 
           # REVISIT: Process the fact derivation conditions, if any
         end
