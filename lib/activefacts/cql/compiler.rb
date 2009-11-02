@@ -948,8 +948,6 @@ module ActiveFacts
           end
 
           # We know the role players are the same in all clauses, but we haven't matched them up.
-          # If any player is duplicated and isn't used with consistent adjectives, we must use
-          # loose adjective binding or require subscripts.
 
           # If we have no matched clause, make a fact type and reading for the first clause.
           # Treat this new reading as a matched clause.
@@ -960,14 +958,12 @@ module ActiveFacts
           end
 
           # Then, for each remaining unmatched clause, try to match the roles against those of any matched clause.
+          match_progress = []
           unmatched_clauses.each do |clause|
-            # REVISIT: Any duplicated unmatched_clauses aren't detected here
-            match_clause_against_clauses(clause, matched_clauses)
-          end
-
-          # Make new readings for all unmatched clauses
-          unmatched_clauses.each do |clause|
+            # REVISIT: Any duplicated unmatched_clauses aren't detected here.
+            match_clause_against_clauses(clause, matched_clauses+match_progress)
             make_reading_for_fact_type(fact_type, clause)
+            match_progress << clause
           end
 
           (matched_clauses-[first_clause]).each do |clause|
