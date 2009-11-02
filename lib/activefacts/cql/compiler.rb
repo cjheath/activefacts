@@ -865,6 +865,44 @@ module ActiveFacts
         end
       end
 
+      # For each fact reading there may be embedded mandatory, uniqueness or frequency constraints:
+      def make_embedded_presence_constraints(fact_type, role_phrases)
+        embedded_presence_constraints = []
+        roles = role_phrases.map { |p| p[:role_ref].role }
+        role_phrases.each_with_index do |role_phrase, index|
+          role = role_phrase[:role_ref].role
+          raise "No Role for embedded_presence_constraint; use role_ref?" unless role
+
+          next unless quantifier = role_phrase[:quantifier]
+
+          debug :constraint, "Processing embedded constraint #{quantifier.inspect} on #{role.concept.name} in #{fact_type.describe}" do
+            constrained_roles = roles.clone
+            constrained_roles.delete_at(index)
+            constraint = find_pc_over_roles(constrained_roles)
+            if constraint
+              debug :constraint, "Setting max frequency to #{quantifier[1]} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
+              raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != quantifier[1]
+              constraint.max_frequency = quantifier[1]
+            else
+              role_sequence = @constellation.RoleSequence(:new)
+              constrained_roles.each_with_index do |constrained_role, i|
+                role_ref = @constellation.RoleRef(role_sequence, i, :role => constrained_role)
+              end
+              constraint = @constellation.PresenceConstraint(
+                  :new,
+                  :vocabulary => @vocabulary,
+                  :role_sequence => role_sequence,
+                  :is_mandatory => quantifier[0] && quantifier[0] > 0,  # REVISIT: Check "maybe" qualifier?
+                  :max_frequency => quantifier[1],
+                  :min_frequency => quantifier[0]
+                )
+              embedded_presence_constraints << constraint
+              debug :constraint, "Made new PC min=#{quantifier[0].inspect} max=#{quantifier[1].inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
+            end
+          end
+        end
+      end
+
       def fact_type(name, clauses, conditions) 
         debug :matching, "Processing clauses for fact type" do
           fact_type = nil
@@ -919,6 +957,7 @@ module ActiveFacts
 
           # Then, for each remaining unmatched clause, try to match the roles against those of any matched clause.
           unmatched_clauses.each do |clause|
+            # REVISIT: Any duplicated unmatched_clauses aren't detected here
             match_clause_against_clauses(clause, matched_clauses)
           end
 
@@ -932,7 +971,17 @@ module ActiveFacts
             role_sequence_for_matched_reading(fact_type, clause)
           end
 
-          if matched_clauses.size == 0
+          debug :constraint, "making embedded presence constraints" do
+            (matched_clauses + unmatched_clauses).each do |clause|
+              kind, qualifiers, phrases, context = *clause
+              role_phrases = phrases.select{|p| p.is_a?(Hash)}
+              debug :constraint, "making embedded presence constraints from #{show_phrases(phrases)}"
+              make_embedded_presence_constraints(fact_type, role_phrases)
+            end
+          end
+
+          unless fact_type.all_role.detect{|r| r.all_role_ref.detect{|rr| rr.role_sequence.all_presence_constraint.detect{|pc| pc.max_frequency == 1}} }
+            raise "Fact type has no embedded uniqueness constraints"  # Note that a ternary may have UCs but still need to be objectified
             # REVISIT: This isn't the thing to do long term; it needs to be added if we find no other constraint
             make_default_identifier_for_fact_type(fact_type)
             @constellation.EntityType(@vocabulary, "Blah", :fact_type => fact_type)
