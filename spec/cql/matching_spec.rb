@@ -83,9 +83,10 @@ describe "Fact Type Role Matching" do
     }
   end
 
-  # This doesn't work, because it applies at runtime, not test-time (atexit)
   def self.pending(msg = "TODO") # , &b
-    raise Spec::Example::ExamplePendingError.new(msg)
+    lambda {|c|
+      raise Spec::Example::ExamplePendingError.new(msg)
+    }
   end
 
   def self.ReadingContainsHyphenatedWord reading_num
@@ -95,7 +96,7 @@ describe "Fact Type Role Matching" do
           reading.ordinal == reading_num
         }[0]
       hyphenated_reading.should_not == nil
-      hyphenated_reading.text.should =~ /[a-z]-[a-z]/
+      (hyphenated_reading.text =~ /[a-z]-[a-z]/).should_not == nil
     }
   end
 
@@ -130,10 +131,10 @@ describe "Fact Type Role Matching" do
           Boy is going out with Girl,
           Boy is going out with Girl;
       },
-      #pending,
-      #SingleFact(),
-      ReadingCount(2),
-      #PresenceConstraintCount(1),
+      SingleFact(),
+        PresenceConstraintCount(1),
+        pending("duplicate new clauses are not eliminated"),
+        ReadingCount(2),
     ],
     [ # Simple match with a new presence Constraint
       %q{Girl is going out with at most one Boy; },
@@ -235,7 +236,7 @@ describe "Fact Type Role Matching" do
       },
       SingleFact(),
         ReadingCount(2),
-        ReadingContainsHyphenatedWord(2),
+        ReadingContainsHyphenatedWord(1),
         PresenceConstraintCount(1)
     ],
     [ # Match with implicit leading ignoring explicit trailing adjective
@@ -302,7 +303,7 @@ describe "Fact Type Role Matching" do
     ],
   ]
   AllTests =
-#    SimpleBinaryFactTypeTests +
+    SimpleBinaryFactTypeTests +
     EntityIdentificationTests
 
   before :each do
@@ -320,6 +321,8 @@ describe "Fact Type Role Matching" do
         when Proc
           begin
             test.call(@compiler.vocabulary.constellation)
+          rescue Spec::Example::ExamplePendingError
+            raise
           rescue => e
             puts "Failed on\n\t"+tests.select{|t| t.is_a?(String)}*" "
             raise
