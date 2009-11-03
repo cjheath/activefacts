@@ -26,6 +26,7 @@ describe "Fact Type Role Matching" do
   def self.ReadingCount n
     lambda {|c|
       unless @fact_type.all_reading.size == n
+        # REVISIT: Figure out how to suppress this inside a pending block
         puts "SPEC FAILED, wrong number of readings (should be #{n}):\n\t#{
           @fact_type.all_reading.map{ |r| r.expand}*"\n\t"
         }"
@@ -83,12 +84,23 @@ describe "Fact Type Role Matching" do
     }
   end
 
+  class BlackHole
+    def method_missing(m,*a,&b)
+      self
+    end
+  end
+  class PendingSilencer
+    def STDOUT; BlackHole.new; end
+    def puts; BlackHole.new; end
+    def p; BlackHole.new; end
+  end
+
   def self.pending(msg = "TODO", &b)
     lambda {|c|
       raised = nil
       begin
         example = b.call
-        example.call(c)
+        eval(lambda { example.call(c) }, BlackHole.new)
       rescue => raised
       end
       raise Spec::Example::PendingExampleFixedError.new(msg) unless raised
