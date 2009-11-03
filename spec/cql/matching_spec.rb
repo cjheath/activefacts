@@ -14,6 +14,7 @@ describe "Fact Type Role Matching" do
     Boy is written as String;
     Girl is written as String;
   }
+  BaseConcepts = 3  # String, Boy, Girl
 
   def self.SingleFact
     lambda {|c|
@@ -43,16 +44,42 @@ describe "Fact Type Role Matching" do
     }
   end
 
-  def self.EntityType name
+  def self.ConceptCount n
     lambda {|c|
-      @entity_type = c.EntityType[[["Tests"], name]]
-      @entity_type.should_not == nil
+      c.Concept.values.size.should == n
     }
   end
 
-  def self.PreferredIdentifier
+  def self.Concept name
     lambda {|c|
-      @preferred_identifier = @entity_type.preferred_identifier
+      @concept = c.Concept[[["Tests"], name]]
+      @concept.should_not == nil
+    }
+  end
+
+  def self.WrittenAs name
+    lambda {|c|
+      @base_type = c.Concept[[["Tests"], name]]
+      @base_type.class.should == ActiveFacts::Metamodel::ValueType
+      @concept.class.should == ActiveFacts::Metamodel::ValueType
+      @concept.supertype.should == @base_type
+    }
+  end
+
+  def self.PreferredIdentifier num_roles
+    lambda {|c|
+      @preferred_identifier = @concept.preferred_identifier
+      @preferred_identifier.should_not == nil
+      @preferred_identifier.role_sequence.all_role_ref.size.should == num_roles
+      #@preferred_identifier.min_frequency.should == 1
+      @preferred_identifier.max_frequency.should == 1
+      @preferred_identifier.is_preferred_identifier.should == true
+    }
+  end
+
+  def self.PreferredIdentifierRolePlayedBy name, num = 0
+    lambda {|c|
+      @preferred_identifier.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[num].role.concept.name.should == name
     }
   end
 
@@ -249,19 +276,27 @@ describe "Fact Type Role Matching" do
 
   EntityIdentificationTests = [
     [
+      # REVISIT: At present, this doesn't add the minimum frequency constraint that a preferred identifier requires.
+      %q{Thong is written as String;},
       %q{Thing is identified by Thong where Thing has one Thong;},
+      Concept('Thong'),
+        WrittenAs('String'),
       SingleFact(),
-      ReadingCount(1),
-      EntityType('Thing'),
-      PreferredIdentifier(),
+        ReadingCount(1),
+      ConceptCount(2+BaseConcepts),
+      Concept('Thing'),
+        PreferredIdentifier(1),
+          PreferredIdentifierRolePlayedBy('Thong'),
     ],
     [
       %q{Thong is written as String;},
       %q{Thing is identified by Thong where Thing has one Thong, Thong is of one Thing;},
       SingleFact(),
-      ReadingCount(2),
-      EntityType('Thing'),
-      PreferredIdentifier(),
+        ReadingCount(2),
+      ConceptCount(2+BaseConcepts),
+      Concept('Thing'),
+        PreferredIdentifier(1),
+          PreferredIdentifierRolePlayedBy('Thong'),
     ],
   ]
   AllTests =
