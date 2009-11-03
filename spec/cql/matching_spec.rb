@@ -8,34 +8,51 @@ require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
 # require File.dirname(__FILE__) + '/../helpers/test_parser'
 
-describe "Fact Type Matching" do
+describe "Fact Type Role Matching" do
   Prefix = %q{
     vocabulary Tests;
     Boy is written as String;
     Girl is written as String;
   }
 
-  def self.OneFactNReadings n
+  def self.SingleFact
     lambda {|c|
       c.FactType.size.should == 1
-      unless c.FactType.values[0].all_reading.size == n
-        puts "SPEC FAILED, wrong number of readings (should be #{n}):\n\t#{
-          c.FactType.values[0].all_reading.map{ |r| r.expand}*"\n\t"
-        }"
-      end
-      c.FactType.values[0].all_reading.size.should == n
+      @fact_type = c.FactType.values[0]
     }
   end
 
-  def self.FactTypeHasNPresenceConstraints(n)
+  def self.ReadingCount n
+    lambda {|c|
+      unless @fact_type.all_reading.size == n
+        puts "SPEC FAILED, wrong number of readings (should be #{n}):\n\t#{
+          @fact_type.all_reading.map{ |r| r.expand}*"\n\t"
+        }"
+      end
+      @fact_type.all_reading.size.should == n
+    }
+  end
+
+  def self.PresenceConstraintCount n
     lambda{ |c|
-      # pending
-      fact_type = c.FactType.values[0]
-      fact_type.all_role.map{|r|
+      @fact_type.all_role.map{|r|
         r.all_role_ref.map{|rr|
           rr.role_sequence.all_presence_constraint.to_a
         }
       }.flatten.uniq.size.should == n
+    }
+  end
+
+  def self.EntityType name
+    lambda {|c|
+      @entity_type = c.EntityType[[["Tests"], name]]
+      @entity_type.should_not == nil
+    }
+  end
+
+  def self.PreferredIdentifier
+    lambda {|c|
+      @preferred_identifier = @entity_type.preferred_identifier
     }
   end
 
@@ -53,16 +70,18 @@ describe "Fact Type Matching" do
       hyphenated_readings.size.should == 1
     }
 
-  Tests = [
+  SimpleBinaryFactTypeTests = [
     [ # Simple create
       %q{Girl is going out with at most one Boy; },
-      OneFactNReadings(1),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(1),
+      PresenceConstraintCount(1)
     ],
     [ # Create with explicit adjective
       %q{Girl is going out with at most one ugly-Boy;},
-      OneFactNReadings(1),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(1),
+      PresenceConstraintCount(1)
     ],
     [ # Simple match
       %q{Girl is going out with at most one Boy; },
@@ -70,8 +89,9 @@ describe "Fact Type Matching" do
         Girl is going out with Boy,
           Boy is going out with Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Simple match with repetition
       %q{Girl is going out with at most one Boy; },
@@ -82,8 +102,9 @@ describe "Fact Type Matching" do
           Boy is going out with Girl;
       },
       #pending,
-      #OneFactNReadings(2),
-      #FactTypeHasNPresenceConstraints(1),
+      #SingleFact(),
+      ReadingCount(2),
+      #PresenceConstraintCount(1),
     ],
     [ # Simple match with a new presence Constraint
       %q{Girl is going out with at most one Boy; },
@@ -91,8 +112,9 @@ describe "Fact Type Matching" do
         Girl is going out with Boy,
           Boy is going out with at most one Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(2)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(2)
     ],
     [ # RoleName matching
       %q{Girl is going out with at most one Boy;},
@@ -100,72 +122,81 @@ describe "Fact Type Matching" do
         Boy is going out with Girlfriend,
           Girl (as Girlfriend) is going out with at most one Boy;
       },
-      OneFactNReadings(3),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(3),
+      PresenceConstraintCount(1)
     ],
     [ # Match with explicit adjective
       %q{Girl is going out with at most one ugly-Boy;},
       %q{Girl is going out with at most one ugly-Boy,
         ugly-Boy is best friend of Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Match with implicit adjective
       %q{Girl is going out with at most one ugly-Boy;},
       %q{Girl is going out with ugly Boy,
         Boy is going out with Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Match with explicit trailing adjective
       %q{Girl is going out with at most one Boy-monster;},
       %q{Girl is going out with Boy-monster,
         Boy is going out with Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Match with implicit trailing adjective
       %q{Girl is going out with at most one Boy-monster;},
       %q{Girl is going out with Boy monster,
         Boy is going out with Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Match with two explicit adjectives
       %q{Girl is going out with at most one ugly- bad Boy;},
       %q{Girl is going out with ugly- bad Boy,
         ugly- bad Boy is going out with Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Match with two implicit adjective
       %q{Girl is going out with at most one ugly- bad Boy;},
       %q{Girl is going out with ugly bad Boy,
         Boy is going out with Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Match with two explicit trailing adjective
       %q{Girl is going out with at most one Boy real -monster;},
       %q{Girl is going out with Boy real -monster,
         Boy is going out with Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Match with two implicit trailing adjectives
       %q{Girl is going out with at most one Boy real -monster;},
       %q{Girl is going out with Boy real monster,
         Boy is going out with Girl;
       },
-      OneFactNReadings(2),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(2),
+      PresenceConstraintCount(1)
     ],
     [ # Match with hyphenated word
       %q{Girl is going out with at most one Boy; },
@@ -173,49 +204,75 @@ describe "Fact Type Matching" do
         Girl is going out with Boy,
           Boy is out driving a semi-trailer with Girl;
       },
-      OneFactNReadings(2),
+      SingleFact(),
+      ReadingCount(2),
       ReadingContainsHyphenatedWord,
-      FactTypeHasNPresenceConstraints(1)
+      PresenceConstraintCount(1)
     ],
     [ # Match with implicit leading ignoring explicit trailing adjective
       %q{Girl is going out with at most one ugly-Boy;},
       %q{Girl is going out with ugly Boy-monster,
         Boy is going out with Girl;
       },
-      OneFactNReadings(3),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(3),
+      PresenceConstraintCount(1)
     ],
     [ # Match with implicit leading ignoring implicit trailing adjective
       %q{Girl is going out with at most one ugly-Boy;},
       %q{Girl is going out with ugly Boy monster,
         Boy-monster is going out with Girl;
       },
-      OneFactNReadings(3),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(3),
+      PresenceConstraintCount(1)
     ],
     [ # Match with implicit trailing ignoring explicit leading adjective
       %q{Girl is going out with at most one Boy-monster;},
       %q{Girl is going out with ugly-Boy monster,
         Boy is going out with Girl;
       },
-      OneFactNReadings(3),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(3),
+      PresenceConstraintCount(1)
     ],
     [ # Match with implicit trailing ignoring implicit leading adjective
       %q{Girl is going out with at most one Boy-monster;},
       %q{Girl is going out with ugly Boy monster,
         ugly-Boy is going out with Girl;
       },
-      OneFactNReadings(3),
-      FactTypeHasNPresenceConstraints(1)
+      SingleFact(),
+      ReadingCount(3),
+      PresenceConstraintCount(1)
     ],
   ]
+
+  EntityIdentificationTests = [
+    [
+      %q{Thing is identified by Thong where Thing has one Thong;},
+      SingleFact(),
+      ReadingCount(1),
+      EntityType('Thing'),
+      PreferredIdentifier(),
+    ],
+    [
+      %q{Thong is written as String;},
+      %q{Thing is identified by Thong where Thing has one Thong, Thong is of one Thing;},
+      SingleFact(),
+      ReadingCount(2),
+      EntityType('Thing'),
+      PreferredIdentifier(),
+    ],
+  ]
+  AllTests =
+#    SimpleBinaryFactTypeTests +
+    EntityIdentificationTests
 
   before :each do
     @compiler = ActiveFacts::CQL::Compiler.new(Prefix)
   end
 
-  Tests.each do |tests|
+  AllTests.each do |tests|
     it "should process #{tests.select{|t| t.is_a?(String)}*' '} correctly" do
       tests.each do |test|
         case test

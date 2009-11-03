@@ -4,7 +4,7 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/cql/parser'
-require 'activefacts/cql/binding'
+# require 'activefacts/cql/binding'
 
 module ActiveFacts
   module CQL
@@ -124,7 +124,9 @@ module ActiveFacts
 
           # Set up its supertypes:
           supertypes.each do |supertype_name|
-            add_supertype(entity_type, supertype_name, !identification && supertype_name == supertypes[0], mapping_pragmas)
+            debug :entity, "Adding supertype #{supertype_name}" do
+              add_supertype(entity_type, supertype_name, !identification && supertype_name == supertypes[0], mapping_pragmas)
+            end
           end
 
           # If we're using a common identification mode, find or create the necessary ValueTypes first:
@@ -132,59 +134,167 @@ module ActiveFacts
           if identification && identification[:mode]
             mode = identification[:mode]        # An identification mode
 
-            # Find or Create an appropriate ValueType called "#{name}#{mode}", of the supertype "#{mode}"
-            vt_name = "#{name}#{mode}"
-            unless vt = @constellation.ValueType[[@vocabulary, vt_name]]
-              base_vt = @constellation.ValueType(@vocabulary, mode)
-              vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
-              if parameters = identification[:parameters]
-                length, scale = *parameters
-                vt.length = length if length
-                vt.scale = scale if scale
+            debug :entity, "Preparing value type #{name}#{mode} for reference mode" do
+              # Find or Create an appropriate ValueType called "#{name}#{mode}", of the supertype "#{mode}"
+              vt_name = "#{name}#{mode}"
+              unless vt = @constellation.ValueType[[@vocabulary, vt_name]]
+                base_vt = @constellation.ValueType(@vocabulary, mode)
+                vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
+                if parameters = identification[:parameters]
+                  length, scale = *parameters
+                  vt.length = length if length
+                  vt.scale = scale if scale
+                end
+              else
+                debug :entity, "Value type #{name}#{mode} already exists"
               end
             end
+
             # REVISIT: If we do this, it gets emitted twice when we generate CQL. The generator should detect that the restriction is the same and not emit it.
             #if (ranges = identification[:restriction])
             #  vt.value_restriction = value_restriction(ranges, identification[:enforcement])
             #end
           end
 
-          # Use a two-pass algorithm for entity fact types...
-          # The first step is to find all role references and definitions in the clauses
-          # After bind_roles, each phrase in each clause is either:
-          # * a string, which is a linking word, or
-          # * the phrase hash augmented with a :binding=>Binding
-          @symbols = SymbolTable.new(@constellation, @vocabulary)
+          @allowed_forward =
+            if identification && identification[:roles]
+              # We can't create non-existent terms as ETs yet, they might be role names.
+              identification[:roles].map{|i| i.size == 1 ? i[0] : nil}.compact.uniq
+            else
+              []
+            end
+          debug :entity, "Identifying roles #{@allowed_forward*', '} may be forward-referenced" if @allowed_forward.size > 0
 
-          # Enumerate the identifying roles that may be forward referenced.
-          # Forward identification isn't allowed by roles with adjectives.
-          # We can't tell which is the adjective (possible to fix, but not done yet):
-          if (ir = identification && identification[:roles])
-            @symbols.allowed_forward = ir.inject({}){|h, i| h[i[0]] = true; h}
-          end
-          @symbols.bind_roles_in_clauses(clauses, identification ? identification[:roles] : nil)
+          # Find and set [:player] to the concept (object type) that plays each role
+          resolve_players(clauses)
 
-          # Next arrange the clauses according to what fact they belong to,
-          # then process each fact type using normal fact type processing.
-          # That way if we find a fact type here having none of the players being the
-          # entity type, we know it's an objectified fact type. The CQL syntax might make
-          # us come here with such a case when the fact type is a subtype of some entity type,
-          # such as occurs in the Metamodel with TypeInheritance.
+          # Arrange the clauses according to the players (the hash key is the sorted array of player's names)
+          cbp = clauses_by_players(clauses)
 
-          identifying_fact_types = {}
-          clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
-            fact_type = nil
-            @symbols.embedded_presence_constraints = [] # Clear embedded_presence_constraints for each fact type
-            debug :entity, "New Fact Type for entity #{name}" do
-              clauses_for_fact_type.each do |clause|
-                type, qualifiers, phrases, context = *clause
-                debug :reading, "Clause: #{clause.inspect}" do
-                  f, r = *bind_fact_reading(fact_type, qualifiers, phrases)
-                  identifying_fact_types[f] = true
-                  fact_type ||= f
+          # Create all the required fact types
+          fact_types = []
+          debug :entity, "Entity type contains #{cbp.keys.size} fact types:" do
+            cbp.each do |terms, clauses|
+              fact_type = nil
+              debug :entity, "Fact type over #{terms*', '}" do
+                clauses.each_with_index do |clause, index|
+                  ft = find_existing_fact_type(clause)
+                  debug :entity, "Fact reading over #{show_phrases(clause[2])}"
+                  if (ft && ft != fact_type)
+                    # We might relax this later, allowing objectification of an existing FT.
+                    raise "Cannot use existing fact type #{show_phrases(clause[2])} in entity type definition"
+                  end
+                  fact_type ||= ft
+                  if !fact_type
+                    fact_type = make_fact_type_for_clause(clause)
+                    make_reading_for_fact_type(fact_type, clause)
+                    fact_types << fact_type
+                  else
+                    # Bind against existing readings to extract the required roles:
+                    type, qualifiers, phrases, context = *clause
+                    match_clause_against_clauses(clause, clauses[0...index])
+
+                    # REVISIT: Any duplicated clauses aren't detected here, we just make a reading for each.
+                    make_reading_for_fact_type(fact_type, clause)
+                  end
+
+                  #if clause[2].detect{|p|p.is_a?(Hash) and !p[:role_ref]}
+                  #  p show_phrases(clause[2])
+                  #  debugger
+                  #  puts "Need :role_ref before continueing to embedded constraints"
+                  #end
+
+                  # This relies on the role phrases having been decorated with [:role_ref] values
+                  make_embedded_presence_constraints(fact_type, clause)
                 end
               end
             end
+          end
+
+          # Now, find the role that the new entity type plays in each fact type.
+          # If this is an objectified type, no role will be played; there may only be one of those,
+          # and usually the entity type will use its identification and require no further fact types.
+          # Others must all be unaries or functional binaries, and the counterpart role in each
+          # is an identifying role.
+          objectified_fact_type = nil
+          identifying_roles = []
+          fact_types.each do |fact_type|
+            roles = fact_type.all_role.to_a
+            case
+            when 1 == roles.size && roles[0].concept == entity_type
+              identifying_roles << roles[0]              # A unary played by this entity_type
+            when 2 == roles.size && (entity_role = roles.detect{|role| role.concept == entity_type })
+              identifying_roles << (roles-[entity_role])[0]  # A binary involving this entity_type
+            else                                        # Must be the objectified fact type
+              raise "#{name} can only objectify one fact type" if objectified_fact_type
+              # This can only happen when the objectified_fact_type has external identification
+              objectified_fact_type = fact_type
+            end
+          end
+
+          # Find the identifying roles in the order they were declared
+          identifying_roles_in_order = nil
+          if (ir = identification && (identification[:roles] || [[vt_name]]))
+            identifying_roles_in_order =
+              ir.map do |names|
+                identifying_roles.detect do |role|
+                  player_position = names.index(role.concept.name)
+                  if (!player_position)
+                    raise "identifying role #{names*' '} not found in declared fact types" unless names == [vt_name]
+                    break nil
+                  end
+                  if role.fact_type.all_role.size == 1
+                    bind_unary_fact_type(entity_type, names)
+                  else
+                    role_ref = nil
+                    if player_position > 0  # Preceding words must be leading adjectives in some reading
+                      required_la = names.slice(0, player_position)*' '
+                      next nil unless role.all_role_ref.detect do |rr|
+                          role_ref = rr if rr.leading_adjective == required_la
+                        end
+                    end
+                    if player_position < names.size-1 # Following words must be trailing adjectives
+                      required_ta = names.slice(player_position+1, 1000)*' '
+                      next nil unless role.all_role_ref.detect do |rr|
+                          !role_ref || role_ref == rr and rr.trailing_adjective == required_ta
+                        end
+                    end
+                    role
+                  end
+                end
+              end
+          end
+
+          raise "Can't handle reference modes in new version yet" if identifying_roles_in_order.include?(nil)
+
+          role_sequence = @constellation.RoleSequence(:new)
+          identifying_roles_in_order.each_with_index do |identifying_role, index|
+            @constellation.RoleRef(role_sequence, index, :role => identifying_role)
+          end
+
+          # Find a uniqueness constraint as PI, or make one
+          pc = find_pc_over_roles(identifying_roles_in_order)
+          if (pc)
+            debug "Existing PC #{pc.verbalise} is now PK for #{name} #{pc.class.roles.keys.map{|k|"#{k} => "+pc.send(k).verbalise}*", "}"
+            pc.is_preferred_identifier = true
+            pc.name = "#{name}PK" unless pc.name
+          else
+            # Add a unique constraint over all identifying roles
+            pc = @constellation.PresenceConstraint(
+                :new,
+                :vocabulary => @vocabulary,
+                :name => "#{name}PK",            # Is this a useful name?
+                :role_sequence => role_sequence,
+                :is_preferred_identifier => true,
+                :max_frequency => 1              # Unique
+                #:is_mandatory => true,
+                #:min_frequency => 1,
+              )
+          end
+
+=begin
+          identifying_fact_types = {}
+          clauses_by_fact_type(clauses).each do |clauses_for_fact_type|
 
             # Find the role that this entity type plays in the fact type, if any:
             debug :reading, "Roles are: #{fact_type.all_role.map{|role| (role.concept == entity_type ? "*" : "") + role.concept.name }*", "}"
@@ -374,7 +484,22 @@ module ActiveFacts
             # identification must be inherited.
             debug "Identification is inherited"
           end
+=end
         end
+      end
+
+      def concept_by_name(name)
+        player = @constellation.Concept[[@vocabulary.identifying_role_values, name]]
+
+        # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
+        if !player && %w{Date DateAndTime Time}.include?(name)
+          player = @constellation.ValueType(@vocabulary.identifying_role_values, name)
+        end
+
+        if (!player && @allowed_forward.include?(name))
+          player = @constellation.EntityType(@vocabulary, name)
+        end
+        player
       end
 
       def add_supertype(entity_type, supertype_name, identifying_supertype, mapping_pragmas)
@@ -867,12 +992,26 @@ module ActiveFacts
         end
       end
 
+      def find_pc_over_roles(roles)
+        return nil if roles.size == 0 # Safeguard; this would chuck an exception otherwise
+        roles[0].all_role_ref.each do |role_ref|
+          next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
+          pc = role_ref.role_sequence.all_presence_constraint.single  # Will return nil if there's more than one.
+          #puts "Existing PresenceConstraint matches those roles!" if pc
+          return pc if pc
+        end
+        nil
+      end
+
       # For each fact reading there may be embedded mandatory, uniqueness or frequency constraints:
-      def make_embedded_presence_constraints(fact_type, role_phrases)
+      def make_embedded_presence_constraints(fact_type, clause)
+        kind, qualifiers, phrases, context = *clause
+        role_phrases = phrases.select{|p| p.is_a?(Hash)}
+        debug :constraint, "making embedded presence constraints from #{show_phrases(phrases)}"
         embedded_presence_constraints = []
-        roles = role_phrases.map { |p| p[:role_ref].role }
+        roles = role_phrases.map { |p| p[:role] || p[:role_ref].role }
         role_phrases.each_with_index do |role_phrase, index|
-          role = role_phrase[:role_ref].role
+          role = role_phrase[:role] || role_phrase[:role_ref].role
           raise "No Role for embedded_presence_constraint; use role_ref?" unless role
 
           next unless quantifier = role_phrase[:quantifier]
@@ -907,6 +1046,19 @@ module ActiveFacts
         end
       end
 
+      def make_fact_type_for_clause(clause)
+        fact_type = @constellation.FactType(:new)
+        kind, qualifiers, phrases, context = *clause
+        debug :matching, "Making new fact type for #{show_phrases(phrases)}" do
+          phrases.each do |phrase|
+            next unless phrase.is_a?(Hash)
+            role = @constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase[:player])
+            phrase[:role] = role
+          end
+        end
+        fact_type
+      end
+
       def fact_type(name, clauses, conditions) 
         debug :matching, "Processing clauses for fact type" do
           fact_type = nil
@@ -935,17 +1087,7 @@ module ActiveFacts
             end
 
           # Make a new fact type if we didn't match any reading
-          if !fact_type
-            fact_type = @constellation.FactType(:new)
-            kind, qualifiers, phrases, context = *unmatched_clauses[0]
-            debug :matching, "Making new fact type for #{show_phrases(phrases)}" do
-              phrases.each do |phrase|
-                next unless phrase.is_a?(Hash)
-                role = @constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase[:player])
-                phrase[:role] = role
-              end
-            end
-          end
+          fact_type = make_fact_type_for_clause(unmatched_clauses[0]) unless fact_type
 
           # We know the role players are the same in all clauses, but we haven't matched them up.
 
@@ -975,10 +1117,7 @@ module ActiveFacts
 
           debug :constraint, "making embedded presence constraints" do
             (matched_clauses + unmatched_clauses).each do |clause|
-              kind, qualifiers, phrases, context = *clause
-              role_phrases = phrases.select{|p| p.is_a?(Hash)}
-              debug :constraint, "making embedded presence constraints from #{show_phrases(phrases)}"
-              make_embedded_presence_constraints(fact_type, role_phrases)
+              make_embedded_presence_constraints(fact_type, clause)
             end
           end
 
