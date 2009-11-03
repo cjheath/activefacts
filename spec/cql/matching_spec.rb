@@ -83,8 +83,15 @@ describe "Fact Type Role Matching" do
     }
   end
 
-  def self.pending(msg = "TODO") # , &b
+  def self.pending(msg = "TODO", &b)
     lambda {|c|
+      raised = nil
+      begin
+        example = b.call
+        example.call(c)
+      rescue => raised
+      end
+      raise Spec::Example::PendingExampleFixedError.new(msg) unless raised
       raise Spec::Example::ExamplePendingError.new(msg)
     }
   end
@@ -133,8 +140,9 @@ describe "Fact Type Role Matching" do
       },
       SingleFact(),
         PresenceConstraintCount(1),
-        pending("duplicate new clauses are not eliminated"),
-        ReadingCount(2),
+        pending("duplicate new clauses are not eliminated") do
+          ReadingCount(2)
+        end
     ],
     [ # Simple match with a new presence Constraint
       %q{Girl is going out with at most one Boy; },
