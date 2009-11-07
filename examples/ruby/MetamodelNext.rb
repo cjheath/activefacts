@@ -40,6 +40,10 @@ module ::Metamodel
     value_type :length => 16
   end
 
+  class Ephemera < String
+    value_type 
+  end
+
   class Exponent < SignedSmallInteger
     value_type :length => 32
   end
@@ -113,7 +117,7 @@ module ::Metamodel
     value_type 
   end
 
-  class ValueRestrictionId < AutoCounter
+  class ValueConstraintId < AutoCounter
     value_type 
   end
 
@@ -134,12 +138,12 @@ module ::Metamodel
 
   class ContextNote
     identified_by :context_note_id
-    has_one :concept                            # See Concept.all_context_note
     has_one :constraint                         # See Constraint.all_context_note
     one_to_one :context_note_id, :mandatory => true  # See ContextNoteId.context_note
     has_one :context_note_kind, :mandatory => true  # See ContextNoteKind.all_context_note
     has_one :discussion, :mandatory => true     # See Discussion.all_context_note
     has_one :fact_type                          # See FactType.all_context_note
+    has_one :object_type                        # See ObjectType.all_context_note
   end
 
   class Fact
@@ -156,9 +160,9 @@ module ::Metamodel
 
   class Instance
     identified_by :instance_id
-    has_one :concept, :mandatory => true        # See Concept.all_instance
     one_to_one :fact                            # See Fact.instance
     one_to_one :instance_id, :mandatory => true  # See InstanceId.instance
+    has_one :object_type, :mandatory => true    # See ObjectType.all_instance
     has_one :population, :mandatory => true     # See Population.all_instance
     has_one :value                              # See Value.all_instance
   end
@@ -176,14 +180,6 @@ module ::Metamodel
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_presence_constraint
   end
 
-  class Reading
-    identified_by :fact_type, :ordinal
-    has_one :fact_type, :mandatory => true      # See FactType.all_reading
-    has_one :ordinal, :mandatory => true        # See Ordinal.all_reading
-    has_one :role_sequence, :mandatory => true  # See RoleSequence.all_reading
-    has_one :text, :mandatory => true           # See Text.all_reading
-  end
-
   class RingConstraint < Constraint
     has_one :other_role, :class => "Role"       # See Role.all_ring_constraint_as_other_role
     has_one :ring_type, :mandatory => true      # See RingType.all_ring_constraint
@@ -194,8 +190,8 @@ module ::Metamodel
     identified_by :fact_type, :ordinal
     has_one :fact_type, :mandatory => true      # See FactType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
-    has_one :concept, :mandatory => true        # See Concept.all_role
-    has_one :role_value_restriction, :class => "ValueRestriction"  # See ValueRestriction.all_role_as_role_value_restriction
+    has_one :object_type, :mandatory => true    # See ObjectType.all_role
+    has_one :role_value_constraint, :class => "ValueConstraint"  # See ValueConstraint.all_role_as_role_value_constraint
   end
 
   class RoleSequence
@@ -222,7 +218,7 @@ module ::Metamodel
   class Unit
     identified_by :unit_id
     has_one :coefficient                        # See Coefficient.all_unit
-    maybe :is_ephemeral
+    has_one :ephemera                           # See Ephemera.all_unit
     maybe :is_fundamental
     has_one :name, :mandatory => true           # See Name.all_unit
     has_one :offset                             # See Offset.all_unit
@@ -237,14 +233,22 @@ module ::Metamodel
     has_one :unit                               # See Unit.all_value
   end
 
-  class ValueRestriction
-    identified_by :value_restriction_id
-    one_to_one :value_restriction_id, :mandatory => true  # See ValueRestrictionId.value_restriction
+  class ValueConstraint
+    identified_by :value_constraint_id
+    one_to_one :value_constraint_id, :mandatory => true  # See ValueConstraintId.value_constraint
   end
 
   class Vocabulary
     identified_by :name
     one_to_one :name, :mandatory => true        # See Name.vocabulary
+  end
+
+  class less
+    identified_by :fact_type, :ordinal
+    has_one :fact_type, :mandatory => true      # See FactType.all_less
+    has_one :ordinal, :mandatory => true        # See Ordinal.all_less
+    has_one :role_sequence, :mandatory => true  # See RoleSequence.all_less
+    has_one :text, :mandatory => true           # See Text.all_less
   end
 
   class Agreement
@@ -263,6 +267,7 @@ module ::Metamodel
     identified_by :context_note, :person
     has_one :context_note, :mandatory => true   # See ContextNote.all_context_according_to
     has_one :person, :mandatory => true         # See Person.all_context_according_to
+    has_one :date                               # See Date.all_context_according_to
   end
 
   class ContextAgreedBy
@@ -315,6 +320,7 @@ module ::Metamodel
     identified_by :vocabulary, :name
     has_one :name, :mandatory => true           # See Name.all_term
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_term
+    has_one :object_type                        # See ObjectType.all_term
   end
 
   class ValueRange
@@ -324,30 +330,45 @@ module ::Metamodel
   end
 
   class AllowedRange
-    identified_by :value_restriction, :value_range
+    identified_by :value_constraint, :value_range
+    has_one :value_constraint, :mandatory => true  # See ValueConstraint.all_allowed_range
     has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
-    has_one :value_restriction, :mandatory => true  # See ValueRestriction.all_allowed_range
-  end
-
-  class Concept
-    identified_by :term
-    maybe :is_independent
-    has_one :pronoun                            # See Pronoun.all_concept
-    one_to_one :term                            # See Term.concept
-    one_to_one :term, :mandatory => true        # See Term.concept
-  end
-
-  class EntityType < Concept
-    one_to_one :fact_type                       # See FactType.entity_type
   end
 
   class Join
     identified_by :role_ref, :join_step
     has_one :join_step, :class => Ordinal, :mandatory => true  # See Ordinal.all_join_as_join_step
     has_one :role_ref, :mandatory => true       # See RoleRef.all_join
-    has_one :concept                            # See Concept.all_join
     has_one :input_role, :class => Role         # See Role.all_join_as_input_role
+    maybe :is
+    maybe :is_outer
+    has_one :object_type                        # See ObjectType.all_join
     has_one :output_role, :class => Role        # See Role.all_join_as_output_role
+  end
+
+  class ObjectType
+    identified_by :term
+    maybe :is_independent
+    has_one :pronoun                            # See Pronoun.all_object_type
+    one_to_one :term, :mandatory => true        # See Term.object_type
+  end
+
+  class ValueType < ObjectType
+    has_one :length                             # See Length.all_value_type
+    has_one :scale                              # See Scale.all_value_type
+    has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
+    has_one :unit                               # See Unit.all_value_type
+    has_one :value_constraint                   # See ValueConstraint.all_value_type
+  end
+
+  class EntityType < ObjectType
+    one_to_one :fact_type                       # See FactType.entity_type
+  end
+
+  class Parameter
+    identified_by :name, :value_type
+    has_one :name, :mandatory => true           # See Name.all_parameter
+    has_one :value_type, :mandatory => true     # See ValueType.all_parameter
   end
 
   class TypeInheritance < FactType
@@ -356,20 +377,6 @@ module ::Metamodel
     has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
     has_one :assimilation                       # See Assimilation.all_type_inheritance
     maybe :provides_identification
-  end
-
-  class ValueType < Concept
-    has_one :length                             # See Length.all_value_type
-    has_one :scale                              # See Scale.all_value_type
-    has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
-    has_one :unit                               # See Unit.all_value_type
-    has_one :value_restriction                  # See ValueRestriction.all_value_type
-  end
-
-  class Parameter
-    identified_by :name, :value_type
-    has_one :name, :mandatory => true           # See Name.all_parameter
-    has_one :value_type, :mandatory => true     # See ValueType.all_parameter
   end
 
   class ParamValue

@@ -65,9 +65,9 @@
       <DependentUpon>Metamodel.orm</DependentUpon>
       <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Include="MetamodelTerms._ORMCustomToolReport.cs">
+    <Compile Include="MetamodelNext._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
-      <DependentUpon>MetamodelTerms.orm</DependentUpon>
+      <DependentUpon>MetamodelNext.orm</DependentUpon>
     </Compile>
     <Compile Include="Monogamy._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -212,9 +212,9 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Metamodel._ORMCustomToolReport.cs</LastGenOutput>
     </None>
-    <None Include="MetamodelTerms.orm">
+    <None Include="MetamodelNext.orm">
       <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>MetamodelTerms._ORMCustomToolReport.cs</LastGenOutput>
+      <LastGenOutput>MetamodelNext._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Monogamy.orm">
       <Generator>ORMCustomTool</Generator>
@@ -644,23 +644,6 @@
     <None Include="OddIdentifier.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>OddIdentifier.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="Exists('MetamodelTerms.orm')">
-    <None Include="MetamodelTerms.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MetamodelTerms.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="MetamodelTerms.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MetamodelTerms.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="MetamodelTerms.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MetamodelTerms.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
