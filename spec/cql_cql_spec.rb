@@ -16,12 +16,12 @@ describe "CQL Loader" do
   cql_failures = {
     "Airline" => "Contains queries, unsupported",
     "CompanyQuery" => "Contains queries, unsupported",
+    "MetamodelNext" => "Fails due to weak adjective/role matching",
     "OrienteeringER" => "Doesn't parse due to difficult fact type match",
     "ServiceDirector" => "Doesn't parse some constraints due to mis-matched adjectives"
   }
   cql_cql_failures = {
     "Insurance" => "Misses a subtype join in a constraint verbalisation",
-    "MetamodelTerms" => "Fails due to weak adjective/role matching",
 #    "OddIdentifier" => "Doesn't support identification of object fact types using mixed external/internal roles",
   }
   # Generate and return the CQL for the given vocabulary
