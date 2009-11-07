@@ -65,14 +65,17 @@ describe "Fact Type Role Matching" do
 
   def self.ConceptCount n
     lambda {|c|
+      @constellation = c
       c.Concept.values.size.should == n
     }
   end
 
-  def self.Concept name
+  def self.Concept name, &b
     lambda {|c|
       @concept = c.Concept[[["Tests"], name]]
       @concept.should_not == nil
+      b.call(@concept) if b
+      @concept
     }
   end
 
@@ -348,8 +351,11 @@ describe "Fact Type Role Matching" do
         Readings(fact_type).size.should == 1
         PresenceConstraints(fact_type).size.should == 2
       end,
-      Concept('Thong'),
-        WrittenAs('String'),
+      Concept('Thong') do |concept|
+        concept.class.should == ActiveFacts::Metamodel::ValueType
+        # REVISIT: Figure out how WrittenAs can access the constellation.
+        WrittenAs('String')
+      end,
       ConceptCount(2+BaseConcepts),
       Concept('Thing'),
         PreferredIdentifier(1),
