@@ -25,6 +25,16 @@ describe "Fact Type Role Matching" do
     }
   end
 
+  def self.FactHavingPlayers(*a, &b)
+    lambda {|c|
+      @fact_type = c.FactType.detect do |key, ft|
+        ft.all_role.map{|r| r.concept.name}.sort == a.sort
+      end
+      b.call(@fact_type) if b
+      @fact_type
+    }
+  end
+
   def self.PresenceConstraints fact_type, &b
     @presence_constraints =
       fact_type.all_role.map{|r|
@@ -361,6 +371,7 @@ describe "Fact Type Role Matching" do
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Thong'),
     ],
+
     [
       %q{Thong is written as String;},
       %q{Thing is identified by Thong where Thing has one Thong, Thong is of one Thing;},
@@ -373,9 +384,56 @@ describe "Fact Type Role Matching" do
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Thong'),
     ],
+
+    [   # Objectified fact type with internal identification
+      %q{Relationship is where Boy relates to Girl;},
+      SingleFact() do |fact_type|
+        Readings(fact_type).size.should == 1
+        PresenceConstraints(fact_type).size.should == 1
+      end,
+      ConceptCount(1+BaseConcepts),
+      Concept('Relationship'),
+        PreferredIdentifier(2),
+#          PreferredIdentifierRolePlayedBy('Thong'),
+    ],
+
+    [   # Objectified fact type with external identification
+      %q{Relationship is identified by its Id where Boy relates to Girl;},
+      ConceptCount(3+BaseConcepts),
+      Concept('Relationship'),
+        PreferredIdentifier(1),   # 1 role in PI
+          PreferredIdentifierRolePlayedBy('RelationshipId'),
+      FactHavingPlayers('Relationship', 'RelationshipId') do |fact_type|
+        Readings(fact_type).size.should == 2
+        PresenceConstraints(fact_type).size.should == 2
+        fact_type.all_reading.detect{|r| r.text == '{0} has {1}'}.should_not == nil
+        fact_type.all_reading.detect{|r| r.text == '{0} is of {1}'}.should_not == nil
+      end,
+      FactHavingPlayers('Boy', 'Girl') do |fact_type|
+        fact_type.entity_type.should == @concept
+      end,
+    ],
+
+    [   # Objectified fact type with external identification and explicit reading
+      %q{Relationship is identified by its Id where Boy relates to Girl, Relationship is known by RelationshipId;},
+      ConceptCount(3+BaseConcepts),
+      Concept('Relationship'),
+        PreferredIdentifier(1),
+          PreferredIdentifierRolePlayedBy('RelationshipId'),
+      FactHavingPlayers('Relationship', 'RelationshipId') do |fact_type|
+        Readings(fact_type).size.should == 2
+        PresenceConstraints(fact_type).size.should == 2
+        fact_type.all_reading.detect{|r| r.text == '{0} is known by {1}'}.should_not == nil
+        fact_type.all_reading.detect{|r| r.text == '{0} is of {1}'}.should_not == nil
+      end,
+      FactHavingPlayers('Boy', 'Girl') do |fact_type|
+        fact_type.entity_type.should == @concept
+      end,
+    ],
+
   ]
   AllTests =
-    SimpleBinaryFactTypeTests +
+#    SimpleBinaryFactTypeTests +
     EntityIdentificationTests
 
   before :each do
@@ -383,7 +441,7 @@ describe "Fact Type Role Matching" do
   end
 
   AllTests.each do |tests|
-    it "should process #{tests.select{|t| t.is_a?(String)}*' '} correctly" do
+    it "should process '#{(tests.select{|t| t.is_a?(String)}*' ').gsub(/\s+/m,' ')}' correctly" do
       tests.each do |test|
         case test
         when String

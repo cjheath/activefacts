@@ -114,6 +114,105 @@ module ActiveFacts
         constraint.enforcement.agent = agent if agent
       end
 
+      def complete_reference_mode_readings(entity_type, fact_type)
+        entity_role = fact_type.all_role.detect{|r| r.concept == entity_type}
+        value_role = fact_type.all_role.detect{|r| r.concept != entity_type}
+        vt = value_role.concept
+
+        # Find all role sequences over the fact type's two roles
+        rss = entity_role.all_role_ref.select do |rr|
+          rr.role_sequence.all_role_ref.size == 2 &&
+            (rr.role_sequence.all_role_ref.to_a-[rr])[0].role == value_role
+        end.map{|rr| rr.role_sequence}
+
+        # Make a forward reading, if there is none already:
+        # Find or create RoleSequences for the forward and reverse readings:
+        rs01 = rss.select{|rs| rs.all_role_ref.sort_by{|rr| rr.ordinal}.map(&:role) == [entity_role, value_role] }[0]
+        if !rs01
+          rs01 = @constellation.RoleSequence(:new)
+          @constellation.RoleRef(rs01, 0, :role => entity_role)
+          @constellation.RoleRef(rs01, 1, :role => value_role)
+        end
+        if rs01.all_reading.empty?
+          @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs01, :text => "{0} has {1}")
+          debug :mode, "Creating new forward reading '#{entity_role.concept.name} has #{vt.name}'"
+        else
+          debug :mode, "Using existing forward reading"
+        end
+
+        # Make a reverse reading if none exists
+        rs10 = rss.select{|rs| rs.all_role_ref.sort_by{|rr| rr.ordinal}.map(&:role) == [value_role, entity_role] }[0]
+        if !rs10
+          rs10 = @constellation.RoleSequence(:new)
+          @constellation.RoleRef(rs10, 0, :role => value_role)
+          @constellation.RoleRef(rs10, 1, :role => entity_role)
+        end
+        if rs10.all_reading.empty?
+          @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs10, :text => "{0} is of {1}")
+          debug :mode, "Creating new reverse reading '#{vt.name} is of #{entity_role.concept.name}'"
+        else
+          debug :mode, "Using existing reverse reading"
+        end
+
+        # Entity Type must have a value type. Find or create the role sequence, then create a PC if necessary
+        debug :mode, "entity_role has #{entity_role.all_role_ref.size} attached sequences"
+        debug :mode, "entity_role has #{entity_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}.size} unary sequences"
+        rrs0 = entity_role.all_role_ref.detect{|rr| rr.role_sequence.all_role_ref.size == 1}
+        rs0 = rrs0 && rrs0.role_sequence
+        #rs0 = entity_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1 ? rr.role_sequence : nil }.compact[0]
+        if !rs0
+          rs0 = @constellation.RoleSequence(:new)
+          @constellation.RoleRef(rs0, 0, :role => entity_role)
+          debug :mode, "Creating new EntityType role sequence"
+        else
+          debug :mode, "Using existing EntityType role sequence"
+        end
+        if (rs0.all_presence_constraint.size == 0)
+          constraint = @constellation.PresenceConstraint(
+            :new,
+            :name => '',
+            :vocabulary => @vocabulary,
+            :role_sequence => rs0,
+            :min_frequency => 1,
+            :max_frequency => 1,
+            :is_preferred_identifier => false,
+            :is_mandatory => true
+          )
+          debug :mode, "Creating new EntityType PresenceConstraint"
+        else
+          debug :mode, "Using existing EntityType PresenceConstraint"
+        end
+
+        # Value Type must have a value type. Find or create the role sequence, then create a PC if necessary
+        debug :mode, "value_role has #{value_role.all_role_ref.size} attached sequences"
+        debug :mode, "value_role has #{value_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}.size} unary sequences"
+        rs1 = value_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1 ? rr.role_sequence : nil }.compact[0]
+        if (!rs1)
+          rs1 = @constellation.RoleSequence(:new)
+          @constellation.RoleRef(rs1, 0, :role => value_role)
+          debug :mode, "Creating new ValueType role sequence"
+        else
+          rs1 = rs1.role_sequence
+          debug :mode, "Using existing ValueType role sequence"
+        end
+        if (rs1.all_presence_constraint.size == 0)
+          constraint = @constellation.PresenceConstraint(
+            :new,
+            :name => '',
+            :vocabulary => @vocabulary,
+            :role_sequence => rs1,
+            :min_frequency => 0,
+            :max_frequency => 1,
+            :is_preferred_identifier => true,
+            :is_mandatory => false
+          )
+          debug :mode, "Creating new ValueType PresenceConstraint"
+        else
+          debug :mode, "Marking existing ValueType PresenceConstraint as preferred"
+          rs1.all_presence_constraint[0].is_preferred_identifier = true
+        end
+      end
+
       def entity_type(name, supertypes, identification, mapping_pragmas, clauses)
         #puts "Entity Type #{name}, supertypes #{supertypes.inspect}, id #{identification.inspect}, clauses = #{clauses.inspect}"
         debug :entity, "Defining Entity Type #{name}" do
@@ -231,6 +330,7 @@ module ActiveFacts
               objectified_fact_type = fact_type
             end
           end
+          objectified_fact_type.entity_type = entity_type if objectified_fact_type
 
           # Find the identifying roles in the order they were declared
           identifying_roles_in_order = nil
@@ -262,6 +362,28 @@ module ActiveFacts
                     role
                   end
                 end
+              end
+              if identification[:mode]
+                if identifying_roles_in_order == [nil]
+                  # No identifying fact type exists because no reading was provided. Make that first.
+                  identifying_fact_type =
+                    ft = @constellation.FactType(:new)
+                  fact_types << ft
+                  entity_role = @constellation.Role(ft, 0, :concept => entity_type)
+                  value_role = @constellation.Role(ft, 1, :concept => vt)
+                  identifying_roles = [value_role]
+                  identifying_roles_in_order = [value_role]
+                  debug :mode, "Creating new fact type to identify #{name}"
+                else
+                  identifying_fact_type = identifying_roles_in_order[0].fact_type
+                end
+
+                # REVISIT: The restriction applies only to the value role. There is good reason to apply it above to the value type as well.
+                if (ranges = identification[:restriction])
+                  value_role.role_value_restriction = value_restriction(ranges, identification[:enforcement])
+                end
+
+                complete_reference_mode_readings(entity_type, identifying_fact_type)
               end
           end
 
