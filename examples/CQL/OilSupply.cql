@@ -4,7 +4,7 @@ vocabulary OilSupply;
  * Value Types
  */
 Cost is written as Money;
-MonthCode is written as FixedLengthText;
+MonthNr is written as SignedInteger(32);
 ProductName is written as VariableLengthText;
 Quantity is written as UnsignedInteger(32);
 RefineryName is written as VariableLengthText(80);
@@ -16,7 +16,7 @@ YearNr is written as SignedInteger(32);
 /*
  * Entity Types
  */
-Month is identified by its Code;
+Month is identified by its Nr restricted to {1..12};
 Month is in one Season;
 
 Product is identified by its Name;
