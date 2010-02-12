@@ -372,6 +372,57 @@ describe "Fact Type Role Matching" do
           PreferredIdentifierRolePlayedBy('Thong'),
     ],
 
+    [ # Auto-create Id and ThingId:
+      %q{Thing is identified by its Id;},
+      SingleFact() do |fact_type|
+        Readings(fact_type).size.should == 2
+        PresenceConstraints(fact_type).size.should == 2
+      end,
+      ConceptCount(3+BaseConcepts),
+      Concept('Thing'),
+        PreferredIdentifier(1),
+          PreferredIdentifierRolePlayedBy('ThingId'),
+    ],
+
+    [ # Auto-create ThingId:
+      %q{Id is written as String;},
+      %q{Thing is identified by its Id;},
+      SingleFact() do |fact_type|
+        Readings(fact_type).size.should == 2
+        PresenceConstraints(fact_type).size.should == 2
+      end,
+      ConceptCount(3+BaseConcepts),
+      Concept('Thing'),
+        PreferredIdentifier(1),
+          PreferredIdentifierRolePlayedBy('ThingId'),
+    ],
+
+    [ # Auto-create nothing (identifying value type exists already)
+      %q{ThingId is written as String;},
+      %q{Thing is identified by its Id;},
+      SingleFact() do |fact_type|
+        Readings(fact_type).size.should == 2
+        PresenceConstraints(fact_type).size.should == 2
+      end,
+      ConceptCount(2+BaseConcepts),
+      Concept('Thing'),
+        PreferredIdentifier(1),
+          PreferredIdentifierRolePlayedBy('ThingId'),
+    ],
+
+    [ # Auto-create nothing (identifying entity type exists already so don't create a VT)
+      %q{ThingId is identified by Id where ThingId has one Id, Id is of one ThingId;},
+      %q{Thing is identified by its Id;},
+      FactHavingPlayers("Thing", "ThingId") do |fact_type|
+        Readings(fact_type).size.should == 2
+        PresenceConstraints(fact_type).size.should == 2
+      end,
+      ConceptCount(3+BaseConcepts),
+      Concept('Thing'),
+        PreferredIdentifier(1),
+          PreferredIdentifierRolePlayedBy('ThingId'),
+    ],
+
     [
       %q{Thong is written as String;},
       %q{Thing is identified by Thong where Thing has one Thong, Thong is of one Thing;},

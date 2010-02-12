@@ -74,7 +74,7 @@ module ActiveFacts
         # Create the base type:
         base_type = nil
         if (base_type_name != name)
-          unless base_type = @constellation.ValueType[[@vocabulary, @constellation.Name(base_type_name)]]
+          unless base_type = @constellation.ValueType[[@vocabulary.identifying_role_values, @constellation.Name(base_type_name)]]
             #puts "REVISIT: Creating base ValueType #{base_type_name} in #{@vocabulary.inspect}"
             base_type = @constellation.ValueType(@vocabulary, base_type_name)
             return if base_type_name == name
@@ -213,6 +213,32 @@ module ActiveFacts
         end
       end
 
+      def make_entity_type_refmode_valuetypes(name, mode, parameters)
+        vt_name = "#{name}#{mode}"
+        debug :entity, "Preparing value type #{vt_name} for reference mode" do
+          # Find or Create an appropriate ValueType called "#{vt_name}", of the supertype "#{mode}"
+          unless vt = @constellation.Concept[[@vocabulary.identifying_role_values, vt_name]]
+            base_vt = @constellation.ValueType(@vocabulary, mode)
+            vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
+            if parameters
+              length, scale = *parameters
+              vt.length = length if length
+              vt.scale = scale if scale
+            end
+          else
+            debug :entity, "Value type #{vt_name} already exists"
+          end
+        end
+
+        # REVISIT: If we do this, it gets emitted twice when we generate CQL.
+        # The generator should detect that the restriction is the same and not emit it.
+        #if (ranges = identification[:restriction])
+        #  vt.value_restriction = value_restriction(ranges, identification[:enforcement])
+        #end
+
+        vt_name
+      end
+
       def entity_type(name, supertypes, identification, mapping_pragmas, clauses)
         #puts "Entity Type #{name}, supertypes #{supertypes.inspect}, id #{identification.inspect}, clauses = #{clauses.inspect}"
         debug :entity, "Defining Entity Type #{name}" do
@@ -229,32 +255,12 @@ module ActiveFacts
           end
 
           # If we're using a common identification mode, find or create the necessary ValueTypes first:
-          vt_name = vt = nil
           if identification && identification[:mode]
-            mode = identification[:mode]        # An identification mode
-
-            debug :entity, "Preparing value type #{name}#{mode} for reference mode" do
-              # Find or Create an appropriate ValueType called "#{name}#{mode}", of the supertype "#{mode}"
-              vt_name = "#{name}#{mode}"
-              unless vt = @constellation.ValueType[[@vocabulary, vt_name]]
-                base_vt = @constellation.ValueType(@vocabulary, mode)
-                vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
-                if parameters = identification[:parameters]
-                  length, scale = *parameters
-                  vt.length = length if length
-                  vt.scale = scale if scale
-                end
-              else
-                debug :entity, "Value type #{name}#{mode} already exists"
-              end
-            end
-
-            # REVISIT: If we do this, it gets emitted twice when we generate CQL. The generator should detect that the restriction is the same and not emit it.
-            #if (ranges = identification[:restriction])
-            #  vt.value_restriction = value_restriction(ranges, identification[:enforcement])
-            #end
+            vt_name = make_entity_type_refmode_valuetypes(name, identification[:mode], identification[:parameters])
+            vt = @constellation.Concept[[@vocabulary.identifying_role_values, vt_name]]
           end
 
+          # Names used in the identifying roles list may be forward referenced:
           @allowed_forward =
             if identification && identification[:roles]
               # We can't create non-existent terms as ETs yet, they might be role names.
@@ -317,51 +323,66 @@ module ActiveFacts
           # is an identifying role.
           objectified_fact_type = nil
           identifying_roles = []
-          fact_types.each do |fact_type|
-            roles = fact_type.all_role.to_a
-            case
-            when 1 == roles.size && roles[0].concept == entity_type
-              identifying_roles << roles[0]              # A unary played by this entity_type
-            when 2 == roles.size && (entity_role = roles.detect{|role| role.concept == entity_type })
-              identifying_roles << (roles-[entity_role])[0]  # A binary involving this entity_type
-            else                                        # Must be the objectified fact type
-              raise "#{name} can only objectify one fact type" if objectified_fact_type
-              # This can only happen when the objectified_fact_type has external identification
-              objectified_fact_type = fact_type
+          debug :identification, "Detecting identifying roles in #{fact_types.size} fact types" do
+            fact_types.each do |fact_type|
+              debug :identification, "Detecting identifying role in #{fact_type.default_reading}"
+              roles = fact_type.all_role.to_a
+              case
+              when 1 == roles.size && roles[0].concept == entity_type
+                debug :identification, "Unary role #{fact_type.default_reading}"
+                identifying_roles << roles[0]              # A unary played by this entity_type
+              when 2 == roles.size && (entity_role = roles.detect{|role| role.concept == entity_type })
+                role = (roles-[entity_role])[0]  # A binary involving this entity_type
+                debug :identification, "Role #{role.concept.name}"
+                identifying_roles << role
+              else                                        # Must be the objectified fact type
+                raise "#{name} can only objectify one fact type" if objectified_fact_type
+                # This can only happen when the objectified_fact_type has external identification
+                objectified_fact_type = fact_type
+              end
             end
+            objectified_fact_type.entity_type = entity_type if objectified_fact_type
           end
-          objectified_fact_type.entity_type = entity_type if objectified_fact_type
 
           # Find the identifying roles in the order they were declared
           identifying_roles_in_order = nil
           if (ir = identification && (identification[:roles] || [[vt_name]]))
             identifying_roles_in_order =
               ir.map do |names|
-                identifying_roles.detect do |role|
-                  player_position = names.index(role.concept.name)
-                  if (!player_position)
-                    raise "identifying role #{names*' '} not found in declared fact types" unless names == [vt_name]
-                    break nil
-                  end
-                  if role.fact_type.all_role.size == 1
-                    bind_unary_fact_type(entity_type, names)
-                  else
-                    role_ref = nil
-                    if player_position > 0  # Preceding words must be leading adjectives in some reading
-                      required_la = names.slice(0, player_position)*' '
-                      next nil unless role.all_role_ref.detect do |rr|
-                          role_ref = rr if rr.leading_adjective == required_la
-                        end
+                identifying_role =
+                  identifying_roles.detect do |role|
+                    # names is an array of words, being the identifying role player and possible adjectives
+                    # The role player (word *sequence*) must exist in the identifying_roles
+                    player_names = role.concept.name.split(/\s/)
+                    player_position =         # Try all possible match positions
+                      (0..(names.size-player_names.size)).detect do |position|
+                        names[0,player_names.size] == player_names
+                        # REVISIT: What to do to match identifying role adjectives here?
+                      end
+                    next unless player_position
+                    if role.fact_type.all_role.size == 1
+                      bind_unary_fact_type(entity_type, names)
+                    else
+                      role_ref = nil
+                      if player_position > 0  # Preceding words must be leading adjectives in some reading
+                        required_la = names.slice(0, player_position)*' '
+                        next nil unless role.all_role_ref.detect do |rr|
+                            role_ref = rr if rr.leading_adjective == required_la
+                          end
+                      end
+                      if player_position < names.size-1 # Following words must be trailing adjectives
+                        required_ta = names.slice(player_position+1, 1000)*' '
+                        next nil unless role.all_role_ref.detect do |rr|
+                            !role_ref || role_ref == rr and rr.trailing_adjective == required_ta
+                          end
+                      end
+                      role
                     end
-                    if player_position < names.size-1 # Following words must be trailing adjectives
-                      required_ta = names.slice(player_position+1, 1000)*' '
-                      next nil unless role.all_role_ref.detect do |rr|
-                          !role_ref || role_ref == rr and rr.trailing_adjective == required_ta
-                        end
-                    end
-                    role
                   end
-                end
+                raise "identifying role #{names*' '} not found in declared fact types, considered #{
+                    identifying_roles.map { |role| role.concept.name}.inspect
+                  }" unless identifying_role || names == [vt_name]
+                identifying_role
               end
               if identification[:mode]
                 if identifying_roles_in_order == [nil]
