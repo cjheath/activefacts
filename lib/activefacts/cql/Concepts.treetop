@@ -82,9 +82,16 @@ module ActiveFacts
 	    end
 	  }
         /
-        identified_by
-	role_list
-	  &{|s| input.context.allowed_forward_terms(s[1].roles.map{|words| words.size == 1 ? words[0] : nil}.compact); true }
+        identified_by role_list
+	  &{|s|
+	    forwards = s[-1].roles.map do |phrase|
+		next nil if phrase.size != 1
+		next nil if (term = phrase[0])[:leading_adjective] or term[:trailing_adjective]
+		term[:term]
+	      end.compact
+	    input.context.allowed_forward_terms(forwards)
+	    true
+	  }
           { def value; {:roles => role_list.roles }; end }
       end
 
@@ -98,11 +105,20 @@ module ActiveFacts
       end
 
       rule term_or_unary
-        words:(s !non_role_word id)* s
-        { def value
-	    words.elements.map {|w| w.id.text_value }
-          end
-        }
+	pre_text:(s !non_role_word !term id)* s term post_text:(s !non_role_word !term id)*
+	  { def value
+	      pre_text.elements.map {|w| w.id.text_value } +
+	      [ term.structure ] +
+	      post_text.elements.map {|w| w.id.text_value }
+	    end
+	  }
+	/
+	s !non_role_word id s &non_role_word
+	  {
+	    def value
+	      [{:term => id.text_value}]
+	    end
+	  }
       end
 
       rule mapping_pragmas
