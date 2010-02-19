@@ -85,7 +85,7 @@ module ActiveFacts
         identified_by role_list
 	  &{|s|
 	    forwards = s[-1].roles.map do |phrase|
-		next nil if phrase.size != 1
+		next nil if phrase.size != 1  # Can only forward-reference simple terms.
 		next nil if (term = phrase[0])[:leading_adjective] or term[:trailing_adjective]
 		term[:term]
 	      end.compact

@@ -24,6 +24,7 @@ module ActiveFacts
 
       # If one of the words is the name of the entity type, and the other
       # words consist of a unary fact type reading, return the role it plays.
+      # REVISIT: This probably won't handle an adjective on the entity type.
       def bind_unary_fact_type(entity_type, words)
         return nil unless i = words.index(entity_type.name)
 
@@ -56,6 +57,7 @@ module ActiveFacts
       # must occur more than once in each group of fact types where
       # it appears, and it forms a join between those fact types.
       def bind_joins_as_role_sequences(joins_list)
+    #raise "REVISIT: bind_joins_as_role_sequences is old code, untested in multiword"
         @symbols = SymbolTable.new(@constellation, @vocabulary)
         fact_roles_list = []
         bindings_list = []
@@ -64,9 +66,7 @@ module ActiveFacts
           @symbols.bind_roles_in_phrases_list(joins)
 
           fact_roles_list << joins.map do |phrases|
-            ifr = invoked_fact_roles(phrases)
-            raise "Fact type reading not found for #{phrases.inspect}" unless ifr
-            ifr
+            invoked_fact_roles(phrases) or raise "Fact type reading not found for #{phrases.inspect}"
           end
           bindings_list << joins.map do |phrases|
             phrases.map{ |phrase| Hash === phrase ? phrase[:binding] : nil}.compact
@@ -134,21 +134,10 @@ module ActiveFacts
         role_sequences
       end
 
-      # Search the supertypes of 'subtype' looking for an inheritance path to 'supertype',
-      # and returning the array of TypeInheritance fact types from supertype to subtype.
-      def inheritance_path(subtype, supertype)
-        direct_inheritance = subtype.all_supertype_inheritance.select{|ti| ti.supertype == supertype}
-        return direct_inheritance if (direct_inheritance[0])
-        subtype.all_supertype_inheritance.each{|ti|
-          ip = inheritance_path(ti.supertype, supertype)
-          return ip+[ti] if (ip)
-        }
-        return nil
-      end
-
       # For a given phrase array from the parser, find the matching declared reading, and return
       # the array of Role object in the same order as they occur in the reading.
       def invoked_fact_roles(phrases)
+    raise "REVISIT: invoked_fact_roles is old code, untested in multiword"
         # REVISIT: Possibly this special reading from the parser can be removed now?
         if (phrases[0] == "!SUBTYPE!")
           subtype = phrases[1][:binding].concept
@@ -166,7 +155,20 @@ module ActiveFacts
         invoked_fact_roles_by_players(phrases, players)
       end
 
+      # Search the supertypes of 'subtype' looking for an inheritance path to 'supertype',
+      # and returning the array of TypeInheritance fact types from supertype to subtype.
+      def inheritance_path(subtype, supertype)
+        direct_inheritance = subtype.all_supertype_inheritance.select{|ti| ti.supertype == supertype}
+        return direct_inheritance if (direct_inheritance[0])
+        subtype.all_supertype_inheritance.each{|ti|
+          ip = inheritance_path(ti.supertype, supertype)
+          return ip+[ti] if (ip)
+        }
+        return nil
+      end
+
       def invoked_fact_roles_by_players(phrases, players)
+    raise "REVISIT: invoked_fact_roles_by_players is old code, untested in multiword"
         players[0].all_role.each do |role|
           # Does this fact type have the right number of roles?
           next if role.fact_type.all_role.size != players.size
@@ -226,6 +228,7 @@ module ActiveFacts
       end
 
       def bind_fact_reading(fact_type, qualifiers, phrases)
+    raise "REVISIT: bind_fact_reading is old code, untested in multiword"
         reading = debug :reading, "Processing reading #{phrases.inspect}" do
           role_phrases = phrases.select do |phrase|
             Hash === phrase && phrase[:binding]
@@ -353,6 +356,7 @@ module ActiveFacts
 
       # For each fact reading there may be embedded mandatory, uniqueness or frequency constraints:
       def create_embedded_presence_constraints(fact_type, role_phrases, roles)
+    raise "REVISIT: create_embedded_presence_constraints is old code, untested in multiword"
         embedded_presence_constraints = []
         role_phrases.zip(roles).each_with_index do |role_pair, index|
           role_phrase, role = *role_pair
@@ -389,6 +393,7 @@ module ActiveFacts
       end
 
       def process_qualifiers(role_sequence, qualifiers)
+    raise "REVISIT: process_qualifiers is old code, untested in multiword"
         return unless qualifiers.size > 0
         qualifiers.sort!
 
@@ -442,18 +447,8 @@ module ActiveFacts
         puts "REVISIT: Qualifiers #{qualifiers.inspect} over #{role_sequence.describe}"
       end
 
-      def find_pc_over_roles(roles)
-        return nil if roles.size == 0 # Safeguard; this would chuck an exception otherwise
-        roles[0].all_role_ref.each do |role_ref|
-          next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
-          pc = role_ref.role_sequence.all_presence_constraint.single  # Will return nil if there's more than one.
-          #puts "Existing PresenceConstraint matches those roles!" if pc
-          return pc if pc
-        end
-        nil
-      end
-
       def add_reading(fact_type, role_sequence, phrases)
+    raise "REVISIT: add_reading is old code, untested in multiword"
         ordinal = (fact_type.all_reading.map(&:ordinal).max||-1) + 1  # Use the next unused ordinal
         reading = @constellation.Reading(fact_type, ordinal, :role_sequence => role_sequence)
         role_num = -1
@@ -468,20 +463,6 @@ module ActiveFacts
       # Return an array of this entity type and all its supertypes, transitively:
       def supertypes(o)
         ([o] + o.all_supertype_inheritance.map{|ti| supertypes(ti.supertype)}.flatten).uniq
-      end
-
-      def concept_by_name(name)
-        player = @constellation.Concept[[@vocabulary.identifying_role_values, name]]
-
-        # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
-        if !player && %w{Date DateAndTime Time}.include?(name)
-          player = @constellation.ValueType(@vocabulary.identifying_role_values, name)
-        end
-
-        if (!player && @symbols.allowed_forward[name])
-          player = @constellation.EntityType(@vocabulary, name)
-        end
-        player
       end
 
       class SymbolTable #:nodoc:all
@@ -536,6 +517,7 @@ module ActiveFacts
         end
 
         def bind_roles_in_clauses(clauses, identification = [])
+    raise "REVISIT: bind_roles_in_clauses is old code, untested in multiword"
           identification ||= []
           bind_roles_in_phrases_list(
               clauses.map{|clause| clause[2]},    # Extract the phrases
@@ -553,6 +535,7 @@ module ActiveFacts
         # Other words are turned from phrases (hashes) into simple strings.
         #
         def bind_roles_in_phrases_list(phrases_list, allowed_forwards = [])
+    raise "REVISIT: bind_roles_in_phrases_list is old code, untested in multiword"
           phrases_list.each do |phrases|
             debug :bind, "Binding phrases"
 
@@ -598,6 +581,7 @@ module ActiveFacts
         end
 
         def bind(phrase)  # Phrase is an array of words constituting a role reference
+    raise "REVISIT: bind is old code, untested in multiword"
           # Normal case: The phrase is already bound
           if binding = @bindings[phrase*" "]
             return [binding.concept, binding]

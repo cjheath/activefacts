@@ -9,6 +9,7 @@ module ActiveFacts
     grammar ValueTypes
       rule value_type
         s term_definition_name
+	# REVISIT: ORM2 would allow (subtype_prefix term)?
         written_as
         base:(term/id) s
         value_type_parameters
