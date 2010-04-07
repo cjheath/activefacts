@@ -4,8 +4,17 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/cql/parser'
-require 'activefacts/cql/binding'
 
+require 'activefacts/cql/compiler/shared'
+require 'activefacts/cql/compiler/value_type'
+require 'activefacts/cql/compiler/entity_type'
+require 'activefacts/cql/compiler/reading'
+require 'activefacts/cql/compiler/fact_type'
+require 'activefacts/cql/compiler/fact'
+require 'activefacts/cql/compiler/constraint'
+
+# The following files are from the old implementation, moving into the above:
+require 'activefacts/cql/binding'
 require 'activefacts/cql/value_type'
 require 'activefacts/cql/constraints'
 require 'activefacts/cql/entity_type'
@@ -32,7 +41,11 @@ module ActiveFacts
         result = parse_all(@string, :definition) do |node|
           debug :parse, "Parsed '#{node.text_value.gsub(/\s+/,' ').strip}'" do
             begin
-              compile_definition node
+              ast = node.ast
+              debug :ast, ast.inspect
+              value = ast.compile(@constellation, @vocabulary)
+              @vocabulary = value if ast.is_a?(Compiler::Vocabulary)
+#              compile_definition node
             rescue => e
               puts e.message+"\n\t"+e.backtrace*"\n\t" if debug :exception
               start_line = @string.line_of(node.interval.first)
@@ -45,7 +58,7 @@ module ActiveFacts
           nil
         end
         raise failure_reason unless result
-        @vocabulary
+        vocabulary
       end
 
       def compile_definition(node)
@@ -61,9 +74,9 @@ module ActiveFacts
         end
       end
 
-      def vocabulary(name)
-        @vocabulary = @constellation.Vocabulary(name)
-      end
+#      def vocabulary(name)
+#        @vocabulary = @constellation.Vocabulary(name)
+#      end
 
     private
       def concept_by_name(name)

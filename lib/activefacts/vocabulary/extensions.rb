@@ -118,6 +118,10 @@ module ActiveFacts
       def subtypes
         all_value_type_as_supertype
       end
+
+      def subtypes_transitive
+        [self] + subtypes.map{|st| st.subtypes_transitive}.flatten
+      end
     end
 
     class EntityType
@@ -268,6 +272,10 @@ module ActiveFacts
         all_type_inheritance_as_supertype.map{|ti| ti.subtype }
       end
 
+      def subtypes_transitive
+        [self] + subtypes.map{|st| st.subtypes_transitive}.flatten.uniq
+      end
+
       def all_supertype_inheritance
         all_type_inheritance_as_subtype.sort_by{|ti|
             [ti.provides_identification ? 0 : 1, ti.supertype.name]
@@ -284,7 +292,6 @@ module ActiveFacts
       # An array of self followed by all supertypes in order:
       def supertypes_transitive
         ([self] + all_type_inheritance_as_subtype.map{|ti|
-            # debug ti.class.roles.verbalise; exit
             ti.supertype.supertypes_transitive
           }).flatten.uniq
       end
@@ -320,9 +327,11 @@ module ActiveFacts
             role = role_ref.role
             la = "#{role_ref.leading_adjective}"
             la.sub!(/(.\b|.\Z)/, '\1-')
+            la.sub!(/- /,'-  ')
             la = nil if la == ""
             ta = "#{role_ref.trailing_adjective}"
             ta.sub!(/(\b.|\A.)/, '-\1')
+            ta.sub!(/ -/,'  -')   # Double the space to compensate for space removed below
             ta = nil if ta == ""
 
             expanded.gsub!(/\{#{i}\}/) {
@@ -351,7 +360,7 @@ module ActiveFacts
                 ].compact*" "
             }
         }
-        expanded.gsub!(/ *- */, '-')      # Remove spaces around adjectives
+        expanded.gsub!(/ ?- ?/, '-')        # Remove single spaces around adjectives
         #debug "Expanded '#{expanded}' using #{frequency_constraints.inspect}"
         expanded
       end

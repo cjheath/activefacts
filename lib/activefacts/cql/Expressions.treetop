@@ -36,11 +36,8 @@ module ActiveFacts
           def value
             return t0.value if tail.empty?
             [ :"+",
-              *([t0.value] +
-                tail.elements.map{|e|
-                    e.op.text_value == '-' ? [ :"-", e.t1.value ] : e.t1.value
-                  }
-              )
+              t0.value,
+	      *tail.elements.map{|e| e.op.text_value == '-' ? [ :"-", e.t1.value ] : e.t1.value }
             ]
           end
         }
@@ -56,11 +53,8 @@ module ActiveFacts
           def value
             return f0.value if tail.empty?
             [ :"*",
-              *([f0.value] +
-                tail.elements.map{|e|
-                    e.op.text_value != '*' ? [ :"-", e.f1.value ] : e.f1.value
-                  }
-              )
+              f0.value,
+	      *tail.elements.map{|e| e.op.text_value != '*' ? [ :"-", e.f1.value ] : e.f1.value }
             ]
           end
         }

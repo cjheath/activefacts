@@ -7,7 +7,7 @@
 require 'rubygems'
 require 'treetop'
 
-# These are Treetop files, which it will compile on the fly if precompiled ones aren't found:
+# These are Treetop files, which Polyglot will compile on the fly if precompiled ones aren't found:
 require 'activefacts/cql/LexicalRules'
 require 'activefacts/cql/Language/English'
 require 'activefacts/cql/Expressions'

@@ -27,6 +27,11 @@ module ActiveFacts
         ec:entity_conditions?
         ';' s
         {
+	  def ast
+	    name = term_definition_name.value
+	    Compiler::EntityType.new name, sup.supers, sup.identifier, mapping_pragmas.value, (ec.empty? ? nil : ec.conditions)
+	  end
+	  
           def defined_type
             [ :entity_type, sup.supers, sup.identifier, mapping_pragmas.value, (ec.empty? ? nil : ec.conditions) ]
           end

@@ -127,7 +127,7 @@ module ActiveFacts
       rule no 'no' !alphanumeric end
       rule none 'none' !alphanumeric end
       rule not 'not' !alphanumeric end
-      rule either_all_or_none either s all s or s none end
+      rule either_all_or_none either s all s or s ( none / no ) end
       rule one 'one' !alphanumeric end
       rule only 'only' !alphanumeric end
       rule or 'or' !alphanumeric end 

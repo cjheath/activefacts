@@ -12,6 +12,12 @@ module ActiveFacts
         s is s mapping_pragmas where    # REVISIT: Need a place to put mapping pragmas like [independent]
         anonymous_fact_type
         {
+	  def ast
+	    ft = anonymous_fact_type.ast
+	    ft.name = term_definition_name.value
+	    ft
+	  end
+
           def value
             f = anonymous_fact_type.value
             f[0] = term_definition_name.value
@@ -21,14 +27,26 @@ module ActiveFacts
       end
 
       rule anonymous_fact_type
-        f0:fact_clause
-          ftail:( (',' / and ) s f1:fact_clause s )*
+        fact_clause
+          ftail:( (',' / and ) s fact_clause s )*
           ctail:( (':' / where) s c:conditions s)?
           returning_clause?
         s ';' s
         {
+	  def ast
+            readings = [fact_clause.ast, *ftail.elements.map{|e| e.fact_clause.ast }]
+            conditions = !ctail.empty? ? ctail.c.condition_list : []
+	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
+	    if (readings.detect{|r| r.includes_literals})
+	      raise "Fact instances may not contain conditions" unless conditions.empty? && !returning
+	      Compiler::Fact.new readings
+	    else
+	      Compiler::FactType.new nil, readings, conditions, returning
+	    end
+	  end
+
           def value
-            readings = [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
+            readings = [ fact_clause.body, *ftail.elements.map{|e| e.fact_clause.body } ]
             conditions = !ctail.empty? ? ctail.c.condition_list : []
             [ nil, [ :fact_type, readings, conditions ] ]
           end
@@ -47,7 +65,7 @@ module ActiveFacts
         head:condition s tail:( (',' s / and S) next:condition s )*
         {
           def condition_list
-            [head.value] + tail.elements.map{|i| i.next.value}
+            [head.value, *tail.elements.map{|i| i.next.value}]
           end
         }
       end
@@ -60,7 +78,7 @@ module ActiveFacts
 #            if tail.elements.size == 0
               head.clause
 #            else
-#              [:"||", head.clause] + tail.elements.map{|i| i.alternate.clause}
+#              [:"||", head.clause, *tail.elements.map{|i| i.alternate.clause}]
 #            end
           end
         }
@@ -79,6 +97,13 @@ module ActiveFacts
       rule fact_clause
         s q:qualifier? s reading s p:post_qualifiers? s c:context?
         {
+	  def ast
+	    qualifiers = (q.empty? ? [] : [ q.text_value ]) +
+	      (p.empty? ? [] : p.list)
+	    # REVISIT: When we implement objectification joins, we might get multiple readings here...
+	    Compiler::Reading.new reading.ast, qualifiers, (c.empty? ? nil : c.value)
+	  end
+
           def body
             [ :fact_clause,
               (q.empty? ? [] : [ q.text_value ]) +
@@ -98,7 +123,7 @@ module ActiveFacts
         '[' s q0:post_qualifier tail:( s ',' s q1:post_qualifier )* s ']' s
         {
           def list
-            [q0.text_value] + tail.elements.map{|e| e.q1.text_value}
+            [q0.text_value, *tail.elements.map{|e| e.q1.text_value}]
           end
         }
       end
@@ -110,14 +135,36 @@ module ActiveFacts
       rule reading
         (
           role    # A role reference containing a term, perhaps with attached paraphernalia
-          /       # A hyphenated non-term
-          i1:id '-' i2:id s
-            { def value; [i1.value, i2.value]*"-"; end }
+          /       # A hyphenated non-term. Important: no embedded spaces
+          id tail:('-' !term id)+ s
+            {
+	      def ast
+		value
+	      end
+
+	      def value
+		[id.value, *tail.elements.map{|e| e.id.value}]*"-"
+	      end
+	    }
           /       # A normal non-term
           !non_role_word id s
-	  { def value; id.value; end }
+	    {
+	      def ast
+		value
+	      end
+
+	      def value
+		id.value
+	      end
+	    }
         )+
         {
+	  def ast
+	    elements.map{ |r|
+	      r.ast
+	    }
+	  end
+
           def value
             elements.map{|r|
 	      r.value
@@ -135,8 +182,27 @@ module ActiveFacts
         func:function_call? s
         role_id:(role_name / subscript )?
         lr:( literal / restriction enforcement )?
+	oj:objectification_join?
         !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
+	  def ast
+	    quantifier = q.empty? ? nil : q.quantifier.value
+	    role_name = role_id.empty? ? nil : role_id.value
+	    function_call = nil
+	    if !lr.empty?
+	      literal = lr.value if lr.respond_to?(:value)
+	      restriction = Compiler::Restriction.new(lr.restriction.ranges, lr.enforcement.value) if lr.respond_to?(:restriction)
+	    end
+
+	    raise "REVISIT: Objectification joins #{oj.text_value} are not yet implemented" unless oj.empty?
+
+	    structure = player.structure
+	    term = structure[:term]
+	    la = structure[:leading_adjective]
+	    ta = structure[:trailing_adjective]
+	    Compiler::RoleRef.new term, la, ta, quantifier, function_call, role_name, restriction, literal
+	  end
+
           def value
             r = player.structure # has keys :word, :term, :leading_adjective, :trailing_adjective
 
@@ -159,6 +225,10 @@ module ActiveFacts
         }
       end
 
+      rule objectification_join
+        '(' s where s fact_clause s ')' s
+      end
+
       rule role_name
         # REVISIT: Multiword role names?
         '(' s as S r:id s ')' s
@@ -166,7 +236,7 @@ module ActiveFacts
       end
 
       rule subscript
-        '(' i:([1-9] [0-9]*) ')' s 
+        '(' s i:([1-9] [0-9]*) s ')' s 
         { def value; i.text_value.to_i; end }
       end
 

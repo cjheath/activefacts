@@ -164,7 +164,7 @@ module ActiveFacts
       end
 
       rule comment_to_eol
-        '//' (!"\n" .)+
+        '//' (!"\n" .)*
       end
 
       rule comment_c_style
