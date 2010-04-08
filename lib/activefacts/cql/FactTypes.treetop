@@ -186,7 +186,7 @@ module ActiveFacts
         !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
 	  def ast
-	    quantifier = q.empty? ? nil : q.quantifier.value
+	    quantifier = q.empty? || !q.quantifier.value ? nil : Compiler::Quantifier.new(q.quantifier.value[0], q.quantifier.value[1], q.enforcement.value)
 	    role_name = role_id.empty? ? nil : role_id.value
 	    function_call = nil
 	    if !lr.empty?

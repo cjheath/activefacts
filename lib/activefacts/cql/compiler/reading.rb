@@ -357,7 +357,6 @@ module ActiveFacts
         # These adjectives have been removed from the phrases. If there are any remaining adjectives,
         # we need to make a new RoleSequence, otherwise we can use the existing one.
         def adjust_for_match
-          debugger if !@applied_side_effects
           new_role_sequence_needed = @applied_side_effects.residual_adjectives
 
           role_phrases = []
@@ -379,7 +378,7 @@ module ActiveFacts
             end
           end
 
-          puts "Reading '#{reading_words*' '}' #{new_role_sequence_needed ? '' : 'does not '} require a new Role Sequence"
+          puts "Reading '#{reading_words*' '}' #{new_role_sequence_needed ? 'requires' : 'does not require'} a new Role Sequence"
 
           constellation = @fact_type.constellation
           reading_text = reading_words*" "
@@ -414,6 +413,14 @@ module ActiveFacts
           constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ")
           @role_sequence
         end
+
+        def make_embedded_presence_constraints vocabulary
+          role_refs.each do |role_ref|
+            next unless role_ref.quantifier
+            # puts "Quantifier #{role_ref.inspect} not implemented as a presence constraint"
+            role_ref.make_embedded_presence_constraint vocabulary
+          end
+        end
       end
 
       class ReadingMatchSideEffects
@@ -437,6 +444,7 @@ module ActiveFacts
         attr_accessor :role
         attr_accessor :mm_role    # This refers to the ActiveFacts::Metamodel::Role
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
+        attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
 
         def initialize term, leading_adjective, trailing_adjective, quantifier, function_call, role_name, restriction, literal
           @term = term
@@ -508,10 +516,53 @@ module ActiveFacts
         def wipe_trailing_adjective
           @trailing_adjective = nil
         end
+
+        def make_embedded_presence_constraint vocabulary
+          raise "No Role for embedded_presence_constraint" unless @mm_role
+          fact_type = @mm_role.fact_type
+          constellation = vocabulary.constellation
+
+          debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@mm_role.concept.name} in #{fact_type.describe}" do
+            constrained_roles = fact_type.all_role.to_a.clone
+            constrained_roles.delete(@mm_role)
+            if constrained_roles.empty?
+              debug :constraint, "Quantifier over unery role has no effect"
+              return
+            end
+            constraint = nil; puts "REVISIT: need to find_pc_over_roles" # find_pc_over_roles(constrained_roles)
+            if constraint
+              debug :constraint, "Setting max frequency to #{@quantifier.max} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
+              raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != @quantifier.max
+              constraint.max_frequency = @quantifier.max
+            else
+              role_sequence = constellation.RoleSequence(:new)
+              constrained_roles.each_with_index do |constrained_role, i|
+                role_ref = constellation.RoleRef(role_sequence, i, :role => constrained_role)
+              end
+              constraint = constellation.PresenceConstraint(
+                  :new,
+                  :vocabulary => vocabulary,
+                  :role_sequence => role_sequence,
+                  :is_mandatory => @quantifier.min && @quantifier.min > 0,  # REVISIT: Check "maybe" qualifier?
+                  :max_frequency => @quantifier.max,
+                  :min_frequency => @quantifier.min
+                )
+              debug :constraint, "Made new PC min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
+              if @quantifier.enforcement && @quantifier.enforcement != []
+                # apply_enforcement(constraint, @quantifier.enforcement)
+                puts "Can't apply enforcement to presence constraints yet"
+              end
+              @embedded_presence_constraint = constraint
+            end
+            constraint
+          end
+
+        end
       end
 
       class Quantifier
         attr_accessor :enforcement
+        attr_reader :min, :max
 
         def initialize min, max, enforcement = nil
           @min = min

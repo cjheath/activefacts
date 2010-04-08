@@ -1,0 +1,179 @@
+#
+# vi:encoding=utf-8
+#       ActiveFacts CQL Parser.
+#       Parse rules the English syntax of CQL.
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
+module ActiveFacts
+  module CQL
+    grammar Language
+
+      rule subtype_prefix
+        est s un s ('type'/'genre') s 'de' S
+      end
+
+      rule un
+        'un' 'e'?
+      end
+
+      rule written_as
+        s est s 'ecrit' S 'en' s    # REVISIT: "e"crit has acute
+      end
+
+      rule identified_by
+        #identified s by s
+	'identifie' s 'par' s	# REVISIT: e acute
+      end
+
+# Company has at most one postal-Address;
+# CompanyContact is where Company has contact-Person;
+# CompanyContact is the situation where Company has contact-Person;
+# for each Company at least one of the following holds:
+#     that Company has some contact-Person,
+#     that Company has some mailing-Address and that mailing-Address includes PostCode;
+#
+# Entreprise is a synonym for English:Company;
+# Entreprise est un synonyme pour English:Company;
+# Personne is a synonym for English:Person;
+#
+# Entreprise a au plus une Adresse Postale;
+# EntrepriseContact est quand un(e) Entreprise a Personnes comme -contact;
+# pour chaque Entreprise au moins un des suivants s'applique:
+#     que cette Entreprise a certaines Personnes comme -contact,
+#     que cette Entreprise a certaines Adresses Postales et que ces Adresses Postales ont un Code Postale;
+#
+# ---------------------------------------------------
+# each A occurs at least one time in:
+# chaque A existe (at least one) fois parmis ce qui suit:
+#
+# each combination A, B occurs at least one time in:
+# chaque combinaison A, B existe (at least one) fois parmis ce qui suit:
+#
+
+      rule quantifier
+        # REVISIT: each s                   { def value; [1, nil]; end }
+        / ('a' s 'certaines' / un s 'certain' 'e'? ) s    { def value; nil; end }
+        / 'que' s ('ce'/'cette'/'ces') s	    { def value; nil; end } # ce is masculine, ces is plural
+
+        / un s                    { def value; [1, 1]; end }
+        / 'pas' s 'de' s          { def value; [0, 0]; end }	# REVISIT: Example: "Personne n'a pas de Casier-judiciaire"
+        / exactement s quantity   { def value; q = quantity.value; [q, q]; end }
+	/ au moins quantity most:( et au plus q:quantity )?
+                                  { def value;
+                                      [ quantity.value,
+                                        most.empty? ? nil : most.q.value
+                                      ]
+                                    end
+                                  }
+	/ au plus quantity	  { def value; [ nil, quantity.value ]; end }
+        / entre s numeric_range s  { def value; numeric_range.value; end }
+	/ soit tous soit aucun    { def value; [ -1, 1 ]; end }
+      end
+
+      rule quantity
+        un s                     { def value; 1; end }
+        / number s                { def value; number.value; end }
+      end
+
+      rule according_to
+	'selon'
+      end
+
+      rule because
+	# REVSIT: or 'car'?
+	'parce' s 'que'
+      end
+
+      rule as_opposed_to
+	'au' s 'lieu' s 'de'
+      end
+
+      rule so_that
+	'pour' s 'que'
+      end
+
+      rule to_avoid
+	'pour' s 'empecher' s 'de' s
+	/ 'pour' s 'ne' s 'pas' s
+      end
+
+      rule as_agreed_by
+	s 'comme' s 'convenu' s d:('le' s date)? 'par' s agents
+        { def value; [ d.empty? ? nil : d.date.value, agents.value ]; end }
+      end
+
+      rule date
+        s d:(!(by/')') .)+
+        { def value; d.text_value.strip; end }
+      end
+
+      rule agents
+        s h:agent s t:(',' s !context_type agent s)*
+        { def value; [h.text_value] + t.elements.map{|e| e.agent.text_value }; end }
+      end
+
+      rule agent
+        id (s id)*
+      end
+
+      # An enforcement action, like SMS, email, log, alarm, etc.
+      rule action
+	id
+      end
+
+      rule acyclic 'acyclique' !alphanumeric end
+      rule alias 'alias' !alphanumeric end 
+      rule all 'tous' !alphanumeric end
+      rule and 'et' !alphanumeric end
+      rule approximately 'environ' !alphanumeric end	      # REVISIT: google translate
+      rule as 'comme' !alphanumeric end
+      rule at 'a' !alphanumeric end
+      rule both 'les deux' !alphanumeric end 
+      rule but 'mais' !alphanumeric end 
+      rule by 'par' !alphanumeric end 
+      rule converts 'convertit' !alphanumeric end 
+      rule definitely 'définitivement' !alphanumeric end
+      rule each 'chaque' !alphanumeric end 
+      rule either 'soit' !alphanumeric end 
+      rule entity 'entité' !alphanumeric end 
+      rule ephemeral 'éphémère' !alphanumeric end 
+      rule exactement 'exactement' !alphanumeric end
+      rule false 'faux' !alphanumeric end 
+      rule feminine 'féminin' !alphanumeric end 
+      rule from  'à partir de' !alphanumeric end	      # REVISIT: google translate
+      rule identified ('connus'/'identifiés') !alphanumeric end 
+      rule independent 'indépendants' !alphanumeric end	      # REVISIT: google translate; need trailing s?
+      rule if 'si' !alphanumeric end
+      rule import 'import' !alphanumeric end		      # REVISIT: 
+      rule includes 'comprend' !alphanumeric end
+      rule intransitive 'intransitif' !alphanumeric end
+      rule est 'est' !alphanumeric end 
+      rule its 'ses' !alphanumeric end
+      rule masculine 'masculin' !alphanumeric end 
+      rule matches 'matches' !alphanumeric end
+      rule maybe 'peut-e^tre' !alphanumeric end
+      rule none 'aucun' !alphanumeric end
+      rule not 'not' !alphanumeric end			      # REVISIT: Used in constraints
+      rule only 'only' !alphanumeric end		      # REVISIT: Used in constraints
+      rule or 'ou' !alphanumeric end 
+      rule otherwise 'sinon' !alphanumeric end
+      rule partitioned 'partitionné' !alphanumeric end 
+      rule personal 'personelle' !alphanumeric end 
+      rule restricted 'limite\' s 'a' !alphanumeric end
+      rule returning 'retour' !alphanumeric end
+      rule separate 'distincte' !alphanumeric end 
+      rule some 'quelques' !alphanumeric end
+      rule static 'statique' !alphanumeric end
+      rule symmetric 'symétrique' !alphanumeric end
+      rule that 'que' !alphanumeric end
+      rule to 'à' !alphanumeric end
+      rule transient 'transitoires' !alphanumeric end
+      rule transitive 'transitif' !alphanumeric end
+      rule true 'vrai' !alphanumeric end 
+      rule vocabulary 'vocabulaire' !alphanumeric end 
+      rule where 'où' !alphanumeric end 
+
+    end
+  end
+end

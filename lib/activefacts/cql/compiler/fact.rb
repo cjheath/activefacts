@@ -8,7 +8,7 @@ module ActiveFacts
         end
 
         def compile constellation, vocabulary
-          puts "REVISIT: Fact Instances are not yet compiled"
+          puts "REVISIT: Fact Instances are not yet compiled: #{@readings.inspect}"
         end
       end
 

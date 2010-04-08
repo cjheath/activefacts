@@ -60,9 +60,64 @@ module ActiveFacts
             end
           end
 
-          matched_readings.each{ |reading| reading.adjust_for_match }
+          # If a reading matched but the match left extra adjectives, we need to make a new RoleSequence for them:
+          matched_readings.each do |reading|
+            reading.adjust_for_match
+          end
+
+          @readings.each do |reading|
+            reading.make_embedded_presence_constraints vocabulary
+          end
+
+          # Objectify the fact type if necessary:
+          if @name
+            if @fact_type.entity_type and @name != @fact_type.entity_type.name
+              raise "Cannot objectify fact type as #{@name} and as #{@fact_type.entity_type.name}"
+            end
+            constellation.EntityType(vocabulary, @name, :fact_type => @fact_type)
+          end
+
+          # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
+          make_default_identifier_for_fact_type vocabulary
 
           true
+        end
+
+        def make_default_identifier_for_fact_type(vocabulary, prefer = true)
+          return if @fact_type.all_role.size == 1 && !@fact_type.entity_type     # Non-objectified unaries don't need a PI
+
+          # REVISIT: It's possible that this fact type is objectified and inherits identification through a supertype.
+
+          # If there's a preferred alethic uniqueness constraint over the fact type already, we're done
+          return if @fact_type.all_role.
+            detect do |r|
+              r.all_role_ref.detect do |rr|
+                rr.role_sequence.all_presence_constraint.detect do |pc|
+                  pc.max_frequency == 1 && !pc.enforcement && pc.is_preferred_identifier
+                end
+              end
+            end
+
+          # If there's an existing presence constraint that can be converted into a PC, do that:
+          @readings.each do |reading|
+            rr = reading.role_refs[-1] or next
+            epc = rr.embedded_presence_constraint or next
+            epc.max_frequency == 1 or next
+            next if epc.enforcement
+            epc.is_preferred_identifier = true
+            return
+          end
+
+          raise "Fact type must be named as it has no identifying uniqueness constraint" unless @name || @fact_type.all_role.size == 1
+          vocabulary.constellation.PresenceConstraint(
+            :new,
+            :vocabulary => vocabulary,
+            :name => @fact_type.entity_type ? @fact_type.entity_type.name+"PK" : '',
+            :role_sequence => @fact_type.preferred_reading.role_sequence,
+            :is_preferred_identifier => true,
+            :max_frequency => 1,
+            :is_preferred_identifier => prefer
+          )
         end
 
         def verify_matching_roles
