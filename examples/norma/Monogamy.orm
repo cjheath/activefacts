@@ -248,12 +248,6 @@
 					<orm:Role id="_B2369081-4D79-42C5-9788-B977215D595D" ref="_1B3F3B43-3C94-4F56-ABD1-501CCEC0DB74" />
 				</orm:RoleSequence>
 			</orm:RingConstraint>
-			<orm:MandatoryConstraint id="_152DB4C6-5F0A-43F8-92A3-0C51EEB98C56" Name="ImpliedMandatoryConstraint2" IsImplied="true">
-				<orm:RoleSequence>
-					<orm:Role id="_9277DAC4-880B-4015-985F-D4B6B1290D34" ref="_057C457F-6385-469A-A253-E9E4D25D7165" />
-				</orm:RoleSequence>
-				<orm:ImpliedByObjectType ref="_D78ACB87-DBD8-4DBA-8CEE-428B0B4BA935" />
-			</orm:MandatoryConstraint>
 			<orm:MandatoryConstraint id="_0B1028BE-2880-4B8D-A12D-0CB7241A48FB" Name="SimpleMandatoryConstraint4" IsSimple="true">
 				<orm:RoleSequence>
 					<orm:Role id="_6C821ED0-911B-4502-A6B8-AD7CA5DA9EFB" ref="_7A345438-30F5-4533-88BF-18F90B5A9DEF" />
@@ -264,6 +258,12 @@
 					<orm:Role id="_EE7378EC-F516-4039-9574-8C17592A4D95" ref="_7A345438-30F5-4533-88BF-18F90B5A9DEF" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
+			<orm:MandatoryConstraint id="_EB157732-8618-4A14-A4D6-2CE085F3D66C" Name="ImpliedMandatoryConstraint2" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_F3041145-8646-4D0C-A75D-CEE20B4249D5" ref="_057C457F-6385-469A-A253-E9E4D25D7165" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_D78ACB87-DBD8-4DBA-8CEE-428B0B4BA935" />
+			</orm:MandatoryConstraint>
 			<orm:ExclusionConstraint id="_B6B72D3A-96D9-42DF-9EC9-85C93C87EE22" Name="ExclusiveOrConstraint1">
 				<orm:RoleSequences>
 					<orm:RoleSequence id="_BC7B82E7-8289-4CCB-A9F5-E89E60966DFC">
@@ -300,7 +300,7 @@
 			<ormDiagram:ExternalConstraintShape id="_C4BADA25-2194-442F-AEE6-66075BEDC0CC" IsExpanded="true" AbsoluteBounds="1.1666668256123858, 1.1979166865348818, 0.16, 0.16">
 				<ormDiagram:Subject ref="_121FA9F6-02AE-4202-8964-0E5743D1D65A" />
 			</ormDiagram:ExternalConstraintShape>
-			<ormDiagram:FactTypeShape id="_A0A42A6D-496C-456F-ACEE-B0014B8C8DAA" IsExpanded="true" AbsoluteBounds="1.0547223811162017, 1.4612499006589257, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
+			<ormDiagram:FactTypeShape id="_A0A42A6D-496C-456F-ACEE-B0014B8C8DAA" IsExpanded="true" AbsoluteBounds="1.0547223811162017, 1.4612499006589257, 0.38388888899236917, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
 					<ormDiagram:ReadingShape id="_27560C27-DA7F-4AF6-8115-3C229F99776D" IsExpanded="true" AbsoluteBounds="1.0547223811162017, 1.769890302953621, 1.6041033267974854, 0.12950302660465241">
 						<ormDiagram:Subject ref="_8D8B9954-FEB7-486E-8468-38E6DBD63CF7" />
@@ -317,10 +317,10 @@
 			<ormDiagram:RingConstraintShape id="_BC7C4E07-FFEC-452A-BC92-30F07252F07A" IsExpanded="true" AbsoluteBounds="1.0866668256123861, 2.0833333929379787, 0.32, 0.21280000000000002">
 				<ormDiagram:Subject ref="_8E386086-610D-4226-B7BB-F1E5D6D1E789" />
 			</ormDiagram:RingConstraintShape>
-			<ormDiagram:ObjectTypeShape id="_3DBD85EB-356B-47BC-9178-4845B9A0C5E7" IsExpanded="true" AbsoluteBounds="2.3333334128061929, 0.56594295106207337, 0.44445383071899419, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_3DBD85EB-356B-47BC-9178-4845B9A0C5E7" IsExpanded="true" AbsoluteBounds="2.3333334128061929, 0.56594295106207337, 0.44445383071899414, 0.22950302660465241">
 				<ormDiagram:Subject ref="_D78ACB87-DBD8-4DBA-8CEE-428B0B4BA935" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_A6EA39F7-9F4F-4067-B5B2-91E9217D235D" IsExpanded="true" AbsoluteBounds="1.7187499602635703, 0.523750019868215, 0.38388888899236917, 0.24388888899236916" ConstraintDisplayPosition="Top">
+			<ormDiagram:FactTypeShape id="_A6EA39F7-9F4F-4067-B5B2-91E9217D235D" IsExpanded="true" AbsoluteBounds="1.7187499602635703, 0.523750019868215, 0.38388888899236917, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
 					<ormDiagram:ReadingShape id="_E117BA94-22F4-42FC-B98F-68C70FEEA66D" IsExpanded="true" AbsoluteBounds="1.7187499602635703, 0.83239042216291037, 0.38379356265068054, 0.12950302660465241">
 						<ormDiagram:Subject ref="_71FA717D-1ABD-4151-9F12-02C44FA7B416" />
