@@ -29,7 +29,8 @@ module ActiveFacts
         {
 	  def ast
 	    name = term_definition_name.value
-	    Compiler::EntityType.new name, sup.supers, sup.identifier, mapping_pragmas.value, (ec.empty? ? nil : ec.conditions)
+	    readings = ec.empty? ? [] : ec.ast
+	    Compiler::EntityType.new name, sup.supers, sup.ast, mapping_pragmas.value, readings
 	  end
 	  
           def defined_type
@@ -48,7 +49,9 @@ module ActiveFacts
         is s
         # independency?
         identification
-        { def supers; [] end
+        {
+	  def ast; identification.ast; end
+	  def supers; []; end
           def identifier; identification.value; end
         }
       end
@@ -58,6 +61,7 @@ module ActiveFacts
         # independency?
         supertype_list ident:identification?
         {
+	  def ast; ident.empty? ? nil : ident.ast; end
           def supers; supertype_list.value; end
           def identifier; ident.empty? ? nil : ident.value; end
         }
@@ -78,7 +82,17 @@ module ActiveFacts
         # REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
         identified_by its s i:(term/id) value_type_parameters
 	r:(restriction enforcement)?          # Reference Mode; restriction may be needed for the ValueType
-          { def value
+          {
+	    def ast
+	      if r.empty?
+		restriction = nil
+	      else
+		restriction = Compiler::Restriction.new(r.restriction.ranges, r.enforcement.value)
+	      end
+	      Compiler::ReferenceMode.new(i.value, restriction, value_type_parameters.values)
+	    end
+
+	    def value
 	      { :mode => i.value,
 	        :restriction => (r.text_value.empty? ? nil : r.restriction.ranges),
 	        :enforcement => (r.text_value.empty? ? nil : r.enforcement.value),
@@ -97,21 +111,47 @@ module ActiveFacts
 	    input.context.allowed_forward_terms(forwards)
 	    true
 	  }
-          { def value; {:roles => role_list.roles }; end }
+          {
+	    def ast
+	      role_list.ast
+	    end
+
+	    def value
+	      {:roles => role_list.roles }
+	    end
+	  }
       end
 
       # Identified by roles... also used for constraints, beware
       rule role_list 
         head:term_or_unary s tail:( ( and S / ',' s ) term_or_unary s )*
-        { def roles
-            tail.elements.inject([head.value]) { |a, e| a << e.term_or_unary.value }
+        {
+	  def ast
+	    [head.ast, *tail.elements.map{|e| e.term_or_unary.ast}]
+	  end
+
+	  def roles
+	    [head.value, *tail.elements.map{|e| e.term_or_unary.value}]
+            # tail.elements.inject([head.value]) { |a, e| a << e.term_or_unary.value }
           end
         }
       end
 
       rule term_or_unary
 	pre_text:(s !non_role_word !term id)* s term post_text:(s !non_role_word !term id)*
-	  { def value
+	  {
+	    def ast
+	      t = Compiler::RoleRef.new(term.value, nil, nil, nil, nil, nil, nil, nil)
+	      if pre_text.elements.size == 0 && post_text.elements.size == 0
+		t
+	      else
+		pre_words = pre_text.elements.map{|w| w.id.text_value}
+		post_words = post_text.elements.map{|w| w.id.text_value}
+		Compiler::Reading.new(pre_words + [t] + post_words, [], nil)
+	      end
+	    end
+
+	    def value
 	      pre_text.elements.map {|w| w.id.text_value } +
 	      [ term.structure ] +
 	      post_text.elements.map {|w| w.id.text_value }
@@ -120,6 +160,9 @@ module ActiveFacts
 	/
 	s !non_role_word id s &non_role_word
 	  {
+	    def ast
+	    end
+
 	    def value
 	      [{:term => id.text_value}]
 	    end
@@ -142,6 +185,10 @@ module ActiveFacts
       rule entity_conditions
         (':' / where) s c:conditions?
         {
+	  def ast
+            c.empty? ? [] : c.ast
+	  end
+
           def conditions
             c.empty? ? [] : c.condition_list
           end

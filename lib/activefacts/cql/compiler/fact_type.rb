@@ -13,7 +13,7 @@ module ActiveFacts
           @returning = returning
         end
 
-        def compile constellation, vocabulary
+        def compile
           raise "Queries not yet handled" unless @conditions.empty? and !@returning
 
           #
@@ -30,7 +30,7 @@ module ActiveFacts
           # * Objectify the fact type if @name
           #
 
-          context = CompilationContext.new(vocabulary)
+          context = CompilationContext.new(@vocabulary)
           @readings.each{ |reading| reading.identify_players_with_role_name(context) }
           @readings.each{ |reading| reading.identify_other_players(context) }
           @readings.each{ |reading| reading.bind_roles context }  # Create the Compiler::Roles
@@ -50,13 +50,13 @@ module ActiveFacts
 
           unless @fact_type
             first_reading = @readings[0]
-            @fact_type = first_reading.make_fact_type(vocabulary)
-            first_reading.make_reading(vocabulary, @fact_type)
+            @fact_type = first_reading.make_fact_type(@vocabulary)
+            first_reading.make_reading(@vocabulary, @fact_type)
           end
 
           @readings.each do |reading|
             unless reading.fact_type
-              reading.make_reading(vocabulary, @fact_type)
+              reading.make_reading(@vocabulary, @fact_type)
             end
           end
 
@@ -66,7 +66,7 @@ module ActiveFacts
           end
 
           @readings.each do |reading|
-            reading.make_embedded_presence_constraints vocabulary
+            reading.make_embedded_presence_constraints @vocabulary
           end
 
           # Objectify the fact type if necessary:
@@ -74,16 +74,16 @@ module ActiveFacts
             if @fact_type.entity_type and @name != @fact_type.entity_type.name
               raise "Cannot objectify fact type as #{@name} and as #{@fact_type.entity_type.name}"
             end
-            constellation.EntityType(vocabulary, @name, :fact_type => @fact_type)
+            @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type)
           end
 
           # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
-          make_default_identifier_for_fact_type vocabulary
+          make_default_identifier_for_fact_type
 
           true
         end
 
-        def make_default_identifier_for_fact_type(vocabulary, prefer = true)
+        def make_default_identifier_for_fact_type(prefer = true)
           return if @fact_type.all_role.size == 1 && !@fact_type.entity_type     # Non-objectified unaries don't need a PI
 
           # REVISIT: It's possible that this fact type is objectified and inherits identification through a supertype.
@@ -109,9 +109,9 @@ module ActiveFacts
           end
 
           raise "Fact type must be named as it has no identifying uniqueness constraint" unless @name || @fact_type.all_role.size == 1
-          vocabulary.constellation.PresenceConstraint(
+          @constellation.PresenceConstraint(
             :new,
-            :vocabulary => vocabulary,
+            :vocabulary => @vocabulary,
             :name => @fact_type.entity_type ? @fact_type.entity_type.name+"PK" : '',
             :role_sequence => @fact_type.preferred_reading.role_sequence,
             :is_preferred_identifier => true,
@@ -121,16 +121,16 @@ module ActiveFacts
         end
 
         def verify_matching_roles
-          readings_by_roles =
+          readings_by_bindings =
             @readings.inject({}) do |hash, reading|
-              roles = reading.role_refs.map{|rr| rr.role}
-              raise "Fact types may not have duplicate roles" if roles.uniq.size < roles.size
-              (hash[roles.sort] ||= []) << reading
+              bindings = reading.role_refs.map{|rr| rr.binding}
+              raise "Fact types may not have duplicate roles" if bindings.uniq.size < bindings.size
+              (hash[bindings.sort] ||= []) << reading
               hash
             end
-          unless readings_by_roles.size == 1
+          unless readings_by_bindings.size == 1
             raise "All readings in a fact type definition must have the same role players compare (#{
-                readings_by_roles.keys.map do |key|
+                readings_by_bindings.keys.map do |key|
                   key.map{|k| k.inspect}*", "
                 end*") with ("
               })"

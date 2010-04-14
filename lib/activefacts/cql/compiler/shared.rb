@@ -2,14 +2,15 @@ module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
 
-      # In a declaration, a Role has one or more RoleRef's.
-      # A Role is played by a single Concept, and the references (RoleRefs) to it
-      # will normally be the concept name and the same adjectives,
+      # In a declaration, a Binding has one or more RoleRef's.
+      # A Binding is for a single Concept, normally related to just one Role,
+      # and the references (RoleRefs) to it will normally be the concept name
+      # with the same adjectives (modulo loose binding),
       # or a role name or subscript reference.
       #
-      # In some situations a Role will have some RoleRefs with the same adjectives,
+      # In some situations a Binding will have some RoleRefs with the same adjectives,
       # and one or more RoleRefs with no adjectives - this is called "loose binding".
-      class Role
+      class Binding
         attr_reader :player   # The Concept (object type)
         attr_reader :refs     # an array of the RoleRefs
         attr_reader :role_name
@@ -34,15 +35,15 @@ module ActiveFacts
       end
 
       class CompilationContext
-        attr_reader :allowed_forward_terms
-        attr_reader :roles    # The Role's in this declaration
+        attr_accessor :allowed_forward_terms
+        attr_reader :bindings             # The Bindings in this declaration
         attr_reader :player_by_role_name
 
         def initialize vocabulary
           @vocabulary = vocabulary
           @vocabulary_identifier = @vocabulary.identifying_role_values
           @allowed_forward_terms = []
-          @roles = {}
+          @bindings = {}
           @player_by_role_name = {}
         end
 
@@ -68,18 +69,19 @@ module ActiveFacts
       end
 
       class Definition
-        def compile constellation, vocabulary
+        attr_accessor :constellation, :vocabulary
+        def compile
           raise "#{self.class} should implement the compile method"
         end
       end
 
-      class Vocabulary
+      class Vocabulary < Definition
         def initialize name
           @name = name
         end
 
-        def compile constellation, vocabulary
-          constellation.Vocabulary @name
+        def compile
+          @constellation.Vocabulary @name
         end
       end
 

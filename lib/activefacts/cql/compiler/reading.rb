@@ -270,7 +270,7 @@ module ActiveFacts
             side_effects.apply_all do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
               phrase.role_ref = role_ref    # re-used if possible (no extra adjectives were used, no rolename or join, etc).
 
-              phrase.role.refs.map{|rr| rr.mm_role = role_ref.role}
+              phrase.binding.refs.map{|rr| rr.role = role_ref.role}
 
               # Where this phrase has leading or trailing adjectives that are in excess of those of
               # the role_ref, those must be local, and we'll need to extract them.
@@ -318,7 +318,7 @@ module ActiveFacts
               next unless phrase.is_a?(RoleRef)
               role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase.player)
               # Mark all references to this role
-              phrase.role.refs.map{|rr| rr.mm_role = role}
+              phrase.binding.refs.map{|rr| rr.role = role}
             end
           end
           fact_type
@@ -333,9 +333,8 @@ module ActiveFacts
             @phrases.each do |phrase|
               if phrase.is_a?(RoleRef)
                 index = @role_sequence.all_role_ref.size
-                role = phrase.mm_role
-                raise "Role player #{phrase.player.name} not found for reading: REVISIT Phrase is #{phrase.inspect}" unless role
-                rr = constellation.RoleRef(@role_sequence, index, :role => role)
+                raise "Role player #{phrase.player.name} not found for reading: REVISIT Phrase is #{phrase.inspect}" unless phrase.role
+                rr = constellation.RoleRef(@role_sequence, index, :role => phrase.role)
                 phrase.role_ref = rr
                 if la = phrase.leading_adjective
                   # If we have used one or more adjective to match an existing reading, that has already been removed.
@@ -441,8 +440,8 @@ module ActiveFacts
       class RoleRef
         attr_reader :term, :leading_adjective, :trailing_adjective, :quantifier, :function_call, :role_name, :restriction, :literal
         attr_reader :player
-        attr_accessor :role
-        attr_accessor :mm_role    # This refers to the ActiveFacts::Metamodel::Role
+        attr_accessor :binding
+        attr_accessor :role       # This refers to the ActiveFacts::Metamodel::Role
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
         attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
 
@@ -504,8 +503,8 @@ module ActiveFacts
               role_name = @term
             end
           end
-          @role = (context.roles[key] ||= Role.new(@player, role_name))
-          @role.refs << self
+          @binding = (context.bindings[key] ||= Binding.new(@player, role_name))
+          @binding.refs << self
         end
 
         # These are called when we successfully match a fact type reading that has relevant adjectives:
@@ -518,15 +517,15 @@ module ActiveFacts
         end
 
         def make_embedded_presence_constraint vocabulary
-          raise "No Role for embedded_presence_constraint" unless @mm_role
-          fact_type = @mm_role.fact_type
+          raise "No Role for embedded_presence_constraint" unless @role
+          fact_type = @role.fact_type
           constellation = vocabulary.constellation
 
-          debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@mm_role.concept.name} in #{fact_type.describe}" do
+          debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role.concept.name} in #{fact_type.describe}" do
             constrained_roles = fact_type.all_role.to_a.clone
-            constrained_roles.delete(@mm_role)
+            constrained_roles.delete(@role)
             if constrained_roles.empty?
-              debug :constraint, "Quantifier over unery role has no effect"
+              debug :constraint, "Quantifier over unary role has no effect"
               return
             end
             constraint = nil; puts "REVISIT: need to find_pc_over_roles" # find_pc_over_roles(constrained_roles)

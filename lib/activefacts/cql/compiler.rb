@@ -43,7 +43,9 @@ module ActiveFacts
             begin
               ast = node.ast
               debug :ast, ast.inspect
-              value = ast.compile(@constellation, @vocabulary)
+              ast.constellation = @constellation
+              ast.vocabulary = @vocabulary
+              value = ast.compile
               @vocabulary = value if ast.is_a?(Compiler::Vocabulary)
 #              compile_definition node
             rescue => e

@@ -64,6 +64,10 @@ module ActiveFacts
       rule conditions
         head:condition s tail:( (',' s / and S) next:condition s )*
         {
+	  def ast
+	    [head.ast, *tail.elements.map{|i| i.next.ast}]
+	  end
+
           def condition_list
             [head.value, *tail.elements.map{|i| i.next.value}]
           end
@@ -74,6 +78,9 @@ module ActiveFacts
         head:clause s
 #        tail:(or S alternate:clause s )*
         {
+	  def ast
+	    head.ast # REVISIT: alternate conditions are not yet implemented
+	  end
           def value
 #            if tail.elements.size == 0
               head.clause

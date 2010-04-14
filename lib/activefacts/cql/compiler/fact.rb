@@ -2,12 +2,12 @@ module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
 
-      class Fact
+      class Fact < Definition
         def initialize readings
           @readings = readings
         end
 
-        def compile constellation, vocabulary
+        def compile
           puts "REVISIT: Fact Instances are not yet compiled: #{@readings.inspect}"
         end
       end

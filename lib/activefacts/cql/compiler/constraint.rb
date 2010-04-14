@@ -39,15 +39,15 @@ module ActiveFacts
           @enforcement = enforcement
         end
 
-        def compile constellation, vocabulary
-          vr = @constellation.ValueRestriction(:new)
+        def compile constellation
+          vr = constellation.ValueRestriction(:new)
           @value_ranges.each do |range|
             min, max = Array === range ? range : [range, range]
-            v_range = @constellation.ValueRange(
+            v_range = constellation.ValueRange(
               min ? [[String === min ? eval(min) : min.to_s, String === min, nil], true] : nil,
               max ? [[String === max ? eval(max) : max.to_s, String === max, nil], true] : nil
             )
-            ar = @constellation.AllowedRange(vr, v_range)
+            ar = constellation.AllowedRange(vr, v_range)
           end
           apply_enforcement(vr, @enforcement) if @enforcement
           vr
