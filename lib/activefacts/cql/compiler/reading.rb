@@ -3,6 +3,7 @@ module ActiveFacts
     class Compiler < ActiveFacts::CQL::Parser
 
       class Reading
+        attr_reader :phrases, :qualifiers, :context_note
         attr_reader :fact_type, :reading, :role_sequence    # These are the Metamodel objects
 
         def initialize role_refs_and_words, qualifiers, context_note
@@ -53,6 +54,18 @@ module ActiveFacts
           end
 
           role_refs.each { |role_ref| role_ref.bind context }
+        end
+
+        def phrases_match(phrases)
+          @phrases.zip(phrases).each do |mine, theirs|
+            return false if mine.is_a?(RoleRef) != theirs.is_a?(RoleRef)
+            if mine.is_a?(RoleRef)
+              return false unless mine.key == theirs.key
+            else
+              return false unless mine == theirs
+            end
+          end
+          true
         end
 
         # This method chooses the existing fact type which matches most closely.
@@ -270,8 +283,6 @@ module ActiveFacts
             side_effects.apply_all do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
               phrase.role_ref = role_ref    # re-used if possible (no extra adjectives were used, no rolename or join, etc).
 
-              phrase.binding.refs.map{|rr| rr.role = role_ref.role}
-
               # Where this phrase has leading or trailing adjectives that are in excess of those of
               # the role_ref, those must be local, and we'll need to extract them.
 
@@ -316,9 +327,7 @@ module ActiveFacts
           debug :matching, "Making new fact type for #{@phrases.inspect}" do
             @phrases.each do |phrase|
               next unless phrase.is_a?(RoleRef)
-              role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase.player)
-              # Mark all references to this role
-              phrase.binding.refs.map{|rr| rr.role = role}
+              phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase.player)
             end
           end
           fact_type
@@ -333,7 +342,14 @@ module ActiveFacts
             @phrases.each do |phrase|
               if phrase.is_a?(RoleRef)
                 index = @role_sequence.all_role_ref.size
-                raise "Role player #{phrase.player.name} not found for reading: REVISIT Phrase is #{phrase.inspect}" unless phrase.role
+                # phrase.role will be set if this reading was used to make_fact_type.
+                # Otherwise we have to find the existing role via the Binding. This is pretty ugly.
+                unless phrase.role
+                  # Find another binding for this phrase which already has a role_ref to the same fact type:
+                  ref = phrase.binding.refs.detect{|ref| ref.role_ref && ref.role_ref.role.fact_type == fact_type}
+                  role_ref = ref.role_ref
+                  phrase.role = role_ref.role
+                end
                 rr = constellation.RoleRef(@role_sequence, index, :role => phrase.role)
                 phrase.role_ref = rr
                 if la = phrase.leading_adjective
@@ -469,6 +485,13 @@ module ActiveFacts
           }>"
         end
 
+        def <=>(other)
+          ( 4*(@term <=> other.term) +
+            2*((@leading_adjective||'') <=> (other.leading_adjective||'')) +
+            1*((@trailing_adjective||'') <=> (other.trailing_adjective||''))
+          ) <=> 0
+        end
+
         def identify_player context
           @player = context.concept @term
           raise "Concept #{@term} unrecognised" unless @player
@@ -505,6 +528,7 @@ module ActiveFacts
           end
           @binding = (context.bindings[key] ||= Binding.new(@player, role_name))
           @binding.refs << self
+          @binding
         end
 
         # These are called when we successfully match a fact type reading that has relevant adjectives:
@@ -517,13 +541,13 @@ module ActiveFacts
         end
 
         def make_embedded_presence_constraint vocabulary
-          raise "No Role for embedded_presence_constraint" unless @role
-          fact_type = @role.fact_type
+          raise "No Role for embedded_presence_constraint" unless @role_ref
+          fact_type = @role_ref.role.fact_type
           constellation = vocabulary.constellation
 
-          debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role.concept.name} in #{fact_type.describe}" do
+          debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role_ref.role.concept.name} in #{fact_type.describe}" do
             constrained_roles = fact_type.all_role.to_a.clone
-            constrained_roles.delete(@role)
+            constrained_roles.delete(@role_ref.role)
             if constrained_roles.empty?
               debug :constraint, "Quantifier over unary role has no effect"
               return

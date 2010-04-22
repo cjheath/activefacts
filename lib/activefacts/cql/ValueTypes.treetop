@@ -21,7 +21,7 @@ module ActiveFacts
 	  def ast
 	    name = term_definition_name.value
 	    params = value_type_parameters.values
-	    restriction = r.empty? ? nil : Compiler::Restriction.new(r.restriction.ranges, r.enforcement.value)
+	    restriction = r.empty? ? nil : Compiler::Restriction.new(r.restriction.ranges, r.enforcement.ast)
 	    Compiler::ValueType.new name, base.value, params, units.value, restriction, mapping_pragmas.value
 	  end
 

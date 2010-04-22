@@ -10,7 +10,8 @@ module ActiveFacts
       rule term_definition_name
         id s
          t:(!non_term_def id s)*
-        { def value
+        {
+	  def value
             t.elements.inject([
               id.value
             ]){|a, e| a << e.id.value}*' '
@@ -102,7 +103,16 @@ module ActiveFacts
         s head:id x             &{|s| w = s[1].text_value; input.context.term_starts?(w, s[2]) }
         tail:(s '-'? s w:id     &{|s| w = s[3].text_value; input.context.term_continues?(w) })*
                                 &{|s| input.context.term_complete? }
-        { def value		# Sometimes we just want the full term name
+        {
+	  def ast
+	    t = x.context[:term]
+	    gt = x.context[:global_term]
+	    leading_adjective = t[0...-gt.size-1] if t.size > gt.size and t[-gt.size..-1] == gt
+	    trailing_adjective = t[gt.size+1..-1] if t.size > gt.size and t[0...gt.size] == gt
+	    Compiler::RoleRef.new(gt, leading_adjective, trailing_adjective, nil, nil, nil, nil, nil)
+	  end
+
+	  def value		# Sometimes we just want the full term name
             x.context[:term]
           end
 

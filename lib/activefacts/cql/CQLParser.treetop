@@ -85,10 +85,16 @@ module ActiveFacts
 
       rule enforcement
 	s '(' s otherwise s action s a:agent? s ')' s
-	  { def value; [action.text_value, a.empty? ? nil : a.text_value]; end }
+	  {
+	    def ast; Compiler::Enforcement.new(action.text_value, a.empty? ? nil : a.text_value); end
+	    def value; [action.text_value, a.empty? ? nil : a.text_value]; end
+	  }
 	/
 	''
-	  { def value; []; end }
+	  {
+	    def ast; nil; end
+	    def value; []; end
+	  }
       end
 
       # presence constraint:
@@ -99,7 +105,7 @@ module ActiveFacts
         {
 	  def ast
 	    context = c.empty? ? nil : c.value
-	    Compiler::PresenceConstraint.new context, enforcement.value, role_list.roles, quantifier.value, readings_list.ast
+	    Compiler::PresenceConstraint.new context, enforcement.ast, role_list.roles, quantifier.value, readings_list.ast
 	  end
 
 	  def value
@@ -116,7 +122,7 @@ module ActiveFacts
           {
 	    def ast
 	      context = c.empty? ? nil : c.value
-	      Compiler::SetConstraint.new context, enforcement.value, role_list.roles, quantifier.value, readings_list.ast
+	      Compiler::SetConstraint.new context, enforcement.ast, role_list.roles, quantifier.value, readings_list.ast
 	    end
 
 	    def value
@@ -131,7 +137,7 @@ module ActiveFacts
 	      quantifier = exclusion.text_value.empty? ?
                   [1, nil] :		# At least one (meaning 1 or 2/more)
                   [1,1]                 # Exactly one (1 and only 1)
-	      Compiler::SetConstraint.new context, enforcement.value, nil, quantifier, [r1.ast, r2.ast]
+	      Compiler::SetConstraint.new context, enforcement.ast, nil, quantifier, [r1.ast, r2.ast]
 	    end
 
 	    def value;
@@ -154,7 +160,7 @@ module ActiveFacts
         {
 	  def ast
 	    context = c.empty? ? nil : c.value
-	    Compiler::SubsetConstraint.new context, enforcement.value, readings.ast, r2.ast
+	    Compiler::SubsetConstraint.new context, enforcement.ast, readings.ast, r2.ast
 	  end
 
 	  def value
@@ -170,7 +176,7 @@ module ActiveFacts
 	  def ast
 	    context = c.empty? ? nil : c.value
 	    all_readings = [readings.ast, *tail.elements.map{|e| e.readings.value }]
-	    Compiler::EqualityConstraint.new context, enforcement.value, all_readings
+	    Compiler::EqualityConstraint.new context, enforcement.ast, all_readings
 	  end
 
 	  def value

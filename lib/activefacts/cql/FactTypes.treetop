@@ -193,12 +193,12 @@ module ActiveFacts
         !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
 	  def ast
-	    quantifier = q.empty? || !q.quantifier.value ? nil : Compiler::Quantifier.new(q.quantifier.value[0], q.quantifier.value[1], q.enforcement.value)
+	    quantifier = q.empty? || !q.quantifier.value ? nil : Compiler::Quantifier.new(q.quantifier.value[0], q.quantifier.value[1], q.enforcement.ast)
 	    role_name = role_id.empty? ? nil : role_id.value
 	    function_call = nil
 	    if !lr.empty?
 	      literal = lr.value if lr.respond_to?(:value)
-	      restriction = Compiler::Restriction.new(lr.restriction.ranges, lr.enforcement.value) if lr.respond_to?(:restriction)
+	      restriction = Compiler::Restriction.new(lr.restriction.ranges, lr.enforcement.ast) if lr.respond_to?(:restriction)
 	    end
 
 	    raise "REVISIT: Objectification joins #{oj.text_value} are not yet implemented" unless oj.empty?

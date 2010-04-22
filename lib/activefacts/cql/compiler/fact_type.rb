@@ -33,27 +33,30 @@ module ActiveFacts
           context = CompilationContext.new(@vocabulary)
           @readings.each{ |reading| reading.identify_players_with_role_name(context) }
           @readings.each{ |reading| reading.identify_other_players(context) }
-          @readings.each{ |reading| reading.bind_roles context }  # Create the Compiler::Roles
+          @readings.each{ |reading| reading.bind_roles context }  # Create the Compiler::Bindings
 
           # REVISIT: Loose binding goes here; it might merge some Compiler#Roles
 
           verify_matching_roles # All readings of a fact type must have the same roles
 
+          # Ignore any useless readings:
+          @readings.reject!{|reading| reading.is_existential_type }
+          return true unless @readings.size > 0   # Nothing interesting was said.
+
+          # See if any existing fact type is being invoked (presumably to objectify it)
           matched_readings = @readings.select{ |reading| reading.match_existing_fact_type context }
           fact_types = matched_readings.map{ |reading| reading.fact_type }.uniq
           raise "Clauses match different existing fact types" if fact_types.size > 1
           @fact_type = fact_types[0]
 
-          # Ignore any useless readings:
-          @readings.reject!{|reading| reading.is_existential_type }
-          return true unless @readings.size > 0   # Nothing interesting was said.
-
+          # If not, make a new fact type:
           unless @fact_type
             first_reading = @readings[0]
             @fact_type = first_reading.make_fact_type(@vocabulary)
             first_reading.make_reading(@vocabulary, @fact_type)
           end
 
+          # Now make any new readings:
           @readings.each do |reading|
             unless reading.fact_type
               reading.make_reading(@vocabulary, @fact_type)

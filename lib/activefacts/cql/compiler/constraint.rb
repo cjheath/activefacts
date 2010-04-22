@@ -1,6 +1,13 @@
 module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
+      class Enforcement
+        attr_reader :action, :agent
+        def initialize action, agent
+          @action = action
+          @agent = agent
+        end
+      end
 
       class Constraint < Definition
         def initialize context_note, enforcement

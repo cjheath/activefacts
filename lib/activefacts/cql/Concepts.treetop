@@ -87,7 +87,7 @@ module ActiveFacts
 	      if r.empty?
 		restriction = nil
 	      else
-		restriction = Compiler::Restriction.new(r.restriction.ranges, r.enforcement.value)
+		restriction = Compiler::Restriction.new(r.restriction.ranges, r.enforcement.ast)
 	      end
 	      Compiler::ReferenceMode.new(i.value, restriction, value_type_parameters.values)
 	    end
@@ -141,7 +141,7 @@ module ActiveFacts
 	pre_text:(s !non_role_word !term id)* s term post_text:(s !non_role_word !term id)*
 	  {
 	    def ast
-	      t = Compiler::RoleRef.new(term.value, nil, nil, nil, nil, nil, nil, nil)
+	      t = term.ast
 	      if pre_text.elements.size == 0 && post_text.elements.size == 0
 		t
 	      else
@@ -159,8 +159,10 @@ module ActiveFacts
 	  }
 	/
 	s !non_role_word id s &non_role_word
-	  {
+	  { # A forward-referenced entity type
+	    # REVISIT: A change in this rule might allow forward-referencing a multi-word term
 	    def ast
+	      Compiler::RoleRef.new(id.text_value, nil, nil, nil, nil, nil, nil, nil)
 	    end
 
 	    def value
