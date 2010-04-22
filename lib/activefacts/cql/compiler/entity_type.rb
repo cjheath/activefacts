@@ -55,7 +55,6 @@ module ActiveFacts
           if @identification
             if @identification.is_a? ReferenceMode
               make_entity_type_refmode_valuetypes(name, @identification.name, @identification.parameters)
-              # REVISIT: Decide whether this puts the restriction in the right place:
               vt_name = @reference_mode_value_type.name
               @identification = [Compiler::RoleRef.new(vt_name, nil, nil, nil, nil, nil, @identification.restriction, nil)]
             else
@@ -297,9 +296,9 @@ module ActiveFacts
           @identification[0].role = identifying_role
 
           if (restriction = @identification[0].restriction)
-            # The restriction applies only to the value role
-            raise "Reference Mode value restrictions are not yet implemented"
-            identifying_role.role_value_restriction = value_restriction(restriction)
+            # The restriction applies only to the value role, not to the underlying value type
+            # REVISIT: Decide whether this puts the restriction in the right place:
+            identifying_role.role_value_restriction = restriction.compile fact_type.constellation
           end
 
           # Find all role sequences over the fact type's two roles

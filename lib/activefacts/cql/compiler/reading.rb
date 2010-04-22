@@ -74,7 +74,8 @@ module ActiveFacts
         # As this match may not necessarily be used (depending on the side effects),
         # no change is made to this Reading object - those will be done later.
         #
-        # REVISIT: In future, there may be more than one match, and this method will return them all.
+        # REVISIT: In future, there may be more than one match, and this method will return
+        # them all, for the caller to select the best.
         def match_existing_fact_type context
           rrs = role_refs
           players = rrs.map{|rr| rr.player}
@@ -134,7 +135,6 @@ module ActiveFacts
             # the whole declaration has been processed and the extra adjectives can be matched.
 
             if matches.size > 1
-              # REVISIT: Handle ambiguity here if possible.
               raise "#{@phrases.inspect} could match any of the following:\n\t"+
                 matches.keys.map { |reading| reading.expand } * "\n\t"
             end
@@ -143,9 +143,6 @@ module ActiveFacts
               @reading = matches.keys[0]
               side_effects = matches.values[0]
               apply_side_effects(side_effects)
-
-              # REVISIT: Perhaps I could just do this here, and make use of the known side effects (like residual_adjectives)?
-              # adjust_for_match(side_effects)
 
               return @fact_type = side_effects.fact_type
             end
@@ -359,6 +356,10 @@ module ActiveFacts
                 if ta = phrase.trailing_adjective
                   rr.trailing_adjective = ta
                 end
+                if phrase.restriction
+                  raise "The role #{rr.inspect} already has a value constraint" if rr.role.role_value_restriction
+                  rr.role.role_value_restriction = phrase.restriction.compile fact_type.constellation
+                end
                 reading_words << "{#{index}}"
               else
                 reading_words << phrase
@@ -467,8 +468,7 @@ module ActiveFacts
           @leading_adjective = leading_adjective
           @trailing_adjective = trailing_adjective
           @quantifier = quantifier
-          # REVISIT: Not used or implemented:
-          # @function_call = function_call
+          # @function_call = function_call # REVISIT: Not used or implemented
           @role_name = role_name
           @restriction = restriction
           @literal = literal

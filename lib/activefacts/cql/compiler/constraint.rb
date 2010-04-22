@@ -6,6 +6,7 @@ module ActiveFacts
         def initialize action, agent
           @action = action
           @agent = agent
+          @constraint = nil
         end
       end
 
@@ -14,11 +15,19 @@ module ActiveFacts
           @context_note = context_note
           @enforcement = enforcement
         end
+
+        def apply_enforcement
+          @constraint.enforcement = @enforcement
+        end
       end
 
       class PresenceConstraint < Constraint
         def initialize context_note, enforcement, roles, quantifier, readings
           super context_note, enforcement
+        end
+
+        def compile
+          puts "REVISIT: PresenceConstraint#compile is not yet implemented"
         end
       end
 
@@ -26,11 +35,19 @@ module ActiveFacts
         def initialize context_note, enforcement, roles, quantifier, readings
           super context_note, enforcement
         end
+
+        def compile
+          puts "REVISIT: SetConstraint#compile is not yet implemented"
+        end
       end
 
       class SubsetConstraint < Constraint
         def initialize context_note, enforcement, subset_readings, superset_readings
           super context_note, enforcement
+        end
+
+        def compile
+          puts "REVISIT: SubsetConstraint#compile is not yet implemented"
         end
       end
 
@@ -38,26 +55,30 @@ module ActiveFacts
         def initialize context_note, enforcement, quantifier, readings
           super context_note, enforcement
         end
+
+        def compile
+          puts "REVISIT: EqualityConstraint#compile is not yet implemented"
+        end
       end
 
-      class Restriction
+      class ValueRestriction < Constraint
         def initialize value_ranges, enforcement
+          super(nil, enforcement)
           @value_ranges = value_ranges
-          @enforcement = enforcement
         end
 
         def compile constellation
-          vr = constellation.ValueRestriction(:new)
+          @constraint = constellation.ValueRestriction(:new)
           @value_ranges.each do |range|
             min, max = Array === range ? range : [range, range]
             v_range = constellation.ValueRange(
               min ? [[String === min ? eval(min) : min.to_s, String === min, nil], true] : nil,
               max ? [[String === max ? eval(max) : max.to_s, String === max, nil], true] : nil
             )
-            ar = constellation.AllowedRange(vr, v_range)
+            ar = constellation.AllowedRange(@constraint, v_range)
           end
-          apply_enforcement(vr, @enforcement) if @enforcement
-          vr
+          apply_enforcement
+          @constraint
         end
       end
 

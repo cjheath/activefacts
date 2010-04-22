@@ -87,7 +87,7 @@ module ActiveFacts
 	      if r.empty?
 		restriction = nil
 	      else
-		restriction = Compiler::Restriction.new(r.restriction.ranges, r.enforcement.ast)
+		restriction = Compiler::ValueRestriction.new(r.restriction.ranges, r.enforcement.ast)
 	      end
 	      Compiler::ReferenceMode.new(i.value, restriction, value_type_parameters.values)
 	    end

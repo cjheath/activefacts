@@ -200,7 +200,7 @@ module ActiveFacts
 	    function_call = nil
 	    if !lr.empty?
 	      literal = lr.value if lr.respond_to?(:value)
-	      restriction = Compiler::Restriction.new(lr.restriction.ranges, lr.enforcement.ast) if lr.respond_to?(:restriction)
+	      restriction = Compiler::ValueRestriction.new(lr.restriction.ranges, lr.enforcement.ast) if lr.respond_to?(:restriction)
 	    end
 
 	    raise "REVISIT: Objectification joins #{oj.text_value} are not yet implemented" unless oj.empty?
