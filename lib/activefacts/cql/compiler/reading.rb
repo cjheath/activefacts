@@ -393,7 +393,7 @@ module ActiveFacts
             end
           end
 
-          puts "Reading '#{reading_words*' '}' #{new_role_sequence_needed ? 'requires' : 'does not require'} a new Role Sequence"
+          debug :matching, "Reading '#{reading_words*' '}' #{new_role_sequence_needed ? 'requires' : 'does not require'} a new Role Sequence"
 
           constellation = @fact_type.constellation
           reading_text = reading_words*" "
@@ -602,6 +602,10 @@ module ActiveFacts
           @min = min
           @max = max
           @enforcement = enforcement
+        end
+
+        def inspect
+          "[#{@min}..#{@max}]"
         end
       end
 

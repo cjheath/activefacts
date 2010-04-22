@@ -78,8 +78,7 @@ module ActiveFacts
               id.identify_player(context)
               binding = id.bind(context)
               roles = binding.refs.map{|r| r.role}.compact.uniq
-              debugger if roles.size != 1
-              raise hell if roles.size != 1
+              raise "Internal error in identifying roles" if roles.size != 1
               roles[0]
             else
               # id is a reading of a unary fact type.
@@ -171,6 +170,7 @@ module ActiveFacts
             unless fact_type
               fact_type = readings[0].make_fact_type(@vocabulary)
               readings[0].make_reading(@vocabulary, fact_type)
+              make_embedded_presence_constraints(fact_type, readings[0])
               existing_readings = [readings[0]]
             end
 
