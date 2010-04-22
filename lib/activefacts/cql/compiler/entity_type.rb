@@ -27,8 +27,8 @@ module ActiveFacts
 
           # REVISIT: CQL needs a way to indicate whether subtype migration can occur.
           # For example by saying "Xyz is a role of Abc".
-          @supertypes.each do |supertype_name|
-            add_supertype(supertype_name, !@identification && supertype_name == @supertypes[0])
+          @supertypes.each_with_index do |supertype_name, i|
+            add_supertype(supertype_name, @identification || i > 0)
           end
 
           context = CompilationContext.new(@vocabulary)
@@ -170,58 +170,16 @@ module ActiveFacts
             unless fact_type
               fact_type = readings[0].make_fact_type(@vocabulary)
               readings[0].make_reading(@vocabulary, fact_type)
-              make_embedded_presence_constraints(fact_type, readings[0])
+              readings[0].make_embedded_presence_constraints vocabulary
               existing_readings = [readings[0]]
             end
 
             (readings - existing_readings).each do |reading|
               reading.make_reading(@vocabulary, fact_type)
-              make_embedded_presence_constraints(fact_type, reading)
+              reading.make_embedded_presence_constraints vocabulary
             end
 
             fact_type
-          end
-        end
-
-        # For each fact reading there may be embedded mandatory, uniqueness or frequency constraints:
-        def make_embedded_presence_constraints(fact_type, reading)
-          debug :constraint, "making embedded presence constraints from #{reading.inspect}"
-          embedded_presence_constraints = []
-          
-          roles = reading.role_refs.map { |rr| rr.role || rr.role_ref.role }
-          reading.role_refs.each_with_index do |crr, index|
-            role = crr.role || crr.role_ref.role
-            raise "No Role for embedded_presence_constraint; use role_ref?" unless role
-
-            next unless quantifier = crr.quantifier
-
-            debug :constraint, "Processing embedded constraint #{quantifier.inspect} on #{role.concept.name} in #{fact_type.describe}" do
-              constrained_roles = roles.clone
-              constrained_roles.delete_at(index)
-              constraint = find_pc_over_roles(constrained_roles)
-              if constraint
-                debug :constraint, "Setting max frequency to #{quantifier[1]} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
-                raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != quantifier[1]
-                constraint.max_frequency = quantifier[1]
-              else
-                role_sequence = @constellation.RoleSequence(:new)
-                constrained_roles.each_with_index do |constrained_role, i|
-                  role_ref = @constellation.RoleRef(role_sequence, i, :role => constrained_role)
-                end
-                constraint = @constellation.PresenceConstraint(
-                    :new,
-                    :vocabulary => @vocabulary,
-                    :role_sequence => role_sequence,
-                    :is_mandatory => quantifier.min && quantifier.min > 0,  # REVISIT: Check "maybe" qualifier?
-                    :max_frequency => quantifier.max,
-                    :min_frequency => quantifier.min
-                  )
-                embedded_presence_constraints << constraint
-                debug :constraint, "Made new PC min=#{quantifier.min.inspect} max=#{quantifier.max.inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
-                enforcement = quantifier.enforcement
-                apply_enforcement(constraint, enforcement) if enforcement
-              end
-            end
           end
         end
 

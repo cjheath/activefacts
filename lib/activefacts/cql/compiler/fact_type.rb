@@ -44,8 +44,8 @@ module ActiveFacts
           return true unless @readings.size > 0   # Nothing interesting was said.
 
           # See if any existing fact type is being invoked (presumably to objectify it)
-          matched_readings = @readings.select{ |reading| reading.match_existing_fact_type context }
-          fact_types = matched_readings.map{ |reading| reading.fact_type }.uniq
+          existing_readings = @readings.select{ |reading| reading.match_existing_fact_type context }
+          fact_types = existing_readings.map{ |reading| reading.fact_type }.uniq
           raise "Clauses match different existing fact types" if fact_types.size > 1
           @fact_type = fact_types[0]
 
@@ -54,22 +54,19 @@ module ActiveFacts
             first_reading = @readings[0]
             @fact_type = first_reading.make_fact_type(@vocabulary)
             first_reading.make_reading(@vocabulary, @fact_type)
+            first_reading.make_embedded_presence_constraints vocabulary
+            existing_readings = [first_reading]
           end
 
           # Now make any new readings:
-          @readings.each do |reading|
-            unless reading.fact_type
-              reading.make_reading(@vocabulary, @fact_type)
-            end
+          (@readings - existing_readings).each do |reading|
+            reading.make_reading(@vocabulary, @fact_type)
+            reading.make_embedded_presence_constraints vocabulary
           end
 
           # If a reading matched but the match left extra adjectives, we need to make a new RoleSequence for them:
-          matched_readings.each do |reading|
+          existing_readings.each do |reading|
             reading.adjust_for_match
-          end
-
-          @readings.each do |reading|
-            reading.make_embedded_presence_constraints @vocabulary
           end
 
           # Objectify the fact type if necessary:
@@ -87,9 +84,11 @@ module ActiveFacts
         end
 
         def make_default_identifier_for_fact_type(prefer = true)
-          return if @fact_type.all_role.size == 1 && !@fact_type.entity_type     # Non-objectified unaries don't need a PI
+          # Non-objectified unaries don't need a PI:
+          return if @fact_type.all_role.size == 1 && !@fact_type.entity_type
 
-          # REVISIT: It's possible that this fact type is objectified and inherits identification through a supertype.
+          # It's possible that this fact type is objectified and inherits identification through a supertype.
+          return if @fact_type.entity_type and @fact_type.entity_type.all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification}
 
           # If there's a preferred alethic uniqueness constraint over the fact type already, we're done
           return if @fact_type.all_role.
@@ -111,7 +110,9 @@ module ActiveFacts
             return
           end
 
-          raise "Fact type must be named as it has no identifying uniqueness constraint" unless @name || @fact_type.all_role.size == 1
+          # REVISIT: We need to check uniqueness constraints after processing the whole vocabulary
+          # raise "Fact type must be named as it has no identifying uniqueness constraint" unless @name || @fact_type.all_role.size == 1
+
           @constellation.PresenceConstraint(
             :new,
             :vocabulary => @vocabulary,

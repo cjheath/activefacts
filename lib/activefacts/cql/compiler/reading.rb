@@ -372,6 +372,7 @@ module ActiveFacts
         # These adjectives have been removed from the phrases. If there are any remaining adjectives,
         # we need to make a new RoleSequence, otherwise we can use the existing one.
         def adjust_for_match
+          return unless @applied_side_effects
           new_role_sequence_needed = @applied_side_effects.residual_adjectives
 
           role_phrases = []
