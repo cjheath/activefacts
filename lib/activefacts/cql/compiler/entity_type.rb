@@ -28,7 +28,7 @@ module ActiveFacts
           # REVISIT: CQL needs a way to indicate whether subtype migration can occur.
           # For example by saying "Xyz is a role of Abc".
           @supertypes.each do |supertype_name|
-            add_supertype(supertype_name, !@identification && supertype_name == supertypes[0])
+            add_supertype(supertype_name, !@identification && supertype_name == @supertypes[0])
           end
 
           context = CompilationContext.new(@vocabulary)
@@ -72,6 +72,7 @@ module ActiveFacts
         end
 
         def bind_identifying_roles context
+          return unless @identification
           @identification.map do |id|
             if id.is_a?(RoleRef)
               id.identify_player(context)
@@ -93,7 +94,7 @@ module ActiveFacts
         end
 
         def make_preferred_identifier_over_roles identifying_roles
-          return unless identifying_roles.size > 0
+          return unless identifying_roles && identifying_roles.size > 0
           role_sequence = @constellation.RoleSequence(:new)
           identifying_roles.each_with_index do |identifying_role, index|
             @constellation.RoleRef(role_sequence, index, :role => identifying_role)

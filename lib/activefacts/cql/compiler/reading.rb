@@ -540,6 +540,17 @@ module ActiveFacts
           @trailing_adjective = nil
         end
 
+        def find_pc_over_roles(roles)
+          return nil if roles.size == 0 # Safeguard; this would chuck an exception otherwise
+          roles[0].all_role_ref.each do |role_ref|
+            next if role_ref.role_sequence.all_role_ref.map(&:role) != roles
+            pc = role_ref.role_sequence.all_presence_constraint.single  # Will return nil if there's more than one.
+            #puts "Existing PresenceConstraint matches those roles!" if pc
+            return pc if pc
+          end
+          nil
+        end
+
         def make_embedded_presence_constraint vocabulary
           raise "No Role for embedded_presence_constraint" unless @role_ref
           fact_type = @role_ref.role.fact_type
@@ -552,7 +563,7 @@ module ActiveFacts
               debug :constraint, "Quantifier over unary role has no effect"
               return
             end
-            constraint = nil; puts "REVISIT: need to find_pc_over_roles" # find_pc_over_roles(constrained_roles)
+            constraint = find_pc_over_roles(constrained_roles)
             if constraint
               debug :constraint, "Setting max frequency to #{@quantifier.max} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
               raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != @quantifier.max
