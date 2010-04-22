@@ -39,15 +39,12 @@ module ActiveFacts
           # Create the fact types that define the identifying roles:
           fact_types = create_identifying_fact_types context
 
-          # Find the roles to use if we have to create an identifying uniqueness constraint:
-          identifying_roles = bind_identifying_roles context
-          p identifying_roles.map{|r| r.concept.name}
-
-=begin
           # At this point, @identification is an array of RoleRefs and/or Readings (for unary fact types)
           # Have to do this after creating the necessary fact types
-          complete_reference_mode_fact_type
-=end
+          complete_reference_mode_fact_type fact_types
+
+          # Find the roles to use if we have to create an identifying uniqueness constraint:
+          identifying_roles = bind_identifying_roles context
 
           make_preferred_identifier_over_roles identifying_roles
 
@@ -57,8 +54,9 @@ module ActiveFacts
           # Figure out the identification mode or roles, if any:
           if @identification
             if @identification.is_a? ReferenceMode
-              vt_name, vt = make_entity_type_refmode_valuetypes(name, @identification.name, @identification.parameters)
+              make_entity_type_refmode_valuetypes(name, @identification.name, @identification.parameters)
               # REVISIT: Decide whether this puts the restriction in the right place:
+              vt_name = @reference_mode_value_type.name
               @identification = [Compiler::RoleRef.new(vt_name, nil, nil, nil, nil, nil, @identification.restriction, nil)]
             else
               context.allowed_forward_terms = legal_forward_references(@identification)
@@ -79,6 +77,7 @@ module ActiveFacts
               id.identify_player(context)
               binding = id.bind(context)
               roles = binding.refs.map{|r| r.role}.compact.uniq
+              debugger if roles.size != 1
               raise hell if roles.size != 1
               roles[0]
             else
@@ -316,8 +315,123 @@ module ActiveFacts
           #if (ranges = identification[:restriction])
           #  vt.value_restriction = value_restriction(ranges, identification[:enforcement])
           #end
+          @reference_mode_value_type = vt
+        end
 
-          [ vt_name, vt ]
+        def complete_reference_mode_fact_type(fact_types)
+          return unless identifying_type = @reference_mode_value_type
+
+          # Find an existing fact type, if any:
+          entity_role = identifying_role = nil
+          fact_type = fact_types.detect do |ft|
+            identifying_role = ft.all_role.detect{|r| r.concept == identifying_type } and
+            entity_role = ft.all_role.detect{|r| r.concept == @entity_type }
+          end
+
+          # Create an identifying fact type if needed:
+          unless fact_type
+            fact_type = @constellation.FactType(:new)
+            fact_types << fact_type
+            entity_role = @constellation.Role(fact_type, 0, :concept => @entity_type)
+            identifying_role = @constellation.Role(fact_type, 1, :concept => identifying_type)
+          end
+          @identification[0].role = identifying_role
+
+          if (restriction = @identification[0].restriction)
+            # The restriction applies only to the value role
+            raise "Reference Mode value restrictions are not yet implemented"
+            identifying_role.role_value_restriction = value_restriction(restriction)
+          end
+
+          # Find all role sequences over the fact type's two roles
+          rss = entity_role.all_role_ref.select do |rr|
+            rr.role_sequence.all_role_ref.size == 2 &&
+              (rr.role_sequence.all_role_ref.to_a-[rr])[0].role == identifying_role
+          end.map{|rr| rr.role_sequence}
+
+          # Make a forward reading, if there is none already:
+          # Find or create RoleSequences for the forward and reverse readings:
+          rs01 = rss.select{|rs| rs.all_role_ref.sort_by{|rr| rr.ordinal}.map(&:role) == [entity_role, identifying_role] }[0]
+          if !rs01
+            rs01 = @constellation.RoleSequence(:new)
+            @constellation.RoleRef(rs01, 0, :role => entity_role)
+            @constellation.RoleRef(rs01, 1, :role => identifying_role)
+          end
+          if rs01.all_reading.empty?
+            @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs01, :text => "{0} has {1}")
+            debug :mode, "Creating new forward reading '#{entity_role.concept.name} has #{identifying_type.name}'"
+          else
+            debug :mode, "Using existing forward reading"
+          end
+
+          # Make a reverse reading if none exists
+          rs10 = rss.select{|rs| rs.all_role_ref.sort_by{|rr| rr.ordinal}.map(&:role) == [identifying_role, entity_role] }[0]
+          if !rs10
+            rs10 = @constellation.RoleSequence(:new)
+            @constellation.RoleRef(rs10, 0, :role => identifying_role)
+            @constellation.RoleRef(rs10, 1, :role => entity_role)
+          end
+          if rs10.all_reading.empty?
+            @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs10, :text => "{0} is of {1}")
+            debug :mode, "Creating new reverse reading '#{identifying_type.name} is of #{entity_role.concept.name}'"
+          else
+            debug :mode, "Using existing reverse reading"
+          end
+
+          # Entity must have one identifying instance. Find or create the role sequence, then create a PC if necessary
+          rs0 = entity_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}[0]
+          if rs0
+            rs0 = rs0.role_sequence
+            debug :mode, "Using existing EntityType role sequence"
+          else
+            rs0 = @constellation.RoleSequence(:new)
+            @constellation.RoleRef(rs0, 0, :role => entity_role)
+            debug :mode, "Creating new EntityType role sequence"
+          end
+          if (rs0.all_presence_constraint.size == 0)
+            constraint = @constellation.PresenceConstraint(
+              :new,
+              :name => '',
+              :vocabulary => @vocabulary,
+              :role_sequence => rs0,
+              :min_frequency => 1,
+              :max_frequency => 1,
+              :is_preferred_identifier => false,
+              :is_mandatory => true
+            )
+            debug :mode, "Creating new EntityType PresenceConstraint"
+          else
+            debug :mode, "Using existing EntityType PresenceConstraint"
+          end
+
+          # Value Type must have a value type. Find or create the role sequence, then create a PC if necessary
+          debug :mode, "identifying_role has #{identifying_role.all_role_ref.size} attached sequences"
+          debug :mode, "identifying_role has #{identifying_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}.size} unary sequences"
+          rs1 = identifying_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1 ? rr.role_sequence : nil }.compact[0]
+          if (!rs1)
+            rs1 = @constellation.RoleSequence(:new)
+            @constellation.RoleRef(rs1, 0, :role => identifying_role)
+            debug :mode, "Creating new ValueType role sequence"
+          else
+            rs1 = rs1.role_sequence
+            debug :mode, "Using existing ValueType role sequence"
+          end
+          if (rs1.all_presence_constraint.size == 0)
+            constraint = @constellation.PresenceConstraint(
+              :new,
+              :name => '',
+              :vocabulary => @vocabulary,
+              :role_sequence => rs1,
+              :min_frequency => 0,
+              :max_frequency => 1,
+              :is_preferred_identifier => true,
+              :is_mandatory => false
+            )
+            debug :mode, "Creating new ValueType PresenceConstraint"
+          else
+            debug :mode, "Marking existing ValueType PresenceConstraint as preferred"
+            rs1.all_presence_constraint[0].is_preferred_identifier = true
+          end
         end
 
       end
