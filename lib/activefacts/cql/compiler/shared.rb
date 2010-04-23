@@ -14,6 +14,7 @@ module ActiveFacts
         attr_reader :player   # The Concept (object type)
         attr_reader :refs     # an array of the RoleRefs
         attr_reader :role_name
+        attr_accessor :rebound_to   # Loose binding may set this to another binding
 
         def initialize player, role_name = nil
           @player = player

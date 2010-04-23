@@ -534,6 +534,15 @@ module ActiveFacts
           @binding
         end
 
+        def rebind(other_role_ref)
+          debug :binding, "Rebinding #{inspect} to #{other_role_ref.inspect}"
+          old_binding = binding
+          new_binding = other_role_ref.binding
+          self.binding = nil
+          old_binding.refs.each {|ref| ref.binding = new_binding; new_binding.refs << ref }
+          old_binding.rebound_to = new_binding
+        end
+
         # These are called when we successfully match a fact type reading that has relevant adjectives:
         def wipe_leading_adjective
           @leading_adjective = nil

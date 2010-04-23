@@ -35,8 +35,6 @@ module ActiveFacts
           @readings.each{ |reading| reading.identify_other_players(context) }
           @readings.each{ |reading| reading.bind_roles context }  # Create the Compiler::Bindings
 
-          # REVISIT: Loose binding goes here; it might merge some Compiler#Roles
-
           verify_matching_roles # All readings of a fact type must have the same roles
 
           # Ignore any useless readings:
@@ -124,21 +122,71 @@ module ActiveFacts
           )
         end
 
+        def has_more_adjectives(less, more)
+          return false if less.leading_adjective && less.leading_adjective != more.leading_adjective
+          return false if less.trailing_adjective && less.trailing_adjective != more.trailing_adjective
+          return true
+        end
+
         def verify_matching_roles
+          role_refs_by_reading_and_key = {}
           readings_by_role_refs =
             @readings.inject({}) do |hash, reading|
-              keys = reading.role_refs.map{|rr| rr.key.map{|k| k || ''}}.sort
+              keys = reading.role_refs.map do |rr|
+                key = rr.key.compact
+                role_refs_by_reading_and_key[[reading, key]] = rr
+                key
+              end.sort
               raise "Fact types may not have duplicate roles" if keys.uniq.size < keys.size
               (hash[keys] ||= []) << reading
               hash
             end
 
           if readings_by_role_refs.size != 1
-            raise "All readings in a fact type definition must have the same role players compare (#{
-                readings_by_role_refs.keys.map do |keys|
-                  keys.map{|key| key.select{|k| !k.empty?}*"-" }*", "
-                end*") with ("
-              })"
+            # Attempt loose binding here; it might merge some Compiler::RoleRefs to share the same Bindings
+            variants = readings_by_role_refs.keys
+            (readings_by_role_refs.size-1).downto(1) do |m|   # Start with the last one
+              0.upto(m-1) do |l|                              # Try to rebind onto any lower one
+                common = variants[m]&variants[l]
+                readings_l = readings_by_role_refs[variants[l]]
+                readings_m = readings_by_role_refs[variants[m]]
+                l_keys = variants[l]-common
+                m_keys = variants[m]-common
+                debug :binding, "Try to collapse variant #{m} onto #{l}; diffs are #{l_keys.inspect} -> #{m_keys.inspect}"
+                rebindings = 0
+                l_keys.each_with_index do |l_key, i|
+                  m_keys.each_with_index do |m_key, j|
+                    l_role_ref = role_refs_by_reading_and_key[[readings_l[l], l_key]]
+                    m_role_ref = role_refs_by_reading_and_key[[readings_m[j], m_key]]
+                    debug :binding, "Can we match #{l_role_ref.inspect} with #{m_role_ref.inspect}?"
+                    next if m_role_ref.player != l_role_ref.player
+                    if has_more_adjectives(m_role_ref, l_role_ref)
+                      m_role_ref.rebind(l_role_ref)
+                      rebindings += 1
+                      break
+                    elsif has_more_adjectives(l_role_ref, m_role_ref)
+                      l_role_ref.rebind(m_role_ref)
+                      rebindings += 1
+                      break
+                    end
+                  end
+                end
+                if (rebindings == l_keys.size)
+                  # Successfully rebound this fact type
+                  debug :binding, "Successfully rebound readings #{readings_l.map{|r|r.inspect}*'; '} on to #{readings_m.map{|r|r.inspect}*'; '}"
+                  break
+                else
+                  # No point continuing, we failed on this one.
+                  raise "All readings in a fact type definition must have the same role players compare (#{
+                      readings_by_role_refs.keys.map do |keys|
+                        keys.map{|key| key*'-' }*", "
+                      end*") with ("
+                    })"
+                end
+
+              end
+            end
+          # else all readings already matched
           end
         end
       end
