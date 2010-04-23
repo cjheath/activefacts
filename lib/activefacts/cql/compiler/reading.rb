@@ -325,6 +325,7 @@ module ActiveFacts
             @phrases.each do |phrase|
               next unless phrase.is_a?(RoleRef)
               phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase.player)
+              phrase.role.role_name = phrase.role_name if phrase.role_name
             end
           end
           fact_type
@@ -516,9 +517,10 @@ module ActiveFacts
 
         def bind context
           if role_name = @role_name
-            if @leading_adjective || @trailing_adjective
-              raise "Role reference may not have adjectives if it defines a role name or uses a subscript: #{inspect}"
-            end
+            # Omit these tests to see if anything evil eventuates:
+            #if @leading_adjective || @trailing_adjective
+            #  raise "Role reference may not have adjectives if it defines a role name or uses a subscript: #{inspect}"
+            #end
           else
             if uses_role_name?
               if @leading_adjective || @trailing_adjective
