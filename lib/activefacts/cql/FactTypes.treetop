@@ -205,11 +205,7 @@ module ActiveFacts
 
 	    raise "REVISIT: Objectification joins #{oj.text_value} are not yet implemented" unless oj.empty?
 
-	    structure = player.structure
-	    term = structure[:term]
-	    la = structure[:leading_adjective]
-	    ta = structure[:trailing_adjective]
-	    Compiler::RoleRef.new term, la, ta, quantifier, function_call, role_name, restriction, literal
+	    player.ast(quantifier, function_call, role_name, restriction, literal)
 	  end
 
           def value
