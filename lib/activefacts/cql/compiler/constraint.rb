@@ -52,7 +52,7 @@ module ActiveFacts
       end
 
       class EqualityConstraint < Constraint
-        def initialize context_note, enforcement, quantifier, readings
+        def initialize context_note, enforcement, readings
           super context_note, enforcement
         end
 

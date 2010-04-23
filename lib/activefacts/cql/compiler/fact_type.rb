@@ -125,17 +125,18 @@ module ActiveFacts
         end
 
         def verify_matching_roles
-          readings_by_bindings =
+          readings_by_role_refs =
             @readings.inject({}) do |hash, reading|
-              bindings = reading.role_refs.map{|rr| rr.binding}
-              raise "Fact types may not have duplicate roles" if bindings.uniq.size < bindings.size
-              (hash[bindings.sort] ||= []) << reading
+              keys = reading.role_refs.map{|rr| rr.key.map{|k| k || ''}}.sort
+              raise "Fact types may not have duplicate roles" if keys.uniq.size < keys.size
+              (hash[keys] ||= []) << reading
               hash
             end
-          unless readings_by_bindings.size == 1
+
+          if readings_by_role_refs.size != 1
             raise "All readings in a fact type definition must have the same role players compare (#{
-                readings_by_bindings.keys.map do |key|
-                  key.map{|k| k.inspect}*", "
+                readings_by_role_refs.keys.map do |keys|
+                  keys.map{|key| key.select{|k| !k.empty?}*"-" }*", "
                 end*") with ("
               })"
           end
