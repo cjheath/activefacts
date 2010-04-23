@@ -155,21 +155,30 @@ module ActiveFacts
                 debug :binding, "Try to collapse variant #{m} onto #{l}; diffs are #{l_keys.inspect} -> #{m_keys.inspect}"
                 rebindings = 0
                 l_keys.each_with_index do |l_key, i|
-                  m_keys.each_with_index do |m_key, j|
-                    l_role_ref = role_refs_by_reading_and_key[[readings_l[l], l_key]]
-                    m_role_ref = role_refs_by_reading_and_key[[readings_m[j], m_key]]
-                    debug :binding, "Can we match #{l_role_ref.inspect} with #{m_role_ref.inspect}?"
+                  # Find possible rebinding candidates; there must be exactly one.
+                  candidates = []
+                  (0...m_keys.size).each do |j|
+                    m_key = m_keys[j]
+                    l_role_ref = role_refs_by_reading_and_key[[readings_l[0], l_key]]
+                    m_role_ref = role_refs_by_reading_and_key[[readings_m[0], m_key]]
+                    debug :binding, "Can we match #{l_role_ref.inspect} (#{i}) with #{m_role_ref.inspect} (#{j})?"
                     next if m_role_ref.player != l_role_ref.player
                     if has_more_adjectives(m_role_ref, l_role_ref)
-                      m_role_ref.rebind(l_role_ref)
-                      rebindings += 1
-                      break
+                      debug :binding, "can rebind #{m_role_ref.inspect} to #{l_role_ref.inspect}"
+                      candidates << [m_role_ref, l_role_ref]
                     elsif has_more_adjectives(l_role_ref, m_role_ref)
-                      l_role_ref.rebind(m_role_ref)
-                      rebindings += 1
-                      break
+                      debug :binding, "can rebind #{l_role_ref.inspect} to #{m_role_ref.inspect}"
+                      candidates << [l_role_ref, m_role_ref]
                     end
                   end
+
+                  debug :binding, "found #{candidates.size} rebinding candidates"
+                  # debug :binding, "rebinding is ambiguous so not attempted" if candidates.size > 1
+                  if (candidates.size == 1)
+                    candidates[0][0].rebind(candidates[0][1])
+                    rebindings += 1
+                  end
+
                 end
                 if (rebindings == l_keys.size)
                   # Successfully rebound this fact type
@@ -177,7 +186,7 @@ module ActiveFacts
                   break
                 else
                   # No point continuing, we failed on this one.
-                  raise "All readings in a fact type definition must have the same role players compare (#{
+                  raise "All readings in a fact type definition must have matching role players, compare (#{
                       readings_by_role_refs.keys.map do |keys|
                         keys.map{|key| key*'-' }*", "
                       end*") with ("
