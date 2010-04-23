@@ -72,6 +72,8 @@ module ActiveFacts
         end
 
         def term_starts?(s, context_saver)
+          @term = @global_term = nil
+
           @term_part = s
           @context_saver = context_saver
           t = @terms[s] || @role_names[s] || system_term(s)
