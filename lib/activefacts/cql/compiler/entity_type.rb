@@ -146,6 +146,7 @@ module ActiveFacts
 
             fact_type = create_identifying_fact_type(context, readings)
             fact_types << fact_type if fact_type
+            objectify_existing_fact_type(fact_type) unless fact_type.all_role.detect{|r| r.concept == @entity_type}
           end
           fact_types
         end
@@ -184,8 +185,8 @@ module ActiveFacts
 
         def objectify_existing_fact_type fact_type
           raise "#{@name} cannot objectify a fact type that's already objectified" if fact_type.entity_type
-          raise "#{@name} must only objectofy one fact type" if @fact_type
-          @fact_type = entity_type.fact_type = fact_type
+          raise "#{@name} must only objectify one fact type" if @fact_type
+          @fact_type = @entity_type.fact_type = fact_type
         end
 
         def add_supertype(supertype_name, not_identifying)

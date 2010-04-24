@@ -172,8 +172,8 @@ module ActiveFacts
                     end
                   end
 
-                  debug :binding, "found #{candidates.size} rebinding candidates"
-                  # debug :binding, "rebinding is ambiguous so not attempted" if candidates.size > 1
+                  # debug :binding, "found #{candidates.size} rebinding candidates for this role"
+                  debug :binding, "rebinding is ambiguous so not attempted" if candidates.size > 1
                   if (candidates.size == 1)
                     candidates[0][0].rebind(candidates[0][1])
                     rebindings += 1
