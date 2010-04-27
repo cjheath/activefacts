@@ -44,9 +44,6 @@ module ActiveFacts
           @readings.each{ |reading| reading.identify_other_players(context) }
           @readings.each{ |reading| reading.bind_roles context }  # Create the Compiler::Bindings
 
-          # REVISIT: Need to apply loose binding over the constrained roles:
-          @role_refs.each{ |role| role.identify_player context; role.bind context }
-
           unmatched_roles = @role_refs.clone
           fact_types =
             @readings.map do |reading|
@@ -54,6 +51,22 @@ module ActiveFacts
               raise "Unrecognised fact type #{@reading.inspect} in presence constraint" unless fact_type
               fact_type
             end
+
+          @role_refs.each do |role_ref|
+            role_ref.identify_player context
+            role_ref.bind context
+            if role_ref.binding.refs.size == 1
+              # Need to apply loose binding over the constrained roles
+              candidates =
+                @readings.map do |reading|
+                  reading.role_refs.select{ |rr| rr.player == role_ref.player }
+                end.flatten
+              if candidates.size == 1
+                debug :constraint, "Rebinding #{role_ref.inspect} to #{candidates[0].inspect} in presence constraint"
+                role_ref.rebind(candidates[0])
+              end
+            end
+          end
 
           rs = @constellation.RoleSequence(:new)
           @role_refs.each do |role_ref|
