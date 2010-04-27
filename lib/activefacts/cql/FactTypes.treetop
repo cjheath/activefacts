@@ -108,7 +108,11 @@ module ActiveFacts
 	    qualifiers = (q.empty? ? [] : [ q.text_value ]) +
 	      (p.empty? ? [] : p.list)
 	    # REVISIT: When we implement objectification joins, we might get multiple readings here...
-	    Compiler::Reading.new reading.ast, qualifiers, (c.empty? ? nil : c.value)
+	    r = reading.ast
+	    r.qualifiers << q.text_value unless q.empty?
+	    r.qualifiers += p.list unless p.empty?
+	    r.context_note = c.value unless c.empty?
+	    r
 	  end
 
           def body
@@ -167,9 +171,7 @@ module ActiveFacts
         )+
         {
 	  def ast
-	    elements.map{ |r|
-	      r.ast
-	    }
+	    Compiler::Reading.new(elements.map{ |r| r.ast })
 	  end
 
           def value
