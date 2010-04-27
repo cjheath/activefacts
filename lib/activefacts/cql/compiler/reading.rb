@@ -3,10 +3,11 @@ module ActiveFacts
     class Compiler < ActiveFacts::CQL::Parser
 
       class Reading
-        attr_reader :phrases, :qualifiers, :context_note
+        attr_reader :phrases
+        attr_accessor :qualifiers, :context_note
         attr_reader :fact_type, :reading, :role_sequence    # These are the Metamodel objects
 
-        def initialize role_refs_and_words, qualifiers, context_note
+        def initialize role_refs_and_words, qualifiers = [], context_note = nil
           @phrases = role_refs_and_words
           @qualifiers = qualifiers
           @context_note = context_note

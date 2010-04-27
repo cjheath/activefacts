@@ -105,7 +105,7 @@ module ActiveFacts
         {
 	  def ast
 	    context = c.empty? ? nil : c.value
-	    Compiler::PresenceConstraint.new context, enforcement.ast, role_list.roles, quantifier.value, readings_list.ast
+	    Compiler::PresenceConstraint.new context, enforcement.ast, role_list.ast, quantifier.ast, readings_list.ast
 	  end
 
 	  def value
