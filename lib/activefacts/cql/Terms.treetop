@@ -60,15 +60,14 @@ module ActiveFacts
         }
       end
 
-      # Do a first-pass mainly lexical analysis, looking only for role name definitions
-      # For use in detecting terms later.
-      # REVISIT: and adjectives
+      # Do a first-pass mainly lexical analysis, looking for role name definitions and adjectives,
+      # for use in detecting terms later.
       rule prescan_rest
         &{ input.context.reset_role_names }
         (
           context                           # Context notes have different lexical conventions
-          / role_name                       # A role name definition
-            &{|s| input.context.role_name(s[0].value) }
+          / '(' as S term_definition_name s ')' s    # Prescan for a Role Name
+            &{|s| input.context.role_name(s[3].value) }
                                             # Adjective definitions
           / new_adjective_term
           / global_term                     # If we see A B - C D, don't recognise B as a new adjective for C D.

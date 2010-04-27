@@ -235,8 +235,7 @@ module ActiveFacts
       end
 
       rule role_name
-        # REVISIT: Multiword role names?
-        '(' s as S r:id s ')' s
+        '(' s as S r:term s ')' s
         { def value; r.value; end }
       end
 
