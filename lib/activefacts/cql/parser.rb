@@ -108,7 +108,7 @@ module ActiveFacts
             if t[@term_part]
               @term = @term_part if t[@term_part]
               @global_term = (t = t[@term_part]) == true ? @term_part : t
-              debug :context, "saving context #{@term}/{@global_term}"
+              debug :context, "saving context #{@term}/#{@global_term}"
               @context_saver.context = {:term => @term, :global_term => @global_term }
             end
           end
