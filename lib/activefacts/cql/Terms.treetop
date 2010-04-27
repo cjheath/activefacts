@@ -24,19 +24,27 @@ module ActiveFacts
         / written_as                        # Value type
         / is s mapping_pragmas where        # Objectified type
         / non_role_word
+	/ identified_by			    # as in: "a kind of X identified by..."
       end
 
       rule entity_prefix
-        is s identified_by / subtype_prefix
+        is s identified_by
+	/
+	subtype_prefix term_definition_name
+	&{|e| input.context.object_type(e[1].value, "subtype"); true }
       end
 
       rule prescan
         s (
           term_definition_name s entity_prefix
+		#&{|e| debugger if e[2].text_value =~ /kind/; true}
 		&{|e| input.context.object_type(e[0].value, "entity type"); true }
           /
-          term_definition_name written_as
-                &{|e| input.context.object_type(e[0].value, "value type"); true }
+          t1:term_definition_name written_as t2:term_definition_name
+                &{|e| input.context.object_type(e[0].value, "value type")
+		  input.context.object_type(e[2].value, "value type")
+		  true
+		}
           /
           term_definition_name s is s mapping_pragmas where
                 &{|e| input.context.object_type(e[0].value, "objectified_fact_type"); true }

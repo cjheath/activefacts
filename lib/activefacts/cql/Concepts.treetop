@@ -73,9 +73,12 @@ module ActiveFacts
       end
 
       rule supertype_list
-        primary:id s
-        alternate_supertypes:( ',' s !identified_by name:id s )*
-        { def value; alternate_supertypes.elements.inject([primary.value]) { |a, sup| a << sup.name.value }; end }
+        primary:term s alternate_supertypes:( ',' s !identified_by name:term s )*
+        {
+	  def value
+	    [primary.value, *alternate_supertypes.elements.map { |sup| sup.name.value } ]
+	  end
+	}
       end
 
       rule identification
