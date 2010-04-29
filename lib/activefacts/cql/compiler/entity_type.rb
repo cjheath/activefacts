@@ -170,13 +170,13 @@ module ActiveFacts
             unless fact_type
               fact_type = readings[0].make_fact_type(@vocabulary)
               readings[0].make_reading(@vocabulary, fact_type)
-              readings[0].make_embedded_presence_constraints vocabulary
+              readings[0].make_embedded_constraints vocabulary
               existing_readings = [readings[0]]
             end
 
             (readings - existing_readings).each do |reading|
               reading.make_reading(@vocabulary, fact_type)
-              reading.make_embedded_presence_constraints vocabulary
+              reading.make_embedded_constraints vocabulary
             end
 
             fact_type

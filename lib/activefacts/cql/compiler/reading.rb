@@ -433,12 +433,24 @@ module ActiveFacts
           @role_sequence
         end
 
-        def make_embedded_presence_constraints vocabulary
+        def make_embedded_constraints vocabulary
           role_refs.each do |role_ref|
             next unless role_ref.quantifier
             # puts "Quantifier #{role_ref.inspect} not implemented as a presence constraint"
             role_ref.make_embedded_presence_constraint vocabulary
           end
+
+          if @qualifiers && @qualifiers.size > 0
+
+            rc = RingConstraint.new(@role_sequence, @qualifiers)
+            rc.vocabulary = vocabulary
+            rc.constellation = vocabulary.constellation
+            rc.compile
+
+            # REVISIT: Check maybe and other qualifiers:
+            debug :constraint, "Need to make constraints for #{@qualifiers*', '}" if @qualifiers.size > 0
+          end
+
         end
       end
 

@@ -52,14 +52,14 @@ module ActiveFacts
             first_reading = @readings[0]
             @fact_type = first_reading.make_fact_type(@vocabulary)
             first_reading.make_reading(@vocabulary, @fact_type)
-            first_reading.make_embedded_presence_constraints vocabulary
+            first_reading.make_embedded_constraints vocabulary
             existing_readings = [first_reading]
           end
 
           # Now make any new readings:
           (@readings - existing_readings).each do |reading|
             reading.make_reading(@vocabulary, @fact_type)
-            reading.make_embedded_presence_constraints vocabulary
+            reading.make_embedded_constraints vocabulary
           end
 
           # If a reading matched but the match left extra adjectives, we need to make a new RoleSequence for them:

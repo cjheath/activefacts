@@ -91,6 +91,64 @@ module ActiveFacts
         end
       end
 
+      class RingConstraint < Constraint
+        Types = %w{acyclic intransitive symmetric asymmetric transitive antisymmetric irreflexive reflexive}
+        Pairs = { :intransitive => [:acyclic, :asymmetric, :symmetric], :irreflexive => [:symmetric] }
+
+        def initialize role_sequence, qualifiers
+          super nil, nil
+          @role_sequence = role_sequence
+          @rings, rest = qualifiers.partition{|q| Types.include?(q) }
+          qualifiers.replace rest
+        end
+
+        def compile
+          # Process the ring constraints:
+          return if @rings.empty?
+
+          role_refs = @role_sequence.all_role_ref.to_a
+          supertypes_by_position = role_refs.
+            map do |role_ref|
+              role_ref.role.concept.supertypes_transitive
+            end
+          role_pairs = []
+          supertypes_by_position.each_with_index do |sts, i|
+            (i+1...supertypes_by_position.size).each do |j|
+              common_supertype = (sts & supertypes_by_position[j])[0]
+              role_pairs << [role_refs[i], role_refs[j], common_supertype] if common_supertype
+            end
+          end
+          if role_pairs.size > 1
+            # REVISIT: Verbalise the role_refs better:
+            raise "ambiguous #{@rings*' '} ring constraint, consider #{role_pairs.map{|rp| "#{rp[0].inspect}<->#{rp[1].inspect}"}*', '}"
+          end
+          if role_pairs.size == 0
+            raise "No matching role pair found for #{@rings*' '} ring constraint"
+          end
+
+          rp = role_pairs[0]
+
+          # Ensure that the keys in RingPairs follow others:
+          @rings = @rings.partition{|rc| !RingPairs.keys.include?(rc.downcase.to_sym) }.flatten
+
+          if @rings.size > 1 and !RingPairs[@rings[-1].to_sym].include?(@rings[0].to_sym)
+            raise "incompatible ring constraint types (#{@rings*", "})"
+          end
+          ring_type = @rings.map{|c| c.capitalize}*""
+
+          ring = @constellation.RingConstraint(
+              :new,
+              :vocabulary => @vocabulary,
+          #   :name => name,              # REVISIT: Create a name for Ring Constraints?
+              :role => rp[0].role,
+              :other_role => rp[1].role,
+              :ring_type => ring_type
+            )
+
+          debug :constraint, "Added #{ring.verbalise} #{ring.class.roles.keys.map{|k|"#{k} => "+ring.send(k).verbalise}*", "}"
+        end
+      end
+
       class SetConstraint < Constraint
         def initialize context_note, enforcement, roles, quantifier, readings
           super context_note, enforcement
