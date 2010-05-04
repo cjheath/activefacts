@@ -19,7 +19,7 @@ module ActiveFacts
         sup:(basetype / subtype)
 	  &{|s|
 	    # There's an implicit type when we use an identification mode, register it:
-	    mode = (i = s[2].identifier) && Hash === i && i[:mode]
+	    mode = s[2].identification_mode
 	    input.context.object_type(s[1].value+mode, "identification mode type") if mode
 	    true
 	  }
@@ -32,16 +32,6 @@ module ActiveFacts
 	    readings = ec.empty? ? [] : ec.ast
 	    Compiler::EntityType.new name, sup.supers, sup.ast, mapping_pragmas.value, readings
 	  end
-	  
-          def defined_type
-            [ :entity_type, sup.supers, sup.identifier, mapping_pragmas.value, (ec.empty? ? nil : ec.conditions) ]
-          end
-
-          def value
-            [ term_definition_name.value,
-              defined_type
-            ]
-          end
         }
       end
 
@@ -52,7 +42,7 @@ module ActiveFacts
         {
 	  def ast; identification.ast; end
 	  def supers; []; end
-          def identifier; identification.value; end
+          def identification_mode; identification.mode; end
         }
       end
 
@@ -63,7 +53,7 @@ module ActiveFacts
         {
 	  def ast; ident.empty? ? nil : ident.ast; end
           def supers; supertype_list.value; end
-          def identifier; ident.empty? ? nil : ident.value; end
+          def identification_mode; ident.empty? ? nil : ident.mode; end
         }
       end
 
@@ -95,22 +85,21 @@ module ActiveFacts
 	      Compiler::ReferenceMode.new(i.value, restriction, value_type_parameters.values)
 	    end
 
-	    def value
-	      { :mode => i.value,
-	        :restriction => (r.text_value.empty? ? nil : r.restriction.ranges),
-	        :enforcement => (r.text_value.empty? ? nil : r.enforcement.value),
-		:parameters => value_type_parameters.values
-	      }
+	    def mode
+	      i.value
 	    end
 	  }
         /
         identified_by role_list
 	  &{|s|
-	    forwards = s[-1].roles.map do |phrase|
-		next nil if phrase.size != 1  # Can only forward-reference simple terms.
-		next nil if (term = phrase[0])[:leading_adjective] or term[:trailing_adjective]
-		term[:term]
-	      end.compact
+	    role_list = s[-1]
+	    forwards = role_list.ast.
+	      map do |role_ref|
+		next nil if role_ref.is_a?(Compiler::Reading) # Can't forward-reference unaries
+		next nil if role_ref.leading_adjective or role_ref.trailing_adjective
+		role_ref.term
+	      end.
+	      compact
 	    input.context.allowed_forward_terms(forwards)
 	    true
 	  }
@@ -119,8 +108,8 @@ module ActiveFacts
 	      role_list.ast
 	    end
 
-	    def value
-	      {:roles => role_list.roles }
+	    def mode
+	      nil
 	    end
 	  }
       end
@@ -132,11 +121,6 @@ module ActiveFacts
 	  def ast
 	    [head.ast, *tail.elements.map{|e| e.term_or_unary.ast}]
 	  end
-
-	  def roles
-	    [head.value, *tail.elements.map{|e| e.term_or_unary.value}]
-            # tail.elements.inject([head.value]) { |a, e| a << e.term_or_unary.value }
-          end
         }
       end
 
@@ -153,12 +137,6 @@ module ActiveFacts
 		Compiler::Reading.new(pre_words + [t] + post_words, [], nil)
 	      end
 	    end
-
-	    def value
-	      pre_text.elements.map {|w| w.id.text_value } +
-	      [ term.structure ] +
-	      post_text.elements.map {|w| w.id.text_value }
-	    end
 	  }
 	/
 	s !non_role_word id s &non_role_word
@@ -166,10 +144,6 @@ module ActiveFacts
 	    # REVISIT: A change in this rule might allow forward-referencing a multi-word term
 	    def ast
 	      Compiler::RoleRef.new(id.text_value, nil, nil, nil, nil, nil, nil, nil)
-	    end
-
-	    def value
-	      [{:term => id.text_value}]
 	    end
 	  }
       end

@@ -13,14 +13,6 @@ require 'activefacts/cql/compiler/fact_type'
 require 'activefacts/cql/compiler/fact'
 require 'activefacts/cql/compiler/constraint'
 
-# The following files are from the old implementation, moving into the above:
-require 'activefacts/cql/binding'
-require 'activefacts/cql/value_type'
-require 'activefacts/cql/constraints'
-require 'activefacts/cql/entity_type'
-require 'activefacts/cql/fact_type'
-require 'activefacts/cql/fact'
-
 module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser

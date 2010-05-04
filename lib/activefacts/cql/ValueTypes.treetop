@@ -24,24 +24,6 @@ module ActiveFacts
 	    restriction = r.empty? ? nil : Compiler::ValueRestriction.new(r.restriction.ranges, r.enforcement.ast)
 	    Compiler::ValueType.new name, base.value, params, units.value, restriction, mapping_pragmas.value
 	  end
-
-          def defined_type
-            [
-              :value_type,
-              base.value,
-              value_type_parameters.values,
-              units.value,
-              (!r.empty? ? r.restriction.ranges : []),
-              mapping_pragmas.value,
-              (!r.empty? ? r.enforcement.value : nil)
-            ]
-          end
-
-          def value
-            [ term_definition_name.value,
-              defined_type
-            ]
-          end
         }
       end
 
@@ -72,7 +54,7 @@ module ActiveFacts
           unit_coefficient units s o:unit_offset?
         )
         q:(approximately '' / ephemeral '')? s
-        ';' s
+        ';'
         {
 	  def ast
             singular = u.singular.text_value
@@ -84,18 +66,6 @@ module ActiveFacts
 	    ephemeral = q.respond_to? :approximately
 	    Compiler::Unit.new singular, plural, numerator, denominator, offset, bases, approximately, ephemeral
 	  end
-
-	  def value
-            r = { :coefficient => u.unit_coefficient.value,
-                  :offset => u.o.text_value.empty? ? 0 : u.o.value,
-                  :base => u.units.value,
-                  :singular => u.singular.text_value,
-                }
-            r[:plural] = u.plural.p.text_value unless u.plural.text_value.empty?
-            r[:approximately] = true if q.text_value == 'approximately' || !u.a.text_value.empty?
-            r[:ephemeral] = true if q.text_value == 'ephemeral'
-            [ nil, [ :unit, r ] ]
-          end
         }
       end
 
@@ -107,12 +77,6 @@ module ActiveFacts
               (denominator.text_value.empty? ? "1" : denominator.number.text_value)
 	    ]
 	  end
-
-	  def value
-            { :numerator => numerator.text_value,
-              :denominator => (denominator.text_value.empty? ? "1" : denominator.number.text_value)
-            }
-          end
         }
       end
 

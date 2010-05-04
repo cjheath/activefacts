@@ -17,12 +17,6 @@ module ActiveFacts
 	    ft.name = term_definition_name.value
 	    ft
 	  end
-
-          def value
-            f = anonymous_fact_type.value
-            f[0] = term_definition_name.value
-            f
-          end
         }
       end
 
@@ -35,7 +29,7 @@ module ActiveFacts
         {
 	  def ast
             readings = [fact_clause.ast, *ftail.elements.map{|e| e.fact_clause.ast }]
-            conditions = !ctail.empty? ? ctail.c.condition_list : []
+            conditions = !ctail.empty? ? ctail.c.ast : []
 	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
 	    if (readings.detect{|r| r.includes_literals})
 	      raise "Fact instances may not contain conditions" unless conditions.empty? && !returning
@@ -44,12 +38,6 @@ module ActiveFacts
 	      Compiler::FactType.new nil, readings, conditions, returning
 	    end
 	  end
-
-          def value
-            readings = [ fact_clause.body, *ftail.elements.map{|e| e.fact_clause.body } ]
-            conditions = !ctail.empty? ? ctail.c.condition_list : []
-            [ nil, [ :fact_type, readings, conditions ] ]
-          end
         }
       end
 
@@ -67,38 +55,23 @@ module ActiveFacts
 	  def ast
 	    [head.ast, *tail.elements.map{|i| i.next.ast}]
 	  end
-
-          def condition_list
-            [head.value, *tail.elements.map{|i| i.next.value}]
-          end
         }
       end
 
       rule condition
-        head:clause s
-#        tail:(or S alternate:clause s )*
+        head:clause s # tail:(or S alternate:clause s )*
         {
 	  def ast
-	    head.ast # REVISIT: alternate conditions are not yet implemented
+	    head.ast
+            # Compiler::Alternates.new(head.ast, *tail.elements.map{|i| i.alternate.ast})
+	    # REVISIT: alternate conditions are not yet implemented
 	  end
-          def value
-#            if tail.elements.size == 0
-              head.clause
-#            else
-#              [:"||", head.clause, *tail.elements.map{|i| i.alternate.clause}]
-#            end
-          end
         }
       end
 
       rule clause
         # REVISIT: No context for comparisons, yet
-        (comparison / fact_clause)
-        {
-          def clause
-            self.body
-          end
-        }
+        comparison / fact_clause
       end
 
       rule fact_clause
@@ -114,15 +87,6 @@ module ActiveFacts
 	    r.context_note = c.value unless c.empty?
 	    r
 	  end
-
-          def body
-            [ :fact_clause,
-              (q.empty? ? [] : [ q.text_value ]) +
-                (p.empty? ? [] : p.list),
-              reading.value,
-              c.empty? ? nil : c.value 
-            ]
-          end
         }
       end
 
@@ -150,10 +114,6 @@ module ActiveFacts
           id tail:('-' !term id)+ s
             {
 	      def ast
-		value
-	      end
-
-	      def value
 		[id.value, *tail.elements.map{|e| e.id.value}]*"-"
 	      end
 	    }
@@ -161,10 +121,6 @@ module ActiveFacts
           !non_role_word id s
 	    {
 	      def ast
-		value
-	      end
-
-	      def value
 		id.value
 	      end
 	    }
@@ -173,12 +129,6 @@ module ActiveFacts
 	  def ast
 	    Compiler::Reading.new(elements.map{ |r| r.ast })
 	  end
-
-          def value
-            elements.map{|r|
-	      r.value
-	    }
-          end
         }
       end
 
@@ -209,26 +159,6 @@ module ActiveFacts
 
 	    player.ast(quantifier, function_call, role_name, restriction, literal)
 	  end
-
-          def value
-            r = player.structure # has keys :word, :term, :leading_adjective, :trailing_adjective
-
-            if !q.empty?
-	      quantifier = q.quantifier.value   # "some" quantifier has nil value
-	      r[:quantifier_restriction] = q.enforcement.value
-	    end
-
-            r[:quantifier] = quantifier if quantifier
-            r[:function] = func.value if !func.empty?
-            r[:role_name] = role_id.value unless role_id.empty?
-	    if !lr.empty? && lr.respond_to?(:restriction)
-	      r[:restriction] = lr.restriction.ranges
-	      r[:restriction_enforcement] = lr.enforcement.value
-	    end
-            r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
-
-            r
-          end
         }
       end
 

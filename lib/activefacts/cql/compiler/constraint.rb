@@ -309,10 +309,10 @@ module ActiveFacts
 
           rp = role_pairs[0]
 
-          # Ensure that the keys in RingPairs follow others:
-          @rings = @rings.partition{|rc| !RingPairs.keys.include?(rc.downcase.to_sym) }.flatten
+          # Ensure that the keys in Pairs follow others:
+          @rings = @rings.partition{|rc| !Pairs.keys.include?(rc.downcase.to_sym) }.flatten
 
-          if @rings.size > 1 and !RingPairs[@rings[-1].to_sym].include?(@rings[0].to_sym)
+          if @rings.size > 1 and !Pairs[@rings[-1].to_sym].include?(@rings[0].to_sym)
             raise "incompatible ring constraint types (#{@rings*", "})"
           end
           ring_type = @rings.map{|c| c.capitalize}*""
