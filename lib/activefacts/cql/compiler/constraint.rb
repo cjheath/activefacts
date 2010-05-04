@@ -120,10 +120,11 @@ module ActiveFacts
           rs = @constellation.RoleSequence(:new)
           @role_refs.each do |role_ref|
             raise "The constrained role #{role_ref.inspect} was not found in the invoked fact types" if role_ref.binding.refs.size == 1
-            # REVISIT: Need a better way to extract the referenced role via the fact type:
-            role = role_ref.binding.refs.map{|ref| ref && ref.role or ref.role_ref && ref.role_ref.role }.compact[0]
-            raise "FactType role not found for #{role_ref.inspect}" unless role
-            @constellation.RoleRef(rs, rs.all_role_ref.size, :role => role)
+            (role_ref.binding.refs-[role_ref]).each do |ref|
+              role = (ref.role_ref && ref.role_ref.role) || ref.role
+              raise "FactType role not found for #{ref.inspect}" unless role
+              @constellation.RoleRef(rs, rs.all_role_ref.size, :role => role)
+            end
           end
 
           @constellation.PresenceConstraint(
