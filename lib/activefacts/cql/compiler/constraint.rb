@@ -36,9 +36,11 @@ module ActiveFacts
 
               # Find the bindings that occur more than once in this join_list.
               # They join the readings. Each must occur exactly twice
+              all_bindings = []
               bindings_count = {}
               join_list.each do |reading|
                 reading.role_refs.each do |rr|
+                  all_bindings << rr.binding
                   bindings_count[rr.binding] ||= 0
                   bindings_count[rr.binding] += 1
                 end
@@ -53,7 +55,7 @@ module ActiveFacts
               # That means the join_bindings may only contain a single element at most
               # (This will be a binding to the constrained object)
               raise "REVISIT: No constraint joins (except ORM2's implicit joins) are currently supported" if join_bindings.size > 1
-              residuals = (bindings_count.keys - join_bindings).sort
+              residuals = (all_bindings.uniq - join_bindings)
             end
 
           @common_residuals = @residual_bindings[1..-1].inject(@residual_bindings[0]) { |r, b| r & b }
