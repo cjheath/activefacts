@@ -43,6 +43,7 @@ module ActiveFacts
             begin
               ast = node.ast
               debug :ast, ast.inspect
+              ast.source = node.body
               ast.constellation = @constellation
               ast.vocabulary = @vocabulary
               value = ast.compile

@@ -96,6 +96,14 @@ module ActiveFacts
                 all_roles = role.fact_type.all_role
                 next if all_roles.size != players.size      # Wrong number of players
 
+                if players.size == 2 and
+                  role.fact_type.is_a?(Metamodel::TypeInheritance) and
+                  [players[0].name, players[1].name].sort != all_roles.map{|r| r.concept.name}.sort
+                  # REVISIT: Perhaps this match can be made transitive in future:
+                  debug :matching, "Requiring exact match for TypeInheritance invocation"
+                  next
+                end
+
                 all_players = all_roles.map{|r| r.concept}  # All the players of this candidate fact type
 
                 next if player_related_types[1..-1].        # We know the first player is compatible, check the rest
@@ -135,16 +143,18 @@ module ActiveFacts
             # This requires the final decision on fact type matching to be postponed until
             # the whole declaration has been processed and the extra adjectives can be matched.
 
-            if matches.size > 1
+            best_matches = matches.keys.sort_by{|match| matches[match].cost}
+
+            if matches.size > 1 and matches[best_matches[0]].cost > 0
+              # Complain if there's more than one inexact match:
               raise "#{@phrases.inspect} could match any of the following:\n\t"+
-                matches.keys.map { |reading| reading.expand } * "\n\t"
+                best_matches.map { |reading| reading.expand + " with " + matches[reading].describe } * "\n\t"
             end
 
-            if (matches.size == 1)
-              @reading = matches.keys[0]
-              side_effects = matches.values[0]
+            if matches.size >= 1
+              @reading = best_matches[0]
+              side_effects = matches[@reading]
               apply_side_effects(side_effects)
-
               return @fact_type = side_effects.fact_type
             end
 
@@ -270,7 +280,7 @@ module ActiveFacts
             debug :matching, "Matched reading '#{reading.expand}' with #{side_effects.select{|(phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype)| absorbed_precursors+absorbed_followers > 0 || common_supertype}.size} side effects#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
           # There will be one side_effects for each role player
-          ReadingMatchSideEffects.new(fact_type, residual_adjectives, side_effects)
+          ReadingMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects)
         end
 
         def apply_side_effects(side_effects)
@@ -450,22 +460,42 @@ module ActiveFacts
             # REVISIT: Check maybe and other qualifiers:
             debug :constraint, "Need to make constraints for #{@qualifiers*', '}" if @qualifiers.size > 0
           end
-
         end
+
       end
 
       class ReadingMatchSideEffects
         attr_reader :residual_adjectives
         attr_reader :fact_type
 
-        def initialize fact_type, residual_adjectives, side_effects
+        def initialize fact_type, reading, residual_adjectives, side_effects
           @fact_type = fact_type
+          @reading = reading
           @residual_adjectives = residual_adjectives
           @side_effects = side_effects
         end
 
         def apply_all &b
           @side_effects.reverse.each{ |side_effect| b.call(*side_effect) }
+        end
+
+        def cost
+          c = 0
+          @side_effects.each do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
+            c += absorbed_precursors + absorbed_followers + (common_supertype ? 1 : 0)
+          end
+          c
+        end
+
+        def describe
+          actual_effects =
+            @side_effects.map do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
+              ( [common_supertype ? "supertype join over #{common_supertype.name}" : nil] +
+                [absorbed_precursors > 0 ? "absorbs #{absorbed_precursors} preceding words" : nil] +
+                [absorbed_followers > 0 ? "absorbs #{absorbed_followers} following words" : nil]
+              )
+            end.flatten.compact*','
+          actual_effects.empty? ? "no side effects" : actual_effects
         end
       end
 

@@ -31,7 +31,7 @@ module ActiveFacts
           ftail:( (',' / and ) s fact_clause s )*
           ctail:( (':' / where) s c:conditions s)?
           returning_clause?
-        s ';' s
+        s ';'
         {
 	  def ast
             readings = [fact_clause.ast, *ftail.elements.map{|e| e.fact_clause.ast }]

@@ -25,7 +25,7 @@ module ActiveFacts
 	  }
         mapping_pragmas
         ec:entity_conditions?
-        ';' s
+        ';'
         {
 	  def ast
 	    name = term_definition_name.value
