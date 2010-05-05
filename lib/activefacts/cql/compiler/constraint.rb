@@ -21,19 +21,28 @@ module ActiveFacts
           @constraint.enforcement = @enforcement
         end
 
+        def loose_binding
+          # Override if you want to implement loose binding
+        end
+
         def bind_joins
           @context = CompilationContext.new(@vocabulary)
+
+          @join_lists.map do |join_list|
+            join_list.each{ |reading| reading.identify_players_with_role_name(@context) }
+            join_list.each{ |reading| reading.identify_other_players(@context) }
+            join_list.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
+            join_list.each do |reading| 
+              fact_type = reading.match_existing_fact_type @context
+              raise "Unrecognised fact type #{@reading.inspect} in #{self.class}" unless fact_type
+              # REVISIT: Should we complain when any fact type is not binary?
+            end
+          end
+
+          loose_binding
+
           @residual_bindings =
             @join_lists.map do |join_list|
-              join_list.each{ |reading| reading.identify_players_with_role_name(@context) }
-              join_list.each{ |reading| reading.identify_other_players(@context) }
-              join_list.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
-              join_list.each do |reading| 
-                fact_type = reading.match_existing_fact_type @context
-                raise "Unrecognised fact type #{@reading.inspect} in #{self.class}" unless fact_type
-                # REVISIT: Should we complain when any fact type is not binary?
-              end
-
               # Find the bindings that occur more than once in this join_list.
               # They join the readings. Each must occur exactly twice
               all_bindings = []
@@ -81,7 +90,7 @@ module ActiveFacts
         end
 
         def compile
-          # REVISIT: Call bind_joins(true) here and constrain the @common_residuals
+          # REVISIT: Call bind_joins here and constrain the @common_residuals
 
           @readings = @join_lists.map do |join_list|
             raise "REVISIT: Join presence constraints not supported yet" if join_list.size > 1
@@ -111,8 +120,8 @@ module ActiveFacts
                   reading.role_refs.select{ |rr| rr.player == role_ref.player }
                 end.flatten
               if candidates.size == 1
-                debug :constraint, "Rebinding #{role_ref.inspect} to #{candidates[0].inspect} in presence constraint"
-                role_ref.rebind(candidates[0])
+                debug :binding, "Rebinding #{role_ref.inspect} to #{candidates[0].inspect} in presence constraint"
+                role_ref.rebind_to(context, candidates[0])
               end
             end
           end
@@ -138,6 +147,12 @@ module ActiveFacts
             :is_mandatory => @quantifier.min && @quantifier.min > 0,
             :enforcement => @enforcement && @enforcement.compile
           )
+        end
+
+        # In a PresenceConstraint, each role in "each XYZ" must occur in exactly one join_list
+        def loose_binding
+          # This needs to be implemented when compile changes to use bind_roles
+          raise hell
         end
       end
 
@@ -204,13 +219,12 @@ module ActiveFacts
       class SetExclusionConstraint < SetComparisonConstraint
         def initialize context_note, enforcement, join_lists, roles, quantifier
           super context_note, enforcement, join_lists
-          @roles = roles
+          @roles = roles || []
           @quantifier = quantifier
         end
 
         def compile
           bind_joins
-          # REVISIT: Apply loose binding over @roles, if any
 
           is_either_or = @quantifier.max == nil
 
@@ -246,6 +260,43 @@ module ActiveFacts
             )
             role_sequences.each_with_index do |role_sequence, i|
               @constellation.SetComparisonRoles(constraint, i, :role_sequence => role_sequence)
+            end
+          end
+        end
+
+        # In a SetExclusionConstraint, each role in "for each XYZ" must occur in each join_list
+        def loose_binding
+          # Apply loose binding over applicable roles:
+          debug :binding, "Loose binding on SetExclusionConstraint" do
+            @roles.each do |role_ref|
+              role_ref.identify_player @context
+              role_ref.bind @context
+              if role_ref.binding.refs.size < @join_lists.size+1
+                debug :binding, "Insufficient bindings for #{role_ref.inspect} (#{role_ref.binding.refs.size}, expected #{@join_lists.size+1}), attempting loose binding" do
+                  @join_lists.each do |join_list|
+                    candidates = []
+                    next if join_list.
+                      detect do |reading|
+                        debug :binding, "Checking #{reading.inspect}"
+                        reading.role_refs.
+                          detect do |rr|
+                            already_bound = rr.binding == role_ref.binding
+                            if !already_bound && rr.player == role_ref.player
+                              debugger
+                              candidates << rr
+                            end
+                            already_bound
+                          end
+                      end
+                    debug :binding, "Attempting loose binding for #{role_ref.inspect} in #{join_list.inspect}, from the following candidates: #{candidates.inspect}"
+
+                    if candidates.size == 1
+                      debug :binding, "Rebinding #{candidates[0].inspect} to #{role_ref.inspect}"
+                      candidates[0].rebind_to(@context, role_ref)
+                    end
+                  end
+                end
+              end
             end
           end
         end

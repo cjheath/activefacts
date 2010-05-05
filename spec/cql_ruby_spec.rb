@@ -23,7 +23,6 @@ describe "CQL Loader with Ruby output" do
   cql_failures = {
     "Airline" => "Contains queries, not supported",
     "CompanyQuery" => "Contains queries, not supported",
-    "OrienteeringER" => "Large fact type reading cannot be matched",
     "ServiceDirector" => "Constraints contain adjectives that require looser matching",
   }
 

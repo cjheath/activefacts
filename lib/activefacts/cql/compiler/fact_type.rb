@@ -35,7 +35,7 @@ module ActiveFacts
           @readings.each{ |reading| reading.identify_other_players(context) }
           @readings.each{ |reading| reading.bind_roles context }  # Create the Compiler::Bindings
 
-          verify_matching_roles # All readings of a fact type must have the same roles
+          verify_matching_roles context # All readings of a fact type must have the same roles
 
           # Ignore any useless readings:
           @readings.reject!{|reading| reading.is_existential_type }
@@ -128,7 +128,7 @@ module ActiveFacts
           return true
         end
 
-        def verify_matching_roles
+        def verify_matching_roles context
           role_refs_by_reading_and_key = {}
           readings_by_role_refs =
             @readings.inject({}) do |hash, reading|
@@ -175,7 +175,7 @@ module ActiveFacts
                   # debug :binding, "found #{candidates.size} rebinding candidates for this role"
                   debug :binding, "rebinding is ambiguous so not attempted" if candidates.size > 1
                   if (candidates.size == 1)
-                    candidates[0][0].rebind(candidates[0][1])
+                    candidates[0][0].rebind_to(context, candidates[0][1])
                     rebindings += 1
                   end
 

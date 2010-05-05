@@ -122,14 +122,6 @@ module ActiveFacts
 	  def value		# Sometimes we just want the full term name
             x.context[:term]
           end
-
-	  def structure		# but in roles, we want the structure
-	    term = x.context[:term]
-	    s = { :term => (g = x.context[:global_term]) }
-	    s[:leading_adjective] = term[0...-g.size-1] if term.size > g.size and term[-g.size..-1] == g
-	    s[:trailing_adjective] = term[g.size+1..-1] if term.size > g.size and term[0...g.size] == g
-	    s
-	  end
         }
       end
 

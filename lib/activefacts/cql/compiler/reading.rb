@@ -9,6 +9,7 @@ module ActiveFacts
 
         def initialize role_refs_and_words, qualifiers = [], context_note = nil
           @phrases = role_refs_and_words
+          role_refs.each { |role_ref| role_ref.reading = self }
           @qualifiers = qualifiers
           @context_note = context_note
         end
@@ -154,7 +155,7 @@ module ActiveFacts
             if matches.size >= 1
               @reading = best_matches[0]
               side_effects = matches[@reading]
-              apply_side_effects(side_effects)
+              apply_side_effects(context, side_effects)
               return @fact_type = side_effects.fact_type
             end
 
@@ -183,8 +184,8 @@ module ActiveFacts
         def reading_matches(fact_type, reading)
           side_effects = []    # An array of items for each role, describing any side-effects of the match.
           residual_adjectives = false
-          debug :matching, "Does '#{@phrases.inspect}' match '#{reading.expand}'" do
-          phrase_num = 0
+          debug :matching_fails, "Does '#{@phrases.inspect}' match '#{reading.expand}'" do
+            phrase_num = 0
             reading_parts = reading.text.split(/\s+/)
             # Check that the number of roles matches (skipped, the caller should have done it):
             # return nil unless reading_parts.select{|p| p =~ /\{(\d+)\}/}.size == role_refs.size
@@ -192,7 +193,7 @@ module ActiveFacts
               if element !~ /\{(\d+)\}/
                 # Just a word; it must match
                 unless @phrases[phrase_num] == element
-                  debug :matching, "Mismatched ordinary word #{@phrases[phrase_num]} (wanted #{element})"
+                  debug :matching_fails, "Mismatched ordinary word #{@phrases[phrase_num]} (wanted #{element})"
                   return nil
                 end
                 phrase_num += 1
@@ -224,7 +225,7 @@ module ActiveFacts
                 # This relies on the supertypes being in breadth-first order:
                 common_supertype = (next_player_phrase.player.supertypes_transitive & player.supertypes_transitive)[0]
                 if !common_supertype
-                  debug :matching, "Reading discounted because next player #{player.name} doesn't match #{next_player_phrase.player.name}"
+                  debug :matching_fails, "Reading discounted because next player #{player.name} doesn't match #{next_player_phrase.player.name}"
                   return nil
                 end
                 debug :matching, "Subtype join is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
@@ -269,27 +270,28 @@ module ActiveFacts
               end
 
               # The phrases matched this reading's next role_ref, save data to apply the side-effects:
-              debug :matching, "Saving matched player #{next_player_phrase.term} with #{role_ref ? "a" : "no" } role_ref"
+              debug :matching, "Saving side effects for #{next_player_phrase.term}, absorbs #{absorbed_precursors}/#{absorbed_followers}#{common_supertype ? ', join over supertype '+ common_supertype.name : ''}" if absorbed_precursors+absorbed_followers+(common_supertype ? 1 : 0) > 0
               side_effects << [next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers, common_supertype]
             end
 
             unless phrase_num == @phrases.size
-              debug :matching, "Extra words #{@phrases[phrase_num..-1].inspect}"
+              debug :matching_fails, "Extra words #{@phrases[phrase_num..-1].inspect}"
               return nil
             end
-            debug :matching, "Matched reading '#{reading.expand}' with #{side_effects.select{|(phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype)| absorbed_precursors+absorbed_followers > 0 || common_supertype}.size} side effects#{residual_adjectives ? ' and residual adjectives' : ''}"
+            debug :matching, "Matched reading '#{reading.expand}' with #{side_effects.map{|(phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype)| absorbed_precursors+absorbed_followers + (common_supertype ? 1 : 0)}.inspect} side effects#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
           # There will be one side_effects for each role player
           ReadingMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects)
         end
 
-        def apply_side_effects(side_effects)
+        def apply_side_effects(context, side_effects)
           @applied_side_effects = side_effects
           # Enact the side-effects of this match (delete the consumed adjectives):
           # Since this deletes words from the phrases, we do it in reverse order.
           debug :matching, "Apply side-effects" do
             side_effects.apply_all do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
               phrase.role_ref = role_ref    # re-used if possible (no extra adjectives were used, no rolename or join, etc).
+              changed = false
 
               # Where this phrase has leading or trailing adjectives that are in excess of those of
               # the role_ref, those must be local, and we'll need to extract them.
@@ -302,10 +304,12 @@ module ActiveFacts
                   if a.size >= rra.size
                     a.slice!(0, rra.size+1) # Remove the matched adjectives and the space (if any)
                     phrase.wipe_trailing_adjective if a.empty?
+                    changed = true
                   end
                 elsif absorbed_followers > 0
                   phrase.wipe_trailing_adjective
                   @phrases.slice!(num+1, absorbed_followers)
+                  changed = true
                 end
               end
 
@@ -318,12 +322,17 @@ module ActiveFacts
                     a.slice!(-rra.size, 1000) # Remove the matched adjectives and the space
                     a.chop!
                     phrase.wipe_leading_adjective if a.empty?
+                    changed = true
                   end
                 elsif absorbed_precursors > 0
                   phrase.wipe_leading_adjective
                   @phrases.slice!(num-absorbed_precursors, absorbed_precursors)
+                  changed = true
                 end
               end
+
+              phrase.rebind(context) if changed
+
             end
           end
         end
@@ -503,6 +512,7 @@ module ActiveFacts
         attr_reader :term, :leading_adjective, :trailing_adjective, :quantifier, :function_call, :role_name, :restriction, :literal
         attr_reader :player
         attr_accessor :binding
+        attr_accessor :reading    # The reading that this RoleRef is part of
         attr_accessor :role       # This refers to the ActiveFacts::Metamodel::Role
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
         attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
@@ -577,12 +587,28 @@ module ActiveFacts
           @binding
         end
 
-        def rebind(other_role_ref)
+        def unbind context
+          # The key has changed.
+          @binding.refs.delete(self)
+          @binding = nil
+        end
+
+        def rebind(context)
+          unbind context
+          bind context
+        end
+
+        def rebind_to(context, other_role_ref)
           debug :binding, "Rebinding #{inspect} to #{other_role_ref.inspect}"
-          old_binding = binding
+
+          old_binding = binding   # Remember to move all refs across
+          unbind(context)
+
           new_binding = other_role_ref.binding
-          self.binding = nil
-          old_binding.refs.each {|ref| ref.binding = new_binding; new_binding.refs << ref }
+          [self, *old_binding.refs].each do |ref|
+            ref.binding = new_binding
+            new_binding.refs << ref
+          end
           old_binding.rebound_to = new_binding
         end
 
