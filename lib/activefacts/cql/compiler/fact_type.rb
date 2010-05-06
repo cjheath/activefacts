@@ -14,7 +14,7 @@ module ActiveFacts
         end
 
         def compile
-          raise "Queries not yet handled" unless @conditions.empty? and !@returning
+          raise "Queries not yet handled: #{@source}" unless @conditions.empty? and !@returning
 
           #
           # Process:
