@@ -31,9 +31,16 @@ module ActiveFacts
             readings = [fact_clause.ast, *ftail.elements.map{|e| e.fact_clause.ast }]
             conditions = !ctail.empty? ? ctail.c.ast : []
 	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
-	    if (readings.detect{|r| r.includes_literals})
+	    if (conditions.empty? && readings.detect{|r| r.includes_literals})
 	      raise "Fact instances may not contain conditions" unless conditions.empty? && !returning
 	      Compiler::Fact.new readings
+	    elsif (readings.size == 1 &&
+	      readings[0].phrases.size == 1 &&
+	      (popname = readings[0].phrases[0]) &&
+	      !popname.is_a?(Compiler::RoleRef) &&
+	      conditions.detect{|r| r.includes_literals}
+	    )
+	      Compiler::Fact.new conditions, popname
 	    else
 	      Compiler::FactType.new nil, readings, conditions, returning
 	    end
