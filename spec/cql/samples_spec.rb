@@ -59,7 +59,6 @@ describe "Sample data" do
       "Company 'Microsoft' is directed by Person 'Gates';",
       [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
     ],
-
     [   # Same with an explicit joined fact
       "Company 'Microsoft' is directed by Person, Person is called PersonName 'Gates';",
       [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
@@ -93,7 +92,7 @@ describe "Sample data" do
     [ # Omit the company name:
       "example: Company is directed by Person, Person is called PersonName, PersonName 'Gates', Company has CompanyName;",
       [ "Company (lacking CompanyName)", "CompanyName (needs a value)" ]
-    ]
+    ],
   ]
 
   # REVISIT: This code does a better job than verbalise. Consider incorporating it?
@@ -156,6 +155,7 @@ describe "Sample data" do
   GoodSamples.
   each do |c|
     source, expected = *Array(c)
+
     it "should handle #{source.inspect}" do
       @text = SamplePrefix+source
       pending if expected == :pending
@@ -181,6 +181,7 @@ describe "Sample data" do
       result = instance_data(@vocabulary)
       result[0].should == expected[0]
     end
+
   end
 
   BadSamples.each do |c|
@@ -204,4 +205,5 @@ describe "Sample data" do
       end
     end
   end
+
 end
