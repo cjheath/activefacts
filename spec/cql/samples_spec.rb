@@ -18,7 +18,7 @@ describe "Sample data" do
       Company is directed by Person;
   }
 
-  Samples = [
+  GoodSamples = [
     [   # A simple ValueType instance
       "CompanyName 'Microsoft';",
       [{:facts=>[], :instances=>["CompanyName 'Microsoft'"]}]
@@ -59,6 +59,7 @@ describe "Sample data" do
       "Company 'Microsoft' is directed by Person 'Gates';",
       [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
     ],
+
     [   # Same with an explicit joined fact
       "Company 'Microsoft' is directed by Person, Person is called PersonName 'Gates';",
       [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
@@ -71,6 +72,28 @@ describe "Sample data" do
       "example: Company is directed by Person, Person is called PersonName, PersonName 'Gates', Company has CompanyName, CompanyName 'Microsoft';",
       [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
     ],
+
+    # Objectification examples
+    [   # Same in a named population
+      "Directorship (where Company 'Microsoft' is directed by Person 'Gates');",
+      :pending # [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
+    ],
+  ]
+
+  BadSamples =
+  [
+    [
+      "CompanyName",
+      "CompanyName",
+    ],
+    [
+      "foo: CompanyName",
+      "CompanyName",
+    ],
+    [ # Omit the company name:
+      "example: Company is directed by Person, Person is called PersonName, PersonName 'Gates', Company has CompanyName;",
+      [ "Company (lacking CompanyName)", "CompanyName (needs a value)" ]
+    ]
   ]
 
   # REVISIT: This code does a better job than verbalise. Consider incorporating it?
@@ -129,11 +152,16 @@ describe "Sample data" do
     end
   end
 
-  Samples.each do |c|
+  # [].
+  GoodSamples.
+  each do |c|
     source, expected = *Array(c)
     it "should handle #{source.inspect}" do
       @text = SamplePrefix+source
-      @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+      pending if expected == :pending
+      lambda do
+        @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+      end.should_not raise_error
       result = instance_data(@vocabulary)
 
       if expected
@@ -146,9 +174,34 @@ describe "Sample data" do
     it "should de-duplicate #{source.inspect}" do
       # Make sure you don't get anything duplicated
       @text = SamplePrefix+source+source
-      @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+      pending if expected == :pending
+      lambda do
+        @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+      end.should_not raise_error
       result = instance_data(@vocabulary)
       result[0].should == expected[0]
+    end
+  end
+
+  BadSamples.each do |c|
+    source, missing = *Array(c)
+    it "should detect missing joins in #{source.inspect}" do
+      @text = SamplePrefix+source
+      lambda do
+        begin
+          @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+        rescue => @exception
+          raise
+        end
+      end.should raise_error
+
+      if missing
+        missing.each do |m|
+          @exception.message.should =~ (m.is_a?(Regexp) ? m : Regexp.new(Regexp.escape(m)))
+        end
+      else
+        pending "raised #{@exception}"
+      end
     end
   end
 end

@@ -64,7 +64,7 @@ module ActiveFacts
           @pass += 1
 
           progress = false
-          debug :instance, "Pass #{@pass}" do
+          debug :instance, "Pass #{@pass} with #{@unbound_readings.size} readings to consider" do
             @unbound_readings.map! do |reading|
               # See if we can create the fact instance yet
 
@@ -132,6 +132,7 @@ module ActiveFacts
                   instance = (role_value.fact.all_role_value.to_a-[role_value])[0].instance
                   debug :instance, "Found existing instance (of #{instance.concept.name}) from a previous definition"
                   @bound_instances[binding] = instance
+                  progress = true
                   next  # Done with this reading
                 end
 
@@ -164,6 +165,7 @@ module ActiveFacts
                   true
                 end
 
+                progress = true
                 next  # Done with this reading
               end
               reading
@@ -235,25 +237,39 @@ module ActiveFacts
         end
 
         def complain_incomplete
-          return
-          raise "REVISIT: old code, not fixed"
-          incomplete = @bound_fact_types.select{|ft| !ft.is_a?(ActiveFacts::Metamodel::Instance) && !ft.is_a?(ActiveFacts::Metamodel::Fact)}
-          if incomplete.size > 0
+          if @unbound_readings.size > 0
             # Provide a readable description of the problem here, by showing each binding with no instance
-            missing_bindings = incomplete.map do |f|
-              phrases = f[0]
-              phrases.select{|p|
-                p.is_a?(Hash) and binding = p[:binding] and !@bound_instances[binding]
-              }.map{|phrase| phrase[:binding]}
-            end.flatten.uniq
+            missing_bindings = @unbound_readings.
+              map do |reading|
+                reading.role_refs.
+                  select do |rr|
+                    !@bound_instances[rr.binding]
+                  end.
+                  map do |role_ref|
+                    role_ref.binding
+                  end
+              end.
+              flatten.
+              uniq
+
             raise "Not enough facts are given to identify #{
-                missing_bindings.map do |b|
-                  [ b.leading_adjective, b.concept.name, b.trailing_adjective ].compact*" " +
-                  " (need #{b.concept.preferred_identifier.role_sequence.all_role_ref.map do |rr|
-                      [ rr.leading_adjective, rr.role.role_name || rr.role.concept.name, rr.trailing_adjective ].compact*" "
-                    end*", "
-                  })"
-                end*", "
+                missing_bindings.
+                  sort_by{|b| b.key}.
+                  map do |b|
+                    player_identifier =
+                      if b.player.is_a?(ActiveFacts::Metamodel::EntityType)
+                        "lacking " +
+                          b.player.preferred_identifier.role_sequence.all_role_ref.map do |rr|
+                            [ rr.leading_adjective, rr.role.role_name || rr.role.concept.name, rr.trailing_adjective ].compact*" "
+                          end*", "
+                      else
+                        "needs a value"
+                      end
+                    [
+                      b.refs[0].leading_adjective, b.player.name, b.refs[0].trailing_adjective
+                    ].compact*" " +
+                      " (#{player_identifier})"
+                  end*" or "
               }"
           end
         end
