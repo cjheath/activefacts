@@ -34,7 +34,7 @@ module ActiveFacts
             join_list.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
             join_list.each do |reading| 
               fact_type = reading.match_existing_fact_type @context
-              raise "Unrecognised fact type #{@reading.inspect} in #{self.class}" unless fact_type
+              raise "Unrecognised fact type #{reading.inspect} in #{self.class}" unless fact_type
               # REVISIT: Should we complain when any fact type is not binary?
             end
           end
@@ -106,7 +106,7 @@ module ActiveFacts
           fact_types =
             @readings.map do |reading|
               fact_type = reading.match_existing_fact_type context
-              raise "Unrecognised fact type #{@reading.inspect} in presence constraint" unless fact_type
+              raise "Unrecognised fact type #{reading.inspect} in presence constraint" unless fact_type
               fact_type
             end
 
