@@ -47,17 +47,20 @@ module ActiveFacts
           raise "Clauses match different existing fact types" if fact_types.size > 1
           @fact_type = fact_types[0]
 
-          # If not, make a new fact type:
-          unless @fact_type
+          new_readings = @readings - existing_readings
+          if !@fact_type
+            # Make a new fact type:
             first_reading = @readings[0]
             @fact_type = first_reading.make_fact_type(@vocabulary)
             first_reading.make_reading(@vocabulary, @fact_type)
             first_reading.make_embedded_constraints vocabulary
             existing_readings = [first_reading]
+          elsif new_readings.size > 0
+            debug :binding, "Extending existing fact type with #{new_readings.size} new readings"
           end
 
           # Now make any new readings:
-          (@readings - existing_readings).each do |reading|
+          new_readings.each do |reading|
             reading.make_reading(@vocabulary, @fact_type)
             reading.make_embedded_constraints vocabulary
           end
