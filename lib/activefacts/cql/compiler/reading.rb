@@ -136,7 +136,6 @@ module ActiveFacts
                 matches[reading] = side_effects if side_effects
               end
             end
-            debug :matching_fails, "Found #{matches.size} valid matches"
 
             # REVISIT: Side effects that leave extra adjectives should only be allowed if the
             # same extra adjectives exist in some other reading in the same declaration.
@@ -146,6 +145,7 @@ module ActiveFacts
             # the whole declaration has been processed and the extra adjectives can be matched.
 
             best_matches = matches.keys.sort_by{|match| matches[match].cost}
+            debug :matching_fails, "Found #{matches.size} valid matches#{matches.size > 0 ? ', best is '+best_matches[0].expand : ''}"
 
             if matches.size > 1 and matches[best_matches[0]].cost > 0
               # Complain if there's more than one inexact match:
@@ -252,6 +252,8 @@ module ActiveFacts
                 residual_adjectives = true if phrase_la.size > la.size
                 # The leading adjectives and the player matched! Check the trailing adjectives.
                 absorbed_precursors = intervening_words.size
+              elsif intervening_words.size > 0 || next_player_phrase.leading_adjective
+                residual_adjectives = true
               end
 
               absorbed_followers = 0
@@ -269,6 +271,13 @@ module ActiveFacts
                 residual_adjectives = true if phrase_ta.size > ta.size || i < ta.size
                 absorbed_followers = i
                 phrase_num += i # Skip following words that were consumed as trailing adjectives
+              elsif next_player_phrase.trailing_adjective
+                residual_adjectives = true
+              end
+
+              if residual_adjectives && next_player_phrase.binding.refs.size == 1
+                debug :matching_fails, "Residual adjectives have no other purpose, so this match fails"
+                return nil
               end
 
               # The phrases matched this reading's next role_ref, save data to apply the side-effects:
@@ -292,7 +301,10 @@ module ActiveFacts
           # Since this deletes words from the phrases, we do it in reverse order.
           debug :matching, "Apply side-effects" do
             side_effects.apply_all do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
-              phrase.role_ref = role_ref    # re-used if possible (no extra adjectives were used, no rolename or join, etc).
+              # We re-use the role_ref if possible (no extra adjectives were used, no rolename or join, etc).
+              phrase.binding.refs.each { |rr| rr.role_ref = role_ref }
+              # phrase.role_ref = role_ref
+
               changed = false
 
               # Where this phrase has leading or trailing adjectives that are in excess of those of
@@ -367,6 +379,7 @@ module ActiveFacts
                 unless phrase.role
                   # Find another binding for this phrase which already has a role_ref to the same fact type:
                   ref = phrase.binding.refs.detect{|ref| ref.role_ref && ref.role_ref.role.fact_type == fact_type}
+                  debugger unless ref
                   role_ref = ref.role_ref
                   phrase.role = role_ref.role
                 end
@@ -493,7 +506,7 @@ module ActiveFacts
         def cost
           c = 0
           @side_effects.each do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
-            c += absorbed_precursors + absorbed_followers + (common_supertype ? 1 : 0)
+            c += absorbed_precursors + absorbed_followers + (common_supertype ? 1 : 0) + (@residual_adjectives ? 1 : 0)
           end
           c
         end
