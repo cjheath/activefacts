@@ -136,6 +136,7 @@ module ActiveFacts
                 matches[reading] = side_effects if side_effects
               end
             end
+            debug :matching_fails, "Found #{matches.size} valid matches"
 
             # REVISIT: Side effects that leave extra adjectives should only be allowed if the
             # same extra adjectives exist in some other reading in the same declaration.
@@ -183,6 +184,7 @@ module ActiveFacts
         #
         def reading_matches(fact_type, reading)
           side_effects = []    # An array of items for each role, describing any side-effects of the match.
+          intervening_words = nil
           residual_adjectives = false
           debug :matching_fails, "Does '#{@phrases.inspect}' match '#{reading.expand}'" do
             phrase_num = 0
@@ -274,8 +276,8 @@ module ActiveFacts
               side_effects << [next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers, common_supertype]
             end
 
-            unless phrase_num == @phrases.size
-              debug :matching_fails, "Extra words #{@phrases[phrase_num..-1].inspect}"
+            if phrase_num != @phrases.size || !intervening_words.empty?
+              debug :matching_fails, "Extra words #{(intervening_words + @phrases[phrase_num..-1]).inspect}"
               return nil
             end
             debug :matching, "Matched reading '#{reading.expand}' with #{side_effects.map{|(phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype)| absorbed_precursors+absorbed_followers + (common_supertype ? 1 : 0)}.inspect} side effects#{residual_adjectives ? ' and residual adjectives' : ''}"
