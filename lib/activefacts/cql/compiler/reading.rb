@@ -101,7 +101,7 @@ module ActiveFacts
                   role.fact_type.is_a?(Metamodel::TypeInheritance) and
                   [players[0].name, players[1].name].sort != all_roles.map{|r| r.concept.name}.sort
                   # REVISIT: Perhaps this match can be made transitive in future:
-                  debug :matching, "Requiring exact match for TypeInheritance invocation"
+                  debug :matching, "Requiring exact match for TypeInheritance invocation want (#{players.map{|p|p.name}.sort*', '}), discounting (#{all_roles.map{|r|r.concept.name}.sort*', '})"
                   next
                 end
 
@@ -147,7 +147,7 @@ module ActiveFacts
             best_matches = matches.keys.sort_by{|match| matches[match].cost}
             debug :matching_fails, "Found #{matches.size} valid matches#{matches.size > 0 ? ', best is '+best_matches[0].expand : ''}"
 
-            if matches.size > 1 and matches[best_matches[0]].cost > 0
+            if matches.size > 1 and (b = matches[best_matches[0]].cost) > 0 || b == matches[best_matches[1]].cost
               # Complain if there's more than one inexact match:
               raise "#{@phrases.inspect} could match any of the following:\n\t"+
                 best_matches.map { |reading| reading.expand + " with " + matches[reading].describe } * "\n\t"
@@ -195,7 +195,7 @@ module ActiveFacts
               if element !~ /\{(\d+)\}/
                 # Just a word; it must match
                 unless @phrases[phrase_num] == element
-                  debug :matching_fails, "Mismatched ordinary word #{@phrases[phrase_num]} (wanted #{element})"
+                  debug :matching_fails, "Mismatched ordinary word #{@phrases[phrase_num].inspect} (wanted #{element})"
                   return nil
                 end
                 phrase_num += 1
@@ -252,6 +252,7 @@ module ActiveFacts
                 residual_adjectives = true if phrase_la.size > la.size
                 # The leading adjectives and the player matched! Check the trailing adjectives.
                 absorbed_precursors = intervening_words.size
+                intervening_words = []
               elsif intervening_words.size > 0 || next_player_phrase.leading_adjective
                 residual_adjectives = true
               end
@@ -302,8 +303,7 @@ module ActiveFacts
           debug :matching, "Apply side-effects" do
             side_effects.apply_all do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
               # We re-use the role_ref if possible (no extra adjectives were used, no rolename or join, etc).
-              phrase.binding.refs.each { |rr| rr.role_ref = role_ref }
-              # phrase.role_ref = role_ref
+              phrase.role_ref = role_ref
 
               changed = false
 
@@ -311,7 +311,7 @@ module ActiveFacts
               # the role_ref, those must be local, and we'll need to extract them.
 
               if rra = role_ref.trailing_adjective
-                debug :matching, "Deleting matched trailing adjective '#{rra}'#{absorbed_followers>0 ? "in #{absorbed_followers} followers" : ""}"
+                debug :matching, "Deleting matched trailing adjective '#{rra}'#{absorbed_followers>0 ? " in #{absorbed_followers} followers" : ""}"
 
                 # These adjective(s) matched either an adjective here, or a follower word, or both.
                 if a = phrase.trailing_adjective
@@ -328,7 +328,7 @@ module ActiveFacts
               end
 
               if rra = role_ref.leading_adjective
-                debug :matching, "Deleting matched leading adjective '#{rra}'#{absorbed_precursors>0 ? "in #{absorbed_precursors} precursors" : ""}}"
+                debug :matching, "Deleting matched leading adjective '#{rra}'#{absorbed_precursors>0 ? " in #{absorbed_precursors} precursors" : ""}}"
 
                 # These adjective(s) matched either an adjective here, or a precursor word, or both.
                 if a = phrase.leading_adjective
@@ -579,7 +579,10 @@ module ActiveFacts
           elsif uses_role_name?
             key = [@player.name, @term]       # Uses a role name
           else
-            key = [@leading_adjective, @term, @trailing_adjective]
+            l = @leading_adjective
+            t = @trailing_adjective
+            key = [!l || l.empty? ? nil : l, @term, !t || t.empty? ? nil : t]
+            key
           end
         end
 
