@@ -155,9 +155,11 @@ module ActiveFacts
 
             if matches.size >= 1
               @reading = best_matches[0]
-              side_effects = matches[@reading]
-              apply_side_effects(context, side_effects)
-              return @fact_type = side_effects.fact_type
+              @side_effects = matches[@reading]
+              @fact_type = @side_effects.fact_type
+              # REVISIT: Move this code to make_reading
+              apply_side_effects(context, @side_effects)
+              return @fact_type
             end
 
           end
@@ -283,14 +285,15 @@ module ActiveFacts
 
               # The phrases matched this reading's next role_ref, save data to apply the side-effects:
               debug :matching, "Saving side effects for #{next_player_phrase.term}, absorbs #{absorbed_precursors}/#{absorbed_followers}#{common_supertype ? ', join over supertype '+ common_supertype.name : ''}" if absorbed_precursors+absorbed_followers+(common_supertype ? 1 : 0) > 0
-              side_effects << [next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers, common_supertype]
+              side_effects << ReadingMatchSideEffect.new(next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers, common_supertype)
             end
 
             if phrase_num != @phrases.size || !intervening_words.empty?
               debug :matching_fails, "Extra words #{(intervening_words + @phrases[phrase_num..-1]).inspect}"
               return nil
             end
-            debug :matching, "Matched reading '#{reading.expand}' with #{side_effects.map{|(phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype)| absorbed_precursors+absorbed_followers + (common_supertype ? 1 : 0)}.inspect} side effects#{residual_adjectives ? ' and residual adjectives' : ''}"
+            debug :matching, "Matched reading '#{reading.expand}' with #{side_effects.map{|se| se.absorbed_precursors+se.absorbed_followers + (se.common_supertype ? 1 : 0)
+            }.inspect} side effects#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
           # There will be one side_effects for each role player
           ReadingMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects)
@@ -301,51 +304,52 @@ module ActiveFacts
           # Enact the side-effects of this match (delete the consumed adjectives):
           # Since this deletes words from the phrases, we do it in reverse order.
           debug :matching, "Apply side-effects" do
-            side_effects.apply_all do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
+            side_effects.apply_all do |se|
+
               # We re-use the role_ref if possible (no extra adjectives were used, no rolename or join, etc).
-              phrase.role_ref = role_ref
+              se.phrase.role_ref = se.role_ref
 
               changed = false
 
               # Where this phrase has leading or trailing adjectives that are in excess of those of
               # the role_ref, those must be local, and we'll need to extract them.
 
-              if rra = role_ref.trailing_adjective
-                debug :matching, "Deleting matched trailing adjective '#{rra}'#{absorbed_followers>0 ? " in #{absorbed_followers} followers" : ""}"
+              if rra = se.role_ref.trailing_adjective
+                debug :matching, "Deleting matched trailing adjective '#{rra}'#{se.absorbed_followers>0 ? " in #{se.absorbed_followers} followers" : ""}"
 
                 # These adjective(s) matched either an adjective here, or a follower word, or both.
-                if a = phrase.trailing_adjective
+                if a = se.phrase.trailing_adjective
                   if a.size >= rra.size
                     a.slice!(0, rra.size+1) # Remove the matched adjectives and the space (if any)
-                    phrase.wipe_trailing_adjective if a.empty?
+                    se.phrase.wipe_trailing_adjective if a.empty?
                     changed = true
                   end
-                elsif absorbed_followers > 0
-                  phrase.wipe_trailing_adjective
-                  @phrases.slice!(num+1, absorbed_followers)
+                elsif se.absorbed_followers > 0
+                  se.phrase.wipe_trailing_adjective
+                  @phrases.slice!(se.num+1, se.absorbed_followers)
                   changed = true
                 end
               end
 
-              if rra = role_ref.leading_adjective
-                debug :matching, "Deleting matched leading adjective '#{rra}'#{absorbed_precursors>0 ? " in #{absorbed_precursors} precursors" : ""}}"
+              if rra = se.role_ref.leading_adjective
+                debug :matching, "Deleting matched leading adjective '#{rra}'#{se.absorbed_precursors>0 ? " in #{se.absorbed_precursors} precursors" : ""}}"
 
                 # These adjective(s) matched either an adjective here, or a precursor word, or both.
-                if a = phrase.leading_adjective
+                if a = se.phrase.leading_adjective
                   if a.size >= rra.size
                     a.slice!(-rra.size, 1000) # Remove the matched adjectives and the space
                     a.chop!
-                    phrase.wipe_leading_adjective if a.empty?
+                    se.phrase.wipe_leading_adjective if a.empty?
                     changed = true
                   end
-                elsif absorbed_precursors > 0
-                  phrase.wipe_leading_adjective
-                  @phrases.slice!(num-absorbed_precursors, absorbed_precursors)
+                elsif se.absorbed_precursors > 0
+                  se.phrase.wipe_leading_adjective
+                  @phrases.slice!(se.num-se.absorbed_precursors, se.absorbed_precursors)
                   changed = true
                 end
               end
 
-              phrase.rebind(context) if changed
+              se.phrase.rebind(context) if changed
 
             end
           end
@@ -369,11 +373,11 @@ module ActiveFacts
           @fact_type = fact_type
           constellation = vocabulary.constellation
           @role_sequence = constellation.RoleSequence(:new)
-          reading_words = []
+          reading_words = @phrases.clone
+          index = 0
           debug :matching, "Making new reading for #{@phrases.inspect}" do
-            @phrases.each do |phrase|
+            reading_words.map! do |phrase|
               if phrase.is_a?(RoleRef)
-                index = @role_sequence.all_role_ref.size
                 # phrase.role will be set if this reading was used to make_fact_type.
                 # Otherwise we have to find the existing role via the Binding. This is pretty ugly.
                 unless phrase.role
@@ -385,6 +389,7 @@ module ActiveFacts
                 end
                 rr = constellation.RoleRef(@role_sequence, index, :role => phrase.role)
                 phrase.role_ref = rr
+
                 if la = phrase.leading_adjective
                   # If we have used one or more adjective to match an existing reading, that has already been removed.
                   rr.leading_adjective = la
@@ -392,13 +397,16 @@ module ActiveFacts
                 if ta = phrase.trailing_adjective
                   rr.trailing_adjective = ta
                 end
+
                 if phrase.restriction
                   raise "The role #{rr.inspect} already has a value constraint" if rr.role.role_value_restriction
                   rr.role.role_value_restriction = phrase.restriction.compile fact_type.constellation
                 end
-                reading_words << "{#{index}}"
+
+                index += 1
+                "{#{index-1}}"
               else
-                reading_words << phrase
+                phrase
               end
             end
             constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ")
@@ -488,35 +496,51 @@ module ActiveFacts
 
       end
 
+      # An instance of ReadingMatchSideEffects is created when the compiler matches an existing fact type.
+      # It captures the details that have to be adjusted for the match to be regarded a success.
+      class ReadingMatchSideEffect
+        attr_reader :phrase, :role_ref, :num, :absorbed_precursors, :absorbed_followers, :common_supertype
+
+        def initialize phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype
+          @phrase = phrase
+          @role_ref = role_ref
+          @num = num
+          @absorbed_precursors = absorbed_precursors
+          @absorbed_followers = absorbed_followers
+          @common_supertype = common_supertype
+        end
+      end
+
       class ReadingMatchSideEffects
         attr_reader :residual_adjectives
         attr_reader :fact_type
+        attr_reader :role_side_effects    # One array of values per RoleRef matched, in order
 
-        def initialize fact_type, reading, residual_adjectives, side_effects
+        def initialize fact_type, reading, residual_adjectives, role_side_effects
           @fact_type = fact_type
           @reading = reading
           @residual_adjectives = residual_adjectives
-          @side_effects = side_effects
+          @role_side_effects = role_side_effects
         end
 
         def apply_all &b
-          @side_effects.reverse.each{ |side_effect| b.call(*side_effect) }
+          @role_side_effects.reverse.each{ |role_side_effect| b.call(*role_side_effect) }
         end
 
         def cost
           c = 0
-          @side_effects.each do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
-            c += absorbed_precursors + absorbed_followers + (common_supertype ? 1 : 0) + (@residual_adjectives ? 1 : 0)
+          @role_side_effects.each do |se|
+            c += se.absorbed_precursors + se.absorbed_followers + (se.common_supertype ? 1 : 0)
           end
-          c
+          c + (@residual_adjectives ? 1 : 0)
         end
 
         def describe
           actual_effects =
-            @side_effects.map do |phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype|
-              ( [common_supertype ? "supertype join over #{common_supertype.name}" : nil] +
-                [absorbed_precursors > 0 ? "absorbs #{absorbed_precursors} preceding words" : nil] +
-                [absorbed_followers > 0 ? "absorbs #{absorbed_followers} following words" : nil]
+            @role_side_effects.map do |se|
+              ( [se.common_supertype ? "supertype join over #{se.common_supertype.name}" : nil] +
+                [se.absorbed_precursors > 0 ? "absorbs #{se.absorbed_precursors} preceding words" : nil] +
+                [se.absorbed_followers > 0 ? "absorbs #{se.absorbed_followers} following words" : nil]
               )
             end.flatten.compact*','
           actual_effects.empty? ? "no side effects" : actual_effects
