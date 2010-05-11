@@ -6,7 +6,10 @@ module ActiveFacts
         def initialize action, agent
           @action = action
           @agent = agent
-          @constraint = nil
+        end
+
+        def compile constellation
+          constellation.Enforcement(:enforcement_code => @action, :agent => @agent)
         end
       end
 
@@ -15,10 +18,6 @@ module ActiveFacts
           @context_note = context_note
           @enforcement = enforcement
           @join_lists = join_lists
-        end
-
-        def apply_enforcement
-          @constraint.enforcement = @enforcement
         end
 
         def loose_binding
@@ -85,8 +84,10 @@ module ActiveFacts
           debug :binding, "Loose binding on SetEqualityConstraint" do
             @join_lists.each do |join_list|
               join_list.each do |reading|
-                reading.role_refs.each do |role_ref|
+                next if reading.side_effects && reading.side_effects.cost == 0        # Exact match
+                reading.role_refs.each_with_index do |role_ref, i|
                   next if role_ref.binding.refs.size > 1
+                  next if reading.side_effects && reading.side_effects[i].cost == 0   # Exact match
                   # This role_ref didn't match any other role_ref. Have a scout around for a suitable partner
                   candidates = @context.bindings.
                     select do |key, binding|
@@ -201,7 +202,7 @@ module ActiveFacts
             :max_frequency => @quantifier.max,
             :is_preferred_identifier => false,
             :is_mandatory => @quantifier.min && @quantifier.min > 0,
-            :enforcement => @enforcement && @enforcement.compile
+            :enforcement => @enforcement && @enforcement.compile(@constellation)
           )
         end
 
@@ -263,7 +264,7 @@ module ActiveFacts
             :vocabulary => @vocabulary,
             :subset_role_sequence => role_sequences[0],
             :superset_role_sequence => role_sequences[1],
-            :enforcement => @enforcement && @enforcement.compile
+            :enforcement => @enforcement && @enforcement.compile(@constellation)
           )
         end
 
@@ -311,14 +312,14 @@ module ActiveFacts
               :max_frequency => nil,
               :is_preferred_identifier => false,
               :is_mandatory => true,
-              :enforcement => @enforcement && @enforcement.compile
+              :enforcement => @enforcement && @enforcement.compile(@constellation)
             )
           else
             constraint = @constellation.SetExclusionConstraint(
               :new,
               :vocabulary => @vocabulary,
               :is_mandatory => @quantifier.min == 1,
-              :enforcement => @enforcement && @enforcement.compile
+              :enforcement => @enforcement && @enforcement.compile(@constellation)
             )
             role_sequences.each_with_index do |role_sequence, i|
               @constellation.SetComparisonRoles(constraint, i, :role_sequence => role_sequence)
@@ -351,7 +352,7 @@ module ActiveFacts
           constraint = @constellation.SetEqualityConstraint(
             :new,
             :vocabulary => @vocabulary,
-            :enforcement => @enforcement && @enforcement.compile
+            :enforcement => @enforcement && @enforcement.compile(@constellation)
           )
           role_sequences.each_with_index do |role_sequence, i|
             @constellation.SetComparisonRoles(constraint, i, :role_sequence => role_sequence)
@@ -438,7 +439,7 @@ module ActiveFacts
             )
             ar = constellation.AllowedRange(@constraint, v_range)
           end
-          apply_enforcement
+          @constraint.enforcement = @enforcement.compile(constellation) if @enforcement
           @constraint
         end
       end

@@ -113,6 +113,7 @@ module ActiveFacts
             @constellation.Instance(:new, :concept => reading.fact_type.entity_type, :fact => fact, :population => @population)
             reading.reading.role_sequence.all_role_ref.zip(instances).each do |rr, instance|
               debug :instance, "New fact has #{instance.concept.name} role #{instance.value.inspect}"
+              # REVISIT: Any residual adjectives after the fact type matching are lost here.
               @constellation.RoleValue(:fact => fact, :instance => instance, :role => rr.role, :population => @population)
             end
           else

@@ -30,22 +30,19 @@ module ActiveFacts
           # * Objectify the fact type if @name
           #
 
-          context = CompilationContext.new(@vocabulary)
-          @readings.each{ |reading| reading.identify_players_with_role_name(context) }
-          @readings.each{ |reading| reading.identify_other_players(context) }
-          @readings.each{ |reading| reading.bind_roles context }  # Create the Compiler::Bindings
+          @context = CompilationContext.new(@vocabulary)
+          @readings.each{ |reading| reading.identify_players_with_role_name(@context) }
+          @readings.each{ |reading| reading.identify_other_players(@context) }
+          @readings.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
 
-          verify_matching_roles context # All readings of a fact type must have the same roles
+          verify_matching_roles   # All readings of a fact type must have the same roles
 
           # Ignore any useless readings:
           @readings.reject!{|reading| reading.is_existential_type }
           return true unless @readings.size > 0   # Nothing interesting was said.
 
-          # See if any existing fact type is being invoked (presumably to objectify it)
-          existing_readings = @readings.select{ |reading| reading.match_existing_fact_type context }
-          fact_types = existing_readings.map{ |reading| reading.fact_type }.uniq
-          raise "Clauses match different existing fact types" if fact_types.size > 1
-          @fact_type = fact_types[0]
+          # See if any existing fact type is being invoked (presumably to objectify or extend it)
+          @fact_type = check_compatibility_of_matched_readings
 
           if !@fact_type
             # Make a new fact type:
@@ -53,20 +50,20 @@ module ActiveFacts
             @fact_type = first_reading.make_fact_type(@vocabulary)
             first_reading.make_reading(@vocabulary, @fact_type)
             first_reading.make_embedded_constraints vocabulary
-            existing_readings = [first_reading]
-          elsif (n = @readings.size - existing_readings.size) > 0
+            @existing_readings = [first_reading]
+          elsif (n = @readings.size - @existing_readings.size) > 0
             debug :binding, "Extending existing fact type with #{n} new readings"
           end
 
           # Now make any new readings:
-          new_readings = @readings - existing_readings
+          new_readings = @readings - @existing_readings
           new_readings.each do |reading|
             reading.make_reading(@vocabulary, @fact_type)
             reading.make_embedded_constraints vocabulary
           end
 
           # If a reading matched but the match left extra adjectives, we need to make a new RoleSequence for them:
-          existing_readings.each do |reading|
+          @existing_readings.each do |reading|
             reading.adjust_for_match
           end
 
@@ -82,6 +79,23 @@ module ActiveFacts
           make_default_identifier_for_fact_type
 
           true
+        end
+
+        def check_compatibility_of_matched_readings
+          @existing_readings = @readings.
+            select{ |reading| reading.match_existing_fact_type @context }.
+            sort_by{ |reading| reading.side_effects.cost }
+          fact_types = @existing_readings.map{ |reading| reading.fact_type }.uniq.compact
+          if (fact_types.size > 1)
+            # There must be only one fact type with exact matches:
+            if @existing_readings[0].side_effects.cost != 0 or
+              @existing_readings.detect{|r| r.fact_type != fact_types[0] && r.side_effects.cost == 0 }
+              raise "Clauses match different existing fact types '#{fact_types.map{|ft| ft.preferred_reading.expand}*"', '"}'"
+            end
+            # Try to make false-matched readings match the chosen one instead
+            @existing_readings.reject!{|r| r.fact_type != fact_types[0] }
+          end
+          fact_types[0]
         end
 
         def make_default_identifier_for_fact_type(prefer = true)
@@ -131,7 +145,7 @@ module ActiveFacts
           return true
         end
 
-        def verify_matching_roles context
+        def verify_matching_roles
           role_refs_by_reading_and_key = {}
           readings_by_role_refs =
             @readings.inject({}) do |hash, reading|
@@ -178,7 +192,7 @@ module ActiveFacts
                   # debug :binding, "found #{candidates.size} rebinding candidates for this role"
                   debug :binding, "rebinding is ambiguous so not attempted" if candidates.size > 1
                   if (candidates.size == 1)
-                    candidates[0][0].rebind_to(context, candidates[0][1])
+                    candidates[0][0].rebind_to(@context, candidates[0][1])
                     rebindings += 1
                   end
 

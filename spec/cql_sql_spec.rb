@@ -17,7 +17,6 @@ describe "CQL Loader with SQL output" do
   cql_failures = {
     "Airline" => "Contains unsupported queries",
     "CompanyQuery" => "Contains unsupported queries",
-    "OrienteeringER" => "Large fact type reading cannot be matched",
     "ServiceDirector" => "Constraints contain adjectives that require looser matching",
   }
   cql_sql_failures = {
@@ -30,7 +29,7 @@ describe "CQL Loader with SQL output" do
     "Orienteering" =>
         "Names an index automatically from CQL, but explicitly from NORMA" + " " +
         "Drops uniqueness constraints",
-    "RedundantDependency" => "Drops uniqueness constraints",
+#    "RedundantDependency" => "Drops uniqueness constraints",
     "SubtypePI" => "Names an index automatically from CQL, but explicitly from NORMA",
     "Tests.Test5.Load" => "Names an index automatically from CQL, but explicitly from NORMA",
   }

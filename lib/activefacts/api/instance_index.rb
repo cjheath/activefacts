@@ -33,6 +33,10 @@ module ActiveFacts
         h.size
       end
 
+      def each &b
+        h.each &b
+      end
+
       def map &b
         h.map &b
       end

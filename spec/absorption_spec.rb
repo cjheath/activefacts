@@ -59,11 +59,11 @@ describe "Absorption" do
         Lodgement is where
           Claim was lodged by at most one Person;
         Lodgement was made at at most one DateTime;
-        Person has exactly one birth-Date;
+        Person has exactly one birth-DateTime;
       },
       :tables => {
         "Claim" => [%w{Claim ID}, %w{Lodgement Date Time}, %w{Lodgement Person ID}],
-        "Party" => [%w{Party ID}, %w{Person Birth Date}]
+        "Party" => [%w{Party ID}, %w{Person Birth Date Time}]
       }
     },
 

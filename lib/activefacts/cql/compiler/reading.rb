@@ -6,6 +6,7 @@ module ActiveFacts
         attr_reader :phrases
         attr_accessor :qualifiers, :context_note
         attr_reader :fact_type, :reading, :role_sequence    # These are the Metamodel objects
+        attr_reader :side_effects
 
         def initialize role_refs_and_words, qualifiers = [], context_note = nil
           @phrases = role_refs_and_words
@@ -82,6 +83,8 @@ module ActiveFacts
           rrs = role_refs
           players = rrs.map{|rr| rr.player}
           raise "Must identify players before matching fact types" if players.include? nil
+
+          raise "A fact type must involve at least one object type, but there are none in '#{inspect}'" if players.size == 0
 
           # For each role player, find the compatible types (the set of all subtypes and supertypes).
           player_related_types =
@@ -349,8 +352,6 @@ module ActiveFacts
                 end
               end
 
-              se.phrase.rebind(context) if changed
-
             end
           end
         end
@@ -509,6 +510,10 @@ module ActiveFacts
           @absorbed_followers = absorbed_followers
           @common_supertype = common_supertype
         end
+
+        def cost
+          absorbed_precursors + absorbed_followers + (common_supertype ? 1 : 0)
+        end
       end
 
       class ReadingMatchSideEffects
@@ -530,7 +535,7 @@ module ActiveFacts
         def cost
           c = 0
           @role_side_effects.each do |se|
-            c += se.absorbed_precursors + se.absorbed_followers + (se.common_supertype ? 1 : 0)
+            c += se.cost
           end
           c + (@residual_adjectives ? 1 : 0)
         end
@@ -706,8 +711,7 @@ module ActiveFacts
                 )
               debug :constraint, "Made new PC min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
               if @quantifier.enforcement && @quantifier.enforcement != []
-                # apply_enforcement(constraint, @quantifier.enforcement)
-                puts "Can't apply enforcement to presence constraints yet"
+                constraint.enforcement = @quantifier.enforcement.compile(constellation)
               end
               @embedded_presence_constraint = constraint
             end

@@ -3,6 +3,9 @@
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 
+=begin
+REVISIT: These tests are important, but the intermediate layer they test no longer exists. Find another solution!
+
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/parser'
@@ -398,3 +401,4 @@ describe "Constraint" do
     end
   end
 end
+=end
