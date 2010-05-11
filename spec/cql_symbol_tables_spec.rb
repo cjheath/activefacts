@@ -3,6 +3,8 @@
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 
+=begin
+
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/input/cql'
@@ -256,3 +258,4 @@ describe "CQL Symbol table" do
   end
 
 end
+=end

@@ -4,13 +4,15 @@ vocabulary Metamodel;
  * Value Types
  */
 Adjective is written as VariableLengthText(64);
+AgentName is written as VariableLengthText;
 Assimilation is written as VariableLengthText restricted to {'partitioned', 'separate'};
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
+Date is written as Date;
 Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
-Enforcement is written as VariableLengthText(16);
+EnforcementCode is written as VariableLengthText(16);
 Exponent is written as SignedSmallInteger(32);
 FactId is written as AutoCounter;
 FactTypeId is written as AutoCounter;
@@ -22,26 +24,24 @@ Name is written as VariableLengthText(64);
 Numerator is written as Decimal;
 Offset is written as Decimal;
 Ordinal is written as UnsignedSmallInteger(32);
-PersonName is written as VariableLengthText;
 Pronoun is written as VariableLengthText(20) restricted to {'feminine', 'masculine', 'neuter', 'personal'};
 RingType is written as VariableLengthText;
 RoleSequenceId is written as AutoCounter;
 Scale is written as UnsignedInteger(32);
 Text is written as VariableLengthText(256);
 UnitId is written as AutoCounter;
-ValueRestrictionId is written as AutoCounter;
 
 /*
  * Entity Types
  */
+Agent is identified by its Name;
+
 Coefficient is identified by Numerator and Denominator and Coefficient is precise where
 	Coefficient has one Numerator,
 	Coefficient has one Denominator,
 	Coefficient is precise;
 
 Constraint is identified by its Id;
-Constraint requires at most one Enforcement,
-	Enforcement applies to Constraint;
 Name is of Constraint,
 	Constraint is called at most one Name;
 
@@ -53,6 +53,11 @@ ContextNote has one ContextNoteKind,
 ContextNote has one Discussion,
 	Discussion is for ContextNote;
 
+Enforcement is identified by its Code;
+Constraint requires at most one Enforcement,
+	Enforcement applies to Constraint;
+Enforcement notifies at most one Agent;
+
 Fact is identified by its Id;
 
 FactType is identified by its Id;
@@ -62,8 +67,6 @@ FactType has ContextNote,
 
 Instance is identified by its Id;
 Instance objectifies at most one Fact;
-
-Person is identified by its Name;
 
 PresenceConstraint is a kind of Constraint;
 PresenceConstraint has at most one max-Frequency restricted to {1..};
@@ -87,6 +90,7 @@ Role is of RingConstraint,
 	RingConstraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
+other-Role is of RingConstraint;
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 
@@ -124,7 +128,7 @@ Value is identified by Literal and Value is a string and Unit where
 	Unit is of Value;
 Instance has at most one Value;
 
-ValueRestriction is identified by its Id;
+ValueRestriction is a kind of Constraint;
 Role has at most one role-ValueRestriction,
 	ValueRestriction applies to Role;
 
@@ -158,12 +162,12 @@ Concept is independent;
 Instance is of one Concept;
 
 ContextAccordingTo is where
-	ContextNote is according to Person,
-	Person claims ContextNote;
+	ContextNote is according to Agent,
+	Agent claims ContextNote;
 
 ContextAgreedBy is where
-	Agreement was reached by Person,
-	Person agreed on Agreement;
+	Agreement was reached by Agent,
+	Agent agreed on Agreement;
 
 Derivation is where
 	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];

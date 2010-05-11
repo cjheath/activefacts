@@ -127,14 +127,14 @@ Vocabulary contains Constraint,
 Vocabulary includes Unit,
 	Unit is in one Vocabulary;
 
-less is identified by FactType and Ordinal where
-	FactType has at least one less,
-	less is for one FactType,
-	less is in one Ordinal position,
-	Ordinal reading for fact type is less;
-less is in one RoleSequence,
-	RoleSequence is for less;
-less has one Text;
+Reading is identified by FactType and Ordinal where
+	FactType has at least one Reading,
+	Reading is for one FactType,
+	Reading is in one Ordinal position,
+	Ordinal reading for fact type is Reading;
+Reading is in one RoleSequence,
+	RoleSequence is for Reading;
+Reading has one Text;
 
 Agreement is identified by ContextNote where
 	ContextNote was added by at most one Agreement,
@@ -271,7 +271,7 @@ for each Instance at most one of these holds:
 	Instance objectifies Fact;
 either ObjectType is an EntityType or ObjectType is a ValueType but not both;
 for each RoleSequence exactly one of these holds:
-	less is in RoleSequence,
+	Reading is in RoleSequence,
 	PresenceConstraint covers RoleSequence,
 	SubsetConstraint covers subset-RoleSequence,
 	SubsetConstraint covers superset-RoleSequence,

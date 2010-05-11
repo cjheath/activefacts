@@ -17,20 +17,21 @@ module ActiveFacts
       rule entity_type
         s term_definition_name
         sup:(basetype / subtype)
-                &{|e| input.context.entity_type(e[1].value); true }
+	  &{|s|
+	    # There's an implicit type when we use an identification mode, register it:
+	    mode = s[2].identification_mode
+	    input.context.object_type(s[1].value+mode, "identification mode type") if mode
+	    true
+	  }
         mapping_pragmas
         ec:entity_conditions?
-        ';' s
+        ';'
         {
-          def defined_type
-            [ :entity_type, sup.supers, sup.identifier, mapping_pragmas.value, (ec.empty? ? nil : ec.conditions) ]
-          end
-
-          def value
-            [ term_definition_name.value,
-              defined_type
-            ]
-          end
+	  def ast
+	    name = term_definition_name.value
+	    readings = ec.empty? ? [] : ec.ast
+	    Compiler::EntityType.new name, sup.supers, sup.ast, mapping_pragmas.value, readings
+	  end
         }
       end
 
@@ -38,8 +39,10 @@ module ActiveFacts
         is s
         # independency?
         identification
-        { def supers; [] end
-          def identifier; identification.value; end
+        {
+	  def ast; identification.ast; end
+	  def supers; []; end
+          def identification_mode; identification.mode; end
         }
       end
 
@@ -48,8 +51,9 @@ module ActiveFacts
         # independency?
         supertype_list ident:identification?
         {
+	  def ast; ident.empty? ? nil : ident.ast; end
           def supers; supertype_list.value; end
-          def identifier; ident.empty? ? nil : ident.value; end
+          def identification_mode; ident.empty? ? nil : ident.mode; end
         }
       end
 
@@ -59,80 +63,94 @@ module ActiveFacts
       end
 
       rule supertype_list
-        primary:id s
-        alternate_supertypes:( ',' s !identified_by name:id s )*
-        { def value
-            [primary.value]+alternate_supertypes.elements.map{|sup| sup.name.value}
-          end
-        }
+        primary:term s alternate_supertypes:( ',' s !identified_by name:term s )*
+        {
+	  def value
+	    [primary.value, *alternate_supertypes.elements.map { |sup| sup.name.value } ]
+	  end
+	}
       end
 
       rule identification
         # REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
-        identified_by its s id value_type_parameters
+        identified_by its s i:(term/id) value_type_parameters
 	r:(restriction enforcement)?          # Reference Mode; restriction may be needed for the ValueType
-          { def value
-	      { :mode => id.value,
-	        :restriction => (r.text_value.empty? ? nil : r.restriction.ranges),
-	        :enforcement => (r.text_value.empty? ? nil : r.enforcement.value),
-		:parameters => value_type_parameters.values
-	      }
+          {
+	    def ast
+	      if r.empty?
+		restriction = nil
+	      else
+		restriction = Compiler::ValueRestriction.new(r.restriction.ranges, r.enforcement.ast)
+	      end
+	      Compiler::ReferenceMode.new(i.value, restriction, value_type_parameters.values)
+	    end
+
+	    def mode
+	      i.value
 	    end
 	  }
         /
         identified_by role_list
-          { def value; {:roles => role_list.roles }; end }
+	  &{|s|
+	    role_list = s[-1]
+	    forwards = role_list.ast.
+	      map do |role_ref|
+		next nil if role_ref.is_a?(Compiler::Reading) # Can't forward-reference unaries
+		next nil if role_ref.leading_adjective or role_ref.trailing_adjective
+		role_ref.term
+	      end.
+	      compact
+	    input.context.allowed_forward_terms(forwards)
+	    true
+	  }
+          {
+	    def ast
+	      role_list.ast
+	    end
+
+	    def mode
+	      nil
+	    end
+	  }
       end
 
       # Identified by roles... also used for constraints, beware
       rule role_list 
-        head:role_player s tail:( ( and S / ',' s ) role:role_player s )*
+        head:term_or_unary s tail:( ( and S / ',' s ) term_or_unary s )*
         {
-          def roles
-            [head.value] + tail.elements.map{|i| i.role.value}
-          end
+	  def ast
+	    [head.ast, *tail.elements.map{|e| e.term_or_unary.ast}]
+	  end
         }
       end
 
-          # We can't tell which word is an adjective and which is a concept here.
-          # The concept might be forward-referenced, but not if adjectives are used.
-          # REVISIT: This accepts double-adjective expressions (three words) but they don't work elsewhere
-          rule lead_adj
-            role_player_id '-'
-          end
-
-          rule trail_adj
-            '-' role_player_id
-          end
-
-          rule role_player
-            l:lead_adj? tail:(s role_player_id)+ s t:trail_adj?
-            {
-              def value
-                (l.empty? ? [] : [l.role_player_id.value]) +
-                tail.elements.map{|e| e.role_player_id.value } +
-                (t.empty? ? [] : [t.role_player_id.value])
-              end
-            }
-          end
-
-          rule role_player_id
-            !(role_list_sep / quantifier) id
-            { def value; id.value; end }
-          end
-
-          rule role_list_sep
-            (where / and / 'occurs')
-          end
-
-          rule reference_mode
-            # REVISIT: Adopt ORM2-style reference mode patterns here
-            '(' s '.' s mode_name:id s ')' s
-          end
+      rule term_or_unary
+	pre_text:(s !non_role_word !term id)* s term post_text:(s !non_role_word !term id)*
+	  {
+	    def ast
+	      t = term.ast
+	      if pre_text.elements.size == 0 && post_text.elements.size == 0
+		t
+	      else
+		pre_words = pre_text.elements.map{|w| w.id.text_value}
+		post_words = post_text.elements.map{|w| w.id.text_value}
+		Compiler::Reading.new(pre_words + [t] + post_words, [], nil)
+	      end
+	    end
+	  }
+	/
+	s !non_role_word id s &non_role_word
+	  { # A forward-referenced entity type
+	    # REVISIT: A change in this rule might allow forward-referencing a multi-word term
+	    def ast
+	      Compiler::RoleRef.new(id.text_value, nil, nil, nil, nil, nil, nil, nil)
+	    end
+	  }
+      end
 
       rule mapping_pragmas
         '[' s h:mapping_pragma t:(s ',' s mapping_pragma)* s ']' s
-          { def value; [h.value] + t.elements.map{|e| e.mapping_pragma.value}; end }
+          { def value; t.elements.inject([h.value]) { |a, e| a << e.mapping_pragma.value }; end }
         /
         ''
           { def value; []; end }
@@ -146,6 +164,10 @@ module ActiveFacts
       rule entity_conditions
         (':' / where) s c:conditions?
         {
+	  def ast
+            c.empty? ? [] : c.ast
+	  end
+
           def conditions
             c.empty? ? [] : c.condition_list
           end

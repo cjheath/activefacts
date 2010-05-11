@@ -105,7 +105,7 @@ module ActiveFacts
           value_player = value_role.concept and
           value_player.is_a?(ActiveFacts::Metamodel::ValueType) and
           value_name = value_player.name and
-          residual = value_name.gsub(%r{#{entity_role.concept.name}},'') and
+          residual = value_name.sub(%r{^#{entity_role.concept.name}},'') and
           residual != '' and
           residual != value_name
 
@@ -306,9 +306,23 @@ module ActiveFacts
       end
 
       def dump_set_constraint(c)
-        # REVISIT exclusion: every <player-list> must<?> either reading1, reading2, ...
-
         # Each constraint involves two or more occurrences of one or more players.
+        #
+        # The constrained roles will usually be in fact types also having unconstrained roles.
+        # It's possible that unconstrained roles are played by a concept that plays a constrained role.
+        # (an unconstrained role may form joins; not handled here yet)
+        #
+        # The readings chosen may apply non-matching adjectives to the occurrences of the constrained roles.
+        # REVISIT: These constraints will not compile!
+        #
+        # It's not clear when (if ever) the usage some/that (some X.... that X...) is useful.
+        #
+        # Each role reference must have an unambiguous identification (role reference) within the constraint.
+        # This is achieved when each occurrence of a role reference:
+        # * is played by a concept that appears nowhere else
+        # * is played by a concept and distinguished by a local adjective (outside any adjectives in its readings)
+        # * is played by a concept, perhaps with different adjectives, but with the same subscript.
+
         # For each player, a subtype may be involved in the occurrences.
         # Find the common supertype of each player.
         scrs = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}
@@ -325,6 +339,7 @@ module ActiveFacts
           concepts = scrs.map do |r|
             r.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[pindex].role.concept
           end
+          # Here, "concepts" is an array of the object types that all play the same role position "pindex"
           player, players_differ[pindex] = common_supertype(concepts)
           raise "Role sequences of #{c.class.basename} must have concepts matching #{concepts.map(&:name)*","} in position #{pindex}" unless player
           player
@@ -341,6 +356,7 @@ module ActiveFacts
         end
 
         if scrs.size == 2 && c.is_mandatory
+          introduced = {}
           puts "either " +
             ( scrs.map do |scr|
                 constrained_roles = scr.role_sequence.all_role_ref.map{|rr| rr.role }
@@ -353,13 +369,14 @@ module ActiveFacts
                       constrained_roles.include?(first_reading_role)
                     end
                   reading ||= fact_type.preferred_reading
-                  expand_constrained(reading, constrained_roles, players, players_differ)
+                  expand_constrained(reading, constrained_roles, players, players_differ, introduced)
                 end * " and "
               end*" or "
             ) +
             " but not both;"
         else
           mode = c.is_mandatory ? "exactly one" : "at most one"
+          introduced = {}
           puts "for each #{players.map{|p| p.name}*", "} #{mode} of these holds:\n\t" +
             (scrs.map do |scr|
               constrained_roles = scr.role_sequence.all_role_ref.map{|rr| rr.role }
@@ -370,7 +387,7 @@ module ActiveFacts
                 # - the role player occurs twice in the reading, or
                 # - is a subclass of the constrained concept, or
                 reading = fact_type.preferred_reading
-                expand_constrained(reading, constrained_roles, players, players_differ)
+                expand_constrained(reading, constrained_roles, players, players_differ, introduced)
               end * " and "
 
             end*",\n\t"
@@ -380,15 +397,17 @@ module ActiveFacts
 
       # Expand this reading using (in)definite articles where needed
       # Handle any roles in constrained_roles specially.
-      def expand_constrained(reading, constrained_roles, players, players_differ)
+      def expand_constrained(reading, constrained_roles, players, players_differ, introduced)
         frequency_constraints = reading.role_sequence.all_role_ref.map {|role_ref|
             i = constrained_roles.index(role_ref.role)
-            if !i
+            if !i   # Not a constrained role
+              # REVISIT: If this is a join role, we need some/that, not just "some"
               [ "some", role_ref.role.concept.name]
             elsif players_differ[i]
               [ "that", players[i].name ]   # Make sure to use the superclass name
             else
               if reading.fact_type.all_role.select{|r| r.concept == role_ref.role.concept }.size > 1
+                # This fact type has more than one role played by the same concept
                 [ "that", role_ref.role.concept.name ]
               else
                 [ "some", role_ref.role.concept.name ]

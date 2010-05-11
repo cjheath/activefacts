@@ -8,14 +8,12 @@ module ActiveFacts
   module CQL
     grammar Expressions
       rule comparison
-        e1:expression s comparator s e2:expression
+        e1:expression s
+	comparator s e2:expression
         {
-          def body
-            [ comparator.text_value,
-              e1.value,
-              e2.value
-            ]
-          end
+	  def ast
+	    Compiler::Comparison.new comparator.text_value, e1.ast, e2.ast
+	  end
         }
       end
 
@@ -32,16 +30,9 @@ module ActiveFacts
       rule sum
         t0:product s tail:( op:add_op s t1:product s )*
         {
-          def value
-            return t0.value if tail.empty?
-            [ :"+",
-              *([t0.value] +
-                tail.elements.map{|e|
-                    e.op.text_value == '-' ? [ :"-", e.t1.value ] : e.t1.value
-                  }
-              )
-            ]
-          end
+	  def ast
+	    Compiler::Sum.new(t0.ast, *tail.elements.map{|e| e.op.text_value == '-' ? Compiler::Negate.new(e.t1.ast) : e.t1.ast})
+	  end
         }
       end
 
@@ -52,65 +43,38 @@ module ActiveFacts
       rule product
         f0:factor s tail:( op:mul_op s f1:factor s )*
         {
-          def value
-            return f0.value if tail.empty?
-            [ :"*",
-              *([f0.value] +
-                tail.elements.map{|e|
-                    e.op.text_value != '*' ? [ :"-", e.f1.value ] : e.f1.value
-                  }
-              )
-            ]
-          end
+	  def ast
+	    Compiler::Product.new(f0.ast, *tail.elements.map{|e| e.op.text_value != '*' ? Compiler::DivideBy.new(e.op.text_value, e.f1.ast) : e.t1.ast})
+	  end
         }
       end
 
       rule factor
         literal u:unit? s
-            { def value
-                u.empty? ? literal.value : [ literal.value, u.text_value ]
-              end
+            {
+	      def ast
+		Compiler::Literal.new(literal.value, u.empty? ? nil : u.text_value)
+	      end
             }
         / derived_variable
-        / !context '(' s sum s ')' s                   { def value; sum.value; end }
+        / !context '(' s sum s ')' s                   { def ast; sum.ast; end }
       end
 
       rule derived_variable
-        variable s p:function_call*
+        variable:term s p:function_call*
         {
-          def value
-            r = variable.value
-            # Apply the function_call operators in order:
-            p.elements.each{|p| r = [ p.value, r ] }
-            r
-          end
-        }
-      end
-
-      rule variable
-        id0:id o0:( !written_as s id1:id )?
-        {
-          def value
-            # Variable names may consist of one or two words (optional adjective and a noun):
-            r = [ :variable, id0.value ]
-            r += [ o0.id1.value ] unless o0.empty?
-            r
-          end
+	  def ast
+	    Compiler::FunctionCallChain.new(term.ast, *p.elements.each{|f| f.ast})
+	  end
         }
       end
 
       rule function_call
         '.' s func:id s param_list:( '(' s params:( p0:expression s tail:( ',' s p1:expression s )* )? ')' s )?
         {
-          def value
-            r = [ :"(", func.value ]
-            return r if param_list.empty? || param_list.params.empty?
-            r += [ param_list.params.p0.value ]
-            param_list.params.tail.elements.each{|e|
-                r += [ e.p1.value ]
-              }
-            r
-          end
+	  def ast
+	    Compiler::FunctionCall.new(func.value, *param_list.elements.map{|param| param.ast })
+	  end
         }
       end
 

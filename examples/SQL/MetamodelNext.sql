@@ -419,14 +419,14 @@ CREATE TABLE ValueConstraint (
 )
 GO
 
-CREATE TABLE less (
-	-- FactType has less and FactType has FactTypeId,
+CREATE TABLE RoleRef (
+	-- FactType has RoleRef and FactType has FactTypeId,
 	FactTypeId                              AutoCounter NOT NULL,
-	-- less is in Ordinal position,
+	-- RoleRef is in Ordinal position,
 	Ordinal                                 UnsignedSmallInteger(32) NOT NULL,
-	-- less is in RoleSequence and RoleSequence has RoleSequenceId,
+	-- RoleRef is in RoleSequence and RoleSequence has RoleSequenceId,
 	RoleSequenceId                          AutoCounter NOT NULL,
-	-- less has Text,
+	-- RoleRef has Text,
 	Text                                    VariableLengthText(256) NOT NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId),

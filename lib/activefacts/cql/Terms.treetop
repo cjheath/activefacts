@@ -10,7 +10,8 @@ module ActiveFacts
       rule term_definition_name
         id s
          t:(!non_term_def id s)*
-        { def value
+        {
+	  def value
             t.elements.inject([
               id.value
             ]){|a, e| a << e.id.value}*' '
@@ -23,42 +24,50 @@ module ActiveFacts
         / written_as                        # Value type
         / is s mapping_pragmas where        # Objectified type
         / non_role_word
+	/ identified_by			    # as in: "a kind of X identified by..."
       end
 
       rule entity_prefix
-        is s identified_by / subtype_prefix
+        is s identified_by
+	/
+	subtype_prefix term_definition_name
+	&{|e| input.context.object_type(e[1].value, "subtype"); true }
       end
 
       rule prescan
         s (
           term_definition_name s entity_prefix
-            &{|e| input.context.entity_type(e[0].value); true }
+		#&{|e| debugger if e[2].text_value =~ /kind/; true}
+		&{|e| input.context.object_type(e[0].value, "entity type"); true }
           /
-          term_definition_name written_as
-                &{|e| input.context.value_type(e[0].value); true }
+          t1:term_definition_name written_as t2:term_definition_name
+                &{|e| input.context.object_type(e[0].value, "value type")
+		  input.context.object_type(e[2].value, "value type")
+		  true
+		}
           /
           term_definition_name s is s mapping_pragmas where
-                &{|e| input.context.objectified_fact_type(e[0].value); true }
+                &{|e| input.context.object_type(e[0].value, "objectified_fact_type"); true }
         )?
         prescan_rest
         &{|s|
+	  # Wipe any terminal failures that were added:
           @terminal_failures = []
           @max_terminal_failure_index = start_index
 
           # puts "========== prescan is complete on #{(s.map{|e|e.text_value}*" ").inspect} =========="
-          false # REVISIT: Wipe any terminal failures that were added? Can there be anything relevant?
+          false
         }
       end
 
-      # Do a first-pass mainly lexical analysis, looking only for role name definitions
-      # For use in detecting terms later.
-      # REVISIT: and adjectives
+      # Do a first-pass mainly lexical analysis, looking for role name definitions and adjectives,
+      # for use in detecting terms later.
       rule prescan_rest
         &{ input.context.reset_role_names }
         (
           context                           # Context notes have different lexical conventions
-          / role_name                       # A role name definition
-            &{|s| input.context.role_name(s[0].value) }
+          / '(' as S term_definition_name s ')' s    # Prescan for a Role Name
+            &{|s| input.context.role_name(s[3].value) }
                                             # Adjective definitions
           / new_adjective_term
           / global_term                     # If we see A B - C D, don't recognise B as a new adjective for C D.
@@ -71,29 +80,59 @@ module ActiveFacts
       end
 
       rule new_adjective_term
-        !global_term adj:id '-' s global_term
-          &{|s| input.context.new_leading_adjective_term(s[1].value, s[4].value) }          # Definitely a new leading adjective for this term
+        !global_term adj:id '-' lead_intervening s global_term	  # Definitely a new leading adjective for this term
+          &{|s| input.context.new_leading_adjective_term([s[1].text_value, s[3].value].compact*" ", s[5].text_value) }
         /
-        global_term s '-' !global_term adj:id
-          &{|s| input.context.new_trailing_adjective_term(s[4].value, s[1].value) }         # Definitely a new trailing adjective for this term
+        global_term s trail_intervening '-' !global_term adj:id	  # Definitely a new trailing adjective for this term
+          &{|s| input.context.new_trailing_adjective_term([s[2].value, s[5].text_value].compact*" ", s[0].text_value) }
+      end
+
+      rule lead_intervening	# Words intervening between a new adjective and the term
+	(S !global_term id)*
+	{
+	  def value
+	    elements.size == 0 ? nil : elements.map{|e| e.id.text_value}*" "
+	  end
+	}
+      end
+
+      rule trail_intervening	# Words intervening between a new adjective and the term
+	(!global_term id S)*
+	{
+	  def value
+	    elements.size == 0 ? nil : elements.map{|e| e.id.text_value}*" "
+	  end
+	}
       end
 
       # This is the rule to use after the prescan; it only succeeds on a complete term or role reference
       rule term
-        s head:id             &{|s| w = s[1].text_value; input.context.term_starts(w) }
-        tail:(s '-'? s w:id  &{|s| w = s[3].text_value; input.context.term_continues(w) } )*
-        { def value
-            name = tail.elements.inject(head.value) { |t, e| "#{t} #{e.w.value}" }
-            #puts "Detected term #{name.inspect}"
-            name
+        s head:id x             &{|s| w = s[1].text_value; input.context.term_starts?(w, s[2]) }
+        tail:(s '-'? s w:id     &{|s| w = s[3].text_value; input.context.term_continues?(w) })*
+                                &{|s| input.context.term_complete? }
+        {
+	  def ast quantifier = nil, function_call = nil, role_name = nil, restriction = nil, literal = nil
+	    t = x.context[:term]
+	    gt = x.context[:global_term]
+	    leading_adjective = t[0...-gt.size-1] if t.size > gt.size and t[-gt.size..-1] == gt
+	    trailing_adjective = t[gt.size+1..-1] if t.size > gt.size and t[0...gt.size] == gt
+	    Compiler::RoleRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, restriction, literal)
+	  end
+
+	  def value		# Sometimes we just want the full term name
+            x.context[:term]
           end
         }
       end
 
+      rule x
+	'' <SavedContext>
+      end
+
       rule global_term
         # This rule shouldn't be used outside the prescan, it will memoize the wrong things.
-        head:id    &{|s| input.context.term_starts(s[0].text_value) }
-        tail:(s w:id &{|s| input.context.term_continues(s[1].text_value) } )*
+        head:id x    &{|s| input.context.term_starts?(s[0].text_value, s[1]) }
+        tail:(s w:id &{|s| input.context.term_continues?(s[1].text_value) } )*
         { def value
             tail.elements.inject(head.value) { |t, e| "#{t} #{e.w.value}" }
           end
@@ -110,6 +149,7 @@ module ActiveFacts
         / quantifier
         / restriction
         / but
+	/ 'occurs' s quantifier s 'time' 
       end
 
     end

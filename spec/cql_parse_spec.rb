@@ -15,7 +15,6 @@ describe "CQL Parser" do
   cql_failures = {
     "Airline" => "Contains queries, unsupported",
     "CompanyQuery" => "Contains queries, unsupported",
-    "OrienteeringER" => "Contains a long fact type that can't be matched properly",
     "ServiceDirector" => "Contains constraints with mismatched adjectives",
   }
 

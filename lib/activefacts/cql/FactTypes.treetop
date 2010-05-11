@@ -9,32 +9,42 @@ module ActiveFacts
     grammar FactTypes
       rule named_fact_type
         s term_definition_name
-        ( written_as      # REVISIT: What on earth was I thinking when I wrote this?
-        / s is s mapping_pragmas where    # REVISIT: Need a place to put mapping pragmas like [independent]
-        )
-                &{|e| input.context.objectified_fact_type(e[1].value); true }
+        s is s mapping_pragmas where    # REVISIT: Need a place to put mapping pragmas like [independent]
         anonymous_fact_type
         {
-          def value
-            f = anonymous_fact_type.value
-            f[0] = term_definition_name.value
-            f
-          end
+	  def ast
+	    ft = anonymous_fact_type.ast
+	    ft.name = term_definition_name.value
+	    ft
+	  end
         }
       end
 
       rule anonymous_fact_type
-        f0:fact_clause
-          ftail:( (',' / and ) s f1:fact_clause s )*
+        fact_clause
+          ftail:( (',' / and ) s fact_clause s )*
           ctail:( (':' / where) s c:conditions s)?
           returning_clause?
-        s ';' s
+        s ';'
         {
-          def value
-            readings = [ f0.body, *ftail.elements.map{|e| e.f1.body } ]
-            conditions = !ctail.empty? ? ctail.c.condition_list : []
-            [ nil, [ :fact_type, readings, conditions ] ]
-          end
+	  def ast
+            readings = [fact_clause.ast, *ftail.elements.map{|e| e.fact_clause.ast }]
+            conditions = !ctail.empty? ? ctail.c.ast : []
+	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
+	    if (conditions.empty? && readings.detect{|r| r.includes_literals})
+	      raise "Fact instances may not contain conditions" unless conditions.empty? && !returning
+	      Compiler::Fact.new readings
+	    elsif (readings.size == 1 &&
+	      readings[0].phrases.size == 1 &&
+	      (popname = readings[0].phrases[0]) &&
+	      !popname.is_a?(Compiler::RoleRef) &&
+	      conditions.detect{|r| r.includes_literals}
+	    )
+	      Compiler::Fact.new conditions, popname
+	    else
+	      Compiler::FactType.new nil, readings, conditions, returning
+	    end
+	  end
         }
       end
 
@@ -49,47 +59,41 @@ module ActiveFacts
       rule conditions
         head:condition s tail:( (',' s / and S) next:condition s )*
         {
-          def condition_list
-            [head.value] + tail.elements.map{|i| i.next.value}
-          end
+	  def ast
+	    [head.ast, *tail.elements.map{|i| i.next.ast}]
+	  end
         }
       end
 
       rule condition
-        head:clause s
-#        tail:(or S alternate:clause s )*
+        head:clause s # tail:(or S alternate:clause s )*
         {
-          def value
-#            if tail.elements.size == 0
-              head.clause
-#            else
-#              [:"||", head.clause] + tail.elements.map{|i| i.alternate.clause}
-#            end
-          end
+	  def ast
+	    head.ast
+            # Compiler::Alternates.new(head.ast, *tail.elements.map{|i| i.alternate.ast})
+	    # REVISIT: alternate conditions are not yet implemented
+	  end
         }
       end
 
       rule clause
         # REVISIT: No context for comparisons, yet
-        (comparison / fact_clause)
-        {
-          def clause
-            self.body
-          end
-        }
+        comparison / fact_clause
       end
 
       rule fact_clause
         s q:qualifier? s reading s p:post_qualifiers? s c:context?
         {
-          def body
-            [ :fact_clause,
-              (q.empty? ? [] : [ q.text_value ]) +
-                (p.empty? ? [] : p.list),
-              reading.value,
-              c.empty? ? nil : c.value 
-            ]
-          end
+	  def ast
+	    qualifiers = (q.empty? ? [] : [ q.text_value ]) +
+	      (p.empty? ? [] : p.list)
+	    # REVISIT: When we implement objectification joins, we might get multiple readings here...
+	    r = reading.ast
+	    r.qualifiers << q.text_value unless q.empty?
+	    r.qualifiers += p.list unless p.empty?
+	    r.context_note = c.value unless c.empty?
+	    r
+	  end
         }
       end
 
@@ -101,7 +105,7 @@ module ActiveFacts
         '[' s q0:post_qualifier tail:( s ',' s q1:post_qualifier )* s ']' s
         {
           def list
-            [q0.text_value] + tail.elements.map{|e| e.q1.text_value}
+            [q0.text_value, *tail.elements.map{|e| e.q1.text_value}]
           end
         }
       end
@@ -111,11 +115,27 @@ module ActiveFacts
       end
 
       rule reading
-        role+
+        (
+          role    # A role reference containing a term, perhaps with attached paraphernalia
+          /       # A hyphenated non-term. Important: no embedded spaces
+          id tail:('-' !term id)+ s
+            {
+	      def ast
+		[id.value, *tail.elements.map{|e| e.id.value}]*"-"
+	      end
+	    }
+          /       # A normal non-term
+          !non_role_word id s
+	    {
+	      def ast
+		id.value
+	      end
+	    }
+        )+
         {
-          def value
-            elements.map{|r| r.value}
-          end
+	  def ast
+	    Compiler::Reading.new(elements.map{ |r| r.ast })
+	  end
         }
       end
 
@@ -124,71 +144,50 @@ module ActiveFacts
       # but find no way out as soon as we hit the trailing non_role.
       rule role
         q:(quantifier enforcement)?
-        adj0:(a:role_word '-' s)?
-        player:role_word !'-' s?
-        adj1:( '-' a:(a:role_word s)? )?
-        func:function_call?
+        player:term
+        func:function_call? s
         role_id:(role_name / subscript )?
         lr:( literal / restriction enforcement )?
-        !non_role
+	oj:objectification_join?
+        !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
-          def value
-            r = {}
-            if !q.empty?
-	      quantifier = q.quantifier.value   # "some" quantifier has nil value
-	      r[:quantifier_restriction] = q.enforcement.value
+	  def ast
+	    if !q.empty? && q.quantifier.value
+	      quantifier = Compiler::Quantifier.new(q.quantifier.value[0], q.quantifier.value[1], q.enforcement.ast)
+	    end
+	    role_name = role_id.empty? ? nil : role_id.value
+	    function_call = nil
+	    if !lr.empty?
+	      literal = lr.value if lr.respond_to?(:value)
+	      restriction = Compiler::ValueRestriction.new(lr.restriction.ranges, lr.enforcement.ast) if lr.respond_to?(:restriction)
 	    end
 
-            r[:quantifier] = quantifier if quantifier
-            r[:leading_adjective] = adj0.a.value unless adj0.empty?
+	    raise "REVISIT: Objectification joins #{oj.text_value} are not yet implemented" unless oj.empty?
 
-            r[:word] = player.value
-
-            r[:trailing_adjective] = adj1.a.a.value unless adj1.empty?
-            r[:function] = func.value if !func.empty?
-            r[:role_name] = role_id.value unless role_id.empty?
-	    if !lr.empty? && lr.respond_to?(:restriction)
-	      r[:restriction] = lr.restriction.ranges
-	      r[:restriction_enforcement] = lr.enforcement.value
-	    end
-            r[:literal] = lr.value if !lr.empty? && lr.respond_to?(:value)
-
-            r
-          end
+	    player.ast(quantifier, function_call, role_name, restriction, literal)
+	  end
         }
       end
 
+      rule objectification_join
+        '(' s where s fact_clause s ')' s
+      end
+
       rule role_name
-        '(' s as S r:id s ')' s
+        '(' s as S r:term s ')' s
         { def value; r.value; end }
       end
 
       rule subscript
-        '(' i:([1-9] [0-9]*) ')' s 
+        '(' s i:([1-9] [0-9]*) s ')' s 
         { def value; i.text_value.to_i; end }
       end
 
       rule non_role
-        # Any of these is illegal in or following a reading:
+        # Any of these is illegal in or following a reading (they indicate a comparison is coming). Later, this will change:
         comparator
         / add_op
         / mul_op
-      end
-
-      rule role_word
-        !non_role_word id
-        { def value; id.value; end }
-      end
-
-      rule non_role_word
-        # These words are illegal in (but maybe ok following) a reading where a role word is expected:
-        and
-        / if
-        / only
-        / or
-        / quantifier
-        / restriction
-        / but
       end
 
     end

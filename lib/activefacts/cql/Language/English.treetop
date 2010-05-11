@@ -21,25 +21,33 @@ module ActiveFacts
       end
 
       rule quantifier
-        each s                    { def value; [1, nil]; end }
-        / some s                  { def value; nil; end }
-          # REVISIT: "Some" means that any prior occurrence of this role player is to be ignored; this is a new occurrence
-          # "that" on the other hand means that this role player was *previously* designated using "some".
-          # These distinctions are lost here
-        / that s                  { def value; nil; end }
-        / one s                   { def value; [1, 1]; end }
-        / no s                    { def value; [0, 0]; end }
-        / exactly s quantity      { def value; q = quantity.value; [q, q]; end }
-        / at s least s quantity most:( and s at s most s q:quantity )?
-                                  { def value;
-                                      [ quantity.value,
-                                        most.empty? ? nil : most.q.value
-                                      ]
-                                    end
-                                  }
-        / at s most s quantity    { def value; [ nil, quantity.value ]; end }
-        / from s numeric_range s  { def value; numeric_range.value; end }
-        / either_all_or_none s    { def value; [ -1, 1 ]; end }
+	(
+	  each s                    { def value; [1, nil]; end }
+	  / some s                  { def value; nil; end }
+	    # REVISIT: "Some" means that any prior occurrence of this role player is to be ignored; this is a new occurrence
+	    # "that" on the other hand means that this role player was *previously* designated using "some".
+	    # These distinctions are lost here
+	  / that s                  { def value; nil; end }
+	  / one s                   { def value; [1, 1]; end }
+	  / no s                    { def value; [0, 0]; end }
+	  / exactly s quantity      { def value; q = quantity.value; [q, q]; end }
+	  / at s least s quantity most:( and s at s most s q:quantity )?
+				    { def value;
+					[ quantity.value,
+					  most.empty? ? nil : most.q.value
+					]
+				      end
+				    }
+	  / at s most s quantity    { def value; [ nil, quantity.value ]; end }
+	  / from s numeric_range s  { def value; numeric_range.value; end }
+	  / either_all_or_none s    { def value; [ -1, 1 ]; end }
+	)
+	{
+	  def ast
+	    v = value
+	    Compiler::Quantifier.new(v[0], v[1])
+	  end
+	}
       end
 
       rule quantity
@@ -127,7 +135,7 @@ module ActiveFacts
       rule no 'no' !alphanumeric end
       rule none 'none' !alphanumeric end
       rule not 'not' !alphanumeric end
-      rule either_all_or_none either s all s or s none end
+      rule either_all_or_none either s all s or s ( none / no ) end
       rule one 'one' !alphanumeric end
       rule only 'only' !alphanumeric end
       rule or 'or' !alphanumeric end 

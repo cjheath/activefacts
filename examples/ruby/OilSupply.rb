@@ -6,8 +6,8 @@ module ::OilSupply
     value_type 
   end
 
-  class MonthCode < FixedLengthText
-    value_type 
+  class MonthNr < SignedInteger
+    value_type :length => 32
   end
 
   class ProductName < String
@@ -41,8 +41,8 @@ module ::OilSupply
   end
 
   class Month
-    identified_by :month_code
-    one_to_one :month_code, :mandatory => true  # See MonthCode.month
+    identified_by :month_nr
+    one_to_one :month_nr, :mandatory => true    # See MonthNr.month
     has_one :season, :mandatory => true         # See Season.all_month
   end
 

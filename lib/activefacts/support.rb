@@ -16,7 +16,7 @@
       $debug_indent = 0
       $debug_keys = {}
       if (e = ENV["DEBUG"])
-        e.split(/[^a-zA-Z0-9]/).each{|k| $debug_keys[k.to_sym] = true }
+        e.split(/[^_a-zA-Z0-9]/).each{|k| $debug_keys[k.to_sym] = true }
         if $debug_keys[:help]
           at_exit {
             $stderr.puts "---\nDebugging keys available: #{$debug_available.keys.map{|s| s.to_s}.sort*", "}"

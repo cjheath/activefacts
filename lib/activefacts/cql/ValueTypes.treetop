@@ -9,32 +9,21 @@ module ActiveFacts
     grammar ValueTypes
       rule value_type
         s term_definition_name
+	# REVISIT: ORM2 would allow (subtype_prefix term)?
         written_as
-                &{|e| input.context.value_type(e[1].value); true }
-        base:id s
+        base:(term/id) s
         value_type_parameters
         units
         r:(restriction enforcement)?
         mapping_pragmas
         s ';' s
         {
-          def defined_type
-            [
-              :value_type,
-              base.value,
-              value_type_parameters.values,
-              units.value,
-              (!r.empty? ? r.restriction.ranges : []),
-              mapping_pragmas.value,
-              (!r.empty? ? r.enforcement.value : nil)
-            ]
-          end
-
-          def value
-            [ term_definition_name.value,
-              defined_type
-            ]
-          end
+	  def ast
+	    name = term_definition_name.value
+	    params = value_type_parameters.values
+	    restriction = r.empty? ? nil : Compiler::ValueRestriction.new(r.restriction.ranges, r.enforcement.ast)
+	    Compiler::ValueType.new name, base.value, params, units.value, restriction, mapping_pragmas.value
+	  end
         }
       end
 
@@ -49,7 +38,7 @@ module ActiveFacts
         head:number s tail:( ',' s number s )*
         {
           def values
-            [head.value] + tail.elements.map{|i| i.number.value}
+            [head.value, *tail.elements.map{|i| i.number.value}]
           end
         }
       end
@@ -64,29 +53,30 @@ module ActiveFacts
           converts s a:(approximately s)? to s
           unit_coefficient units s o:unit_offset?
         )
-        q:(approximately / ephemeral)? s
-        ';' s
-        { def value
-            r = { :coefficient => u.unit_coefficient.value,
-                  :offset => u.o.text_value.empty? ? 0 : u.o.value,
-                  :base => u.units.value,
-                  :singular => u.singular.text_value,
-                }
-            r[:plural] = u.plural.p.text_value unless u.plural.text_value.empty?
-            r[:approximately] = true if q.text_value == 'approximately' || !u.a.text_value.empty?
-            r[:ephemeral] = true if q.text_value == 'ephemeral'
-            [ nil, [ :unit, r ] ]
-          end
+        q:(approximately '' / ephemeral '')? s
+        ';'
+        {
+	  def ast
+            singular = u.singular.text_value
+            plural = u.plural.text_value.empty? ? nil : u.plural.p.text_value 
+            numerator, denominator = *u.unit_coefficient.ast
+            offset = u.o.text_value.empty? ? 0 : u.o.value
+            bases = u.units.value
+	    approximately = q.respond_to? :approximately
+	    ephemeral = q.respond_to? :approximately
+	    Compiler::Unit.new singular, plural, numerator, denominator, offset, bases, approximately, ephemeral
+	  end
         }
       end
 
       rule unit_coefficient
         numerator:number denominator:(s '/' s number)? s
-        { def value
-            { :numerator => numerator.text_value,
-              :denominator => (denominator.text_value.empty? ? "1" : denominator.number.text_value)
-            }
-          end
+        {
+	  def ast
+            [ numerator.text_value,
+              (denominator.text_value.empty? ? "1" : denominator.number.text_value)
+	    ]
+	  end
         }
       end
 
@@ -129,7 +119,7 @@ module ActiveFacts
       end
 
       rule restriction
-        restricted s to s range_list s units
+	restricted s to s range_list s units
         {
           def ranges
             range_list.ranges   # REVISIT: Use the units here
@@ -143,7 +133,7 @@ module ActiveFacts
         '}' s
         {
           def ranges
-            [head.value] + tail.elements.map{|e| e.range.value }
+            [head.value, *tail.elements.map{|e| e.range.value }]
           end
         }
       end

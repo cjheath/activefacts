@@ -16,6 +16,8 @@ ContactMethod is written as FixedLengthText(1) restricted to {'B', 'H', 'M'};
 Count is written as UnsignedInteger(32);
 CoverTypeCode is written as FixedLengthText;
 CoverTypeName is written as VariableLengthText;
+Time is written as Time;
+Date is written as Date;
 DateTime is written as DateAndTime;
 DemeritKindName is written as VariableLengthText;
 Description is written as VariableLengthText(1024);

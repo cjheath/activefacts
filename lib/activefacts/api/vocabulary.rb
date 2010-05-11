@@ -36,6 +36,10 @@ module ActiveFacts
         Constellation.new(self)
       end
 
+      def populate &b
+        constellation.populate &b
+      end
+
       def verbalise
         "Vocabulary #{name}:\n\t" +
           @concept.keys.sort.map{|concept|

@@ -1,7 +1,7 @@
 <!--#include virtual="/header.html" -->
 <!--#include virtual="navbar.html" -->
 
-<link rel="stylesheet" href="css/offline.css" media="screen" type="text/css" />
+<link rel="stylesheet" href="../css/offline.css" media="screen" type="text/css" />
 <div id="sidebar"></div>
 
 <div id="top" class="content">
@@ -11,52 +11,121 @@
     ActiveFacts Project Status
   </h2>
 
+  <h4>Constellation Query Language</h4>
+
   <p>
-  The Constellation Query Language has DDL support sufficient to allow
-  conversion of any ORM2 model. The Ruby generator is complete. The SQL
-  generator is complete, but with a couple of known defects in corner cases.
-  The generated Ruby code has only a partial implementation of the mapping
-  data needed to convert to and from SQL tables, and even that has to be
-  enabled using an option.
+  The Constellation Query Language implementation available in
+  version 0.8.5 compiles all features of ORM2 implemented by NORMA
+  with only minuscule differences. Entity Types, Value Types, Fact
+  Types (including objectified), Reference Modes, and all types of
+  constraints - Value and Role Value Restriction, Presence
+  Constraints (which covers Mandatory, Uniqueness, and Frequency
+  constraints), Subset, Equality, Exclusion, Mandatory Exclusion,
+  and Ring constraints.
+  </p>
+  
+  <p> At this version Terms (object type names) may not contain
+  spaces.  Terms may not appear in readings (unless in lower-case)
+  and readings may only contain single adjectives (hyphen-binding).
+  Deontic constraints are recognised using the annotation (otherwise
+  <b>action</b>). Join Constraints may also be defined beyond those
+  available in NORMA.  Example data may be declared.  </p>
+
+  <p>
+  This version provides functionality not available in NORMA. Additions
+  include:
+  </p>
+  <ul>
+  <li> Business Context Notes, which are annotations indicating why a
+      particular modeling construct was used, and who approved that.
+  </li>
+  <li> Definition of Units using conversion formulae.  A library of
+      500 standard unit conversions is provided.  </li>
+  <li> Value Types may be defined to utilise those units. </li>
+  </ul>
+
+  <p>
+  New features are being developed for an upcoming 0.9.0 release:
+  </p>
+  <ul>
+  <li> Multi-word terms, and multiple adjectives.
+  <li> Improvements on the use of the hyphen to allow hyphenated words in readings.
+  <li> Term Synonyms
+  <li> Imported vocabularies (including multi-lingual versioning)
+  <li> Improved model validation
+  </ul>
+
+  <p>
+  Beyond that, the query syntax will be completed and queries will be generated
+  to SQL.
+  </p>
+
+  <h4>Constellation Query Language generators</h4>
+
+  <p>
+  The CQL generator allows conversion of NORMA files. At the present release,
+  deontic constraints and example fact populations are not emitted.
   </p>
 
   <p>
-  CQL is not yet handling imported vocabularies, example fact populations or
-  value type units yet. It has limited model validation facilities, and it's
-  not yet possible to add a new reading to an existing fact type.  It's also
-  only parsing query syntax, with no semantic analysis or SQL generation.
+  The Ruby generator is functional. Not all constraints are emitted to Ruby yet,
+  but any combination of facts allowed by the vocabulary may be represented.
+  </p>
+  
+  <p>
+  The SQL generators are generating correct and useful SQL, using a relational
+  mapping algorithm that produces similar results to NORMA. This algorithm will
+  be extended to emit more constraints, and to provide more control over
+  the generation of object names, and to directly support Ruby on Rails.
+  Deontic constraints are still handled as Alethic.
   </p>
 
-  <p>
-  The Constellation API (in Ruby) supports the generated Ruby code, allowing
-  any fact population to be constructed for a given vocabulary.  There is
-  not yet any support within the API for database persistence, but that's
-  coming up for implementation soon.
-  </p>
+  <h4>The Constellation API</h4>
 
   <p>
-  The Metamodel is generated to Ruby from CQL or ORM2 to support the
-  creation and manipulation of any semantic model. Some changes are upcoming
-  to support a vocabulary that provides a translation of an existing
-  vocabulary, such as a Dutch or Japanese version of an English language
-  model.
+  The Constellation API (in Ruby) supports the generated Ruby code, by
+  allowing any fact population to be asserted into a constellation for
+  a given vocabulary. The generated Ruby module for a vocabulary can be
+  told which object types are tables in the SQL, and can infer all the
+  column names and object mappings from that.
+  </p>
+  
+  <p> Processing of the deny operation (which removes facts from a
+  constellation) does not yet propagate denial through mandatory roles.
+  There is not yet a validate operation to verify that all verifible
+  constraints are met.  Where a constellation is known to be
+  incomplete, that's not yet able to be recorded (this will be used
+  in determining which constraints can be checked)
+  There is not yet any support within the API for database persistence
+  (creating a constellation from query results, and creating, deleting or
+  updating database rows by saving a constellation).
   </p>
 
+  <h4>The ORM2 Metamodel</h4>
+
   <p>
+  The ORM2 Metamodel is generated to Ruby from CQL or ORM2 to support
+  the creation and manipulation of any semantic model. Some changes are
+  upcoming to support synonyms, including allowing a vocabulary to
+  provide a translation of an existing vocabulary, such as a Dutch or
+  Japanese version of an English language model.
+  </p>
+
+  <!--p>
   ActiveFacts can currently read models from NORMA, which are in elementary
   form, and it can reverse engineer the schemas of existing databases in SQL
   Server, DB2, Oracle, and open-source databases not yet tested including
   MySQL, PostgreSQL, etc.  Reverse-engineered models are still in composite
   form - the mapping to elementary form is incomplete.  Reverse engineering
   does not yet analyse actual data.
-  </p>
+  </p-->
 
-  <p>
+  <!--p>
   ActiveFacts has no database adapter infrastructure yet. The
   previously-available reverse engineering tools used used the
   infrastructure of ActiveRecord with DRYSql and Composite Primary Keys, but
   future versions will probably just use the ActiveRecord adapters directly.
-  </p>
+  </p-->
 
   <!--p>
   APRIMO allows the definition of vocabulary aspects as well as the addition

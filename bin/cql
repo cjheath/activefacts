@@ -4,7 +4,6 @@
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
-
 require 'activefacts'
 require 'activefacts/cql/parser'
 require 'readline'
@@ -12,51 +11,71 @@ require 'readline'
 if ENV['DEBUG']
   begin
     require 'ruby-debug'
-    debugger if debug :exception
+    Debugger.start
   rescue LoadError
     # Ok, no debugger, tough luck.
   end
 end
-true # Ok, got the stack set up, continue to the fault
 
 puts "This is a stub for the CQL interactive commandline. At the moment it only parses CQL and shows the parse trees."
 
-parser = ActiveFacts::CQL::Parser.new
-parser.root = :definition
-statement = nil
-while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
-  statement = statement ? statement + "\n"+line : line
-  if line =~ %r{\A/}
+class InteractiveCQLParser < ActiveFacts::CQL::Parser
+  def initialize *a
+    @show_tree = false  # Show the raw Treetop parse tree
+    super *a
+    self.root = :definition
+  end
+
+  def metacommand(line)
     # meta-commands start with /
     case (words = line.split).shift
+    when "/tree"
+      @show_tree = !@show_tree
+      puts "Will #{@show_tree ? "" : "not "}show the parse tree"
     when "/root"
-      parser.root = words[0] && words[0].to_sym || :definition
-      puts "ok"
+      self.root = words[0] && words[0].to_sym || :definition
+      puts "Looking for a #{self.root}"
     else
       puts "Unknown metacommand #{line}, did you mean /root <rule>?"
     end
-    statement = nil
-  elsif parser.root != :definition or
-      line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
-    # After stripping string literals the line contains a ';', it's the last line of the command:
+  end
+
+  def process(statement)
     begin
-      result = parser.parse(statement)
+      result = parse(statement)
       if result
-        begin
-          p result.value
-        rescue => e
-          puts e.to_s+":"
+	begin
+	  if @show_tree
+	    p result
+	  else
+	    p result.value
+	  end
+	rescue => e
+	  puts e.to_s+":"
 	  puts e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
-          p result  # In case the root is changed and there's no value()
-        end
-        #p parser.definition(result)
+	  p result  # In case the root is changed and there's no value()
+	end
       else
-        p parser.failure_reason
+	p failure_reason
       end
     rescue => e
       puts e
       puts "\t"+e.backtrace*"\n\t"
     end
+  end
+end
+
+parser = InteractiveCQLParser.new
+statement = nil
+while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
+  statement = statement ? statement + "\n"+line : line
+  if line =~ %r{\A/}
+    parser.metacommand(line)
+    statement = nil
+  elsif parser.root != :definition or
+      line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
+    # After stripping string literals the line contains a ';', we've found the last line of the command:
+    parser.process(statement)
     statement = nil
   end
 end

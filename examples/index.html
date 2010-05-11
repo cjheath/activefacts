@@ -24,19 +24,25 @@
     </ul>
   </div>
 
-  <p>The example models presented here were created as Object Role Models
-  using <a href="http://www.ormfoundation.org/files/">NORMA</a>. The
-  ActiveFacts generator <em>afgen</em> was used to convert them from ORM2
-  to CQL, SQL and Ruby code using ActiveFacts.  They're all available here
-  as PNG images and in the other formats.
+  <p>This page introduces my example models in both ORM2 and CQL. The CQL
+  files are exactly as generated from the ORM2 versions, but you could have
+  written them by hand. Either type of file can be converted to SQL or Ruby,
+  using the relational and object-oriented mapping algorithms implemented
+  in the ActiveFacts generator <em>afgen</em>. The output files from these
+  conversions are available here, as are the PNG images of the ORM2 versions.
+  </p>
 
-  </p><p>
+  <p>The example models presented here were created as Object Role Models
+  using <a href="http://www.ormfoundation.org/files/">NORMA</a>. A selection
+  of the basic models is discussed below, and a full table below that.  </p>
+
+  <p>
   To make a start learning Object Role Modeling, read the
   <a href="intro.html">Introduction to ORM2</a> or check the Resources page
   for other sites.
 
   </p><p>
-  The CQL code here formatted and laid out is <em>exactly</em> as it was generated.
+  The CQL code here is formatted and laid out is <em>exactly</em> as it was generated.
   It's interesting how cleverly the semantic clustering algorithm works!
 
   </p><p class="offline">
@@ -105,11 +111,11 @@
   <td></td>
   <td></td>
   <td></td>
-  <th>Diagrams</th>
+  <th>ORM2 Diagrams</th>
   </tr>
 
   <tr>
-  <td>Address</td>
+  <td>Address <a href="ORM/Address.orm">(orm)</a></td>
   <td><a href="CQL/Address.cql">CQL</a></td>
   <td><a href="ruby/Address.rb">Ruby</a></td>
   <td><a href="SQL/Address.sql">SQL</a></td>
@@ -118,7 +124,7 @@
   </tr>
 
   <tr>
-  <td>Blog</td>
+  <td>Blog <a href="ORM/Blog.orm">(orm)</a></td>
   <td><a href="CQL/Blog.cql">CQL</a></td>
   <td><a href="ruby/Blog.rb">Ruby</a></td>
   <td><a href="SQL/Blog.sql">SQL</a></td>
@@ -127,7 +133,7 @@
   </tr>
 
   <tr>
-  <td>CompanyDirectorEmployee</td>
+  <td>CompanyDirectorEmployee <a href="ORM/CompanyDirectorEmployee.orm">(orm)</a></td>
   <td><a href="CQL/CompanyDirectorEmployee.cql">CQL</a></td>
   <td><a href="ruby/CompanyDirectorEmployee.rb">Ruby</a></td>
   <td><a href="SQL/CompanyDirectorEmployee.sql">SQL</a></td>
@@ -136,7 +142,7 @@
   </tr>
 
   <tr>
-  <td>Death</td>
+  <td>Death <a href="ORM/Death.orm">(orm)</a></td>
   <td><a href="CQL/Death.cql">CQL</a></td>
   <td><a href="ruby/Death.rb">Ruby</a></td>
   <td><a href="SQL/Death.sql">SQL</a></td>
@@ -145,7 +151,7 @@
   </tr>
 
   <tr>
-  <td>Genealogy</td>
+  <td>Genealogy <a href="ORM/Genealogy.orm">(orm)</a></td>
   <td><a href="CQL/Genealogy.cql">CQL</a></td>
   <td><a href="ruby/Genealogy.rb">Ruby</a></td>
   <td><a href="SQL/Genealogy.sql">SQL</a></td>
@@ -159,14 +165,25 @@
   <td><a href="ruby/Insurance.rb">Ruby</a></td>
   <td><a href="SQL/Insurance.sql">SQL</a></td>
   <td>
-  <a href="images/Insurance/Claim.png">Claim</a><br>
   <a href="images/Insurance/Insurance.png">Insurance</a><br>
   <a href="images/Insurance/Person.png">Person</a><br>
   <a href="images/Insurance/Policy.png">Policy</a><br>
+  <a href="images/Insurance/Claim.png">Claim</a><br>
+  <a href="images/Insurance/VehicleIncident.png">VehicleIncident</a><br>
+  <a href="images/Insurance/Related.png">Related</a><br>
   </tr>
 
   <tr>
-  <td>Marriage</td>
+  <td>JoinEquality <a href="ORM/JoinEquality.orm">(orm)</a></td>
+  <td><a href="CQL/JoinEquality.cql">CQL</a></td>
+  <td><a href="ruby/JoinEquality.rb">Ruby</a></td>
+  <td><a href="SQL/JoinEquality.sql">SQL</a></td>
+  <td>
+  <a href="images/JoinEquality.png">JoinEquality</a><br>
+  </tr>
+
+  <tr>
+  <td>Marriage <a href="ORM/Marriage.orm">(orm)</a></td>
   <td><a href="CQL/Marriage.cql">CQL</a></td>
   <td><a href="ruby/Marriage.rb">Ruby</a></td>
   <td><a href="SQL/Marriage.sql">SQL</a></td>
@@ -174,21 +191,26 @@
   <a href="images/Marriage.png">Marriage</a><br>
   </tr>
 
+  <a name="Metamodel"></a>
   <tr>
   <td>Metamodel</td>
   <td><a href="CQL/Metamodel.cql">CQL</a></td>
   <td><a href="ruby/Metamodel.rb">Ruby</a></td>
   <td><a href="SQL/Metamodel.sql">SQL</a></td>
   <td>
-  <a href="images/Metamodel/Constraints.png">Constraints</a><br>
-  <a href="images/Metamodel/Import.png">Import</a><br>
   <a href="images/Metamodel/Objects.png">Objects</a><br>
-  <a href="images/Metamodel/Populations.png">Populations</a><br>
+  <a href="images/Metamodel/Terms.png">Terms</a><br>
+  <a href="images/Metamodel/ValueTypes.png">ValueTypes</a><br>
+  <a href="images/Metamodel/Constraints.png">Constraints</a><br>
+  <a href="images/Metamodel/Units.png">Units</a><br>
+  <a href="images/Metamodel/Joins.png">Joins</a><br>
   <a href="images/Metamodel/Values.png">Values</a><br>
+  <a href="images/Metamodel/Populations.png">Populations</a><br>
+  <a href="images/Metamodel/Context.png">Context</a><br>
   </tr>
 
   <tr>
-  <td>MultiInheritance</td>
+  <td>MultiInheritance <a href="ORM/MultiInheritance.orm">(orm)</a></td>
   <td><a href="CQL/MultiInheritance.cql">CQL</a></td>
   <td><a href="ruby/MultiInheritance.rb">Ruby</a></td>
   <td><a href="SQL/MultiInheritance.sql">SQL</a></td>
@@ -197,7 +219,7 @@
   </tr>
 
   <tr>
-  <td>OilSupply</td>
+  <td>OilSupply <a href="ORM/OilSupply.orm">(orm)</a></td>
   <td><a href="CQL/OilSupply.cql">CQL</a></td>
   <td><a href="ruby/OilSupply.rb">Ruby</a></td>
   <td><a href="SQL/OilSupply.sql">SQL</a></td>
@@ -206,7 +228,7 @@
   </tr>
 
   <tr>
-  <td>Orienteering</td>
+  <td>Orienteering <a href="ORM/Orienteering.orm">(orm)</a></td>
   <td><a href="CQL/Orienteering.cql">CQL</a></td>
   <td><a href="ruby/Orienteering.rb">Ruby</a></td>
   <td><a href="SQL/Orienteering.sql">SQL</a></td>
@@ -217,7 +239,7 @@
   </tr>
 
   <tr>
-  <td>OrienteeringER</td>
+  <td>OrienteeringER <a href="ORM/OrienteeringER.orm">(orm)</a></td>
   <td><a href="CQL/OrienteeringER.cql">CQL</a></td>
   <td><a href="ruby/OrienteeringER.rb">Ruby</a></td>
   <td><a href="SQL/OrienteeringER.sql">SQL</a></td>
@@ -226,7 +248,7 @@
   </tr>
 
   <tr>
-  <td>PersonPlaysGame</td>
+  <td>PersonPlaysGame <a href="ORM/PersonPlaysGame.orm">(orm)</a></td>
   <td><a href="CQL/PersonPlaysGame.cql">CQL</a></td>
   <td><a href="ruby/PersonPlaysGame.rb">Ruby</a></td>
   <td><a href="SQL/PersonPlaysGame.sql">SQL</a></td>
@@ -235,7 +257,16 @@
   </tr>
 
   <tr>
-  <td>SchoolActivities</td>
+  <td>RedundantDependency <a href="ORM/RedundantDependency.orm">(orm)</a></td>
+  <td><a href="CQL/RedundantDependency.cql">CQL</a></td>
+  <td><a href="ruby/RedundantDependency.rb">Ruby</a></td>
+  <td><a href="SQL/RedundantDependency.sql">SQL</a></td>
+  <td>
+  <a href="images/RedundantDependency.png">RedundantDependency</a><br>
+  </tr>
+
+  <tr>
+  <td>SchoolActivities <a href="ORM/SchoolActivities.orm">(orm)</a></td>
   <td><a href="CQL/SchoolActivities.cql">CQL</a></td>
   <td><a href="ruby/SchoolActivities.rb">Ruby</a></td>
   <td><a href="SQL/SchoolActivities.sql">SQL</a></td>
@@ -244,7 +275,7 @@
   </tr>
 
   <tr>
-  <td>SimplestUnary</td>
+  <td>SimplestUnary <a href="ORM/SimplestUnary.orm">(orm)</a></td>
   <td><a href="CQL/SimplestUnary.cql">CQL</a></td>
   <td><a href="ruby/SimplestUnary.rb">Ruby</a></td>
   <td><a href="SQL/SimplestUnary.sql">SQL</a></td>
@@ -253,7 +284,7 @@
   </tr>
 
   <tr>
-  <td>Warehousing</td>
+  <td>Warehousing <a href="ORM/Warehousing.orm">(orm)</a></td>
   <td><a href="CQL/Warehousing.cql">CQL</a></td>
   <td><a href="ruby/Warehousing.rb">Ruby</a></td>
   <td><a href="SQL/Warehousing.sql">SQL</a></td>
@@ -262,7 +293,7 @@
   </tr>
 
   <tr>
-  <td>WindowInRoomInBldg</td>
+  <td>WindowInRoomInBldg <a href="ORM/WindowInRoomInBldg.orm">(orm)</a></td>
   <td><a href="CQL/WindowInRoomInBldg.cql">CQL</a></td>
   <td><a href="ruby/WindowInRoomInBldg.rb">Ruby</a></td>
   <td><a href="SQL/WindowInRoomInBldg.sql">SQL</a></td>

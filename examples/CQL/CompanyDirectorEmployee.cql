@@ -1,5 +1,7 @@
 vocabulary CompanyDirectorEmployee;
 
+Date is written as Date;
+
 /*
  * Value Types
  */
@@ -48,4 +50,4 @@ Manager is ceo;
 /*
  * Constraints:
  */
-either that Employee is ceo or that Employee is supervised by some Manager but not both;
+either Employee is ceo or Employee is supervised by some Manager but not both;
