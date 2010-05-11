@@ -4,6 +4,7 @@ vocabulary ORMModel1;
  * Value Types
  */
 AccuracyLevel is written as SignedInteger(32);
+Date is written as Date;
 PartyId is written as AutoCounter;
 PartyName is written as VariableLengthText;
 ymd is written as Date;

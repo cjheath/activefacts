@@ -1,5 +1,6 @@
-vocabulary CompanyDirectorEmployee in English;
-vocabulary French CompanyDirectorEmployee extends English;
+vocabulary CompanyDirectorEmployee;
+
+Date is written as Date;
 
 /*
  * Value Types

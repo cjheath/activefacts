@@ -8,6 +8,7 @@ Assimilation is written as VariableLengthText restricted to {'partitioned', 'sep
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
+Date is written as Date;
 Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
 Enforcement is written as VariableLengthText(16);
@@ -73,6 +74,13 @@ PresenceConstraint has at most one min-Frequency restricted to {2..};
 PresenceConstraint is mandatory;
 PresenceConstraint is preferred identifier;
 
+Reading is identified by FactType and Ordinal where
+	FactType has at least one Reading,
+	Reading is for one FactType,
+	Reading is in one Ordinal position,
+	Ordinal reading for fact type is Reading;
+Reading has one Text;
+
 RingConstraint is a kind of Constraint;
 RingConstraint is of one RingType;
 
@@ -85,6 +93,8 @@ other-Role is of RingConstraint,
 
 RoleSequence is identified by its Id;
 PresenceConstraint covers one RoleSequence;
+Reading is in one RoleSequence,
+	RoleSequence is for Reading;
 
 RoleValue is identified by Instance and Fact where
 	Instance plays RoleValue,
@@ -126,15 +136,6 @@ Vocabulary contains Constraint,
 	Constraint belongs to at most one Vocabulary;
 Vocabulary includes Unit,
 	Unit is in one Vocabulary;
-
-less is identified by FactType and Ordinal where
-	FactType has at least one less,
-	less is for one FactType,
-	less is in one Ordinal position,
-	Ordinal reading for fact type is less;
-less is in one RoleSequence,
-	RoleSequence is for less;
-less has one Text;
 
 Agreement is identified by ContextNote where
 	ContextNote was added by at most one Agreement,
@@ -271,7 +272,7 @@ for each Instance at most one of these holds:
 	Instance objectifies Fact;
 either ObjectType is an EntityType or ObjectType is a ValueType but not both;
 for each RoleSequence exactly one of these holds:
-	less is in RoleSequence,
+	Reading is in RoleSequence,
 	PresenceConstraint covers RoleSequence,
 	SubsetConstraint covers subset-RoleSequence,
 	SubsetConstraint covers superset-RoleSequence,

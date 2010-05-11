@@ -6,6 +6,7 @@ vocabulary ServiceDirector;
 Company_Code is written as FixedLengthText(5);
 Credential_Nr is written as SignedInteger(32);
 DDMMYYYY is written as Date;
+Date is written as Date;
 DataStore_Name is written as VariableLengthText(15);
 EmailAddress is written as VariableLengthText(50);
 HHMMSS is written as Time;

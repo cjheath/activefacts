@@ -46,7 +46,7 @@ Event is called at most one EventName,
 Event has at most one Number;
 Event is held on one StartTime;
 Event starts at one start-Location,
-	Location is where Event starts;
+	Location is place Event starts;
 
 EventControl is where
 	Event includes at least one ControlNumber;

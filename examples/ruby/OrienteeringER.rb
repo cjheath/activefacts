@@ -65,7 +65,7 @@ module ::OrienteeringER
   end
 
   class Map
-    identified_by :map_name
+    identified_by :map_name, :accessibility, :club
     has_one :accessibility, :mandatory => true  # See Accessibility.all_map
     has_one :club, :mandatory => true           # See Club.all_map
     one_to_one :map_name, :class => Name, :mandatory => true  # See Name.map_as_map_name
@@ -78,7 +78,7 @@ module ::OrienteeringER
   end
 
   class Event
-    identified_by :event_id
+    identified_by :event_id, :series_event, :event_name, :club, :map, :date, :location
     has_one :club, :mandatory => true           # See Club.all_event
     has_one :date, :mandatory => true           # See Date.all_event
     one_to_one :event_id, :class => ID, :mandatory => true  # See ID.event_as_event_id

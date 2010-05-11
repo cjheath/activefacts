@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{20C04CA6-72A9-4C0C-A4F8-5173BBC91687}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -58,10 +58,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Insurance.orm</DependentUpon>
     </Compile>
-    <Compile Include="JoinEquality._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>JoinEquality.orm</DependentUpon>
-    </Compile>
     <Compile Include="Marriage._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Marriage.orm</DependentUpon>
@@ -113,6 +109,10 @@
     <Compile Include="NonRoleId._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>NonRoleId.orm</DependentUpon>
+    </Compile>
+    <Compile Include="UnaryIdentification._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UnaryIdentification.orm</DependentUpon>
     </Compile>
     <Compile Include="PersonPlaysGame._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -205,10 +205,6 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Insurance._ORMCustomToolReport.cs</LastGenOutput>
     </None>
-    <None Include="JoinEquality.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>JoinEquality._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
     <None Include="Marriage.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Marriage._ORMCustomToolReport.cs</LastGenOutput>
@@ -252,6 +248,10 @@
     <None Include="NonRoleId.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>NonRoleId._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="UnaryIdentification.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>UnaryIdentification._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="PersonPlaysGame.orm">
       <Generator>ORMCustomTool</Generator>
@@ -686,23 +686,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('JoinEquality.orm')">
-    <None Include="JoinEquality.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>JoinEquality.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="JoinEquality.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>JoinEquality.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="JoinEquality.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>JoinEquality.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('Tests.Test5.Load.orm')">
     <None Include="Tests.Test5.Load.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -738,6 +721,28 @@
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('Richmond-ORMModel-v0.9.orm')">
+  </ItemGroup>
+  <ItemGroup Condition="Exists('UnaryIdentification.orm')">
+    <None Include="UnaryIdentification.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UnaryIdentification.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="UnaryIdentification.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UnaryIdentification.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="UnaryIdentification.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UnaryIdentification.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+    <None Include="UnaryIdentification.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UnaryIdentification.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

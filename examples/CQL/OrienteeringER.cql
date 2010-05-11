@@ -29,7 +29,7 @@ Map is where
 
 SeriesEvent is where
 	SeriesName includes event-Number,
-	event Number is in SeriesName;
+	event-Number is in SeriesName;
 
 Event is where
 	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
