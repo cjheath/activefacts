@@ -22,7 +22,7 @@ module ActiveFacts
         end
 
         def loose_binding
-          # Override if you want to implement loose binding
+          # Override for constraint types that need loose binding (same role player matching with different adjectives)
         end
 
         def bind_joins
@@ -78,6 +78,62 @@ module ActiveFacts
             end
           end
 
+        end
+
+        def loose_bind_wherever_possible
+          # Apply loose binding over applicable roles:
+          debug :binding, "Loose binding on SetEqualityConstraint" do
+            @join_lists.each do |join_list|
+              join_list.each do |reading|
+                reading.role_refs.each do |role_ref|
+                  next if role_ref.binding.refs.size > 1
+                  # This role_ref didn't match any other role_ref. Have a scout around for a suitable partner
+                  candidates = @context.bindings.
+                    select do |key, binding|
+                      binding != role_ref.binding and binding.player == role_ref.binding.player
+                    end.map{|k,b| b}
+                  next if candidates.size != 1  # Fail
+                  debug :binding, "Loose binding #{role_ref.inspect} to #{candidates[0].inspect}"
+                  role_ref.rebind_to(@context, candidates[0].refs[0])
+                end
+              end
+            end
+          end
+        end
+
+        def loose_bind_roles
+          # Apply loose binding over applicable @roles:
+          debug :binding, "Check for loose bindings on #{@roles.size} roles in SetExclusionConstraint" do
+            @roles.each do |role_ref|
+              role_ref.identify_player @context
+              role_ref.bind @context
+              if role_ref.binding.refs.size < @join_lists.size+1
+                debug :binding, "Insufficient bindings for #{role_ref.inspect} (#{role_ref.binding.refs.size}, expected #{@join_lists.size+1}), attempting loose binding" do
+                  @join_lists.each do |join_list|
+                    candidates = []
+                    next if join_list.
+                      detect do |reading|
+                        debug :binding, "Checking #{reading.inspect}"
+                        reading.role_refs.
+                          detect do |rr|
+                            already_bound = rr.binding == role_ref.binding
+                            if !already_bound && rr.player == role_ref.player
+                              candidates << rr
+                            end
+                            already_bound
+                          end
+                      end
+                    debug :binding, "Attempting loose binding for #{role_ref.inspect} in #{join_list.inspect}, from the following candidates: #{candidates.inspect}"
+
+                    if candidates.size == 1
+                      debug :binding, "Rebinding #{candidates[0].inspect} to #{role_ref.inspect}"
+                      candidates[0].rebind_to(@context, role_ref)
+                    end
+                  end
+                end
+              end
+            end
+          end
         end
 
       end
@@ -154,6 +210,7 @@ module ActiveFacts
           # This needs to be implemented when compile changes to use bind_roles
           raise hell
         end
+
       end
 
       class SetConstraint < Constraint
@@ -180,6 +237,7 @@ module ActiveFacts
                     role_ref.role_ref && role_ref.role_ref.role or role_ref.role
                   end.
                   compact
+                # REVISIT: Should use reading side effects to preserve residual adjectives here.
                 @constellation.RoleRef(rs, rs.all_role_ref.size, :role => roles[0])
               end
               rs
@@ -207,6 +265,10 @@ module ActiveFacts
             :superset_role_sequence => role_sequences[1],
             :enforcement => @enforcement && @enforcement.compile
           )
+        end
+
+        def loose_binding
+          loose_bind_wherever_possible
         end
       end
 
@@ -266,40 +328,13 @@ module ActiveFacts
 
         # In a SetExclusionConstraint, each role in "for each XYZ" must occur in each join_list
         def loose_binding
-          # Apply loose binding over applicable roles:
-          debug :binding, "Loose binding on SetExclusionConstraint" do
-            @roles.each do |role_ref|
-              role_ref.identify_player @context
-              role_ref.bind @context
-              if role_ref.binding.refs.size < @join_lists.size+1
-                debug :binding, "Insufficient bindings for #{role_ref.inspect} (#{role_ref.binding.refs.size}, expected #{@join_lists.size+1}), attempting loose binding" do
-                  @join_lists.each do |join_list|
-                    candidates = []
-                    next if join_list.
-                      detect do |reading|
-                        debug :binding, "Checking #{reading.inspect}"
-                        reading.role_refs.
-                          detect do |rr|
-                            already_bound = rr.binding == role_ref.binding
-                            if !already_bound && rr.player == role_ref.player
-                              debugger
-                              candidates << rr
-                            end
-                            already_bound
-                          end
-                      end
-                    debug :binding, "Attempting loose binding for #{role_ref.inspect} in #{join_list.inspect}, from the following candidates: #{candidates.inspect}"
-
-                    if candidates.size == 1
-                      debug :binding, "Rebinding #{candidates[0].inspect} to #{role_ref.inspect}"
-                      candidates[0].rebind_to(@context, role_ref)
-                    end
-                  end
-                end
-              end
-            end
+          if @roles.size == 0
+            loose_bind_wherever_possible
+          else
+            loose_bind_roles
           end
         end
+
       end
 
       class SetEqualityConstraint < SetComparisonConstraint
@@ -322,6 +357,11 @@ module ActiveFacts
             @constellation.SetComparisonRoles(constraint, i, :role_sequence => role_sequence)
           end
         end
+
+        def loose_binding
+          loose_bind_wherever_possible
+        end
+
       end
 
       class RingConstraint < Constraint
