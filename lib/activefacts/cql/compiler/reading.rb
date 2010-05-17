@@ -76,9 +76,6 @@ module ActiveFacts
         #
         # As this match may not necessarily be used (depending on the side effects),
         # no change is made to this Reading object - those will be done later.
-        #
-        # REVISIT: In future, there may be more than one match, and this method will return
-        # them all, for the caller to select the best.
         def match_existing_fact_type context
           rrs = role_refs
           players = rrs.map{|rr| rr.player}
@@ -103,7 +100,7 @@ module ActiveFacts
                 if players.size == 2 and
                   role.fact_type.is_a?(Metamodel::TypeInheritance) and
                   [players[0].name, players[1].name].sort != all_roles.map{|r| r.concept.name}.sort
-                  # REVISIT: Perhaps this match can be made transitive in future:
+                  # REVISIT: Perhaps this subtyping match can be made transitive in future:
                   debug :matching, "Requiring exact match for TypeInheritance invocation want (#{players.map{|p|p.name}.sort*', '}), discounting (#{all_roles.map{|r|r.concept.name}.sort*', '})"
                   next
                 end
@@ -160,7 +157,6 @@ module ActiveFacts
               @reading = best_matches[0]
               @side_effects = matches[@reading]
               @fact_type = @side_effects.fact_type
-              # REVISIT: Move this code to make_reading
               apply_side_effects(context, @side_effects)
               return @fact_type
             end
@@ -236,11 +232,11 @@ module ActiveFacts
                   return nil
                 end
                 debug :matching, "Subtype join is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
-                # REVISIT: Remember the subtype join as a side-effect
               end
 
               # It's the right player. Do the adjectives match? This must include the intervening_words, if any.
 
+              role_has_residual_adjectives = false
               absorbed_precursors = 0
               if la = role_ref.leading_adjective and !la.empty?
                 # The leading adjectives must match, one way or another
@@ -254,12 +250,12 @@ module ActiveFacts
                 return nil if !intervening_words.empty? && la != phrase_la
                 # If not, the phrase's leading_adjectives must *end* with the reading's
                 return nil if phrase_la[-la.size..-1] != la
-                residual_adjectives = true if phrase_la.size > la.size
+                role_has_residual_adjectives = true if phrase_la.size > la.size
                 # The leading adjectives and the player matched! Check the trailing adjectives.
                 absorbed_precursors = intervening_words.size
                 intervening_words = []
               elsif intervening_words.size > 0 || next_player_phrase.leading_adjective
-                residual_adjectives = true
+                role_has_residual_adjectives = true
               end
 
               absorbed_followers = 0
@@ -274,13 +270,14 @@ module ActiveFacts
                   i += 1
                 end
                 return nil if ta != phrase_ta[0,ta.size]
-                residual_adjectives = true if phrase_ta.size > ta.size || i < ta.size
+                role_has_residual_adjectives = true if phrase_ta.size > ta.size || i < ta.size
                 absorbed_followers = i
                 phrase_num += i # Skip following words that were consumed as trailing adjectives
               elsif next_player_phrase.trailing_adjective
-                residual_adjectives = true
+                role_has_residual_adjectives = true
               end
 
+              residual_adjectives ||= role_has_residual_adjectives
               if residual_adjectives && next_player_phrase.binding.refs.size == 1
                 debug :matching_fails, "Residual adjectives have no other purpose, so this match fails"
                 return nil
@@ -288,7 +285,7 @@ module ActiveFacts
 
               # The phrases matched this reading's next role_ref, save data to apply the side-effects:
               debug :matching, "Saving side effects for #{next_player_phrase.term}, absorbs #{absorbed_precursors}/#{absorbed_followers}#{common_supertype ? ', join over supertype '+ common_supertype.name : ''}" if absorbed_precursors+absorbed_followers+(common_supertype ? 1 : 0) > 0
-              side_effects << ReadingMatchSideEffect.new(next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers, common_supertype)
+              side_effects << ReadingMatchSideEffect.new(next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers, common_supertype, role_has_residual_adjectives)
             end
 
             if phrase_num != @phrases.size || !intervening_words.empty?
@@ -500,15 +497,16 @@ module ActiveFacts
       # An instance of ReadingMatchSideEffects is created when the compiler matches an existing fact type.
       # It captures the details that have to be adjusted for the match to be regarded a success.
       class ReadingMatchSideEffect
-        attr_reader :phrase, :role_ref, :num, :absorbed_precursors, :absorbed_followers, :common_supertype
+        attr_reader :phrase, :role_ref, :num, :absorbed_precursors, :absorbed_followers, :common_supertype, :residual_adjectives
 
-        def initialize phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype
+        def initialize phrase, role_ref, num, absorbed_precursors, absorbed_followers, common_supertype, residual_adjectives
           @phrase = phrase
           @role_ref = role_ref
           @num = num
           @absorbed_precursors = absorbed_precursors
           @absorbed_followers = absorbed_followers
           @common_supertype = common_supertype
+          @residual_adjectives = residual_adjectives
         end
 
         def cost

@@ -128,8 +128,7 @@ module ActiveFacts
 	    def ast
 	      context = c.empty? ? nil : c.value
 
-	      # REVISIT: Disabled until PresenceConstraint.compile can cope with nil role_refs:
-	      if false and exclusion.text_value.empty?
+	      if exclusion.text_value.empty?
 		Compiler::PresenceConstraint.new context, enforcement.ast, [r1.ast, r2.ast], nil, Compiler::Quantifier.new(1, nil)
 	      else
 		quantifier = Compiler::Quantifier.new(*(exclusion.text_value.empty? ? [1, nil] : [1, 1]))

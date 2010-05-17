@@ -8,6 +8,7 @@ Assimilation is written as VariableLengthText restricted to {'partitioned', 'sep
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
+Date is written as Date;
 Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
 Enforcement is written as VariableLengthText(16);
@@ -287,7 +288,7 @@ either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetCo
 for each Term at most one of these holds:
 	Term designates ObjectType,
 	Term is secondary for ObjectType;
-either Unit is fundamental or that Unit is derived from some base-Unit but not both;
+either Unit is fundamental or Unit is derived from base-Unit but not both;
 either Unit has Coefficient or Unit uses coefficient from Ephemera but not both;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;

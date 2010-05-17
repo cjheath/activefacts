@@ -434,15 +434,28 @@ module ActiveFacts
             i = constrained_roles.index(role_ref.role)
             if !i   # Not a constrained role
               # REVISIT: If this is a join role, we need some/that, not just "some"
-              [ "some", role_ref.role.concept.name]
+              # REVISIT: Deactivated this code since it does the wrong thing in either/or, and CQL doesn't use it anyhow
+              [
+                nil, # "some",
+                role_ref.role.concept.name
+              ]
             elsif players_differ[i]
-              [ "that", players[i].name ]   # Make sure to use the superclass name
+              [
+                nil, # "that",
+                players[i].name
+              ]   # Make sure to use the superclass name
             else
               if reading.fact_type.all_role.select{|r| r.concept == role_ref.role.concept }.size > 1
                 # This fact type has more than one role played by the same concept
-                [ "that", role_ref.role.concept.name ]
+                [
+                  nil, # "that",
+                  role_ref.role.concept.name
+                ]
               else
-                [ "some", role_ref.role.concept.name ]
+                [
+                  nil, # "some",
+                  role_ref.role.concept.name
+                ]
               end
             end
           }

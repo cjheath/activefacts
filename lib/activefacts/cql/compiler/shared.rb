@@ -56,10 +56,12 @@ module ActiveFacts
           # Bind to an existing role which has a role name (that's why we bind those first)
           player ||= @player_by_role_name[name]
 
+=begin
           # REVISIT: Hack to allow facts to refer to standard types that will be imported from standard vocabulary:
           if !player && %w{Date DateAndTime Time}.include?(name)
             player = constellation.ValueType(virv, name)
           end
+=end
 
           if !player && @allowed_forward_terms.include?(name)
             player = constellation.EntityType(@vocabulary, name)

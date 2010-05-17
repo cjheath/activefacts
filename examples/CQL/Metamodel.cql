@@ -271,7 +271,7 @@ RoleValue fulfils Fact and Fact is of FactType
 	RoleValue is of Role and FactType has Ordinal role;
 either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConstraint is a SetEqualityConstraint but not both;
 either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
-either Unit is fundamental or that Unit is derived from some base-Unit but not both;
+either Unit is fundamental or Unit is derived from base-Unit but not both;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale

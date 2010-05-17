@@ -50,4 +50,4 @@ Manager is ceo;
 /*
  * Constraints:
  */
-either Employee is ceo or Employee is supervised by some Manager but not both;
+either Employee is ceo or Employee is supervised by Manager but not both;
