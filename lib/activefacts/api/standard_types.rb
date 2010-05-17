@@ -53,9 +53,19 @@ class Class
   end
 end
 
-# REVISIT: Fix these NORMA types
-class Decimal < Int #:nodoc:
+require 'bigdecimal'
+class Decimal < BigDecimal #:nodoc:
+  extend ActiveFacts::API::ValueClass
+  # The problem here is you can't pass a BigDecimal to BigDecimal.new. Fix it.
+  def self.new(v)
+    if v.is_a?(BigDecimal)
+      super(v.to_s)
+    else
+      super
+    end
+  end
 end
+# REVISIT: Fix these NORMA types
 class SignedInteger < Int #:nodoc:
 end
 class SignedSmallInteger < Int #:nodoc:

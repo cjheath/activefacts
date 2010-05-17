@@ -21,6 +21,38 @@ module ActiveFacts
       def vocabulary_end
       end
 
+      def units_banner
+        puts "/*\n * Units\n */"
+      end
+
+      def unit_dump unit
+        if unit.coefficient
+          # REVISIT: Use a smarter algorithm to switch to exponential form when there'd be lots of zeroes.
+          print unit.coefficient.numerator.to_s('F')
+          if d = unit.coefficient.denominator and d != 1
+            print "/#{d}"
+          end
+          print ' '
+        else
+          print '1 '
+        end
+        # REVISIT: Sort base units, and convert negative powers to division?
+        print(unit.
+          all_derivation_as_derived_unit.
+          map do |der|
+            base = der.base_unit
+            "#{base.name}#{der.exponent and der.exponent != 1 ? "^#{der.exponent}" : ''} "
+          end*''
+        )
+        if o = unit.offset and o != 0
+          print "+ #{o.to_s('F')} "
+        end
+        print "converts to #{unit.name}"
+        print " approximately" if unit.coefficient and !unit.coefficient.is_precise
+        print " ephemeral" if unit.is_ephemeral
+        puts ";"
+      end
+
       def value_type_banner
         puts "/*\n * Value Types\n */"
       end

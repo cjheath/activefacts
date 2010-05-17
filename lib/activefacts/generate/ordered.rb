@@ -34,6 +34,7 @@ module ActiveFacts
         build_indices
         @concept_types_dumped = {}
         @fact_types_dumped = {}
+        units_dump()
         value_types_dump()
         entity_types_dump()
         fact_types_dump()
@@ -60,6 +61,27 @@ module ActiveFacts
             end
           }
         @constraints_used = {}
+      end
+
+      def units_dump
+        done_banner = false
+        units = @vocabulary.all_unit.to_a.sort_by{|u| u.name}
+        while units.size > 0
+          if !done_banner
+            done_banner = true
+            units_banner
+          end
+          i = 0
+          while i < units.size
+            unit = units[i]
+            i += 1
+            next if unit.all_derivation_as_derived_unit.detect{|d| units.include?(d.base_unit) }
+
+            unit_dump(unit)
+            units.delete(unit)
+            i -= 1
+          end
+        end
       end
 
       def value_types_dump
@@ -527,6 +549,12 @@ module ActiveFacts
 
       def vocabulary_end
         debug "Should override vocabulary_end"
+      end
+
+      def units_banner
+      end
+
+      def unit_dump unit
       end
 
       def value_type_banner

@@ -63,7 +63,7 @@ module ActiveFacts
             offset = u.o.text_value.empty? ? 0 : u.o.value
             bases = u.units.value
 	    approximately = q.respond_to? :approximately
-	    ephemeral = q.respond_to? :approximately
+	    ephemeral = q.respond_to? :ephemeral
 	    Compiler::Unit.new singular, plural, numerator, denominator, offset, bases, approximately, ephemeral
 	  end
         }

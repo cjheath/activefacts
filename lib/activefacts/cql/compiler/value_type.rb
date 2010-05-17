@@ -16,15 +16,14 @@ module ActiveFacts
         def compile
           if (@numerator.to_f / @denominator.to_i != 1.0)
             coefficient = @constellation.Coefficient(
-                :numerator => @numerator.to_f,
+                :numerator => @numerator,
                 :denominator => @denominator.to_i,
                 :is_precise => !@approximately
               )
           else
             coefficient = nil
           end
-          @offset = @offset.to_f
-          @offset = nil if @offset == 0
+          @offset = nil if @offset.to_f == 0
 
           debug :units, "Defining new unit #{@singular}#{@plural ? "/"+@plural : ""}" do
             debug :units, "Coefficient is #{coefficient.numerator}#{coefficient.denominator != 1 ? "/#{coefficient.denominator}" : ""} #{coefficient.is_precise ? "exactly" : "approximately"}" if coefficient
@@ -75,7 +74,6 @@ module ActiveFacts
           base_type = nil
           if (@base_type_name != @name)
             unless base_type = @constellation.ValueType[[@vocabulary.identifying_role_values, @constellation.Name(@base_type_name)]]
-              #puts "REVISIT: Creating base ValueType #{base_type_name} in #{@vocabulary.inspect}"
               base_type = @constellation.ValueType(@vocabulary, @base_type_name)
               return base_type if @base_type_name == @name
             end
@@ -88,6 +86,7 @@ module ActiveFacts
           vt.scale = scale if scale
 
           # REVISIT: Find and apply the units
+          #debugger unless @unit.empty?
 
           if @restriction
             vt.value_restriction = @restriction.compile(@constellation)
