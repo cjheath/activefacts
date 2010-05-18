@@ -9,7 +9,7 @@ require 'activefacts/cql/compiler'
 # require File.dirname(__FILE__) + '/../helpers/compiler_helper'  # Can't see how to include/extend these methods correctly
 
 describe "Fact Type Role Matching" do
-  Prefix = %q{
+  MatchingPrefix = %q{
     vocabulary Tests;
     Boy is written as String;
     Girl is written as String;
@@ -488,7 +488,7 @@ describe "Fact Type Role Matching" do
     EntityIdentificationTests
 
   before :each do
-    @compiler = ActiveFacts::CQL::Compiler.new(Prefix)
+    @compiler = ActiveFacts::CQL::Compiler.new(MatchingPrefix)
   end
 
   AllTests.each do |tests|

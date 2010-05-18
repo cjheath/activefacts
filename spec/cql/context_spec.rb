@@ -6,11 +6,11 @@
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
-require File.dirname(__FILE__) + '/../helpers/test_parser'
+# require File.dirname(__FILE__) + '/../helpers/test_parser'
 
 describe "Business Context Notes" do
   # (according_to people ',')? (because / as_opposed_to / so_that / to_avoid) discussion (',' as_agreed_by)? s
-  Prefix = %q{
+  ContextNotePrefix = %q{
     vocabulary Test;
     Person is written as Person;
     Person is employed;
@@ -50,7 +50,7 @@ describe "Business Context Notes" do
   ]
 
   before :each do
-    @compiler = ActiveFacts::CQL::Compiler.new(Prefix)
+    @compiler = ActiveFacts::CQL::Compiler.new(ContextNotePrefix)
   end
 
   Notes.each do |c|
