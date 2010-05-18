@@ -128,7 +128,7 @@ module ActiveFacts
                         # REVISIT: Don't bind to a binding with a role occurrence in the same reading
                         !binding.refs.detect{|rr|
                           x = rr.reading == reading
-                          puts "Discounting binding #{binding.inspect} as a match for #{role_ref.inspect} because it's already bound to a player in #{role_ref.reading.inspect}" if x
+                          # puts "Discounting binding #{binding.inspect} as a match for #{role_ref.inspect} because it's already bound to a player in #{role_ref.reading.inspect}" if x
                           x
                         }
                     end.map{|k,b| b}
