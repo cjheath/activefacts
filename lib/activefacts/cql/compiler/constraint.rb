@@ -435,7 +435,7 @@ module ActiveFacts
           end
           ring_type = @rings.map{|c| c.capitalize}*""
 
-          @constaint = @constellation.RingConstraint(
+          @constraint = @constellation.RingConstraint(
               :new,
               :vocabulary => @vocabulary,
           #   :name => name,              # REVISIT: Create a name for Ring Constraints?
