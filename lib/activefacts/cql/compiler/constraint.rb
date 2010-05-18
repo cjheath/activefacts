@@ -455,17 +455,17 @@ module ActiveFacts
           @value_ranges = value_ranges
         end
 
-        def compile constellation
-          @constraint = constellation.ValueRestriction(:new)
+        def compile
+          @constraint = @constellation.ValueRestriction(:new)
           @value_ranges.each do |range|
             min, max = Array === range ? range : [range, range]
-            v_range = constellation.ValueRange(
+            v_range = @constellation.ValueRange(
               min ? [[String === min ? eval(min) : min.to_s, String === min, nil], true] : nil,
               max ? [[String === max ? eval(max) : max.to_s, String === max, nil], true] : nil
             )
-            ar = constellation.AllowedRange(@constraint, v_range)
+            ar = @constellation.AllowedRange(@constraint, v_range)
           end
-          @constraint.enforcement = @enforcement.compile(constellation) if @enforcement
+          @constraint.enforcement = @enforcement.compile(@constellation) if @enforcement
           super
         end
       end

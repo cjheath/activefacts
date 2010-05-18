@@ -89,7 +89,8 @@ module ActiveFacts
           #debugger unless @unit.empty?
 
           if @restriction
-            vt.value_restriction = @restriction.compile(@constellation)
+            @restriction.constellation = @constellation
+            vt.value_restriction = @restriction.compile
           end
 
           vt

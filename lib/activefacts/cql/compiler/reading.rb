@@ -398,7 +398,8 @@ module ActiveFacts
 
                 if phrase.restriction
                   raise "The role #{rr.inspect} already has a value constraint" if rr.role.role_value_restriction
-                  rr.role.role_value_restriction = phrase.restriction.compile fact_type.constellation
+                  phrase.restriction.constellation = fact_type.constellation
+                  rr.role.role_value_restriction = phrase.restriction.compile
                 end
 
                 index += 1
