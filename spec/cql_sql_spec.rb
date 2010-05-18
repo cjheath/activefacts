@@ -17,7 +17,6 @@ describe "CQL Loader with SQL output" do
   cql_failures = {
     "Airline" => "Contains unsupported queries",
     "CompanyQuery" => "Contains unsupported queries",
-    "ServiceDirector" => "Constraints contain adjectives that require looser matching",
   }
   cql_sql_failures = {
     "Blog" => "Drops uniqueness constraints",

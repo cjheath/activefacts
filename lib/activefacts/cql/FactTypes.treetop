@@ -82,7 +82,7 @@ module ActiveFacts
       end
 
       rule fact_clause
-        s q:qualifier? s reading s p:post_qualifiers? s c:context?
+        s q:qualifier? s reading s p:post_qualifiers? s c:context_note?
         {
 	  def ast
 	    qualifiers = (q.empty? ? [] : [ q.text_value ]) +
@@ -91,7 +91,7 @@ module ActiveFacts
 	    r = reading.ast
 	    r.qualifiers << q.text_value unless q.empty?
 	    r.qualifiers += p.list unless p.empty?
-	    r.context_note = c.value unless c.empty?
+	    r.context_note = c.ast unless c.empty?
 	    r
 	  end
         }

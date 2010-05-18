@@ -65,7 +65,7 @@ module ActiveFacts
       rule prescan_rest
         &{ input.context.reset_role_names }
         (
-          context                           # Context notes have different lexical conventions
+          context_note                      # Context notes have different lexical conventions
           / '(' as S term_definition_name s ')' s    # Prescan for a Role Name
             &{|s| input.context.role_name(s[3].value) }
                                             # Adjective definitions

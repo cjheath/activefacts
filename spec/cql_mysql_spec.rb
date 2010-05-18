@@ -17,8 +17,6 @@ describe "CQL Loader with SQL output" do
   cql_failures = {
     "Airline" => "Contains queries, unsupported",
     "CompanyQuery" => "Contains queries, unsupported",
-    "OrienteeringER" => "Doesn't parse due to difficult fact type match",
-    "ServiceDirector" => "Doesn't parse some constraints due to mis-matched adjectives"
   }
   cql_mysql_failures = {
     "Metamodel" => "An index to enforce uniqueness on the nesting fact type isn't emitted",

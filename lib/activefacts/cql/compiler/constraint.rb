@@ -13,11 +13,44 @@ module ActiveFacts
         end
       end
 
+      class ContextNote
+        attr_reader :context_kind, :discussion, :who, :agreed_date, :agreed_agents
+
+        def initialize context_kind, discussion, who, agreed
+          @context_kind, @discussion, @who, @agreed = context_kind, discussion, who, agreed
+          @agreed_date, @agreed_agents = *agreed
+        end
+
+        def compile constellation, target
+          context_note =
+            constellation.ContextNote(
+              :new,
+              :context_note_kind => @context_note_kind,
+              :discussion => @discussion
+            )
+          case target
+          when ActiveFacts::Metamodel::Concept
+            context_note.concept = target
+          when ActiveFacts::Metamodel::Constraint
+            context_note.constraint = target
+          when ActiveFacts::Metamodel::FactType
+            context_note.fact_type = target
+          end
+          # REVISIT: Add agents and agreement_date
+          puts "REVISIT: agents and agreement_date not added to ContextNote" if @agreed_agents
+        end
+      end
+
       class Constraint < Definition
         def initialize context_note, enforcement, join_lists = []
           @context_note = context_note
           @enforcement = enforcement
           @join_lists = join_lists
+        end
+
+        def compile
+          @context_note.compile @constellation, @constraint if @context_note
+          @constraint
         end
 
         def loose_binding
@@ -183,17 +216,19 @@ module ActiveFacts
             end
           end
 
-          @constellation.PresenceConstraint(
-            :new,
-            :name => '',
-            :vocabulary => @vocabulary,
-            :role_sequence => role_sequence,
-            :min_frequency => @quantifier.min,
-            :max_frequency => @quantifier.max,
-            :is_preferred_identifier => false,
-            :is_mandatory => @quantifier.min && @quantifier.min > 0,
-            :enforcement => @enforcement && @enforcement.compile(@constellation)
-          )
+          @constraint =
+            @constellation.PresenceConstraint(
+              :new,
+              :name => '',
+              :vocabulary => @vocabulary,
+              :role_sequence => role_sequence,
+              :min_frequency => @quantifier.min,
+              :max_frequency => @quantifier.max,
+              :is_preferred_identifier => false,
+              :is_mandatory => @quantifier.min && @quantifier.min > 0,
+              :enforcement => @enforcement && @enforcement.compile(@constellation)
+            )
+          super
         end
 
         # In a PresenceConstraint, each role in "each XYZ" must occur in exactly one join_list
@@ -267,13 +302,15 @@ module ActiveFacts
           role_sequences =
             bind_residuals_as_role_sequences
 
-          @constellation.SubsetConstraint(
-            :new,
-            :vocabulary => @vocabulary,
-            :subset_role_sequence => role_sequences[0],
-            :superset_role_sequence => role_sequences[1],
-            :enforcement => @enforcement && @enforcement.compile(@constellation)
-          )
+          @constraint =
+            @constellation.SubsetConstraint(
+              :new,
+              :vocabulary => @vocabulary,
+              :subset_role_sequence => role_sequences[0],
+              :superset_role_sequence => role_sequences[1],
+              :enforcement => @enforcement && @enforcement.compile(@constellation)
+            )
+          super
         end
 
         def loose_binding
@@ -301,15 +338,16 @@ module ActiveFacts
           role_sequences =
             bind_residuals_as_role_sequences
 
-          constraint = @constellation.SetExclusionConstraint(
+          @constraint = @constellation.SetExclusionConstraint(
             :new,
             :vocabulary => @vocabulary,
             :is_mandatory => @quantifier.min == 1,
             :enforcement => @enforcement && @enforcement.compile(@constellation)
           )
           role_sequences.each_with_index do |role_sequence, i|
-            @constellation.SetComparisonRoles(constraint, i, :role_sequence => role_sequence)
+            @constellation.SetComparisonRoles(@constraint, i, :role_sequence => role_sequence)
           end
+          super
         end
 
         # In a SetExclusionConstraint, each role in "for each XYZ" must occur in each join_list
@@ -335,14 +373,15 @@ module ActiveFacts
           role_sequences =
             bind_residuals_as_role_sequences
 
-          constraint = @constellation.SetEqualityConstraint(
+          @constraint = @constellation.SetEqualityConstraint(
             :new,
             :vocabulary => @vocabulary,
             :enforcement => @enforcement && @enforcement.compile(@constellation)
           )
           role_sequences.each_with_index do |role_sequence, i|
-            @constellation.SetComparisonRoles(constraint, i, :role_sequence => role_sequence)
+            @constellation.SetComparisonRoles(@constraint, i, :role_sequence => role_sequence)
           end
+          super
         end
 
         def loose_binding
@@ -396,7 +435,7 @@ module ActiveFacts
           end
           ring_type = @rings.map{|c| c.capitalize}*""
 
-          ring = @constellation.RingConstraint(
+          @constaint = @constellation.RingConstraint(
               :new,
               :vocabulary => @vocabulary,
           #   :name => name,              # REVISIT: Create a name for Ring Constraints?
@@ -405,7 +444,8 @@ module ActiveFacts
               :ring_type => ring_type
             )
 
-          debug :constraint, "Added #{ring.verbalise} #{ring.class.roles.keys.map{|k|"#{k} => "+ring.send(k).verbalise}*", "}"
+          debug :constraint, "Added #{@constraint.verbalise} #{@constraint.class.roles.keys.map{|k|"#{k} => "+@constraint.send(k).verbalise}*", "}"
+          super
         end
       end
 
@@ -426,7 +466,7 @@ module ActiveFacts
             ar = constellation.AllowedRange(@constraint, v_range)
           end
           @constraint.enforcement = @enforcement.compile(constellation) if @enforcement
-          @constraint
+          super
         end
       end
 

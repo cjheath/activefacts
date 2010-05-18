@@ -7,11 +7,20 @@
 module ActiveFacts
   module CQL
     grammar Context
-      rule context
+      rule context_note
         '('
         w:who_says? s context_type discussion agreed:(',' a:as_agreed_by)? s
         ')'
-        { def value; [ w.empty? ? nil : w.value, context_type.value, discussion.text_value, agreed.empty? ? [] : agreed.a.value]; end }
+        {
+	  def value
+	    [ w.empty? ? nil : w.value, context_type.value, discussion.text_value, agreed.empty? ? [] : agreed.a.value]
+	  end
+	  def ast
+	    who = w.empty? ? nil : w.value
+	    agreed = !agreed || agreed.empty? ? [] : agreed.a.value
+	    Compiler::ContextNote.new context_type.value, discussion.text_value, who, agreed
+	  end
+	}
       end
 
       rule who_says

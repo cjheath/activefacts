@@ -15,7 +15,6 @@ describe "CQL Parser" do
   cql_failures = {
     "Airline" => "Contains queries, unsupported",
     "CompanyQuery" => "Contains queries, unsupported",
-    "ServiceDirector" => "Contains constraints with mismatched adjectives",
   }
 
   pattern = ENV["AFTESTS"] || "*"

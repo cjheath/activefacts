@@ -102,11 +102,11 @@ module ActiveFacts
       rule presence_constraint
         s 'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s enforcement 'in' s
         readings_list s
-        c:context? ';'
+        c:context_note? ';'
         {
 	  def ast
-	    context = c.empty? ? nil : c.value
-	    Compiler::PresenceConstraint.new context, enforcement.ast, readings_list.ast, role_list.ast, quantifier.ast
+	    context_note = c.empty? ? nil : c.ast
+	    Compiler::PresenceConstraint.new context_note, enforcement.ast, readings_list.ast, role_list.ast, quantifier.ast
 	  end
 	}
       end
@@ -115,25 +115,25 @@ module ActiveFacts
       rule set_constraint
         s 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s enforcement ':' s
           readings_list s
-          c:context? ';'
+          c:context_note? ';'
           {
 	    def ast
-	      context = c.empty? ? nil : c.value
-	      Compiler::SetExclusionConstraint.new context, enforcement.ast, readings_list.ast, role_list.ast, quantifier.ast
+	      context_note = c.empty? ? nil : c.ast
+	      Compiler::SetExclusionConstraint.new context_note, enforcement.ast, readings_list.ast, role_list.ast, quantifier.ast
 	    end
 	  }
         /
-        s either? s r1:readings s or s r2:readings exclusion:(but s not s both s)? c:context? enforcement ';'
+        s either? s r1:readings s or s r2:readings exclusion:(but s not s both s)? c:context_note? enforcement ';'
           {
 	    def ast
-	      context = c.empty? ? nil : c.value
+	      context_note = c.empty? ? nil : c.ast
 
 	      if exclusion.text_value.empty?
-		Compiler::PresenceConstraint.new context, enforcement.ast, [r1.ast, r2.ast], nil, Compiler::Quantifier.new(1, nil)
+		Compiler::PresenceConstraint.new context_note, enforcement.ast, [r1.ast, r2.ast], nil, Compiler::Quantifier.new(1, nil)
 	      else
 		quantifier = Compiler::Quantifier.new(*(exclusion.text_value.empty? ? [1, nil] : [1, 1]))
 		#quantifier = Compiler::Quantifier.new(1, 1)
-		Compiler::SetExclusionConstraint.new context, enforcement.ast, [r1.ast, r2.ast], nil, quantifier
+		Compiler::SetExclusionConstraint.new context_note, enforcement.ast, [r1.ast, r2.ast], nil, quantifier
 	      end
 	    end
           }
@@ -141,23 +141,23 @@ module ActiveFacts
 
       rule subset_constraint
         s readings s only s if s r2:readings s
-        c:context? enforcement ';'
+        c:context_note? enforcement ';'
         {
 	  def ast
-	    context = c.empty? ? nil : c.value
-	    Compiler::SubsetConstraint.new context, enforcement.ast, [readings.ast, r2.ast]
+	    context_note = c.empty? ? nil : c.ast
+	    Compiler::SubsetConstraint.new context_note, enforcement.ast, [readings.ast, r2.ast]
 	  end
 	}
       end
 
       rule equality_constraint
         s readings s tail:( if s and s only s if s readings s)+
-        c:context? enforcement ';'
+        c:context_note? enforcement ';'
         {
 	  def ast
-	    context = c.empty? ? nil : c.value
+	    context_note = c.empty? ? nil : c.ast
 	    all_readings = [readings.ast, *tail.elements.map{|e| e.readings.ast }]
-	    Compiler::SetEqualityConstraint.new context, enforcement.ast, all_readings
+	    Compiler::SetEqualityConstraint.new context_note, enforcement.ast, all_readings
 	  end
 	}
       end
