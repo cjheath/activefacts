@@ -7,6 +7,7 @@
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 
+require 'spec/spec_helper'
 require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/persistence'
@@ -19,7 +20,7 @@ include ActiveFacts::Metamodel
 Exceptions = {
   "Blog" => ["Author", "Comment", "Paragraph", "Post", "Topic"],
   "JoinEquality" => ["Event", "Seat", "Ticket", "Venue"],
-  "Metamodel" => ["AllowedRange", "Concept", "Constraint", "ContextAccordingTo", "ContextAgreedBy", "ContextNote", "Derivation", "Fact", "FactType", "Instance", "Join", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit", "ValueRestriction" ],
+  "Metamodel" => ["AllowedRange", "Concept", "Constraint", "ContextAccordingTo", "ContextAgreedBy", "ContextNote", "Derivation", "Fact", "FactType", "Instance", "Join", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit"],
   "MetamodelNext" => ["AllowedRange", "Constraint", "ContextAccordingTo", "ContextAgreedBy", "ContextNote", "Derivation", "Fact", "FactType", "Instance", "Join", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Term", "Unit", "ValueConstraint"],
   "OilSupply" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
   "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
@@ -77,7 +78,7 @@ describe "Relational Composition from NORMA" do
       File.open(expected_tables_file, "w") { |f| f.puts expected_tables*"\n" }
 
       # Check that the list matched:
-      table_names.should == expected_tables
+      table_names.should_not differ_from(expected_tables)
 
       # Calculate the columns and column names; REVISIT: check the results
       tables.each do |table|

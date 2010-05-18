@@ -6,6 +6,7 @@
 =begin
 REVISIT: These tests are important, but the intermediate layer they test no longer exists. Find another solution!
 
+require 'spec/helpers/test_parser'
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/parser'

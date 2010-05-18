@@ -5,7 +5,10 @@
 #   actual_text.should_not differ_from(expected_text)
 #
 
-require 'spec/helpers/file_matcher.rb'
+require 'spec/helpers/diff_matcher'
+require 'spec/helpers/array_matcher'
+require 'spec/helpers/file_matcher'
+require 'spec/helpers/string_matcher'
 
 class String
   def strip_comments()

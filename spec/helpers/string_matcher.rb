@@ -1,14 +1,12 @@
 require 'diff/lcs'
 
-module FileMatcher
-  class BeDifferentFile
+module StringMatcher
+  class BeDifferentString
     def initialize(expected)
-      expected = File.open(expected).read if expected.is_a?(Pathname)
       @expected = expected.scan(/[^\n]+/)
     end
 
     def matches?(actual)
-      actual = File.open(actual).read if actual.is_a?(Pathname)
       actual_lines = actual.scan(/[^\n]+/)
       differences = Diff::LCS::diff(@expected, actual_lines)
       @diff = differences.map do |chunk|
@@ -32,10 +30,10 @@ module FileMatcher
   end
 
   def have_different_contents(expected)
-    BeDifferentFile.new(expected)
+    BeDifferentString.new(expected)
   end
 end
 
 Spec::Runner.configure do |config|
-  config.include(FileMatcher)
+  config.include(StringMatcher)
 end
