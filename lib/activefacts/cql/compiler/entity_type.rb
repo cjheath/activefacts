@@ -77,7 +77,7 @@ module ActiveFacts
               id.identify_player(context)
               binding = id.bind(context)
               roles = binding.refs.map{|r| r.role}.compact.uniq
-              raise "Internal error in identifying roles" if roles.size != 1
+              raise "Looking for an occurrence of identifying role #{id.inspect}, but found #{roles.size == 0 ? "none" : roles.size}" if roles.size != 1
               roles[0]
             else
               # id is a reading of a unary fact type.

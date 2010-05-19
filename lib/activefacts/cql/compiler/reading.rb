@@ -709,9 +709,7 @@ module ActiveFacts
                   :min_frequency => @quantifier.min
                 )
               debug :constraint, "Made new PC min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
-              if @quantifier.enforcement && @quantifier.enforcement != []
-                constraint.enforcement = @quantifier.enforcement.compile(constellation)
-              end
+              @quantifier.enforcement.compile(constellation, constraint) if @quantifier.enforcement
               @embedded_presence_constraint = constraint
             end
             constraint
