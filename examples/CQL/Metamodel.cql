@@ -12,6 +12,7 @@ ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to',
 Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
 EnforcementCode is written as VariableLengthText(16);
+EphemeraURL is written as VariableLengthText;
 Exponent is written as SignedSmallInteger(32);
 FactId is written as AutoCounter;
 FactTypeId is written as AutoCounter;
@@ -67,7 +68,8 @@ FactType has ContextNote,
 	ContextNote applies to at most one FactType;
 
 Instance is identified by its Id;
-Instance objectifies at most one Fact;
+Instance objectifies at most one Fact,
+	Fact is objectified as at most one Instance;
 
 PresenceConstraint is a kind of Constraint;
 PresenceConstraint has at most one max-Frequency restricted to {1..};
@@ -89,9 +91,9 @@ Role is where
 	FactType has at least one Ordinal role;
 Role is of RingConstraint,
 	RingConstraint has at most one Role;
-Role has at most one role-Name;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
+other-Role is of RingConstraint;
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 
@@ -115,6 +117,8 @@ SubsetConstraint covers one subset-RoleSequence;
 SubsetConstraint covers one superset-RoleSequence;
 
 Unit is identified by its Id;
+EphemeraURL provides Unit coefficient,
+	Unit uses coefficient from at most one EphemeraURL;
 Name is of Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
@@ -144,7 +148,8 @@ Vocabulary includes Unit,
 Agreement is identified by ContextNote where
 	ContextNote was added by at most one Agreement,
 	Agreement covers one ContextNote;
-Agreement was on at most one Date;
+Agreement was on at most one Date,
+	Date is of Agreement;
 
 Bound is identified by Value and Bound is inclusive where
 	Bound has one Value,
@@ -241,7 +246,9 @@ Join is where
 Join traverses at most one Concept,
 	Concept is traversed by Join;
 Join has at most one input-Role;
+is anti Join;
 Join has at most one output-Role;
+Join is outer;
 
 Parameter is where
 	Name is a parameter of ValueType,
@@ -274,6 +281,7 @@ RoleValue fulfils Fact and Fact is of FactType
 either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConstraint is a SetEqualityConstraint but not both;
 either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
 either Unit is fundamental or Unit is derived from base-Unit but not both;
+either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale
@@ -282,8 +290,6 @@ either Agreement was reached by Agent or Agreement was on Date;
 each combination EntityType, TypeInheritance occurs at most one time in
 	EntityType is subtype of super-EntityType,
 	TypeInheritance provides identification;
-each Fact occurs at most one time in
-	Instance objectifies Fact;
 either Join has input-Role or Join has output-Role;
 each PresenceConstraint occurs at least one time in
 	PresenceConstraint has min-Frequency,
@@ -298,4 +304,3 @@ each combination Vocabulary, Name occurs at most one time in
 each combination Vocabulary, Name occurs at most one time in
 	Vocabulary includes Unit,
 	Name is of Unit;
-

@@ -4,14 +4,15 @@ vocabulary Metamodel;
  * Value Types
  */
 Adjective is written as VariableLengthText(64);
+AgentName is written as VariableLengthText;
 Assimilation is written as VariableLengthText restricted to {'partitioned', 'separate'};
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
 Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
-Enforcement is written as VariableLengthText(16);
-Ephemera is written as VariableLengthText;
+EnforcementCode is written as VariableLengthText(16);
+EphemeraURL is written as VariableLengthText;
 Exponent is written as SignedSmallInteger(32);
 FactId is written as AutoCounter;
 FactTypeId is written as AutoCounter;
@@ -23,26 +24,24 @@ Name is written as VariableLengthText(64);
 Numerator is written as Decimal;
 Offset is written as Decimal;
 Ordinal is written as UnsignedSmallInteger(32);
-PersonName is written as VariableLengthText;
 Pronoun is written as VariableLengthText(20) restricted to {'feminine', 'masculine', 'neuter', 'personal'};
 RingType is written as VariableLengthText;
 RoleSequenceId is written as AutoCounter;
 Scale is written as UnsignedInteger(32);
 Text is written as VariableLengthText(256);
 UnitId is written as AutoCounter;
-ValueConstraintId is written as AutoCounter;
 
 /*
  * Entity Types
  */
+Agent is identified by its Name;
+
 Coefficient is identified by Numerator and Denominator and Coefficient is precise where
 	Coefficient has one Numerator,
 	Coefficient has one Denominator,
 	Coefficient is precise;
 
 Constraint is identified by its Id;
-Constraint requires at most one Enforcement,
-	Enforcement applies to Constraint;
 Name is of Constraint,
 	Constraint is called at most one Name;
 
@@ -54,6 +53,13 @@ ContextNote has one ContextNoteKind,
 ContextNote has one Discussion,
 	Discussion is for ContextNote;
 
+Enforcement is identified by Constraint where
+	Constraint requires at most one Enforcement,
+	Enforcement applies to one Constraint;
+Enforcement notifies at most one Agent;
+Enforcement has one EnforcementCode,
+	EnforcementCode is of Enforcement;
+
 Fact is identified by its Id;
 
 FactType is identified by its Id;
@@ -64,8 +70,6 @@ FactType has ContextNote,
 Instance is identified by its Id;
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
-
-Person is identified by its Name;
 
 PresenceConstraint is a kind of Constraint;
 PresenceConstraint has at most one max-Frequency restricted to {1..};
@@ -87,7 +91,6 @@ Role is where
 	FactType has at least one Ordinal role;
 Role is of RingConstraint,
 	RingConstraint has at most one Role;
-other-Role is of RingConstraint;
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 
@@ -95,6 +98,7 @@ RoleSequence is identified by its Id;
 PresenceConstraint covers one RoleSequence;
 Reading is in one RoleSequence,
 	RoleSequence is for Reading;
+RoleSequence has unused dependency to force table in norma;
 
 RoleValue is identified by Instance and Fact where
 	Instance plays RoleValue,
@@ -110,8 +114,8 @@ SubsetConstraint covers one subset-RoleSequence;
 SubsetConstraint covers one superset-RoleSequence;
 
 Unit is identified by its Id;
-Ephemera provides Unit coefficient,
-	Unit uses coefficient from at most one Ephemera;
+EphemeraURL provides Unit coefficient,
+	Unit uses coefficient from at most one EphemeraURL;
 Name is of Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
@@ -126,7 +130,7 @@ Value is identified by Literal and Value is a string and Unit where
 	Unit is of Value;
 Instance has at most one Value;
 
-ValueConstraint is identified by its Id;
+ValueConstraint is a kind of Constraint;
 Role has at most one role-ValueConstraint,
 	ValueConstraint applies to Role;
 
@@ -149,13 +153,13 @@ Bound is identified by Value and Bound is inclusive where
 	Bound is inclusive;
 
 ContextAccordingTo is where
-	ContextNote is according to Person,
-	Person claims ContextNote;
-ContextAccordingTo lodged on at most one Date;
+	ContextNote is according to Agent,
+	Agent claims ContextNote;
+ContextAccordingTo was lodged on at most one Date;
 
 ContextAgreedBy is where
-	Agreement was reached by Person,
-	Person agreed on Agreement;
+	Agreement was reached by Agent,
+	Agent agreed on Agreement;
 
 Derivation is where
 	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];
@@ -196,8 +200,8 @@ SetExclusionConstraint is mandatory;
 
 Term is where
 	Vocabulary contains Name;
-RoleRef has at most one role-Term,
-	role-Term is name of at least one RoleRef;
+RoleRef has at most one Term (as RoleName),
+	RoleName is name of RoleRef;
 
 ValueRange is identified by minimum-Bound and maximum-Bound where
 	ValueRange has at most one minimum-Bound,
@@ -209,9 +213,9 @@ AllowedRange is where
 Join is where
 	RoleRef has Ordinal (as JoinStep) join;
 Join has at most one input-Role;
+is anti Join;
 Join has at most one output-Role;
 Join is outer;
-is anti-Join;
 
 ObjectType is identified by Term where
 	Term designates at most one ObjectType,
@@ -288,12 +292,19 @@ either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetCo
 for each Term at most one of these holds:
 	Term designates ObjectType,
 	Term is secondary for ObjectType;
+for each Term at most one of these holds:
+	Term designates ObjectType,
+	RoleRef has Term;
+for each Term at most one of these holds:
+	Term is secondary for ObjectType,
+	RoleRef has Term;
 either Unit is fundamental or Unit is derived from base-Unit but not both;
-either Unit has Coefficient or Unit uses coefficient from Ephemera but not both;
+either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale
 	only if ValueType has Length;
+either Agreement was reached by Agent or Agreement was on Date;
 each combination EntityType, TypeInheritance occurs at most one time in
 	EntityType is subtype of super-EntityType,
 	TypeInheritance provides identification;
@@ -304,6 +315,10 @@ each PresenceConstraint occurs at least one time in
 	PresenceConstraint is mandatory;
 each RoleSequence occurs at least one time in
 	RoleSequence in Ordinal position includes Role;
+each Term occurs at least one time in
+	Term designates ObjectType,
+	Term is secondary for ObjectType,
+	RoleRef has Term;
 either ValueRange has minimum-Bound or ValueRange has maximum-Bound;
 each combination Vocabulary, Name occurs at most one time in
 	Vocabulary contains Constraint,

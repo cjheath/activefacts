@@ -6,6 +6,10 @@ module ::Metamodel
     value_type :length => 64
   end
 
+  class AgentName < String
+    value_type 
+  end
+
   class Assimilation < String
     value_type 
     restrict 'partitioned', 'separate'
@@ -36,11 +40,11 @@ module ::Metamodel
     value_type 
   end
 
-  class Enforcement < String
+  class EnforcementCode < String
     value_type :length => 16
   end
 
-  class Ephemera < String
+  class EphemeraURL < String
     value_type 
   end
 
@@ -88,10 +92,6 @@ module ::Metamodel
     value_type :length => 32
   end
 
-  class PersonName < String
-    value_type 
-  end
-
   class Pronoun < String
     value_type :length => 20
     restrict 'feminine', 'masculine', 'neuter', 'personal'
@@ -117,8 +117,9 @@ module ::Metamodel
     value_type 
   end
 
-  class ValueConstraintId < AutoCounter
-    value_type 
+  class Agent
+    identified_by :agent_name
+    one_to_one :agent_name, :mandatory => true  # See AgentName.agent
   end
 
   class Coefficient
@@ -131,7 +132,6 @@ module ::Metamodel
   class Constraint
     identified_by :constraint_id
     one_to_one :constraint_id, :mandatory => true  # See ConstraintId.constraint
-    has_one :enforcement                        # See Enforcement.all_constraint
     has_one :name                               # See Name.all_constraint
     has_one :vocabulary                         # See Vocabulary.all_constraint
   end
@@ -144,6 +144,13 @@ module ::Metamodel
     has_one :discussion, :mandatory => true     # See Discussion.all_context_note
     has_one :fact_type                          # See FactType.all_context_note
     has_one :object_type                        # See ObjectType.all_context_note
+  end
+
+  class Enforcement
+    identified_by :constraint
+    has_one :agent                              # See Agent.all_enforcement
+    one_to_one :constraint, :mandatory => true  # See Constraint.enforcement
+    has_one :enforcement_code, :mandatory => true  # See EnforcementCode.all_enforcement
   end
 
   class Fact
@@ -165,11 +172,6 @@ module ::Metamodel
     has_one :object_type, :mandatory => true    # See ObjectType.all_instance
     has_one :population, :mandatory => true     # See Population.all_instance
     has_one :value                              # See Value.all_instance
-  end
-
-  class Person
-    identified_by :person_name
-    one_to_one :person_name, :mandatory => true  # See PersonName.person
   end
 
   class PresenceConstraint < Constraint
@@ -204,6 +206,7 @@ module ::Metamodel
 
   class RoleSequence
     identified_by :role_sequence_id
+    maybe :has_unused_dependency_to_force_table_in_norma
     one_to_one :role_sequence_id, :mandatory => true  # See RoleSequenceId.role_sequence
   end
 
@@ -226,7 +229,7 @@ module ::Metamodel
   class Unit
     identified_by :unit_id
     has_one :coefficient                        # See Coefficient.all_unit
-    has_one :ephemera                           # See Ephemera.all_unit
+    has_one :ephemera_url, :class => EphemeraURL  # See EphemeraURL.all_unit
     maybe :is_fundamental
     has_one :name, :mandatory => true           # See Name.all_unit
     has_one :offset                             # See Offset.all_unit
@@ -241,9 +244,7 @@ module ::Metamodel
     has_one :unit                               # See Unit.all_value
   end
 
-  class ValueConstraint
-    identified_by :value_constraint_id
-    one_to_one :value_constraint_id, :mandatory => true  # See ValueConstraintId.value_constraint
+  class ValueConstraint < Constraint
   end
 
   class Vocabulary
@@ -264,16 +265,16 @@ module ::Metamodel
   end
 
   class ContextAccordingTo
-    identified_by :context_note, :person
+    identified_by :context_note, :agent
+    has_one :agent, :mandatory => true          # See Agent.all_context_according_to
     has_one :context_note, :mandatory => true   # See ContextNote.all_context_according_to
-    has_one :person, :mandatory => true         # See Person.all_context_according_to
     has_one :date                               # See Date.all_context_according_to
   end
 
   class ContextAgreedBy
-    identified_by :agreement, :person
+    identified_by :agreement, :agent
+    has_one :agent, :mandatory => true          # See Agent.all_context_agreed_by
     has_one :agreement, :mandatory => true      # See Agreement.all_context_agreed_by
-    has_one :person, :mandatory => true         # See Person.all_context_agreed_by
   end
 
   class Derivation
@@ -295,7 +296,7 @@ module ::Metamodel
     has_one :role, :mandatory => true           # See Role.all_role_ref
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
     has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
-    has_one :role_term, :class => "Term"        # See Term.all_role_ref_as_role_term
+    has_one :role_name, :class => "Term"        # See Term.all_role_ref_as_role_name
     has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
   end
 
@@ -340,7 +341,7 @@ module ::Metamodel
     has_one :join_step, :class => Ordinal, :mandatory => true  # See Ordinal.all_join_as_join_step
     has_one :role_ref, :mandatory => true       # See RoleRef.all_join
     has_one :input_role, :class => Role         # See Role.all_join_as_input_role
-    maybe :is
+    maybe :is_anti
     maybe :is_outer
     has_one :object_type                        # See ObjectType.all_join
     has_one :output_role, :class => Role        # See Role.all_join_as_output_role

@@ -45,6 +45,10 @@ module ActiveFacts
       value_type :length => 16
     end
 
+    class EphemeraURL < String
+      value_type 
+    end
+
     class Exponent < SignedSmallInteger
       value_type :length => 32
     end
@@ -227,6 +231,7 @@ module ActiveFacts
     class Unit
       identified_by :unit_id
       has_one :coefficient                        # See Coefficient.all_unit
+      has_one :ephemera_url, :class => EphemeraURL  # See EphemeraURL.all_unit
       maybe :is_ephemeral
       maybe :is_fundamental
       has_one :name, :mandatory => true           # See Name.all_unit
@@ -359,6 +364,8 @@ module ActiveFacts
       has_one :role_ref, :mandatory => true       # See RoleRef.all_join
       has_one :concept                            # See Concept.all_join
       has_one :input_role, :class => Role         # See Role.all_join_as_input_role
+      maybe :is_anti
+      maybe :is_outer
       has_one :output_role, :class => Role        # See Role.all_join_as_output_role
     end
 

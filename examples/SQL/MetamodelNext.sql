@@ -1,5 +1,5 @@
 CREATE TABLE AllowedRange (
-	-- AllowedRange is where ValueConstraint allows ValueRange and ValueConstraint has ValueConstraintId,
+	-- AllowedRange is where ValueConstraint allows ValueRange and Constraint has ConstraintId,
 	ValueConstraintId                       int NOT NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound is inclusive,
 	ValueRangeMaximumBoundIsInclusive       bit NULL,
@@ -24,8 +24,10 @@ GO
 CREATE TABLE [Constraint] (
 	-- Constraint has ConstraintId,
 	ConstraintId                            int IDENTITY NOT NULL,
-	-- maybe Constraint requires Enforcement,
-	Enforcement                             varchar(16) NULL,
+	-- maybe Constraint requires Enforcement and maybe Enforcement notifies Agent and Agent has AgentName,
+	EnforcementAgentName                    varchar NULL,
+	-- maybe Constraint requires Enforcement and Enforcement has EnforcementCode,
+	EnforcementCode                         varchar(16) NULL,
 	-- maybe Name is of Constraint,
 	Name                                    varchar(64) NULL,
 	-- maybe PresenceConstraint is a kind of Constraint and PresenceConstraint is mandatory,
@@ -79,22 +81,22 @@ CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameName ON dbo.Constrain
 GO
 
 CREATE TABLE ContextAccordingTo (
-	-- ContextAccordingTo is where ContextNote is according to Person and ContextNote has ContextNoteId,
+	-- ContextAccordingTo is where ContextNote is according to Agent and Agent has AgentName,
+	AgentName                               varchar NOT NULL,
+	-- ContextAccordingTo is where ContextNote is according to Agent and ContextNote has ContextNoteId,
 	ContextNoteId                           int NOT NULL,
-	-- maybe ContextAccordingTo lodged on Date,
+	-- maybe ContextAccordingTo was lodged on Date,
 	Date                                    datetime NULL,
-	-- ContextAccordingTo is where ContextNote is according to Person and Person has PersonName,
-	PersonName                              varchar NOT NULL,
-	PRIMARY KEY(ContextNoteId, PersonName)
+	PRIMARY KEY(ContextNoteId, AgentName)
 )
 GO
 
 CREATE TABLE ContextAgreedBy (
-	-- ContextAgreedBy is where Agreement was reached by Person and ContextNote has ContextNoteId,
+	-- ContextAgreedBy is where Agreement was reached by Agent and Agent has AgentName,
+	AgentName                               varchar NOT NULL,
+	-- ContextAgreedBy is where Agreement was reached by Agent and ContextNote has ContextNoteId,
 	AgreementContextNoteId                  int NOT NULL,
-	-- ContextAgreedBy is where Agreement was reached by Person and Person has PersonName,
-	PersonName                              varchar NOT NULL,
-	PRIMARY KEY(AgreementContextNoteId, PersonName)
+	PRIMARY KEY(AgreementContextNoteId, AgentName)
 )
 GO
 
@@ -234,8 +236,8 @@ CREATE TABLE [Join] (
 	InputRoleFactTypeId                     int NULL,
 	-- maybe Join has input-Role and Role is where FactType has Ordinal role,
 	InputRoleOrdinal                        int NULL,
-	-- is anti-Join,
-	[Is]                                    bit NOT NULL,
+	-- is anti Join,
+	IsAnti                                  bit NOT NULL,
 	-- Join is outer,
 	IsOuter                                 bit NOT NULL,
 	-- Join is where RoleRef has JoinStep join,
@@ -300,9 +302,10 @@ CREATE TABLE Role (
 	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Role is where FactType has Ordinal role,
 	Ordinal                                 int NOT NULL,
-	-- maybe Role has role-ValueConstraint and ValueConstraint has ValueConstraintId,
+	-- maybe Role has role-ValueConstraint and Constraint has ConstraintId,
 	RoleValueConstraintId                   int NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
+	FOREIGN KEY (RoleValueConstraintId) REFERENCES [Constraint] (ConstraintId),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
 GO
@@ -314,14 +317,14 @@ CREATE TABLE RoleRef (
 	Ordinal                                 int NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
 	RoleFactTypeId                          int NOT NULL,
+	-- maybe RoleRef has RoleName and Term is where Vocabulary contains Name,
+	RoleName                                varchar(64) NULL,
+	-- maybe RoleRef has RoleName and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	RoleNameVocabularyName                  varchar(64) NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role,
 	RoleOrdinal                             int NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and RoleSequence has RoleSequenceId,
 	RoleSequenceId                          int NOT NULL,
-	-- maybe RoleRef has role-Term and Term is where Vocabulary contains Name,
-	RoleTermName                            varchar(64) NULL,
-	-- maybe RoleRef has role-Term and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	RoleTermVocabularyName                  varchar(64) NULL,
 	-- maybe RoleRef has trailing-Adjective,
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
@@ -331,6 +334,8 @@ CREATE TABLE RoleRef (
 GO
 
 CREATE TABLE RoleSequence (
+	-- RoleSequence has unused dependency to force table in norma,
+	HasUnusedDependencyToForceTableInNorma  bit NOT NULL,
 	-- RoleSequence has RoleSequenceId,
 	RoleSequenceId                          int IDENTITY NOT NULL,
 	PRIMARY KEY(RoleSequenceId)
@@ -392,11 +397,12 @@ CREATE TABLE Term (
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
 	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType is of Unit and Unit has UnitId,
 	ValueTypeUnitId                         int NULL,
-	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType has ValueConstraint and ValueConstraint has ValueConstraintId,
+	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType has ValueConstraint and Constraint has ConstraintId,
 	ValueTypeValueConstraintId              int NULL,
 	-- Term is where Vocabulary contains Name and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(VocabularyName, Name),
+	FOREIGN KEY (ValueTypeValueConstraintId) REFERENCES [Constraint] (ConstraintId),
 	FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES Term (Name, VocabularyName),
 	FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES Term (Name, VocabularyName)
 )
@@ -409,8 +415,8 @@ CREATE TABLE Unit (
 	CoefficientIsPrecise                    bit NULL,
 	-- maybe Unit has Coefficient and Coefficient has Numerator,
 	CoefficientNumerator                    decimal NULL,
-	-- maybe Ephemera provides Unit coefficient,
-	Ephemera                                varchar NULL,
+	-- maybe EphemeraURL provides Unit coefficient,
+	EphemeraURL                             varchar NULL,
 	-- Unit is fundamental,
 	IsFundamental                           bit NOT NULL,
 	-- Name is of Unit,
@@ -426,15 +432,8 @@ CREATE TABLE Unit (
 )
 GO
 
-CREATE TABLE ValueConstraint (
-	-- ValueConstraint has ValueConstraintId,
-	ValueConstraintId                       int IDENTITY NOT NULL,
-	PRIMARY KEY(ValueConstraintId)
-)
-GO
-
 ALTER TABLE AllowedRange
-	ADD FOREIGN KEY (ValueConstraintId) REFERENCES ValueConstraint (ValueConstraintId)
+	ADD FOREIGN KEY (ValueConstraintId) REFERENCES [Constraint] (ConstraintId)
 GO
 
 ALTER TABLE [Constraint]
@@ -529,23 +528,15 @@ ALTER TABLE Role
 	ADD FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES Term (Name, VocabularyName)
 GO
 
-ALTER TABLE Role
-	ADD FOREIGN KEY (RoleValueConstraintId) REFERENCES ValueConstraint (ValueConstraintId)
-GO
-
 ALTER TABLE RoleRef
 	ADD FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
 GO
 
 ALTER TABLE RoleRef
-	ADD FOREIGN KEY (RoleTermName, RoleTermVocabularyName) REFERENCES Term (Name, VocabularyName)
+	ADD FOREIGN KEY (RoleName, RoleNameVocabularyName) REFERENCES Term (Name, VocabularyName)
 GO
 
 ALTER TABLE Term
 	ADD FOREIGN KEY (ValueTypeUnitId) REFERENCES Unit (UnitId)
-GO
-
-ALTER TABLE Term
-	ADD FOREIGN KEY (ValueTypeValueConstraintId) REFERENCES ValueConstraint (ValueConstraintId)
 GO
 
