@@ -9,7 +9,6 @@ Assimilation is written as VariableLengthText restricted to {'partitioned', 'sep
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
-Date is written as Date;
 Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
 EnforcementCode is written as VariableLengthText(16);
@@ -53,10 +52,12 @@ ContextNote has one ContextNoteKind,
 ContextNote has one Discussion,
 	Discussion is for ContextNote;
 
-Enforcement is identified by its Code;
-Constraint requires at most one Enforcement,
-	Enforcement applies to Constraint;
+Enforcement is identified by Constraint where
+	Constraint requires at most one Enforcement,
+	Enforcement applies to one Constraint;
 Enforcement notifies at most one Agent;
+Enforcement has one EnforcementCode,
+	EnforcementCode is of Enforcement;
 
 Fact is identified by its Id;
 
@@ -88,9 +89,9 @@ Role is where
 	FactType has at least one Ordinal role;
 Role is of RingConstraint,
 	RingConstraint has at most one Role;
+Role has at most one role-Name;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
-other-Role is of RingConstraint;
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 
@@ -98,6 +99,7 @@ RoleSequence is identified by its Id;
 PresenceConstraint covers one RoleSequence;
 Reading is in one RoleSequence,
 	RoleSequence is for Reading;
+RoleSequence has unused dependency to force table in norma;
 
 RoleValue is identified by Instance and Fact where
 	Instance plays RoleValue,
@@ -276,6 +278,7 @@ PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale
 	only if ValueType has Length;
+either Agreement was reached by Agent or Agreement was on Date;
 each combination EntityType, TypeInheritance occurs at most one time in
 	EntityType is subtype of super-EntityType,
 	TypeInheritance provides identification;
@@ -295,3 +298,4 @@ each combination Vocabulary, Name occurs at most one time in
 each combination Vocabulary, Name occurs at most one time in
 	Vocabulary includes Unit,
 	Name is of Unit;
+

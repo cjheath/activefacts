@@ -180,6 +180,14 @@ module ::Metamodel
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_presence_constraint
   end
 
+  class Reading
+    identified_by :fact_type, :ordinal
+    has_one :fact_type, :mandatory => true      # See FactType.all_reading
+    has_one :ordinal, :mandatory => true        # See Ordinal.all_reading
+    has_one :role_sequence, :mandatory => true  # See RoleSequence.all_reading
+    has_one :text, :mandatory => true           # See Text.all_reading
+  end
+
   class RingConstraint < Constraint
     has_one :other_role, :class => "Role"       # See Role.all_ring_constraint_as_other_role
     has_one :ring_type, :mandatory => true      # See RingType.all_ring_constraint
@@ -241,14 +249,6 @@ module ::Metamodel
   class Vocabulary
     identified_by :name
     one_to_one :name, :mandatory => true        # See Name.vocabulary
-  end
-
-  class Reading
-    identified_by :fact_type, :ordinal
-    has_one :fact_type, :mandatory => true      # See FactType.all_reading
-    has_one :ordinal, :mandatory => true        # See Ordinal.all_reading
-    has_one :role_sequence, :mandatory => true  # See RoleSequence.all_reading
-    has_one :text, :mandatory => true           # See Text.all_reading
   end
 
   class Agreement

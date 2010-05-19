@@ -8,7 +8,6 @@ Assimilation is written as VariableLengthText restricted to {'partitioned', 'sep
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
-Date is written as Date;
 Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
 Enforcement is written as VariableLengthText(16);
@@ -74,6 +73,13 @@ PresenceConstraint has at most one min-Frequency restricted to {2..};
 PresenceConstraint is mandatory;
 PresenceConstraint is preferred identifier;
 
+Reading is identified by FactType and Ordinal where
+	FactType has at least one Reading,
+	Reading is for one FactType,
+	Reading is in one Ordinal position,
+	Ordinal reading for fact type is Reading;
+Reading has one Text;
+
 RingConstraint is a kind of Constraint;
 RingConstraint is of one RingType;
 
@@ -81,11 +87,14 @@ Role is where
 	FactType has at least one Ordinal role;
 Role is of RingConstraint,
 	RingConstraint has at most one Role;
+other-Role is of RingConstraint;
 other-Role is of RingConstraint,
 	RingConstraint has at most one other-Role;
 
 RoleSequence is identified by its Id;
 PresenceConstraint covers one RoleSequence;
+Reading is in one RoleSequence,
+	RoleSequence is for Reading;
 
 RoleValue is identified by Instance and Fact where
 	Instance plays RoleValue,
@@ -127,15 +136,6 @@ Vocabulary contains Constraint,
 	Constraint belongs to at most one Vocabulary;
 Vocabulary includes Unit,
 	Unit is in one Vocabulary;
-
-Reading is identified by FactType and Ordinal where
-	FactType has at least one Reading,
-	Reading is for one FactType,
-	Reading is in one Ordinal position,
-	Ordinal reading for fact type is Reading;
-Reading is in one RoleSequence,
-	RoleSequence is for Reading;
-Reading has one Text;
 
 Agreement is identified by ContextNote where
 	ContextNote was added by at most one Agreement,

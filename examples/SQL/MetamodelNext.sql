@@ -1,61 +1,61 @@
 CREATE TABLE AllowedRange (
 	-- AllowedRange is where ValueConstraint allows ValueRange and ValueConstraint has ValueConstraintId,
-	ValueConstraintId                       AutoCounter NOT NULL,
+	ValueConstraintId                       int NOT NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound is inclusive,
-	ValueRangeMaximumBoundIsInclusive       BIT NULL,
+	ValueRangeMaximumBoundIsInclusive       bit NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and Value is a string,
-	ValueRangeMaximumBoundValueIsAString    BIT NULL,
+	ValueRangeMaximumBoundValueIsAString    bit NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and Value is represented by Literal,
-	ValueRangeMaximumBoundValueLiteral      VariableLengthText NULL,
+	ValueRangeMaximumBoundValueLiteral      varchar NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
-	ValueRangeMaximumBoundValueUnitId       AutoCounter NULL,
+	ValueRangeMaximumBoundValueUnitId       int NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound is inclusive,
-	ValueRangeMinimumBoundIsInclusive       BIT NULL,
+	ValueRangeMinimumBoundIsInclusive       bit NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and Value is a string,
-	ValueRangeMinimumBoundValueIsAString    BIT NULL,
+	ValueRangeMinimumBoundValueIsAString    bit NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and Value is represented by Literal,
-	ValueRangeMinimumBoundValueLiteral      VariableLengthText NULL,
+	ValueRangeMinimumBoundValueLiteral      varchar NULL,
 	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
-	ValueRangeMinimumBoundValueUnitId       AutoCounter NULL,
+	ValueRangeMinimumBoundValueUnitId       int NULL,
 	UNIQUE(ValueConstraintId, ValueRangeMinimumBoundValueUnitId, ValueRangeMinimumBoundValueLiteral, ValueRangeMinimumBoundValueIsAString, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValueUnitId, ValueRangeMaximumBoundValueLiteral, ValueRangeMaximumBoundValueIsAString, ValueRangeMaximumBoundIsInclusive)
 )
 GO
 
 CREATE TABLE [Constraint] (
 	-- Constraint has ConstraintId,
-	ConstraintId                            AutoCounter IDENTITY NOT NULL,
+	ConstraintId                            int IDENTITY NOT NULL,
 	-- maybe Constraint requires Enforcement,
-	Enforcement                             VariableLengthText(16) NULL,
+	Enforcement                             varchar(16) NULL,
 	-- maybe Name is of Constraint,
-	Name                                    VariableLengthText(64) NULL,
+	Name                                    varchar(64) NULL,
 	-- maybe PresenceConstraint is a kind of Constraint and PresenceConstraint is mandatory,
-	PresenceConstraintIsMandatory           BIT NULL,
+	PresenceConstraintIsMandatory           bit NULL,
 	-- maybe PresenceConstraint is a kind of Constraint and PresenceConstraint is preferred identifier,
-	PresenceConstraintIsPreferredIdentifier BIT NULL,
+	PresenceConstraintIsPreferredIdentifier bit NULL,
 	-- maybe PresenceConstraint is a kind of Constraint and maybe PresenceConstraint has max-Frequency,
-	PresenceConstraintMaxFrequency          UnsignedInteger(32) NULL CHECK(PresenceConstraintMaxFrequency >= 1),
+	PresenceConstraintMaxFrequency          int NULL CHECK(PresenceConstraintMaxFrequency >= 1),
 	-- maybe PresenceConstraint is a kind of Constraint and maybe PresenceConstraint has min-Frequency,
-	PresenceConstraintMinFrequency          UnsignedInteger(32) NULL CHECK(PresenceConstraintMinFrequency >= 2),
+	PresenceConstraintMinFrequency          int NULL CHECK(PresenceConstraintMinFrequency >= 2),
 	-- maybe PresenceConstraint is a kind of Constraint and PresenceConstraint covers RoleSequence and RoleSequence has RoleSequenceId,
-	PresenceConstraintRoleSequenceId        AutoCounter NULL,
+	PresenceConstraintRoleSequenceId        int NULL,
 	-- maybe RingConstraint is a kind of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role and FactType has FactTypeId,
-	RingConstraintOtherRoleFactTypeId       AutoCounter NULL,
+	RingConstraintOtherRoleFactTypeId       int NULL,
 	-- maybe RingConstraint is a kind of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role,
-	RingConstraintOtherRoleOrdinal          UnsignedSmallInteger(32) NULL,
+	RingConstraintOtherRoleOrdinal          int NULL,
 	-- maybe RingConstraint is a kind of Constraint and RingConstraint is of RingType,
-	RingConstraintRingType                  VariableLengthText NULL,
+	RingConstraintRingType                  varchar NULL,
 	-- maybe RingConstraint is a kind of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role and FactType has FactTypeId,
-	RingConstraintRoleFactTypeId            AutoCounter NULL,
+	RingConstraintRoleFactTypeId            int NULL,
 	-- maybe RingConstraint is a kind of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role,
-	RingConstraintRoleOrdinal               UnsignedSmallInteger(32) NULL,
+	RingConstraintRoleOrdinal               int NULL,
 	-- maybe SetConstraint is a kind of Constraint and maybe SetComparisonConstraint is a kind of SetConstraint and maybe SetExclusionConstraint is a kind of SetComparisonConstraint and SetExclusionConstraint is mandatory,
-	SetExclusionConstraintIsMandatory       BIT NULL,
+	SetExclusionConstraintIsMandatory       bit NULL,
 	-- maybe SetConstraint is a kind of Constraint and maybe SubsetConstraint is a kind of SetConstraint and SubsetConstraint covers subset-RoleSequence and RoleSequence has RoleSequenceId,
-	SubsetConstraintSubsetRoleSequenceId    AutoCounter NULL,
+	SubsetConstraintSubsetRoleSequenceId    int NULL,
 	-- maybe SetConstraint is a kind of Constraint and maybe SubsetConstraint is a kind of SetConstraint and SubsetConstraint covers superset-RoleSequence and RoleSequence has RoleSequenceId,
-	SubsetConstraintSupersetRoleSequenceId  AutoCounter NULL,
+	SubsetConstraintSupersetRoleSequenceId  int NULL,
 	-- maybe Vocabulary contains Constraint and Vocabulary is called Name,
-	VocabularyName                          VariableLengthText(64) NULL,
+	VocabularyName                          varchar(64) NULL,
 	PRIMARY KEY(ConstraintId)
 )
 GO
@@ -80,41 +80,41 @@ GO
 
 CREATE TABLE ContextAccordingTo (
 	-- ContextAccordingTo is where ContextNote is according to Person and ContextNote has ContextNoteId,
-	ContextNoteId                           AutoCounter NOT NULL,
+	ContextNoteId                           int NOT NULL,
 	-- maybe ContextAccordingTo lodged on Date,
-	Date                                    Date NULL,
+	Date                                    datetime NULL,
 	-- ContextAccordingTo is where ContextNote is according to Person and Person has PersonName,
-	PersonName                              VariableLengthText NOT NULL,
+	PersonName                              varchar NOT NULL,
 	PRIMARY KEY(ContextNoteId, PersonName)
 )
 GO
 
 CREATE TABLE ContextAgreedBy (
 	-- ContextAgreedBy is where Agreement was reached by Person and ContextNote has ContextNoteId,
-	AgreementContextNoteId                  AutoCounter NOT NULL,
+	AgreementContextNoteId                  int NOT NULL,
 	-- ContextAgreedBy is where Agreement was reached by Person and Person has PersonName,
-	PersonName                              VariableLengthText NOT NULL,
+	PersonName                              varchar NOT NULL,
 	PRIMARY KEY(AgreementContextNoteId, PersonName)
 )
 GO
 
 CREATE TABLE ContextNote (
 	-- maybe ContextNote was added by Agreement and maybe Agreement was on Date,
-	AgreementDate                           Date NULL,
+	AgreementDate                           datetime NULL,
 	-- maybe Constraint has ContextNote and Constraint has ConstraintId,
-	ConstraintId                            AutoCounter NULL,
+	ConstraintId                            int NULL,
 	-- ContextNote has ContextNoteId,
-	ContextNoteId                           AutoCounter IDENTITY NOT NULL,
+	ContextNoteId                           int IDENTITY NOT NULL,
 	-- ContextNote has ContextNoteKind,
-	ContextNoteKind                         VariableLengthText NOT NULL CHECK(ContextNoteKind = 'as_opposed_to' OR ContextNoteKind = 'because' OR ContextNoteKind = 'so_that' OR ContextNoteKind = 'to_avoid'),
+	ContextNoteKind                         varchar NOT NULL CHECK(ContextNoteKind = 'as_opposed_to' OR ContextNoteKind = 'because' OR ContextNoteKind = 'so_that' OR ContextNoteKind = 'to_avoid'),
 	-- ContextNote has Discussion,
-	Discussion                              VariableLengthText NOT NULL,
+	Discussion                              varchar NOT NULL,
 	-- maybe FactType has ContextNote and FactType has FactTypeId,
-	FactTypeId                              AutoCounter NULL,
+	FactTypeId                              int NULL,
 	-- maybe ObjectType has ContextNote and Term is where Vocabulary contains Name,
-	ObjectTypeName                          VariableLengthText(64) NULL,
+	ObjectTypeName                          varchar(64) NULL,
 	-- maybe ObjectType has ContextNote and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ObjectTypeVocabularyName                VariableLengthText(64) NULL,
+	ObjectTypeVocabularyName                varchar(64) NULL,
 	PRIMARY KEY(ContextNoteId),
 	FOREIGN KEY (ConstraintId) REFERENCES [Constraint] (ConstraintId)
 )
@@ -122,47 +122,47 @@ GO
 
 CREATE TABLE Derivation (
 	-- Derivation is where DerivedUnit is derived from BaseUnit and Unit has UnitId,
-	BaseUnitId                              AutoCounter NOT NULL,
+	BaseUnitId                              int NOT NULL,
 	-- Derivation is where DerivedUnit is derived from BaseUnit and Unit has UnitId,
-	DerivedUnitId                           AutoCounter NOT NULL,
+	DerivedUnitId                           int NOT NULL,
 	-- maybe Derivation has Exponent,
-	Exponent                                SignedSmallInteger(32) NULL,
+	Exponent                                int NULL,
 	PRIMARY KEY(DerivedUnitId, BaseUnitId)
 )
 GO
 
 CREATE TABLE Fact (
 	-- Fact has FactId,
-	FactId                                  AutoCounter IDENTITY NOT NULL,
+	FactId                                  int IDENTITY NOT NULL,
 	-- Fact is of FactType and FactType has FactTypeId,
-	FactTypeId                              AutoCounter NOT NULL,
+	FactTypeId                              int NOT NULL,
 	-- Population includes Fact and Population has Name,
-	PopulationName                          VariableLengthText(64) NOT NULL,
+	PopulationName                          varchar(64) NOT NULL,
 	-- Population includes Fact and maybe Vocabulary includes Population and Vocabulary is called Name,
-	PopulationVocabularyName                VariableLengthText(64) NULL,
+	PopulationVocabularyName                varchar(64) NULL,
 	PRIMARY KEY(FactId)
 )
 GO
 
 CREATE TABLE FactType (
 	-- maybe EntityType nests FactType and Term is where Vocabulary contains Name,
-	EntityTypeName                          VariableLengthText(64) NULL,
+	EntityTypeName                          varchar(64) NULL,
 	-- maybe EntityType nests FactType and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	EntityTypeVocabularyName                VariableLengthText(64) NULL,
+	EntityTypeVocabularyName                varchar(64) NULL,
 	-- FactType has FactTypeId,
-	FactTypeId                              AutoCounter IDENTITY NOT NULL,
+	FactTypeId                              int IDENTITY NOT NULL,
 	-- maybe TypeInheritance is a kind of FactType and maybe Assimilation applies to TypeInheritance,
-	TypeInheritanceAssimilation             VariableLengthText NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
+	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
 	-- maybe TypeInheritance is a kind of FactType and TypeInheritance provides identification,
-	TypeInheritanceProvidesIdentification   BIT NULL,
+	TypeInheritanceProvidesIdentification   bit NULL,
 	-- maybe TypeInheritance is a kind of FactType and TypeInheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name,
-	TypeInheritanceSubtypeName              VariableLengthText(64) NULL,
+	TypeInheritanceSubtypeName              varchar(64) NULL,
 	-- maybe TypeInheritance is a kind of FactType and TypeInheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	TypeInheritanceSubtypeVocabularyName    VariableLengthText(64) NULL,
+	TypeInheritanceSubtypeVocabularyName    varchar(64) NULL,
 	-- maybe TypeInheritance is a kind of FactType and TypeInheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name,
-	TypeInheritanceSupertypeName            VariableLengthText(64) NULL,
+	TypeInheritanceSupertypeName            varchar(64) NULL,
 	-- maybe TypeInheritance is a kind of FactType and TypeInheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	TypeInheritanceSupertypeVocabularyName  VariableLengthText(64) NULL,
+	TypeInheritanceSupertypeVocabularyName  varchar(64) NULL,
 	PRIMARY KEY(FactTypeId)
 )
 GO
@@ -199,23 +199,23 @@ GO
 
 CREATE TABLE Instance (
 	-- maybe Instance objectifies Fact and Fact has FactId,
-	FactId                                  AutoCounter NULL,
+	FactId                                  int NULL,
 	-- Instance has InstanceId,
-	InstanceId                              AutoCounter IDENTITY NOT NULL,
+	InstanceId                              int IDENTITY NOT NULL,
 	-- Instance is of ObjectType and Term is where Vocabulary contains Name,
-	ObjectTypeName                          VariableLengthText(64) NOT NULL,
+	ObjectTypeName                          varchar(64) NOT NULL,
 	-- Instance is of ObjectType and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ObjectTypeVocabularyName                VariableLengthText(64) NOT NULL,
+	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Population includes Instance and Population has Name,
-	PopulationName                          VariableLengthText(64) NOT NULL,
+	PopulationName                          varchar(64) NOT NULL,
 	-- Population includes Instance and maybe Vocabulary includes Population and Vocabulary is called Name,
-	PopulationVocabularyName                VariableLengthText(64) NULL,
+	PopulationVocabularyName                varchar(64) NULL,
 	-- maybe Instance has Value and Value is a string,
-	ValueIsAString                          BIT NULL,
+	ValueIsAString                          bit NULL,
 	-- maybe Instance has Value and Value is represented by Literal,
-	ValueLiteral                            VariableLengthText NULL,
+	ValueLiteral                            varchar NULL,
 	-- maybe Instance has Value and maybe Value is in Unit and Unit has UnitId,
-	ValueUnitId                             AutoCounter NULL,
+	ValueUnitId                             int NULL,
 	PRIMARY KEY(InstanceId),
 	FOREIGN KEY (FactId) REFERENCES Fact (FactId)
 )
@@ -231,63 +231,77 @@ GO
 
 CREATE TABLE [Join] (
 	-- maybe Join has input-Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
-	InputRoleFactTypeId                     AutoCounter NULL,
+	InputRoleFactTypeId                     int NULL,
 	-- maybe Join has input-Role and Role is where FactType has Ordinal role,
-	InputRoleOrdinal                        UnsignedSmallInteger(32) NULL,
+	InputRoleOrdinal                        int NULL,
 	-- is anti-Join,
-	[Is]                                    BIT NOT NULL,
+	[Is]                                    bit NOT NULL,
 	-- Join is outer,
-	IsOuter                                 BIT NOT NULL,
+	IsOuter                                 bit NOT NULL,
 	-- Join is where RoleRef has JoinStep join,
-	JoinStep                                UnsignedSmallInteger(32) NOT NULL,
+	JoinStep                                int NOT NULL,
 	-- maybe Join traverses ObjectType and Term is where Vocabulary contains Name,
-	ObjectTypeName                          VariableLengthText(64) NULL,
+	ObjectTypeName                          varchar(64) NULL,
 	-- maybe Join traverses ObjectType and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ObjectTypeVocabularyName                VariableLengthText(64) NULL,
+	ObjectTypeVocabularyName                varchar(64) NULL,
 	-- maybe Join has output-Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
-	OutputRoleFactTypeId                    AutoCounter NULL,
+	OutputRoleFactTypeId                    int NULL,
 	-- maybe Join has output-Role and Role is where FactType has Ordinal role,
-	OutputRoleOrdinal                       UnsignedSmallInteger(32) NULL,
+	OutputRoleOrdinal                       int NULL,
 	-- Join is where RoleRef has JoinStep join and RoleRef is where RoleSequence in Ordinal position includes Role,
-	RoleRefOrdinal                          UnsignedSmallInteger(32) NOT NULL,
+	RoleRefOrdinal                          int NOT NULL,
 	-- Join is where RoleRef has JoinStep join and RoleRef is where RoleSequence in Ordinal position includes Role and RoleSequence has RoleSequenceId,
-	RoleRefRoleSequenceId                   AutoCounter NOT NULL,
+	RoleRefRoleSequenceId                   int NOT NULL,
 	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep)
 )
 GO
 
 CREATE TABLE ParamValue (
 	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType,
-	ParameterName                           VariableLengthText(64) NOT NULL,
+	ParameterName                           varchar(64) NOT NULL,
 	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType and Term is where Vocabulary contains Name,
-	ParameterValueTypeName                  VariableLengthText(64) NOT NULL,
+	ParameterValueTypeName                  varchar(64) NOT NULL,
 	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ParameterValueTypeVocabularyName        VariableLengthText(64) NOT NULL,
+	ParameterValueTypeVocabularyName        varchar(64) NOT NULL,
 	-- ParamValue is where Value for Parameter applies to ValueType and Value is a string,
-	ValueIsAString                          BIT NOT NULL,
+	ValueIsAString                          bit NOT NULL,
 	-- ParamValue is where Value for Parameter applies to ValueType and Value is represented by Literal,
-	ValueLiteral                            VariableLengthText NOT NULL,
+	ValueLiteral                            varchar NOT NULL,
 	-- ParamValue is where Value for Parameter applies to ValueType and Term is where Vocabulary contains Name,
-	ValueTypeName                           VariableLengthText(64) NOT NULL,
+	ValueTypeName                           varchar(64) NOT NULL,
 	-- ParamValue is where Value for Parameter applies to ValueType and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ValueTypeVocabularyName                 VariableLengthText(64) NOT NULL,
+	ValueTypeVocabularyName                 varchar(64) NOT NULL,
 	-- ParamValue is where Value for Parameter applies to ValueType and maybe Value is in Unit and Unit has UnitId,
-	ValueUnitId                             AutoCounter NULL,
+	ValueUnitId                             int NULL,
 	UNIQUE(ValueUnitId, ValueLiteral, ValueIsAString, ParameterName, ParameterValueTypeVocabularyName, ParameterValueTypeName)
+)
+GO
+
+CREATE TABLE Reading (
+	-- FactType has Reading and FactType has FactTypeId,
+	FactTypeId                              int NOT NULL,
+	-- Reading is in Ordinal position,
+	Ordinal                                 int NOT NULL,
+	-- Reading is in RoleSequence and RoleSequence has RoleSequenceId,
+	RoleSequenceId                          int NOT NULL,
+	-- Reading has Text,
+	Text                                    varchar(256) NOT NULL,
+	PRIMARY KEY(FactTypeId, Ordinal),
+	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
 GO
 
 CREATE TABLE Role (
 	-- Role is where FactType has Ordinal role and FactType has FactTypeId,
-	FactTypeId                              AutoCounter NOT NULL,
+	FactTypeId                              int NOT NULL,
 	-- ObjectType plays Role and Term is where Vocabulary contains Name,
-	ObjectTypeName                          VariableLengthText(64) NOT NULL,
+	ObjectTypeName                          varchar(64) NOT NULL,
 	-- ObjectType plays Role and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ObjectTypeVocabularyName                VariableLengthText(64) NOT NULL,
+	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Role is where FactType has Ordinal role,
-	Ordinal                                 UnsignedSmallInteger(32) NOT NULL,
+	Ordinal                                 int NOT NULL,
 	-- maybe Role has role-ValueConstraint and ValueConstraint has ValueConstraintId,
-	RoleValueConstraintId                   AutoCounter NULL,
+	RoleValueConstraintId                   int NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
@@ -295,21 +309,21 @@ GO
 
 CREATE TABLE RoleRef (
 	-- maybe RoleRef has leading-Adjective,
-	LeadingAdjective                        VariableLengthText(64) NULL,
+	LeadingAdjective                        varchar(64) NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role,
-	Ordinal                                 UnsignedSmallInteger(32) NOT NULL,
+	Ordinal                                 int NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
-	RoleFactTypeId                          AutoCounter NOT NULL,
+	RoleFactTypeId                          int NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role,
-	RoleOrdinal                             UnsignedSmallInteger(32) NOT NULL,
+	RoleOrdinal                             int NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and RoleSequence has RoleSequenceId,
-	RoleSequenceId                          AutoCounter NOT NULL,
+	RoleSequenceId                          int NOT NULL,
 	-- maybe RoleRef has role-Term and Term is where Vocabulary contains Name,
-	RoleTermName                            VariableLengthText(64) NULL,
+	RoleTermName                            varchar(64) NULL,
 	-- maybe RoleRef has role-Term and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	RoleTermVocabularyName                  VariableLengthText(64) NULL,
+	RoleTermVocabularyName                  varchar(64) NULL,
 	-- maybe RoleRef has trailing-Adjective,
-	TrailingAdjective                       VariableLengthText(64) NULL,
+	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
 	UNIQUE(RoleFactTypeId, RoleOrdinal, RoleSequenceId),
 	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
@@ -318,24 +332,24 @@ GO
 
 CREATE TABLE RoleSequence (
 	-- RoleSequence has RoleSequenceId,
-	RoleSequenceId                          AutoCounter IDENTITY NOT NULL,
+	RoleSequenceId                          int IDENTITY NOT NULL,
 	PRIMARY KEY(RoleSequenceId)
 )
 GO
 
 CREATE TABLE RoleValue (
 	-- RoleValue fulfils Fact and Fact has FactId,
-	FactId                                  AutoCounter NOT NULL,
+	FactId                                  int NOT NULL,
 	-- Instance plays RoleValue and Instance has InstanceId,
-	InstanceId                              AutoCounter NOT NULL,
+	InstanceId                              int NOT NULL,
 	-- Population includes RoleValue and Population has Name,
-	PopulationName                          VariableLengthText(64) NOT NULL,
+	PopulationName                          varchar(64) NOT NULL,
 	-- Population includes RoleValue and maybe Vocabulary includes Population and Vocabulary is called Name,
-	PopulationVocabularyName                VariableLengthText(64) NULL,
+	PopulationVocabularyName                varchar(64) NULL,
 	-- RoleValue is of Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
-	RoleFactTypeId                          AutoCounter NOT NULL,
+	RoleFactTypeId                          int NOT NULL,
 	-- RoleValue is of Role and Role is where FactType has Ordinal role,
-	RoleOrdinal                             UnsignedSmallInteger(32) NOT NULL,
+	RoleOrdinal                             int NOT NULL,
 	PRIMARY KEY(InstanceId, FactId),
 	FOREIGN KEY (FactId) REFERENCES Fact (FactId),
 	FOREIGN KEY (InstanceId) REFERENCES Instance (InstanceId),
@@ -345,11 +359,11 @@ GO
 
 CREATE TABLE SetComparisonRoles (
 	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence,
-	Ordinal                                 UnsignedSmallInteger(32) NOT NULL,
+	Ordinal                                 int NOT NULL,
 	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence and RoleSequence has RoleSequenceId,
-	RoleSequenceId                          AutoCounter NOT NULL,
+	RoleSequenceId                          int NOT NULL,
 	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence and Constraint has ConstraintId,
-	SetComparisonConstraintId               AutoCounter NOT NULL,
+	SetComparisonConstraintId               int NOT NULL,
 	PRIMARY KEY(SetComparisonConstraintId, Ordinal),
 	UNIQUE(SetComparisonConstraintId, RoleSequenceId),
 	FOREIGN KEY (SetComparisonConstraintId) REFERENCES [Constraint] (ConstraintId),
@@ -359,29 +373,29 @@ GO
 
 CREATE TABLE Term (
 	-- Term is where Vocabulary contains Name,
-	Name                                    VariableLengthText(64) NOT NULL,
+	Name                                    varchar(64) NOT NULL,
 	-- maybe Term designates ObjectType and ObjectType is independent,
-	ObjectTypeIsIndependent                 BIT NULL,
+	ObjectTypeIsIndependent                 bit NULL,
 	-- maybe Term is secondary for ObjectType and Term is where Vocabulary contains Name,
-	ObjectTypeName                          VariableLengthText(64) NULL,
+	ObjectTypeName                          varchar(64) NULL,
 	-- maybe Term designates ObjectType and maybe ObjectType uses Pronoun,
-	ObjectTypePronoun                       VariableLengthText(20) NULL CHECK(ObjectTypePronoun = 'feminine' OR ObjectTypePronoun = 'masculine' OR ObjectTypePronoun = 'neuter' OR ObjectTypePronoun = 'personal'),
+	ObjectTypePronoun                       varchar(20) NULL CHECK(ObjectTypePronoun = 'feminine' OR ObjectTypePronoun = 'masculine' OR ObjectTypePronoun = 'neuter' OR ObjectTypePronoun = 'personal'),
 	-- maybe Term is secondary for ObjectType and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ObjectTypeVocabularyName                VariableLengthText(64) NULL,
+	ObjectTypeVocabularyName                varchar(64) NULL,
 	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType has Length,
-	ValueTypeLength                         UnsignedInteger(32) NULL,
+	ValueTypeLength                         int NULL,
 	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType has Scale,
-	ValueTypeScale                          UnsignedInteger(32) NULL,
+	ValueTypeScale                          int NULL,
 	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType is subtype of Supertype and Term is where Vocabulary contains Name,
-	ValueTypeSupertypeName                  VariableLengthText(64) NULL,
+	ValueTypeSupertypeName                  varchar(64) NULL,
 	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ValueTypeSupertypeVocabularyName        VariableLengthText(64) NULL,
+	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
 	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType is of Unit and Unit has UnitId,
-	ValueTypeUnitId                         AutoCounter NULL,
+	ValueTypeUnitId                         int NULL,
 	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType has ValueConstraint and ValueConstraint has ValueConstraintId,
-	ValueTypeValueConstraintId              AutoCounter NULL,
+	ValueTypeValueConstraintId              int NULL,
 	-- Term is where Vocabulary contains Name and Vocabulary is called Name,
-	VocabularyName                          VariableLengthText(64) NOT NULL,
+	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(VocabularyName, Name),
 	FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES Term (Name, VocabularyName),
 	FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES Term (Name, VocabularyName)
@@ -390,23 +404,23 @@ GO
 
 CREATE TABLE Unit (
 	-- maybe Unit has Coefficient and Coefficient has Denominator,
-	CoefficientDenominator                  UnsignedInteger(32) NULL,
+	CoefficientDenominator                  int NULL,
 	-- maybe Unit has Coefficient and Coefficient is precise,
-	CoefficientIsPrecise                    BIT NULL,
+	CoefficientIsPrecise                    bit NULL,
 	-- maybe Unit has Coefficient and Coefficient has Numerator,
-	CoefficientNumerator                    Decimal NULL,
+	CoefficientNumerator                    decimal NULL,
 	-- maybe Ephemera provides Unit coefficient,
-	Ephemera                                VariableLengthText NULL,
+	Ephemera                                varchar NULL,
 	-- Unit is fundamental,
-	IsFundamental                           BIT NOT NULL,
+	IsFundamental                           bit NOT NULL,
 	-- Name is of Unit,
-	Name                                    VariableLengthText(64) NOT NULL,
+	Name                                    varchar(64) NOT NULL,
 	-- maybe Unit has Offset,
-	Offset                                  Decimal NULL,
+	Offset                                  decimal NULL,
 	-- Unit has UnitId,
-	UnitId                                  AutoCounter IDENTITY NOT NULL,
+	UnitId                                  int IDENTITY NOT NULL,
 	-- Vocabulary includes Unit and Vocabulary is called Name,
-	VocabularyName                          VariableLengthText(64) NOT NULL,
+	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(UnitId),
 	UNIQUE(VocabularyName, Name)
 )
@@ -414,23 +428,8 @@ GO
 
 CREATE TABLE ValueConstraint (
 	-- ValueConstraint has ValueConstraintId,
-	ValueConstraintId                       AutoCounter IDENTITY NOT NULL,
+	ValueConstraintId                       int IDENTITY NOT NULL,
 	PRIMARY KEY(ValueConstraintId)
-)
-GO
-
-CREATE TABLE RoleRef (
-	-- FactType has RoleRef and FactType has FactTypeId,
-	FactTypeId                              AutoCounter NOT NULL,
-	-- RoleRef is in Ordinal position,
-	Ordinal                                 UnsignedSmallInteger(32) NOT NULL,
-	-- RoleRef is in RoleSequence and RoleSequence has RoleSequenceId,
-	RoleSequenceId                          AutoCounter NOT NULL,
-	-- RoleRef has Text,
-	Text                                    VariableLengthText(256) NOT NULL,
-	PRIMARY KEY(FactTypeId, Ordinal),
-	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId),
-	FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
 )
 GO
 
@@ -520,6 +519,10 @@ GO
 
 ALTER TABLE ParamValue
 	ADD FOREIGN KEY (ValueTypeName, ValueTypeVocabularyName) REFERENCES Term (Name, VocabularyName)
+GO
+
+ALTER TABLE Reading
+	ADD FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
 GO
 
 ALTER TABLE Role

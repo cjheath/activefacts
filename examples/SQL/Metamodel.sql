@@ -15,7 +15,7 @@ CREATE TABLE AllowedRange (
 	ValueRangeMinimumBoundValueLiteral      varchar NULL,
 	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
 	ValueRangeMinimumBoundValueUnitId       int NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and ValueRestriction has ValueRestrictionId,
+	-- AllowedRange is where ValueRestriction allows ValueRange and Constraint has ConstraintId,
 	ValueRestrictionId                      int NOT NULL,
 	UNIQUE(ValueRestrictionId, ValueRangeMinimumBoundValueUnitId, ValueRangeMinimumBoundValueLiteral, ValueRangeMinimumBoundValueIsAString, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValueUnitId, ValueRangeMaximumBoundValueLiteral, ValueRangeMaximumBoundValueIsAString, ValueRangeMaximumBoundIsInclusive)
 )
@@ -38,7 +38,7 @@ CREATE TABLE Concept (
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
 	-- maybe ValueType is a kind of Concept and maybe ValueType is of Unit and Unit has UnitId,
 	ValueTypeUnitId                         int NULL,
-	-- maybe ValueType is a kind of Concept and maybe ValueType has ValueRestriction and ValueRestriction has ValueRestrictionId,
+	-- maybe ValueType is a kind of Concept and maybe ValueType has ValueRestriction and Constraint has ConstraintId,
 	ValueTypeValueRestrictionId             int NULL,
 	-- Concept belongs to Vocabulary and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,
@@ -50,8 +50,10 @@ GO
 CREATE TABLE [Constraint] (
 	-- Constraint has ConstraintId,
 	ConstraintId                            int IDENTITY NOT NULL,
-	-- maybe Constraint requires Enforcement,
-	Enforcement                             varchar(16) NULL,
+	-- maybe Constraint requires Enforcement and maybe Enforcement notifies Agent and Agent has AgentName,
+	EnforcementAgentName                    varchar NULL,
+	-- maybe Constraint requires Enforcement and Enforcement has EnforcementCode,
+	EnforcementCode                         varchar(16) NULL,
 	-- maybe Name is of Constraint,
 	Name                                    varchar(64) NULL,
 	-- maybe PresenceConstraint is a kind of Constraint and PresenceConstraint is mandatory,
@@ -105,20 +107,20 @@ CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameName ON dbo.Constrain
 GO
 
 CREATE TABLE ContextAccordingTo (
-	-- ContextAccordingTo is where ContextNote is according to Person and ContextNote has ContextNoteId,
+	-- ContextAccordingTo is where ContextNote is according to Agent and Agent has AgentName,
+	AgentName                               varchar NOT NULL,
+	-- ContextAccordingTo is where ContextNote is according to Agent and ContextNote has ContextNoteId,
 	ContextNoteId                           int NOT NULL,
-	-- ContextAccordingTo is where ContextNote is according to Person and Person has PersonName,
-	PersonName                              varchar NOT NULL,
-	PRIMARY KEY(ContextNoteId, PersonName)
+	PRIMARY KEY(ContextNoteId, AgentName)
 )
 GO
 
 CREATE TABLE ContextAgreedBy (
-	-- ContextAgreedBy is where Agreement was reached by Person and ContextNote has ContextNoteId,
+	-- ContextAgreedBy is where Agreement was reached by Agent and Agent has AgentName,
+	AgentName                               varchar NOT NULL,
+	-- ContextAgreedBy is where Agreement was reached by Agent and ContextNote has ContextNoteId,
 	AgreementContextNoteId                  int NOT NULL,
-	-- ContextAgreedBy is where Agreement was reached by Person and Person has PersonName,
-	PersonName                              varchar NOT NULL,
-	PRIMARY KEY(AgreementContextNoteId, PersonName)
+	PRIMARY KEY(AgreementContextNoteId, AgentName)
 )
 GO
 
@@ -329,10 +331,11 @@ CREATE TABLE Role (
 	Ordinal                                 int NOT NULL,
 	-- maybe Role has role-Name,
 	RoleName                                varchar(64) NULL,
-	-- maybe Role has role-ValueRestriction and ValueRestriction has ValueRestrictionId,
+	-- maybe Role has role-ValueRestriction and Constraint has ConstraintId,
 	RoleValueRestrictionId                  int NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
 	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
+	FOREIGN KEY (RoleValueRestrictionId) REFERENCES [Constraint] (ConstraintId),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
 GO
@@ -357,6 +360,8 @@ CREATE TABLE RoleRef (
 GO
 
 CREATE TABLE RoleSequence (
+	-- RoleSequence has unused dependency to force table in norma,
+	HasUnusedDependencyToForceTableInNorma  bit NOT NULL,
 	-- RoleSequence has RoleSequenceId,
 	RoleSequenceId                          int IDENTITY NOT NULL,
 	PRIMARY KEY(RoleSequenceId)
@@ -421,23 +426,16 @@ CREATE TABLE Unit (
 )
 GO
 
-CREATE TABLE ValueRestriction (
-	-- ValueRestriction has ValueRestrictionId,
-	ValueRestrictionId                      int IDENTITY NOT NULL,
-	PRIMARY KEY(ValueRestrictionId)
-)
+ALTER TABLE AllowedRange
+	ADD FOREIGN KEY (ValueRestrictionId) REFERENCES [Constraint] (ConstraintId)
 GO
 
-ALTER TABLE AllowedRange
-	ADD FOREIGN KEY (ValueRestrictionId) REFERENCES ValueRestriction (ValueRestrictionId)
+ALTER TABLE Concept
+	ADD FOREIGN KEY (ValueTypeValueRestrictionId) REFERENCES [Constraint] (ConstraintId)
 GO
 
 ALTER TABLE Concept
 	ADD FOREIGN KEY (ValueTypeUnitId) REFERENCES Unit (UnitId)
-GO
-
-ALTER TABLE Concept
-	ADD FOREIGN KEY (ValueTypeValueRestrictionId) REFERENCES ValueRestriction (ValueRestrictionId)
 GO
 
 ALTER TABLE [Constraint]
@@ -498,10 +496,6 @@ GO
 
 ALTER TABLE Reading
 	ADD FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
-GO
-
-ALTER TABLE Role
-	ADD FOREIGN KEY (RoleValueRestrictionId) REFERENCES ValueRestriction (ValueRestrictionId)
 GO
 
 ALTER TABLE RoleRef

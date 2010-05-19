@@ -128,7 +128,6 @@ module ::Metamodel
   class Constraint
     identified_by :constraint_id
     one_to_one :constraint_id, :mandatory => true  # See ConstraintId.constraint
-    has_one :enforcement                        # See Enforcement.all_constraint
     has_one :name                               # See Name.all_constraint
     has_one :vocabulary                         # See Vocabulary.all_constraint
   end
@@ -144,9 +143,10 @@ module ::Metamodel
   end
 
   class Enforcement
-    identified_by :enforcement_code
+    identified_by :constraint
     has_one :agent                              # See Agent.all_enforcement
-    one_to_one :enforcement_code, :mandatory => true  # See EnforcementCode.enforcement
+    one_to_one :constraint, :mandatory => true  # See Constraint.enforcement
+    has_one :enforcement_code, :mandatory => true  # See EnforcementCode.all_enforcement
   end
 
   class Fact
@@ -203,6 +203,7 @@ module ::Metamodel
 
   class RoleSequence
     identified_by :role_sequence_id
+    maybe :has_unused_dependency_to_force_table_in_norma
     one_to_one :role_sequence_id, :mandatory => true  # See RoleSequenceId.role_sequence
   end
 
