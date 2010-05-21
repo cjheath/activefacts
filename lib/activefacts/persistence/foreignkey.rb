@@ -35,11 +35,14 @@ module ActiveFacts
       # Return an Array of Reference paths for such absorbed FKs
       def all_absorbed_foreign_key_reference_path
         references_from.inject([]) do |array, ref|
-
           if ref.is_simple_reference
-            # This catches references that would be created to secondary supertypes, when absorption is through primary.
-            # There might be other cases where an exclusion like this is needed, but I can't reason it out.
-            next array if TypeInheritance === ref.fact_type && absorbed_via && TypeInheritance === absorbed_via.fact_type
+            if TypeInheritance === ref.fact_type
+              # Ignore references to secondary supertypes, when absorption is through primary.
+              next array if absorbed_via && TypeInheritance === absorbed_via.fact_type
+              # Ignore the case where a subtype is absorbed elsewhere:
+              # REVISIT: Disabled, as this should never happen.
+              # next array if ref.to.absorbed_via != ref.fact_type
+            end
             array << [ref]
           elsif ref.is_absorbing
             ref.to.all_absorbed_foreign_key_reference_path.each{|aref|

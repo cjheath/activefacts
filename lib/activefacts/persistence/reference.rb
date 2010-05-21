@@ -305,6 +305,9 @@ module ActiveFacts
             if r.to.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role == role}
               debug :references, "EntityType #{name} identifies EntityType #{r.to.name}, so absorbs it"
               r.to.absorbed_via = r
+              # We can't be absorbed into our supertype!
+              # REVISIT: We might need to flip all one-to-ones as well
+              r.to.references_to.clone.map{|q|q.flip if q.to_role.role_type == :subtype }
               r.tabulate
               return
             end
