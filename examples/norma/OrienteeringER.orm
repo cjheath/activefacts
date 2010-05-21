@@ -1455,6 +1455,11 @@
 			<orm:DateAndTimeTemporalDataType id="_2BEC9450-C5D2-42D1-ACAA-B54C208ED11A" />
 			<orm:UnsignedIntegerNumericDataType id="_DF2C9558-F766-4ADC-B9B8-83D835FC6992" />
 		</orm:DataTypes>
+		<orm:ModelNotes>
+			<orm:ModelNote id="_E412D652-1633-4DCD-92BB-EEFCC1D5E718">
+				<orm:Text>This is an illegal model with various NORMA errors disabled. It contains compound fact types</orm:Text>
+			</orm:ModelNote>
+		</orm:ModelNotes>
 		<orm:ModelErrors>
 			<orm:NMinusOneError id="_162DACA2-B49C-4BD6-AE9E-DFDC9135C09B" Name="Uniqueness constraint 'InternalUniquenessConstraint7' on FactType 'Map' in model 'OrienteeringER' must span at least 2 roles.">
 				<orm:UniquenessConstraint ref="_B02F413D-8F88-4652-AAFD-08D07617F624" />
@@ -1644,6 +1649,9 @@
 					<ormDiagram:Role ref="_5D5856B3-E15C-4D82-98AB-1A77F9092EAF" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
+			<ormDiagram:ModelNoteShape id="_4EDF82B3-BA57-4875-99FF-B1D2A17CD5D0" IsExpanded="true" AbsoluteBounds="1.0833333730697632, 3.5624999205271406, 4.1519035453796382, 0.14150302660465242">
+				<ormDiagram:Subject ref="_E412D652-1633-4DCD-92BB-EEFCC1D5E718" />
+			</ormDiagram:ModelNoteShape>
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_54E7ED1D-BE60-4280-A1A0-D64D3AA9B868" />
 	</ormDiagram:ORMDiagram>
