@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 #
-#	ActiveFacts: Interactive CQL command-line. Incomplete; only parses CQL and shows the parse trees
+#       ActiveFacts: Interactive CQL command-line. Incomplete; only parses CQL and shows the parse trees
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
@@ -44,23 +44,23 @@ class InteractiveCQLParser < ActiveFacts::CQL::Parser
     begin
       result = parse(statement)
       if result
-	begin
-	  if @show_tree
-	    p result
-	  else
-	    p result.value
-	  end
-	rescue => e
-	  puts e.to_s+":"
-	  puts e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
-	  p result  # In case the root is changed and there's no value()
-	end
+        begin
+          if @show_tree
+            p result
+          else
+            p result.value
+          end
+        rescue => e
+          puts e.to_s+":"
+          puts "\t"+e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
+          p result  # In case the root is changed and there's no value()
+        end
       else
-	p failure_reason
+        p failure_reason
       end
     rescue => e
       puts e
-      puts "\t"+e.backtrace*"\n\t"
+      puts "\t"+e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
     end
   end
 end

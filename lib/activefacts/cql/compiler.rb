@@ -41,11 +41,13 @@ module ActiveFacts
               value = ast.compile
               @vocabulary = value if ast.is_a?(Compiler::Vocabulary)
             rescue => e
-              puts e.message+"\n\t"+e.backtrace*"\n\t" if debug :exception
+              # Augment the exception message, but preserve the backtrace
               start_line = @string.line_of(node.interval.first)
               end_line = @string.line_of(node.interval.last-1)
               lines = start_line != end_line ? "s #{start_line}-#{end_line}" : " #{start_line.to_s}"
-              raise "at line#{lines} #{e.message.strip}"
+              ne = StandardError.new("at line#{lines} #{e.message.strip}")
+              ne.set_backtrace(e.backtrace)
+              raise ne
             end
           end
 

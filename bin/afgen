@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 #
-#	ActiveFacts: Read a Vocabulary (from a NORMA, CQL or other file) and run a generator
+#       ActiveFacts: Read a Vocabulary (from a NORMA, CQL or other file) and run a generator
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
@@ -13,7 +13,7 @@ require 'activefacts/vocabulary'
 if ENV['DEBUG']
   begin
     require 'ruby-debug'
-    Debugger.start(:post_mortem => true)	# Stop when an exception is thrown, but before it's rescued
+    Debugger.start(:post_mortem => true)        # Stop when an exception is thrown, but before it's rescued
   rescue LoadError
     # Ok, no debugger, tough luck.
   end
@@ -46,10 +46,10 @@ raise "Expected #{input_handler} to define #{input_class}" unless input_klass
 # Read the input file:
 begin
   vocabulary = input_klass.readfile(arg)
+
+  # Generate the output:
+  output_klass.new(vocabulary, *generator_options).generate if vocabulary
 rescue => e
   puts "#{e.message}"
-  puts "#{e}:\n\t#{e.backtrace*"\n\t"}" if debug
+  puts "\t#{e.backtrace*"\n\t"}" if debug :exception
 end
-
-# Generate the output:
-output_klass.new(vocabulary, *generator_options).generate if vocabulary

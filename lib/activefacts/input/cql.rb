@@ -18,8 +18,10 @@ module ActiveFacts
           read(file, filename)
         }
       rescue => e
-        puts e.message+"\n\t"+e.backtrace*"\n\t" if debug :exception
-        raise "In #{filename} #{e.message.strip}"
+        # Augment the exception message, but preserve the backtrace
+        ne = StandardError.new("In #{filename} #{e.message.strip}")
+        ne.set_backtrace(e.backtrace)
+        raise ne
       end
 
       # Read the specified input stream
