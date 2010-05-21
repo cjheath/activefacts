@@ -14,7 +14,7 @@ VenueId is written as AutoCounter;
  */
 Event is identified by its Id;
 
-Venue is identified by its Id;
+Venue is identified by its Id [independent];
 Event is held at one Venue;
 
 Seat is identified by Venue and Reserve and Row and Number [independent] where
