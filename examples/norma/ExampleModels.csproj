@@ -58,6 +58,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Insurance.orm</DependentUpon>
     </Compile>
+    <Compile Include="JoinEquality._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+    </Compile>
     <Compile Include="Marriage._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Marriage.orm</DependentUpon>
@@ -200,6 +204,10 @@
     <None Include="Insurance.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Insurance._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="JoinEquality.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>JoinEquality._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Marriage.orm">
       <Generator>ORMCustomTool</Generator>
@@ -734,6 +742,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>UnaryIdentification.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('JoinEquality.orm')">
+    <None Include="JoinEquality.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="JoinEquality.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="JoinEquality.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

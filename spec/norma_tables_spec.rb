@@ -17,20 +17,17 @@ require 'activefacts/input/orm'
 include ActiveFacts
 include ActiveFacts::Metamodel
 
+# The exceptions table is keyed by the model name, and contains the added and removed table names vs NORMA
 Exceptions = {
-  "Blog" => ["Author", "Comment", "Paragraph", "Post", "Topic"],
-  "JoinEquality" => ["Event", "Seat", "Ticket", "Venue"],
-  "Metamodel" => ["AllowedRange", "Concept", "Constraint", "ContextAccordingTo", "ContextAgreedBy", "ContextNote", "Derivation", "Fact", "FactType", "Instance", "Join", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Unit"],
-  "MetamodelNext" => ["AllowedRange", "Constraint", "ContextAccordingTo", "ContextAgreedBy", "ContextNote", "Derivation", "Fact", "FactType", "Instance", "Join", "ParamValue", "Reading", "Role", "RoleRef", "RoleSequence", "RoleValue", "SetComparisonRoles", "Term", "Unit"],
-  "OilSupply" => ["AcceptableSubstitutes", "Month", "ProductionForecast", "RegionalDemand", "TransportRoute"],
-  "Orienteering" => ["Club", "Entry", "Event", "EventControl", "EventScoringMethod", "Map", "Person", "Punch", "PunchPlacement", "Series", "Visit"],
-  "SeparateSubtype" => ["Claim", "VehicleIncident"],
-  "Warehousing" => ["Bin", "DirectOrderMatch", "DispatchItem", "Party", "Product", "PurchaseOrder", "PurchaseOrderItem", "ReceivedItem", "SalesOrder", "SalesOrderItem", "TransferRequest", "Warehouse"],
-  "Portfolio" => ["AnnualDepreciation", "Attachment", "Collateral", "DepreciationSchedule", "Disposal", "Expenditure", "OwnedItem", "Revenue", "Transaction", "Valuation"],
-  "OrienteeringER" => ["Club", "Event", "EventControl", "EventCourse", "Map", "SeriesEvent"],
-  "RedundantDependency" => ["Address", "Politician", "StateOrProvince"],
+  "Metamodel" => [[], %w{Agreement Enforcement}],                   # ActiveFacts absorbs Agreement into ContextNote, Enforcement into Constraint
+  "MetamodelNext" => [[], %w{Agreement Enforcement ObjectType}],    # ActiveFacts absorbs ObjectType into Term
+  "Orienteering" => [%w{Punch}, []],                                # NORMA doesn't make a table for the IDENTITY field
+  "OrienteeringER" => [%w{SeriesEvent}, []],                        # NORMA doesn't make a table for the IDENTITY field
+  "RedundantDependency" => [%w{Politician StateOrProvince}, %w{LegislativeDistrict}],   # NORMA doesn't make a table for the 3 IDENTITY fields
+  "SeparateSubtype" => [%w{Claim}, %w{Incident}],                   # NORMA doesn't make a table for the IDENTITY field. Even when Claim is independent, it still doesn't absorb Incident either and I don't know why, must ask Matt.
+  "Warehousing" => [%w{Product Warehouse}, []],                     # NORMA doesn't make a table for the IDENTITY field
 }
-
+  
 def extract_created_tables_from_sql sql_file
   File.open(sql_file) do |f|
     f.
@@ -48,24 +45,23 @@ end
 describe "Relational Composition from NORMA" do
   pattern = ENV["AFTESTS"] || "*"
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
-    expected_tables = Exceptions[File.basename(orm_file, ".orm")]
-    if !expected_tables
-      sql_file_pattern = orm_file.sub(/\.orm\Z/, '*.sql')
-      sql_file = Dir[sql_file_pattern][0]
-      next unless sql_file
-    end
+    exception = Exceptions[File.basename(orm_file, ".orm")]
+    sql_file_pattern = orm_file.sub(/\.orm\Z/, '*.sql')
+    sql_file = Dir[sql_file_pattern][0]
+    next unless sql_file
 
     it "should load #{orm_file} and compute #{
-        expected_tables ?
-          "the expected list of tables" :
-          "a list of tables similar to those in #{sql_file}"
+        (exception ? "a modified" :  "the same") + " list of tables similar to those in #{sql_file}"
       }" do
 
       # Read the ORM file:
       vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
 
       # Get the list of tables from NORMA's SQL:
-      expected_tables ||= extract_created_tables_from_sql(sql_file)
+      expected_tables = extract_created_tables_from_sql(sql_file)
+      if exception
+        expected_tables = expected_tables + exception[0] - exception[1]
+      end
 
       # Get the list of tables from our composition:
       tables = vocabulary.tables
