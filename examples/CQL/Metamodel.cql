@@ -12,6 +12,7 @@ ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to',
 Date is written as Date;
 Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
+DisplayRoleNamesSetting is written as VariableLengthText restricted to {'false', 'true'};
 EnforcementCode is written as VariableLengthText(16);
 EphemeraURL is written as VariableLengthText;
 Exponent is written as SignedSmallInteger(32);
@@ -28,9 +29,13 @@ Ordinal is written as UnsignedSmallInteger(32);
 Pronoun is written as VariableLengthText(20) restricted to {'feminine', 'masculine', 'neuter', 'personal'};
 RingType is written as VariableLengthText;
 RoleSequenceId is written as AutoCounter;
+RotationSetting is written as VariableLengthText restricted to {'left', 'right'};
 Scale is written as UnsignedInteger(32);
+ShapeId is written as AutoCounter;
 Text is written as VariableLengthText(256);
 UnitId is written as AutoCounter;
+X is written as SignedInteger(32);
+Y is written as SignedInteger(32);
 
 /*
  * Entity Types
@@ -72,6 +77,10 @@ Instance is identified by its Id;
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
 
+Position is identified by X and Y where
+	Position is at one X,
+	Position is at one Y;
+
 PresenceConstraint is a kind of Constraint;
 PresenceConstraint has at most one max-Frequency restricted to {1..};
 PresenceConstraint has at most one min-Frequency restricted to {2..};
@@ -112,6 +121,10 @@ RoleValue is identified by Instance and Fact where
 RoleValue is of one Role;
 
 SetConstraint is a kind of Constraint;
+
+Shape is identified by its Id;
+Shape is at at most one Position;
+Shape is expanded;
 
 SubsetConstraint is a kind of SetConstraint;
 SubsetConstraint covers one subset-RoleSequence;
@@ -169,6 +182,9 @@ Concept plays Role,
 Concept is independent;
 Instance is of one Concept;
 
+ConstraintShape is a kind of Shape;
+ConstraintShape is for one Constraint;
+
 ContextAccordingTo is where
 	ContextNote is according to Agent,
 	Agent claims ContextNote;
@@ -181,9 +197,37 @@ Derivation is where
 	Unit (as DerivedUnit) is derived from base-Unit (as BaseUnit) [acyclic, intransitive];
 Derivation has at most one Exponent;
 
+Diagram is identified by Vocabulary and Name where
+	Diagram is for one Vocabulary,
+	Vocabulary contains Diagram,
+	Diagram is called one Name,
+	Name is of Diagram;
+Shape is in one Diagram,
+	Diagram includes Shape;
+
 EntityType is a kind of Concept;
 EntityType nests at most one FactType,
 	FactType is nested as at most one EntityType;
+
+FactTypeShape is a kind of Shape;
+FactTypeShape has at most one DisplayRoleNamesSetting;
+FactTypeShape is for one FactType,
+	FactType has FactTypeShape;
+FactTypeShape has at most one RotationSetting;
+
+FrequencyConstraintShape is a kind of ConstraintShape;
+
+ModelNoteShape is a kind of Shape;
+ModelNoteShape is for one ContextNote;
+
+ObjectTypeShape is a kind of Shape;
+ObjectTypeShape is for one Concept,
+	Concept has ObjectTypeShape;
+ObjectTypeShape has expanded reference mode;
+
+ObjectifiedFactTypeNameShape is a kind of Shape identified by FactTypeShape where
+	ObjectifiedFactTypeNameShape (as OFT) is for one FactTypeShape,
+	FactTypeShape has at most one OFT;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -196,6 +240,24 @@ Population includes Instance,
 	Instance belongs to one Population;
 Population includes RoleValue,
 	RoleValue belongs to one Population;
+
+ReadingShape is a kind of Shape identified by FactTypeShape where
+	FactTypeShape has at most one ReadingShape,
+	ReadingShape is for one FactTypeShape;
+ReadingShape is for one Reading,
+	Reading has ReadingShape;
+
+RingConstraintShape is a kind of ConstraintShape;
+RingConstraintShape is attached to one FactType;
+
+RoleDisplay is where
+	FactTypeShape displays Role in Ordinal position,
+	FactTypeShape displays in Ordinal position at most one Role;
+RoleDisplay has FrequencyConstraintShape,
+	FrequencyConstraintShape is for one RoleDisplay;
+
+RoleNameShape is a kind of Shape;
+RoleNameShape is for one Role;
 
 RoleRef is where
 	RoleSequence in Ordinal position includes at most one Role,
@@ -225,6 +287,12 @@ Assimilation applies to TypeInheritance,
 	TypeInheritance uses at most one Assimilation;
 TypeInheritance provides identification;
 
+ValueConstraintShape is a kind of ConstraintShape;
+RoleDisplay has at most one ValueConstraintShape,
+	ValueConstraintShape is for at most one RoleDisplay;
+ValueConstraintShape is for at most one ObjectTypeShape,
+	ObjectTypeShape has ValueConstraintShape;
+
 ValueRange is identified by minimum-Bound and maximum-Bound where
 	ValueRange has at most one minimum-Bound,
 	ValueRange has at most one maximum-Bound;
@@ -235,7 +303,8 @@ ValueType has at most one Length,
 ValueType has at most one Scale,
 	Scale is of ValueType;
 ValueType is of at most one Unit;
-ValueType has at most one ValueRestriction;
+ValueType has at most one ValueRestriction,
+	ValueRestriction constrains ValueType;
 ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 	Supertype is supertype of ValueType;
 
@@ -283,11 +352,16 @@ either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConst
 either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
 either Unit is fundamental or Unit is derived from base-Unit but not both;
 either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
+either ValueConstraintShape is for ObjectTypeShape or ValueConstraintShape is for RoleDisplay but not both;
+either ValueRestriction constrains ValueType or ValueRestriction applies to Role but not both;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale
 	only if ValueType has Length;
 either Agreement was reached by Agent or Agreement was on Date;
+each combination Diagram, Position occurs at most one time in
+	Shape is in Diagram,
+	Shape is at Position;
 each combination EntityType, TypeInheritance occurs at most one time in
 	EntityType is subtype of super-EntityType,
 	TypeInheritance provides identification;

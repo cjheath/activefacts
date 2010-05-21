@@ -40,6 +40,11 @@ module ::Metamodel
     value_type 
   end
 
+  class DisplayRoleNamesSetting < String
+    value_type 
+    restrict 'false', 'true'
+  end
+
   class EnforcementCode < String
     value_type :length => 16
   end
@@ -105,8 +110,17 @@ module ::Metamodel
     value_type 
   end
 
+  class RotationSetting < String
+    value_type 
+    restrict 'left', 'right'
+  end
+
   class Scale < UnsignedInteger
     value_type :length => 32
+  end
+
+  class ShapeId < AutoCounter
+    value_type 
   end
 
   class Text < String
@@ -115,6 +129,14 @@ module ::Metamodel
 
   class UnitId < AutoCounter
     value_type 
+  end
+
+  class X < SignedInteger
+    value_type :length => 32
+  end
+
+  class Y < SignedInteger
+    value_type :length => 32
   end
 
   class Agent
@@ -174,6 +196,12 @@ module ::Metamodel
     has_one :value                              # See Value.all_instance
   end
 
+  class Position
+    identified_by :x, :y
+    has_one :x, :mandatory => true              # See X.all_position
+    has_one :y, :mandatory => true              # See Y.all_position
+  end
+
   class PresenceConstraint < Constraint
     maybe :is_mandatory
     maybe :is_preferred_identifier
@@ -221,6 +249,14 @@ module ::Metamodel
   class SetConstraint < Constraint
   end
 
+  class Shape
+    identified_by :shape_id
+    has_one :diagram, :mandatory => true        # See Diagram.all_shape
+    maybe :is_expanded
+    has_one :position                           # See Position.all_shape
+    one_to_one :shape_id, :mandatory => true    # See ShapeId.shape
+  end
+
   class SubsetConstraint < SetConstraint
     has_one :subset_role_sequence, :class => RoleSequence, :mandatory => true  # See RoleSequence.all_subset_constraint_as_subset_role_sequence
     has_one :superset_role_sequence, :class => RoleSequence, :mandatory => true  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
@@ -264,6 +300,10 @@ module ::Metamodel
     has_one :value, :mandatory => true          # See Value.all_bound
   end
 
+  class ConstraintShape < Shape
+    has_one :constraint, :mandatory => true     # See Constraint.all_constraint_shape
+  end
+
   class ContextAccordingTo
     identified_by :context_note, :agent
     has_one :agent, :mandatory => true          # See Agent.all_context_according_to
@@ -284,10 +324,61 @@ module ::Metamodel
     has_one :exponent                           # See Exponent.all_derivation
   end
 
+  class Diagram
+    identified_by :vocabulary, :name
+    has_one :name, :mandatory => true           # See Name.all_diagram
+    has_one :vocabulary, :mandatory => true     # See Vocabulary.all_diagram
+  end
+
+  class FactTypeShape < Shape
+    has_one :display_role_names_setting         # See DisplayRoleNamesSetting.all_fact_type_shape
+    has_one :fact_type, :mandatory => true      # See FactType.all_fact_type_shape
+    has_one :rotation_setting                   # See RotationSetting.all_fact_type_shape
+  end
+
+  class FrequencyConstraintShape < ConstraintShape
+    has_one :role_display, :mandatory => true   # See RoleDisplay.all_frequency_constraint_shape
+  end
+
+  class ModelNoteShape < Shape
+    has_one :context_note, :mandatory => true   # See ContextNote.all_model_note_shape
+  end
+
+  class ObjectTypeShape < Shape
+    maybe :has_expanded_reference_mode
+    has_one :object_type, :mandatory => true    # See ObjectType.all_object_type_shape
+  end
+
+  class ObjectifiedFactTypeNameShape < Shape
+    identified_by :fact_type_shape
+    one_to_one :fact_type_shape, :mandatory => true, :counterpart => :oftns  # See FactTypeShape.oftns
+  end
+
   class Population
     identified_by :vocabulary, :name
     has_one :name, :mandatory => true           # See Name.all_population
     has_one :vocabulary                         # See Vocabulary.all_population
+  end
+
+  class ReadingShape < Shape
+    identified_by :fact_type_shape
+    one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.reading_shape
+    has_one :reading, :mandatory => true        # See Reading.all_reading_shape
+  end
+
+  class RingConstraintShape < ConstraintShape
+    has_one :fact_type, :mandatory => true      # See FactType.all_ring_constraint_shape
+  end
+
+  class RoleDisplay
+    identified_by :fact_type_shape, :ordinal
+    has_one :fact_type_shape, :mandatory => true  # See FactTypeShape.all_role_display
+    has_one :ordinal, :mandatory => true        # See Ordinal.all_role_display
+    has_one :role, :mandatory => true           # See Role.all_role_display
+  end
+
+  class RoleNameShape < Shape
+    has_one :role, :mandatory => true           # See Role.all_role_name_shape
   end
 
   class RoleRef
@@ -322,6 +413,11 @@ module ::Metamodel
     has_one :name, :mandatory => true           # See Name.all_term
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_term
     has_one :object_type                        # See ObjectType.all_term
+  end
+
+  class ValueConstraintShape < ConstraintShape
+    has_one :object_type_shape                  # See ObjectTypeShape.all_value_constraint_shape
+    one_to_one :role_display                    # See RoleDisplay.value_constraint_shape
   end
 
   class ValueRange
