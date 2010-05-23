@@ -1630,7 +1630,7 @@
 			</orm:Fact>
 			<orm:Fact id="_0F06922A-860C-44F5-A528-EB3BCE4DFE4A" _Name="CoefficientIsPrecise">
 				<orm:FactRoles>
-					<orm:Role id="_3327E951-D349-4F77-8B9F-E10D8DF17D27" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_3327E951-D349-4F77-8B9F-E10D8DF17D27" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_AB5A1709-E97E-4AB4-884D-1C5523BF2503" />
 					</orm:Role>
 					<orm:Role id="_E0E04353-0E9E-419D-9030-C2BB24D1ED68" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
@@ -1651,6 +1651,7 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_2C1B7AAA-E099-4DE5-922F-653515243E31" />
+					<orm:MandatoryConstraint ref="_24988B4F-5F71-42B6-B1A0-00C455B4FA06" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_0591188F-8C88-455E-879A-EA60C97D06F3" _Name="UnitHasCoefficient">
@@ -3233,7 +3234,7 @@
 			</orm:Fact>
 			<orm:Fact id="_0A84082C-628C-461A-869D-3228B82063BD" _Name="BoundIsInclusive">
 				<orm:FactRoles>
-					<orm:Role id="_5C65BD23-177B-4EE6-A885-34347AD92ECE" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_5C65BD23-177B-4EE6-A885-34347AD92ECE" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_C3949D07-0497-46CF-9360-D0A856F628A6" />
 					</orm:Role>
 					<orm:Role id="_B8B02DAE-BD17-42FC-AB0E-8F02646BA645" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
@@ -3254,6 +3255,7 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_BEAD0D31-6274-463C-A4F4-01BF4FCA2606" />
+					<orm:MandatoryConstraint ref="_5C2576B3-A64E-4AE1-9268-F8FAABCC9535" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_596143DD-5098-436F-B90B-55487A3CC6C2" _Name="ReadingIsInOrdinalPosition">
@@ -3301,7 +3303,7 @@
 					</orm:Note>
 				</orm:Notes>
 				<orm:FactRoles>
-					<orm:Role id="_7FBCF375-B833-4F28-8792-29DC5722EEE0" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_7FBCF375-B833-4F28-8792-29DC5722EEE0" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_22D5E427-6719-4B7B-A8ED-53FED9CA226C" />
 					</orm:Role>
 					<orm:Role id="_6FF9A48A-9070-4851-BA74-EA57C469B68C" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
@@ -3322,11 +3324,12 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_C10647A3-6CD0-4A17-8E7D-046AF19D5E96" />
+					<orm:MandatoryConstraint ref="_FD7144B6-3792-468C-8E79-35F826239D72" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_3DF3A079-C0EF-47C7-85CA-DC74850E114D" _Name="PresenceConstraintIsMandatory">
 				<orm:FactRoles>
-					<orm:Role id="_F49B8D81-1524-404C-8C59-2EED62593F1B" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_F49B8D81-1524-404C-8C59-2EED62593F1B" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_22D5E427-6719-4B7B-A8ED-53FED9CA226C" />
 					</orm:Role>
 					<orm:Role id="_11598F15-1C94-41CC-AC23-F0A14C292277" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
@@ -3347,6 +3350,7 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_A246274A-ED98-4622-8BE3-F21AA2807971" />
+					<orm:MandatoryConstraint ref="_1DA5D60E-7212-4864-A599-CB5808559926" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:SubtypeFact id="_18693BE8-8413-4F60-BA4F-978E22EB9C32" _Name="SetComparisonConstraintIsASubtypeOfSetConstraint" PreferredIdentificationPath="true">
@@ -3435,7 +3439,7 @@
 			</orm:ImpliedFact>
 			<orm:Fact id="_EB5F96EA-81E6-43C1-A05F-55AAD2C25ADD" _Name="SetExclusionConstraintIsMandatory">
 				<orm:FactRoles>
-					<orm:Role id="_408FBC08-E42A-4D8E-8FDA-078FA1CCC4E7" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_408FBC08-E42A-4D8E-8FDA-078FA1CCC4E7" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_6935FE49-35E2-4CBA-86A3-3ABF2FD9CD44" />
 					</orm:Role>
 					<orm:Role id="_8C11EA19-56EC-4725-AC6A-B85193141C63" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
@@ -3456,11 +3460,12 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_03245EAC-A1BF-457A-87A6-36ABCFE26161" />
+					<orm:MandatoryConstraint ref="_2981D5C2-BF56-413B-9C3A-48A092431268" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_866C403F-B1F3-4352-B679-611E903BE8C5" _Name="UnitIsFundamental">
 				<orm:FactRoles>
-					<orm:Role id="_A357C403-EA4C-402E-A132-914DEAD40CC1" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_A357C403-EA4C-402E-A132-914DEAD40CC1" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_9053778F-2A1B-481E-A3B1-2DAF2137C5AA" />
 					</orm:Role>
 					<orm:Role id="_50CF677F-C7E1-4AFC-9B48-EFA98996881E" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
@@ -3481,6 +3486,7 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_55F4B886-EFE7-4C9A-B75E-2DCD1ACB9CF1" />
+					<orm:MandatoryConstraint ref="_307E3E87-F351-4F99-8E90-1925DB636AAA" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_8386ADAB-B2E4-49B0-A4D8-396D5206D775" _Name="VocabularyContainsConstraint">
@@ -5218,7 +5224,7 @@
 			</orm:Fact>
 			<orm:Fact id="_4EAF9E83-D611-4248-96C1-318069F47EAA" _Name="ValueIsAString">
 				<orm:FactRoles>
-					<orm:Role id="_A695B41B-D965-4875-BA88-9482D1AD8607" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_A695B41B-D965-4875-BA88-9482D1AD8607" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_37D88A60-D029-4760-929B-038077D1A708" />
 					</orm:Role>
 					<orm:Role id="_86436808-0096-4F90-B336-785BED7C741E" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
@@ -5239,6 +5245,7 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_628A1E62-DFE0-450B-85BB-209F59AC2D76" />
+					<orm:MandatoryConstraint ref="_17853915-F730-4AAC-B857-4EB11D8EA79A" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_537271C8-B3D2-44CC-9AFE-1AC98DEDE37C" _Name="ConceptPlaysRole">
@@ -9301,6 +9308,41 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_AAC7DA17-8465-4EE5-908D-9B8DA7985B8D" />
 			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_5C2576B3-A64E-4AE1-9268-F8FAABCC9535" Name="SimpleMandatoryConstraint111" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_18100A8F-C751-4CCD-9588-32B61563FBEB" ref="_5C65BD23-177B-4EE6-A885-34347AD92ECE" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_24988B4F-5F71-42B6-B1A0-00C455B4FA06" Name="SimpleMandatoryConstraint112" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_D89BC2B8-982A-403D-A841-FB6A7CAFEC9D" ref="_3327E951-D349-4F77-8B9F-E10D8DF17D27" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_307E3E87-F351-4F99-8E90-1925DB636AAA" Name="SimpleMandatoryConstraint113" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_4C6FB839-403F-40E8-9D40-936D74638095" ref="_A357C403-EA4C-402E-A132-914DEAD40CC1" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_2981D5C2-BF56-413B-9C3A-48A092431268" Name="SimpleMandatoryConstraint114" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_71C98878-B300-4C40-A0EE-56974EF359FA" ref="_408FBC08-E42A-4D8E-8FDA-078FA1CCC4E7" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_FD7144B6-3792-468C-8E79-35F826239D72" Name="SimpleMandatoryConstraint115" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_A6D0153A-81DD-4BD1-9381-5CF03EDDEFB9" ref="_7FBCF375-B833-4F28-8792-29DC5722EEE0" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_1DA5D60E-7212-4864-A599-CB5808559926" Name="SimpleMandatoryConstraint116" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_3209974C-A1F8-4611-B09B-BD0B9CCFB497" ref="_F49B8D81-1524-404C-8C59-2EED62593F1B" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_17853915-F730-4AAC-B857-4EB11D8EA79A" Name="SimpleMandatoryConstraint117" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_AC7A6774-B55D-4436-9BF2-5118506DD37B" ref="_A695B41B-D965-4875-BA88-9482D1AD8607" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
 			<orm:ExclusionConstraint id="_05BE8DA4-8194-4809-931A-E585D885D621" Name="ConceptMayNotBeBothValueTypeAndEntityType">
 				<orm:RoleSequences>
 					<orm:RoleSequence id="_1EDABAEC-EFB2-4466-B51C-81D9FDB3051B">
@@ -9614,6 +9656,26 @@
 				</orm:ReferencedBy>
 			</orm:ModelNote>
 		</orm:ModelNotes>
+		<orm:ModelErrors>
+			<orm:ExclusionContradictsMandatoryError id="_82777725-A6B9-4391-A823-CE723F796E2F" Name="Constraints 'ExclusiveOrConstraint1' and 'SimpleMandatoryConstraint113' in model 'Metamodel' are in a state of contradiction.">
+				<orm:Constraints>
+					<orm:ExclusionConstraint ref="_154D7C63-9115-41BF-B21A-656E27608E3B" />
+					<orm:MandatoryConstraint ref="_307E3E87-F351-4F99-8E90-1925DB636AAA" />
+				</orm:Constraints>
+			</orm:ExclusionContradictsMandatoryError>
+			<orm:ImplicationError id="_71F85479-5F23-4DB4-9CEC-1E8CD3822388" Name="Constraint 'InclusiveOrConstraint1' in model 'Metamodel' is implied by at least one constraint of the same type attached to a subset of the same roles.">
+				<orm:SetConstraint ref="_79E061D0-65F1-4DFE-ABAD-CDB6BD6EE5CE" />
+			</orm:ImplicationError>
+			<orm:NotWellModeledSubsetAndMandatoryError id="_BA1B5D94-16B5-4A74-A7DB-CC7F7745C641" Name="Subset constraint 'PreferredIdentifierHasMaxFrequency' and mandatory constraint 'SimpleMandatoryConstraint115' in model 'Metamodel' are not well-modeled. Suggested ways to fix: (1) Delete the mandatory constraint. (2) Add another mandatory constraint on the superset role. (3) Delete the subset constraint.">
+				<orm:Constraints>
+					<orm:SubsetConstraint ref="_21586130-1089-4DEA-8081-AF55C93CFEE0" />
+					<orm:MandatoryConstraint ref="_FD7144B6-3792-468C-8E79-35F826239D72" />
+				</orm:Constraints>
+			</orm:NotWellModeledSubsetAndMandatoryError>
+			<orm:ImplicationError id="_5581658E-0AD1-46B1-AD30-71AE6F349A92" Name="Constraint 'PresenceConstraintMustHaveFrequency' in model 'Metamodel' is implied by at least one constraint of the same type attached to a subset of the same roles.">
+				<orm:SetConstraint ref="_9B0588EE-2419-4E14-818A-8A5788BF1586" />
+			</orm:ImplicationError>
+		</orm:ModelErrors>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_AEAC88B1-D519-4489-94A7-BB26D668B419" FormatString="{1}" ReferenceModeType="General" />
 			<orm:ReferenceModeKind id="_3654077D-B011-4BEB-9282-03B416E9F4DD" FormatString="{0}{1}" ReferenceModeType="Popular" />
@@ -11568,7 +11630,7 @@
 					<oial:informationType id="_116868BA-3246-4775-97E9-0D20C100AA8B" ref="_61D238A8-FD86-4E35-9F2A-AE852182417E" name="Denominator" />
 					<oial:informationType id="_68088C9F-DBA4-4B45-A7A3-2ADF1678E540" ref="_807E7354-3672-4C5E-84BE-958CD969B6B7" name="Coefficient is precise" />
 					<oial:informationType id="_0833EA0F-A931-4EA8-A13B-1DA844CA5467" ref="_F8A590A5-9E9C-4C1F-B5FF-3E4351E9EFFD" isMandatory="true" name="Name" />
-					<oial:informationType id="_22722821-3A93-487E-9E77-A1E75383B781" ref="_94B0B7B9-E2BF-4D39-BE7B-5923CD35131B" name="Unit is fundamental" />
+					<oial:informationType id="_22722821-3A93-487E-9E77-A1E75383B781" ref="_94B0B7B9-E2BF-4D39-BE7B-5923CD35131B" isMandatory="true" name="Unit is fundamental" />
 					<oial:informationType id="_8F60C4FA-F3BC-4242-B1BD-F594CCD627C7" ref="_225405EE-BB09-497A-A35B-B075938D671D" name="Offset" />
 					<oial:informationType id="_92A9BFB1-FA3C-4556-B15B-BBE93FD797E8" ref="_F8A590A5-9E9C-4C1F-B5FF-3E4351E9EFFD" isMandatory="true" name="Name" />
 					<oial:informationType id="_330172E9-ADF7-4F3E-A4DE-BE2988EB1408" ref="_16875245-6C12-43E3-B392-50EE329266C5" isMandatory="true" name="UnitId" />
@@ -11660,14 +11722,14 @@
 				<oial:children>
 					<oial:informationType id="_C4B4DDA5-0678-417E-BF87-197966B1AEA6" ref="_1D56BAE4-D6E1-4A12-8A5A-AA91566F2C8E" name="Frequency" />
 					<oial:informationType id="_6DA43669-2447-41BE-840C-DC9DCEBBB3A7" ref="_1D56BAE4-D6E1-4A12-8A5A-AA91566F2C8E" name="Frequency" />
-					<oial:informationType id="_71529FE3-223D-4674-9D19-E82213979FC3" ref="_78E657D3-98A3-4BBE-8046-61EA9C934B70" name="PresenceConstraint is preferred identifier" />
-					<oial:informationType id="_A21331EF-A827-4BC4-8BBB-F58B5124F61F" ref="_3C85E684-EE9A-4935-B3D3-4A9A285B63D1" name="PresenceConstraint is mandatory" />
+					<oial:informationType id="_71529FE3-223D-4674-9D19-E82213979FC3" ref="_78E657D3-98A3-4BBE-8046-61EA9C934B70" isMandatory="true" name="PresenceConstraint is preferred identifier" />
+					<oial:informationType id="_A21331EF-A827-4BC4-8BBB-F58B5124F61F" ref="_3C85E684-EE9A-4935-B3D3-4A9A285B63D1" isMandatory="true" name="PresenceConstraint is mandatory" />
 					<oial:relatedConceptType id="_D052D780-3C2E-43D7-8B78-6D4F1B8891B0" ref="_0110D806-B060-477E-B9C1-52AFFDD8E6B0" isMandatory="true" name="PresenceConstraint" oppositeName="RoleSequence" />
 				</oial:children>
 			</oial:conceptType>
 			<oial:conceptType id="_EBD4B976-E350-4CCA-8B3B-06A31BCF18F8" name="SetExclusionConstraint">
 				<oial:children>
-					<oial:informationType id="_7FC353D6-D9DA-402D-9B02-1AEAE57185DE" ref="_F3A16B4E-3ABF-46F4-8C1C-1E584D6BC857" name="SetExclusionConstraint is mandatory" />
+					<oial:informationType id="_7FC353D6-D9DA-402D-9B02-1AEAE57185DE" ref="_F3A16B4E-3ABF-46F4-8C1C-1E584D6BC857" isMandatory="true" name="SetExclusionConstraint is mandatory" />
 				</oial:children>
 			</oial:conceptType>
 			<oial:conceptType id="_DCE070B5-6020-46A4-B88A-18C759C56B6A" name="SetEqualityConstraint" />
@@ -11868,7 +11930,7 @@
 			<oial:conceptType id="_7608EC15-584A-48DE-8C5A-F046E096A40F" name="ParamValue">
 				<oial:children>
 					<oial:informationType id="_FE34139E-BCD8-4062-81A2-E66214A38C87" ref="_3205841C-0937-4D9D-88F1-C395BAD91191" isMandatory="true" name="Literal" />
-					<oial:informationType id="_9DAFDD72-4BCF-4FFE-9DCC-A94D7DFE4E6A" ref="_19E2C4FD-D29D-46DF-8960-24F05AC6F0C2" name="Value is a string" />
+					<oial:informationType id="_9DAFDD72-4BCF-4FFE-9DCC-A94D7DFE4E6A" ref="_19E2C4FD-D29D-46DF-8960-24F05AC6F0C2" isMandatory="true" name="Value is a string" />
 					<oial:informationType id="_6A78EE32-9A82-4CE7-AF80-EF6AB4137F5F" ref="_F8A590A5-9E9C-4C1F-B5FF-3E4351E9EFFD" isMandatory="true" name="Name" />
 					<oial:relatedConceptType id="_E965588D-6A99-4FE1-864C-4AC6DB94C937" ref="_13D2CF92-26B1-4205-968B-ADDD2C52EBD0" name="Value" oppositeName="Unit" />
 					<oial:relatedConceptType id="_FF836763-EFA6-41AF-8F8C-11D48E58DE19" ref="_F61E9E55-47FE-444E-AC66-E10DE1A7E930" isMandatory="true" name="Parameter" oppositeName="ValueType" />
@@ -12057,10 +12119,10 @@
 		<ormtooial:FactTypeMapsTowardsRole id="_BF6E38AD-51D9-4218-9EFA-1E3676270DB6" FactType="_C187D51A-2042-4A73-97E5-2DEF5F71E9C9" TowardsRole="_E1044FDB-C942-479C-987C-F5BA7BC8A766" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_2477FEB0-4168-463A-B5BE-D4ACBD66FD4D" FactType="_F797A759-25FC-4DFE-9682-F283A0F8337B" TowardsRole="_464D5CEE-80DE-47B7-9374-DF9FC0F6B788" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_13CAA679-E931-4440-886B-7E354611370F" FactType="_D9DE1F52-5636-4881-9B04-5A67F2015B20" TowardsRole="_4DA13CD4-9632-4916-98EC-E67E98B009C4" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_8A6004C0-AEE1-4759-95C6-004A76D4DB69" FactType="_0A84082C-628C-461A-869D-3228B82063BD" TowardsRole="_5C65BD23-177B-4EE6-A885-34347AD92ECE" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_8A6004C0-AEE1-4759-95C6-004A76D4DB69" FactType="_0A84082C-628C-461A-869D-3228B82063BD" TowardsRole="_5C65BD23-177B-4EE6-A885-34347AD92ECE" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_DF033152-3C24-4C9A-A19F-AB0AF83290B0" FactType="_2B06433A-4D71-4E8B-8575-7D964B761E1B" TowardsRole="_D4954415-8B59-4C38-A764-F5CAECBD32D7" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_F8D65B3D-4C6D-41B9-9158-36A655BB0184" FactType="_190B9119-D48A-4EAC-81E8-26CCE735D500" TowardsRole="_275F60FA-A5C9-4194-9C99-8127B98B0023" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_F45D51F1-93B3-4625-8791-58B55DCF1DA5" FactType="_0F06922A-860C-44F5-A528-EB3BCE4DFE4A" TowardsRole="_3327E951-D349-4F77-8B9F-E10D8DF17D27" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_F45D51F1-93B3-4625-8791-58B55DCF1DA5" FactType="_0F06922A-860C-44F5-A528-EB3BCE4DFE4A" TowardsRole="_3327E951-D349-4F77-8B9F-E10D8DF17D27" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_C6B2FEBF-F9BE-431A-866B-F92FBA721672" FactType="_9ABFB221-53EF-4064-B506-B0F8D1BC0FD5" TowardsRole="_8B18C3B1-CC89-4BC4-9B6B-4F606ACDA065" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_258C7559-65E4-4F84-836E-D2E6CFE4474E" FactType="_8EDFB2B2-CB50-4BF0-A235-931E58E63A6C" TowardsRole="_B221D898-70F6-4B84-A7C7-8041560BBAF8" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_41FBF903-E7D8-4588-BEF1-F8833BB1EE74" FactType="_27CBA203-C250-4F3C-85F7-DC8DD6A181E2" TowardsRole="_07CC31C9-EA7D-4D47-8681-C70B7D0F2CC2" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
@@ -12137,8 +12199,8 @@
 		<ormtooial:FactTypeMapsTowardsRole id="_A62B222B-CA52-4726-AA39-6BBF91FF9022" FactType="_5FA2C86A-BA88-4140-AF0B-D817411A70DF" TowardsRole="_A41004E7-E3D4-436C-8734-80C7EED484CA" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_A8E9E75F-71E3-48B2-BCEB-384516CB11A5" FactType="_8E470869-A9B0-434C-AD70-4ABE1FA2F7E7" TowardsRole="_90052E44-87E3-4458-BE2D-078D99EFEC57" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_4B9A953F-6DF7-4A81-9A7E-D5AE7DE4EC9B" FactType="_165B68AD-EA65-42E8-825B-BAAAEE3CFCA9" TowardsRole="_6728BCFA-6CE9-46EF-9C1C-CC2AC59B4487" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_7138FE9E-970B-4E7D-82F2-2D5F8B0FBE78" FactType="_3DF3A079-C0EF-47C7-85CA-DC74850E114D" TowardsRole="_F49B8D81-1524-404C-8C59-2EED62593F1B" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_280404BE-9CF5-4881-AFFA-505904B7C5E4" FactType="_3288668D-D576-446F-8A82-23CF494AE51A" TowardsRole="_7FBCF375-B833-4F28-8792-29DC5722EEE0" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_7138FE9E-970B-4E7D-82F2-2D5F8B0FBE78" FactType="_3DF3A079-C0EF-47C7-85CA-DC74850E114D" TowardsRole="_F49B8D81-1524-404C-8C59-2EED62593F1B" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_280404BE-9CF5-4881-AFFA-505904B7C5E4" FactType="_3288668D-D576-446F-8A82-23CF494AE51A" TowardsRole="_7FBCF375-B833-4F28-8792-29DC5722EEE0" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_3500EA88-B2AB-454D-B385-3A9FD216013B" FactType="_A903A957-6219-4928-AE9C-416462133D2D" TowardsRole="_B1F36AF6-E1E9-4267-9E80-34310A574A76" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_EAEDFA09-A99B-4F32-AF19-7D4016451F09" FactType="_596143DD-5098-436F-B90B-55487A3CC6C2" TowardsRole="_5E22A697-27CE-4E98-9EF5-DB4DE09C9C69" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_5DECC47C-D75E-4551-ADCD-370063F2C3BF" FactType="_29EBCF2B-762B-4533-9F99-0BF0F64F2F01" TowardsRole="_6FCE2C80-7F39-4D58-A6A0-135CD0B1047B" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
@@ -12171,7 +12233,7 @@
 		<ormtooial:FactTypeMapsTowardsRole id="_224958AC-B893-412D-81D1-E970C030CD90" FactType="_A72DCE40-2C17-47FD-8492-7C63F255E2C0" TowardsRole="_B359C8E9-14FE-4B42-9125-FA319E62B79F" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_583D9258-B8BB-41A8-9B1F-848127C6361F" FactType="_CE096C68-42FE-49FB-A789-FF8CF1D342F6" TowardsRole="_EC2DF352-B513-4679-A0A6-DF046054FC80" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_CABA4202-1309-43A3-A695-AEA56CD3B6E6" FactType="_1D9B0D6F-0E95-4ED5-942B-08DB38A7AF1C" TowardsRole="_712E757E-310A-415E-B9AE-9E80FB7BC9AB" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_C4809DD5-368D-45FC-B20C-7390E8B95337" FactType="_EB5F96EA-81E6-43C1-A05F-55AAD2C25ADD" TowardsRole="_408FBC08-E42A-4D8E-8FDA-078FA1CCC4E7" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_C4809DD5-368D-45FC-B20C-7390E8B95337" FactType="_EB5F96EA-81E6-43C1-A05F-55AAD2C25ADD" TowardsRole="_408FBC08-E42A-4D8E-8FDA-078FA1CCC4E7" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_1BF14F81-BEA5-4705-9565-4CF22E7D5818" FactType="_56140386-D182-4525-B67B-ACDA2FC2723C" TowardsRole="_90600085-8D6A-40BF-925E-6FD971277DE9" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_AC2EAB0F-DE3C-4BB1-9A4A-441672F61E8D" FactType="_B063C035-B378-4CA6-ABCE-7C5FEC53D7DA" TowardsRole="_D961F7C1-4ABB-4569-9CBE-C71502A852D3" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_0266B47F-2FF6-423A-B2CF-661C7CC42931" FactType="_0DD8796D-E76B-4320-A649-64AA7D08DD5A" TowardsRole="_08A22896-8A82-4B78-B7B0-1A40690BC475" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
@@ -12185,12 +12247,12 @@
 		<ormtooial:FactTypeMapsTowardsRole id="_662FDD30-9DE9-41EB-A975-457BE5757D4E" FactType="_F7B6F26F-92C2-4E77-BD8D-0E80A4508D8C" TowardsRole="_46F406A1-260F-43D5-AC24-F7A8B0A48EC5" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_DCAA7FDD-EF74-4FCB-AFDE-F1F1670ED35C" FactType="_D6A43EFB-9D21-41D6-A191-81F31F299162" TowardsRole="_F4CD0D1E-6928-4AB1-B9DB-2D2095BE0029" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_44FC9D73-2152-4FDB-9467-0CE8DF2255EB" FactType="_F93AF992-034A-48DB-A899-FED1D124A3CE" TowardsRole="_3A32C59C-0727-49DE-BE1E-5D504AD7E6A0" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_61D0F221-3DD3-45B4-BBC7-E7AD226FB91D" FactType="_866C403F-B1F3-4352-B679-611E903BE8C5" TowardsRole="_A357C403-EA4C-402E-A132-914DEAD40CC1" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_61D0F221-3DD3-45B4-BBC7-E7AD226FB91D" FactType="_866C403F-B1F3-4352-B679-611E903BE8C5" TowardsRole="_A357C403-EA4C-402E-A132-914DEAD40CC1" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_DE056346-5E6C-4210-8217-21611FE49114" FactType="_B0AEF05F-E56C-4F94-9096-C1FA28B0F8FA" TowardsRole="_E5A9C647-D3DA-49DB-9996-C0491511E91D" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_1280CCA9-1F3C-4376-A7BD-23265A5F5ADD" FactType="_A7BD7584-4008-4EF9-A95C-AC85700AC79F" TowardsRole="_7DD73889-5BBF-48E3-B444-B074DDAC49DA" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_63A85F9A-CEE6-4EFE-A189-700014F198EC" FactType="_85D17446-1413-484B-8505-3FBEB52D1CDD" TowardsRole="_5F00537D-BA59-4E54-A579-D933FC2C3E4E" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_25295BBF-418B-493F-9CDC-4FAD944DF840" FactType="_560893DF-7205-48FA-9283-0D25AB667FDF" TowardsRole="_F1D215C5-0A03-417F-86FD-4F12D0FD2BA1" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_812E0206-D603-4AD9-BC1E-8C91374E6022" FactType="_4EAF9E83-D611-4248-96C1-318069F47EAA" TowardsRole="_A695B41B-D965-4875-BA88-9482D1AD8607" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_812E0206-D603-4AD9-BC1E-8C91374E6022" FactType="_4EAF9E83-D611-4248-96C1-318069F47EAA" TowardsRole="_A695B41B-D965-4875-BA88-9482D1AD8607" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_CCCEABD3-3576-4869-BDC4-14FB68F71843" FactType="_9D298271-48FA-4D9C-8B2F-ADC64D6FC5B5" TowardsRole="_27DA7E64-562B-4863-902E-F3DF24E28289" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_70FD58B8-16B1-4E03-9079-7076B4697119" FactType="_F4EC9E0C-1807-4B8A-8D77-8B239A565AA4" TowardsRole="_3356076B-EE54-459E-B866-BDF0003D39FF" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_61F631A8-CC18-4F03-BFAA-0AB926A67A25" FactType="_64D6FA23-C824-475A-A669-E413BED6E895" TowardsRole="_001C5AA4-F7B5-4498-B76C-65E9E10D7AA5" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
@@ -12706,7 +12768,7 @@
 							<rcd:Column id="_42F439DC-A441-4AAA-BC69-23A28F5A853D" Name="denominator" IsNullable="true" />
 							<rcd:Column id="_AB0E6DD8-6421-44C5-A64F-731E1930B7C3" Name="isPrecise" IsNullable="true" />
 							<rcd:Column id="_2A059E53-3025-4DE9-84FD-45C951BA515B" Name="name" />
-							<rcd:Column id="_7E69717A-6FBD-4D06-883B-3DAE35E741F8" Name="isFundamental" IsNullable="true" />
+							<rcd:Column id="_7E69717A-6FBD-4D06-883B-3DAE35E741F8" Name="isFundamental" />
 							<rcd:Column id="_3658A4DA-6560-421B-A082-2614B860D853" Name="offset" IsNullable="true" />
 							<rcd:Column id="_563C5404-8E6D-4EF4-82D8-C891DE9923F4" Name="vocabulary" />
 							<rcd:Column id="_285AA44D-D1F1-4490-9596-BA5BBFD09CD8" Name="unitId" />
@@ -13222,7 +13284,7 @@
 					<rcd:Table id="_63A0A397-8FF1-4D63-BE82-E69D30C28786" Name="ParamValue">
 						<rcd:Columns>
 							<rcd:Column id="_A7282F02-3B8F-49B3-87B4-789423F5BBAE" Name="literal" />
-							<rcd:Column id="_13BA9D59-6F40-46C8-9E5F-FE3724B60A46" Name="isAString" IsNullable="true" />
+							<rcd:Column id="_13BA9D59-6F40-46C8-9E5F-FE3724B60A46" Name="isAString" />
 							<rcd:Column id="_93440653-DD74-4358-A7A0-BA2035B882E2" Name="name" />
 							<rcd:Column id="_BA63082F-27BF-4B61-9065-420862E7C66B" Name="unitId" IsNullable="true" />
 							<rcd:Column id="_F7CE4F2F-3641-447B-B297-1B95788963BD" Name="valueTypeIsCalledVocabulary2" />
