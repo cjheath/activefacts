@@ -823,7 +823,7 @@ module ActiveFacts
       end
 
       def read_instances
-        population = Population.new(@vocabulary, "sample")
+        population = @constellation.Population(@vocabulary, "sample")
 
         # Value instances first, then entities then facts:
 
@@ -836,11 +836,11 @@ module ActiveFacts
           vt_id = xvt['id']
           vtname = xvt['Name'] || ''
           vtname.gsub!(/\s/,'')
-          vtname = nil if name.size == 0
+          vtname = nil if vtname.size == 0
           vt = @by_id[vt_id]
           throw "ValueType #{vtname} not found" unless vt
 
-          i = Instance.new(vt, [v.text, is_a_string(v.text), nil])
+          i = @constellation.Instance(:new, :population => population, :concept => vt, :value => [v.text, is_a_string(v.text), nil])
           @by_id[id] = i
           # show_xmlobj(v)
         }
@@ -861,13 +861,13 @@ module ActiveFacts
           if (et_id != last_et_id)
             etname = xet['Name'] || ''
             etname.gsub!(/\s/,'')
-            etname = nil if name.size == 0
+            etname = nil if etname.size == 0
             last_et = et = @by_id[et_id]
             last_et_id = et_id
             throw "EntityType #{etname} not found" unless et
           end
 
-          instance = Instance.new(et, nil)
+          instance = @constellation.Instance(:new, :population => population, :concept => et, :value => nil)
           @by_id[id] = instance
           # puts "Made new EntityType #{etname}"
         }
@@ -876,7 +876,7 @@ module ActiveFacts
         # We must create implicit PI facts after all the instances.
         entity_count = 0
         pi_fact_count = 0
-        x_entities.each{|v|
+        x_entities.each do |v|
           id = v['id']
           instance = @by_id[id]
           et = @by_id[v.parent.parent['id']]
@@ -895,47 +895,46 @@ module ActiveFacts
             }
 
           # Create an instance of each required fact type, for compound identification:
-          preferred_id.role_sequence.map(&:fact_type).uniq.each{|ft|
-            # puts "\tFor FactType #{ft}"
-            fact_roles = ft.roles.map{|role|
-              if role.concept == et
-                object = instance
-              else
-                object = role_instances[role]
-                # puts "\t\tinstance for role #{role} is #{object}"
+          identifying_fact_types =
+            preferred_id.role_sequence.all_role_ref.map { |rr| rr.role.fact_type }.uniq
+          identifying_fact_types.
+            each do |ft|
+              # puts "\tFor FactType #{ft}"
+              fact = @constellation.Fact(:new, :population => population, :fact_type => ft)
+              fact_roles = ft.all_role.map do |role|
+                if role.concept == et
+                  object = instance
+                else
+                  object = role_instances[role]
+                  # puts "\t\tinstance for role #{role} is #{object}"
+                end
+                @constellation.RoleValue(:instance => object, :population => population, :fact => fact, :role => role)
               end
-              FactRole.new(role, object)
-            }
-            f = Fact.new(population, ft, *fact_roles)
-            pi_fact_count += 1
-          }
+              pi_fact_count += 1
+            end
+
           entity_count += 1
-        }
+        end
         # puts "Created #{pi_fact_count} facts to identify #{entity_count} entities"
 
         # Use the "ref" attribute of FactTypeRoleInstance:
         x_fact_roles = @x_model.xpath("orm:Facts/orm:Fact/orm:Instances/orm:FactTypeInstance/orm:RoleInstances/orm:FactTypeRoleInstance")
 
         last_id = nil
-        last_fact_type = nil
+        fact = nil
         fact_roles = []
-        x_fact_roles.each{|v|
+        x_fact_roles.each do |v|
           fact_type_id = v.parent.parent.parent.parent['id']
           id = v.parent.parent['id']
           fact_type = @by_id[fact_type_id]
           throw "Fact type #{fact_type_id} not found" unless fact_type
 
-          if (last_id && id != last_id)
-            # Process completed fact now we have all roles:
-            last_fact = Fact.new(population, last_fact_type, *fact_roles)
-            fact_roles = []
-          else
-            last_fact_type = fact_type
-          end
-
-          #show_xmlobj(v)
-
+          # Create initial and subsequent Fact objects:
+          fact = @constellation.Fact(:new, :population => population, :fact_type => fact_type) unless fact && last_id == id
           last_id = id
+
+          # REVISIT: This doesn't handle instances of objectified fact types (where a RoleValue.instance objectifies Fact)
+
           x_role_instance = @x_by_id[v['ref']]
           x_role_id = x_role_instance.parent.parent['id']
           role = @by_id[x_role_id]
@@ -943,12 +942,7 @@ module ActiveFacts
           instance_id = x_role_instance['ref']
           instance = @by_id[instance_id]
           throw "Instance not found for FactRole #{instance_id}" unless instance
-          fact_roles << FactRole.new(role, instance)
-        }
-
-        if (last_id)
-          # Process final completed fact now we have all roles:
-          last_fact = Fact.new(population, last_fact_type, *fact_roles)
+          @constellation.RoleValue(:instance => instance, :population => population, :fact => fact, :role => role)
         end
 
       end
