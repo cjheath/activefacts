@@ -143,7 +143,7 @@ module ActiveFacts
 	  { # A forward-referenced entity type
 	    # REVISIT: A change in this rule might allow forward-referencing a multi-word term
 	    def ast
-	      Compiler::RoleRef.new(id.text_value, nil, nil, nil, nil, nil, nil, nil)
+	      Compiler::RoleRef.new(id.text_value)
 	    end
 	  }
       end

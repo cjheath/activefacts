@@ -552,7 +552,7 @@ module ActiveFacts
       end
 
       class RoleRef
-        attr_reader :term, :leading_adjective, :trailing_adjective, :quantifier, :function_call, :role_name, :restriction, :literal
+        attr_reader :term, :leading_adjective, :trailing_adjective, :quantifier, :function_call, :role_name, :restriction, :literal, :objectification_join
         attr_reader :player
         attr_accessor :binding
         attr_accessor :reading    # The reading that this RoleRef is part of
@@ -560,7 +560,7 @@ module ActiveFacts
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
         attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
 
-        def initialize term, leading_adjective, trailing_adjective, quantifier, function_call, role_name, restriction, literal
+        def initialize term, leading_adjective = nil, trailing_adjective = nil, quantifier = nil, function_call = nil, role_name = nil, restriction = nil, literal = nil, objectification_join = nil
           @term = term
           @leading_adjective = leading_adjective
           @trailing_adjective = trailing_adjective
@@ -569,6 +569,8 @@ module ActiveFacts
           @role_name = role_name
           @restriction = restriction
           @literal = literal
+          @objectification_join = objectification_join
+          raise "REVISIT: Objectification joins #{@objectification_join.text_value} are not yet implemented" if @objectification_join
         end
 
         def inspect

@@ -111,12 +111,12 @@ module ActiveFacts
         tail:(s '-'? s w:id     &{|s| w = s[3].text_value; input.context.term_continues?(w) })*
                                 &{|s| input.context.term_complete? }
         {
-	  def ast quantifier = nil, function_call = nil, role_name = nil, restriction = nil, literal = nil
+	  def ast quantifier = nil, function_call = nil, role_name = nil, restriction = nil, literal = nil, objectification_join = nil
 	    t = x.context[:term]
 	    gt = x.context[:global_term]
 	    leading_adjective = t[0...-gt.size-1] if t.size > gt.size and t[-gt.size..-1] == gt
 	    trailing_adjective = t[gt.size+1..-1] if t.size > gt.size and t[0...gt.size] == gt
-	    Compiler::RoleRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, restriction, literal)
+	    Compiler::RoleRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, restriction, literal, objectification_join = nil)
 	  end
 
 	  def value		# Sometimes we just want the full term name

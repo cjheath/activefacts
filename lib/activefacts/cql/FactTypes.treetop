@@ -186,15 +186,19 @@ module ActiveFacts
 	      restriction = Compiler::ValueRestriction.new(lr.restriction.ranges, lr.enforcement.ast) if lr.respond_to?(:restriction)
 	    end
 
-	    raise "REVISIT: Objectification joins #{oj.text_value} are not yet implemented" unless oj.empty?
-
-	    player.ast(quantifier, function_call, role_name, restriction, literal)
+	    objectification_join = oj.empty? ? nil : oj.ast
+	    player.ast(quantifier, function_call, role_name, restriction, literal, objectification_join)
 	  end
         }
       end
 
       rule objectification_join
         '(' s where s fact_clause s ')' s
+	{
+	  def ast
+	    fact_clause.ast
+	  end
+	}
       end
 
       rule role_name
