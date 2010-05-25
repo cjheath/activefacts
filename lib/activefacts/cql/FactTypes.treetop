@@ -28,7 +28,8 @@ module ActiveFacts
         s ';'
         {
 	  def ast
-            readings = [fact_clause.ast, *ftail.elements.map{|e| e.fact_clause.ast }]
+            readings = fact_clause.ast
+            ftail.elements.each{|e| readings += e.fact_clause.ast }
             conditions = !ctail.empty? ? ctail.c.ast : []
 	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
 	    if (conditions.empty? && readings.detect{|r| r.includes_literals})
@@ -60,7 +61,9 @@ module ActiveFacts
         head:condition s tail:( (',' s / and S) next:condition s )*
         {
 	  def ast
-	    [head.ast, *tail.elements.map{|i| i.next.ast}]
+	    conditions = head.ast
+	    tail.elements.each{|i| conditions += i.next.ast}
+	    conditions
 	  end
         }
       end
@@ -89,9 +92,9 @@ module ActiveFacts
 	      (p.empty? ? [] : p.list)
 	    # REVISIT: When we implement objectification joins, we might get multiple readings here...
 	    r = reading.ast
-	    r.qualifiers << q.text_value unless q.empty?
-	    r.qualifiers += p.list unless p.empty?
-	    r.context_note = c.ast unless c.empty?
+	    r[0].qualifiers << q.text_value unless q.empty?
+	    r[0].qualifiers += p.list unless p.empty?
+	    r[0].context_note = c.ast unless c.empty?
 	    r
 	  end
         }
@@ -116,27 +119,48 @@ module ActiveFacts
 
       rule reading
         (
-          role    # A role reference containing a term, perhaps with attached paraphernalia
-          /       # A hyphenated non-term. Important: no embedded spaces
-          id tail:('-' !term id)+ s
-            {
+	  contracted_reading
+	  /
+	  role    # A role reference containing a term, perhaps with attached paraphernalia
+	  /       # A hyphenated non-term. Important: no embedded spaces
+	  id tail:('-' !term id)+ s
+	    {
 	      def ast
 		[id.value, *tail.elements.map{|e| e.id.value}]*"-"
 	      end
 	    }
-          /       # A normal non-term
-          !non_role_word id s
+	  /       # A normal non-term
+	  !non_role_word id s
 	    {
 	      def ast
 		id.value
 	      end
 	    }
-        )+
+	)+
         {
 	  def ast
-	    Compiler::Reading.new(elements.map{ |r| r.ast })
+	    asts = elements.map{ |r| r.ast }
+	    contraction = []
+	    if asts[-1].is_a?(Array)
+	      contraction = asts.pop
+	      asts.push(contraction.shift)
+	    end
+	     [Compiler::Reading.new(asts)] + contraction
 	  end
         }
+      end
+
+      # REVISIT: and later, similarly for contracted conditions (including comparisons)
+      rule contracted_reading
+	role that s q:qualifier? s reading p:post_qualifiers? s
+	{
+	  def ast
+	    readings = [role.ast, *Compiler::Reading.new([role.ast, *reading.elements.map{|r| r.ast}])]
+	    readings[1].qualifiers << q.text_value unless q.empty?  # Add maybe/definitely
+	    readings[1].qualifiers += p.list unless p.empty?	    # Add transitive, etc qualifiers
+	    readings
+	  end
+	}
       end
 
       # This is the rule that causes most back-tracking. I think you can see why.

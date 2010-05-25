@@ -175,7 +175,9 @@ module ActiveFacts
         reading s tail:( and s reading s )*
         {
 	  def ast
-	    [reading.ast, *tail.elements.map{|e| e.reading.ast }]
+	    readings = reading.ast
+	    tail.elements.map{|e| readings += e.reading.ast }
+	    readings
 	  end
 	}
       end

@@ -110,7 +110,7 @@ module ActiveFacts
 
         def loose_bind_wherever_possible
           # Apply loose binding over applicable roles:
-          debug :binding, "Loose binding on SetEqualityConstraint" do
+          debug :binding, "Loose binding on #{self.class.name}" do
             @join_lists.each do |join_list|
               join_list.each do |reading|
 #                next if reading.side_effects && !reading.side_effects.residual_adjectives
@@ -143,7 +143,7 @@ module ActiveFacts
 
         def loose_bind_roles
           # Apply loose binding over applicable @roles:
-          debug :binding, "Check for loose bindings on #{@roles.size} roles in SetExclusionConstraint" do
+          debug :binding, "Check for loose bindings on #{@roles.size} roles in #{self.class.name}" do
             @roles.each do |role_ref|
               role_ref.identify_player @context
               role_ref.bind @context
