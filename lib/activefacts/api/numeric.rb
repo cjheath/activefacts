@@ -71,9 +71,11 @@ class ::Date
   # Date.new cannot normally be called passing a Date as the parameter. This allows that.
   def self.new(*a, &b)
     #puts "Constructing date with #{a.inspect} from #{caller*"\n\t"}"
-    if (a.size == 1 && Date === a[0])
+    if (a.size == 1 && a[0].is_a?(Date))
       a = a[0]
       civil(a.year, a.month, a.day, a.start)
+    elsif (a.size == 1 && a[0].is_a?(String))
+      parse(a[0])
     else
       civil(*a, &b)
     end
