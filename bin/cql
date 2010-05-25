@@ -17,11 +17,11 @@ if d = ENV['DEBUG'] and d.split(/,/).include?('debug')
 end
 
 require 'activefacts'
-require 'activefacts/cql/parser'
+require 'activefacts/cql/compiler'
 
 puts "This is a stub for the CQL interactive commandline. At the moment it only parses CQL and shows the parse trees."
 
-class InteractiveCQLParser < ActiveFacts::CQL::Parser
+class InteractiveCQL < ActiveFacts::CQL::Compiler
   def initialize *a
     @show_tree = false  # Show the raw Treetop parse tree
     super *a
@@ -44,40 +44,35 @@ class InteractiveCQLParser < ActiveFacts::CQL::Parser
 
   def process(statement)
     begin
-      result = parse(statement)
-      if result
-        begin
-          if @show_tree
-            p result
-          else
-            p result.value
-          end
-        rescue => e
-          puts e.to_s+":"
-          puts "\t"+e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
-          p result  # In case the root is changed and there's no value()
-        end
-      else
-        p failure_reason
-      end
+      @results = []
+      compile(statement)
+      puts(@results.map{|r| "\t"+r.inspect}*"\n")
     rescue => e
       puts e
       puts "\t"+e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
     end
   end
+
+  def compile_definition ast
+    # Accumulate the results:
+    p ast if @show_tree
+    @results += Array(result = super)
+    result
+  end
+
 end
 
-parser = InteractiveCQLParser.new
+compiler = InteractiveCQL.new
 statement = nil
 while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
   statement = statement ? statement + "\n"+line : line
   if line =~ %r{\A/}
-    parser.metacommand(line)
+    compiler.metacommand(line)
     statement = nil
-  elsif parser.root != :definition or
+  elsif compiler.root != :definition or
       line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
     # After stripping string literals the line contains a ';', we've found the last line of the command:
-    parser.process(statement)
+    compiler.process(statement)
     statement = nil
   end
 end

@@ -18,13 +18,13 @@ module ActiveFacts
     class Compiler < ActiveFacts::CQL::Parser
       attr_reader :vocabulary
 
-      def initialize(input, filename = "stdin")
+      def initialize(filename = "stdin")
         @filename = filename
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
-        @string = input
       end
 
-      def compile
+      def compile input
+        @string = input
         # The syntax tree created from each parsed CQL statement gets passed to the block.
         # parse_all returns an array of the block's non-nil return values.
         ok = parse_all(@string, :definition) do |node|
