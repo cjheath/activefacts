@@ -448,7 +448,7 @@ module ActiveFacts
           @constraint = @constellation.RingConstraint(
               :new,
               :vocabulary => @vocabulary,
-          #   :name => name,              # REVISIT: Create a name for Ring Constraints?
+          #   :name => name,              # Create a name for Ring Constraints?
               :role => rp[0].role,
               :other_role => rp[1].role,
               :ring_type => ring_type

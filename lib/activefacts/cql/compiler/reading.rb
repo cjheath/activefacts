@@ -565,7 +565,7 @@ module ActiveFacts
           @leading_adjective = leading_adjective
           @trailing_adjective = trailing_adjective
           @quantifier = quantifier
-          # @function_call = function_call # REVISIT: Not used or implemented
+          # @function_call = function_call # Not used or implemented
           @role_name = role_name
           @restriction = restriction
           @literal = literal

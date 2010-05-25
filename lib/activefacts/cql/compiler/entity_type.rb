@@ -304,7 +304,7 @@ module ActiveFacts
 
           if (restriction = @identification[0].restriction)
             # The restriction applies only to the value role, not to the underlying value type
-            # REVISIT: Decide whether this puts the restriction in the right place:
+            # Decide whether this puts the restriction in the right place:
             restriction.constellation = fact_type.constellation
             identifying_role.role_value_restriction = restriction.compile
           end

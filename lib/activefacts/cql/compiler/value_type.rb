@@ -85,8 +85,7 @@ module ActiveFacts
           vt.length = length if length
           vt.scale = scale if scale
 
-          # REVISIT: Find and apply the units
-          #debugger unless @unit.empty?
+          raise "REVISIT: ValueType units are recognised but not yet compiled" unless @unit.empty?
 
           if @restriction
             @restriction.constellation = @constellation
