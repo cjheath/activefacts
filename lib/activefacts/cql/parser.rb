@@ -184,21 +184,17 @@ module ActiveFacts
         super(input, options)
       end
 
-      # Repeatedly parse rule_name until all input is consumed,
-      # returning an array of syntax trees for each definition.
       def parse_all(input, rule_name = nil, &block)
         self.root = rule_name if rule_name
 
         @index = 0  # Byte offset to start next parse
         self.consume_all_input = false
-        results = []
         begin
           node = parse(InputProxy.new(input, context), :index => @index)
           return nil unless node
-          node = block.call(node) if block
-          results << node if node
+          block.call(node) if block
         end until self.index == @input_length
-        results
+        true
       end
     end
 

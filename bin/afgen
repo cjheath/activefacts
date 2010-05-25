@@ -8,7 +8,8 @@ $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'rubygems'
 
-if ENV['DEBUG']
+# Load the ruby debugger before everything else, if requested
+if d = ENV['DEBUG'] and d.split(/,/).include?('debug')
   begin
     require 'ruby-debug'
     Debugger.start(:post_mortem => true)        # Stop when an exception is thrown, but before it's rescued
@@ -16,7 +17,6 @@ if ENV['DEBUG']
     # Ok, no debugger, tough luck.
   end
 end
-true # Ok, got the stack set up, continue to the fault
 
 require 'activefacts'
 require 'activefacts/vocabulary'
@@ -55,6 +55,6 @@ begin
   output_klass.new(vocabulary, *generator_options).generate if vocabulary
 rescue => e
   puts "#{e.message}"
-  puts "\t#{e.backtrace*"\n\t"}"
-  # puts "\t#{e.backtrace*"\n\t"}" if debug :exception
+  # puts "\t#{e.backtrace*"\n\t"}"
+  puts "\t#{e.backtrace*"\n\t"}" if debug :exception
 end

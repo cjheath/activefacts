@@ -31,7 +31,8 @@ module ActiveFacts
 
       # Read the specified input string
       def self.readstring(str, filename = "string")
-        ActiveFacts::CQL::Compiler.new(str, filename).vocabulary
+        compiler = ActiveFacts::CQL::Compiler.new(str, filename)
+        compiler.compile
       end 
     end
   end

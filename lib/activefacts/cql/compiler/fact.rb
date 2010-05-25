@@ -19,6 +19,7 @@ module ActiveFacts
           # Figure out the simple existential facts and find fact types:
           @bound_instances = {}  # Instances indexed by binding
           @bound_fact_types = []
+          @bound_facts = []
           @unbound_readings = @readings.
             map do |reading|
               bind_literal_or_fact_type reading
@@ -32,6 +33,8 @@ module ActiveFacts
 
           # Any remaining unbound facts are a problem we can bitch about:
           complain_incomplete unless @unbound_readings.empty?
+
+          @bound_facts.uniq # N.B. this includes Instance objects (existential facts)
         end
 
         def bind_literal_or_fact_type reading
@@ -110,7 +113,10 @@ module ActiveFacts
           }
           unless fact
             fact = @constellation.Fact(:new, :fact_type => reading.fact_type, :population => @population)
-            @constellation.Instance(:new, :concept => reading.fact_type.entity_type, :fact => fact, :population => @population)
+            @bound_facts << fact
+            instance =
+              @constellation.Instance(:new, :concept => reading.fact_type.entity_type, :fact => fact, :population => @population)
+            @bound_facts << instance
             reading.reading.role_sequence.all_role_ref.zip(instances).each do |rr, instance|
               debug :instance, "New fact has #{instance.concept.name} role #{instance.value.inspect}"
               # REVISIT: Any residual adjectives after the fact type matching are lost here.
@@ -171,9 +177,11 @@ module ActiveFacts
           debug :instance, "Going ahead with creating #{binding.player.name} using #{identifiers.size} roles"
           instance = @constellation.Instance(:new, :concept => entity_type, :population => @population)
           @bound_instances[binding] = instance
+          @bound_facts << instance
           identifiers.each do |rr, fact_a, identifying_binding, identifying_instance|
             # This reading provides the identifying literal for the entity_type
             id_fact = @constellation.Fact(:new, :fact_type => rr.role.fact_type, :population => @population)
+            @bound_facts << id_fact
             role = (rr.role.fact_type.all_role.to_a-[rr.role])[0]
             @constellation.RoleValue(:instance => instance, :fact => id_fact, :population => @population, :role => role)
             @constellation.RoleValue(:instance => identifying_instance, :fact => id_fact, :role => rr.role, :population => @population)
@@ -207,6 +215,7 @@ module ActiveFacts
                     :population => @population,
                     :value => [literal.to_s, is_a_string, nil]
                   )
+                @bound_facts << instance
               end
               instance
             end
@@ -234,7 +243,9 @@ module ActiveFacts
               debug :instance, "This #{concept.name} entity already exists"
             else
               fact = @constellation.Fact(:new, :fact_type => role.fact_type, :population => @population)
+              @bound_facts << fact
               instance = @constellation.Instance(:new, :concept => concept, :population => @population)
+              @bound_facts << instance
               # The identifying fact type has two roles; create both role instances:
               @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :population => @population, :role => role)
               @constellation.RoleValue(:instance => instance, :fact => fact, :population => @population, :role => (role.fact_type.all_role-[role])[0])

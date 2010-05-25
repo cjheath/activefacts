@@ -48,6 +48,7 @@ module ActiveFacts
 
           make_preferred_identifier_over_roles identifying_roles
 
+          @entity_type
         end
 
         def prepare_identifier context

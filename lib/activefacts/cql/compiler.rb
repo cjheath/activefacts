@@ -21,16 +21,13 @@ module ActiveFacts
       def initialize(input, filename = "stdin")
         @filename = filename
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
-
-        compile(input)
+        @string = input
       end
 
-      def compile(input)
-        @string = input
-
+      def compile
         # The syntax tree created from each parsed CQL statement gets passed to the block.
         # parse_all returns an array of the block's non-nil return values.
-        result = parse_all(@string, :definition) do |node|
+        ok = parse_all(@string, :definition) do |node|
           debug :parse, "Parsed '#{node.text_value.gsub(/\s+/,' ').strip}'" do
             begin
               ast = node.ast
@@ -38,7 +35,7 @@ module ActiveFacts
               ast.source = node.body
               ast.constellation = @constellation
               ast.vocabulary = @vocabulary
-              value = ast.compile
+              value = compile_definition ast
               @vocabulary = value if ast.is_a?(Compiler::Vocabulary)
             rescue => e
               # Augment the exception message, but preserve the backtrace
@@ -50,11 +47,13 @@ module ActiveFacts
               raise ne
             end
           end
-
-          nil
         end
-        raise failure_reason unless result
+        raise failure_reason unless ok
         vocabulary
+      end
+
+      def compile_definition ast
+        ast.compile
       end
 
     end

@@ -78,7 +78,7 @@ module ActiveFacts
           # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
           make_default_identifier_for_fact_type
 
-          true
+          @fact_type
         end
 
         def check_compatibility_of_matched_readings
