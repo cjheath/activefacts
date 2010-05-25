@@ -14,292 +14,392 @@
   <!-- Things to show only in the offline version -->
   <div class="localnav offline noprint">
     <ul>
-      <li id="nav-home"><a href="/ActiveFacts/" title="Home">Home</a></li>
-      <li><a title="CompanyDirectorEmployee" href="#CompanyDirectorEmployee"> Company and People </a></li>
-      <li><a title="Blog" href="#Blog"> Blog </a></li>
-      <li><a title="SchoolActivities" href="#SchoolActivities"> School Activities </a></li>
-      <li><a title="Orienteering" href="#Orienteering"> Orienteering </a></li>
+      <li id="nav-home"><a href="/" title="Home">Home</a></li>
+      <li><a href="/ActiveFacts/" title="ActiveFacts Home">ActiveFacts Home</a></li>
+      <li><a title="Start Here" href="#CompanyDirectorEmployee"> Start Here </a></li>
       <li><a title="Metamodel" href="#Metamodel"> Metamodel </a></li>
       <li><a title="All Examples" href="#AllExamples"> Table of all examples </a></li>
     </ul>
   </div>
 
-  <p>This page introduces my example models in both ORM2 and CQL. The CQL
-  files are exactly as generated from the ORM2 versions, but you could have
-  written them by hand. Either type of file can be converted to SQL or Ruby,
-  using the relational and object-oriented mapping algorithms implemented
-  in the ActiveFacts generator <em>afgen</em>. The output files from these
-  conversions are available here, as are the PNG images of the ORM2 versions.
+  <p> ActiveFacts converts fact-oriented models into matching object-oriented and
+  relational models. It accepts models in <a href="../CQLIntroduction.html">the Constellation Query Language</a> (CQL)
+  or <a href="http://www.ormfoundation.org/files/">NORMA</a>, and emits CQL,
+  Ruby, or SQL. This page contains many examples.</p>
+
+  <p>The CQL files look like hand-written code, but they aren't.
+  They're generated from the ORM2 files, and have not been edited.
+  You can of course write them by hand.
   </p>
 
-  <p>The example models presented here were created as Object Role Models
-  using <a href="http://www.ormfoundation.org/files/">NORMA</a>. A selection
-  of the basic models is discussed below, and a full table below that.  </p>
+  <p>
+  The ActiveFacts generator <em>afgen</em> does semantic analysis to convert these
+  input files to SQL or Ruby, using the relational and object-oriented mapping algorithms.
+  The Ruby code uses the Constellation API provided by the <em>activefacts</em> gem.
+  </p>
 
   <p>
   To make a start learning Object Role Modeling, read the
   <a href="intro.html">Introduction to ORM2</a> or check the Resources page
   for other sites.
 
-  </p><p>
-  The CQL code here is formatted and laid out is <em>exactly</em> as it was generated.
-  It's interesting how cleverly the semantic clustering algorithm works!
+  </p>
 
-  </p><p class="offline">
-  If you're looking at a Subversion checkout of the project on Windows,
-  and have Visual Studio (pro) with NORMA installed, you can open
-  the solution <a href="norma/ExampleModels.sln">here</a>.
+  <p class="offline">
+  If you're looking at a git clone of this project, and have Visual Studio (pro)
+  on Windows with NORMA installed, you can open the Visual Studio solution
+  <a href="norma/ExampleModels.sln">here</a>.
   Otherwise, you won't be able to edit the ORM2 files, but never fear,
   you can do all the same things by editing the CQL text.
   </p>
 
-  <a name="CompanyDirectorEmployee"></a>
-  <h4>CompanyDirectorEmployee</h4>
-  <p>This is my main introductory model. It shows the relationships of a person
-  to a company of which they are a director or employee.
-  </p>
-
-  <a name="Blog"></a>
-  <h4>Blog</h4>
-  <p>The Blog model supports a hierarchy of topics, Posts by Authors, each Post
-  consisting of a series of styled Paragraphs. Comments may be made on individual
-  Paragraphs.
-  </p>
-
-  <a name="SchoolActivities"></a>
-  <h4>SchoolActivities</h4>
-  <p>This model represents students representing their school in school-sanctioned activities.
-  It includes the ternary StudentParticipation <em>Fact Type</em>, which represents a student's
-  participation in a school-sanctioned activity.
-  The model has constraints that allow a given Student to participate only in a given
-  Activity for a single School, only representing the School in which they're enrolled, and
-  only if the School sanctions that activity.
-  </p>
-
-  <a name="Orienteering"></a>
-  <h4>Orienteering </h4>
-  <p>A model for the sport of Orienteering, broken into three diagrams for
-  administration, registration and scoring. These diagrams also reflect areas
-  of interest to folk in different roles, an idea which could inspire the use
-  of the division as security domains. However, for an object showing on multiple
-  diagrams, ORM2 doesn't indicate with which diagram it has a primary affinity.
-  In CQL, it might be better to structure this as three separate <em>vocabularies</em>.
-
-  </p><p>
-  The author is involved in orienteering in his local association (which publishes a
-  program and results at <a href="http://street.orienteering.com.au">street.orienteering.com.au</a>
-  and the <a href="http://www.vicorienteering.asn.au/parkstreet/"> Victorian Orienteering
-  Association</a>) and he used this model to construct a scoring system using low-power
-  microprocessors distributed around the course.
-  </p>
-
-  <a name="Metamodel"></a>
-  <h4>Metamodel </h4>
-  <p>The Metamodel encodes the meaning of an ORM2 or CQL model. All features of the
-  ORM2 and CQL languages have a representation here, as well as a few CQL features
-  that haven't yet been implemented yet. The generated Ruby code is <em>used as the
-  intermediate form</em> inside the CQL language implementation.
-  </p>
-
   <a name="AllExamples"></a>
 
-  <h3>Table of all examples</h3>
-  <!-- Table below here is generated automatically -->
+  <h3>Table of examples</h3>
   <table class="examples" width="100%">
-  <tr>
+
+  <!--tr>
   <th>Model Name</th>
   <td></td>
   <td></td>
   <td></td>
-  <th>ORM2 Diagrams</th>
-  </tr>
+  <th>ORM2 Diagrams</th-->
 
-  <tr>
-  <td>Address <a href="ORM/Address.orm">(orm)</a></td>
-  <td><a href="CQL/Address.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a href="CQL/Address.cql">CQL</a>
+    <span>Address</span>
+    <div class="diagrams">
+    <a href="images/Address.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/Address.rb">Ruby</a></td>
   <td><a href="SQL/Address.sql">SQL</a></td>
   <td>
-  <a href="images/Address.png">Address</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  Shows how the relational mapping algorithm makes the minimum number of tables
+  <a href="ORM/Address.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>Blog <a href="ORM/Blog.orm">(orm)</a></td>
-  <td><a href="CQL/Blog.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/Blog.cql">CQL</a>
+    <span>Blog</span>
+    <div class="diagrams">
+    <a href="images/Blog.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/Blog.rb">Ruby</a></td>
   <td><a href="SQL/Blog.sql">SQL</a></td>
   <td>
-  <a href="images/Blog.png">Blog</a><br>
   </tr>
+  <tr class="even"><td colspan="5">
+  The Blog model supports a hierarchy of topics, Posts by Authors, each Post
+  consisting of a series of styled Paragraphs. Comments may be made on individual
+  Paragraphs. <a href="ORM/Blog.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>CompanyDirectorEmployee <a href="ORM/CompanyDirectorEmployee.orm">(orm)</a></td>
-  <td><a href="CQL/CompanyDirectorEmployee.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a name="CompanyDirectorEmployee"></a>
+    <a href="CQL/CompanyDirectorEmployee.cql">CQL</a>
+    <span>CompanyDirectorEmployee</span>
+    <div class="diagrams">
+    <a href="images/CompanyDirectorEmployee.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/CompanyDirectorEmployee.rb">Ruby</a></td>
   <td><a href="SQL/CompanyDirectorEmployee.sql">SQL</a></td>
   <td>
-  <a href="images/CompanyDirectorEmployee.png">CompanyDirectorEmployee</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  This model shows the relationships of a person to a company of which they are a director or employee. <a href="ORM/CompanyDirectorEmployee.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>Death <a href="ORM/Death.orm">(orm)</a></td>
-  <td><a href="CQL/Death.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/Death.cql">CQL</a>
+    <span>Death</span>
+    <div class="diagrams">
+    <a href="images/Death.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/Death.rb">Ruby</a></td>
   <td><a href="SQL/Death.sql">SQL</a></td>
   <td>
-  <a href="images/Death.png">Death</a><br>
   </tr>
+  <tr class="even"><td colspan="5">
+  This model shows a objectified unary fact type. <a href="ORM/Death.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>Genealogy <a href="ORM/Genealogy.orm">(orm)</a></td>
-  <td><a href="CQL/Genealogy.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a href="CQL/Genealogy.cql">CQL</a>
+    <span>Genealogy</span>
+    <div class="diagrams">
+    <a href="images/Genealogy.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/Genealogy.rb">Ruby</a></td>
   <td><a href="SQL/Genealogy.sql">SQL</a></td>
   <td>
-  <a href="images/Genealogy.png">Genealogy</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  An event-based model for Genealogy which allows for different versions of the same fact
+  to be claimed by different sources, for use in reconciling contradictory information. <a href="ORM/Genealogy.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>Insurance</td>
-  <td><a href="CQL/Insurance.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/Insurance.cql">CQL</a>
+    <span>Insurance</span>
+    <div class="diagrams">
+    <a href="images/Insurance/Insurance.png">Insurance</a>
+    <a href="images/Insurance/Person.png">Person</a>
+    <a href="images/Insurance/Policy.png">Policy</a>
+    <a href="images/Insurance/Claim.png">Claim</a>
+    <a href="images/Insurance/VehicleIncident.png">VehicleIncident</a>
+    <a href="images/Insurance/Related.png">Related</a>
+    </div>
+  </td>
   <td><a href="ruby/Insurance.rb">Ruby</a></td>
   <td><a href="SQL/Insurance.sql">SQL</a></td>
-  <td>
-  <a href="images/Insurance/Insurance.png">Insurance</a><br>
-  <a href="images/Insurance/Person.png">Person</a><br>
-  <a href="images/Insurance/Policy.png">Policy</a><br>
-  <a href="images/Insurance/Claim.png">Claim</a><br>
-  <a href="images/Insurance/VehicleIncident.png">VehicleIncident</a><br>
-  <a href="images/Insurance/Related.png">Related</a><br>
+  <td></td>
   </tr>
+  <tr class="even"><td colspan="5">
+  A partial model for an insurance company's claims management, extended into automotive insurance claims
+  </td></tr>
 
-  <tr>
-  <td>JoinEquality <a href="ORM/JoinEquality.orm">(orm)</a></td>
-  <td><a href="CQL/JoinEquality.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a href="CQL/JoinEquality.cql">CQL</a>
+    <span>JoinEquality</span>
+    <div class="diagrams">
+    <a href="images/JoinEquality.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/JoinEquality.rb">Ruby</a></td>
   <td><a href="SQL/JoinEquality.sql">SQL</a></td>
   <td>
-  <a href="images/JoinEquality.png">JoinEquality</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  An example of a join equality constraint. The highlighted constraint requires that
+  tickets issued for an event are for a seat at the venue where that event will be held. <a href="ORM/JoinEquality.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>Marriage <a href="ORM/Marriage.orm">(orm)</a></td>
-  <td><a href="CQL/Marriage.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/Marriage.cql">CQL</a>
+    <span>Marriage</span>
+    <div class="diagrams">
+    <a href="images/Marriage.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/Marriage.rb">Ruby</a></td>
   <td><a href="SQL/Marriage.sql">SQL</a></td>
   <td>
-  <a href="images/Marriage.png">Marriage</a><br>
   </tr>
+  <tr class="even"><td colspan="5">
+  This shows a conventional model of marriage, to demonstrate the relational mapping (view the SQL). <a href="ORM/Marriage.orm">xml</a>
+  </td></tr>
 
-  <a name="Metamodel"></a>
-  <tr>
-  <td>Metamodel</td>
-  <td><a href="CQL/Metamodel.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a name="Metamodel"></a>
+    <a href="CQL/Metamodel.cql">CQL</a>
+    <span>Metamodel</span>
+    <div class="diagrams">
+    <a href="images/Metamodel/Objects.png">Objects</a>
+    <a href="images/Metamodel/Terms.png">Terms</a>
+    <a href="images/Metamodel/ValueTypes.png">ValueTypes</a>
+    <a href="images/Metamodel/Constraints.png">Constraints</a>
+    <a href="images/Metamodel/Units.png">Units</a>
+    <a href="images/Metamodel/Joins.png">Joins</a>
+    <a href="images/Metamodel/Values.png">Values</a>
+    <a href="images/Metamodel/Populations.png">Populations</a>
+    <a href="images/Metamodel/Context.png">Context</a>
+    <a href="images/Metamodel/Diagrams.png">Diagrams</a>
+    </div>
+  </td>
   <td><a href="ruby/Metamodel.rb">Ruby</a></td>
   <td><a href="SQL/Metamodel.sql">SQL</a></td>
   <td>
-  <a href="images/Metamodel/Objects.png">Objects</a><br>
-  <a href="images/Metamodel/Terms.png">Terms</a><br>
-  <a href="images/Metamodel/ValueTypes.png">ValueTypes</a><br>
-  <a href="images/Metamodel/Constraints.png">Constraints</a><br>
-  <a href="images/Metamodel/Units.png">Units</a><br>
-  <a href="images/Metamodel/Joins.png">Joins</a><br>
-  <a href="images/Metamodel/Values.png">Values</a><br>
-  <a href="images/Metamodel/Populations.png">Populations</a><br>
-  <a href="images/Metamodel/Context.png">Context</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  This is the metamodel of ActiveFacts itself.
+  The generated Ruby code provides the intermediate representation for the compiler!
+  <br>
+  <br>
+  The Metamodel encodes the meaning of an ORM2 or CQL model. All features of the
+  ORM2 and CQL languages have a representation here, as well as a few CQL features
+  that haven't yet been implemented yet.
+  </td></tr>
 
-  <tr>
-  <td>MultiInheritance <a href="ORM/MultiInheritance.orm">(orm)</a></td>
-  <td><a href="CQL/MultiInheritance.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/MultiInheritance.cql">CQL</a>
+    <span>MultiInheritance</span>
+    <div class="diagrams">
+    <a href="images/MultiInheritance.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/MultiInheritance.rb">Ruby</a></td>
   <td><a href="SQL/MultiInheritance.sql">SQL</a></td>
   <td>
-  <a href="images/MultiInheritance.png">MultiInheritance</a><br>
   </tr>
+  <tr class="even"><td colspan="5">
+  An example of multiple inheritance. The solid subtype connectors show the identification
+  path (for example, an AustralianEmployee is identified by his/her EmployeeID). <a href="ORM/MultiInheritance.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>OilSupply <a href="ORM/OilSupply.orm">(orm)</a></td>
-  <td><a href="CQL/OilSupply.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a href="CQL/OilSupply.cql">CQL</a>
+    <span>OilSupply</span>
+    <div class="diagrams">
+    <a href="images/OilSupply.png">diagram</a><br>
+    </div>
+  </td>
   <td><a href="ruby/OilSupply.rb">Ruby</a></td>
   <td><a href="SQL/OilSupply.sql">SQL</a></td>
   <td>
-  <a href="images/OilSupply.png">OilSupply</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  A model of the supply and demand for refined oil.
+  A populated database can be used to optimise profitability by minimising transport costs,
+  maximise supply by allowing substitution of compatible products (with compatibility depending on season)
+  and also to predict shortages. <a href="ORM/OilSupply.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>Orienteering <a href="ORM/Orienteering.orm">(orm)</a></td>
-  <td><a href="CQL/Orienteering.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/Orienteering.cql">CQL</a>
+    <span>Orienteering</span>
+    <div class="diagrams">
+    <a href="images/Orienteering/Administration.png">Administration</a>
+    <a href="images/Orienteering/Registration.png">Registration</a>
+    <a href="images/Orienteering/Scoring.png">Scoring</a>
+    </div>
+  </td>
   <td><a href="ruby/Orienteering.rb">Ruby</a></td>
   <td><a href="SQL/Orienteering.sql">SQL</a></td>
   <td>
-  <a href="images/Orienteering/Administration.png">Administration</a><br>
-  <a href="images/Orienteering/Registration.png">Registration</a><br>
-  <a href="images/Orienteering/Scoring.png">Scoring</a><br>
   </tr>
+  <tr class="even"><td colspan="5">
+  A model for the sport of Orienteering, broken into three diagrams. <a href="ORM/Orienteering.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>OrienteeringER <a href="ORM/OrienteeringER.orm">(orm)</a></td>
-  <td><a href="CQL/OrienteeringER.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a href="CQL/OrienteeringER.cql">CQL</a>
+    <span>OrienteeringER</span>
+    <div class="diagrams">
+    <a href="images/OrienteeringER.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/OrienteeringER.rb">Ruby</a></td>
   <td><a href="SQL/OrienteeringER.sql">SQL</a></td>
   <td>
-  <a href="images/OrienteeringER.png">OrienteeringER</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  This is an illegal ORM2 model, for illustrative purposes. It contains a compound fact type. <a href="ORM/OrienteeringER.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>PersonPlaysGame <a href="ORM/PersonPlaysGame.orm">(orm)</a></td>
-  <td><a href="CQL/PersonPlaysGame.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/PersonPlaysGame.cql">CQL</a>
+    <span>PersonPlaysGame</span>
+    <div class="diagrams">
+    <a href="images/PersonPlaysGame.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/PersonPlaysGame.rb">Ruby</a></td>
   <td><a href="SQL/PersonPlaysGame.sql">SQL</a></td>
   <td>
-  <a href="images/PersonPlaysGame.png">PersonPlaysGame</a><br>
   </tr>
+  <tr class="even"><td colspan="5">
+  Perhaps the simplest possible model, which maps to a single table. <a href="ORM/PersonPlaysGame.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>RedundantDependency <a href="ORM/RedundantDependency.orm">(orm)</a></td>
-  <td><a href="CQL/RedundantDependency.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a href="CQL/RedundantDependency.cql">CQL</a>
+    <span>RedundantDependency</span>
+    <div class="diagrams">
+    <a href="images/RedundantDependency.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/RedundantDependency.rb">Ruby</a></td>
   <td><a href="SQL/RedundantDependency.sql">SQL</a></td>
   <td>
-  <a href="images/RedundantDependency.png">RedundantDependency</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  This model illustrates an outstanding problem in some fact-oriented modelling
+  tools, including ActiveFacts. The problem is that the Address table contains
+  two copies of the same value, StateOrProvinceId. <a href="ORM/RedundantDependency.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>SchoolActivities <a href="ORM/SchoolActivities.orm">(orm)</a></td>
-  <td><a href="CQL/SchoolActivities.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/SchoolActivities.cql">CQL</a>
+    <span>SchoolActivities</span>
+    <div class="diagrams">
+    <a href="images/SchoolActivities.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/SchoolActivities.rb">Ruby</a></td>
   <td><a href="SQL/SchoolActivities.sql">SQL</a></td>
   <td>
-  <a href="images/SchoolActivities.png">SchoolActivities</a><br>
   </tr>
+  <tr class="even"><td colspan="5">
+  This model represents students representing their school in school-sanctioned activities.
+  It includes the ternary StudentParticipation <em>Fact Type</em>, which represents a student's
+  participation in a school-sanctioned activity.
+  The model has constraints that allow a given Student to participate only in a given
+  Activity for a single School, only representing the School in which they're enrolled, and
+  only if the School sanctions that activity. <a href="ORM/SchoolActivities.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>SimplestUnary <a href="ORM/SimplestUnary.orm">(orm)</a></td>
-  <td><a href="CQL/SimplestUnary.cql">CQL</a></td>
-  <td><a href="ruby/SimplestUnary.rb">Ruby</a></td>
-  <td><a href="SQL/SimplestUnary.sql">SQL</a></td>
-  <td>
-  <a href="images/SimplestUnary.png">SimplestUnary</a><br>
-  </tr>
-
-  <tr>
-  <td>Warehousing <a href="ORM/Warehousing.orm">(orm)</a></td>
-  <td><a href="CQL/Warehousing.cql">CQL</a></td>
+  <tr class="odd">
+  <td class="title">
+    <a name="Warehousing" href="CQL/Warehousing.cql">CQL</a>
+    <span>Warehousing</span>
+    <div class="diagrams">
+    <a href="images/Warehousing.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/Warehousing.rb">Ruby</a></td>
   <td><a href="SQL/Warehousing.sql">SQL</a></td>
   <td>
-  <a href="images/Warehousing.png">Warehousing</a><br>
   </tr>
+  <tr class="odd"><td colspan="5">
+  Based on a classic model of warehousing, it records stock levels for every product
+  in each bin in every warehouse, and allows incoming and outgoing products to be
+  allocated to be allocated to orders, including requests for transfers between
+  warehouses. An order does not have to be shipped in a single shipment, but each
+  item must be checked off for each shipment. <a href="ORM/Warehousing.orm">xml</a>
+  </td></tr>
 
-  <tr>
-  <td>WindowInRoomInBldg <a href="ORM/WindowInRoomInBldg.orm">(orm)</a></td>
-  <td><a href="CQL/WindowInRoomInBldg.cql">CQL</a></td>
+  <tr class="even">
+  <td class="title">
+    <a href="CQL/WindowInRoomInBldg.cql">CQL</a>
+    <span>WindowInRoomInBldg</span>
+    <div class="diagrams">
+    <a href="images/WindowInRoomInBldg.png">diagram</a>
+    </div>
+  </td>
   <td><a href="ruby/WindowInRoomInBldg.rb">Ruby</a></td>
   <td><a href="SQL/WindowInRoomInBldg.sql">SQL</a></td>
   <td>
-  <a href="images/WindowInRoomInBldg.png">WindowInRoomInBldg</a><br>
   </tr>
+  <tr class="even"><td colspan="5">
+  This model shows how object types can get absorbed into others for efficient storage.
+  In this case, every window is in a wall, every wall in a room, and every room in a
+  building - yet only one table is needed to store a record of all windows. Try adding
+  further properties to a room, and see what happens to the relational form! <a href="ORM/WindowInRoomInBldg.orm">xml</a>
+  </td></tr>
+
   </table>
 
 </div>
