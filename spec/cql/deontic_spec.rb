@@ -55,13 +55,13 @@ describe "Deontic Constraints" do
   ]
 
   before :each do
-    @compiler = ActiveFacts::CQL::Compiler.new(DeonticPrefix)
+    @compiler = ActiveFacts::CQL::Compiler.new('Test')
   end
 
   Cases.each do |c|
     source, action, agent = *c
     it "should parse #{source.inspect}" do
-      result = @compiler.compile(source)
+      result = @compiler.compile(DeonticPrefix+source)
       puts @compiler.failure_reason unless result
       result.should_not be_nil
       constellation = @compiler.vocabulary.constellation

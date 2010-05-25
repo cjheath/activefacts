@@ -488,7 +488,7 @@ describe "Fact Type Role Matching" do
     EntityIdentificationTests
 
   before :each do
-    @compiler = ActiveFacts::CQL::Compiler.new(MatchingPrefix)
+    @compiler = ActiveFacts::CQL::Compiler.new('Test')
   end
 
   AllTests.each do |tests|
@@ -496,7 +496,7 @@ describe "Fact Type Role Matching" do
       tests.each do |test|
         case test
         when String
-          result = @compiler.compile(test)
+          result = @compiler.compile(MatchingPrefix+test)
           puts @compiler.failure_reason unless result
           result.should_not be_nil
         when Proc

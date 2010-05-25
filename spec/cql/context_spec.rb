@@ -6,7 +6,6 @@
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
-# require File.dirname(__FILE__) + '/../helpers/test_parser'
 
 describe "Business Context Notes" do
   # (according_to people ',')? (because / as_opposed_to / so_that / to_avoid) discussion (',' as_agreed_by)? s
@@ -50,14 +49,14 @@ describe "Business Context Notes" do
   ]
 
   before :each do
-    @compiler = ActiveFacts::CQL::Compiler.new(ContextNotePrefix)
+    @compiler = ActiveFacts::CQL::Compiler.new('Test')
   end
 
   Notes.each do |c|
     source, result = *c
     it "should parse #{source.inspect}" do
 
-      result = @compiler.compile(source)
+      result = @compiler.compile(ContextNotePrefix+source)
       puts @compiler.failure_reason unless result
       result.should_not be_nil
       constellation = @compiler.vocabulary.constellation
