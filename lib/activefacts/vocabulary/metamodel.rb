@@ -231,7 +231,6 @@ module ActiveFacts
       has_one :ordinal, :mandatory => true        # See Ordinal.all_role
       has_one :concept, :mandatory => true        # See Concept.all_role
       has_one :role_name, :class => Name          # See Name.all_role_as_role_name
-      has_one :role_value_restriction, :class => "ValueRestriction"  # See ValueRestriction.all_role_as_role_value_restriction
     end
 
     class RoleSequence
@@ -284,6 +283,7 @@ module ActiveFacts
     end
 
     class ValueRestriction < Constraint
+      one_to_one :role, :counterpart => :role_value_restriction  # See Role.role_value_restriction
     end
 
     class Vocabulary
@@ -365,7 +365,7 @@ module ActiveFacts
 
     class ObjectifiedFactTypeNameShape < Shape
       identified_by :fact_type_shape
-      one_to_one :fact_type_shape, :mandatory => true, :counterpart => :oft  # See FactTypeShape.oft
+      one_to_one :fact_type_shape, :mandatory => true # See FactTypeShape.objectified_fact_type_name_shape
     end
 
     class Population
@@ -392,7 +392,7 @@ module ActiveFacts
     end
 
     class RoleNameShape < Shape
-      has_one :role, :mandatory => true           # See Role.all_role_name_shape
+      one_to_one :role_display, :mandatory => true  # See RoleDisplay.role_name_shape
     end
 
     class RoleRef
@@ -445,7 +445,7 @@ module ActiveFacts
       has_one :scale                              # See Scale.all_value_type
       has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
       has_one :unit                               # See Unit.all_value_type
-      has_one :value_restriction                  # See ValueRestriction.all_value_type
+      one_to_one :value_restriction               # See ValueRestriction.value_type
     end
 
     class AllowedRange

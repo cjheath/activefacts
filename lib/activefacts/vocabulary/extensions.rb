@@ -26,6 +26,16 @@ module ActiveFacts
       def default_reading(frequency_constraints = [], define_role_names = false)
         preferred_reading.expand(frequency_constraints, define_role_names)
       end
+
+      def internal_presence_constraints
+        all_role.map do |r|
+          r.all_role_ref.map do |rr|
+            !rr.role_sequence.all_role_ref.detect{|rr1| rr1.role.fact_type != self } ?
+              rr.role_sequence.all_presence_constraint.to_a :
+              []
+          end
+        end.flatten.compact.uniq
+      end
     end
 
     class Role
@@ -457,7 +467,9 @@ module ActiveFacts
       end
 
       def describe
-        role_sequence.describe + " occurs " + frequency + " time"
+        min = min_frequency
+        max = max_frequency
+        role_sequence.describe + " occurs " + frequency + " time#{(min&&min>1)||(max&&max>1) ? 's' : ''}"
       end
     end
 

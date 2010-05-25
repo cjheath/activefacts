@@ -100,7 +100,7 @@ module ActiveFacts
 
       # presence constraint:
       rule presence_constraint
-        s 'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' s enforcement 'in' s
+        s 'each' s ('combination' S)? role_list s 'occurs' s quantifier s 'time' 's'? s enforcement 'in' s
         readings_list s
         c:context_note? ';'
         {

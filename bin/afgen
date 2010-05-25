@@ -7,8 +7,6 @@
 $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'rubygems'
-require 'activefacts'
-require 'activefacts/vocabulary'
 
 if ENV['DEBUG']
   begin
@@ -20,15 +18,20 @@ if ENV['DEBUG']
 end
 true # Ok, got the stack set up, continue to the fault
 
+require 'activefacts'
+require 'activefacts/vocabulary'
+
 arg = ARGV.shift
 
 # Load the required generator, or the default "text" generator:
 generator = "text"
+generator_options = []
 if arg =~ /^--([^=]*)(?:=(.*))?/
   generator = $1
   generator_options = ($2||"").split(/,/)
   arg = ARGV.shift
 end
+
 output_handler = "activefacts/generate/#{generator.downcase}"
 require output_handler
 output_class = generator.upcase.gsub(%r{[/\\]+},'::')
@@ -36,6 +39,7 @@ output_klass = eval("ActiveFacts::Generate::#{output_class}")
 raise "Expected #{output_handler} to define #{output_class}" unless output_klass
 
 # Load the file type input method
+arg, *options = *arg.split(/=/)
 extension = arg.sub(/\A.*\./,'').downcase
 input_handler = "activefacts/input/#{extension}"
 require input_handler
@@ -45,11 +49,12 @@ raise "Expected #{input_handler} to define #{input_class}" unless input_klass
 
 # Read the input file:
 begin
-  vocabulary = input_klass.readfile(arg)
+  vocabulary = input_klass.readfile(arg, *options)
 
   # Generate the output:
   output_klass.new(vocabulary, *generator_options).generate if vocabulary
 rescue => e
   puts "#{e.message}"
-  puts "\t#{e.backtrace*"\n\t"}" if debug :exception
+  puts "\t#{e.backtrace*"\n\t"}"
+  # puts "\t#{e.backtrace*"\n\t"}" if debug :exception
 end

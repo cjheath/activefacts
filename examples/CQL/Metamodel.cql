@@ -150,7 +150,7 @@ Instance has at most one Value;
 
 ValueRestriction is a kind of Constraint;
 Role has at most one role-ValueRestriction,
-	ValueRestriction applies to Role;
+	ValueRestriction applies to at most one Role;
 
 Vocabulary is identified by Name where
 	Vocabulary is called one Name;
@@ -226,8 +226,8 @@ ObjectTypeShape is for one Concept,
 ObjectTypeShape has expanded reference mode;
 
 ObjectifiedFactTypeNameShape is a kind of Shape identified by FactTypeShape where
-	ObjectifiedFactTypeNameShape (as OFT) is for one FactTypeShape,
-	FactTypeShape has at most one OFT;
+	ObjectifiedFactTypeNameShape is for one FactTypeShape,
+	FactTypeShape has at most one ObjectifiedFactTypeNameShape;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -257,7 +257,8 @@ RoleDisplay has FrequencyConstraintShape,
 	FrequencyConstraintShape is for one RoleDisplay;
 
 RoleNameShape is a kind of Shape;
-RoleNameShape is for one Role;
+RoleNameShape is for one RoleDisplay,
+	RoleDisplay has at most one RoleNameShape;
 
 RoleRef is where
 	RoleSequence in Ordinal position includes at most one Role,
@@ -304,7 +305,7 @@ ValueType has at most one Scale,
 	Scale is of ValueType;
 ValueType is of at most one Unit;
 ValueType has at most one ValueRestriction,
-	ValueRestriction constrains ValueType;
+	ValueRestriction constrains at most one ValueType;
 ValueType is subtype of at most one super-ValueType (as Supertype) [acyclic],
 	Supertype is supertype of ValueType;
 
@@ -372,6 +373,8 @@ each PresenceConstraint occurs at least one time in
 	PresenceConstraint is mandatory;
 each RoleSequence occurs at least one time in
 	RoleSequence in Ordinal position includes Role;
+each SetComparisonConstraint occurs at least 2 times in
+	SetComparisonConstraint has in Ordinal position RoleSequence;
 either ValueRange has minimum-Bound or ValueRange has maximum-Bound;
 each combination Vocabulary, Name occurs at most one time in
 	Vocabulary contains Constraint,

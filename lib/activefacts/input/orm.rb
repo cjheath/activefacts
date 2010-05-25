@@ -31,20 +31,25 @@ module ActiveFacts
     #   afgen --<generator> <file>.orm
     # This parser uses Rexml so it's very slow.
     class ORM
+      module Gravity
+        %w{NW N NE W C E SW S SE}.each_with_index { |dir, i| const_set(dir, i) }
+      end
+
     private
-      def self.readfile(filename)
+      def self.readfile(filename, *options)
         File.open(filename) {|file|
-          self.read(file, filename)
+          self.read(file, filename, *options)
         }
       end
 
-      def self.read(file, filename = "stdin")
-        ORM.new(file, filename).read
+      def self.read(file, filename = "stdin", *options)
+        ORM.new(file, filename, *options).read
       end 
 
-      def initialize(file, filename = "stdin")
+      def initialize(file, filename = "stdin", *options)
         @file = file
         @filename = filename
+        @options = options
       end
 
     public
@@ -78,7 +83,7 @@ module ActiveFacts
       def read_vocabulary
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
         vocabulary_name = @x_model['Name']
-        @vocabulary = @constellation.Vocabulary(@x_model['Name'])
+        @vocabulary = @constellation.Vocabulary(vocabulary_name)
 
         # Find all elements having an "id" attribute and index them
         x_identified = @x_model.xpath(".//*[@id]")
@@ -98,8 +103,8 @@ module ActiveFacts
         read_subtypes
         read_roles
         read_constraints
-        # REVISIT: Skip instance data for now:
-        #read_instances
+        read_instances if @options.include?("instances")
+        read_diagrams if @options.include?("diagrams")
       end
 
       def read_entity_types
@@ -165,12 +170,15 @@ module ActiveFacts
           personal = x['IsPersonal']
           vt.pronoun = 'personal' if personal && personal == 'true'
 
-          x_ranges = x.xpath("orm:ValueRestriction/orm:ValueConstraint/orm:ValueRanges/orm:ValueRange")
-          next if x_ranges.size == 0
-          vt.value_restriction = @constellation.ValueRestriction(:new)
-          x_ranges.each{|x_range|
-            v_range = value_range(x_range)
-            ar = @constellation.AllowedRange(vt.value_restriction, v_range)
+          x_vr = x.xpath("orm:ValueRestriction/orm:ValueConstraint")
+          x_vr.each{|vr|
+            x_ranges = vr.xpath("orm:ValueRanges/orm:ValueRange")
+            next if x_ranges.size == 0
+            vt.value_restriction = @by_id[vr['id']] = @constellation.ValueRestriction(:new)
+            x_ranges.each{|x_range|
+              v_range = value_range(x_range)
+              ar = @constellation.AllowedRange(vt.value_restriction, v_range)
+            }
           }
         }
       end
@@ -389,11 +397,11 @@ module ActiveFacts
             role.role_name = name if name
             # puts "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x['Name']} is played by #{concept.name}, role is #{role.object_id}"
 
-            x_vr = x.xpath("orm:ValueRestriction")
+            x_vr = x.xpath("orm:ValueRestriction/orm:RoleValueConstraint")
             x_vr.each{|vr|
-              x_ranges = vr.xpath("orm:RoleValueConstraint/orm:ValueRanges/orm:ValueRange")
+              x_ranges = vr.xpath("orm:ValueRanges/orm:ValueRange")
               next if x_ranges.size == 0
-              role.role_value_restriction = @constellation.ValueRestriction(:new)
+              role.role_value_restriction = @by_id[vr['id']] = @constellation.ValueRestriction(:new)
               x_ranges.each{|x_range|
                 v_range = value_range(x_range)
                 ar = @constellation.AllowedRange(role.role_value_restriction, v_range)
@@ -562,6 +570,7 @@ module ActiveFacts
 
       def read_residual_mandatory_constraints
         @mandatory_constraints_by_rs.each { |roles, x|
+          id = x['id']
           # Create a simply-mandatory PresenceConstraint for each mandatory constraint
           name = x["Name"] || ''
           name.gsub!(/\s/,'')
@@ -578,6 +587,7 @@ module ActiveFacts
           pc.is_preferred_identifier = false
 
           (@constraints_by_rs[roles] ||= []) << pc
+          @by_id[id] = pc
         }
       end
 
@@ -587,7 +597,7 @@ module ActiveFacts
           name = x["Name"] || ''
           name.gsub!(/\s/,'')
           name = nil if name.size == 0
-          id = x["id"]
+          uc_id = x["id"]
           x_pi = x.xpath("orm:PreferredIdentifierFor")[0]
           pi = x_pi ? @by_id[eref = x_pi['ref']] : nil
 
@@ -625,10 +635,12 @@ module ActiveFacts
             unary_identifier = true
           end
 
+          mc_id = nil
           if (mc = @mandatory_constraints_by_rs[roles])
             # Remove absorbed mandatory constraints, leaving residual ones.
             # puts "Absorbing MC #{mc['Name']}"
             @mandatory_constraints_by_rs.delete(roles)
+            mc_id = mc['id']
             @mandatory_constraint_rs_by_id.delete(mc['id'])
           end
 
@@ -660,12 +672,15 @@ module ActiveFacts
           #puts roles.all_role_ref.to_a[0].role.fact_type.describe + " is subject to " + pc.describe if roles.all_role_ref.all?{|r| r.role.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance }
 
           (@constraints_by_rs[roles] ||= []) << pc
+          @by_id[uc_id] = pc
+          @by_id[mc_id] = pc if mc_id
         }
       end
 
       def read_exclusion_constraints
         x_exclusion_constraints = @x_model.xpath("orm:Constraints/orm:ExclusionConstraint")
         x_exclusion_constraints.each{|x|
+          id = x['id']
           name = x["Name"] || ''
           name.gsub!(/\s/,'')
           name = nil if name.size == 0
@@ -694,12 +709,15 @@ module ActiveFacts
             @constellation.SetComparisonRoles(ec, i, :role_sequence => rs)
           end
           ec.is_mandatory = true if x_mandatory
+          @by_id[id] = ec
+          @by_id[mc_id] = ec if mc_id
         }
       end
 
       def read_equality_constraints
         x_equality_constraints = @x_model.xpath("orm:Constraints/orm:EqualityConstraint")
         x_equality_constraints.each{|x|
+          id = x['id']
           name = x["Name"] || ''
           name.gsub!(/\s/,'')
           name = nil if name.size == 0
@@ -719,12 +737,14 @@ module ActiveFacts
           role_sequences.each_with_index do |rs, i|
             @constellation.SetComparisonRoles(ec, i, :role_sequence => rs)
           end
+          @by_id[id] = ec
         }
       end
 
       def read_subset_constraints
         x_subset_constraints = @x_model.xpath("orm:Constraints/orm:SubsetConstraint")
         x_subset_constraints.each{|x|
+          id = x['id']
           name = x["Name"] || ''
           name.gsub!(/\s/,'')
           name = nil if name.size == 0
@@ -743,12 +763,14 @@ module ActiveFacts
           # ec.enforcement = 
           ec.subset_role_sequence = role_sequences[0]
           ec.superset_role_sequence = role_sequences[1]
+          @by_id[id] = ec
         }
       end
 
       def read_ring_constraints
         x_ring_constraints = @x_model.xpath("orm:Constraints/orm:RingConstraint")
         x_ring_constraints.each{|x|
+          id = x['id']
           name = x["Name"] || ''
           name.gsub!(/\s/,'')
           name = nil if name.size == 0
@@ -770,12 +792,34 @@ module ActiveFacts
           rc.role = from
           rc.other_role = to
           rc.ring_type = type
+          @by_id[id] = rc
         }
       end
 
       def read_frequency_constraints
         x_frequency_constraints = @x_model.xpath("orm:Constraints/orm:FrequencyConstraint")
-        # REVISIT: FrequencyConstraints not handled yet
+        x_frequency_constraints.each do |x_frequency_constraint|
+          id = x_frequency_constraint['id']
+          min_frequency = x_frequency_constraint["MinFrequency"].to_i
+          min_frequency = nil if min_frequency == 0
+          max_frequency = x_frequency_constraint["MaxFrequency"].to_i
+          max_frequency = nil if max_frequency == 0
+          x_roles = x_frequency_constraint.xpath("orm:RoleSequence/orm:Role")
+          role = @by_id[x_roles[0]["ref"]]
+          role_sequence = @constellation.RoleSequence(:new)
+          role_ref = @constellation.RoleRef(role_sequence, 0, :role => role)
+          # puts "FrequencyConstraint(min #{min_frequency.inspect} max #{max_frequency.inspect} over #{role.fact_type.describe(role)} #{id} role ref = #{x_roles[0]["ref"]}"
+          @by_id[id] = @constellation.PresenceConstraint(
+              :new,
+              :vocabulary => @vocabulary,
+              :name => name = x_frequency_constraint["Name"] || '',
+              :role_sequence => role_sequence,
+              :is_mandatory => false,
+              :min_frequency => min_frequency,
+              :max_frequency => max_frequency,
+              :is_preferred_identifier => false
+            )
+        end
       end
 
       def read_instances
@@ -907,6 +951,177 @@ module ActiveFacts
           last_fact = Fact.new(population, last_fact_type, *fact_roles)
         end
 
+      end
+
+      def read_diagrams
+        x_diagrams = @document.root.xpath("ormDiagram:ORMDiagram")
+        x_diagrams.each do |x|
+          name = (x["Name"] || '').gsub(/\s/,'')
+          diagram = @constellation.Diagram(@vocabulary, name)
+          debug :diagram, "Starting to read diagram #{name}"
+          shapes = x.xpath("ormDiagram:Shapes/*")
+          shapes.map do |x_shape|
+            x_subject = x_shape.xpath("ormDiagram:Subject")[0]
+            subject = @by_id[x_subject["ref"]]
+            is_expanded = v = x_shape['IsExpanded'] and v == 'true'
+            bounds = x_shape['AbsoluteBounds']
+            case shape_type = x_shape.name
+            when 'FactTypeShape'
+              read_fact_type_shape diagram, x_shape, is_expanded, bounds, subject
+            when 'ExternalConstraintShape'
+              # REVISIT: The offset might depend on the constraint type. This is right for subset and other round ones.
+              position = convert_position(bounds, Gravity::NW, 31, 31)
+              shape = @constellation.ConstraintShape(
+                  :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
+                  :constraint => subject
+                )
+            when 'FrequencyConstraintShape'
+              position = convert_position(bounds, Gravity::NW, 31, 31)
+              shape = @constellation.FrequencyConstraintShape(
+                  :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
+                  :constraint => subject
+                )
+              # subject here is a PresenceConstraint with a single role
+              role = subject.role_sequence.all_role_ref.single.role
+              # REVISIT: If there's more than one FTS for this FT on this diagram, NORMA just chooses one, gah. Choose the closest one!
+              # REVISIT: Has the fact type been created yet?
+              fact_type_shape = role.fact_type.all_fact_type_shape.select{|fts| fts.diagram == diagram}[0]
+              ordinal = fact_type_shape && fact_type_shape.all_role_display.detect{|rd| rd.role == role}.ordinal
+              if ordinal
+                shape.role_display = @constellation.RoleDisplay(fact_type_shape, ordinal, :role => subject)
+              end
+            when 'RingConstraintShape'
+              # REVISIT: The offset might depend on the ring constraint type. This is right for basic round ones.
+              position = convert_position(bounds, Gravity::NW, 31, 31)
+              shape = @constellation.RingConstraintShape(
+                  :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
+                  :constraint => subject
+                )
+              shape.fact_type = subject.role.fact_type
+            when 'ModelNoteShape'
+              # REVISIT: Add model notes
+            when 'ObjectTypeShape'
+              shape = @constellation.ObjectTypeShape(
+                  :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
+                  :concept => subject,
+                  :has_expanded_reference_mode => false # REVISIT
+                )
+            else
+              raise "Unknown shape #{x_shape.name}"
+            end
+          end
+        end
+      end
+
+      def read_fact_type_shape diagram, x_shape, is_expanded, bounds, fact_type
+        display_role_names_setting = v = x_shape["DisplayRoleNames"] and
+          case v
+          when 'Off'; 'false'
+          when 'On'; 'true'
+          else nil
+          end
+        rotation_setting = v = x_shape['DisplayOrientation'] and
+          case v
+          when 'VerticalRotatedLeft'; 'left'
+          when 'VerticalRotatedRight'; 'right'
+          else nil
+          end
+        # Position of a fact type is the top-left of the first role box
+        offs_x = 0
+        offs_y = 0
+        if fact_type.entity_type          # If objectified, move right 12, down 24
+          offs_x += 12
+          offs_y += 24
+        end
+
+        # count internal UC's, add 27 Y units for each:
+        iucs = fact_type.internal_presence_constraints.select{|uc| uc.max_frequency == 1 }
+        offs_y += iucs.size*27
+        position = convert_position(bounds, Gravity::NW, offs_x, offs_y)
+        # puts "REVISIT: Can't place rotated fact type correctly on diagram yet" if rotation_setting
+
+        #puts "fact type at #{position.x},#{position.y} has display_role_names_setting=#{display_role_names_setting.inspect}, rotation_setting=#{rotation_setting.inspect}, #{iucs.size} IUC's"
+        shape = @constellation.FactTypeShape(
+            :new,
+            :diagram => diagram,
+            :position => position,
+            :is_expanded => is_expanded,
+            :display_role_names_setting => display_role_names_setting,
+            :rotation_setting => rotation_setting,
+            :fact_type => fact_type
+          )
+        # Create RoleDisplay objects if necessary
+        x_role_display = x_shape.xpath("ormDiagram:RoleDisplayOrder/ormDiagram:Role")
+        # print "Fact type '#{fact_type.preferred_reading.expand}' (#{fact_type.all_role.map{|r|r.concept.name}*' '})"
+        if x_role_display.size > 0
+          # puts " has roleDisplay (#{x_role_display.map{|rd| @by_id[rd['ref']].concept.name}*','})'"
+          x_role_display.each_with_index do |rd, ordinal|
+            role_display = @constellation.RoleDisplay(shape, ordinal, :role => @by_id[rd['ref']])
+          end
+        else
+          # Decide whether to create all RoleDisplay objects for this fact type, which is in role order
+          # Omitting this here might lead to incomplete RoleDisplay sequences,
+          # because each RoleNameShape or ValueConstraintShape creates just one.
+          # puts " has no roleDisplay"
+        end
+
+        relative_shapes = x_shape.xpath('ormDiagram:RelativeShapes/*')
+        relative_shapes.each do |xr_shape|
+          position = convert_position(xr_shape['AbsoluteBounds'])
+          case xr_shape.name
+          when 'ObjectifiedFactTypeNameShape'
+            @constellation.ObjectifiedFactTypeNameShape(shape, :diagram => diagram, :position => position, :is_expanded => false)
+          when 'ReadingShape'
+            @constellation.ReadingShape(:new, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
+          when 'RoleNameShape'
+            role = @by_id[xr_shape.xpath("ormDiagram:Subject")[0]['ref']]
+            role_display = role_display_for_role(shape, x_role_display, role)
+            puts "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name}"
+            @constellation.RoleNameShape(
+              :new, :diagram => diagram, :position => position, :is_expanded => false,
+              :role_display => role_display
+            )
+          when 'ValueConstraintShape'
+            vc_subject_id = xr_shape.xpath("ormDiagram:Subject")[0]['ref']
+            constraint = @by_id[vc_subject_id]
+            # puts "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name} for #{constraint.inspect}"
+
+            role_display = role_display_for_role(shape, x_role_display, constraint.role)
+            # puts "ValueConstraintShape is on #{role_ordinal}'th role (by #{x_role_display.size > 0 ? 'role_display' : 'fact roles'})"
+            @constellation.ValueConstraintShape(
+              :new, :diagram => diagram, :position => position, :is_expanded => false,
+              :constraint => constraint,
+              :object_type_shape => nil,  # This constraint is relative to a Fact Type, so must be on a role
+              :role_display => role_display
+            )
+          else raise "Unknown relative shape #{xr_shape.name}"
+          end
+        end
+      end
+
+      # Find or create the RoleDisplay for this role in this fact_type_shape, given (possibly empty) x_role_display nodes:
+      def role_display_for_role(fact_type_shape, x_role_display, role)
+        if x_role_display.size == 0
+          role_ordinal = fact_type_shape.fact_type.all_role.to_a.index(role)
+        else
+          role_ordinal = x_role_display.map{|rd| @by_id[rd['ref']]}.index(role)
+        end
+        role_display = @constellation.RoleDisplay(fact_type_shape, role_ordinal, :role => role)
+      end
+
+      DIAGRAM_SCALE = 384
+      def convert_position(bounds, gravity = Gravity::NW, xoffs = 0, yoffs = 0)
+        return nil unless bounds
+        bf = bounds.split(/, /).map{|b|b.to_f}
+        sizefrax = [
+          [0, 0], [1, 0], [2, 0],
+          [0, 1], [1, 1], [2, 2],
+          [0, 2], [1, 2], [2, 2],
+        ]
+
+        x = (DIAGRAM_SCALE * bf[0]+bf[2]*sizefrax[gravity][0]/2).round + xoffs
+        y = (DIAGRAM_SCALE * bf[1]+bf[3]*sizefrax[gravity][1]/2).round + yoffs
+        @constellation.Position(x, y)
       end
 
       # Detect numeric data and denote it as a string:

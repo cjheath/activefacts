@@ -309,8 +309,10 @@ module ActiveFacts
           roles = c.role_sequence.all_role_ref.map{|rr| rr.role }
           players = c.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
           fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
+          min, max = c.min_frequency, c.max_frequency
+          pl = (min&&min>1)||(max&&max>1) ? 's' : ''
           puts \
-            "each #{players.size > 1 ? "combination " : ""}#{players*", "} occurs #{c.frequency} time in\n\t"+
+            "each #{players.size > 1 ? "combination " : ""}#{players*", "} occurs #{c.frequency} time#{pl} in\n\t"+
             "#{fact_types.map{|ft| ft.default_reading([], nil)}*",\n\t"}" +
               ";"
         end

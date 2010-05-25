@@ -56,6 +56,10 @@ CREATE TABLE [Constraint] (
 	SubsetConstraintSubsetRoleSequenceId    int NULL,
 	-- maybe SetConstraint is a kind of Constraint and maybe SubsetConstraint is a kind of SetConstraint and SubsetConstraint covers superset-RoleSequence and RoleSequence has RoleSequenceId,
 	SubsetConstraintSupersetRoleSequenceId  int NULL,
+	-- maybe ValueConstraint is a kind of Constraint and maybe Role has role-ValueConstraint and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	ValueConstraintRoleFactTypeId           int NULL,
+	-- maybe ValueConstraint is a kind of Constraint and maybe Role has role-ValueConstraint and Role is where FactType has Ordinal role,
+	ValueConstraintRoleOrdinal              int NULL,
 	-- maybe Vocabulary contains Constraint and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NULL,
 	PRIMARY KEY(ConstraintId)
@@ -69,6 +73,15 @@ CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetRoleSequenceIdSupersetRoleSeq
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetRoleSequenceIdSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
+GO
+
+CREATE VIEW dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal (ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal FROM dbo.[Constraint]
+	WHERE	ValueConstraintRoleFactTypeId IS NOT NULL
+	  AND	ValueConstraintRoleOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueRestriction ON dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -302,10 +315,7 @@ CREATE TABLE Role (
 	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Role is where FactType has Ordinal role,
 	Ordinal                                 int NOT NULL,
-	-- maybe Role has role-ValueConstraint and Constraint has ConstraintId,
-	RoleValueConstraintId                   int NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
-	FOREIGN KEY (RoleValueConstraintId) REFERENCES [Constraint] (ConstraintId),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
 GO
@@ -403,7 +413,7 @@ CREATE TABLE Shape (
 	FactTypeShapeFactTypeId                 int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is a kind of Shape and Shape has ShapeId,
 	FactTypeShapeId                         int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has OFTNS and ObjectifiedFactTypeNameShape is a kind of Shape and Shape has ShapeId,
+	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ObjectifiedFactTypeNameShape and ObjectifiedFactTypeNameShape is a kind of Shape and Shape has ShapeId,
 	FactTypeShapeId                         int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is for Reading and FactType has Reading and FactType has FactTypeId,
 	FactTypeShapeReadingFactTypeId          int NULL,
@@ -431,10 +441,10 @@ CREATE TABLE Shape (
 	PositionY                               int NULL,
 	-- maybe ConstraintShape is a kind of Shape and maybe RingConstraintShape is a kind of ConstraintShape and RingConstraintShape is attached to FactType and FactType has FactTypeId,
 	RingConstraintShapeFactTypeId           int NULL,
-	-- maybe RoleNameShape is a kind of Shape and RoleNameShape is for Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
-	RoleNameShapeRoleFactTypeId             int NULL,
-	-- maybe RoleNameShape is a kind of Shape and RoleNameShape is for Role and Role is where FactType has Ordinal role,
-	RoleNameShapeRoleOrdinal                int NULL,
+	-- maybe RoleNameShape is a kind of Shape and RoleNameShape is for RoleDisplay and RoleDisplay is where FactTypeShape displays Role in Ordinal position and Shape has ShapeId,
+	RoleNameShapeRoleDisplayFactTypeShapeId int NULL,
+	-- maybe RoleNameShape is a kind of Shape and RoleNameShape is for RoleDisplay and RoleDisplay is where FactTypeShape displays Role in Ordinal position,
+	RoleNameShapeRoleDisplayOrdinal         int NULL,
 	-- Shape has ShapeId,
 	ShapeId                                 int IDENTITY NOT NULL,
 	-- maybe ConstraintShape is a kind of Shape and maybe ValueConstraintShape is a kind of ConstraintShape and maybe ValueConstraintShape is for ObjectTypeShape and Shape has ShapeId,
@@ -449,9 +459,9 @@ CREATE TABLE Shape (
 	FOREIGN KEY (RingConstraintShapeFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeShapeFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeShapeReadingFactTypeId, FactTypeShapeReadingOrdinal) REFERENCES Reading (FactTypeId, Ordinal),
-	FOREIGN KEY (RoleNameShapeRoleFactTypeId, RoleNameShapeRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal),
 	FOREIGN KEY (FrequencyConstraintShapeRoleDisplayFactTypeShapeId, FrequencyConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
+	FOREIGN KEY (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeObjectTypeShapeId) REFERENCES Shape (ShapeId),
 	FOREIGN KEY (FactTypeShapeId) REFERENCES Shape (ShapeId),
 	FOREIGN KEY (FactTypeShapeId) REFERENCES Shape (ShapeId)
@@ -524,6 +534,14 @@ CREATE TABLE Term (
 )
 GO
 
+CREATE VIEW dbo.ValueTypeInTerm_ValueConstraintId (ValueTypeValueConstraintId) WITH SCHEMABINDING AS
+	SELECT ValueTypeValueConstraintId FROM dbo.Term
+	WHERE	ValueTypeValueConstraintId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInTermByValueTypeValueConstraintId ON dbo.ValueTypeInTerm_ValueConstraintId(ValueTypeValueConstraintId)
+GO
+
 CREATE TABLE Unit (
 	-- maybe Unit has Coefficient and Coefficient has Denominator,
 	CoefficientDenominator                  int NULL,
@@ -558,6 +576,10 @@ GO
 
 ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
+GO
+
+ALTER TABLE [Constraint]
+	ADD FOREIGN KEY (ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE [Constraint]

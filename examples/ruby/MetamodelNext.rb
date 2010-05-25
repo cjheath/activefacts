@@ -229,7 +229,6 @@ module ::Metamodel
     has_one :fact_type, :mandatory => true      # See FactType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
     has_one :object_type, :mandatory => true    # See ObjectType.all_role
-    has_one :role_value_constraint, :class => "ValueConstraint"  # See ValueConstraint.all_role_as_role_value_constraint
   end
 
   class RoleSequence
@@ -281,6 +280,7 @@ module ::Metamodel
   end
 
   class ValueConstraint < Constraint
+    one_to_one :role, :counterpart => :role_value_constraint  # See Role.role_value_constraint
   end
 
   class Vocabulary
@@ -351,7 +351,7 @@ module ::Metamodel
 
   class ObjectifiedFactTypeNameShape < Shape
     identified_by :fact_type_shape
-    one_to_one :fact_type_shape, :mandatory => true, :counterpart => :oftns  # See FactTypeShape.oftns
+    one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.objectified_fact_type_name_shape
   end
 
   class Population
@@ -378,7 +378,7 @@ module ::Metamodel
   end
 
   class RoleNameShape < Shape
-    has_one :role, :mandatory => true           # See Role.all_role_name_shape
+    has_one :role_display, :mandatory => true   # See RoleDisplay.all_role_name_shape
   end
 
   class RoleRef
@@ -455,7 +455,7 @@ module ::Metamodel
     has_one :scale                              # See Scale.all_value_type
     has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
     has_one :unit                               # See Unit.all_value_type
-    has_one :value_constraint                   # See ValueConstraint.all_value_type
+    one_to_one :value_constraint                # See ValueConstraint.value_type
   end
 
   class EntityType < ObjectType
