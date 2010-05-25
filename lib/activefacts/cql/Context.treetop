@@ -17,8 +17,8 @@ module ActiveFacts
 	  end
 	  def ast
 	    who = w.empty? ? nil : w.value
-	    agreed = !agreed || agreed.empty? ? [] : agreed.a.value
-	    Compiler::ContextNote.new context_type.value, discussion.text_value, who, agreed
+	    ag = agreed.empty? ? [] : agreed.a.value
+	    Compiler::ContextNote.new context_type.value, discussion.text_value, who, ag
 	  end
 	}
       end

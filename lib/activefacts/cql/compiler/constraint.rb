@@ -25,7 +25,7 @@ module ActiveFacts
           context_note =
             constellation.ContextNote(
               :new,
-              :context_note_kind => @context_note_kind,
+              :context_note_kind => @context_kind,
               :discussion => @discussion
             )
           case target
@@ -36,8 +36,18 @@ module ActiveFacts
           when ActiveFacts::Metamodel::FactType
             context_note.fact_type = target
           end
-          # REVISIT: Add agents and agreement_date
-          puts "REVISIT: agents and agreement_date not added to ContextNote" if @agreed_agents
+          if @agreed_date || @agreed_agents
+            agreement = constellation.Agreement(context_note, :date => @agreed_date)
+            @agreed_agents.each do |agent|
+              constellation.ContextAgreedBy(agreement, agent)
+            end
+          end
+          if @who && @who.size > 0
+            @who.each do |agent|
+              constellation.ContextAccordingTo(context_note, agent)
+            end
+          end
+          context_note
         end
       end
 

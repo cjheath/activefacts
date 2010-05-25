@@ -48,6 +48,11 @@ module ActiveFacts
 
           make_preferred_identifier_over_roles identifying_roles
 
+          @readings.each do |reading|
+            next unless reading.context_note
+            reading.context_note.compile(@constellation, @entity_type)
+          end
+
           @entity_type
         end
 

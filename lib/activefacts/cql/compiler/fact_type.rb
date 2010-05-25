@@ -78,6 +78,11 @@ module ActiveFacts
           # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
           make_default_identifier_for_fact_type
 
+          @readings.each do |reading|
+            next unless reading.context_note
+            reading.context_note.compile(@constellation, @fact_type)
+          end
+
           @fact_type
         end
 
