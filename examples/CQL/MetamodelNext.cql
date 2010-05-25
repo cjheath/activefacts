@@ -197,8 +197,6 @@ FactTypeShape is for one FactType,
 	FactType has FactTypeShape;
 FactTypeShape has at most one RotationSetting;
 
-FrequencyConstraintShape is a kind of ConstraintShape;
-
 ModelNoteShape is a kind of Shape;
 ModelNoteShape is for one ContextNote;
 
@@ -233,8 +231,6 @@ RingConstraintShape is attached to one FactType;
 RoleDisplay is where
 	FactTypeShape displays Role in Ordinal position,
 	FactTypeShape displays in Ordinal position at most one Role;
-RoleDisplay has FrequencyConstraintShape,
-	FrequencyConstraintShape is for one RoleDisplay;
 
 RoleNameShape is a kind of Shape;
 RoleNameShape is for one RoleDisplay,

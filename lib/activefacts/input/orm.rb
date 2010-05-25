@@ -962,28 +962,13 @@ module ActiveFacts
             case shape_type = x_shape.name
             when 'FactTypeShape'
               read_fact_type_shape diagram, x_shape, is_expanded, bounds, subject
-            when 'ExternalConstraintShape'
+            when 'ExternalConstraintShape', 'FrequencyConstraintShape'
               # REVISIT: The offset might depend on the constraint type. This is right for subset and other round ones.
               position = convert_position(bounds, Gravity::NW, 31, 31)
               shape = @constellation.ConstraintShape(
                   :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
                   :constraint => subject
                 )
-            when 'FrequencyConstraintShape'
-              position = convert_position(bounds, Gravity::NW, 31, 31)
-              shape = @constellation.FrequencyConstraintShape(
-                  :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
-                  :constraint => subject
-                )
-              # subject here is a PresenceConstraint with a single role
-              role = subject.role_sequence.all_role_ref.single.role
-              # REVISIT: If there's more than one FTS for this FT on this diagram, NORMA just chooses one, gah. Choose the closest one!
-              # REVISIT: Has the fact type been created yet?
-              fact_type_shape = role.fact_type.all_fact_type_shape.select{|fts| fts.diagram == diagram}[0]
-              ordinal = fact_type_shape && fact_type_shape.all_role_display.detect{|rd| rd.role == role}.ordinal
-              if ordinal
-                shape.role_display = @constellation.RoleDisplay(fact_type_shape, ordinal, :role => subject)
-              end
             when 'RingConstraintShape'
               # REVISIT: The offset might depend on the ring constraint type. This is right for basic round ones.
               position = convert_position(bounds, Gravity::NW, 31, 31)

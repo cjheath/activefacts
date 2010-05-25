@@ -349,10 +349,6 @@ module ::Metamodel
     has_one :rotation_setting                   # See RotationSetting.all_fact_type_shape
   end
 
-  class FrequencyConstraintShape < ConstraintShape
-    has_one :role_display, :mandatory => true   # See RoleDisplay.all_frequency_constraint_shape
-  end
-
   class ModelNoteShape < Shape
     has_one :context_note, :mandatory => true   # See ContextNote.all_model_note_shape
   end
