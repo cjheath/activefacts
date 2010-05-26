@@ -188,6 +188,7 @@ ConstraintShape is for one Constraint;
 ContextAccordingTo is where
 	ContextNote is according to Agent,
 	Agent claims ContextNote;
+ContextAccordingTo was lodged on at most one Date;
 
 ContextAgreedBy is where
 	Agreement was reached by Agent,

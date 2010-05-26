@@ -318,6 +318,7 @@ module ::Metamodel
     identified_by :context_note, :agent
     has_one :agent, :mandatory => true          # See Agent.all_context_according_to
     has_one :context_note, :mandatory => true   # See ContextNote.all_context_according_to
+    has_one :date                               # See Date.all_context_according_to
   end
 
   class ContextAgreedBy
@@ -440,7 +441,7 @@ module ::Metamodel
     has_one :scale                              # See Scale.all_value_type
     has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
     has_one :unit                               # See Unit.all_value_type
-    one_to_one :value_constraint               # See ValueConstraint.value_type
+    one_to_one :value_constraint                # See ValueConstraint.value_type
   end
 
   class AllowedRange

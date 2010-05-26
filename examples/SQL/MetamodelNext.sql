@@ -411,7 +411,7 @@ CREATE TABLE Shape (
 	FactTypeShapeDisplayRoleNamesSetting    varchar NULL CHECK(FactTypeShapeDisplayRoleNamesSetting = 'false' OR FactTypeShapeDisplayRoleNamesSetting = 'true'),
 	-- maybe FactTypeShape is a kind of Shape and FactTypeShape is for FactType and FactType has FactTypeId,
 	FactTypeShapeFactTypeId                 int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ObjectifiedFactTypeNameShape and ObjectifiedFactTypeNameShape is a kind of Shape and Shape has ShapeId,
+	-- maybe FactTypeShape is a kind of Shape and maybe ObjectifiedFactTypeNameShape is for FactTypeShape and ObjectifiedFactTypeNameShape is a kind of Shape and Shape has ShapeId,
 	FactTypeShapeId                         int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is a kind of Shape and Shape has ShapeId,
 	FactTypeShapeId                         int NULL,
@@ -486,6 +486,15 @@ CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEM
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+GO
+
+CREATE VIEW dbo.RoleNameShapeInShape_RoleDisplayFactTypeShapeIdRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
+	SELECT RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal FROM dbo.Shape
+	WHERE	RoleNameShapeRoleDisplayFactTypeShapeId IS NOT NULL
+	  AND	RoleNameShapeRoleDisplayOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_RoleNameShapeInShapeByRoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal ON dbo.RoleNameShapeInShape_RoleDisplayFactTypeShapeIdRoleDisplayOrdinal(RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal)
 GO
 
 CREATE VIEW dbo.ValueConstraintShapeInShape_RoleDisplayFactTypeShapeIdRoleDisplayOrdinal (ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS

@@ -9,8 +9,8 @@ Assimilation is written as VariableLengthText restricted to {'partitioned', 'sep
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
-Denominator is written as UnsignedInteger(32);
 Date is written as Date;
+Denominator is written as UnsignedInteger(32);
 Discussion is written as VariableLengthText;
 DisplayRoleNamesSetting is written as VariableLengthText restricted to {'false', 'true'};
 EnforcementCode is written as VariableLengthText(16);
@@ -204,8 +204,8 @@ ObjectTypeShape is a kind of Shape;
 ObjectTypeShape has expanded reference mode;
 
 ObjectifiedFactTypeNameShape is a kind of Shape identified by FactTypeShape where
-	FactTypeShape has at most one ObjectifiedFactTypeNameShape,
-	ObjectifiedFactTypeNameShape is for one FactTypeShape;
+	ObjectifiedFactTypeNameShape is for one FactTypeShape,
+	FactTypeShape has at most one ObjectifiedFactTypeNameShape;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -234,7 +234,7 @@ RoleDisplay is where
 
 RoleNameShape is a kind of Shape;
 RoleNameShape is for one RoleDisplay,
-	RoleDisplay has RoleNameShape;
+	RoleDisplay has at most one RoleNameShape;
 
 RoleRef is where
 	RoleSequence in Ordinal position includes at most one Role,

@@ -374,7 +374,7 @@ module ::Metamodel
   end
 
   class RoleNameShape < Shape
-    has_one :role_display, :mandatory => true   # See RoleDisplay.all_role_name_shape
+    one_to_one :role_display, :mandatory => true  # See RoleDisplay.role_name_shape
   end
 
   class RoleRef

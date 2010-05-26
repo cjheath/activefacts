@@ -132,6 +132,8 @@ CREATE TABLE ContextAccordingTo (
 	AgentName                               varchar NOT NULL,
 	-- ContextAccordingTo is where ContextNote is according to Agent and ContextNote has ContextNoteId,
 	ContextNoteId                           int NOT NULL,
+	-- maybe ContextAccordingTo was lodged on Date,
+	Date                                    datetime NULL,
 	PRIMARY KEY(ContextNoteId, AgentName)
 )
 GO
