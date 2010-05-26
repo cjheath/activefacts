@@ -383,6 +383,21 @@
 
   <tr class="even">
   <td class="title">
+    <a name="Unit" href="unit.cql">CQL</a>
+    <span>Unit conversions</span>
+  </td>
+  <td></td>
+  <td></td>
+  <td>
+  </tr>
+  <tr class="even"><td colspan="5">
+  This CQL file contains an extensive library of fundamental units and unit conversions.
+  These definitions can be used with your value types, so that queries can convert values
+  from any compatible units.
+  </td></tr>
+
+  <tr class="odd">
+  <td class="title">
     <a href="CQL/WindowInRoomInBldg.cql">CQL</a>
     <span>WindowInRoomInBldg</span>
     <div class="diagrams">
@@ -393,7 +408,7 @@
   <td><a href="SQL/WindowInRoomInBldg.sql">SQL</a></td>
   <td>
   </tr>
-  <tr class="even"><td colspan="5">
+  <tr class="odd"><td colspan="5">
   This model shows how object types can get absorbed into others for efficient storage.
   In this case, every window is in a wall, every wall in a room, and every room in a
   building - yet only one table is needed to store a record of all windows. Try adding

@@ -22,7 +22,7 @@ module ActiveFacts
     # an instance (or returns the existing instance) of Thing identified by the value 3.
     # You can also use the populate() method to apply a block of assertions.
     #
-    # You can instance##deny any instance, and that removes it from the constellation (will
+    # You can instance##retract any instance, and that removes it from the constellation (will
     # delete it from the database when the constellation is saved), and nullifies any
     # references to it.
     #
@@ -57,9 +57,9 @@ module ActiveFacts
       end
 
       # Delete instances from the constellation, nullifying (or cascading) the roles each plays
-      def deny(*instances)
+      def retract(*instances)
         Array(instances).each do |i|
-          i.deny
+          i.retract
         end
       end
 
@@ -99,7 +99,7 @@ module ActiveFacts
 
       # This method removes the given instance from this constellation's indexes
       # It must be called before the identifying roles get deleted or nullified.
-      def __deny(instance) #:nodoc:
+      def __retract(instance) #:nodoc:
         # REVISIT: Need to search, as key values are gone already. Is there a faster way?
         ([instance.class]+instance.class.supertypes_transitive).each do |klass|
           @instances[klass].delete_if{|k,v| v == instance }
