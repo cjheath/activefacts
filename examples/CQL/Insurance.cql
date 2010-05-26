@@ -299,7 +299,7 @@ MotorFleetPolicy is a kind of MotorPolicy;
 either MotorPolicy is a SingleMotorPolicy or MotorPolicy is a MotorFleetPolicy but not both;
 Party is a company
 	if and only if
-	Party is a Company and Company has contact-Person;
+	Party is a Company that has contact-Person;
 each ContactMethods occurs at least one time in
 	ContactMethods includes mobile-Phone,
 	ContactMethods includes home-Phone,

@@ -115,7 +115,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal (ValueCons
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueRestriction ON dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS

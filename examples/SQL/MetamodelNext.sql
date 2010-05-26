@@ -81,7 +81,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal (ValueCons
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueRestriction ON dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -341,9 +341,9 @@ CREATE TABLE RoleRef (
 	Ordinal                                 int NOT NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
 	RoleFactTypeId                          int NOT NULL,
-	-- maybe RoleRef has RoleName and Term is where Vocabulary contains Name,
+	-- maybe RoleName is name of RoleRef and Term is where Vocabulary contains Name,
 	RoleName                                varchar(64) NULL,
-	-- maybe RoleRef has RoleName and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe RoleName is name of RoleRef and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	RoleNameVocabularyName                  varchar(64) NULL,
 	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role,
 	RoleOrdinal                             int NOT NULL,
@@ -411,9 +411,9 @@ CREATE TABLE Shape (
 	FactTypeShapeDisplayRoleNamesSetting    varchar NULL CHECK(FactTypeShapeDisplayRoleNamesSetting = 'false' OR FactTypeShapeDisplayRoleNamesSetting = 'true'),
 	-- maybe FactTypeShape is a kind of Shape and FactTypeShape is for FactType and FactType has FactTypeId,
 	FactTypeShapeFactTypeId                 int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is a kind of Shape and Shape has ShapeId,
-	FactTypeShapeId                         int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ObjectifiedFactTypeNameShape and ObjectifiedFactTypeNameShape is a kind of Shape and Shape has ShapeId,
+	FactTypeShapeId                         int NULL,
+	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is a kind of Shape and Shape has ShapeId,
 	FactTypeShapeId                         int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is for Reading and FactType has Reading and FactType has FactTypeId,
 	FactTypeShapeReadingFactTypeId          int NULL,
@@ -421,10 +421,6 @@ CREATE TABLE Shape (
 	FactTypeShapeReadingOrdinal             int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has RotationSetting,
 	FactTypeShapeRotationSetting            varchar NULL CHECK(FactTypeShapeRotationSetting = 'left' OR FactTypeShapeRotationSetting = 'right'),
-	-- maybe ConstraintShape is a kind of Shape and maybe FrequencyConstraintShape is a kind of ConstraintShape and RoleDisplay has FrequencyConstraintShape and RoleDisplay is where FactTypeShape displays Role in Ordinal position and Shape has ShapeId,
-	FrequencyConstraintShapeRoleDisplayFactTypeShapeId int NULL,
-	-- maybe ConstraintShape is a kind of Shape and maybe FrequencyConstraintShape is a kind of ConstraintShape and RoleDisplay has FrequencyConstraintShape and RoleDisplay is where FactTypeShape displays Role in Ordinal position,
-	FrequencyConstraintShapeRoleDisplayOrdinal int NULL,
 	-- Shape is expanded,
 	IsExpanded                              bit NOT NULL,
 	-- maybe ModelNoteShape is a kind of Shape and ModelNoteShape is for ContextNote and ContextNote has ContextNoteId,
@@ -459,7 +455,6 @@ CREATE TABLE Shape (
 	FOREIGN KEY (RingConstraintShapeFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeShapeFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeShapeReadingFactTypeId, FactTypeShapeReadingOrdinal) REFERENCES Reading (FactTypeId, Ordinal),
-	FOREIGN KEY (FrequencyConstraintShapeRoleDisplayFactTypeShapeId, FrequencyConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeObjectTypeShapeId) REFERENCES Shape (ShapeId),

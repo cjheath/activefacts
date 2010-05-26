@@ -6740,7 +6740,7 @@
 					<orm:Role id="_7F4FC879-DF49-499F-B609-0D29229D6EBC" ref="_3C99A43F-6AC5-46DC-9502-C7113FFEDC46" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:UniquenessConstraint id="_F27AEDB0-A1AD-4994-8A51-8954B5AAC6B3" Name="ValueTypeHasOneValueRestriction" IsInternal="true">
+			<orm:UniquenessConstraint id="_F27AEDB0-A1AD-4994-8A51-8954B5AAC6B3" Name="ValueTypeHasOneValueConstraint" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_BCA503DC-50BC-49D8-B4DC-3EE131799564" ref="_A270F04F-186F-41B7-BAF7-77E0C8679A5A" />
 				</orm:RoleSequence>
@@ -6927,7 +6927,7 @@
 					<orm:Role id="_4D2355B5-28C3-420F-874D-D2335852B69D" ref="_F21557CD-9D31-41BE-A85E-D1610A4B0F6E" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_9B490C53-6B42-4B1F-ADB5-C19D3AD167BE" Name="RoleHasOneRoleValueRestriction" IsInternal="true">
+			<orm:UniquenessConstraint id="_9B490C53-6B42-4B1F-ADB5-C19D3AD167BE" Name="RoleHasOneRoleValueConstraint" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_99A54D95-E9BE-4127-B423-5DEAFA782AA0" ref="_AA2D64A1-F233-45C8-A2C4-914655BC8CA3" />
 				</orm:RoleSequence>
@@ -11726,7 +11726,7 @@
 					<oial:relatedConceptType id="_DFD99CFB-6E76-4DF1-B4E5-A88BDF8DFD44" ref="_8E5C2488-00B7-43BC-BFE4-608E2B78C5EA" name="ValueConstraint" oppositeName="ValueType" />
 				</oial:children>
 				<oial:uniquenessConstraints>
-					<oial:uniquenessConstraint id="_C2E081E6-AFD0-43D0-BA1F-B3ADB80DA277" name="ValueTypeHasOneValueRestriction">
+					<oial:uniquenessConstraint id="_C2E081E6-AFD0-43D0-BA1F-B3ADB80DA277" name="ValueTypeHasOneValueConstraint">
 						<oial:uniquenessChild ref="_DFD99CFB-6E76-4DF1-B4E5-A88BDF8DFD44" />
 					</oial:uniquenessConstraint>
 				</oial:uniquenessConstraints>

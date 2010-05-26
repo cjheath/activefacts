@@ -30,6 +30,6 @@ Ticket is identified by Event and Seat where
 /*
  * Constraints:
  */
-Ticket is for Seat and Seat is at Venue
+Ticket is for Seat that is at Venue
 	if and only if
-	Ticket is for Event and Event is held at Venue;
+	Ticket is for Event that is held at Venue;

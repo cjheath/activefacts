@@ -363,7 +363,7 @@ module ActiveFacts
         related_role_name = related_role_name.to_s if related_role_name = options.delete(:counterpart)
 
         reading = options.delete(:reading)        # REVISIT: Implement verbalisation
-        restriction = options.delete(:restrict)   # REVISIT: Implement role value constraints
+        role_value_constraint = options.delete(:restrict)   # REVISIT: Implement role value constraints
 
         raise "Unrecognised options on #{role_name}: #{options.keys.inspect}" unless options.empty?
 

@@ -9,8 +9,8 @@ Assimilation is written as VariableLengthText restricted to {'partitioned', 'sep
 ConstraintId is written as AutoCounter;
 ContextNoteId is written as AutoCounter;
 ContextNoteKind is written as VariableLengthText restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
-Date is written as Date;
 Denominator is written as UnsignedInteger(32);
+Date is written as Date;
 Discussion is written as VariableLengthText;
 DisplayRoleNamesSetting is written as VariableLengthText restricted to {'false', 'true'};
 EnforcementCode is written as VariableLengthText(16);
@@ -259,8 +259,8 @@ SetExclusionConstraint is mandatory;
 
 Term is where
 	Vocabulary contains Name;
-RoleRef has at most one Term (as RoleName),
-	RoleName is name of RoleRef;
+Term (as RoleName) is name of RoleRef,
+	RoleRef has at most one RoleName;
 
 ValueConstraintShape is a kind of ConstraintShape;
 RoleDisplay has at most one ValueConstraintShape,
@@ -359,13 +359,13 @@ either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConst
 either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
 for each Term at most one of these holds:
 	Term designates ObjectType,
-	Term is secondary for ObjectType;
-for each Term at most one of these holds:
-	Term designates ObjectType,
-	RoleRef has Term;
+	Term is name of RoleRef;
 for each Term at most one of these holds:
 	Term is secondary for ObjectType,
-	RoleRef has Term;
+	Term is name of RoleRef;
+for each Term at most one of these holds:
+	Term designates ObjectType,
+	Term is secondary for ObjectType;
 either Unit is fundamental or Unit is derived from base-Unit but not both;
 either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
 either ValueConstraint constrains ValueType or ValueConstraint applies to Role but not both;
@@ -393,7 +393,7 @@ each SetComparisonConstraint occurs at least 2 times in
 each Term occurs at least one time in
 	Term designates ObjectType,
 	Term is secondary for ObjectType,
-	RoleRef has Term;
+	Term is name of RoleRef;
 either ValueRange has minimum-Bound or ValueRange has maximum-Bound;
 each combination Vocabulary, Name occurs at most one time in
 	Vocabulary contains Constraint,

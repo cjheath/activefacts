@@ -349,8 +349,8 @@ either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConst
 either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
 either Unit is fundamental or Unit is derived from base-Unit but not both;
 either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
-either ValueConstraintShape is for ObjectTypeShape or ValueConstraintShape is for RoleDisplay but not both;
 either ValueConstraint constrains ValueType or ValueConstraint applies to Role but not both;
+either ValueConstraintShape is for ObjectTypeShape or ValueConstraintShape is for RoleDisplay but not both;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale
