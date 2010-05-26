@@ -7,23 +7,22 @@
   <!-- Things to show only in the online version -->
   <div id="sidebar" class="online">
     <h3>Quotes</h3>
-    <!--p><em>&ldquo;epic, a masterwork&rdquo;</em></p>
-    <p align="right">Who</p-->
 
-    <p><em>&ldquo;I've long believed there must be a way to do this, but could never
+    <p><em>&ldquo;You have to get this out there, it will change <b>almost everything</b>
+    that <b>all</b> of us actually <b>do</b>&rdquo;</em></p>
+    <p align="right">Mark Mansour,<br>Agile Alliance Australia</p>
+
+    <!--p><em>&ldquo;I've long believed there must be a way to do this, but could never
     work out how to start.&rdquo;</em></p>
-    <p align="right">OSDC conference attendee</p>
-
-    <!--p><em>&ldquo;Six months ago I quit my job and sold my house to fund a related
-    project that now seems trivial and unnecessary in comparison&rdquo;</em></p>
-    <p align="right">OSDC conference attendee</p>
+    <p align="right">OSDC conference attendee</p-->
 
     <p><em>&ldquo;Epic, a major achievement. Your approach is so far ahead of the
     industry it's hard to believe it possible.&rdquo;</em></p>
-    <p align="right">Who</p-->
+    <p align="right">Richard P,<br>OSDC conference attendee</p-->
 
-    <p><em>&ldquo;Inspirational!&rdquo;</em></p>
-    <p align="right">Sven Dowideit</p>
+    <!--p><em>&ldquo;Inspirational!&rdquo;</em></p>
+    <p align="right">Sven Dowideit</p-->
+
   </div>
 
   <div id="top" class="content">
@@ -59,29 +58,44 @@
 
     <h3> Constellation Query Language </h3>
 
-      <p> CQL combines the power of a formal language with the intuitive feel
-	  of natural language. It can be used both to define and query semantic
-	  models. You can write CQL models directly, use APRIMO, or import ORM2
-	  models from <a href="http://www.ormfoundation.org/files/">NORMA</a>.
+      <p> CQL achieves the seemingly impossible task of combining the
+	  precision of a <strong>formal</strong> language with the
+	  intuitive feel of natural language. It can be used both to
+	  define and query semantic models. You can write CQL models
+	  directly, use APRIMO, or import <a href="examples/intro.html"
+	  >ORM2</a> models from <a
+	  href="http://www.ormfoundation.org/files/">NORMA</a>.  See
+	  some <a href="examples/">example</a> models, or read the <a
+	  href="CQLIntroduction.html">specification</a>.
       </p>
 
     <h3> Constellation API </h3>
-      <p> The Constellation API introduces a new way to code
-	  transactional applications. Each user action results
-	  in a single query, which can span deeply into and
-	  across the whole database, returning only the data
-	  required to respond to that action. Any required
-	  changes are made to the result Constellation, and
-	  a single <em>save</em> operation pushes all the
-	  changes resulting from the user's action back into
-	  the database in a single atomic action.
-      </p>
+      <p> The Constellation API goes beyond object-oriented to
+	  fact-oriented programming, introducing a new way to code
+	  transactional applications.  A Constellation of related facts
+	  derived from a query can be modified only by <em>assert</em>
+	  and <em>retract</em> operations.  The result is translated
+	  back to relational form and saved on demand.
+	</p>
+
+	<p>
+	  In the preferred case, each user action results in a
+	  single query, which can span deeply into and across the
+	  whole database (more than just a relational join),
+	  returning only the data required to respond to that action.
+	  Any required changes are made to the result Constellation,
+	  and a single <em>save</em> operation pushes all the changes
+	  resulting from the user's action back into the database in
+	  a single atomic action.
+	</p>
 
     <h3> Code generators </h3>
       <p> The ActiveFacts code generation framework reads CQL
 	  and emits extensible and effective object models for
 	  use with the Constellation API, and efficient SQL
 	  for whatever relational database product you're using.
+	  Learn to write CQL and have a play with the open source
+	  <a href="download.html">Ruby code generator</a>.
       </p>
 
     <h3> APRIMO </h3>
@@ -90,6 +104,7 @@
 	  implements ORM2 diagrams, with direct CQL entry and
 	  even reverse engineering tools for existing databases.
 	  APRIMO is not yet publicly available.
+      </p>
 
 </div>
 
