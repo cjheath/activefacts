@@ -1,7 +1,7 @@
 vocabulary Units;
 
 // primitive units:
-// m kg sec coul candela dollar bit erlang K
+// m kg sec coul candela bit erlang K
 
 // prefixes
 1e24 converts to yotta;
@@ -40,7 +40,7 @@ vocabulary Units;
 1 deka converts to da;
 1 deci converts to d;
 1 centi converts to c;
-1 milli converts to m;
+//1 milli converts to m;    // Conflicts with metre
 1 nano converts to n;
 1 pico converts to p;
 1 femto converts to f;
@@ -83,7 +83,7 @@ vocabulary Units;
 
 // Dimensional constants
 9.80665 m sec^-2 converts to g;					// Average gravitational pull at sea level
-6.6739e-11 m^3 kg^-1 sec^-2 converts to bigG;			// The gravtational constant
+6.6739e-11 m^3 kg^-1 sec^-2 converts to bigG;			// The gravitational constant
 299792458.0 m sec^-1 converts to lightspeed approximately;	// Speed of light
 149597871000.0 m converts to au approximately;			// Astronomical unit
 1.6021917e-19 coul converts to e approximately;			// Charge on an electron

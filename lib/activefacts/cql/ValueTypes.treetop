@@ -13,7 +13,7 @@ module ActiveFacts
         written_as
         base:(term/id) s
         value_type_parameters
-        units
+        u:units?
         r:(value_constraint enforcement)?
         mapping_pragmas
         s ';' s
@@ -22,7 +22,8 @@ module ActiveFacts
 	    name = term_definition_name.value
 	    params = value_type_parameters.values
 	    value_constraint = r.empty? ? nil : Compiler::ValueConstraint.new(r.value_constraint.ranges, r.enforcement.ast)
-	    Compiler::ValueType.new name, base.value, params, units.value, value_constraint, mapping_pragmas.value
+	    units = u.empty? ? [] : u.value
+	    Compiler::ValueType.new name, base.value, params, units, value_constraint, mapping_pragmas.value
 	  end
         }
       end
@@ -45,13 +46,13 @@ module ActiveFacts
 
       rule unit_definition
         u:(
-          unit_coefficient units s o:unit_offset?
+          unit_coefficient base:units? s o:unit_offset?
           converts s a:(approximately s)? to s
           singular:id s plural:('/' s p:id s)?
         /
           singular:id s plural:('/' s p:id s)?
           converts s a:(approximately s)? to s
-          unit_coefficient units s o:unit_offset?
+          unit_coefficient base:units? s o:unit_offset?
         )
         q:(approximately '' / ephemeral '')? s
         ';'
@@ -61,7 +62,7 @@ module ActiveFacts
             plural = u.plural.text_value.empty? ? nil : u.plural.p.text_value 
             numerator, denominator = *u.unit_coefficient.ast
             offset = u.o.text_value.empty? ? 0 : u.o.value
-            bases = u.units.value
+	    bases = u.base.empty? ? [] : u.base.value
 	    approximately = q.respond_to? :approximately
 	    ephemeral = q.respond_to? :ephemeral
 	    Compiler::Unit.new singular, plural, numerator, denominator, offset, bases, approximately, ephemeral
@@ -88,15 +89,12 @@ module ActiveFacts
         }
       end
 
+      # In a unit definition, we may use undefined base units; this is the only way to get fundamental units
       rule units
-        '' u:(!non_unit unit s tail:(!non_unit unit s)* div:('/' s unit s tail:(!non_unit unit s)*)?)?
+        !non_unit maybe_unit s tail:(!non_unit maybe_unit s)* div:('/' s maybe_unit s tail:(!non_unit maybe_unit s)*)?
         { def value
-            if u.text_value.empty?
-              []
-            else
-              u.tail.elements.inject([u.unit.value]) { |a, e| a << e.unit.value } +
-                (u.div.text_value.empty? ? [] : u.div.tail.elements.inject([u.div.unit.inverse]) { |a, e| a << e.unit.inverse })
-            end
+	    tail.elements.inject([maybe_unit.value]) { |a, e| a << e.maybe_unit.value } +
+	      (div.text_value.empty? ? [] : div.tail.elements.inject([div.maybe_unit.inverse]) { |a, e| a << e.maybe_unit.inverse })
           end
         }
       end
@@ -106,6 +104,10 @@ module ActiveFacts
       end
 
       rule unit
+	maybe_unit &{|s| input.context.unit?(s[0].unit_name.text_value) }
+      end
+
+      rule maybe_unit
         unit_name:id pow:('^' '-'? [0-9])?
         { def value
             [unit_name.text_value, pow.text_value.empty? ? 1 : Integer(pow.text_value[1..-1])]
@@ -119,10 +121,11 @@ module ActiveFacts
       end
 
       rule value_constraint
-	restricted s to s range_list s units
+	restricted s to s range_list s u:units?
         {
           def ranges
-            range_list.ranges   # REVISIT: Use the units here
+	    raise "units on value constraints are not yet processed" unless u.empty? # REVISIT: Use the units here
+            range_list.ranges
           end
         }
       end

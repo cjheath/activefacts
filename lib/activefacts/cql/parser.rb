@@ -125,6 +125,10 @@ module ActiveFacts
           false
         end
 
+        def unit? s
+          @parser.unit? s
+        end
+
       private
         # Index the name by all prefixes
         def index_name(index, name, value = true)
@@ -177,6 +181,11 @@ module ActiveFacts
 
       def context
         @context ||= Context.new(self)
+      end
+
+      def unit?(s)
+        # puts "Asking whether #{s.inspect} is a unit"
+        true
       end
 
       def parse(input, options = {})

@@ -171,7 +171,11 @@ module ActiveFacts
         player:term
         func:function_call? s
         role_id:(role_name / subscript )?
-        lr:( literal / value_constraint enforcement )?
+        lr:(
+	  literal u:unit?
+	  /
+	  value_constraint enforcement
+	)?
 	oj:objectification_join?
         !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
@@ -182,8 +186,12 @@ module ActiveFacts
 	    role_name = role_id.empty? ? nil : role_id.value
 	    function_call = nil
 	    if !lr.empty?
-	      literal = lr.value if lr.respond_to?(:value)
+	      if lr.respond_to?(:literal)
+		literal = lr.literal.value
+		raise "Literals with units are not yet processed" unless lr.u.empty?
+	      end
 	      value_constraint = Compiler::ValueConstraint.new(lr.value_constraint.ranges, lr.enforcement.ast) if lr.respond_to?(:value_constraint)
+	      raise "It is not permitted to provide both a literal value and a value restriction" if value_constraint and literal
 	    end
 
 	    objectification_join = oj.empty? ? nil : oj.ast
