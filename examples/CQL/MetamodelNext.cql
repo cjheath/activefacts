@@ -135,6 +135,7 @@ Name is of Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
 Unit has at most one Offset;
+Unit has at most one plural-Name;
 Unit is fundamental;
 
 Value is identified by Literal and Value is a string and Unit where

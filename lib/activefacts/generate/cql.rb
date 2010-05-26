@@ -47,7 +47,7 @@ module ActiveFacts
         if o = unit.offset and o != 0
           print "+ #{o.to_s('F')} "
         end
-        print "converts to #{unit.name}"
+        print "converts to #{unit.name}#{unit.plural_name ? '/'+unit.plural_name : ''}"
         print " approximately" if unit.coefficient and !unit.coefficient.is_precise
         print " ephemeral" if unit.is_ephemeral
         puts ";"

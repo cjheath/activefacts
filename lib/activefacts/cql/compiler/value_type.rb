@@ -32,7 +32,7 @@ module ActiveFacts
             raise "Redefinition of unit #{@plural}" if @constellation.Unit.values.detect{|u| u.name == @plural}
             unit = @constellation.Unit(:new,
                 :name => @singular,
-                # :plural => @plural,
+                :plural_name => @plural,
                 :coefficient => coefficient,
                 :offset => @offset,
                 :is_fundamental => @base_units.empty?,
@@ -40,11 +40,12 @@ module ActiveFacts
                 :vocabulary => @vocabulary
               )
             @base_units.each do |base_unit, exponent|
-              base = @constellation.Unit.values.detect{|u| u.name == base_unit}
+              base = @constellation.Unit.values.detect{|u| u.name == base_unit || u.plural_name == base_unit }
               debug :units, "Base unit #{base_unit}^#{exponent} #{base ? "" : "(implicitly fundamental)"}"
               base ||= @constellation.Unit(:new, :name => base_unit, :is_fundamental => true, :vocabulary => @vocabulary)
               @constellation.Derivation(:derived_unit => unit, :base_unit => base, :exponent => exponent)
             end
+=begin
             if @plural
               plural_unit = @constellation.Unit(:new,
                   :name => @plural,
@@ -53,6 +54,7 @@ module ActiveFacts
                 )
               @constellation.Derivation(:derived_unit => plural_unit, :base_unit => unit, :exponent => 1)
             end
+=end
           end
         end
       end

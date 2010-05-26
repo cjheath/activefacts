@@ -75,6 +75,7 @@ module ActiveFacts
           while i < units.size
             unit = units[i]
             i += 1
+            # Skip this one if the precursors haven't yet been dumped:
             next if unit.all_derivation_as_derived_unit.detect{|d| units.include?(d.base_unit) }
 
             unit_dump(unit)
