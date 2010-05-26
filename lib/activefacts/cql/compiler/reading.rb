@@ -396,10 +396,10 @@ module ActiveFacts
                   rr.trailing_adjective = ta
                 end
 
-                if phrase.restriction
-                  raise "The role #{rr.inspect} already has a value constraint" if rr.role.role_value_restriction
-                  phrase.restriction.constellation = fact_type.constellation
-                  rr.role.role_value_restriction = phrase.restriction.compile
+                if phrase.value_constraint
+                  raise "The role #{rr.inspect} already has a value constraint" if rr.role.role_value_constraint
+                  phrase.value_constraint.constellation = fact_type.constellation
+                  rr.role.role_value_constraint = phrase.value_constraint.compile
                 end
 
                 index += 1
@@ -552,7 +552,7 @@ module ActiveFacts
       end
 
       class RoleRef
-        attr_reader :term, :leading_adjective, :trailing_adjective, :quantifier, :function_call, :role_name, :restriction, :literal, :objectification_join
+        attr_reader :term, :leading_adjective, :trailing_adjective, :quantifier, :function_call, :role_name, :value_constraint, :literal, :objectification_join
         attr_reader :player
         attr_accessor :binding
         attr_accessor :reading    # The reading that this RoleRef is part of
@@ -560,14 +560,14 @@ module ActiveFacts
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
         attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
 
-        def initialize term, leading_adjective = nil, trailing_adjective = nil, quantifier = nil, function_call = nil, role_name = nil, restriction = nil, literal = nil, objectification_join = nil
+        def initialize term, leading_adjective = nil, trailing_adjective = nil, quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, objectification_join = nil
           @term = term
           @leading_adjective = leading_adjective
           @trailing_adjective = trailing_adjective
           @quantifier = quantifier
           # @function_call = function_call # Not used or implemented
           @role_name = role_name
-          @restriction = restriction
+          @value_constraint = value_constraint
           @literal = literal
           @objectification_join = objectification_join
           raise "REVISIT: Objectification joins #{@objectification_join.text_value} are not yet implemented" if @objectification_join
@@ -581,7 +581,7 @@ module ActiveFacts
             @trailing_adjective && ' '+@trailing_adjective.sub(/(.* |^)/, '\1-') }#{
             @role_name and @role_name.is_a?(Integer) ? "(#{@role_name})" : " (as #{@role_name})" }#{
             @literal && ' '+@literal.inspect }#{
-            @restriction && ' '+@restriction.inspect
+            @value_constraint && ' '+@value_constraint.inspect
           }>"
         end
 

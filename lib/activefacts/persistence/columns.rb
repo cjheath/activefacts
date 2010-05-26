@@ -143,13 +143,13 @@ module ActiveFacts
       # What's the underlying SQL data type of this column?
       def type
         params = {}
-        restrictions = []
-        return ["BIT", params, restrictions] if references[-1].is_unary   # It's a unary
+        constraints = []
+        return ["BIT", params, constraints] if references[-1].is_unary   # It's a unary
 
-        # Add a role value restriction
-        # REVISIT: Can add join-role-value-restrictions here, if we ever provide a way to define them
-        if references[-1].to_role && references[-1].to_role.role_value_restriction
-          restrictions << references[-1].to_role.role_value_restriction
+        # Add a role value constraint
+        # REVISIT: Can add join-role-value-constraints here, if we ever provide a way to define them
+        if references[-1].to_role && references[-1].to_role.role_value_constraint
+          constraints << references[-1].to_role.role_value_constraint
         end
 
         vt = references[-1].is_self_value ? references[-1].from : references[-1].to
@@ -158,10 +158,10 @@ module ActiveFacts
         while vt.supertype
           params[:length] ||= vt.length if vt.length.to_i != 0
           params[:scale] ||= vt.scale if vt.scale.to_i != 0
-          restrictions << vt.value_restriction if vt.value_restriction
+          constraints << vt.value_constraint if vt.value_constraint
           vt = vt.supertype
         end
-        return [vt.name, params, restrictions]
+        return [vt.name, params, constraints]
       end
 
       # The comment is the readings from the References expressed as a join

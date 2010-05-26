@@ -74,15 +74,15 @@ module ActiveFacts
       rule identification
         # REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
         identified_by its s i:(term/id) value_type_parameters
-	r:(restriction enforcement)?          # Reference Mode; restriction may be needed for the ValueType
+	r:(value_constraint enforcement)?          # Reference Mode; value_constraint may be needed for the ValueType
           {
 	    def ast
 	      if r.empty?
-		restriction = nil
+		value_constraint = nil
 	      else
-		restriction = Compiler::ValueRestriction.new(r.restriction.ranges, r.enforcement.ast)
+		value_constraint = Compiler::ValueConstraint.new(r.value_constraint.ranges, r.enforcement.ast)
 	      end
-	      Compiler::ReferenceMode.new(i.value, restriction, value_type_parameters.values)
+	      Compiler::ReferenceMode.new(i.value, value_constraint, value_type_parameters.values)
 	    end
 
 	    def mode

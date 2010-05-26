@@ -64,7 +64,7 @@ describe "Valid Numbers, Strings and Ranges" do
     "a is written as b inch^2/minute^-1;",              # Value type declaration with unit and divided unit with exponents
     "a is written as b() second^-1/mm^-1 mm^-1;",       # Value type declaration with repeated divided unit
 
-    # Integer value restrictions
+    # Integer value constraints
     "a is written as b()restricted to{1};",             # Integer, minimal whitespace
     "a is written as b() restricted to { 1 } ;",        # Integer, maximal whitespace
     "a is written as b() restricted to {1..2};",        # Integer range, minimal whitespace
@@ -82,7 +82,7 @@ describe "Valid Numbers, Strings and Ranges" do
     "a is written as b() restricted to { 1e-4 } ;",     # Integer with negative exponent
     "a is written as b() restricted to { -1e-4 } ;",    # Negative integer with negative exponent
 
-    # Real value restrictions
+    # Real value constraints
     "a is written as b() restricted to {1.0};",         # Real, minimal whitespace
     "a is written as b() restricted to { 1.0 } ;",      # Real, maximal whitespace
     "a is written as b() restricted to { 1.0e4 } ;",    # Real with exponent
@@ -97,7 +97,7 @@ describe "Valid Numbers, Strings and Ranges" do
     "a is written as b() restricted to { 1.1.. };",     # Real range with open end
     "a is written as b() restricted to { 1.1.., 2 };",  # Real range with open end and following integer
 
-    # Strings and string value restrictions
+    # Strings and string value constraints
     "a is written as b() restricted to {''};",          # String, empty, minimal whitespace
     "a is written as b() restricted to {'A'};",         # String, minimal whitespace
     "a is written as b() restricted to { 'A' };",       # String, maximal whitespace
@@ -113,9 +113,9 @@ describe "Valid Numbers, Strings and Ranges" do
     "a is written as b() restricted to { ..'F' };",     # String range, open start
     "a is written as b() restricted to { 'A'.. };",     # String range, open end
 
-    # Value restrictions with units
-    "a is written as b() restricted to {1} inches^2/second;",    # restriction with units and exponent
-    "a is written as b() second^-1/mm^-1 mm^-1 restricted to {1} inches^2/second;",    # type with unit and restriction with units and exponent
+    # Value constraints with units
+    "a is written as b() restricted to {1} inches^2/second;",    # constraint with units and exponent
+    "a is written as b() second^-1/mm^-1 mm^-1 restricted to {1} inches^2/second;",    # type with unit and constraint with units and exponent
   ]
 
   before :each do
@@ -201,16 +201,16 @@ end
 describe "Entity Types" do
   EntityTypes_RefMode = [
     [ "a is identified by its id;",                     # Entity type declaration with reference mode
-      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :restriction=>nil}, [], nil]]] 
+      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :value_constraint=>nil}, [], nil]]] 
     ],
     [ "a is identified by its number(12);",                     # Entity type declaration with reference mode
-      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"number", :parameters=>[12], :restriction=>nil}, [], nil]]]
+      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"number", :parameters=>[12], :value_constraint=>nil}, [], nil]]]
     ],
     [ "a is identified by its id:c;",                   # Entity type declaration with reference mode and fact type(s)
-      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :restriction=>nil}, [], [[:fact_clause, [], ["c"], nil]]]]]
+      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :value_constraint=>nil}, [], [[:fact_clause, [], ["c"], nil]]]]]
     ],
     [ "a is identified by its id where c;",             # Entity type declaration with reference mode and where
-      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :restriction=>nil}, [], [[:fact_clause, [], ["c"], nil]]]]]
+      [["a", [:entity_type, [], {:enforcement=>nil, :mode=>"id", :parameters=>[], :value_constraint=>nil}, [], [[:fact_clause, [], ["c"], nil]]]]]
     ],
   ]
 
@@ -298,7 +298,7 @@ end
 describe "Fact Types" do
   FactTypes = [
     [ "Foo has at most one Bar, Bar is of one Foo restricted to {1..10};",
-      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Foo", :term=>"Foo"}, "has", {:quantifier_restriction=>[], :word=>"Bar", :term=>"Bar", :quantifier=>[nil, 1]}], nil], [:fact_clause, [], [{:word=>"Bar", :term=>"Bar"}, "is", "of", {:restriction=>[[1, 10]], :quantifier_restriction=>[], :word=>"Foo", :term=>"Foo", :quantifier=>[1, 1], :restriction_enforcement=>[]}], nil]], []]]
+      [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Foo", :term=>"Foo"}, "has", {:quantifier_restriction=>[], :word=>"Bar", :term=>"Bar", :quantifier=>[nil, 1]}], nil], [:fact_clause, [], [{:word=>"Bar", :term=>"Bar"}, "is", "of", {:value_constraint=>[[1, 10]], :quantifier_restriction=>[], :word=>"Foo", :term=>"Foo", :quantifier=>[1, 1], :value_constraint_enforcement=>[]}], nil]], []]]
     ],
     [ "Bar(1) is related to Bar(2), primary-Bar(1) has secondary-Bar(2);",
       [nil, [:fact_type, [[:fact_clause, [], [{:word=>"Bar", :term=>"Bar", :role_name=>1}, "is", "related", "to", {:word=>"Bar", :term=>"Bar", :role_name=>2}], nil], [:fact_clause, [], [{:leading_adjective=>"primary", :word=>"primary Bar", :term=>"Bar", :role_name=>1}, "has", {:leading_adjective=>"secondary", :word=>"secondary Bar", :term=>"Bar", :role_name=>2}], nil]], []]]

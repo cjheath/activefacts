@@ -78,7 +78,7 @@ module ActiveFacts
         parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : ""
 
         puts "#{o.name} is written as #{o.supertype.name}#{ parameters }#{
-            o.value_restriction && " "+o.value_restriction.describe
+            o.value_constraint && " "+o.value_constraint.describe
           };"
       end
 
@@ -194,10 +194,10 @@ module ActiveFacts
               )
             )*",\n\t"
 
-            restriction = value_role.role_value_restriction || value_player.value_restriction
-            # REVISIT: If both restrictions apply and differ, we can't use a reference mode
-            restriction_text = restriction ? " "+restriction.describe : ""
-            return " identified by its #{residual}#{restriction_text}#{mapping_pragma(entity_type)}" +
+            value_constraint = value_role.role_value_constraint || value_player.value_constraint
+            # REVISIT: If both constraints apply and differ, we can't use a reference mode
+            constraint_text = value_constraint ? " "+value_constraint.describe : ""
+            return " identified by its #{residual}#{constraint_text}#{mapping_pragma(entity_type)}" +
               (fact_text != "" ? " where\n\t" + fact_text : "")
           end
         end

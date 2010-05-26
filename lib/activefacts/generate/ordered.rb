@@ -244,7 +244,7 @@ module ActiveFacts
 
         # Find the constraints that constrain frequency over each role we can verbalise:
         frequency_constraints = []
-        value_restrictions = []
+        value_constraints = []
         roles.each do |role|
           # Find a mandatory constraint that's *not* unique; this will need an extra reading
           role_is_first_in = reading.fact_type.all_reading.detect{|r|
@@ -253,7 +253,7 @@ module ActiveFacts
                 }[0].role
             }
 
-          if vr = role.role_value_restriction
+          if vr = role.role_value_constraint
             if @constraints_used[vr]
               vr = nil
             else
@@ -261,7 +261,7 @@ module ActiveFacts
               vr = vr.describe
             end
           end
-          value_restrictions << vr
+          value_constraints << vr
           if (role == roles.last)   # First role of the reading?
             # REVISIT: With a ternary, doing this on other than the last role can be ambiguous,
             # in case both the 2nd and 3rd roles have frequencies. Think some more!
@@ -282,7 +282,7 @@ module ActiveFacts
           end
         end
 
-        expanded = reading.expand(frequency_constraints, define_role_names, value_restrictions)
+        expanded = reading.expand(frequency_constraints, define_role_names, value_constraints)
 
         if (ft_rings = @ring_constraints_by_fact[reading.fact_type]) &&
            (ring = ft_rings.detect{|rc| !@constraints_used[rc]})

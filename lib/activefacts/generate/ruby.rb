@@ -76,7 +76,7 @@ module ActiveFacts
         if @sql and o.is_table
           puts "    table"
         end
-        puts "    restrict #{o.value_restriction.all_allowed_range_sorted.map{|ar| ar.to_s}*", "}\n" if o.value_restriction
+        puts "    restrict #{o.value_constraint.all_allowed_range_sorted.map{|ar| ar.to_s}*", "}\n" if o.value_constraint
         puts "    \# REVISIT: #{o.name} is in units of #{o.unit.name}\n" if o.unit
         roles_dump(o)
         puts "  end\n\n"
@@ -163,12 +163,12 @@ module ActiveFacts
                   mandatory ? ":mandatory => true" : nil,
                   readings,
                   other_role_name,
-                  (vr = role.role_value_restriction) ? ":restrict => #{vr}" : nil
+                  (vr = role.role_value_constraint) ? ":restrict => #{vr}" : nil
                 ].compact*", "+"  "
         line += " "*(48-line.length) if line.length < 48
         line += "\# See #{role_player.name}.#{other_method_name}" if other_method_name
         puts line
-        #puts "    \# REVISIT: #{other_role_name} has values restricted to #{role.role_value_restriction}\n" if role.role_value_restriction
+        #puts "    \# REVISIT: #{other_role_name} has values restricted to #{role.role_value_constraint}\n" if role.role_value_constraint
       end
 
       def concept_reference concept

@@ -58,12 +58,12 @@ module ActiveFacts
       end
 
       class ValueType < Concept
-        def initialize name, base, parameters, unit, restriction, pragmas
+        def initialize name, base, parameters, unit, value_constraint, pragmas
           super name
           @base_type_name = base
           @parameters = parameters
           @unit = unit
-          @restriction = restriction
+          @value_constraint = value_constraint
           @pragmas = pragmas
         end
 
@@ -87,9 +87,9 @@ module ActiveFacts
 
           raise "REVISIT: ValueType units are recognised but not yet compiled" unless @unit.empty?
 
-          if @restriction
-            @restriction.constellation = @constellation
-            vt.value_restriction = @restriction.compile
+          if @value_constraint
+            @value_constraint.constellation = @constellation
+            vt.value_constraint = @value_constraint.compile
           end
 
           vt

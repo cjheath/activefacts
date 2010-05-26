@@ -174,10 +174,10 @@ module ActiveFacts
           x_vr.each{|vr|
             x_ranges = vr.xpath("orm:ValueRanges/orm:ValueRange")
             next if x_ranges.size == 0
-            vt.value_restriction = @by_id[vr['id']] = @constellation.ValueRestriction(:new)
+            vt.value_constraint = @by_id[vr['id']] = @constellation.ValueConstraint(:new)
             x_ranges.each{|x_range|
               v_range = value_range(x_range)
-              ar = @constellation.AllowedRange(vt.value_restriction, v_range)
+              ar = @constellation.AllowedRange(vt.value_constraint, v_range)
             }
           }
         }
@@ -401,10 +401,10 @@ module ActiveFacts
             x_vr.each{|vr|
               x_ranges = vr.xpath("orm:ValueRanges/orm:ValueRange")
               next if x_ranges.size == 0
-              role.role_value_restriction = @by_id[vr['id']] = @constellation.ValueRestriction(:new)
+              role.role_value_constraint = @by_id[vr['id']] = @constellation.ValueConstraint(:new)
               x_ranges.each{|x_range|
                 v_range = value_range(x_range)
-                ar = @constellation.AllowedRange(role.role_value_restriction, v_range)
+                ar = @constellation.AllowedRange(role.role_value_constraint, v_range)
               }
             }
 

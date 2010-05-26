@@ -1,23 +1,23 @@
 CREATE TABLE AllowedRange (
-	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has maximum-Bound and Bound is inclusive,
+	-- AllowedRange is where ValueConstraint allows ValueRange and Constraint has ConstraintId,
+	ValueConstraintId                       int NOT NULL,
+	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound is inclusive,
 	ValueRangeMaximumBoundIsInclusive       bit NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and Value is a string,
+	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and Value is a string,
 	ValueRangeMaximumBoundValueIsAString    bit NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and Value is represented by Literal,
+	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and Value is represented by Literal,
 	ValueRangeMaximumBoundValueLiteral      varchar NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
+	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
 	ValueRangeMaximumBoundValueUnitId       int NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has minimum-Bound and Bound is inclusive,
+	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound is inclusive,
 	ValueRangeMinimumBoundIsInclusive       bit NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and Value is a string,
+	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and Value is a string,
 	ValueRangeMinimumBoundValueIsAString    bit NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and Value is represented by Literal,
+	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and Value is represented by Literal,
 	ValueRangeMinimumBoundValueLiteral      varchar NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
+	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
 	ValueRangeMinimumBoundValueUnitId       int NULL,
-	-- AllowedRange is where ValueRestriction allows ValueRange and Constraint has ConstraintId,
-	ValueRestrictionId                      int NOT NULL,
-	UNIQUE(ValueRestrictionId, ValueRangeMinimumBoundValueUnitId, ValueRangeMinimumBoundValueLiteral, ValueRangeMinimumBoundValueIsAString, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValueUnitId, ValueRangeMaximumBoundValueLiteral, ValueRangeMaximumBoundValueIsAString, ValueRangeMaximumBoundIsInclusive)
+	UNIQUE(ValueConstraintId, ValueRangeMinimumBoundValueUnitId, ValueRangeMinimumBoundValueLiteral, ValueRangeMinimumBoundValueIsAString, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValueUnitId, ValueRangeMaximumBoundValueLiteral, ValueRangeMaximumBoundValueIsAString, ValueRangeMaximumBoundIsInclusive)
 )
 GO
 
@@ -38,8 +38,8 @@ CREATE TABLE Concept (
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
 	-- maybe ValueType is a kind of Concept and maybe ValueType is of Unit and Unit has UnitId,
 	ValueTypeUnitId                         int NULL,
-	-- maybe ValueType is a kind of Concept and maybe ValueType has ValueRestriction and Constraint has ConstraintId,
-	ValueTypeValueRestrictionId             int NULL,
+	-- maybe ValueType is a kind of Concept and maybe ValueType has ValueConstraint and Constraint has ConstraintId,
+	ValueTypeValueConstraintId              int NULL,
 	-- Concept belongs to Vocabulary and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(VocabularyName, Name),
@@ -47,12 +47,12 @@ CREATE TABLE Concept (
 )
 GO
 
-CREATE VIEW dbo.ValueTypeInConcept_ValueRestrictionId (ValueTypeValueRestrictionId) WITH SCHEMABINDING AS
-	SELECT ValueTypeValueRestrictionId FROM dbo.Concept
-	WHERE	ValueTypeValueRestrictionId IS NOT NULL
+CREATE VIEW dbo.ValueTypeInConcept_ValueConstraintId (ValueTypeValueConstraintId) WITH SCHEMABINDING AS
+	SELECT ValueTypeValueConstraintId FROM dbo.Concept
+	WHERE	ValueTypeValueConstraintId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInConceptByValueTypeValueRestrictionId ON dbo.ValueTypeInConcept_ValueRestrictionId(ValueTypeValueRestrictionId)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInConceptByValueTypeValueConstraintId ON dbo.ValueTypeInConcept_ValueConstraintId(ValueTypeValueConstraintId)
 GO
 
 CREATE TABLE [Constraint] (
@@ -90,10 +90,10 @@ CREATE TABLE [Constraint] (
 	SubsetConstraintSubsetRoleSequenceId    int NULL,
 	-- maybe SetConstraint is a kind of Constraint and maybe SubsetConstraint is a kind of SetConstraint and SubsetConstraint covers superset-RoleSequence and RoleSequence has RoleSequenceId,
 	SubsetConstraintSupersetRoleSequenceId  int NULL,
-	-- maybe ValueRestriction is a kind of Constraint and maybe Role has role-ValueRestriction and Role is where FactType has Ordinal role and FactType has FactTypeId,
-	ValueRestrictionRoleFactTypeId          int NULL,
-	-- maybe ValueRestriction is a kind of Constraint and maybe Role has role-ValueRestriction and Role is where FactType has Ordinal role,
-	ValueRestrictionRoleOrdinal             int NULL,
+	-- maybe ValueConstraint is a kind of Constraint and maybe Role has role-ValueConstraint and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	ValueConstraintRoleFactTypeId           int NULL,
+	-- maybe ValueConstraint is a kind of Constraint and maybe Role has role-ValueConstraint and Role is where FactType has Ordinal role,
+	ValueConstraintRoleOrdinal              int NULL,
 	-- maybe Vocabulary contains Constraint and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NULL,
 	PRIMARY KEY(ConstraintId)
@@ -109,13 +109,13 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetRoleSequenceIdSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
 GO
 
-CREATE VIEW dbo.ValueRestrictionInConstraint_RoleFactTypeIdRoleOrdinal (ValueRestrictionRoleFactTypeId, ValueRestrictionRoleOrdinal) WITH SCHEMABINDING AS
-	SELECT ValueRestrictionRoleFactTypeId, ValueRestrictionRoleOrdinal FROM dbo.[Constraint]
-	WHERE	ValueRestrictionRoleFactTypeId IS NOT NULL
-	  AND	ValueRestrictionRoleOrdinal IS NOT NULL
+CREATE VIEW dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal (ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal FROM dbo.[Constraint]
+	WHERE	ValueConstraintRoleFactTypeId IS NOT NULL
+	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueRestriction ON dbo.ValueRestrictionInConstraint_RoleFactTypeIdRoleOrdinal(ValueRestrictionRoleFactTypeId, ValueRestrictionRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueRestriction ON dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -449,9 +449,9 @@ CREATE TABLE Shape (
 	FactTypeShapeDisplayRoleNamesSetting    varchar NULL CHECK(FactTypeShapeDisplayRoleNamesSetting = 'false' OR FactTypeShapeDisplayRoleNamesSetting = 'true'),
 	-- maybe FactTypeShape is a kind of Shape and FactTypeShape is for FactType and FactType has FactTypeId,
 	FactTypeShapeFactTypeId                 int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is a kind of Shape and Shape has ShapeId,
-	FactTypeShapeId                         int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe ObjectifiedFactTypeNameShape is for FactTypeShape and ObjectifiedFactTypeNameShape is a kind of Shape and Shape has ShapeId,
+	FactTypeShapeId                         int NULL,
+	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is a kind of Shape and Shape has ShapeId,
 	FactTypeShapeId                         int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is for Reading and FactType has Reading and FactType has FactTypeId,
 	FactTypeShapeReadingFactTypeId          int NULL,
@@ -459,10 +459,6 @@ CREATE TABLE Shape (
 	FactTypeShapeReadingOrdinal             int NULL,
 	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has RotationSetting,
 	FactTypeShapeRotationSetting            varchar NULL CHECK(FactTypeShapeRotationSetting = 'left' OR FactTypeShapeRotationSetting = 'right'),
-	-- maybe ConstraintShape is a kind of Shape and maybe FrequencyConstraintShape is a kind of ConstraintShape and RoleDisplay has FrequencyConstraintShape and RoleDisplay is where FactTypeShape displays Role in Ordinal position and Shape has ShapeId,
-	FrequencyConstraintShapeRoleDisplayFactTypeShapeId int NULL,
-	-- maybe ConstraintShape is a kind of Shape and maybe FrequencyConstraintShape is a kind of ConstraintShape and RoleDisplay has FrequencyConstraintShape and RoleDisplay is where FactTypeShape displays Role in Ordinal position,
-	FrequencyConstraintShapeRoleDisplayOrdinal int NULL,
 	-- Shape is expanded,
 	IsExpanded                              bit NOT NULL,
 	-- maybe ModelNoteShape is a kind of Shape and ModelNoteShape is for ContextNote and ContextNote has ContextNoteId,
@@ -498,7 +494,6 @@ CREATE TABLE Shape (
 	FOREIGN KEY (RingConstraintShapeFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeShapeFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeShapeReadingFactTypeId, FactTypeShapeReadingOrdinal) REFERENCES Reading (FactTypeId, Ordinal),
-	FOREIGN KEY (FrequencyConstraintShapeRoleDisplayFactTypeShapeId, FrequencyConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeObjectTypeShapeId) REFERENCES Shape (ShapeId),
@@ -577,11 +572,11 @@ CREATE TABLE Unit (
 GO
 
 ALTER TABLE AllowedRange
-	ADD FOREIGN KEY (ValueRestrictionId) REFERENCES [Constraint] (ConstraintId)
+	ADD FOREIGN KEY (ValueConstraintId) REFERENCES [Constraint] (ConstraintId)
 GO
 
 ALTER TABLE Concept
-	ADD FOREIGN KEY (ValueTypeValueRestrictionId) REFERENCES [Constraint] (ConstraintId)
+	ADD FOREIGN KEY (ValueTypeValueConstraintId) REFERENCES [Constraint] (ConstraintId)
 GO
 
 ALTER TABLE Concept
@@ -597,7 +592,7 @@ ALTER TABLE [Constraint]
 GO
 
 ALTER TABLE [Constraint]
-	ADD FOREIGN KEY (ValueRestrictionRoleFactTypeId, ValueRestrictionRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
+	ADD FOREIGN KEY (ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE [Constraint]

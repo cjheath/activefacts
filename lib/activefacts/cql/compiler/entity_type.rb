@@ -3,11 +3,11 @@ module ActiveFacts
     class Compiler < ActiveFacts::CQL::Parser
 
       class ReferenceMode
-        attr_reader :name, :restriction, :parameters
+        attr_reader :name, :value_constraint, :parameters
 
-        def initialize name, restriction, parameters
+        def initialize name, value_constraint, parameters
           @name = name
-          @restriction = restriction
+          @value_constraint = value_constraint
           @parameters = parameters
         end
       end
@@ -62,7 +62,7 @@ module ActiveFacts
             if @identification.is_a? ReferenceMode
               make_entity_type_refmode_valuetypes(name, @identification.name, @identification.parameters)
               vt_name = @reference_mode_value_type.name
-              @identification = [Compiler::RoleRef.new(vt_name, nil, nil, nil, nil, nil, @identification.restriction, nil)]
+              @identification = [Compiler::RoleRef.new(vt_name, nil, nil, nil, nil, nil, @identification.value_constraint, nil)]
             else
               context.allowed_forward_terms = legal_forward_references(@identification)
             end
@@ -276,9 +276,9 @@ module ActiveFacts
           end
 
           # REVISIT: If we do this, it gets emitted twice when we generate CQL.
-          # The generator should detect that the restriction is the same and not emit it.
-          #if (ranges = identification[:restriction])
-          #  vt.value_restriction = value_restriction(ranges, identification[:enforcement])
+          # The generator should detect that the value_constraint is the same and not emit it.
+          #if (ranges = identification[:value_constraint])
+          #  vt.value_constraint = value_constraint(ranges, identification[:enforcement])
           #end
           @reference_mode_value_type = vt
         end
@@ -302,11 +302,11 @@ module ActiveFacts
           end
           @identification[0].role = identifying_role
 
-          if (restriction = @identification[0].restriction)
-            # The restriction applies only to the value role, not to the underlying value type
-            # Decide whether this puts the restriction in the right place:
-            restriction.constellation = fact_type.constellation
-            identifying_role.role_value_restriction = restriction.compile
+          if (value_constraint = @identification[0].value_constraint)
+            # The value_constraint applies only to the value role, not to the underlying value type
+            # Decide whether this puts the value_constraint in the right place:
+            value_constraint.constellation = fact_type.constellation
+            identifying_role.role_value_constraint = value_constraint.compile
           end
 
           # Find all role sequences over the fact type's two roles

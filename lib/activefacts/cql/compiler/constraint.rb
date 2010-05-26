@@ -459,14 +459,14 @@ module ActiveFacts
         end
       end
 
-      class ValueRestriction < Constraint
+      class ValueConstraint < Constraint
         def initialize value_ranges, enforcement
           super nil, enforcement
           @value_ranges = value_ranges
         end
 
         def compile
-          @constraint = @constellation.ValueRestriction(:new)
+          @constraint = @constellation.ValueConstraint(:new)
           @value_ranges.each do |range|
             min, max = Array === range ? range : [range, range]
             v_range = @constellation.ValueRange(

@@ -160,8 +160,8 @@ module ActiveFacts
             columns = table.columns.sort_by { |column| column.name(nil) }.map do |column|
               name = escape column.name("")
               padding = " "*(name.size >= ColumnNameMax ? 1 : ColumnNameMax-name.size)
-              type, params, restrictions = column.type
-              restrictions = [] if (fk_columns.include?(column))  # Don't enforce VT restrictions on FK columns
+              type, params, constraints = column.type
+              constraints = [] if (fk_columns.include?(column))  # Don't enforce VT constraints on FK columns
               length = params[:length]
               length &&= length.to_i
               scale = params[:scale]
@@ -176,7 +176,7 @@ module ActiveFacts
                 }"
               identity = column == identity_column ? " AUTO_INCREMENT" : ""
               null = (column.is_mandatory ? "NOT " : "") + "NULL"
-              check = check_clause(name, restrictions)
+              check = check_clause(name, constraints)
               comment = column.comment
               [ "-- #{comment}", "#{name}#{padding}#{sql_type}#{identity} #{null}#{check}" ]
             end.flatten
@@ -235,11 +235,11 @@ module ActiveFacts
           "'" + str.gsub(/'/,"''") + "'"
         end
 
-        def check_clause(column_name, restrictions)
-          return "" if restrictions.empty?
-          # REVISIT: Merge all restrictions (later; now just use the first)
+        def check_clause(column_name, constraints)
+          return "" if constraints.empty?
+          # REVISIT: Merge all constraints (later; now just use the first)
           " CHECK(" +
-            restrictions[0].all_allowed_range_sorted.map do |ar|
+            constraints[0].all_allowed_range_sorted.map do |ar|
               vr = ar.value_range
               min = vr.minimum_bound
               max = vr.maximum_bound

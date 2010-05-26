@@ -73,9 +73,9 @@ module ActiveFacts
           parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : "()"
 
           puts "#{concept o.name} #{keyword "is written as"} #{concept o.supertype.name + parameters }#{
-              if (o.value_restriction)
+              if (o.value_constraint)
                 keyword("restricted to")+
-                o.value_restriction.all_allowed_range.map{|ar|
+                o.value_constraint.all_allowed_range.map{|ar|
                     # REVISIT: Need to display as string or numeric according to type here...
                     min = ar.value_range.minimum_bound
                     max = ar.value_range.maximum_bound

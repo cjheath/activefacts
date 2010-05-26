@@ -100,7 +100,7 @@ describe "Value Type class definitions" do
       }
   end
 
-  # REVISIT: role value restrictions
+  # REVISIT: role value constraints
 
   it "should fail on a non-ValueClass" do
     lambda{

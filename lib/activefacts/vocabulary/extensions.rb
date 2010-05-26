@@ -365,7 +365,7 @@ module ActiveFacts
                   define_role_names == false && role_name ? role_name : player_name,
                   ta,
                   define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil,
-                  # Can't have both a literal and a restriction, but we don't enforce that here:
+                  # Can't have both a literal and a value constraint, but we don't enforce that here:
                   literal ? literal : nil
                 ].compact*" "
             }
@@ -389,7 +389,7 @@ module ActiveFacts
       end
     end
 
-    class ValueRestriction
+    class ValueConstraint
       def describe
         "restricted to {"+
           all_allowed_range_sorted.map{|ar| ar.to_s(false) }*", "+

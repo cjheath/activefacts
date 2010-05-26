@@ -20,7 +20,7 @@ module ActiveFacts
       attr_accessor :counterpart      # All roles except unaries have a binary counterpart
       attr_accessor :unique           # Is this role played by at most one instance, or more?
       attr_accessor :mandatory        # In a valid fact population, is this role required to be played?
-      attr_accessor :value_restriction  # Counterpart Instances playing this role must meet these restrictions
+      attr_accessor :value_constraint  # Counterpart Instances playing this role must meet this constraint
       attr_reader :is_identifying     # Is this an identifying role for owner?
 
       def initialize(owner, counterpart_concept, counterpart, name, mandatory = false, unique = true)

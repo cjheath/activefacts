@@ -14,15 +14,15 @@ module ActiveFacts
         base:(term/id) s
         value_type_parameters
         units
-        r:(restriction enforcement)?
+        r:(value_constraint enforcement)?
         mapping_pragmas
         s ';' s
         {
 	  def ast
 	    name = term_definition_name.value
 	    params = value_type_parameters.values
-	    restriction = r.empty? ? nil : Compiler::ValueRestriction.new(r.restriction.ranges, r.enforcement.ast)
-	    Compiler::ValueType.new name, base.value, params, units.value, restriction, mapping_pragmas.value
+	    value_constraint = r.empty? ? nil : Compiler::ValueConstraint.new(r.value_constraint.ranges, r.enforcement.ast)
+	    Compiler::ValueType.new name, base.value, params, units.value, value_constraint, mapping_pragmas.value
 	  end
         }
       end
@@ -118,7 +118,7 @@ module ActiveFacts
         }
       end
 
-      rule restriction
+      rule value_constraint
 	restricted s to s range_list s units
         {
           def ranges

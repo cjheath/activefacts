@@ -281,8 +281,8 @@ module ::Metamodel
     has_one :unit                               # See Unit.all_value
   end
 
-  class ValueRestriction < Constraint
-    one_to_one :role, :counterpart => :role_value_restriction  # See Role.role_value_restriction
+  class ValueConstraint < Constraint
+    one_to_one :role, :counterpart => :role_value_constraint  # See Role.role_value_constraint
   end
 
   class Vocabulary
@@ -440,13 +440,13 @@ module ::Metamodel
     has_one :scale                              # See Scale.all_value_type
     has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
     has_one :unit                               # See Unit.all_value_type
-    one_to_one :value_restriction               # See ValueRestriction.value_type
+    one_to_one :value_constraint               # See ValueConstraint.value_type
   end
 
   class AllowedRange
-    identified_by :value_restriction, :value_range
+    identified_by :value_constraint, :value_range
+    has_one :value_constraint, :mandatory => true  # See ValueConstraint.all_allowed_range
     has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
-    has_one :value_restriction, :mandatory => true  # See ValueRestriction.all_allowed_range
   end
 
   class Join

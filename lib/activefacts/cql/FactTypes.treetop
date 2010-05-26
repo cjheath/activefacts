@@ -171,7 +171,7 @@ module ActiveFacts
         player:term
         func:function_call? s
         role_id:(role_name / subscript )?
-        lr:( literal / restriction enforcement )?
+        lr:( literal / value_constraint enforcement )?
 	oj:objectification_join?
         !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
@@ -183,11 +183,11 @@ module ActiveFacts
 	    function_call = nil
 	    if !lr.empty?
 	      literal = lr.value if lr.respond_to?(:value)
-	      restriction = Compiler::ValueRestriction.new(lr.restriction.ranges, lr.enforcement.ast) if lr.respond_to?(:restriction)
+	      value_constraint = Compiler::ValueConstraint.new(lr.value_constraint.ranges, lr.enforcement.ast) if lr.respond_to?(:value_constraint)
 	    end
 
 	    objectification_join = oj.empty? ? nil : oj.ast
-	    player.ast(quantifier, function_call, role_name, restriction, literal, objectification_join)
+	    player.ast(quantifier, function_call, role_name, value_constraint, literal, objectification_join)
 	  end
         }
       end

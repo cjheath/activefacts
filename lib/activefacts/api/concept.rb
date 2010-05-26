@@ -303,7 +303,7 @@ module ActiveFacts
       # :reading => "forward/reverse". Forward and reverse readings. Must include MARKERS for the player names. May include adjectives. REVISIT: define MARKERS!
       # LATER:
       # :order => :local_role OR lambda{} (for sort_by)
-      # :restriction => Range or Array of Range/value or respond_to?(include?)
+      # :restrict => Range or Array of Range/value or respond_to?(include?)
       #
       # This function returns an array:
       # [ role_name,
@@ -363,7 +363,7 @@ module ActiveFacts
         related_role_name = related_role_name.to_s if related_role_name = options.delete(:counterpart)
 
         reading = options.delete(:reading)        # REVISIT: Implement verbalisation
-        restriction = options.delete(:restrict)   # REVISIT: Implement role value restrictions
+        restriction = options.delete(:restrict)   # REVISIT: Implement role value constraints
 
         raise "Unrecognised options on #{role_name}: #{options.keys.inspect}" unless options.empty?
 
