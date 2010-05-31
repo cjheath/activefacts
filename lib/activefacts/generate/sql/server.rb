@@ -74,35 +74,35 @@ module ActiveFacts
         # Return SQL type and (modified?) length for the passed NORMA base type
         def norma_type(type, length)
           sql_type = case type
-            when "AutoCounter"; "int"
-            when "UnsignedInteger",
-              "SignedInteger",
-              "UnsignedSmallInteger",
-              "SignedSmallInteger",
-              "UnsignedTinyInteger"
+            when /^Auto ?Counter$/; 'int'
+            when /^Unsigned ?Integer$/,
+              /^Signed ?Integer$/,
+              /^Unsigned ?Small ?Integer$/,
+              /^Signed ?Small ?Integer$/,
+              /^Unsigned ?Tiny ?Integer$/
               s = case
-                when length <= 8; "tinyint"
-                when length <= 16; "shortint"
-                when length <= 32; "int"
-                else "bigint"
+                when length <= 8; 'tinyint'
+                when length <= 16; 'shortint'
+                when length <= 32; 'int'
+                else 'bigint'
                 end
               length = nil
               s
-            when "Decimal"; "decimal"
+            when /^Decimal$/; 'decimal'
 
-            when "FixedLengthText"; "char"
-            when "VariableLengthText"; "varchar"
-            when "LargeLengthText"; "text"
+            when /^Fixed ?Length ?Text$/; 'char'
+            when /^Variable ?Length ?Text$/; 'varchar'
+            when /^Large ?Length ?Text$/; 'text'
 
-            when "DateAndTime"; "datetime"
-            when "Date"; "datetime" # SQLSVR 2K5: "date"
-            when "Time"; "datetime" # SQLSVR 2K5: "time"
-            when "AutoTimestamp"; "timestamp"
+            when /^Date ?And ?Time$/; 'datetime'
+            when /^Date$/; 'datetime' # SQLSVR 2K5: 'date'
+            when /^Time$/; 'datetime' # SQLSVR 2K5: 'time'
+            when /^Auto ?Timestamp$/; 'timestamp'
 
-            when "Money"; "decimal"
-            when "PictureRawData"; "image"
-            when "VariableLengthRawData"; "varbinary"
-            when "BIT"; "bit"
+            when /^Money$/; 'decimal'
+            when /^Picture ?Raw ?Data$/; 'image'
+            when /^Variable ?Length ?Raw ?Data$/; 'varbinary'
+            when /^BIT$/; 'bit'
             else type # raise "SQL type unknown for NORMA type #{type}"
             end
           [sql_type, length]
@@ -117,7 +117,7 @@ module ActiveFacts
           delayed_foreign_keys = []
 
           @vocabulary.tables.each do |table|
-            puts "CREATE TABLE #{escape table.name(@underscore)} ("
+            puts "CREATE TABLE #{escape table.name(@underscore).gsub(' ',@underscore)} ("
 
             pk = table.identifier_columns
             identity_column = pk[0] if pk.size == 1 && pk[0].is_auto_assigned
@@ -161,7 +161,7 @@ module ActiveFacts
             table.foreign_keys.each do |fk|
               fk_text = "FOREIGN KEY (" +
                 fk.from_columns.map{|column| column.name(@underscore)}*", " +
-                ") REFERENCES #{escape fk.to.name(@underscore)} (" +
+                ") REFERENCES #{escape fk.to.name(@underscore).gsub(' ',@underscore)} (" +
                 fk.to_columns.map{|column| column.name(@underscore)}*", " +
                 ")"
               if !@delay_fks and              # We don't want to delay all Fks
@@ -169,7 +169,7 @@ module ActiveFacts
                 fk.to == table && !fk.to_columns.detect{|column| !column.is_mandatory})   # The reference columns already have the required indexes
                 inline_fks << fk_text
               else
-                delayed_foreign_keys << ("ALTER TABLE #{escape fk.from.name(@underscore)}\n\tADD " + fk_text)
+                delayed_foreign_keys << ("ALTER TABLE #{escape fk.from.name(@underscore).gsub(' ',@underscore)}\n\tADD " + fk_text)
               end
             end
 
@@ -187,7 +187,7 @@ module ActiveFacts
                 view_name = escape "#{index.view_name}_#{abbreviated_column_names}"
                 delayed_indices <<
 %Q{CREATE VIEW dbo.#{view_name} (#{column_name_list}) WITH SCHEMABINDING AS
-\tSELECT #{column_name_list} FROM dbo.#{escape index.on.name(@underscore)}
+\tSELECT #{column_name_list} FROM dbo.#{escape index.on.name(@underscore).gsub(' ',@underscore)}
 \tWHERE\t#{
   index.columns.
     select{|column| !column.is_mandatory }.

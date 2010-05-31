@@ -85,53 +85,53 @@ module ActiveFacts
         # Return SQL type and (modified?) length for the passed NORMA base type
         def norma_type(type, length)
           sql_type = case type
-            when "AutoCounter"; "INT"
-            when "SignedInteger",
-              "SignedSmallInteger"
+            when /^Auto ?Counter$/; 'int'
+            when /^Signed ?Integer$/,
+              /^Signed ?Small ?Integer$/
               s = case
-                when length <= 8; "TINYINT UNSIGNED"
-                when length <= 16; "SMALLINT UNSIGNED"
-                when length <= 24; "MEDIUMINT UNSIGNED"
-                else "INT UNSIGNED"
+                when length <= 8; 'tinyint'
+                when length <= 16; 'shortint'
+                when length <= 32; 'int'
+                else 'bigint'
                 end
               length = nil
               s
-            when "UnsignedInteger",
-              "UnsignedSmallInteger",
-              "UnsignedTinyInteger"
+            when /^Unsigned ?Integer$/,
+              /^Unsigned ?Small ?Integer$/,
+              /^Unsigned ?Tiny ?Integer$/
               s = case
-                when length <= 8; "TINYINT"
-                when length <= 16; "SMALLINT"
-                when length <= 24; "MEDIUMINT"
-                when length <= 32; "INT"
-                else "BIGINT"
+                when length <= 8; 'tinyint unsigned'
+                when length <= 16; 'shortint unsigned'
+                when length <= 32; 'int unsigned'
+                else 'bigint'
                 end
               length = nil
               s
-            when "Decimal"; "DECIMAL"
+            when /^Decimal$/; 'decimal'
 
+            when /^Fixed ?Length ?Text$/
             when "FixedLengthText"; 
                 length ||= DefaultCharColLength
-                "CHAR"
-            when "VariableLengthText"; 
+                "char"
+            when /^Variable ?Length ?Text$/
                 length ||= DefaultCharColLength
-                "VARCHAR"
+                "varchar"
             # There are several large length text types; If you need to store more than 65k chars, look at using MEDIUMTEXT or LONGTEXT
             # CQL does not yet allow you to specify a length for LargeLengthText.
-            when "LargeLengthText"; "TEXT"
+            when /^Large ?Length ?Text$/; "text"
 
-            when "DateAndTime"; "DATETIME"
-            when "Date"; "DATE" 
-            when "Time"; "TIME"
-            when "AutoTimestamp"; "TIMESTAMP"
+            when /^Date ?And ?Time$/; 'datetime'
+            when /^Date$/; 'date'
+            when /^Time$/; 'time'
+            when /^Auto ?Timestamp$/; 'timestamp'
 
-            when "Money"; "DECIMAL"
+            when /^Money$/; 'decimal'
             # Warning: Max 65 kbytes. To use larger types, try MediumBlob (16mb) or LongBlob (4gb)
-            when "PictureRawData"; "BLOB"
-            when "VariableLengthRawData"; "BLOB"
+            when /^Picture ?Raw ?Data$/; 'blob'
+            when /^Variable ?Length ?Raw ?Data$/; 'blob'
             # Assuming you only want a boolean out of this. Should we specify length instead?
-            when "BIT"; "BIT"
-            else raise "SQL type unknown for NORMA type #{type}"
+            when /^BIT$/; 'bit'
+            else type # raise "SQL type unknown for NORMA type #{type}"
             end
           [sql_type, length]
         end
@@ -145,7 +145,7 @@ module ActiveFacts
           delayed_foreign_keys = []
 
           @vocabulary.tables.each do |table|
-            puts "CREATE TABLE #{escape table.name} ("
+            puts "CREATE TABLE #{escape table.name.gsub(' ','')} ("
 
             pk = table.identifier_columns
             identity_column = pk[0] if pk.size == 1 && pk[0].is_auto_assigned
@@ -189,7 +189,7 @@ module ActiveFacts
             table.foreign_keys.each do |fk|
               fk_text = "FOREIGN KEY (" +
                 fk.from_columns.map{|column| column.name}*", " +
-                ") REFERENCES #{escape fk.to.name} (" +
+                ") REFERENCES #{escape fk.to.name.gsub(' ','')} (" +
                 fk.to_columns.map{|column| column.name}*", " +
                 ")"
               if !@delay_fks and              # We don't want to delay all Fks
@@ -197,7 +197,7 @@ module ActiveFacts
                 fk.to == table && !fk.to_columns.detect{|column| !column.is_mandatory})   # The reference columns already have the required indexes
                 inline_fks << fk_text
               else
-                delayed_foreign_keys << ("ALTER TABLE #{escape fk.from.name}\n\tADD " + fk_text)
+                delayed_foreign_keys << ("ALTER TABLE #{escape fk.from.name.gsub(' ','')}\n\tADD " + fk_text)
               end
             end
 

@@ -40,7 +40,7 @@ module ActiveFacts
 
       # The name that was assigned (perhaps implicitly by NORMA)
       def real_name
-        @uniqueness_constraint.name && @uniqueness_constraint.name != '' ? @uniqueness_constraint.name : nil
+        @uniqueness_constraint.name && @uniqueness_constraint.name != '' ? @uniqueness_constraint.name.gsub(' ','') : nil
       end
 
       # This name is either the name explicitly assigned (if any) or is constructed to form a unique index name.
@@ -65,7 +65,7 @@ module ActiveFacts
 
       # The name of a view that can be created to enforce uniqueness over non-null key values
       def view_name
-        "#{over.name}#{on == over ? "" : "In"+on.name}"
+        "#{over.name.gsub(' ','')}#{on == over ? "" : "In"+on.name}"
       end
 
       def to_s  #:nodoc:

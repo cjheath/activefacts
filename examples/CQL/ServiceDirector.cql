@@ -6,8 +6,8 @@ vocabulary ServiceDirector;
 Company_Code is written as FixedLengthText(5);
 Credential_Nr is written as SignedInteger(32);
 DDMMYYYY is written as Date;
-Date is written as Date;
 DataStore_Name is written as VariableLengthText(15);
+Date is written as Date;
 EmailAddress is written as VariableLengthText(50);
 HHMMSS is written as Time;
 HostSystem_Name is written as VariableLengthText(15);
@@ -214,15 +214,6 @@ for each Credential exactly one of these holds:
 	Vendor requires Credential,
 	DataStoreFileHostSystem has Internal-Credential,
 	DataStore has Internal-Credential;
-Network is ip_subnet
-	if and only if
-	Network uses Netmask;
-Network has Ending-IP
-	if and only if
-	Network is ip_range;
-for each Network at most one of these holds:
-	Network is ip_single,
-	Network has Ending-IP;
 for each Network exactly one of these holds:
 	HostSystem uses Network,
 	Company has Origin-Network,
@@ -231,30 +222,39 @@ for each Network exactly one of these holds:
 	Network is ip_single,
 	Network is ip_subnet,
 	Network is ip_range;
+either HostSystem runs Switch or DataStore has Legacy-Switch but not both;
+for each Network at most one of these holds:
+	Network is ip_single,
+	Network has Ending-IP;
+Network has Ending-IP
+	if and only if
+	Network is ip_range;
+Network is ip_subnet
+	if and only if
+	Network uses Netmask;
 Switch is on Private-Network
 	if and only if
 	DataStore has Legacy-Switch;
-either HostSystem runs Switch or DataStore has Legacy-Switch but not both;
 Client has default-DataStore
 	only if DataStore belongs to Client;
-Network uses Domain-Name
-	only if Network is ip_single;
 DataStore has TcpProxy-Network
 	only if Network is ip_single;
-each Credential occurs at most one time in
-	DataStore requires Credential;
-each Credential occurs at most one time in
-	Vendor requires Credential;
-each Credential occurs at most one time in
-	DataStoreFileHostSystem has Internal-Credential;
+Network uses Domain-Name
+	only if Network is ip_single;
 each Credential occurs at most one time in
 	DataStore has Internal-Credential;
 each Credential occurs at most one time in
+	DataStore requires Credential;
+each Credential occurs at most one time in
+	DataStoreFileHostSystem has Internal-Credential;
+each Credential occurs at most one time in
 	DataStoreService requires Credential;
-each IP occurs at most one time in
-	Network has Initial-IP;
+each Credential occurs at most one time in
+	Vendor requires Credential;
 each IP occurs at most one time in
 	Network has Ending-IP;
+each IP occurs at most one time in
+	Network has Initial-IP;
 each Name occurs at most one time in
 	DataStore has Friendly-Name;
 each Network occurs at most one time in
@@ -269,10 +269,10 @@ each RecurringSchedule occurs at least one time in
 	RecurringSchedule friday,
 	RecurringSchedule saturday,
 	RecurringSchedule sunday;
-each Service occurs one time in
-	Vendor provides Service;
 each Service occurs at least one time in
 	DataStore has Service;
+each Service occurs one time in
+	Vendor provides Service;
 each Subscription occurs at most one time in
 	DataStoreService has Subscription;
 each Subscription occurs at most one time in

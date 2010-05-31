@@ -338,6 +338,12 @@ for each ContextNote exactly one of these holds:
 	Concept has ContextNote,
 	FactType has ContextNote,
 	Constraint has ContextNote;
+either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConstraint is a SetEqualityConstraint but not both;
+either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
+either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
+either Unit is fundamental or Unit is derived from base-Unit but not both;
+either ValueConstraint constrains ValueType or ValueConstraint applies to Role but not both;
+either ValueConstraintShape is for ObjectTypeShape or ValueConstraintShape is for RoleDisplay but not both;
 for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
@@ -347,12 +353,6 @@ Instance plays RoleValue and Instance is of Concept
 RoleValue fulfils Fact and Fact is of FactType
 	if and only if
 	RoleValue is of Role and FactType has Ordinal role;
-either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConstraint is a SetEqualityConstraint but not both;
-either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
-either Unit is fundamental or Unit is derived from base-Unit but not both;
-either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
-either ValueConstraint constrains ValueType or ValueConstraint applies to Role but not both;
-either ValueConstraintShape is for ObjectTypeShape or ValueConstraintShape is for RoleDisplay but not both;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale

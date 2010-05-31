@@ -65,7 +65,7 @@ module ActiveFacts
 
       def units_dump
         done_banner = false
-        units = @vocabulary.all_unit.to_a.sort_by{|u| u.name}
+        units = @vocabulary.all_unit.to_a.sort_by{|u| u.name.gsub(/ /,'')}
         while units.size > 0
           if !done_banner
             done_banner = true
@@ -88,7 +88,7 @@ module ActiveFacts
       def value_types_dump
         done_banner = false
         @value_type_dumped = {}
-        @vocabulary.all_concept.sort_by{|o| o.name}.each{|o|
+        @vocabulary.all_concept.sort_by{|o| o.name.gsub(/ /,'')}.each{|o|
             next unless o.is_a?(ActiveFacts::Metamodel::ValueType)
 
             value_type_banner unless done_banner
@@ -118,7 +118,7 @@ module ActiveFacts
         done_banner = false
         sorted = @vocabulary.all_concept.select{|o|
           o.is_a?(ActiveFacts::Metamodel::EntityType) # and !o.fact_type
-        }.sort_by{|o| o.name}
+        }.sort_by{|o| o.name.gsub(/ /,'')}
         panic = nil
         while true do
           count_this_pass = 0
@@ -425,28 +425,6 @@ module ActiveFacts
         @concept_types_dumped[fact_type.entity_type] = true if fact_type.entity_type
       end
 
-      # Arrange for objectified fact types to appear in order of name, after other fact types.
-      # Facts are ordered alphabetically by the names of their role players,
-      # then by preferred_reading (subtyping fact types have no preferred_reading).
-      def fact_type_key(fact_type)
-        role_names =
-          if (pr = fact_type.preferred_reading)
-            pr.role_sequence.
-              all_role_ref.
-              sort_by{|role_ref| role_ref.ordinal}.
-              map{|role_ref| [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-" } +
-              [pr.text]
-          else
-            fact_type.all_role.map{|role| role.concept.name }
-          end
-
-        (fact_type.entity_type ? [fact_type.entity_type.name] : [""]) + role_names
-      end
-
-      def role_ref_key(role_ref)
-        [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-"
-      end
-
       # Dump fact types.
       def fact_types_dump
         # REVISIT: Uniqueness on the LHS of a binary can be coded using "distinct"
@@ -504,16 +482,73 @@ module ActiveFacts
         }
       end
 
+      # Arrange for objectified fact types to appear in order of name, after other fact types.
+      # Facts are ordered alphabetically by the names of their role players,
+      # then by preferred_reading (subtyping fact types have no preferred_reading).
+      def fact_type_key(fact_type)
+        role_names =
+          if (pr = fact_type.preferred_reading)
+            pr.role_sequence.
+              all_role_ref.
+              sort_by{|role_ref| role_ref.ordinal}.
+              map{|role_ref| [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-" } +
+              [pr.text]
+          else
+            fact_type.all_role.map{|role| role.concept.name }
+          end
+
+        (fact_type.entity_type ? [fact_type.entity_type.name] : [""]) + role_names
+      end
+
+      def role_ref_key(role_ref)
+        [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-" +
+        " in " +
+        role_ref.role.fact_type.preferred_reading.expand
+      end
+
       def constraint_sort_key(c)
         case c
         when ActiveFacts::Metamodel::RingConstraint
-          [1, c.ring_type, c.role.concept.name, c.other_role.concept.name, c.name||""]
-        when ActiveFacts::Metamodel::SetComparisonConstraint
-          [2, c.all_set_comparison_roles.map{|scrs| scrs.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name||""]
+          [ 1,
+            c.ring_type,
+            c.role.concept.name,
+            c.other_role.concept.name,
+            c.name||""
+          ]
+        when ActiveFacts::Metamodel::SetExclusionConstraint
+          [ 2+(c.is_mandatory ? 0 : 1),
+            c.all_set_comparison_roles.map{|scrs|
+              scrs.role_sequence.all_role_ref.map{|rr|
+                role_ref_key(rr)
+              }
+            },
+            c.name||""
+          ]
+        when ActiveFacts::Metamodel::SetEqualityConstraint
+          [ 4,
+            c.all_set_comparison_roles.map{|scrs|
+              scrs.role_sequence.all_role_ref.map{|rr|
+                role_ref_key(rr)
+              }
+            },
+            c.name||""
+          ]
         when ActiveFacts::Metamodel::SubsetConstraint
-          [3, [c.superset_role_sequence, c.subset_role_sequence].map{|rs| rs.all_role_ref.map{|rr| role_ref_key(rr)}}, c.name||""]
+          [ 5,
+            [c.superset_role_sequence, c.subset_role_sequence].map{|rs|
+              rs.all_role_ref.map{|rr|
+                role_ref_key(rr)
+              }
+            },
+            c.name||""
+          ]
         when ActiveFacts::Metamodel::PresenceConstraint
-          [4, c.role_sequence.all_role_ref.map{|rr| role_ref_key(rr)}, c.name||""]
+          [ 6,
+            c.role_sequence.all_role_ref.map{|rr|
+              role_ref_key(rr)
+            },
+            c.name||""
+          ]
         end
       end
 
