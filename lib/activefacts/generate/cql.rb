@@ -26,16 +26,19 @@ module ActiveFacts
       end
 
       def unit_dump unit
-        if unit.coefficient
-          # REVISIT: Use a smarter algorithm to switch to exponential form when there'd be lots of zeroes.
-          print unit.coefficient.numerator.to_s('F')
-          if d = unit.coefficient.denominator and d != 1
-            print "/#{d}"
+        if !unit.ephemera_url
+          if unit.coefficient
+            # REVISIT: Use a smarter algorithm to switch to exponential form when there'd be lots of zeroes.
+            print unit.coefficient.numerator.to_s('F')
+            if d = unit.coefficient.denominator and d != 1
+              print "/#{d}"
+            end
+            print ' '
+          else
+            print '1 '
           end
-          print ' '
-        else
-          print '1 '
         end
+
         # REVISIT: Sort base units, and convert negative powers to division?
         print(unit.
           all_derivation_as_derived_unit.
@@ -49,7 +52,7 @@ module ActiveFacts
         end
         print "converts to #{unit.name}#{unit.plural_name ? '/'+unit.plural_name : ''}"
         print " approximately" if unit.coefficient and !unit.coefficient.is_precise
-        print " ephemeral" if unit.is_ephemeral
+        print " ephemera #{unit.ephemera_url}" if unit.ephemera_url
         puts ";"
       end
 

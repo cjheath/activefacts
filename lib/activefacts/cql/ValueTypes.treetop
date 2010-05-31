@@ -46,26 +46,31 @@ module ActiveFacts
 
       rule unit_definition
         u:(
-          unit_coefficient base:units? s o:unit_offset?
+          coeff:unit_coefficient? base:units? s o:unit_offset?
           converts s a:(approximately s)? to s
           singular:id s plural:('/' s p:id s)?
         /
           singular:id s plural:('/' s p:id s)?
           converts s a:(approximately s)? to s
-          unit_coefficient base:units? s o:unit_offset?
+          coeff:unit_coefficient? base:units? s o:unit_offset?
         )
-        q:(approximately '' / ephemeral '')? s
+        q:(approximately '' / ephemera s url )? s
         ';'
         {
 	  def ast
             singular = u.singular.text_value
             plural = u.plural.text_value.empty? ? nil : u.plural.p.text_value 
-            numerator, denominator = *u.unit_coefficient.ast
+	    if u.coeff.empty?
+	      raise "Unit definition requires either a coefficient or an ephemera URL" unless q.respond_to?(:ephemera)
+	      numerator,denominator = 1, 1
+	    else
+	      numerator, denominator = *u.coeff.ast
+	    end
             offset = u.o.text_value.empty? ? 0 : u.o.value
 	    bases = u.base.empty? ? [] : u.base.value
 	    approximately = q.respond_to? :approximately
-	    ephemeral = q.respond_to? :ephemeral
-	    Compiler::Unit.new singular, plural, numerator, denominator, offset, bases, approximately, ephemeral
+	    ephemera = q.respond_to?(:ephemera) ? q.url.text_value : nil
+	    Compiler::Unit.new singular, plural, numerator, denominator, offset, bases, approximately, ephemera
 	  end
         }
       end
@@ -100,7 +105,7 @@ module ActiveFacts
       end
 
       rule non_unit
-        restricted / converts / approximately / ephemeral
+        restricted / converts / approximately / ephemera
       end
 
       rule unit

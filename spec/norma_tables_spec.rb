@@ -67,7 +67,7 @@ describe "Relational Composition from NORMA" do
 
       # Get the list of tables from our composition:
       tables = vocabulary.tables
-      table_names = tables.map{|o| o.name }.gsub(/\s/,'').sort
+      table_names = tables.map{|o| o.name.gsub(/\s/,'')}.sort
 
       # Save the actual and expected composition to files
       actual_tables_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.tables')

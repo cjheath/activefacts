@@ -3,14 +3,14 @@ module ActiveFacts
     class Compiler < ActiveFacts::CQL::Parser
 
       class Unit < Definition
-        def initialize singular, plural, numerator, denominator, offset, base_units, approximately, ephemeral
+        def initialize singular, plural, numerator, denominator, offset, base_units, approximately, ephemera_url
           @singular = singular
           @plural = plural
           @numerator, @denominator = numerator, denominator
           @offset = offset
           @base_units = base_units  # An array of pairs, each [unit_name, power]
           @approximately = approximately
-          @ephemeral = ephemeral
+          @ephemera_url = ephemera_url
         end
 
         def compile
@@ -36,7 +36,7 @@ module ActiveFacts
                 :coefficient => coefficient,
                 :offset => @offset,
                 :is_fundamental => @base_units.empty?,
-                :is_ephemeral => @ephemeral,
+                :ephemera_url => @ephemera_url,
                 :vocabulary => @vocabulary
               )
             @base_units.each do |base_unit, exponent|

@@ -266,7 +266,6 @@ module ::Metamodel
     identified_by :unit_id
     has_one :coefficient                        # See Coefficient.all_unit
     has_one :ephemera_url, :class => EphemeraURL  # See EphemeraURL.all_unit
-    maybe :is_ephemeral
     maybe :is_fundamental
     has_one :name, :mandatory => true           # See Name.all_unit
     has_one :offset                             # See Offset.all_unit

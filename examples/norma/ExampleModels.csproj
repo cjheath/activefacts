@@ -730,28 +730,6 @@
   </ItemGroup>
   <ItemGroup Condition="Exists('Richmond-ORMModel-v0.9.orm')">
   </ItemGroup>
-  <ItemGroup Condition="Exists('UnaryIdentification.orm')">
-    <None Include="UnaryIdentification.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>UnaryIdentification.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="UnaryIdentification.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>UnaryIdentification.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="UnaryIdentification.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>UnaryIdentification.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-    <None Include="UnaryIdentification.SQLStandard.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>UnaryIdentification.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('JoinEquality.orm')">
     <None Include="JoinEquality.DCIL.xml">
       <AutoGen>True</AutoGen>

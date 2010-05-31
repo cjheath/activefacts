@@ -54,6 +54,11 @@ module ActiveFacts
         }
       end
 
+      rule url
+	# url_scheme ':' (user ( ':' !(port '/') password )? '@' )? hostname ( ':' port )? '/' path query? fragment?
+	( !(white / ';') .)+
+      end
+
       rule literal
         ( boolean_literal
         / string
