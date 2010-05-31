@@ -95,10 +95,12 @@ module ActiveFacts
 
         def term_continues?(s)
           @term_part = "#{@term_part} #{s}"
-          if t = @terms[@term_part]
+          t = @terms[@term_part]
+          r = @role_names[@term_part]
+          if t && (!r || !r[@term_part])    # Part of a term and not a complete role name
             w = "term"
           else
-            t = @role_names[@term_part]
+            t = r
             w = "role_name"
           end
           if t
@@ -116,9 +118,10 @@ module ActiveFacts
         end
 
         def term_complete?
-          @allowed_forward_terms.include?(@term) or
-          system_term(@term) or
-            ((t = @terms[@term] or t = @role_names[@term]) and t[@term])
+          return true if @allowed_forward_terms.include?(@term)
+          return true if system_term(@term)
+          (t = @terms[@term] and t[@term]) or
+            (t = @role_names[@term] and t[@term])
         end
 
         def system_term(s)
