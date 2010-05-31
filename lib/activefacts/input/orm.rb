@@ -35,6 +35,38 @@ module ActiveFacts
         %w{NW N NE W C E SW S SE}.each_with_index { |dir, i| const_set(dir, i) }
       end
 
+      DataTypeMapping = {
+        "FixedLengthText" => "String",
+        "VariableLengthText" => "String",
+        "LargeLengthTextText" => "String",
+        "SignedIntegerNumeric" => "Integer(32)",
+        "SignedSmallIntegerNumeric" => " Integer(16)",
+        "SignedLargeIntegerNumeric" => " Integer(64)",
+        "UnsignedIntegerNumeric" => "Integer(32)",
+        "UnsignedTinyIntegerNumeric" => "Integer(8)",
+        "UnsignedSmallIntegerNumeric" => " Integer(16)",
+        "UnsignedLargeIntegerNumeric" => " Integer(64)",
+        "AutoCounterNumeric" => "AutoCounter",
+        "FloatingPointNumeric" => "Real(64)",
+        "SinglePrecisionFloatingPointNumeric" => " Real(32)",
+        "DoublePrecisionFloatingPointNumeric" => " Real(32)",
+        "DecimalNumeric" => "Decimal",
+        "MoneyNumeric" => "Decimal",
+        "FixedLengthRawData" => "Blob",
+        "VariableLengthRawData" => "Blob",
+        "LargeLengthRawData" => "Blob",
+        "PictureRawData" => "Image",
+        "OleObjectRawData" => "Blob",
+        "AutoTimestampTemporal" => "TimeStamp",
+        "TimeTemporal" => "Time",
+        "DateTemporal" => "Date",
+        "DateAndTimeTemporal" => "DateTime",
+        "TrueOrFalseLogical" => "Boolean",
+        "YesOrNoLogical" => "Boolean",
+        "RowIdOther" => "Integer(8)",
+        "ObjectIdOther" => "Integer(8)"
+      }
+
     private
       def self.readfile(filename, *options)
         File.open(filename) {|file|
@@ -114,7 +146,6 @@ module ActiveFacts
         x_entity_types.each{|x|
           id = x['id']
           name = x['Name'] || ""
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           entity_types <<
             @by_id[id] =
@@ -140,7 +171,6 @@ module ActiveFacts
         x_value_types.each{|x|
           id = x['id']
           name = x['Name'] || ""
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
 
           cdt = x.xpath('orm:ConceptualDataType')[0]
@@ -148,13 +178,25 @@ module ActiveFacts
           scale = scale != "" && scale.to_i
           length = cdt['Length']
           length = length != "" && length.to_i
+          length = nil if length <= 0
           base_type = @x_by_id[cdt['ref']]
           type_name = "#{base_type.name}"
           type_name.sub!(/^orm:/,'')
+
           type_name.sub!(/DataType\Z/,'')
+#=begin
           type_name.sub!(/Numeric\Z/,'')
           type_name.sub!(/Temporal\Z/,'')
+          type_name.gsub!(/([a-z])([A-Z])/,'\1 \2')
           length = 32 if type_name =~ /Integer\Z/ && length.to_i == 0 # Set default integer length
+#=end
+=begin
+          type_name = DataTypeMapping[type_name] || type_name
+          unless length
+            length = type_name.sub(/\(([0-9]*)\)/,"\1").to_i
+            length = nil if length <= 0
+          end
+=end
 
           # REVISIT: Need to handle standard types better here:
           value_super_type = type_name != name ? @constellation.ValueType(@vocabulary, type_name) : nil
@@ -203,7 +245,6 @@ module ActiveFacts
           id = x['id']
           name = x['Name'] || x['_Name']
           name = "<unnamed>" if !name
-          name.gsub!(/\s/,'')
           name = "" if !name || name.size == 0
           # Note that the new metamodel doesn't have a name for a facttype unless it's objectified
 
@@ -226,7 +267,6 @@ module ActiveFacts
         @x_subtypes.each{|x|
           id = x['id']
           name = x['Name'] || x['_Name'] || ''
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           # puts "FactType #{name || id}"
 
@@ -313,7 +353,6 @@ module ActiveFacts
         x_nested_types.each{|x|
           id = x['id']
           name = x['Name'] || ""
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
 
           x_fact_type = x.xpath('orm:NestedPredicate')[0]
@@ -342,7 +381,7 @@ module ActiveFacts
           id = x['id']
           fact_type = @by_id[id]
           fact_name = x['Name'] || x['_Name'] || ''
-          fact_name.gsub!(/\s/,'')
+          #fact_name.gsub!(/\s/,'')
           fact_name = nil if fact_name == ''
 
           x_fact_roles = x.xpath('orm:FactRoles/*')
@@ -351,13 +390,14 @@ module ActiveFacts
           # Deal with FactRoles (Roles):
           x_fact_roles.each{|x|
             name = x['Name'] || ""
-            name.gsub!(/\s/,'')
             name = nil if name.size == 0
 
             # _IsMandatory = x['_IsMandatory']
             # _Multiplicity = x['_Multiplicity]
             id = x['id']
-            ref = x.xpath('orm:RolePlayer')[0]['ref']
+            rp = x.xpath('orm:RolePlayer')[0]
+            raise "Invalid ORM file; fact has missing player (RolePlayer id=#{id})" unless rp
+            ref = rp['ref']
 
             # Find the concept that plays the role:
             concept = @by_id[ref]
@@ -389,7 +429,6 @@ module ActiveFacts
             throw "Role is played by #{concept.class} not Concept" if !(@constellation.vocabulary.concept(:Concept) === concept)
 
             name = x['Name'] || ''
-            name.gsub!(/\s/,'')
             name = nil if name.size == 0
             #puts "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.fact_type_id} played by #{concept.name}"
 
@@ -445,15 +484,20 @@ module ActiveFacts
           role_ref = all_role_refs[i]
           role = role_ref.role
 
-          word = '\b([A-Za-z][A-Za-z0-9_]*)\b'
-          leading_adjectives_re = "(?:#{word}- *(?:#{word} +)?)"
-          trailing_adjectives_re = "(?: +(?:#{word} +) *-#{word}?)"
+          word = '\b[A-Za-z][A-Za-z0-9_]+\b'
+          leading_adjectives_re = "#{word}-(?: +#{word})*"
+          trailing_adjectives_re = "(?:#{word} +)*-#{word}"
           role_with_adjectives_re =
-            %r| ?#{leading_adjectives_re}?\{#{i}\}#{trailing_adjectives_re}? ?|
+            %r| ?(#{leading_adjectives_re})? *\{#{i}\} *(#{trailing_adjectives_re})? ?|
 
+          #stop = false
+          #debugger if text =~ /Heart-/
           text.gsub!(role_with_adjectives_re) {
-            la = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\s+\Z/,'').strip
-            ta = [[$1]*"", [$2]*""]*" ".gsub(/\s+/, ' ').sub(/\A\s+/,'').strip
+            # REVISIT: Don't want to strip all spaces here any more:
+            #puts "text=#{text.inspect}, la=#{$1.inspect}, ta=#{$2.inspect}" if $1 || $2
+            #debugger if $1 || $2
+            la = ($1||'').gsub(/\s+/,' ').sub(/-/,'').strip
+            ta = ($2||'').gsub(/\s+/,' ').sub(/-/,'').strip
             #puts "Setting leading adj #{la.inspect} from #{text.inspect} for #{role_ref.role.concept.name}" if la != ""
             # REVISIT: Dunno what's up here, but removing the "if" test makes this chuck exceptions:
             role_ref.leading_adjective = la if la != ""
@@ -545,7 +589,6 @@ module ActiveFacts
         @mandatory_constraint_rs_by_id = {}
         x_mandatory_constraints.each{|x|
           name = x["Name"] || ''
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
 
           # As of Feb 2008, all NORMA ValueTypes have an implied mandatory constraint.
@@ -573,7 +616,6 @@ module ActiveFacts
           id = x['id']
           # Create a simply-mandatory PresenceConstraint for each mandatory constraint
           name = x["Name"] || ''
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           #puts "Residual Mandatory #{name}: #{roles.to_s}"
 
@@ -595,7 +637,6 @@ module ActiveFacts
         x_uniqueness_constraints = @x_model.xpath("orm:Constraints/orm:UniquenessConstraint")
         x_uniqueness_constraints.each{|x|
           name = x["Name"] || ''
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           uc_id = x["id"]
           x_pi = x.xpath("orm:PreferredIdentifierFor")[0]
@@ -682,7 +723,6 @@ module ActiveFacts
         x_exclusion_constraints.each{|x|
           id = x['id']
           name = x["Name"] || ''
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           x_mandatory = (m = x.xpath("orm:ExclusiveOrMandatoryConstraint")[0]) &&
                   @x_by_id[mc_id = m['ref']]
@@ -719,7 +759,6 @@ module ActiveFacts
         x_equality_constraints.each{|x|
           id = x['id']
           name = x["Name"] || ''
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           role_sequences = 
             x.xpath("orm:RoleSequences/orm:RoleSequence").map{|x_rs|
@@ -746,7 +785,6 @@ module ActiveFacts
         x_subset_constraints.each{|x|
           id = x['id']
           name = x["Name"] || ''
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           role_sequences = 
             x.xpath("orm:RoleSequences/orm:RoleSequence").map{|x_rs|
@@ -772,7 +810,6 @@ module ActiveFacts
         x_ring_constraints.each{|x|
           id = x['id']
           name = x["Name"] || ''
-          name.gsub!(/\s/,'')
           name = nil if name.size == 0
           type = x["Type"]
   #       begin
@@ -835,7 +872,7 @@ module ActiveFacts
           xvt = v.parent.parent.parent
           vt_id = xvt['id']
           vtname = xvt['Name'] || ''
-          vtname.gsub!(/\s/,'')
+          #vtname.gsub!(/\s/,'')
           vtname = nil if vtname.size == 0
           vt = @by_id[vt_id]
           throw "ValueType #{vtname} not found" unless vt
@@ -860,7 +897,7 @@ module ActiveFacts
           et_id = xet['id']
           if (et_id != last_et_id)
             etname = xet['Name'] || ''
-            etname.gsub!(/\s/,'')
+            #etname.gsub!(/\s/,'')
             etname = nil if etname.size == 0
             last_et = et = @by_id[et_id]
             last_et_id = et_id
