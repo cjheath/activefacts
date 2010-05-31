@@ -3,9 +3,9 @@ vocabulary SeparateSubtype;
 /*
  * Value Types
  */
-ClaimID is written as AutoCounter;
-DateTime is written as DateAndTime;
-DriverName is written as VariableLengthText;
+Claim ID is written as Auto Counter;
+Date Time is written as Date And Time;
+Driver Name is written as Variable Length Text;
 
 /*
  * Entity Types
@@ -16,10 +16,10 @@ Driver is identified by its Name;
 
 Incident is identified by Claim where
 	Claim concerns at most one Incident;
-Incident occurred on at most one DateTime;
+Incident occurred on at most one Date Time;
 
-VehicleIncident is a kind of Incident [separate];
-VehicleIncident occured while at most one Driver was in charge;
+Vehicle Incident is a kind of Incident [separate];
+Vehicle Incident occured while at most one Driver was in charge;
 
 /*
  * Constraints:

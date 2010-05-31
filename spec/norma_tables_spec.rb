@@ -26,6 +26,8 @@ Exceptions = {
   "RedundantDependency" => [%w{Politician StateOrProvince}, %w{LegislativeDistrict}],   # NORMA doesn't make a table for the 3 IDENTITY fields
   "SeparateSubtype" => [%w{Claim}, %w{Incident}],                   # NORMA doesn't make a table for the IDENTITY field. Even when Claim is independent, it still doesn't absorb Incident either and I don't know why, must ask Matt.
   "Warehousing" => [%w{Product Warehouse}, []],                     # NORMA doesn't make a table for the IDENTITY field
+  "ServiceDirector" => [%w{DataStoreService MonitorNotificationUser}, %w{DataStoreFileHostSystem }],
+  
 }
   
 def extract_created_tables_from_sql sql_file
@@ -65,7 +67,7 @@ describe "Relational Composition from NORMA" do
 
       # Get the list of tables from our composition:
       tables = vocabulary.tables
-      table_names = tables.map{|o| o.name }.sort
+      table_names = tables.map{|o| o.name }.gsub(/\s/,'')}.sort
 
       # Save the actual and expected composition to files
       actual_tables_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.tables')

@@ -1,7 +1,7 @@
 CREATE TABLE SomeString (
-	-- SomeString is long,
+	-- Some String is long,
 	IsLong                                  bit NOT NULL,
-	-- SomeString has value,
+	-- Some String has value,
 	SomeStringValue                         varchar NOT NULL,
 	PRIMARY KEY(SomeStringValue)
 )

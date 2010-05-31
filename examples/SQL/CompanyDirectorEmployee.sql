@@ -3,7 +3,7 @@ CREATE TABLE Attendance (
 	AttendeeFamilyName                      varchar(48) NULL,
 	-- Attendance is where Attendee attended Meeting and Person has given-Name,
 	AttendeeGivenName                       varchar(48) NOT NULL,
-	-- Attendance is where Attendee attended Meeting and Company held Meeting and Company is called CompanyName,
+	-- Attendance is where Attendee attended Meeting and Company held Meeting and Company is called Company Name,
 	MeetingCompanyName                      varchar(48) NOT NULL,
 	-- Attendance is where Attendee attended Meeting and Meeting is held on Date,
 	MeetingDate                             datetime NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE Attendance (
 GO
 
 CREATE TABLE Company (
-	-- Company is called CompanyName,
+	-- Company is called Company Name,
 	CompanyName                             varchar(48) NOT NULL,
 	-- Company is listed,
 	IsListed                                bit NOT NULL,
@@ -25,7 +25,7 @@ GO
 CREATE TABLE Directorship (
 	-- Directorship began on appointment-Date,
 	AppointmentDate                         datetime NOT NULL,
-	-- Directorship is where Director directs Company and Company is called CompanyName,
+	-- Directorship is where Director directs Company and Company is called Company Name,
 	CompanyName                             varchar(48) NOT NULL,
 	-- Directorship is where Director directs Company and maybe family-Name is of Person,
 	DirectorFamilyName                      varchar(48) NULL,
@@ -39,11 +39,11 @@ GO
 CREATE TABLE Person (
 	-- maybe Person was born on birth-Date,
 	BirthDate                               datetime NULL CHECK(BirthDate >= '1900/01/01'),
-	-- maybe Employee is a kind of Person and Employee works at Company and Company is called CompanyName,
+	-- maybe Employee is a kind of Person and Employee works at Company and Company is called Company Name,
 	EmployeeCompanyName                     varchar(48) NULL,
-	-- maybe Employee is a kind of Person and maybe Employee is supervised by Manager and Employee has EmployeeNr,
+	-- maybe Employee is a kind of Person and maybe Employee is supervised by Manager and Employee has Employee Nr,
 	EmployeeManagerNr                       int NULL,
-	-- maybe Employee is a kind of Person and Employee has EmployeeNr,
+	-- maybe Employee is a kind of Person and Employee has Employee Nr,
 	EmployeeNr                              int NULL,
 	-- maybe family-Name is of Person,
 	FamilyName                              varchar(48) NULL,

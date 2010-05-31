@@ -1,9 +1,9 @@
 CREATE TABLE Person (
 	-- maybe Australian is a kind of Person and maybe Australian has TFN,
 	AustralianTFN                           char(9) NULL,
-	-- maybe Employee is a kind of Person and Employee has EmployeeID,
+	-- maybe Employee is a kind of Person and Employee has Employee ID,
 	EmployeeID                              int NULL,
-	-- Person has PersonName,
+	-- Person has Person Name,
 	PersonName                              varchar NOT NULL,
 	PRIMARY KEY(PersonName)
 )

@@ -1,19 +1,19 @@
 CREATE TABLE Event (
 	-- maybe Event is certified by Certificate,
 	Certificate                             varchar(64) NULL,
-	-- maybe Event occurred on EventDate and maybe EventDate occurred on Day,
+	-- maybe Event occurred on Event Date and maybe Event Date occurred on Day,
 	EventDateDay                            int NULL CHECK((EventDateDay >= 1 AND EventDateDay <= 31)),
-	-- maybe Event occurred on EventDate and maybe EventDate wasnt after max-Year,
+	-- maybe Event occurred on Event Date and maybe Event Date wasnt after max-Year,
 	EventDateMaxYear                        int NULL,
-	-- maybe Event occurred on EventDate and maybe EventDate wasnt before min-Year,
+	-- maybe Event occurred on Event Date and maybe Event Date wasnt before min-Year,
 	EventDateMinYear                        int NULL,
-	-- maybe Event occurred on EventDate and maybe EventDate occurred in Month,
+	-- maybe Event occurred on Event Date and maybe Event Date occurred in Month,
 	EventDateMonth                          int NULL CHECK((EventDateMonth >= 1 AND EventDateMonth <= 12)),
-	-- Event has EventID,
+	-- Event has Event ID,
 	EventID                                 int IDENTITY NOT NULL,
-	-- maybe Event occurred at EventLocation,
+	-- maybe Event occurred at Event Location,
 	EventLocation                           varchar(128) NULL,
-	-- maybe Event is of EventType and EventType has EventTypeID,
+	-- maybe Event is of Event Type and Event Type has Event Type ID,
 	EventTypeID                             int NULL,
 	-- maybe Event was confirmed by Official,
 	Official                                varchar(64) NULL,
@@ -22,9 +22,9 @@ CREATE TABLE Event (
 GO
 
 CREATE TABLE EventType (
-	-- EventType has EventTypeID,
+	-- Event Type has Event Type ID,
 	EventTypeID                             int IDENTITY NOT NULL,
-	-- EventType is called EventTypeName,
+	-- Event Type is called Event Type Name,
 	EventTypeName                           varchar(16) NOT NULL CHECK(EventTypeName = 'Birth' OR EventTypeName = 'Burial' OR EventTypeName = 'Christening' OR EventTypeName = 'Death' OR EventTypeName = 'Divorce' OR EventTypeName = 'Marriage'),
 	PRIMARY KEY(EventTypeID),
 	UNIQUE(EventTypeName)
@@ -34,22 +34,22 @@ GO
 CREATE TABLE Friend (
 	-- Friend is confirmed,
 	IsConfirmed                             bit NOT NULL,
-	-- Friend is where User is friend of other-User and User has UserID,
+	-- Friend is where User is friend of other-User and User has User ID,
 	OtherUserID                             int NOT NULL,
-	-- Friend is where User is friend of other-User and User has UserID,
+	-- Friend is where User is friend of other-User and User has User ID,
 	UserID                                  int NOT NULL,
 	PRIMARY KEY(UserID, OtherUserID)
 )
 GO
 
 CREATE TABLE Participation (
-	-- Participation is where Person played Role in Event according to Source and Event has EventID,
+	-- Participation is where Person played Role in Event according to Source and Event has Event ID,
 	EventID                                 int NOT NULL,
-	-- Participation is where Person played Role in Event according to Source and Person has PersonID,
+	-- Participation is where Person played Role in Event according to Source and Person has Person ID,
 	PersonID                                int NOT NULL,
-	-- Participation is where Person played Role in Event according to Source and Role has RoleID,
+	-- Participation is where Person played Role in Event according to Source and Role has Role ID,
 	RoleID                                  int NOT NULL,
-	-- Participation is where Person played Role in Event according to Source and Source has SourceID,
+	-- Participation is where Person played Role in Event according to Source and Source has Source ID,
 	SourceID                                int NOT NULL,
 	PRIMARY KEY(PersonID, RoleID, EventID, SourceID),
 	FOREIGN KEY (EventID) REFERENCES Event (EventID)
@@ -69,7 +69,7 @@ CREATE TABLE Person (
 	GivenName                               varchar(128) NULL,
 	-- maybe Occupation is of Person,
 	Occupation                              varchar(128) NULL,
-	-- Person has PersonID,
+	-- Person has Person ID,
 	PersonID                                int IDENTITY NOT NULL,
 	-- maybe preferred-Picture is of Person,
 	PreferredPicture                        image(20) NULL,
@@ -78,9 +78,9 @@ CREATE TABLE Person (
 GO
 
 CREATE TABLE Role (
-	-- Role is called EventRoleName,
+	-- Role is called Event Role Name,
 	EventRoleName                           varchar NOT NULL CHECK(EventRoleName = 'Celebrant' OR EventRoleName = 'Father' OR EventRoleName = 'Husband' OR EventRoleName = 'Mother' OR EventRoleName = 'Subject' OR EventRoleName = 'Wife'),
-	-- Role has RoleID,
+	-- Role has Role ID,
 	RoleID                                  int IDENTITY NOT NULL,
 	PRIMARY KEY(RoleID),
 	UNIQUE(EventRoleName)
@@ -88,11 +88,11 @@ CREATE TABLE Role (
 GO
 
 CREATE TABLE Source (
-	-- Source has SourceID,
+	-- Source has Source ID,
 	SourceID                                int IDENTITY NOT NULL,
-	-- Source has SourceName,
+	-- Source has Source Name,
 	SourceName                              varchar(128) NOT NULL,
-	-- User provided Source and User has UserID,
+	-- User provided Source and User has User ID,
 	UserID                                  int NOT NULL,
 	PRIMARY KEY(SourceID),
 	UNIQUE(SourceName)
@@ -102,7 +102,7 @@ GO
 CREATE TABLE [User] (
 	-- maybe Email is of User,
 	Email                                   varchar(64) NULL,
-	-- User has UserID,
+	-- User has User ID,
 	UserID                                  int IDENTITY NOT NULL,
 	PRIMARY KEY(UserID)
 )

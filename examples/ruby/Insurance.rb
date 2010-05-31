@@ -467,7 +467,7 @@ module ::Insurance
     has_one :application, :mandatory => true    # See Application.all_policy
     has_one :authorised_rep                     # See AuthorisedRep.all_policy
     has_one :client, :mandatory => true         # See Client.all_policy
-    has_one :itcclaimed, :class => ITCClaimed   # See ITCClaimed.all_policy
+    has_one :itc_claimed, :class => ITCClaimed  # See ITCClaimed.all_policy
     has_one :p_product, :class => Product, :mandatory => true  # See Product.all_policy_as_p_product
     has_one :p_serial, :class => PolicySerial, :mandatory => true  # See PolicySerial.all_policy_as_p_serial
     has_one :p_state, :class => State, :mandatory => true  # See State.all_policy_as_p_state

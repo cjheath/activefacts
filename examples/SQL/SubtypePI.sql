@@ -1,9 +1,9 @@
 CREATE TABLE Entrant (
-	-- maybe Competitor is a kind of Entrant and Competitor has FamilyName,
+	-- maybe Competitor is a kind of Entrant and Competitor has Family Name,
 	CompetitorFamilyName                    varchar NULL,
-	-- Entrant has EntrantID,
+	-- Entrant has Entrant ID,
 	EntrantID                               int IDENTITY NOT NULL,
-	-- maybe Team is a kind of Entrant and Team has TeamID,
+	-- maybe Team is a kind of Entrant and Team has Team ID,
 	TeamID                                  int NULL,
 	PRIMARY KEY(EntrantID)
 )
@@ -25,10 +25,10 @@ GO
 CREATE UNIQUE CLUSTERED INDEX PK_TeamInEntrant ON dbo.TeamInEntrant_ID(TeamID)
 GO
 
-CREATE TABLE EntrantHasGivenName (
-	-- EntrantHasGivenName is where Entrant has GivenName and Entrant has EntrantID,
+CREATE TABLE EntrantGivenName (
+	-- Entrant Given Name is where Entrant has Given Name and Entrant has Entrant ID,
 	EntrantID                               int NOT NULL,
-	-- EntrantHasGivenName is where Entrant has GivenName,
+	-- Entrant Given Name is where Entrant has Given Name,
 	GivenName                               varchar NOT NULL,
 	PRIMARY KEY(EntrantID, GivenName),
 	UNIQUE(GivenName),

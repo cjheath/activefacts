@@ -1,7 +1,7 @@
 CREATE TABLE Playing (
-	-- Playing is where Person plays Game and Game has GameCode,
+	-- Playing is where Person plays Game and Game has Game Code,
 	GameCode                                char NOT NULL,
-	-- Playing is where Person plays Game and Person has PersonName,
+	-- Playing is where Person plays Game and Person has Person Name,
 	PersonName                              varchar NOT NULL,
 	PRIMARY KEY(PersonName, GameCode)
 )

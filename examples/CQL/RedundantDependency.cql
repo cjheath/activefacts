@@ -3,32 +3,32 @@ vocabulary RedundantDependency;
 /*
  * Value Types
  */
-AddressId is written as AutoCounter;
-DistrictNumber is written as SignedInteger(32);
-PoliticianId is written as AutoCounter;
-PostalCode is written as SignedInteger(32);
-StateOrProvinceId is written as AutoCounter;
+Address Id is written as Auto Counter;
+District Number is written as Signed Integer(32);
+Politician Id is written as Auto Counter;
+Postal Code is written as Signed Integer(32);
+State Or Province Id is written as Auto Counter;
 
 /*
  * Entity Types
  */
 Address is identified by its Id;
-Address is assigned at most one PostalCode;
+Address is assigned at most one Postal Code;
 
 Politician is identified by its Id;
 
-StateOrProvince is identified by its Id;
-Address is in at most one StateOrProvince;
+State Or Province is identified by its Id;
+Address is in at most one State Or Province;
 
-LegislativeDistrict is identified by DistrictNumber and StateOrProvince where
-	LegislativeDistrict has one DistrictNumber,
-	LegislativeDistrict is for one StateOrProvince;
-Address is in at most one LegislativeDistrict;
-Politician represents at most one LegislativeDistrict,
-	LegislativeDistrict is represented by one Politician;
+Legislative District is identified by District Number and State Or Province where
+	Legislative District has one District Number,
+	Legislative District is for one State Or Province;
+Address is in at most one Legislative District;
+Politician represents at most one Legislative District,
+	Legislative District is represented by one Politician;
 
 /*
  * Constraints:
  */
-Address is in LegislativeDistrict
-	only if Address is in StateOrProvince and LegislativeDistrict is for StateOrProvince;
+Address is in Legislative District
+	only if Address is in State Or Province and Legislative District is for State Or Province;

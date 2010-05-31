@@ -1,64 +1,64 @@
 CREATE TABLE AllowedRange (
-	-- AllowedRange is where ValueConstraint allows ValueRange and Constraint has ConstraintId,
+	-- Allowed Range is where Value Constraint allows Value Range and Constraint has Constraint Id,
 	ValueConstraintId                       int NOT NULL,
-	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound is inclusive,
+	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound is inclusive,
 	ValueRangeMaximumBoundIsInclusive       bit NULL,
-	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and Value is a string,
+	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound has Value and Value is a string,
 	ValueRangeMaximumBoundValueIsAString    bit NULL,
-	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and Value is represented by Literal,
+	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound has Value and Value is represented by Literal,
 	ValueRangeMaximumBoundValueLiteral      varchar NULL,
-	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has maximum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
+	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound has Value and maybe Value is in Unit and Unit has Unit Id,
 	ValueRangeMaximumBoundValueUnitId       int NULL,
-	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound is inclusive,
+	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound is inclusive,
 	ValueRangeMinimumBoundIsInclusive       bit NULL,
-	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and Value is a string,
+	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound has Value and Value is a string,
 	ValueRangeMinimumBoundValueIsAString    bit NULL,
-	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and Value is represented by Literal,
+	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound has Value and Value is represented by Literal,
 	ValueRangeMinimumBoundValueLiteral      varchar NULL,
-	-- AllowedRange is where ValueConstraint allows ValueRange and maybe ValueRange has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit has UnitId,
+	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit has Unit Id,
 	ValueRangeMinimumBoundValueUnitId       int NULL,
 	UNIQUE(ValueConstraintId, ValueRangeMinimumBoundValueUnitId, ValueRangeMinimumBoundValueLiteral, ValueRangeMinimumBoundValueIsAString, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValueUnitId, ValueRangeMaximumBoundValueLiteral, ValueRangeMaximumBoundValueIsAString, ValueRangeMaximumBoundIsInclusive)
 )
 GO
 
 CREATE TABLE [Constraint] (
-	-- Constraint has ConstraintId,
+	-- Constraint has Constraint Id,
 	ConstraintId                            int IDENTITY NOT NULL,
-	-- maybe Constraint requires Enforcement and maybe Enforcement notifies Agent and Agent has AgentName,
+	-- maybe Constraint requires Enforcement and maybe Enforcement notifies Agent and Agent has Agent Name,
 	EnforcementAgentName                    varchar NULL,
-	-- maybe Constraint requires Enforcement and Enforcement has EnforcementCode,
+	-- maybe Constraint requires Enforcement and Enforcement has Enforcement Code,
 	EnforcementCode                         varchar(16) NULL,
 	-- maybe Name is of Constraint,
 	Name                                    varchar(64) NULL,
-	-- maybe PresenceConstraint is a kind of Constraint and PresenceConstraint is mandatory,
+	-- maybe Presence Constraint is a kind of Constraint and Presence Constraint is mandatory,
 	PresenceConstraintIsMandatory           bit NULL,
-	-- maybe PresenceConstraint is a kind of Constraint and PresenceConstraint is preferred identifier,
+	-- maybe Presence Constraint is a kind of Constraint and Presence Constraint is preferred identifier,
 	PresenceConstraintIsPreferredIdentifier bit NULL,
-	-- maybe PresenceConstraint is a kind of Constraint and maybe PresenceConstraint has max-Frequency,
+	-- maybe Presence Constraint is a kind of Constraint and maybe Presence Constraint has max-Frequency,
 	PresenceConstraintMaxFrequency          int NULL CHECK(PresenceConstraintMaxFrequency >= 1),
-	-- maybe PresenceConstraint is a kind of Constraint and maybe PresenceConstraint has min-Frequency,
+	-- maybe Presence Constraint is a kind of Constraint and maybe Presence Constraint has min-Frequency,
 	PresenceConstraintMinFrequency          int NULL CHECK(PresenceConstraintMinFrequency >= 2),
-	-- maybe PresenceConstraint is a kind of Constraint and PresenceConstraint covers RoleSequence and RoleSequence has RoleSequenceId,
+	-- maybe Presence Constraint is a kind of Constraint and Presence Constraint covers Role Sequence and Role Sequence has Role Sequence Id,
 	PresenceConstraintRoleSequenceId        int NULL,
-	-- maybe RingConstraint is a kind of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- maybe Ring Constraint is a kind of Constraint and maybe other-Role is of Ring Constraint and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RingConstraintOtherRoleFactTypeId       int NULL,
-	-- maybe RingConstraint is a kind of Constraint and maybe other-Role is of RingConstraint and Role is where FactType has Ordinal role,
+	-- maybe Ring Constraint is a kind of Constraint and maybe other-Role is of Ring Constraint and Role is where Fact Type has Ordinal role,
 	RingConstraintOtherRoleOrdinal          int NULL,
-	-- maybe RingConstraint is a kind of Constraint and RingConstraint is of RingType,
+	-- maybe Ring Constraint is a kind of Constraint and Ring Constraint is of Ring Type,
 	RingConstraintRingType                  varchar NULL,
-	-- maybe RingConstraint is a kind of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- maybe Ring Constraint is a kind of Constraint and maybe Role is of Ring Constraint and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RingConstraintRoleFactTypeId            int NULL,
-	-- maybe RingConstraint is a kind of Constraint and maybe Role is of RingConstraint and Role is where FactType has Ordinal role,
+	-- maybe Ring Constraint is a kind of Constraint and maybe Role is of Ring Constraint and Role is where Fact Type has Ordinal role,
 	RingConstraintRoleOrdinal               int NULL,
-	-- maybe SetConstraint is a kind of Constraint and maybe SetComparisonConstraint is a kind of SetConstraint and maybe SetExclusionConstraint is a kind of SetComparisonConstraint and SetExclusionConstraint is mandatory,
+	-- maybe Set Constraint is a kind of Constraint and maybe Set Comparison Constraint is a kind of Set Constraint and maybe Set Exclusion Constraint is a kind of Set Comparison Constraint and Set Exclusion Constraint is mandatory,
 	SetExclusionConstraintIsMandatory       bit NULL,
-	-- maybe SetConstraint is a kind of Constraint and maybe SubsetConstraint is a kind of SetConstraint and SubsetConstraint covers subset-RoleSequence and RoleSequence has RoleSequenceId,
+	-- maybe Set Constraint is a kind of Constraint and maybe Subset Constraint is a kind of Set Constraint and Subset Constraint covers subset-Role Sequence and Role Sequence has Role Sequence Id,
 	SubsetConstraintSubsetRoleSequenceId    int NULL,
-	-- maybe SetConstraint is a kind of Constraint and maybe SubsetConstraint is a kind of SetConstraint and SubsetConstraint covers superset-RoleSequence and RoleSequence has RoleSequenceId,
+	-- maybe Set Constraint is a kind of Constraint and maybe Subset Constraint is a kind of Set Constraint and Subset Constraint covers superset-Role Sequence and Role Sequence has Role Sequence Id,
 	SubsetConstraintSupersetRoleSequenceId  int NULL,
-	-- maybe ValueConstraint is a kind of Constraint and maybe Role has role-ValueConstraint and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- maybe Value Constraint is a kind of Constraint and maybe Role has role-Value Constraint and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	ValueConstraintRoleFactTypeId           int NULL,
-	-- maybe ValueConstraint is a kind of Constraint and maybe Role has role-ValueConstraint and Role is where FactType has Ordinal role,
+	-- maybe Value Constraint is a kind of Constraint and maybe Role has role-Value Constraint and Role is where Fact Type has Ordinal role,
 	ValueConstraintRoleOrdinal              int NULL,
 	-- maybe Vocabulary contains Constraint and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NULL,
@@ -66,22 +66,22 @@ CREATE TABLE [Constraint] (
 )
 GO
 
-CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetRoleSequenceIdSupersetRoleSequenceId (SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId) WITH SCHEMABINDING AS
+CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId (SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId) WITH SCHEMABINDING AS
 	SELECT SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId FROM dbo.[Constraint]
 	WHERE	SubsetConstraintSubsetRoleSequenceId IS NOT NULL
 	  AND	SubsetConstraintSupersetRoleSequenceId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetRoleSequenceIdSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
+CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
 GO
 
-CREATE VIEW dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal (ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
+CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal (ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
 	SELECT ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal FROM dbo.[Constraint]
 	WHERE	ValueConstraintRoleFactTypeId IS NOT NULL
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_RoleFactTypeIdRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -94,41 +94,41 @@ CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameName ON dbo.Constrain
 GO
 
 CREATE TABLE ContextAccordingTo (
-	-- ContextAccordingTo is where ContextNote is according to Agent and Agent has AgentName,
+	-- Context According To is where Context Note is according to Agent and Agent has Agent Name,
 	AgentName                               varchar NOT NULL,
-	-- ContextAccordingTo is where ContextNote is according to Agent and ContextNote has ContextNoteId,
+	-- Context According To is where Context Note is according to Agent and Context Note has Context Note Id,
 	ContextNoteId                           int NOT NULL,
-	-- maybe ContextAccordingTo was lodged on Date,
+	-- maybe Context According To was lodged on Date,
 	Date                                    datetime NULL,
 	PRIMARY KEY(ContextNoteId, AgentName)
 )
 GO
 
 CREATE TABLE ContextAgreedBy (
-	-- ContextAgreedBy is where Agreement was reached by Agent and Agent has AgentName,
+	-- Context Agreed By is where Agreement was reached by Agent and Agent has Agent Name,
 	AgentName                               varchar NOT NULL,
-	-- ContextAgreedBy is where Agreement was reached by Agent and ContextNote has ContextNoteId,
+	-- Context Agreed By is where Agreement was reached by Agent and Context Note has Context Note Id,
 	AgreementContextNoteId                  int NOT NULL,
 	PRIMARY KEY(AgreementContextNoteId, AgentName)
 )
 GO
 
 CREATE TABLE ContextNote (
-	-- maybe ContextNote was added by Agreement and maybe Agreement was on Date,
+	-- maybe Context Note was added by Agreement and maybe Agreement was on Date,
 	AgreementDate                           datetime NULL,
-	-- maybe Constraint has ContextNote and Constraint has ConstraintId,
+	-- maybe Constraint has Context Note and Constraint has Constraint Id,
 	ConstraintId                            int NULL,
-	-- ContextNote has ContextNoteId,
+	-- Context Note has Context Note Id,
 	ContextNoteId                           int IDENTITY NOT NULL,
-	-- ContextNote has ContextNoteKind,
+	-- Context Note has Context Note Kind,
 	ContextNoteKind                         varchar NOT NULL CHECK(ContextNoteKind = 'as_opposed_to' OR ContextNoteKind = 'because' OR ContextNoteKind = 'so_that' OR ContextNoteKind = 'to_avoid'),
-	-- ContextNote has Discussion,
+	-- Context Note has Discussion,
 	Discussion                              varchar NOT NULL,
-	-- maybe FactType has ContextNote and FactType has FactTypeId,
+	-- maybe Fact Type has Context Note and Fact Type has Fact Type Id,
 	FactTypeId                              int NULL,
-	-- maybe ObjectType has ContextNote and Term is where Vocabulary contains Name,
+	-- maybe Object Type has Context Note and Term is where Vocabulary contains Name,
 	ObjectTypeName                          varchar(64) NULL,
-	-- maybe ObjectType has ContextNote and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Object Type has Context Note and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ObjectTypeVocabularyName                varchar(64) NULL,
 	PRIMARY KEY(ContextNoteId),
 	FOREIGN KEY (ConstraintId) REFERENCES [Constraint] (ConstraintId)
@@ -136,9 +136,9 @@ CREATE TABLE ContextNote (
 GO
 
 CREATE TABLE Derivation (
-	-- Derivation is where DerivedUnit is derived from BaseUnit and Unit has UnitId,
+	-- Derivation is where Derived Unit is derived from Base Unit and Unit has Unit Id,
 	BaseUnitId                              int NOT NULL,
-	-- Derivation is where DerivedUnit is derived from BaseUnit and Unit has UnitId,
+	-- Derivation is where Derived Unit is derived from Base Unit and Unit has Unit Id,
 	DerivedUnitId                           int NOT NULL,
 	-- maybe Derivation has Exponent,
 	Exponent                                int NULL,
@@ -147,9 +147,9 @@ CREATE TABLE Derivation (
 GO
 
 CREATE TABLE Fact (
-	-- Fact has FactId,
+	-- Fact has Fact Id,
 	FactId                                  int IDENTITY NOT NULL,
-	-- Fact is of FactType and FactType has FactTypeId,
+	-- Fact is of Fact Type and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
 	-- Population includes Fact and Population has Name,
 	PopulationName                          varchar(64) NOT NULL,
@@ -160,23 +160,23 @@ CREATE TABLE Fact (
 GO
 
 CREATE TABLE FactType (
-	-- maybe EntityType nests FactType and Term is where Vocabulary contains Name,
+	-- maybe Entity Type nests Fact Type and Term is where Vocabulary contains Name,
 	EntityTypeName                          varchar(64) NULL,
-	-- maybe EntityType nests FactType and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Entity Type nests Fact Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	EntityTypeVocabularyName                varchar(64) NULL,
-	-- FactType has FactTypeId,
+	-- Fact Type has Fact Type Id,
 	FactTypeId                              int IDENTITY NOT NULL,
-	-- maybe TypeInheritance is a kind of FactType and maybe Assimilation applies to TypeInheritance,
+	-- maybe Type Inheritance is a kind of Fact Type and maybe Assimilation applies to Type Inheritance,
 	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
-	-- maybe TypeInheritance is a kind of FactType and TypeInheritance provides identification,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
 	TypeInheritanceProvidesIdentification   bit NULL,
-	-- maybe TypeInheritance is a kind of FactType and TypeInheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name,
 	TypeInheritanceSubtypeName              varchar(64) NULL,
-	-- maybe TypeInheritance is a kind of FactType and TypeInheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	TypeInheritanceSubtypeVocabularyName    varchar(64) NULL,
-	-- maybe TypeInheritance is a kind of FactType and TypeInheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name,
 	TypeInheritanceSupertypeName            varchar(64) NULL,
-	-- maybe TypeInheritance is a kind of FactType and TypeInheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	TypeInheritanceSupertypeVocabularyName  varchar(64) NULL,
 	PRIMARY KEY(FactTypeId)
 )
@@ -191,17 +191,17 @@ GO
 CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
 GO
 
-CREATE VIEW dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameProvidesIdentification (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
+CREATE VIEW dbo.[TypeInheritanceInFact Type_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentifi] (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
 	SELECT TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification FROM dbo.FactType
 	WHERE	TypeInheritanceSubtypeVocabularyName IS NOT NULL
 	  AND	TypeInheritanceSubtypeName IS NOT NULL
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameProvidesIdentification(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
+CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.[TypeInheritanceInFact Type_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentifi](TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
 GO
 
-CREATE VIEW dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameSupertypeVocabularyNameSupertypeName (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
+CREATE VIEW dbo.[TypeInheritanceInFact Type_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabul] (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
 	SELECT TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName FROM dbo.FactType
 	WHERE	TypeInheritanceSubtypeVocabularyName IS NOT NULL
 	  AND	TypeInheritanceSubtypeName IS NOT NULL
@@ -209,17 +209,17 @@ CREATE VIEW dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameSupert
 	  AND	TypeInheritanceSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_SubtypeVocabularyNameSubtypeNameSupertypeVocabularyNameSupertypeName(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX [PK_TypeInheritanceInFact Type] ON dbo.[TypeInheritanceInFact Type_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabul](TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
 GO
 
 CREATE TABLE Instance (
-	-- maybe Instance objectifies Fact and Fact has FactId,
+	-- maybe Instance objectifies Fact and Fact has Fact Id,
 	FactId                                  int NULL,
-	-- Instance has InstanceId,
+	-- Instance has Instance Id,
 	InstanceId                              int IDENTITY NOT NULL,
-	-- Instance is of ObjectType and Term is where Vocabulary contains Name,
+	-- Instance is of Object Type and Term is where Vocabulary contains Name,
 	ObjectTypeName                          varchar(64) NOT NULL,
-	-- Instance is of ObjectType and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- Instance is of Object Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Population includes Instance and Population has Name,
 	PopulationName                          varchar(64) NOT NULL,
@@ -229,7 +229,7 @@ CREATE TABLE Instance (
 	ValueIsAString                          bit NULL,
 	-- maybe Instance has Value and Value is represented by Literal,
 	ValueLiteral                            varchar NULL,
-	-- maybe Instance has Value and maybe Value is in Unit and Unit has UnitId,
+	-- maybe Instance has Value and maybe Value is in Unit and Unit has Unit Id,
 	ValueUnitId                             int NULL,
 	PRIMARY KEY(InstanceId),
 	FOREIGN KEY (FactId) REFERENCES Fact (FactId)
@@ -245,59 +245,59 @@ CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
 CREATE TABLE [Join] (
-	-- maybe Join has input-Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- maybe Join has input-Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	InputRoleFactTypeId                     int NULL,
-	-- maybe Join has input-Role and Role is where FactType has Ordinal role,
+	-- maybe Join has input-Role and Role is where Fact Type has Ordinal role,
 	InputRoleOrdinal                        int NULL,
 	-- is anti Join,
 	IsAnti                                  bit NOT NULL,
 	-- Join is outer,
 	IsOuter                                 bit NOT NULL,
-	-- Join is where RoleRef has JoinStep join,
+	-- Join is where Role Ref has Join Step join,
 	JoinStep                                int NOT NULL,
-	-- maybe Join traverses ObjectType and Term is where Vocabulary contains Name,
+	-- maybe Join traverses Object Type and Term is where Vocabulary contains Name,
 	ObjectTypeName                          varchar(64) NULL,
-	-- maybe Join traverses ObjectType and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Join traverses Object Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ObjectTypeVocabularyName                varchar(64) NULL,
-	-- maybe Join has output-Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- maybe Join has output-Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	OutputRoleFactTypeId                    int NULL,
-	-- maybe Join has output-Role and Role is where FactType has Ordinal role,
+	-- maybe Join has output-Role and Role is where Fact Type has Ordinal role,
 	OutputRoleOrdinal                       int NULL,
-	-- Join is where RoleRef has JoinStep join and RoleRef is where RoleSequence in Ordinal position includes Role,
+	-- Join is where Role Ref has Join Step join and Role Ref is where Role Sequence in Ordinal position includes Role,
 	RoleRefOrdinal                          int NOT NULL,
-	-- Join is where RoleRef has JoinStep join and RoleRef is where RoleSequence in Ordinal position includes Role and RoleSequence has RoleSequenceId,
+	-- Join is where Role Ref has Join Step join and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
 	RoleRefRoleSequenceId                   int NOT NULL,
 	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep)
 )
 GO
 
 CREATE TABLE ParamValue (
-	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType,
+	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type,
 	ParameterName                           varchar(64) NOT NULL,
-	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType and Term is where Vocabulary contains Name,
+	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Term is where Vocabulary contains Name,
 	ParameterValueTypeName                  varchar(64) NOT NULL,
-	-- ParamValue is where Value for Parameter applies to ValueType and Parameter is where Name is a parameter of ValueType and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ParameterValueTypeVocabularyName        varchar(64) NOT NULL,
-	-- ParamValue is where Value for Parameter applies to ValueType and Value is a string,
+	-- Param Value is where Value for Parameter applies to Value Type and Value is a string,
 	ValueIsAString                          bit NOT NULL,
-	-- ParamValue is where Value for Parameter applies to ValueType and Value is represented by Literal,
+	-- Param Value is where Value for Parameter applies to Value Type and Value is represented by Literal,
 	ValueLiteral                            varchar NOT NULL,
-	-- ParamValue is where Value for Parameter applies to ValueType and Term is where Vocabulary contains Name,
+	-- Param Value is where Value for Parameter applies to Value Type and Term is where Vocabulary contains Name,
 	ValueTypeName                           varchar(64) NOT NULL,
-	-- ParamValue is where Value for Parameter applies to ValueType and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- Param Value is where Value for Parameter applies to Value Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ValueTypeVocabularyName                 varchar(64) NOT NULL,
-	-- ParamValue is where Value for Parameter applies to ValueType and maybe Value is in Unit and Unit has UnitId,
+	-- Param Value is where Value for Parameter applies to Value Type and maybe Value is in Unit and Unit has Unit Id,
 	ValueUnitId                             int NULL,
 	UNIQUE(ValueUnitId, ValueLiteral, ValueIsAString, ParameterName, ParameterValueTypeVocabularyName, ParameterValueTypeName)
 )
 GO
 
 CREATE TABLE Reading (
-	-- FactType has Reading and FactType has FactTypeId,
+	-- Fact Type has Reading and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
 	-- Reading is in Ordinal position,
 	Ordinal                                 int NOT NULL,
-	-- Reading is in RoleSequence and RoleSequence has RoleSequenceId,
+	-- Reading is in Role Sequence and Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int NOT NULL,
 	-- Reading has Text,
 	Text                                    varchar(256) NOT NULL,
@@ -307,13 +307,13 @@ CREATE TABLE Reading (
 GO
 
 CREATE TABLE Role (
-	-- Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
-	-- ObjectType plays Role and Term is where Vocabulary contains Name,
+	-- Object Type plays Role and Term is where Vocabulary contains Name,
 	ObjectTypeName                          varchar(64) NOT NULL,
-	-- ObjectType plays Role and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- Object Type plays Role and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ObjectTypeVocabularyName                varchar(64) NOT NULL,
-	-- Role is where FactType has Ordinal role,
+	-- Role is where Fact Type has Ordinal role,
 	Ordinal                                 int NOT NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
@@ -321,13 +321,13 @@ CREATE TABLE Role (
 GO
 
 CREATE TABLE RoleDisplay (
-	-- RoleDisplay is where FactTypeShape displays Role in Ordinal position and Shape has ShapeId,
+	-- Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Shape Id,
 	FactTypeShapeId                         int NOT NULL,
-	-- RoleDisplay is where FactTypeShape displays Role in Ordinal position,
+	-- Role Display is where Fact Type Shape displays Role in Ordinal position,
 	Ordinal                                 int NOT NULL,
-	-- RoleDisplay is where FactTypeShape displays Role in Ordinal position and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- Role Display is where Fact Type Shape displays Role in Ordinal position and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RoleFactTypeId                          int NOT NULL,
-	-- RoleDisplay is where FactTypeShape displays Role in Ordinal position and Role is where FactType has Ordinal role,
+	-- Role Display is where Fact Type Shape displays Role in Ordinal position and Role is where Fact Type has Ordinal role,
 	RoleOrdinal                             int NOT NULL,
 	PRIMARY KEY(FactTypeShapeId, Ordinal),
 	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
@@ -335,21 +335,21 @@ CREATE TABLE RoleDisplay (
 GO
 
 CREATE TABLE RoleRef (
-	-- maybe RoleRef has leading-Adjective,
+	-- maybe Role Ref has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role,
+	-- Role Ref is where Role Sequence in Ordinal position includes Role,
 	Ordinal                                 int NOT NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RoleFactTypeId                          int NOT NULL,
-	-- maybe RoleName is name of RoleRef and Term is where Vocabulary contains Name,
+	-- maybe Role Name is name of Role Ref and Term is where Vocabulary contains Name,
 	RoleName                                varchar(64) NULL,
-	-- maybe RoleName is name of RoleRef and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Role Name is name of Role Ref and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	RoleNameVocabularyName                  varchar(64) NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role and Role is where FactType has Ordinal role,
+	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role,
 	RoleOrdinal                             int NOT NULL,
-	-- RoleRef is where RoleSequence in Ordinal position includes Role and RoleSequence has RoleSequenceId,
+	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int NOT NULL,
-	-- maybe RoleRef has trailing-Adjective,
+	-- maybe Role Ref has trailing-Adjective,
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
 	UNIQUE(RoleFactTypeId, RoleOrdinal, RoleSequenceId),
@@ -358,26 +358,26 @@ CREATE TABLE RoleRef (
 GO
 
 CREATE TABLE RoleSequence (
-	-- RoleSequence has unused dependency to force table in norma,
+	-- Role Sequence has unused dependency to force table in norma,
 	HasUnusedDependencyToForceTableInNorma  bit NOT NULL,
-	-- RoleSequence has RoleSequenceId,
+	-- Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int IDENTITY NOT NULL,
 	PRIMARY KEY(RoleSequenceId)
 )
 GO
 
 CREATE TABLE RoleValue (
-	-- RoleValue fulfils Fact and Fact has FactId,
+	-- Role Value fulfils Fact and Fact has Fact Id,
 	FactId                                  int NOT NULL,
-	-- Instance plays RoleValue and Instance has InstanceId,
+	-- Instance plays Role Value and Instance has Instance Id,
 	InstanceId                              int NOT NULL,
-	-- Population includes RoleValue and Population has Name,
+	-- Population includes Role Value and Population has Name,
 	PopulationName                          varchar(64) NOT NULL,
-	-- Population includes RoleValue and maybe Vocabulary includes Population and Vocabulary is called Name,
+	-- Population includes Role Value and maybe Vocabulary includes Population and Vocabulary is called Name,
 	PopulationVocabularyName                varchar(64) NULL,
-	-- RoleValue is of Role and Role is where FactType has Ordinal role and FactType has FactTypeId,
+	-- Role Value is of Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RoleFactTypeId                          int NOT NULL,
-	-- RoleValue is of Role and Role is where FactType has Ordinal role,
+	-- Role Value is of Role and Role is where Fact Type has Ordinal role,
 	RoleOrdinal                             int NOT NULL,
 	PRIMARY KEY(InstanceId, FactId),
 	FOREIGN KEY (FactId) REFERENCES Fact (FactId),
@@ -387,11 +387,11 @@ CREATE TABLE RoleValue (
 GO
 
 CREATE TABLE SetComparisonRoles (
-	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence,
+	-- Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence,
 	Ordinal                                 int NOT NULL,
-	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence and RoleSequence has RoleSequenceId,
+	-- Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence and Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int NOT NULL,
-	-- SetComparisonRoles is where SetComparisonConstraint has in Ordinal position RoleSequence and Constraint has ConstraintId,
+	-- Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence and Constraint has Constraint Id,
 	SetComparisonConstraintId               int NOT NULL,
 	PRIMARY KEY(SetComparisonConstraintId, Ordinal),
 	UNIQUE(SetComparisonConstraintId, RoleSequenceId),
@@ -401,53 +401,53 @@ CREATE TABLE SetComparisonRoles (
 GO
 
 CREATE TABLE Shape (
-	-- maybe ConstraintShape is a kind of Shape and ConstraintShape is for Constraint and Constraint has ConstraintId,
+	-- maybe Constraint Shape is a kind of Shape and Constraint Shape is for Constraint and Constraint has Constraint Id,
 	ConstraintShapeConstraintId             int NULL,
 	-- Shape is in Diagram and Diagram is called Name,
 	DiagramName                             varchar(64) NOT NULL,
 	-- Shape is in Diagram and Diagram is for Vocabulary and Vocabulary is called Name,
 	DiagramVocabularyName                   varchar(64) NOT NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has DisplayRoleNamesSetting,
+	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Display Role Names Setting,
 	FactTypeShapeDisplayRoleNamesSetting    varchar NULL CHECK(FactTypeShapeDisplayRoleNamesSetting = 'false' OR FactTypeShapeDisplayRoleNamesSetting = 'true'),
-	-- maybe FactTypeShape is a kind of Shape and FactTypeShape is for FactType and FactType has FactTypeId,
+	-- maybe Fact Type Shape is a kind of Shape and Fact Type Shape is for Fact Type and Fact Type has Fact Type Id,
 	FactTypeShapeFactTypeId                 int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe ObjectifiedFactTypeNameShape is for FactTypeShape and ObjectifiedFactTypeNameShape is a kind of Shape and Shape has ShapeId,
+	-- maybe Fact Type Shape is a kind of Shape and maybe Objectified Fact Type Name Shape is for Fact Type Shape and Objectified Fact Type Name Shape is a kind of Shape and Shape has Shape Id,
 	FactTypeShapeId                         int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is a kind of Shape and Shape has ShapeId,
+	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Reading Shape and Reading Shape is a kind of Shape and Shape has Shape Id,
 	FactTypeShapeId                         int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is for Reading and FactType has Reading and FactType has FactTypeId,
+	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Reading Shape and Reading Shape is for Reading and Fact Type has Reading and Fact Type has Fact Type Id,
 	FactTypeShapeReadingFactTypeId          int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has ReadingShape and ReadingShape is for Reading and Reading is in Ordinal position,
+	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Reading Shape and Reading Shape is for Reading and Reading is in Ordinal position,
 	FactTypeShapeReadingOrdinal             int NULL,
-	-- maybe FactTypeShape is a kind of Shape and maybe FactTypeShape has RotationSetting,
+	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Rotation Setting,
 	FactTypeShapeRotationSetting            varchar NULL CHECK(FactTypeShapeRotationSetting = 'left' OR FactTypeShapeRotationSetting = 'right'),
 	-- Shape is expanded,
 	IsExpanded                              bit NOT NULL,
-	-- maybe ModelNoteShape is a kind of Shape and ModelNoteShape is for ContextNote and ContextNote has ContextNoteId,
+	-- maybe Model Note Shape is a kind of Shape and Model Note Shape is for Context Note and Context Note has Context Note Id,
 	ModelNoteShapeContextNoteId             int NULL,
-	-- maybe ObjectTypeShape is a kind of Shape and ObjectTypeShape has expanded reference mode,
+	-- maybe Object Type Shape is a kind of Shape and Object Type Shape has expanded reference mode,
 	ObjectTypeShapeHasExpandedReferenceMode bit NULL,
-	-- maybe ObjectTypeShape is a kind of Shape and ObjectTypeShape is for ObjectType and Term is where Vocabulary contains Name,
+	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Object Type and Term is where Vocabulary contains Name,
 	ObjectTypeShapeObjectTypeName           varchar(64) NULL,
-	-- maybe ObjectTypeShape is a kind of Shape and ObjectTypeShape is for ObjectType and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Object Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ObjectTypeShapeObjectTypeVocabularyName varchar(64) NULL,
 	-- maybe Shape is at Position and Position is at X,
 	PositionX                               int NULL,
 	-- maybe Shape is at Position and Position is at Y,
 	PositionY                               int NULL,
-	-- maybe ConstraintShape is a kind of Shape and maybe RingConstraintShape is a kind of ConstraintShape and RingConstraintShape is attached to FactType and FactType has FactTypeId,
+	-- maybe Constraint Shape is a kind of Shape and maybe Ring Constraint Shape is a kind of Constraint Shape and Ring Constraint Shape is attached to Fact Type and Fact Type has Fact Type Id,
 	RingConstraintShapeFactTypeId           int NULL,
-	-- maybe RoleNameShape is a kind of Shape and RoleNameShape is for RoleDisplay and RoleDisplay is where FactTypeShape displays Role in Ordinal position and Shape has ShapeId,
+	-- maybe Role Name Shape is a kind of Shape and Role Name Shape is for Role Display and Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Shape Id,
 	RoleNameShapeRoleDisplayFactTypeShapeId int NULL,
-	-- maybe RoleNameShape is a kind of Shape and RoleNameShape is for RoleDisplay and RoleDisplay is where FactTypeShape displays Role in Ordinal position,
+	-- maybe Role Name Shape is a kind of Shape and Role Name Shape is for Role Display and Role Display is where Fact Type Shape displays Role in Ordinal position,
 	RoleNameShapeRoleDisplayOrdinal         int NULL,
-	-- Shape has ShapeId,
+	-- Shape has Shape Id,
 	ShapeId                                 int IDENTITY NOT NULL,
-	-- maybe ConstraintShape is a kind of Shape and maybe ValueConstraintShape is a kind of ConstraintShape and maybe ValueConstraintShape is for ObjectTypeShape and Shape has ShapeId,
+	-- maybe Constraint Shape is a kind of Shape and maybe Value Constraint Shape is a kind of Constraint Shape and maybe Value Constraint Shape is for Object Type Shape and Shape has Shape Id,
 	ValueConstraintShapeObjectTypeShapeId   int NULL,
-	-- maybe ConstraintShape is a kind of Shape and maybe ValueConstraintShape is a kind of ConstraintShape and maybe RoleDisplay has ValueConstraintShape and RoleDisplay is where FactTypeShape displays Role in Ordinal position and Shape has ShapeId,
+	-- maybe Constraint Shape is a kind of Shape and maybe Value Constraint Shape is a kind of Constraint Shape and maybe Role Display has Value Constraint Shape and Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Shape Id,
 	ValueConstraintShapeRoleDisplayFactTypeShapeId int NULL,
-	-- maybe ConstraintShape is a kind of Shape and maybe ValueConstraintShape is a kind of ConstraintShape and maybe RoleDisplay has ValueConstraintShape and RoleDisplay is where FactTypeShape displays Role in Ordinal position,
+	-- maybe Constraint Shape is a kind of Shape and maybe Value Constraint Shape is a kind of Constraint Shape and maybe Role Display has Value Constraint Shape and Role Display is where Fact Type Shape displays Role in Ordinal position,
 	ValueConstraintShapeRoleDisplayOrdinal  int NULL,
 	PRIMARY KEY(ShapeId),
 	FOREIGN KEY (ConstraintShapeConstraintId) REFERENCES [Constraint] (ConstraintId),
@@ -488,46 +488,46 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
-CREATE VIEW dbo.RoleNameShapeInShape_RoleDisplayFactTypeShapeIdRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
+CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
 	SELECT RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal FROM dbo.Shape
 	WHERE	RoleNameShapeRoleDisplayFactTypeShapeId IS NOT NULL
 	  AND	RoleNameShapeRoleDisplayOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_RoleNameShapeInShapeByRoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal ON dbo.RoleNameShapeInShape_RoleDisplayFactTypeShapeIdRoleDisplayOrdinal(RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal)
+CREATE UNIQUE CLUSTERED INDEX IX_RoleNameShapeInShapeByRoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal ON dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal(RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal)
 GO
 
-CREATE VIEW dbo.ValueConstraintShapeInShape_RoleDisplayFactTypeShapeIdRoleDisplayOrdinal (ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
+CREATE VIEW dbo.ValueConstraintShapeInShape_ValueConstraintShapeRoleDisplayFactTypeShapeIdValueConstraintShapeRoleDisplayOrdinal (ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
 	SELECT ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal FROM dbo.Shape
 	WHERE	ValueConstraintShapeRoleDisplayFactTypeShapeId IS NOT NULL
 	  AND	ValueConstraintShapeRoleDisplayOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintShapeInShapeByValueConstraintShapeRoleDisplayFactTypeShapeIdValueConstraintShapeRoleDisplayOrdinal ON dbo.ValueConstraintShapeInShape_RoleDisplayFactTypeShapeIdRoleDisplayOrdinal(ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintShapeInShapeByValueConstraintShapeRoleDisplayFactTypeShapeIdValueConstraintShapeRoleDisplayOrdinal ON dbo.ValueConstraintShapeInShape_ValueConstraintShapeRoleDisplayFactTypeShapeIdValueConstraintShapeRoleDisplayOrdinal(ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal)
 GO
 
 CREATE TABLE Term (
 	-- Term is where Vocabulary contains Name,
 	Name                                    varchar(64) NOT NULL,
-	-- maybe Term designates ObjectType and ObjectType is independent,
+	-- maybe Term designates Object Type and Object Type is independent,
 	ObjectTypeIsIndependent                 bit NULL,
-	-- maybe Term is secondary for ObjectType and Term is where Vocabulary contains Name,
+	-- maybe Term is secondary for Object Type and Term is where Vocabulary contains Name,
 	ObjectTypeName                          varchar(64) NULL,
-	-- maybe Term designates ObjectType and maybe ObjectType uses Pronoun,
+	-- maybe Term designates Object Type and maybe Object Type uses Pronoun,
 	ObjectTypePronoun                       varchar(20) NULL CHECK(ObjectTypePronoun = 'feminine' OR ObjectTypePronoun = 'masculine' OR ObjectTypePronoun = 'neuter' OR ObjectTypePronoun = 'personal'),
-	-- maybe Term is secondary for ObjectType and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Term is secondary for Object Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ObjectTypeVocabularyName                varchar(64) NULL,
-	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType has Length,
+	-- maybe Term designates Object Type and maybe Value Type is a kind of Object Type and maybe Value Type has Length,
 	ValueTypeLength                         int NULL,
-	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType has Scale,
+	-- maybe Term designates Object Type and maybe Value Type is a kind of Object Type and maybe Value Type has Scale,
 	ValueTypeScale                          int NULL,
-	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType is subtype of Supertype and Term is where Vocabulary contains Name,
+	-- maybe Term designates Object Type and maybe Value Type is a kind of Object Type and maybe Value Type is subtype of Supertype and Term is where Vocabulary contains Name,
 	ValueTypeSupertypeName                  varchar(64) NULL,
-	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Term designates Object Type and maybe Value Type is a kind of Object Type and maybe Value Type is subtype of Supertype and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
-	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType is of Unit and Unit has UnitId,
+	-- maybe Term designates Object Type and maybe Value Type is a kind of Object Type and maybe Value Type is of Unit and Unit has Unit Id,
 	ValueTypeUnitId                         int NULL,
-	-- maybe Term designates ObjectType and maybe ValueType is a kind of ObjectType and maybe ValueType has ValueConstraint and Constraint has ConstraintId,
+	-- maybe Term designates Object Type and maybe Value Type is a kind of Object Type and maybe Value Type has Value Constraint and Constraint has Constraint Id,
 	ValueTypeValueConstraintId              int NULL,
 	-- Term is where Vocabulary contains Name and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,
@@ -538,12 +538,12 @@ CREATE TABLE Term (
 )
 GO
 
-CREATE VIEW dbo.ValueTypeInTerm_ValueConstraintId (ValueTypeValueConstraintId) WITH SCHEMABINDING AS
+CREATE VIEW dbo.ValueTypeInTerm_ValueTypeValueConstraintId (ValueTypeValueConstraintId) WITH SCHEMABINDING AS
 	SELECT ValueTypeValueConstraintId FROM dbo.Term
 	WHERE	ValueTypeValueConstraintId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInTermByValueTypeValueConstraintId ON dbo.ValueTypeInTerm_ValueConstraintId(ValueTypeValueConstraintId)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInTermByValueTypeValueConstraintId ON dbo.ValueTypeInTerm_ValueTypeValueConstraintId(ValueTypeValueConstraintId)
 GO
 
 CREATE TABLE Unit (
@@ -553,7 +553,7 @@ CREATE TABLE Unit (
 	CoefficientIsPrecise                    bit NULL,
 	-- maybe Unit has Coefficient and Coefficient has Numerator,
 	CoefficientNumerator                    decimal NULL,
-	-- maybe EphemeraURL provides Unit coefficient,
+	-- maybe Ephemera URL provides Unit coefficient,
 	EphemeraURL                             varchar NULL,
 	-- Unit is fundamental,
 	IsFundamental                           bit NOT NULL,
@@ -563,7 +563,7 @@ CREATE TABLE Unit (
 	Offset                                  decimal NULL,
 	-- maybe Unit has plural-Name,
 	PluralName                              varchar(64) NULL,
-	-- Unit has UnitId,
+	-- Unit has Unit Id,
 	UnitId                                  int IDENTITY NOT NULL,
 	-- Vocabulary includes Unit and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,

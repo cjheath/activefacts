@@ -1,5 +1,5 @@
 CREATE TABLE Author (
-	-- Author has AuthorId,
+	-- Author has Author Id,
 	AuthorId                                int IDENTITY NOT NULL,
 	-- author-Name is of Author,
 	AuthorName                              varchar(64) NOT NULL,
@@ -9,9 +9,9 @@ CREATE TABLE Author (
 GO
 
 CREATE TABLE Comment (
-	-- Author wrote Comment and Author has AuthorId,
+	-- Author wrote Comment and Author has Author Id,
 	AuthorId                                int NOT NULL,
-	-- Comment has CommentId,
+	-- Comment has Comment Id,
 	CommentId                               int IDENTITY NOT NULL,
 	-- Content provides text of Comment and maybe Content is of Style,
 	ContentStyle                            varchar(20) NULL,
@@ -19,7 +19,7 @@ CREATE TABLE Comment (
 	ContentText                             text NOT NULL,
 	-- Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph,
 	ParagraphOrdinal                        int NOT NULL,
-	-- Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph and Post has PostId,
+	-- Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph and Post has Post Id,
 	ParagraphPostId                         int NOT NULL,
 	PRIMARY KEY(CommentId),
 	FOREIGN KEY (AuthorId) REFERENCES Author (AuthorId)
@@ -33,18 +33,18 @@ CREATE TABLE Paragraph (
 	ContentText                             text NOT NULL,
 	-- Paragraph is where Post includes Ordinal paragraph,
 	Ordinal                                 int NOT NULL,
-	-- Paragraph is where Post includes Ordinal paragraph and Post has PostId,
+	-- Paragraph is where Post includes Ordinal paragraph and Post has Post Id,
 	PostId                                  int NOT NULL,
 	PRIMARY KEY(PostId, Ordinal)
 )
 GO
 
 CREATE TABLE Post (
-	-- Post was written by Author and Author has AuthorId,
+	-- Post was written by Author and Author has Author Id,
 	AuthorId                                int NOT NULL,
-	-- Post has PostId,
+	-- Post has Post Id,
 	PostId                                  int IDENTITY NOT NULL,
-	-- Post belongs to Topic and Topic has TopicId,
+	-- Post belongs to Topic and Topic has Topic Id,
 	TopicId                                 int NOT NULL,
 	PRIMARY KEY(PostId),
 	FOREIGN KEY (AuthorId) REFERENCES Author (AuthorId)
@@ -52,9 +52,9 @@ CREATE TABLE Post (
 GO
 
 CREATE TABLE Topic (
-	-- maybe Topic belongs to parent-Topic and Topic has TopicId,
+	-- maybe Topic belongs to parent-Topic and Topic has Topic Id,
 	ParentTopicId                           int NULL,
-	-- Topic has TopicId,
+	-- Topic has Topic Id,
 	TopicId                                 int IDENTITY NOT NULL,
 	-- Topic is called topic-Name,
 	TopicName                               varchar(64) NOT NULL,

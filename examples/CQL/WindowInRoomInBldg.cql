@@ -3,20 +3,20 @@ vocabulary WindowInRoomInBldg;
 /*
  * Value Types
  */
-Building is written as SignedInteger(32);
-RoomNumber is written as SignedInteger(32);
-WallNumber is written as SignedInteger(32);
-WindowNumber is written as UnsignedInteger(32);
+Building is written as Signed Integer(32);
+Room Number is written as Signed Integer(32);
+Wall Number is written as Signed Integer(32);
+Window Number is written as Unsigned Integer(32);
 
 /*
  * Entity Types
  */
-Room is identified by Building and RoomNumber where
+Room is identified by Building and Room Number where
 	Room is in one Building,
-	Room has one RoomNumber;
+	Room has one Room Number;
 
-Window is identified by Room and WallNumber and WindowNumber where
+Window is identified by Room and Wall Number and Window Number where
 	Window is in one Room,
-	Window is located in one WallNumber,
-	Window has one WindowNumber;
+	Window is located in one Wall Number,
+	Window has one Window Number;
 

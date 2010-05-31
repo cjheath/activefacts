@@ -3,11 +3,11 @@ vocabulary JoinEquality;
 /*
  * Value Types
  */
-EventId is written as AutoCounter;
-Number is written as UnsignedSmallInteger(32);
-Reserve is written as VariableLengthText(20);
-Row is written as FixedLengthText(2);
-VenueId is written as AutoCounter;
+Event Id is written as Auto Counter;
+Number is written as Unsigned Small Integer(32);
+Reserve is written as Variable Length Text(20);
+Row is written as Fixed Length Text(2);
+Venue Id is written as Auto Counter;
 
 /*
  * Entity Types

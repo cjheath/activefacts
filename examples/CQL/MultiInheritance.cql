@@ -3,9 +3,9 @@ vocabulary MultiInheritance;
 /*
  * Value Types
  */
-EmployeeID is written as AutoCounter;
-PersonName is written as VariableLengthText;
-TFN is written as FixedLengthText(9);
+Employee ID is written as Auto Counter;
+Person Name is written as Variable Length Text;
+TFN is written as Fixed Length Text(9);
 
 /*
  * Entity Types
@@ -18,5 +18,5 @@ Australian has at most one TFN,
 
 Employee is a kind of Person identified by its ID;
 
-AustralianEmployee is a kind of Employee, Australian;
+Australian Employee is a kind of Employee, Australian;
 

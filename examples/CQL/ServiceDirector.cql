@@ -3,98 +3,96 @@ vocabulary ServiceDirector;
 /*
  * Value Types
  */
-Company_Code is written as FixedLengthText(5);
-Credential_Nr is written as SignedInteger(32);
+Company Code is written as Fixed Length Text(5);
+Credential Nr is written as Signed Integer(32);
 DDMMYYYY is written as Date;
-DataStore_Name is written as VariableLengthText(15);
-Date is written as Date;
-EmailAddress is written as VariableLengthText(50);
+Data Store Name is written as Variable Length Text(15);
+Email Address is written as Variable Length Text(50);
 HHMMSS is written as Time;
-HostSystem_Name is written as VariableLengthText(15);
-IP is written as VariableLengthText(16);
-MDYHMS is written as AutoTimestamp;
-MessageData is written as VariableLengthRawData(8000);
-MessageHeader is written as VariableLengthText(30);
-Monitor_Id is written as AutoCounter;
-MonitoringApplication_Name is written as VariableLengthText(10);
-Name is written as VariableLengthText(15);
-Netmask is written as VariableLengthText(16);
-Network_Nr is written as SignedInteger(32);
-NotificationLevel_Nr is written as SignedInteger(32);
-NotificationType_Name is written as VariableLengthText(20);
-Password is written as VariableLengthText;
-Path is written as VariableLengthText(20);
-Port is written as SignedInteger(32);
-ProviderType_Id is written as SignedSmallInteger(20);
-RecurringSchedule_Id is written as AutoCounter;
-SatalliteMessage_Id is written as UnsignedInteger(32);
-Seconds is written as UnsignedInteger(32);
-SerialNumber is written as VariableLengthText(20);
-ServiceType is written as VariableLengthText(15);
-Subscription_Nr is written as SignedInteger(32);
-Switch_Id is written as AutoCounter;
-Transaction_Nr is written as UnsignedInteger(32);
-TruckPCID is written as UnsignedInteger(32);
-UserName is written as VariableLengthText(20);
-User_Name is written as VariableLengthText(40);
-Version is written as FixedLengthText(5);
+Host System Name is written as Variable Length Text(15);
+IP is written as Variable Length Text(16);
+MDYHMS is written as Auto Timestamp;
+Message Data is written as Variable Length Raw Data(8000);
+Message Header is written as Variable Length Text(30);
+Monitor Id is written as Auto Counter;
+Monitoring Application Name is written as Variable Length Text(10);
+Name is written as Variable Length Text(15);
+Netmask is written as Variable Length Text(16);
+Network Nr is written as Signed Integer(32);
+Notification Level Nr is written as Signed Integer(32);
+Notification Type Name is written as Variable Length Text(20);
+Password is written as Variable Length Text;
+Path is written as Variable Length Text(20);
+Port is written as Signed Integer(32);
+Provider Type Id is written as Signed Small Integer(20);
+Recurring Schedule Id is written as Auto Counter;
+Satellite Message Id is written as Unsigned Integer(32);
+Seconds is written as Unsigned Integer(32);
+Serial Number is written as Variable Length Text(20);
+Service Type is written as Variable Length Text(15);
+Subscription Nr is written as Signed Integer(32);
+Switch Id is written as Auto Counter;
+Transaction Nr is written as Unsigned Integer(32);
+Truck PCID is written as Unsigned Integer(32);
+User Name is written as Variable Length Text(20);
+Version is written as Fixed Length Text(5);
 
 /*
  * Entity Types
  */
-Company is identified by its _Code;
+Company is identified by its Code;
 Company has one Operating-Name;
 Company is client;
 Company is vendor;
 
-Credential is identified by its _Nr;
+Credential is identified by its Nr;
 Credential has one Password;
-Credential has one UserName;
+Credential has one User Name;
 
-DataStore is identified by its _Name;
-DataStore requires at least one Credential;
-DataStore has one Friendly-Name;
-DataStore has at most one HeartBeat-TruckPCID;
-DataStore has one Internal-Credential (as InternalCredential);
-DataStore is one Major-Version;
-DataStore is one Minor-Version;
-DataStore is one Revision-Version;
+Data Store is identified by its Name;
+Data Store requires at least one Credential;
+Data Store has one Friendly-Name;
+Data Store has at most one Heart- Beat Truck PCID;
+Data Store has one Internal-Credential;
+Data Store is one Major-Version;
+Data Store is one Minor-Version;
+Data Store is one Revision-Version;
 
 Date is identified by DDMMYYYY where
 	Date has one DDMMYYYY,
 	DDMMYYYY is of at most one Date;
 Credential has at most one Expiration-Date;
 
-DateTime is identified by MDYHMS where
-	DateTime has one MDYHMS,
-	MDYHMS is of at most one DateTime;
+Date Time is identified by MDYHMS where
+	Date Time has one MDYHMS,
+	MDYHMS is of at most one Date Time;
 
 Duration is identified by Seconds where
 	Duration has one Seconds,
 	Seconds is of at most one Duration;
 
-GeocodeFile is identified by Path where
-	GeocodeFile has one Path,
-	Path is of at most one GeocodeFile;
-DataStore uses at most one GeocodeFile;
+Geocode File is identified by Path where
+	Geocode File has one Path,
+	Path is of at most one Geocode File;
+Data Store uses at most one Geocode File;
 
-HostSystem is identified by its _Name;
-DataStore is on one Primary-HostSystem;
-DataStore is on one Secondary-HostSystem;
+Host System is identified by its Name;
+Data Store is on one Primary-Host System;
+Data Store is on one Secondary-Host System;
 
-Monitor is identified by its _Id;
-Monitor monitors one DataStore;
+Monitor is identified by its Id;
+Monitor monitors one Data Store;
 Monitor is disabled;
 
-MonitoringApplication is identified by its _Name [independent];
-Monitor is owned by one MonitoringApplication;
+Monitoring Application is identified by its Name [independent];
+Monitor is owned by one Monitoring Application;
 
-Network is identified by its _Nr;
+Network is identified by its Nr;
 Company has at least one Origin-Network;
-DataStore has TcpProxy-Network,
-	TcpProxy-Network is in at most one DataStore;
-HostSystem uses at least one Network,
-	Network is used by at most one HostSystem;
+Data Store has Tcp- Proxy Network,
+	Tcp- Proxy Network is in at most one Data Store;
+Host System uses at least one Network,
+	Network is used by at most one Host System;
 Network uses at most one Domain-Name;
 Network has at most one Ending-IP;
 Network has one Initial-IP;
@@ -103,53 +101,53 @@ Network is ip_range;
 Network is ip_single;
 Network is ip_subnet;
 
-NotificationLevel is identified by its _Nr;
-NotificationLevel has one InitialDelay-Duration;
-NotificationLevel has one Repeat-Duration;
+Notification Level is identified by its Nr;
+Notification Level has one Initial- Delay Duration;
+Notification Level has one Repeat-Duration;
 
-NotificationType is identified by its _Name [independent];
+Notification Type is identified by its Name [independent];
 
-ProviderType is identified by its _Id;
+Provider Type is identified by its Id;
 
-RecurringSchedule is identified by its _Id;
-Monitor (as MonitorAllExclusion) has AllExclusion-RecurringSchedule,
-	AllExclusion-RecurringSchedule applies to at most one MonitorAllExclusion;
-Monitor (as MonitorIntegrationExclusion) has IntegrationExclusion-RecurringSchedule,
-	IntegrationExclusion-RecurringSchedule applies to at most one MonitorIntegrationExclusion;
-RecurringSchedule has one Duration;
-RecurringSchedule friday;
-RecurringSchedule monday;
-RecurringSchedule saturday;
-RecurringSchedule sunday;
-RecurringSchedule thursday;
-RecurringSchedule tuesday;
-RecurringSchedule wednesday;
+Recurring Schedule is identified by its Id;
+Monitor has All- Exclusion Recurring Schedule,
+	All- Exclusion Recurring Schedule applies to at most one Monitor;
+Monitor has Integration- Exclusion Recurring Schedule,
+	Integration- Exclusion Recurring Schedule applies to at most one Monitor;
+Recurring Schedule has one Duration;
+Recurring Schedule friday;
+Recurring Schedule monday;
+Recurring Schedule saturday;
+Recurring Schedule sunday;
+Recurring Schedule thursday;
+Recurring Schedule tuesday;
+Recurring Schedule wednesday;
 
-SatalliteMessage is identified by its _Id;
-SatalliteMessage is designated for one DataStore;
-SatalliteMessage one Insertion-DateTime;
-SatalliteMessage has at most one MessageData;
-SatalliteMessage has at most one MessageHeader;
-SatalliteMessage is of at most one ProviderType;
-SatalliteMessage has one SerialNumber;
+Satellite Message is identified by its Id;
+Satellite Message is designated for one Data Store;
+Satellite Message one Insertion-Date Time;
+Satellite Message has at most one Message Data;
+Satellite Message has at most one Message Header;
+Satellite Message is of at most one Provider Type;
+Satellite Message has one Serial Number;
 
-Subscription is identified by its _Nr;
-Company (as DriverTechSubscription) has one DriverTech-Subscription;
+Subscription is identified by its Nr;
+Company has one Driver- Tech Subscription;
 Subscription has one Beginning-Date;
 Subscription has at most one Ending-Date;
 Subscription is enabled;
 
-Switch is identified by its _Id;
-DataStore has at most one Legacy-Switch;
+Switch is identified by its Id;
+Data Store has at most one Legacy-Switch;
 Switch is one Major-Version;
 Switch is one Minor-Version;
-Switch has one Monitoring-Port;
 Switch has one Operating-Port;
-Switch (as PrivateInterfaceSwitch) is on Private-Network,
-	Private-Network connects to at most one PrivateInterfaceSwitch;
-Switch (as PublicInterfaceSwitch) is on at least one Public-Network,
-	Network connects to at most one PublicInterfaceSwitch;
 Switch is one Revision-Version;
+Switch has one monitoring-Port;
+Switch (as Private Interface Switch) is on private-Network,
+	private-Network connects to at most one Private Interface Switch;
+Switch (as Public Interface Switch) is on at least one public-Network,
+	Network connects to at most one Public Interface Switch;
 Switch is backup messages;
 Switch is backup updates;
 Switch is send disabled;
@@ -158,71 +156,71 @@ Switch is test vectors enabled;
 Time is identified by HHMMSS where
 	Time has one HHMMSS,
 	HHMMSS is of at most one Time;
-RecurringSchedule has one Start-Time;
+Recurring Schedule has one Start-Time;
 
-Transaction is identified by its _Nr;
-SatalliteMessage has at most one Group-Transaction;
+Transaction is identified by its Nr;
+Satellite Message has at most one Group-Transaction;
 
-User is identified by its _Name;
-User has one Primary-EmailAddress;
-User has at most one Secondary-EmailAddress;
+User is identified by its Name;
+User has one Primary-Email Address;
+User has at most one Secondary-Email Address;
 User is monitor notification disabled;
 
 Vendor is a kind of Company [separate];
 Vendor requires at least one Credential;
 
 Client is a kind of Company [separate];
-Client has at most one default-DataStore;
-DataStore belongs to one Client,
-	Client uses DataStore;
+Client has at most one default-Data Store;
+Data Store belongs to one Client,
+	Client uses Data Store;
 
-FileHostSystem is a kind of HostSystem;
-FileHostSystem has one Port;
+File Host System is a kind of Host System;
+File Host System has one Port;
 
-HostSystemRunsSwitch is where
-	HostSystem runs Switch;
+Host System Runs Switch is where
+	Host System runs Switch;
 
-MonitorNotificationType is where
-	Monitor has at least one NotificationType;
-MonitorNotificationType is excluded;
+Monitor Notification Type is where
+	Monitor has at least one Notification Type;
+Monitor Notification Type is excluded;
 
-MonitorNotificationUser is where
-	MonitorNotificationType has Notification-User;
-MonitorNotificationUser has one NotificationLevel;
+Monitor Notification User is where
+	Monitor Notification Type has notification-User;
+Monitor Notification User has one Notification Level;
 
-Service is identified by Vendor and ServiceType where
+Service is identified by Vendor and Service Type where
 	Vendor provides Service,
-	Service is of one ServiceType;
+	Service is of one Service Type;
 
-DataStoreFileHostSystem is where
-	DataStore has at most one FileHostSystem;
-DataStoreFileHostSystem has one Internal-Credential;
+Data Store File Host System is where
+	Data Store has at most one File Host System;
+Data Store File Host System has one Internal-Credential;
 
-DataStoreService is where
-	DataStore has Service;
-DataStoreService belongs to one Client;
-DataStoreService requires at least one Credential;
-DataStoreService (as DataStoreServiceSubscription) has one Subscription;
+Data Store Service is where
+	Data Store has Service;
+Data Store Service belongs to one Client;
+Data Store Service requires at least one Credential;
+Data Store Service has one Subscription;
 
 /*
  * Constraints:
  */
 either Company is client or Company is vendor but not both;
 for each Credential exactly one of these holds:
-	DataStore requires Credential,
-	DataStoreService requires Credential,
+	Data Store requires Credential,
+	Data Store Service requires Credential,
 	Vendor requires Credential,
-	DataStoreFileHostSystem has Internal-Credential,
-	DataStore has Internal-Credential;
+	Data Store File Host System has Internal-Credential,
+	Data Store has Internal-Credential;
 for each Network exactly one of these holds:
-	HostSystem uses Network,
+	Host System uses Network,
 	Company has Origin-Network,
-	DataStore has TcpProxy-Network;
+	Data Store has Tcp- Proxy Network;
 for each Network exactly one of these holds:
 	Network is ip_single,
 	Network is ip_subnet,
 	Network is ip_range;
-either HostSystem runs Switch or DataStore has Legacy-Switch but not both;
+either Host System runs Switch or Data Store has Legacy-Switch but not both;
 for each Network at most one of these holds:
 	Network is ip_single,
 	Network has Ending-IP;
@@ -232,23 +230,23 @@ Network has Ending-IP
 Network is ip_subnet
 	if and only if
 	Network uses Netmask;
-Switch is on Private-Network
+Switch is on private-Network
 	if and only if
-	DataStore has Legacy-Switch;
-Client has default-DataStore
-	only if DataStore belongs to Client;
-DataStore has TcpProxy-Network
+	Data Store has Legacy-Switch;
+Client has default-Data Store
+	only if Data Store belongs to Client;
+Data Store has Tcp- Proxy Network
 	only if Network is ip_single;
 Network uses Domain-Name
 	only if Network is ip_single;
 each Credential occurs at most one time in
-	DataStore has Internal-Credential;
+	Data Store File Host System has Internal-Credential;
 each Credential occurs at most one time in
-	DataStore requires Credential;
+	Data Store Service requires Credential;
 each Credential occurs at most one time in
-	DataStoreFileHostSystem has Internal-Credential;
+	Data Store has Internal-Credential;
 each Credential occurs at most one time in
-	DataStoreService requires Credential;
+	Data Store requires Credential;
 each Credential occurs at most one time in
 	Vendor requires Credential;
 each IP occurs at most one time in
@@ -256,31 +254,31 @@ each IP occurs at most one time in
 each IP occurs at most one time in
 	Network has Initial-IP;
 each Name occurs at most one time in
-	DataStore has Friendly-Name;
+	Data Store has Friendly-Name;
 each Network occurs at most one time in
 	Company has Origin-Network;
 each Port occurs at most one time in
-	Switch has Monitoring-Port;
-each RecurringSchedule occurs at least one time in
-	RecurringSchedule monday,
-	RecurringSchedule tuesday,
-	RecurringSchedule wednesday,
-	RecurringSchedule thursday,
-	RecurringSchedule friday,
-	RecurringSchedule saturday,
-	RecurringSchedule sunday;
+	Switch has monitoring-Port;
+each Recurring Schedule occurs at least one time in
+	Recurring Schedule monday,
+	Recurring Schedule tuesday,
+	Recurring Schedule wednesday,
+	Recurring Schedule thursday,
+	Recurring Schedule friday,
+	Recurring Schedule saturday,
+	Recurring Schedule sunday;
 each Service occurs at least one time in
-	DataStore has Service;
+	Data Store has Service;
 each Service occurs one time in
 	Vendor provides Service;
 each Subscription occurs at most one time in
-	DataStoreService has Subscription;
+	Company has Driver- Tech Subscription;
 each Subscription occurs at most one time in
-	Company has DriverTech-Subscription;
+	Data Store Service has Subscription;
 each Switch occurs at most one time in
-	DataStore has Legacy-Switch;
-each combination UserName, Vendor, DataStoreService, DataStore occurs at most one time in
-	Credential has UserName,
+	Data Store has Legacy-Switch;
+each combination User Name, Vendor, Data Store Service, Data Store occurs at most one time in
+	Credential has User Name,
 	Vendor requires Credential,
-	DataStoreService requires Credential,
-	DataStore requires Credential;
+	Data Store Service requires Credential,
+	Data Store requires Credential;

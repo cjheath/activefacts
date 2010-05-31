@@ -3,41 +3,41 @@ vocabulary OrienteeringER;
 /*
  * Value Types
  */
-Accessibility is written as FixedLengthText;
-ClubName is written as VariableLengthText;
-Code is written as FixedLengthText;
-Control is written as UnsignedInteger(32);
-Course is written as FixedLengthText;
-Date is written as DateAndTime;
-EventName is written as VariableLengthText;
-ID is written as AutoCounter;
-Location is written as VariableLengthText;
-Name is written as VariableLengthText;
-Number is written as SignedInteger(32);
-PointValue is written as UnsignedInteger(32);
-SeriesName is written as VariableLengthText;
+Accessibility is written as Fixed Length Text;
+Club Name is written as Variable Length Text;
+Code is written as Fixed Length Text;
+Control is written as Unsigned Integer(32);
+Course is written as Fixed Length Text;
+Date is written as Date And Time;
+Event Name is written as Variable Length Text;
+ID is written as Auto Counter;
+Location is written as Variable Length Text;
+Name is written as Variable Length Text;
+Number is written as Signed Integer(32);
+Point Value is written as Unsigned Integer(32);
+Series Name is written as Variable Length Text;
 
 /*
  * Entity Types
  */
 Club is where
-	Code is of the club called at most one ClubName,
-	the club called ClubName has at most one Code;
+	Code is of the club called at most one Club Name,
+	the club called Club Name has at most one Code;
 
 Map is where
 	map-Name having Accessibility belongs to Club;
 
-SeriesEvent is where
-	SeriesName includes event-Number,
-	event-Number is in SeriesName;
+Series Event is where
+	Series Name includes event-Number,
+	event-Number is in Series Name;
 
 Event is where
-	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
+	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
 
-EventControl is where
-	Event includes Control which is worth at most one PointValue;
+Event Control is where
+	Event includes Control which is worth at most one Point Value;
 
-EventCourse is where
+Event Course is where
 	Course is available at Event,
 	Event offers Course;
 
@@ -45,14 +45,14 @@ EventCourse is where
  * Constraints:
  */
 each Club occurs at least one time in
-	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
+	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
+each Event Name occurs at most one time in
+	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
 each Event occurs at least one time in
-	Event includes Control which is worth PointValue;
-each EventName occurs at most one time in
-	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
+	Event includes Control which is worth Point Value;
 each ID occurs one time in
-	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
+	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
 each Name occurs at most one time in
 	map-Name having Accessibility belongs to Club;
-each SeriesEvent occurs at most one time in
-	event-ID is SeriesEvent called EventName run by Club using Map on Date at Location;
+each Series Event occurs at most one time in
+	event-ID is Series Event called Event Name run by Club using Map on Date at Location;

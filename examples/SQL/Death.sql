@@ -1,7 +1,7 @@
 CREATE TABLE Person (
-	-- Death is where Person is dead and maybe Death was due to CauseOfDeath,
+	-- Death is where Person is dead and maybe Death was due to Cause Of Death,
 	DeathCauseOfDeath                       varchar NULL,
-	-- Person has PersonName,
+	-- Person has Person Name,
 	PersonName                              varchar(40) NOT NULL,
 	PRIMARY KEY(PersonName)
 )

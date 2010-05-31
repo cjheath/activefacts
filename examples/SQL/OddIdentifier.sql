@@ -1,9 +1,9 @@
 CREATE TABLE ThingSequence (
-	-- ThingSequence is where Thing has Ordinal occurrence,
+	-- Thing Sequence is where Thing has Ordinal occurrence,
 	Ordinal                                 int NOT NULL,
-	-- ThingSequence has Text,
+	-- Thing Sequence has Text,
 	Text                                    varchar NOT NULL,
-	-- ThingSequence is where Thing has Ordinal occurrence and Thing has ThingID,
+	-- Thing Sequence is where Thing has Ordinal occurrence and Thing has Thing ID,
 	ThingID                                 int NOT NULL,
 	PRIMARY KEY(ThingID, Text),
 	UNIQUE(ThingID, Ordinal)

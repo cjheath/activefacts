@@ -130,6 +130,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SeparateSubtype.orm</DependentUpon>
     </Compile>
+    <Compile Include="ServiceDirector._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceDirector.orm</DependentUpon>
+    </Compile>
     <Compile Include="SimplestUnary._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>SimplestUnary.orm</DependentUpon>
@@ -264,6 +268,10 @@
     <None Include="SeparateSubtype.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>SeparateSubtype._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="ServiceDirector.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>ServiceDirector._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="SimplestUnary.orm">
       <Generator>ORMCustomTool</Generator>
@@ -759,6 +767,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>JoinEquality.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('ServiceDirector.orm')">
+    <None Include="ServiceDirector.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceDirector.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="ServiceDirector.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceDirector.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="ServiceDirector.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceDirector.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

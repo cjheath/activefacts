@@ -3,13 +3,13 @@ vocabulary Address;
 /*
  * Value Types
  */
-City is written as VariableLengthText(64);
-CompanyName is written as VariableLengthText;
-FamilyName is written as VariableLengthText(20);
-GivenNames is written as VariableLengthText(20);
-Number is written as VariableLengthText(12);
-Postcode is written as VariableLengthText;
-StreetLine is written as VariableLengthText(64);
+City is written as Variable Length Text(64);
+Company Name is written as Variable Length Text;
+Family Name is written as Variable Length Text(20);
+Given Names is written as Variable Length Text(20);
+Number is written as Variable Length Text(12);
+Postcode is written as Variable Length Text;
+Street Line is written as Variable Length Text(64);
 
 /*
  * Entity Types
@@ -18,15 +18,15 @@ Company is identified by its Name;
 
 Family is identified by its Name;
 
-Person is identified by Family and GivenNames where
+Person is identified by Family and Given Names where
 	Person is of one Family,
 	Family includes Person,
-	Person has one GivenNames;
+	Person has one Given Names;
 
-Street is identified by first-StreetLine and second-StreetLine and third-StreetLine where
-	Street includes one first-StreetLine,
-	Street includes at most one second-StreetLine,
-	Street includes at most one third-StreetLine;
+Street is identified by first-Street Line and second-Street Line and third-Street Line where
+	Street includes one first-Street Line,
+	Street includes at most one second-Street Line,
+	Street includes at most one third-Street Line;
 
 Address is identified by street-Number and Street and City and Postcode where
 	Address is at at most one street-Number,
@@ -40,5 +40,5 @@ Person lives at at most one Address;
 /*
  * Constraints:
  */
-Street includes third-StreetLine
-	only if Street includes second-StreetLine;
+Street includes third-Street Line
+	only if Street includes second-Street Line;

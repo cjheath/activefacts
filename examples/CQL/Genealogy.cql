@@ -3,47 +3,47 @@ vocabulary Genealogy;
 /*
  * Value Types
  */
-Address is written as VariableLengthText(128);
-Certificate is written as VariableLengthText(64);
-Day is written as UnsignedInteger(32) restricted to {1..31};
-Email is written as VariableLengthText(64);
-EventID is written as AutoCounter;
-EventLocation is written as VariableLengthText(128);
-EventRoleName is written as VariableLengthText restricted to {'Celebrant', 'Father', 'Husband', 'Mother', 'Subject', 'Wife'};
-EventTypeID is written as AutoCounter;
-EventTypeName is written as VariableLengthText(16) restricted to {'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'};
-Gender is written as FixedLengthText(1) restricted to {'F', 'M'};
-Month is written as UnsignedInteger(32) restricted to {1..12};
-Name is written as VariableLengthText(128);
-Occupation is written as VariableLengthText(128);
-Official is written as VariableLengthText(64);
-PersonID is written as AutoCounter;
-Picture is written as PictureRawData(20);
-RoleID is written as AutoCounter;
-SourceID is written as AutoCounter;
-SourceName is written as VariableLengthText(128);
-UserID is written as AutoCounter;
-Year is written as UnsignedInteger(32);
+Address is written as Variable Length Text(128);
+Certificate is written as Variable Length Text(64);
+Day is written as Unsigned Integer(32) restricted to {1..31};
+Email is written as Variable Length Text(64);
+Event ID is written as Auto Counter;
+Event Location is written as Variable Length Text(128);
+Event Role Name is written as Variable Length Text restricted to {'Celebrant', 'Father', 'Husband', 'Mother', 'Subject', 'Wife'};
+Event Type ID is written as Auto Counter;
+Event Type Name is written as Variable Length Text(16) restricted to {'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'};
+Gender is written as Fixed Length Text(1) restricted to {'F', 'M'};
+Month is written as Unsigned Integer(32) restricted to {1..12};
+Name is written as Variable Length Text(128);
+Occupation is written as Variable Length Text(128);
+Official is written as Variable Length Text(64);
+Person ID is written as Auto Counter;
+Picture is written as Picture Raw Data(20);
+Role ID is written as Auto Counter;
+Source ID is written as Auto Counter;
+Source Name is written as Variable Length Text(128);
+User ID is written as Auto Counter;
+Year is written as Unsigned Integer(32);
 
 /*
  * Entity Types
  */
 Event is identified by its ID;
 Event is certified by at most one Certificate;
-Event occurred at at most one EventLocation;
+Event occurred at at most one Event Location;
 Event was confirmed by at most one Official;
 
-EventDate is identified by min-Year and max-Year and Month and Day where
-	EventDate wasnt before at most one min-Year,
-	EventDate wasnt after at most one max-Year,
-	EventDate occurred in at most one Month,
-	EventDate occurred on at most one Day;
-Event occurred on at most one EventDate;
+Event Date is identified by min-Year and max-Year and Month and Day where
+	Event Date wasnt before at most one min-Year,
+	Event Date wasnt after at most one max-Year,
+	Event Date occurred in at most one Month,
+	Event Date occurred on at most one Day;
+Event occurred on at most one Event Date;
 
-EventType is identified by its ID;
-Event is of at most one EventType;
-EventType is called one EventTypeName,
-	EventTypeName is name of at most one EventType;
+Event Type is identified by its ID;
+Event is of at most one Event Type;
+Event Type is called one Event Type Name,
+	Event Type Name is name of at most one Event Type;
 
 Person is identified by its ID;
 Address is of Person,
@@ -61,12 +61,12 @@ preferred-Picture is of Person,
 	Person has at most one preferred-Picture;
 
 Role is identified by its ID;
-Role is called one EventRoleName,
-	EventRoleName is name of one Role;
+Role is called one Event Role Name,
+	Event Role Name is name of one Role;
 
 Source is identified by its ID;
-Source has one SourceName,
-	SourceName is of at most one Source;
+Source has one Source Name,
+	Source Name is of at most one Source;
 
 User is identified by its ID;
 Email is of User,
@@ -86,12 +86,12 @@ Participation is where
 /*
  * Constraints:
  */
+each Event Date occurs at least one time in
+	Event Date wasnt before min-Year,
+	Event Date wasnt after max-Year,
+	Event Date occurred in Month,
+	Event Date occurred on Day;
 each Event occurs at least one time in
 	Person played Role in Event according to Source;
-each EventDate occurs at least one time in
-	EventDate wasnt before min-Year,
-	EventDate wasnt after max-Year,
-	EventDate occurred in Month,
-	EventDate occurred on Day;
 each Person occurs at least one time in
 	Person played Role in Event according to Source;

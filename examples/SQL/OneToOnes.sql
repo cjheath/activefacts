@@ -1,14 +1,14 @@
 CREATE TABLE Boy (
-	-- Boy has BoyID,
+	-- Boy has Boy ID,
 	BoyID                                   int IDENTITY NOT NULL,
 	PRIMARY KEY(BoyID)
 )
 GO
 
 CREATE TABLE Girl (
-	-- maybe Girl is going out with Boy and Boy has BoyID,
+	-- maybe Girl is going out with Boy and Boy has Boy ID,
 	BoyID                                   int NULL,
-	-- Girl has GirlID,
+	-- Girl has Girl ID,
 	GirlID                                  int IDENTITY NOT NULL,
 	PRIMARY KEY(GirlID),
 	FOREIGN KEY (BoyID) REFERENCES Boy (BoyID)

@@ -3,8 +3,8 @@ vocabulary OneToOnes;
 /*
  * Value Types
  */
-BoyID is written as AutoCounter;
-GirlID is written as AutoCounter;
+Boy ID is written as Auto Counter;
+Girl ID is written as Auto Counter;
 
 /*
  * Entity Types

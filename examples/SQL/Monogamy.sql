@@ -1,9 +1,9 @@
 CREATE TABLE Person (
-	-- maybe Girl is a kind of Person and maybe Girlfriend is going out with Boyfriend and Person has PersonID,
+	-- maybe Girl is a kind of Person and maybe Girlfriend is going out with Boyfriend and Person has Person ID,
 	GirlBoyfriendID                         int NULL,
 	-- Person is called Name,
 	Name                                    varchar NOT NULL,
-	-- Person has PersonID,
+	-- Person has Person ID,
 	PersonID                                int IDENTITY NOT NULL,
 	PRIMARY KEY(PersonID),
 	FOREIGN KEY (GirlBoyfriendID) REFERENCES Person (PersonID)

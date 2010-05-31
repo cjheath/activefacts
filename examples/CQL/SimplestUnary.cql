@@ -3,10 +3,10 @@ vocabulary SimplestUnary;
 /*
  * Value Types
  */
-SomeString is written as VariableLengthText;
+Some String is written as Variable Length Text;
 
 /*
  * Fact Types
  */
-SomeString is long;
+Some String is long;
 

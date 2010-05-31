@@ -5,15 +5,15 @@ Date is written as Date;
 /*
  * Value Types
  */
-CompanyName is written as VariableLengthText(48);
-EmployeeNr is written as SignedInteger(32);
-Name is written as VariableLengthText(48);
+Company Name is written as Variable Length Text(48);
+Employee Nr is written as Signed Integer(32);
+Name is written as Variable Length Text(48);
 
 /*
  * Entity Types
  */
 Company is identified by its Name where
-	Company is called CompanyName;
+	Company is called Company Name;
 Company is listed;
 
 Meeting is identified by Date and Meeting is board meeting and Company where

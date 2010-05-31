@@ -1,24 +1,24 @@
 CREATE TABLE Address (
-	-- Address has AddressId,
+	-- Address has Address Id,
 	AddressId                               int IDENTITY NOT NULL,
-	-- maybe Address is in LegislativeDistrict and LegislativeDistrict has DistrictNumber,
+	-- maybe Address is in Legislative District and Legislative District has District Number,
 	LegislativeDistrictNumber               int NULL,
-	-- maybe Address is in LegislativeDistrict and LegislativeDistrict is for StateOrProvince and StateOrProvince has StateOrProvinceId,
+	-- maybe Address is in Legislative District and Legislative District is for State Or Province and State Or Province has State Or Province Id,
 	LegislativeDistrictStateOrProvinceId    int NULL,
-	-- maybe Address is assigned PostalCode,
+	-- maybe Address is assigned Postal Code,
 	PostalCode                              int NULL,
-	-- maybe Address is in StateOrProvince and StateOrProvince has StateOrProvinceId,
+	-- maybe Address is in State Or Province and State Or Province has State Or Province Id,
 	StateOrProvinceId                       int NULL,
 	PRIMARY KEY(AddressId)
 )
 GO
 
 CREATE TABLE Politician (
-	-- maybe Politician represents LegislativeDistrict and LegislativeDistrict has DistrictNumber,
+	-- maybe Politician represents Legislative District and Legislative District has District Number,
 	LegislativeDistrictNumber               int NULL,
-	-- maybe Politician represents LegislativeDistrict and LegislativeDistrict is for StateOrProvince and StateOrProvince has StateOrProvinceId,
+	-- maybe Politician represents Legislative District and Legislative District is for State Or Province and State Or Province has State Or Province Id,
 	LegislativeDistrictStateOrProvinceId    int NULL,
-	-- Politician has PoliticianId,
+	-- Politician has Politician Id,
 	PoliticianId                            int IDENTITY NOT NULL,
 	PRIMARY KEY(PoliticianId)
 )
@@ -34,7 +34,7 @@ CREATE UNIQUE CLUSTERED INDEX IX_PoliticianByLegislativeDistrictStateOrProvinceI
 GO
 
 CREATE TABLE StateOrProvince (
-	-- StateOrProvince has StateOrProvinceId,
+	-- State Or Province has State Or Province Id,
 	StateOrProvinceId                       int IDENTITY NOT NULL,
 	PRIMARY KEY(StateOrProvinceId)
 )

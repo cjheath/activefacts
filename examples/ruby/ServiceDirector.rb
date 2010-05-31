@@ -2,11 +2,11 @@ require 'activefacts/api'
 
 module ::ServiceDirector
 
-  class Company_Code < FixedLengthText
+  class CompanyCode < FixedLengthText
     value_type :length => 5
   end
 
-  class Credential_Nr < SignedInteger
+  class CredentialNr < SignedInteger
     value_type :length => 32
   end
 
@@ -18,7 +18,7 @@ module ::ServiceDirector
     value_type 
   end
 
-  class DataStore_Name < String
+  class DataStoreName < String
     value_type :length => 15
   end
 
@@ -34,7 +34,7 @@ module ::ServiceDirector
     value_type 
   end
 
-  class HostSystem_Name < String
+  class HostSystemName < String
     value_type :length => 15
   end
 
@@ -54,11 +54,11 @@ module ::ServiceDirector
     value_type :length => 30
   end
 
-  class Monitor_Id < AutoCounter
+  class MonitorId < AutoCounter
     value_type 
   end
 
-  class MonitoringApplication_Name < String
+  class MonitoringApplicationName < String
     value_type :length => 10
   end
 
@@ -70,15 +70,15 @@ module ::ServiceDirector
     value_type :length => 16
   end
 
-  class Network_Nr < SignedInteger
+  class NetworkNr < SignedInteger
     value_type :length => 32
   end
 
-  class NotificationLevel_Nr < SignedInteger
+  class NotificationLevelNr < SignedInteger
     value_type :length => 32
   end
 
-  class NotificationType_Name < String
+  class NotificationTypeName < String
     value_type :length => 20
   end
 
@@ -94,15 +94,15 @@ module ::ServiceDirector
     value_type :length => 32
   end
 
-  class ProviderType_Id < SignedSmallInteger
+  class ProviderTypeId < SignedSmallInteger
     value_type :length => 20
   end
 
-  class RecurringSchedule_Id < AutoCounter
+  class RecurringScheduleId < AutoCounter
     value_type 
   end
 
-  class SatalliteMessage_Id < UnsignedInteger
+  class SatelliteMessageId < UnsignedInteger
     value_type :length => 32
   end
 
@@ -118,15 +118,15 @@ module ::ServiceDirector
     value_type :length => 15
   end
 
-  class Subscription_Nr < SignedInteger
+  class SubscriptionNr < SignedInteger
     value_type :length => 32
   end
 
-  class Switch_Id < AutoCounter
+  class SwitchId < AutoCounter
     value_type 
   end
 
-  class Transaction_Nr < UnsignedInteger
+  class TransactionNr < UnsignedInteger
     value_type :length => 32
   end
 
@@ -138,17 +138,13 @@ module ::ServiceDirector
     value_type :length => 20
   end
 
-  class User_Name < String
-    value_type :length => 40
-  end
-
   class Version < FixedLengthText
     value_type :length => 5
   end
 
   class Company
     identified_by :company_code
-    one_to_one :company_code, :class => Company_Code, :mandatory => true  # See Company_Code.company
+    one_to_one :company_code, :mandatory => true  # See CompanyCode.company
     maybe :is_client
     maybe :is_vendor
     has_one :operating_name, :class => Name, :mandatory => true  # See Name.all_company_as_operating_name
@@ -156,7 +152,7 @@ module ::ServiceDirector
 
   class Credential
     identified_by :credential_nr
-    one_to_one :credential_nr, :class => Credential_Nr, :mandatory => true  # See Credential_Nr.credential
+    one_to_one :credential_nr, :mandatory => true  # See CredentialNr.credential
     has_one :data_store                         # See DataStore.all_credential
     has_one :data_store_service                 # See DataStoreService.all_credential
     has_one :expiration_date, :class => "Date"  # See Date.all_credential_as_expiration_date
@@ -168,7 +164,7 @@ module ::ServiceDirector
   class DataStore
     identified_by :data_store_name
     has_one :client, :mandatory => true         # See Client.all_data_store
-    one_to_one :data_store_name, :class => DataStore_Name, :mandatory => true  # See DataStore_Name.data_store
+    one_to_one :data_store_name, :mandatory => true  # See DataStoreName.data_store
     one_to_one :friendly_name, :class => Name, :mandatory => true  # See Name.data_store_as_friendly_name
     has_one :geocode_file                       # See GeocodeFile.all_data_store
     has_one :heart_beat_truck_pcid, :class => TruckPCID  # See TruckPCID.all_data_store_as_heart_beat_truck_pcid
@@ -202,20 +198,20 @@ module ::ServiceDirector
 
   class HostSystem
     identified_by :host_system_name
-    one_to_one :host_system_name, :class => HostSystem_Name, :mandatory => true  # See HostSystem_Name.host_system
+    one_to_one :host_system_name, :mandatory => true  # See HostSystemName.host_system
   end
 
   class Monitor
     identified_by :monitor_id
     has_one :data_store, :mandatory => true     # See DataStore.all_monitor
     maybe :is_disabled
-    one_to_one :monitor_id, :class => Monitor_Id, :mandatory => true  # See Monitor_Id.monitor
+    one_to_one :monitor_id, :mandatory => true  # See MonitorId.monitor
     has_one :monitoring_application, :mandatory => true  # See MonitoringApplication.all_monitor
   end
 
   class MonitoringApplication
     identified_by :monitoring_application_name
-    one_to_one :monitoring_application_name, :class => MonitoringApplication_Name, :mandatory => true  # See MonitoringApplication_Name.monitoring_application
+    one_to_one :monitoring_application_name, :mandatory => true  # See MonitoringApplicationName.monitoring_application
   end
 
   class Network
@@ -230,7 +226,7 @@ module ::ServiceDirector
     maybe :is_ip_single
     maybe :is_ip_subnet
     has_one :netmask                            # See Netmask.all_network
-    one_to_one :network_nr, :class => Network_Nr, :mandatory => true  # See Network_Nr.network
+    one_to_one :network_nr, :mandatory => true  # See NetworkNr.network
     has_one :private_interface_switch, :class => "Switch", :counterpart => :private_network  # See Switch.all_private_network
     has_one :public_interface_switch, :class => "Switch", :counterpart => :public_network  # See Switch.all_public_network
   end
@@ -238,18 +234,18 @@ module ::ServiceDirector
   class NotificationLevel
     identified_by :notification_level_nr
     has_one :initial_delay_duration, :class => Duration, :mandatory => true  # See Duration.all_notification_level_as_initial_delay_duration
-    one_to_one :notification_level_nr, :class => NotificationLevel_Nr, :mandatory => true  # See NotificationLevel_Nr.notification_level
+    one_to_one :notification_level_nr, :mandatory => true  # See NotificationLevelNr.notification_level
     has_one :repeat_duration, :class => Duration, :mandatory => true  # See Duration.all_notification_level_as_repeat_duration
   end
 
   class NotificationType
     identified_by :notification_type_name
-    one_to_one :notification_type_name, :class => NotificationType_Name, :mandatory => true  # See NotificationType_Name.notification_type
+    one_to_one :notification_type_name, :mandatory => true  # See NotificationTypeName.notification_type
   end
 
   class ProviderType
     identified_by :provider_type_id
-    one_to_one :provider_type_id, :class => ProviderType_Id, :mandatory => true  # See ProviderType_Id.provider_type
+    one_to_one :provider_type_id, :mandatory => true  # See ProviderTypeId.provider_type
   end
 
   class RecurringSchedule
@@ -257,9 +253,9 @@ module ::ServiceDirector
     has_one :duration, :mandatory => true       # See Duration.all_recurring_schedule
     maybe :friday
     maybe :monday
-    has_one :monitor_all_exclusion, :class => Monitor, :counterpart => :all_exclusion_recurring_schedule  # See Monitor.all_all_exclusion_recurring_schedule
-    has_one :monitor_integration_exclusion, :class => Monitor, :counterpart => :integration_exclusion_recurring_schedule  # See Monitor.all_integration_exclusion_recurring_schedule
-    one_to_one :recurring_schedule_id, :class => RecurringSchedule_Id, :mandatory => true  # See RecurringSchedule_Id.recurring_schedule
+    has_one :monitor, :counterpart => :all_exclusion_recurring_schedule  # See Monitor.all_all_exclusion_recurring_schedule
+    has_one :monitor, :counterpart => :integration_exclusion_recurring_schedule  # See Monitor.all_integration_exclusion_recurring_schedule
+    one_to_one :recurring_schedule_id, :mandatory => true  # See RecurringScheduleId.recurring_schedule
     maybe :saturday
     has_one :start_time, :class => "Time", :mandatory => true  # See Time.all_recurring_schedule_as_start_time
     maybe :sunday
@@ -268,25 +264,25 @@ module ::ServiceDirector
     maybe :wednesday
   end
 
-  class SatalliteMessage
-    identified_by :satallite_message_id
-    has_one :data_store, :mandatory => true     # See DataStore.all_satallite_message
-    has_one :group_transaction, :class => "Transaction"  # See Transaction.all_satallite_message_as_group_transaction
-    has_one :insertion_date_time, :class => DateTime, :mandatory => true  # See DateTime.all_satallite_message_as_insertion_date_time
-    has_one :message_data                       # See MessageData.all_satallite_message
-    has_one :message_header                     # See MessageHeader.all_satallite_message
-    has_one :provider_type                      # See ProviderType.all_satallite_message
-    one_to_one :satallite_message_id, :class => SatalliteMessage_Id, :mandatory => true  # See SatalliteMessage_Id.satallite_message
-    has_one :serial_number, :mandatory => true  # See SerialNumber.all_satallite_message
+  class SatelliteMessage
+    identified_by :satellite_message_id
+    has_one :data_store, :mandatory => true     # See DataStore.all_satellite_message
+    has_one :group_transaction, :class => "Transaction"  # See Transaction.all_satellite_message_as_group_transaction
+    has_one :insertion_date_time, :class => DateTime, :mandatory => true  # See DateTime.all_satellite_message_as_insertion_date_time
+    has_one :message_data                       # See MessageData.all_satellite_message
+    has_one :message_header                     # See MessageHeader.all_satellite_message
+    has_one :provider_type                      # See ProviderType.all_satellite_message
+    one_to_one :satellite_message_id, :mandatory => true  # See SatelliteMessageId.satellite_message
+    has_one :serial_number, :mandatory => true  # See SerialNumber.all_satellite_message
   end
 
   class Subscription
     identified_by :subscription_nr
     has_one :beginning_date, :class => Date, :mandatory => true  # See Date.all_subscription_as_beginning_date
-    one_to_one :driver_tech_subscription, :class => Company, :counterpart => :driver_tech_subscription  # See Company.driver_tech_subscription
+    one_to_one :company, :counterpart => :driver_tech_subscription  # See Company.driver_tech_subscription
     has_one :ending_date, :class => Date        # See Date.all_subscription_as_ending_date
     maybe :is_enabled
-    one_to_one :subscription_nr, :class => Subscription_Nr, :mandatory => true  # See Subscription_Nr.subscription
+    one_to_one :subscription_nr, :mandatory => true  # See SubscriptionNr.subscription
   end
 
   class Switch
@@ -301,7 +297,7 @@ module ::ServiceDirector
     one_to_one :monitoring_port, :class => Port, :mandatory => true  # See Port.switch_as_monitoring_port
     has_one :operating_port, :class => Port, :mandatory => true  # See Port.all_switch_as_operating_port
     has_one :revision_version, :class => Version, :mandatory => true  # See Version.all_switch_as_revision_version
-    one_to_one :switch_id, :class => Switch_Id, :mandatory => true  # See Switch_Id.switch
+    one_to_one :switch_id, :mandatory => true   # See SwitchId.switch
   end
 
   class Time
@@ -311,7 +307,7 @@ module ::ServiceDirector
 
   class Transaction
     identified_by :transaction_nr
-    one_to_one :transaction_nr, :class => Transaction_Nr, :mandatory => true  # See Transaction_Nr.transaction
+    one_to_one :transaction_nr, :mandatory => true  # See TransactionNr.transaction
   end
 
   class User
@@ -319,7 +315,7 @@ module ::ServiceDirector
     maybe :is_monitor_notification_disabled
     has_one :primary_email_address, :class => EmailAddress, :mandatory => true  # See EmailAddress.all_user_as_primary_email_address
     has_one :secondary_email_address, :class => EmailAddress  # See EmailAddress.all_user_as_secondary_email_address
-    one_to_one :user_name, :class => User_Name, :mandatory => true  # See User_Name.user
+    one_to_one :user_name, :mandatory => true   # See UserName.user
   end
 
   class Vendor < Company
@@ -371,7 +367,7 @@ module ::ServiceDirector
     has_one :data_store, :mandatory => true     # See DataStore.all_data_store_service
     has_one :service, :mandatory => true        # See Service.all_data_store_service
     has_one :client, :mandatory => true         # See Client.all_data_store_service
-    one_to_one :subscription, :mandatory => true, :counterpart => :data_store_service_subscription  # See Subscription.data_store_service_subscription
+    one_to_one :subscription, :mandatory => true  # See Subscription.data_store_service
   end
 
 end

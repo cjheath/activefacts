@@ -3,8 +3,8 @@ vocabulary NonRoleId;
 /*
  * Value Types
  */
-ComparisonId is written as AutoCounter;
-Ordinal is written as AutoCounter;
+Comparison Id is written as Auto Counter;
+Ordinal is written as Auto Counter;
 
 /*
  * Entity Types

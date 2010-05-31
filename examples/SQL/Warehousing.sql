@@ -1,68 +1,68 @@
 CREATE TABLE Bin (
-	-- Bin has BinID,
+	-- Bin has Bin ID,
 	BinID                                   int IDENTITY NOT NULL,
-	-- maybe Product is stocked in Bin and Product has ProductID,
+	-- maybe Product is stocked in Bin and Product has Product ID,
 	ProductID                               int NULL,
 	-- Bin contains Quantity,
 	Quantity                                int NOT NULL,
-	-- maybe Warehouse contains Bin and Warehouse has WarehouseID,
+	-- maybe Warehouse contains Bin and Warehouse has Warehouse ID,
 	WarehouseID                             int NULL,
 	PRIMARY KEY(BinID)
 )
 GO
 
 CREATE TABLE DirectOrderMatch (
-	-- DirectOrderMatch is where PurchaseOrderItem matches SalesOrderItem and PurchaseOrderItem is for Product and Product has ProductID,
+	-- Direct Order Match is where Purchase Order Item matches Sales Order Item and Purchase Order Item is for Product and Product has Product ID,
 	PurchaseOrderItemProductID              int NOT NULL,
-	-- DirectOrderMatch is where PurchaseOrderItem matches SalesOrderItem and PurchaseOrder includes PurchaseOrderItem and PurchaseOrder has PurchaseOrderID,
+	-- Direct Order Match is where Purchase Order Item matches Sales Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID,
 	PurchaseOrderItemPurchaseOrderID        int NOT NULL,
-	-- DirectOrderMatch is where PurchaseOrderItem matches SalesOrderItem and SalesOrderItem is for Product and Product has ProductID,
+	-- Direct Order Match is where Purchase Order Item matches Sales Order Item and Sales Order Item is for Product and Product has Product ID,
 	SalesOrderItemProductID                 int NOT NULL,
-	-- DirectOrderMatch is where PurchaseOrderItem matches SalesOrderItem and SalesOrder includes SalesOrderItem and SalesOrder has SalesOrderID,
+	-- Direct Order Match is where Purchase Order Item matches Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID,
 	SalesOrderItemSalesOrderID              int NOT NULL,
 	PRIMARY KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID, SalesOrderItemSalesOrderID, SalesOrderItemProductID)
 )
 GO
 
 CREATE TABLE DispatchItem (
-	-- maybe Dispatch is of DispatchItem and Dispatch has DispatchID,
+	-- maybe Dispatch is of Dispatch Item and Dispatch has Dispatch ID,
 	DispatchID                              int NULL,
-	-- DispatchItem has DispatchItemID,
+	-- Dispatch Item has Dispatch Item ID,
 	DispatchItemID                          int IDENTITY NOT NULL,
-	-- DispatchItem is Product and Product has ProductID,
+	-- Dispatch Item is Product and Product has Product ID,
 	ProductID                               int NOT NULL,
-	-- DispatchItem is in Quantity,
+	-- Dispatch Item is in Quantity,
 	Quantity                                int NOT NULL,
-	-- maybe DispatchItem is for SalesOrderItem and SalesOrderItem is for Product and Product has ProductID,
+	-- maybe Dispatch Item is for Sales Order Item and Sales Order Item is for Product and Product has Product ID,
 	SalesOrderItemProductID                 int NULL,
-	-- maybe DispatchItem is for SalesOrderItem and SalesOrder includes SalesOrderItem and SalesOrder has SalesOrderID,
+	-- maybe Dispatch Item is for Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID,
 	SalesOrderItemSalesOrderID              int NULL,
-	-- maybe DispatchItem is for TransferRequest and TransferRequest has TransferRequestID,
+	-- maybe Dispatch Item is for Transfer Request and Transfer Request has Transfer Request ID,
 	TransferRequestID                       int NULL,
 	PRIMARY KEY(DispatchItemID)
 )
 GO
 
 CREATE TABLE Party (
-	-- Party has PartyID,
+	-- Party has Party ID,
 	PartyID                                 int IDENTITY NOT NULL,
 	PRIMARY KEY(PartyID)
 )
 GO
 
 CREATE TABLE Product (
-	-- Product has ProductID,
+	-- Product has Product ID,
 	ProductID                               int IDENTITY NOT NULL,
 	PRIMARY KEY(ProductID)
 )
 GO
 
 CREATE TABLE PurchaseOrder (
-	-- PurchaseOrder has PurchaseOrderID,
+	-- Purchase Order has Purchase Order ID,
 	PurchaseOrderID                         int IDENTITY NOT NULL,
-	-- PurchaseOrder is to Supplier and Party has PartyID,
+	-- Purchase Order is to Supplier and Party has Party ID,
 	SupplierID                              int NOT NULL,
-	-- PurchaseOrder is to Warehouse and Warehouse has WarehouseID,
+	-- Purchase Order is to Warehouse and Warehouse has Warehouse ID,
 	WarehouseID                             int NOT NULL,
 	PRIMARY KEY(PurchaseOrderID),
 	FOREIGN KEY (SupplierID) REFERENCES Party (PartyID)
@@ -70,11 +70,11 @@ CREATE TABLE PurchaseOrder (
 GO
 
 CREATE TABLE PurchaseOrderItem (
-	-- PurchaseOrderItem is for Product and Product has ProductID,
+	-- Purchase Order Item is for Product and Product has Product ID,
 	ProductID                               int NOT NULL,
-	-- PurchaseOrder includes PurchaseOrderItem and PurchaseOrder has PurchaseOrderID,
+	-- Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID,
 	PurchaseOrderID                         int NOT NULL,
-	-- PurchaseOrderItem is in Quantity,
+	-- Purchase Order Item is in Quantity,
 	Quantity                                int NOT NULL,
 	PRIMARY KEY(PurchaseOrderID, ProductID),
 	FOREIGN KEY (ProductID) REFERENCES Product (ProductID),
@@ -83,19 +83,19 @@ CREATE TABLE PurchaseOrderItem (
 GO
 
 CREATE TABLE ReceivedItem (
-	-- ReceivedItem is Product and Product has ProductID,
+	-- Received Item is Product and Product has Product ID,
 	ProductID                               int NOT NULL,
-	-- maybe ReceivedItem is for PurchaseOrderItem and PurchaseOrderItem is for Product and Product has ProductID,
+	-- maybe Received Item is for Purchase Order Item and Purchase Order Item is for Product and Product has Product ID,
 	PurchaseOrderItemProductID              int NULL,
-	-- maybe ReceivedItem is for PurchaseOrderItem and PurchaseOrder includes PurchaseOrderItem and PurchaseOrder has PurchaseOrderID,
+	-- maybe Received Item is for Purchase Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID,
 	PurchaseOrderItemPurchaseOrderID        int NULL,
-	-- ReceivedItem is in Quantity,
+	-- Received Item is in Quantity,
 	Quantity                                int NOT NULL,
-	-- maybe Receipt is of ReceivedItem and Receipt has ReceiptID,
+	-- maybe Receipt is of Received Item and Receipt has Receipt ID,
 	ReceiptID                               int NULL,
-	-- ReceivedItem has ReceivedItemID,
+	-- Received Item has Received Item ID,
 	ReceivedItemID                          int IDENTITY NOT NULL,
-	-- maybe ReceivedItem is for TransferRequest and TransferRequest has TransferRequestID,
+	-- maybe Received Item is for Transfer Request and Transfer Request has Transfer Request ID,
 	TransferRequestID                       int NULL,
 	PRIMARY KEY(ReceivedItemID),
 	FOREIGN KEY (ProductID) REFERENCES Product (ProductID),
@@ -104,11 +104,11 @@ CREATE TABLE ReceivedItem (
 GO
 
 CREATE TABLE SalesOrder (
-	-- Customer made SalesOrder and Party has PartyID,
+	-- Customer made Sales Order and Party has Party ID,
 	CustomerID                              int NOT NULL,
-	-- SalesOrder has SalesOrderID,
+	-- Sales Order has Sales Order ID,
 	SalesOrderID                            int IDENTITY NOT NULL,
-	-- SalesOrder is from Warehouse and Warehouse has WarehouseID,
+	-- Sales Order is from Warehouse and Warehouse has Warehouse ID,
 	WarehouseID                             int NOT NULL,
 	PRIMARY KEY(SalesOrderID),
 	FOREIGN KEY (CustomerID) REFERENCES Party (PartyID)
@@ -116,11 +116,11 @@ CREATE TABLE SalesOrder (
 GO
 
 CREATE TABLE SalesOrderItem (
-	-- SalesOrderItem is for Product and Product has ProductID,
+	-- Sales Order Item is for Product and Product has Product ID,
 	ProductID                               int NOT NULL,
-	-- SalesOrderItem is in Quantity,
+	-- Sales Order Item is in Quantity,
 	Quantity                                int NOT NULL,
-	-- SalesOrder includes SalesOrderItem and SalesOrder has SalesOrderID,
+	-- Sales Order includes Sales Order Item and Sales Order has Sales Order ID,
 	SalesOrderID                            int NOT NULL,
 	PRIMARY KEY(SalesOrderID, ProductID),
 	FOREIGN KEY (ProductID) REFERENCES Product (ProductID),
@@ -129,18 +129,18 @@ CREATE TABLE SalesOrderItem (
 GO
 
 CREATE TABLE TransferRequest (
-	-- maybe TransferRequest is from-Warehouse and Warehouse has WarehouseID,
+	-- maybe Transfer Request is from-Warehouse and Warehouse has Warehouse ID,
 	FromWarehouseID                         int NULL,
-	-- maybe TransferRequest is to-Warehouse and Warehouse has WarehouseID,
+	-- maybe Transfer Request is to-Warehouse and Warehouse has Warehouse ID,
 	ToWarehouseID                           int NULL,
-	-- TransferRequest has TransferRequestID,
+	-- Transfer Request has Transfer Request ID,
 	TransferRequestID                       int IDENTITY NOT NULL,
 	PRIMARY KEY(TransferRequestID)
 )
 GO
 
 CREATE TABLE Warehouse (
-	-- Warehouse has WarehouseID,
+	-- Warehouse has Warehouse ID,
 	WarehouseID                             int IDENTITY NOT NULL,
 	PRIMARY KEY(WarehouseID)
 )

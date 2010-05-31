@@ -3,58 +3,58 @@ vocabulary Orienteering;
 /*
  * Value Types
  */
-Accessibility is written as FixedLengthText(1) restricted to {'A'..'D'};
-ClubCode is written as VariableLengthText(6);
-ClubName is written as VariableLengthText(32);
-ControlNumber is written as UnsignedInteger(32) restricted to {1..1000};
-Course is written as VariableLengthText(16) restricted to {'A'..'E', 'PW'};
-EntryID is written as AutoCounter;
-EventID is written as AutoCounter;
-EventName is written as VariableLengthText(50);
-FamilyName is written as VariableLengthText(48);
-Gender is written as FixedLengthText(1) restricted to {'F', 'M'};
-GivenName is written as VariableLengthText(48);
-Location is written as VariableLengthText(200);
-MapID is written as AutoCounter;
-MapName is written as VariableLengthText(80);
-Number is written as UnsignedInteger(32) restricted to {1..100};
-PersonID is written as AutoCounter;
-Placing is written as UnsignedInteger(32);
-PointValue is written as UnsignedInteger(32);
-PostCode is written as UnsignedInteger(32);
-PunchID is written as AutoCounter;
-Score is written as SignedInteger(32);
-ScoringMethod is written as VariableLengthText(32) restricted to {'Scatter', 'Score', 'Special'};
-SeriesID is written as AutoCounter;
-SeriesName is written as VariableLengthText(40);
-StartTime is written as DateAndTime;
-Time is written as DateAndTime;
-Year is written as UnsignedInteger(32) restricted to {1900..3000};
+Accessibility is written as Fixed Length Text(1) restricted to {'A'..'D'};
+Club Code is written as Variable Length Text(6);
+Club Name is written as Variable Length Text(32);
+Control Number is written as Unsigned Integer(32) restricted to {1..1000};
+Course is written as Variable Length Text(16) restricted to {'A'..'E', 'PW'};
+Entry ID is written as Auto Counter;
+Event ID is written as Auto Counter;
+Event Name is written as Variable Length Text(50);
+Family Name is written as Variable Length Text(48);
+Gender is written as Fixed Length Text(1) restricted to {'F', 'M'};
+Given Name is written as Variable Length Text(48);
+Location is written as Variable Length Text(200);
+Map ID is written as Auto Counter;
+Map Name is written as Variable Length Text(80);
+Number is written as Unsigned Integer(32) restricted to {1..100};
+Person ID is written as Auto Counter;
+Placing is written as Unsigned Integer(32);
+Point Value is written as Unsigned Integer(32);
+Post Code is written as Unsigned Integer(32);
+Punch ID is written as Auto Counter;
+Score is written as Signed Integer(32);
+Scoring Method is written as Variable Length Text(32) restricted to {'Scatter', 'Score', 'Special'};
+Series ID is written as Auto Counter;
+Series Name is written as Variable Length Text(40);
+Start Time is written as Date And Time;
+Time is written as Date And Time;
+Year is written as Unsigned Integer(32) restricted to {1900..3000};
 
 /*
  * Entity Types
  */
 Club is identified by its Code;
-ClubName is name of at most one Club,
-	Club is called one ClubName;
+Club Name is name of at most one Club,
+	Club is called one Club Name;
 
 Event is identified by its ID;
 Club runs Event,
 	Event is run by one Club;
-Event is called at most one EventName,
-	EventName is name of at most one Event;
+Event is called at most one Event Name,
+	Event Name is name of at most one Event;
 Event has at most one Number;
-Event is held on one StartTime;
+Event is held on one Start Time;
 Event starts at one start-Location,
 	Location is place Event starts;
 
-EventControl is where
-	Event includes at least one ControlNumber;
-EventControl has at most one PointValue;
+Event Control is where
+	Event includes at least one Control Number;
+Event Control has at most one Point Value;
 
-EventScoringMethod is where
-	ScoringMethod is used for Course of Event,
-	Course of Event uses at most one ScoringMethod;
+Event Scoring Method is where
+	Scoring Method is used for Course of Event,
+	Course of Event uses at most one Scoring Method;
 
 Map is identified by its ID;
 Club (as Owner) owns Map,
@@ -62,27 +62,27 @@ Club (as Owner) owns Map,
 Map has at most one Accessibility;
 Map is map for Event,
 	Event uses one Map;
-Map has one MapName,
-	MapName is of at most one Map;
+Map has one Map Name,
+	Map Name is of at most one Map;
 
 Person is identified by its ID;
 Person is member of at most one Club;
-Person has one FamilyName,
-	FamilyName is of Person;
+Person has one Family Name,
+	Family Name is of Person;
 Person is of at most one Gender;
-Person has one GivenName,
-	GivenName is name of Person;
-Person has at most one PostCode;
+Person has one Given Name,
+	Given Name is name of Person;
+Person has at most one Post Code;
 Person was born in at most one birth-Year;
 
 Punch is identified by its ID;
 
-PunchPlacement is where
-	Punch is placed at EventControl;
+Punch Placement is where
+	Punch is placed at Event Control;
 
 Series is identified by its ID;
 Event is in at most one Series;
-Series has one SeriesName (as Name),
+Series has one Series Name (as Name),
 	Name is of at most one Series;
 
 Entry is identified by its ID where
@@ -100,12 +100,12 @@ Visit is where
 Event is in Series
 	if and only if
 	Event has Number;
-either Event is called EventName or Event is in Series;
-each EventControl occurs at least one time in
-	Punch is placed at EventControl;
-each combination GivenName, FamilyName occurs at most one time in
-	Person has GivenName,
-	Person has FamilyName;
+each Event Control occurs at least one time in
+	Punch is placed at Event Control;
+either Event is called Event Name or Event is in Series;
+each combination Given Name, Family Name occurs at most one time in
+	Person has Given Name,
+	Person has Family Name;
 each combination Series, Number occurs at most one time in
 	Event is in Series,
 	Event has Number;

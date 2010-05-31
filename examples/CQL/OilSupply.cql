@@ -4,14 +4,14 @@ vocabulary OilSupply;
  * Value Types
  */
 Cost is written as Money;
-MonthNr is written as SignedInteger(32);
-ProductName is written as VariableLengthText;
-Quantity is written as UnsignedInteger(32);
-RefineryName is written as VariableLengthText(80);
-RegionName is written as VariableLengthText;
-Season is written as VariableLengthText(6) restricted to {'Autumn', 'Spring', 'Summer', 'Winter'};
-TransportMethod is written as VariableLengthText restricted to {'Rail', 'Road', 'Sea'};
-YearNr is written as SignedInteger(32);
+Month Nr is written as Signed Integer(32);
+Product Name is written as Variable Length Text;
+Quantity is written as Unsigned Integer(32);
+Refinery Name is written as Variable Length Text(80);
+Region Name is written as Variable Length Text;
+Season is written as Variable Length Text(6) restricted to {'Autumn', 'Spring', 'Summer', 'Winter'};
+Transport Method is written as Variable Length Text restricted to {'Rail', 'Road', 'Sea'};
+Year Nr is written as Signed Integer(32);
 
 /*
  * Entity Types
@@ -25,27 +25,27 @@ Refinery is identified by its Name;
 
 Region is identified by its Name;
 
-TransportRoute is where
-	TransportMethod transportation is available from Refinery to Region,
-	TransportMethod transportation is available to Region from Refinery;
-TransportRoute incurs at most one Cost per kl;
+Transport Route is where
+	Transport Method transportation is available from Refinery to Region,
+	Transport Method transportation is available to Region from Refinery;
+Transport Route incurs at most one Cost per kl;
 
 Year is identified by its Nr;
 
-AcceptableSubstitutes is where
+Acceptable Substitutes is where
 	Product may be substituted by alternate-Product in Season [acyclic, intransitive],
 	alternate-Product is an acceptable substitute for Product in Season;
 
-SupplyPeriod is identified by Year and Month where
-	SupplyPeriod is in one Year,
-	SupplyPeriod is in one Month;
+Supply Period is identified by Year and Month where
+	Supply Period is in one Year,
+	Supply Period is in one Month;
 
-ProductionForecast is where
-	Refinery forecasts production of Product in SupplyPeriod;
-ProductionForecast predicts at most one Cost;
-ProductionForecast is for one Quantity;
+Production Forecast is where
+	Refinery forecasts production of Product in Supply Period;
+Production Forecast predicts at most one Cost;
+Production Forecast is for one Quantity;
 
-RegionalDemand is where
-	Region will need Product in SupplyPeriod;
-RegionalDemand is for at most one Quantity;
+Regional Demand is where
+	Region will need Product in Supply Period;
+Regional Demand is for at most one Quantity;
 

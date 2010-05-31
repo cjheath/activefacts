@@ -8,7 +8,7 @@ CREATE TABLE Month (
 GO
 
 CREATE TABLE Occurrence (
-	-- Occurrence is where Event occurred in Month and Event has EventId,
+	-- Occurrence is where Event occurred in Month and Event has Event Id,
 	EventId                                 int NOT NULL,
 	-- Occurrence is where Event occurred in Month and Month has value,
 	MonthValue                              varchar NOT NULL,

@@ -2,13 +2,13 @@
 <ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:oial="http://schemas.neumont.edu/ORM/Abstraction/2007-06/Core" xmlns:odt="http://schemas.neumont.edu/ORM/Abstraction/2007-06/DataTypes/Core" xmlns:ormtooial="http://schemas.neumont.edu/ORM/Bridge/2007-06/ORMToORMAbstraction" xmlns:rcd="http://schemas.neumont.edu/ORM/Relational/2007-06/ConceptualDatabase" xmlns:ddt="http://schemas.orm.net/DIL/DILDT" xmlns:oialtocdb="http://schemas.neumont.edu/ORM/Bridge/2007-06/ORMAbstractionToConceptualDatabase" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
 	<orm:ORMModel id="_E39A9205-D643-44F9-9287-F3601AE89738" Name="SimplestUnary">
 		<orm:Objects>
-			<orm:ValueType id="_27B48B44-34B9-489A-8073-25ADA7E13A1C" Name="SomeString">
+			<orm:ValueType id="_27B48B44-34B9-489A-8073-25ADA7E13A1C" Name="Some String">
 				<orm:PlayedRoles>
 					<orm:Role ref="_B4AF00E7-28F5-4FA5-B81E-87F03242F1EF" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_02489136-6066-4C16-B2CE-BD27F12BCDAB" ref="_6C38A1A2-EB4F-4516-9F11-EFBD974D7B07" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ValueType id="_368172AE-2553-47FF-BAF0-0D51E06FC465" Name="SomeString is long" IsImplicitBooleanValue="true">
+			<orm:ValueType id="_368172AE-2553-47FF-BAF0-0D51E06FC465" Name="Some String is long" IsImplicitBooleanValue="true">
 				<orm:PlayedRoles>
 					<orm:Role ref="_8248045A-A517-4EBE-9D4C-1BF0012770F3" />
 				</orm:PlayedRoles>
@@ -90,7 +90,7 @@
 	</orm:NameGenerator>
 	<orm:GenerationState id="_65906F06-C1DF-451C-A561-44D61B980BFA">
 		<orm:GenerationSettings>
-			<ormtooial:AbstractionModelGenerationSetting id="_C50F4E0F-926E-4411-8FEC-EFCE2B98192C" AlgorithmVersion="1.005">
+			<ormtooial:AbstractionModelGenerationSetting id="_C50F4E0F-926E-4411-8FEC-EFCE2B98192C" AlgorithmVersion="1.007">
 				<ormtooial:AbstractionModel ref="_60731D30-5E12-4655-B7C4-0E2C0B9A020A" />
 			</ormtooial:AbstractionModelGenerationSetting>
 			<oialtocdb:SchemaGenerationSetting id="_C775D2B9-1A2B-4D90-9F77-9034DABECE0F" CoreAlgorithmVersion="1.004" NameAlgorithmVersion="1.011">
@@ -100,7 +100,7 @@
 	</orm:GenerationState>
 	<ormDiagram:ORMDiagram id="_0E558364-763B-4A87-8BD4-B6E367C08744" IsCompleteView="false" Name="SimplestUnary" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
-			<ormDiagram:ObjectTypeShape id="_E46B3297-FE16-4F3A-835B-7C2494535191" IsExpanded="true" AbsoluteBounds="0.70833329359690334, 0.5, 0.73844658851623535, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_E46B3297-FE16-4F3A-835B-7C2494535191" IsExpanded="true" AbsoluteBounds="0.70833329359690334, 0.5, 0.76778417348861694, 0.22950302660465241">
 				<ormDiagram:Subject ref="_27B48B44-34B9-489A-8073-25ADA7E13A1C" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_8FEF2BA2-8BDA-4796-BE92-675273E58FFA" IsExpanded="true" AbsoluteBounds="1.8854166666666665, 0.52780706880614137, 0.2238888889923692, 0.17388888899236918">
@@ -116,18 +116,18 @@
 	</ormDiagram:ORMDiagram>
 	<oial:model id="_60731D30-5E12-4655-B7C4-0E2C0B9A020A" name="SimplestUnary">
 		<oial:informationTypeFormats>
-			<odt:dataType id="_92553285-949E-491A-AA19-DBC975B64389" name="SomeString" />
-			<odt:dataType id="_D47EE4B1-AF69-4F77-8917-75112B6DCFEB" name="SomeString is long" />
+			<odt:dataType id="_03FB763B-EE20-4A19-A0BB-342C4C584D58" name="Some String" />
+			<odt:dataType id="_C9EEBDE5-483C-4B31-9C21-3BC01382007B" name="Some String is long" />
 		</oial:informationTypeFormats>
 		<oial:conceptTypes>
-			<oial:conceptType id="_7BCCCA65-59E9-410E-99B3-1CE04D2FD8A3" name="SomeString">
+			<oial:conceptType id="_C483BEBB-D68B-44C4-A149-970F82A1698D" name="Some String">
 				<oial:children>
-					<oial:informationType id="_A6AC60C4-7BC6-41F9-B667-21DD1DA4619E" ref="_92553285-949E-491A-AA19-DBC975B64389" isMandatory="true" name="SomeStringValue" />
-					<oial:informationType id="_494DB838-1F1E-491A-A169-2A402DED7C81" ref="_D47EE4B1-AF69-4F77-8917-75112B6DCFEB" isMandatory="true" name="SomeString is long" />
+					<oial:informationType id="_3BD0D5DC-3D23-4848-AE60-819E40F9A72D" ref="_03FB763B-EE20-4A19-A0BB-342C4C584D58" isMandatory="true" name="SomeStringValue" />
+					<oial:informationType id="_01C11B2C-C304-4B4B-879F-B0C62ECE5DB8" ref="_C9EEBDE5-483C-4B31-9C21-3BC01382007B" isMandatory="true" name="SomeString is long" />
 				</oial:children>
 				<oial:uniquenessConstraints>
-					<oial:uniquenessConstraint id="_5E6C2422-2979-4AC9-90B3-791E6DCE5A4E" name="SomeStringUniqueness" isPreferred="true">
-						<oial:uniquenessChild ref="_A6AC60C4-7BC6-41F9-B667-21DD1DA4619E" />
+					<oial:uniquenessConstraint id="_B71FB1E9-FEB0-4FE1-9EE1-6EEBB9626CF7" name="SomeStringUniqueness" isPreferred="true">
+						<oial:uniquenessChild ref="_3BD0D5DC-3D23-4848-AE60-819E40F9A72D" />
 					</oial:uniquenessConstraint>
 				</oial:uniquenessConstraints>
 			</oial:conceptType>
@@ -135,25 +135,25 @@
 	</oial:model>
 	<ormtooial:Bridge>
 		<ormtooial:AbstractionModelIsForORMModel id="_B8508CCF-4EDC-40F9-A985-C62D4EC0AE1E" AbstractionModel="_60731D30-5E12-4655-B7C4-0E2C0B9A020A" ORMModel="_E39A9205-D643-44F9-9287-F3601AE89738" />
-		<ormtooial:FactTypeMapsTowardsRole id="_90326B99-7509-4F10-9F69-9D918F8F7C54" FactType="_E32C48DC-E040-459D-972E-4E26C3C2E7D4" TowardsRole="_B4AF00E7-28F5-4FA5-B81E-87F03242F1EF" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
-		<ormtooial:ConceptTypeIsForObjectType id="_40F9FB6D-7478-4339-9364-6C4DD437EC77" ConceptType="_7BCCCA65-59E9-410E-99B3-1CE04D2FD8A3" ObjectType="_27B48B44-34B9-489A-8073-25ADA7E13A1C" />
-		<ormtooial:ConceptTypeChildHasPathFactType id="_D52C0411-6D44-4E35-9388-E7727FE5B106" ConceptTypeChild="_494DB838-1F1E-491A-A169-2A402DED7C81" PathFactType="_E32C48DC-E040-459D-972E-4E26C3C2E7D4" />
-		<ormtooial:InformationTypeFormatIsForValueType id="_A73BE4F0-1F50-403A-AB10-6C370613CCDE" InformationTypeFormat="_92553285-949E-491A-AA19-DBC975B64389" ValueType="_27B48B44-34B9-489A-8073-25ADA7E13A1C" />
-		<ormtooial:InformationTypeFormatIsForValueType id="_837F5E25-6507-491F-8273-BC585D9EA7D6" InformationTypeFormat="_D47EE4B1-AF69-4F77-8917-75112B6DCFEB" ValueType="_368172AE-2553-47FF-BAF0-0D51E06FC465" />
+		<ormtooial:FactTypeMapsTowardsRole id="_29754707-D106-4183-97EB-25BF6FE7648E" FactType="_E32C48DC-E040-459D-972E-4E26C3C2E7D4" TowardsRole="_B4AF00E7-28F5-4FA5-B81E-87F03242F1EF" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
+		<ormtooial:ConceptTypeIsForObjectType id="_23DF6C25-EC06-4C63-B95E-452A2823D1C9" ConceptType="_C483BEBB-D68B-44C4-A149-970F82A1698D" ObjectType="_27B48B44-34B9-489A-8073-25ADA7E13A1C" />
+		<ormtooial:ConceptTypeChildHasPathFactType id="_3EF137EC-52F9-49F3-BE73-9230E85F8C00" ConceptTypeChild="_01C11B2C-C304-4B4B-879F-B0C62ECE5DB8" PathFactType="_E32C48DC-E040-459D-972E-4E26C3C2E7D4" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_AB4568E8-39EF-43CE-BD3E-F90A2564CCE3" InformationTypeFormat="_03FB763B-EE20-4A19-A0BB-342C4C584D58" ValueType="_27B48B44-34B9-489A-8073-25ADA7E13A1C" />
+		<ormtooial:InformationTypeFormatIsForValueType id="_770E2145-D162-437D-80BA-D85266EB44E1" InformationTypeFormat="_C9EEBDE5-483C-4B31-9C21-3BC01382007B" ValueType="_368172AE-2553-47FF-BAF0-0D51E06FC465" />
 	</ormtooial:Bridge>
 	<rcd:Catalog id="_88D71FD2-E7B5-4574-98CD-6A6EE74DFE2F">
 		<rcd:Schemas>
 			<rcd:Schema id="_D71E0EE3-04D2-410A-9FAB-CE7FB6372230" Name="SimplestUnary">
 				<rcd:Tables>
-					<rcd:Table id="_A2394D28-60D9-4EE3-9670-15D2C50712A9" Name="SomeString">
+					<rcd:Table id="_678BCF14-F692-49D8-872D-FD946207C467" Name="SomeString">
 						<rcd:Columns>
-							<rcd:Column id="_E36626B8-7AFF-4355-B251-8FF8EE665399" Name="value" />
-							<rcd:Column id="_E6A3642B-E9B7-43F5-9E91-E235565C0F8C" Name="isLong" />
+							<rcd:Column id="_7B238CC9-6FB4-498E-A73D-FEF59DDC42B8" Name="value" />
+							<rcd:Column id="_0AF7FAFB-EAC4-47D9-B45A-F89FB56D3636" Name="isLong" />
 						</rcd:Columns>
 						<rcd:Constraints>
-							<rcd:UniquenessConstraint id="_C53D152B-A69D-4FFD-8B6B-F848A0C0A17F" Name="SomeString_PK" IsPrimary="true">
+							<rcd:UniquenessConstraint id="_E9A3B549-1AA5-4445-975B-4F9AA89F395C" Name="SomeString_PK" IsPrimary="true">
 								<rcd:Columns>
-									<rcd:Column ref="_E36626B8-7AFF-4355-B251-8FF8EE665399" />
+									<rcd:Column ref="_7B238CC9-6FB4-498E-A73D-FEF59DDC42B8" />
 								</rcd:Columns>
 							</rcd:UniquenessConstraint>
 						</rcd:Constraints>
@@ -164,9 +164,9 @@
 	</rcd:Catalog>
 	<oialtocdb:Bridge>
 		<oialtocdb:SchemaIsForAbstractionModel id="_82355C81-2E61-4EDC-9128-6523724B5E4E" Schema="_D71E0EE3-04D2-410A-9FAB-CE7FB6372230" AbstractionModel="_60731D30-5E12-4655-B7C4-0E2C0B9A020A" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_006AF6FD-6327-4971-84ED-64BFE8F9DB6E" Column="_E6A3642B-E9B7-43F5-9E91-E235565C0F8C" ConceptTypeChild="_494DB838-1F1E-491A-A169-2A402DED7C81" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_D100E461-5C57-4E0A-A9B1-333FF956D769" Column="_E36626B8-7AFF-4355-B251-8FF8EE665399" ConceptTypeChild="_A6AC60C4-7BC6-41F9-B667-21DD1DA4619E" />
-		<oialtocdb:TableIsPrimarilyForConceptType id="_D8C999CD-F1E0-4F52-8918-AD4F59726D95" Table="_A2394D28-60D9-4EE3-9670-15D2C50712A9" ConceptType="_7BCCCA65-59E9-410E-99B3-1CE04D2FD8A3" />
-		<oialtocdb:UniquenessConstraintIsForUniqueness id="_A9AF1F76-CE28-4ECD-ABE1-B5A105D404A9" UniquenessConstraint="_C53D152B-A69D-4FFD-8B6B-F848A0C0A17F" Uniqueness="_5E6C2422-2979-4AC9-90B3-791E6DCE5A4E" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_64497E4C-5E73-4962-8C35-132F852BEBE5" Column="_0AF7FAFB-EAC4-47D9-B45A-F89FB56D3636" ConceptTypeChild="_01C11B2C-C304-4B4B-879F-B0C62ECE5DB8" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_28A7B68F-746F-4379-9AA8-727EFACBF327" Column="_7B238CC9-6FB4-498E-A73D-FEF59DDC42B8" ConceptTypeChild="_3BD0D5DC-3D23-4848-AE60-819E40F9A72D" />
+		<oialtocdb:TableIsPrimarilyForConceptType id="_51738250-30AF-4AA4-972C-18BC368D35AF" Table="_678BCF14-F692-49D8-872D-FD946207C467" ConceptType="_C483BEBB-D68B-44C4-A149-970F82A1698D" />
+		<oialtocdb:UniquenessConstraintIsForUniqueness id="_A3DBBA94-217E-43BD-9A4D-916A043B97F9" UniquenessConstraint="_E9A3B549-1AA5-4445-975B-4F9AA89F395C" Uniqueness="_B71FB1E9-FEB0-4FE1-9EE1-6EEBB9626CF7" />
 	</oialtocdb:Bridge>
 </ormRoot:ORM2>

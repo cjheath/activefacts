@@ -3,16 +3,16 @@ vocabulary OddIdentifier;
 /*
  * Value Types
  */
-Ordinal is written as SignedInteger(32);
-Text is written as VariableLengthText;
-ThingID is written as AutoCounter;
+Ordinal is written as Signed Integer(32);
+Text is written as Variable Length Text;
+Thing ID is written as Auto Counter;
 
 /*
  * Entity Types
  */
 Thing is identified by its ID;
 
-ThingSequence is identified by Thing and Text where
+Thing Sequence is identified by Thing and Text where
 	Thing has Ordinal occurrence,
-	ThingSequence has one Text;
+	Thing Sequence has one Text;
 

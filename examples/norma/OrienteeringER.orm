@@ -8,7 +8,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_1090AF0B-7EB8-42EB-8BAA-DE30E162D522" ref="_FFCE2572-A4FC-4FA1-BFD3-931AB104F3DB" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ValueType id="_7BE2B553-DD4E-463C-B836-AAF344738469" Name="ClubName">
+			<orm:ValueType id="_7BE2B553-DD4E-463C-B836-AAF344738469" Name="Club Name">
 				<orm:PlayedRoles>
 					<orm:Role ref="_9E58E216-2BBC-469B-9F43-BD3E78426EBF" />
 				</orm:PlayedRoles>
@@ -42,7 +42,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_642FC552-333F-4C17-BFD3-67AF028028D2" ref="_365F3304-7E2F-4D91-99DB-C63E3581C51A" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ValueType id="_89C5FD9F-977A-4E2B-B9F7-5B2B25BDCB19" Name="EventName">
+			<orm:ValueType id="_89C5FD9F-977A-4E2B-B9F7-5B2B25BDCB19" Name="Event Name">
 				<orm:PlayedRoles>
 					<orm:Role ref="_503E97C9-A0B7-4436-9EB1-716600781922" />
 				</orm:PlayedRoles>
@@ -81,13 +81,13 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_39E9BF5F-6219-4AD1-9389-6830FE2BDACF" ref="_EF2C7AD8-F771-4734-A327-79406176550E" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ValueType id="_E0DA324F-6356-4DF2-9BED-A05A1A116158" Name="SeriesName">
+			<orm:ValueType id="_E0DA324F-6356-4DF2-9BED-A05A1A116158" Name="Series Name">
 				<orm:PlayedRoles>
 					<orm:Role ref="_E01EF988-CAB8-4C49-BE52-49B3BB92119F" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_62585609-FA11-4FD8-97EF-F70D0388E4AD" ref="_7990EE95-2838-4D0F-AC47-523B83FB6086" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ObjectifiedType id="_E261A53D-8E53-44C0-BEA2-9E786235A33E" Name="SeriesEvent" _ReferenceMode="">
+			<orm:ObjectifiedType id="_E261A53D-8E53-44C0-BEA2-9E786235A33E" Name="Series Event" _ReferenceMode="">
 				<orm:PlayedRoles>
 					<orm:Role ref="_FD393E52-3303-41B1-A7D4-F27B2D124BA3" />
 					<orm:Role ref="_2008EAED-3021-472B-8CF0-FC6A33D4D3DB" />
@@ -102,7 +102,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_28174758-B100-4E3B-B892-FC9ACBE98552" ref="_FFCE2572-A4FC-4FA1-BFD3-931AB104F3DB" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ObjectifiedType id="_DA40DB9B-5249-416A-8C42-40C616F812A8" Name="EventCourse" _ReferenceMode="">
+			<orm:ObjectifiedType id="_DA40DB9B-5249-416A-8C42-40C616F812A8" Name="Event Course" _ReferenceMode="">
 				<orm:PlayedRoles>
 					<orm:Role ref="_3C864E3F-AA9F-4165-BF60-278671FB753D" />
 					<orm:Role ref="_DF382741-20E6-480D-9751-D73D500B3439" />
@@ -110,7 +110,7 @@
 				<orm:PreferredIdentifier ref="_46DC15D8-2D4F-410D-937F-4FD570E01838" />
 				<orm:NestedPredicate id="_2AE24577-D173-47FC-A6E5-97DDFEFAFCA8" ref="_DB654C4F-2D24-4BCF-980F-044946E7F750" />
 			</orm:ObjectifiedType>
-			<orm:ValueType id="_9F76C902-BD63-453A-9968-D915B7825F7F" Name="PointValue">
+			<orm:ValueType id="_9F76C902-BD63-453A-9968-D915B7825F7F" Name="Point Value">
 				<orm:PlayedRoles>
 					<orm:Role ref="_5D5856B3-E15C-4D82-98AB-1A77F9092EAF" />
 				</orm:PlayedRoles>
@@ -122,7 +122,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_F9BE589E-BCCB-463F-8795-C9E3DAEA5008" ref="_DF2C9558-F766-4ADC-B9B8-83D835FC6992" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ObjectifiedType id="_AC5441B7-5DB0-4890-80F2-F557F06CCFD0" Name="EventControl" _ReferenceMode="">
+			<orm:ObjectifiedType id="_AC5441B7-5DB0-4890-80F2-F557F06CCFD0" Name="Event Control" _ReferenceMode="">
 				<orm:PlayedRoles>
 					<orm:Role ref="_8A60DCF0-3835-4ED7-BD1D-ABA8B757921A" />
 					<orm:Role ref="_43EE0243-0468-43FA-BD0B-5F0424EFB469" />
@@ -612,7 +612,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_9F120130-A243-41BD-A0C9-D9AC884C3754" />
 			</orm:ImpliedFact>
-			<orm:Fact id="_7D1A0976-2657-430F-ADD2-9E16CFFADA2F" _Name="SeriesEvent">
+			<orm:Fact id="_7D1A0976-2657-430F-ADD2-9E16CFFADA2F" _Name="Series Event">
 				<orm:FactRoles>
 					<orm:Role id="_E01EF988-CAB8-4C49-BE52-49B3BB92119F" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_E0DA324F-6356-4DF2-9BED-A05A1A116158" />
@@ -766,7 +766,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_9F120130-A243-41BD-A0C9-D9AC884C3754" />
 			</orm:ImpliedFact>
-			<orm:Fact id="_DB654C4F-2D24-4BCF-980F-044946E7F750" _Name="EventCourse">
+			<orm:Fact id="_DB654C4F-2D24-4BCF-980F-044946E7F750" _Name="Event Course">
 				<orm:FactRoles>
 					<orm:Role id="_92FFBF2A-D94B-4A26-AABB-AF24D34EF7AD" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_69A56563-0D0F-496A-A7C5-B24A7B7440D0" />
@@ -881,7 +881,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_2AE24577-D173-47FC-A6E5-97DDFEFAFCA8" />
 			</orm:ImpliedFact>
-			<orm:Fact id="_77BFAF75-E70F-4394-9CCE-69B02F94E6C1" _Name="EventControl">
+			<orm:Fact id="_77BFAF75-E70F-4394-9CCE-69B02F94E6C1" _Name="Event Control">
 				<orm:FactRoles>
 					<orm:Role id="_5D5856B3-E15C-4D82-98AB-1A77F9092EAF" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_9F76C902-BD63-453A-9968-D915B7825F7F" />
@@ -1476,7 +1476,7 @@
 		</orm:ModelErrors>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_ABB06AF9-6C90-4E33-A399-010A2CBB21F7" FormatString="{1}" ReferenceModeType="General" />
-			<orm:ReferenceModeKind id="_3B26EEB2-5DF0-4D72-90FE-429B536A3E3A" FormatString="{0}{1}" ReferenceModeType="Popular" />
+			<orm:ReferenceModeKind id="_3B26EEB2-5DF0-4D72-90FE-429B536A3E3A" FormatString="{0} {1}" ReferenceModeType="Popular" />
 			<orm:ReferenceModeKind id="_943DD9D2-D20E-46DC-8637-F85A7DD16B03" FormatString="{1}Value" ReferenceModeType="UnitBased" />
 		</orm:ReferenceModeKinds>
 	</orm:ORMModel>
@@ -1531,7 +1531,7 @@
 			<ormDiagram:ObjectTypeShape id="_72586F1B-56BD-42EF-BB1E-BDCC4EE27845" IsExpanded="true" AbsoluteBounds="2.8541666666666674, 0.5, 0.40353315591812133, 0.22950302660465241">
 				<ormDiagram:Subject ref="_8802BE20-560F-4D5D-A422-F56C63864396" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_AE75BFD8-3CAA-4318-B4B8-DE0DFEE611EF" IsExpanded="true" AbsoluteBounds="3.4375000000000009, 0.5, 0.66890042543411254, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_AE75BFD8-3CAA-4318-B4B8-DE0DFEE611EF" IsExpanded="true" AbsoluteBounds="3.4375000000000009, 0.5, 0.69823801040649414, 0.22950302660465241">
 				<ormDiagram:Subject ref="_7BE2B553-DD4E-463C-B836-AAF344738469" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_9B512AD0-F64E-44F9-B50D-56CA5B5FE07B" IsExpanded="true" AbsoluteBounds="4.5979165871938061, 1.1356666666666668, 0.6738888889923691, 0.30588888899236916">
@@ -1579,7 +1579,7 @@
 			<ormDiagram:ObjectTypeShape id="_DFD3B13A-AEC3-482B-B003-6C76CE4DEA32" IsExpanded="true" AbsoluteBounds="0.85416666666666663, 2.09375, 0.27668854117393493, 0.22950302660465241">
 				<ormDiagram:Subject ref="_DCD5C5BB-993A-4E02-A780-4CBE32528261" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_80897F41-C413-4EB5-B49F-34B55985CE21" IsExpanded="true" AbsoluteBounds="1.9791665077209468, 0.5, 0.72918962955474853, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_80897F41-C413-4EB5-B49F-34B55985CE21" IsExpanded="true" AbsoluteBounds="1.9791665077209468, 0.5, 0.75852715492248535, 0.22950302660465241">
 				<ormDiagram:Subject ref="_89C5FD9F-977A-4E2B-B9F7-5B2B25BDCB19" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_E2039750-160D-44D0-9CE4-3A024740FADD" IsExpanded="true" AbsoluteBounds="4.562499841054283, 1.6979167660077408, 0.38929160952568059, 0.22950302660465241">
@@ -1593,7 +1593,7 @@
 					<ormDiagram:ReadingShape id="_F5B2F091-B537-4931-A329-E4C1D7F75A0C" IsExpanded="true" AbsoluteBounds="1.0249709153460964, 1.506307068961362, 1.5178945064544678, 0.12950302660465241">
 						<ormDiagram:Subject ref="_5F650E8C-B183-41F9-8623-C310179F4417" />
 					</ormDiagram:ReadingShape>
-					<ormDiagram:ObjectifiedFactTypeNameShape id="_AE2B1E1C-CC59-4594-9068-5771813A0C18" IsExpanded="true" AbsoluteBounds="1.0249709153460964, 0.94141212675968822, 0.62570977210998535, 0.12950302660465241">
+					<ormDiagram:ObjectifiedFactTypeNameShape id="_AE2B1E1C-CC59-4594-9068-5771813A0C18" IsExpanded="true" AbsoluteBounds="1.0249709153460964, 0.94141212675968822, 0.65699368715286255, 0.12950302660465241">
 						<ormDiagram:Subject ref="_E261A53D-8E53-44C0-BEA2-9E786235A33E" />
 					</ormDiagram:ObjectifiedFactTypeNameShape>
 				</ormDiagram:RelativeShapes>
@@ -1606,7 +1606,7 @@
 			<ormDiagram:ObjectTypeShape id="_90E2D764-1F31-4018-8951-98A4E754FA45" IsExpanded="true" AbsoluteBounds="1.3416375820127637, 0.5, 0.55530046939849864, 0.22950302660465241">
 				<ormDiagram:Subject ref="_D916D79F-E22E-4218-AAB8-F95EAFCC2F84" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_F0D6EE3B-DEFB-4BBC-A8C8-ADBA6AE73166" IsExpanded="true" AbsoluteBounds="0.5, 0.5, 0.75197606801986694, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_F0D6EE3B-DEFB-4BBC-A8C8-ADBA6AE73166" IsExpanded="true" AbsoluteBounds="0.5, 0.5, 0.78131365299224853, 0.22950302660465241">
 				<ormDiagram:Subject ref="_E0DA324F-6356-4DF2-9BED-A05A1A116158" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_73197DA6-C308-4B68-9329-A3C121C37ED3" IsExpanded="true" AbsoluteBounds="4.8020831743876133, 3.0034428517209992, 0.49956857681274414, 0.22950302660465241">
@@ -1617,7 +1617,7 @@
 					<ormDiagram:ReadingShape id="_CA218C14-CB7C-486F-9BA0-F4B59BFB8ADA" IsExpanded="true" AbsoluteBounds="3.5104168256123853, 3.3113069894885023, 0.98526114225387573, 0.12950302660465241">
 						<ormDiagram:Subject ref="_1EDC12AB-1476-42C8-B6B7-8EF1D659F0CD" />
 					</ormDiagram:ReadingShape>
-					<ormDiagram:ObjectifiedFactTypeNameShape id="_EE392508-764E-4C37-939E-BA6BB6C4499D" IsExpanded="true" AbsoluteBounds="4.0000001589457188, 2.735995380620162, 0.58426690101623535, 0.12950302660465241">
+					<ormDiagram:ObjectifiedFactTypeNameShape id="_EE392508-764E-4C37-939E-BA6BB6C4499D" IsExpanded="true" AbsoluteBounds="4.0000001589457188, 2.735995380620162, 0.69596803188323975, 0.12950302660465241">
 						<ormDiagram:Subject ref="_DA40DB9B-5249-416A-8C42-40C616F812A8" />
 					</ormDiagram:ObjectifiedFactTypeNameShape>
 				</ormDiagram:RelativeShapes>
@@ -1627,7 +1627,7 @@
 					<ormDiagram:Role ref="_A866C1B9-D04E-4844-8319-73EF69952215" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_34D48D76-F6F5-48F6-AAF7-BDA9B8DE7694" IsExpanded="true" AbsoluteBounds="2.447916666666667, 3.0138595183876657, 0.69724112272262573, 0.22950302660465241">
+			<ormDiagram:ObjectTypeShape id="_34D48D76-F6F5-48F6-AAF7-BDA9B8DE7694" IsExpanded="true" AbsoluteBounds="2.447916666666667, 3.0138595183876657, 0.72657864809036254, 0.22950302660465241">
 				<ormDiagram:Subject ref="_9F76C902-BD63-453A-9968-D915B7825F7F" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_3E945C7C-FD91-4EFB-9CDC-9DE553E1B798" IsExpanded="true" AbsoluteBounds="0.80208329359690289, 3.0034428517209992, 0.52226009488105785, 0.22950302660465241">
@@ -1635,10 +1635,10 @@
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_0AD6789E-AFAB-4D3A-8EF2-FEA27D243080" IsExpanded="true" AbsoluteBounds="1.6458333730697632, 2.9302499205271406, 0.6738888889923691, 0.30588888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ObjectifiedFactTypeNameShape id="_5EC01B2C-86EE-4375-BC36-A3E4E7ECE157" IsExpanded="true" AbsoluteBounds="1.6458333730697632, 2.735995380620162, 0.59765398502349854, 0.12950302660465241">
+					<ormDiagram:ObjectifiedFactTypeNameShape id="_5EC01B2C-86EE-4375-BC36-A3E4E7ECE157" IsExpanded="true" AbsoluteBounds="1.6458333730697632, 2.735995380620162, 0.70935505628585815, 0.12950302660465241">
 						<ormDiagram:Subject ref="_AC5441B7-5DB0-4890-80F2-F557F06CCFD0" />
 					</ormDiagram:ObjectifiedFactTypeNameShape>
-					<ormDiagram:ReadingShape id="_0E92EBD6-F361-4A87-A62F-FAACEFA233AA" IsExpanded="true" AbsoluteBounds="0.81250003973643015, 3.3321403228218358, 2.4140667915344238, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_0E92EBD6-F361-4A87-A62F-FAACEFA233AA" IsExpanded="true" AbsoluteBounds="0.81250003973643015, 3.3321403228218358, 2.4453506469726562, 0.12950302660465241">
 						<ormDiagram:Subject ref="_A6043543-1ADA-48AB-ADF1-1F2EAF5E03A2" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -1658,17 +1658,17 @@
 	<oial:model id="_62CC75B6-2FBF-4FC0-A567-3EF1AED09729" name="OrienteeringER">
 		<oial:informationTypeFormats>
 			<odt:dataType id="_86A91621-528B-452E-A8AF-B16D97C40389" name="Code" />
-			<odt:dataType id="_C44950DE-4012-49BC-966F-0CFE31040106" name="ClubName" />
+			<odt:dataType id="_C44950DE-4012-49BC-966F-0CFE31040106" name="Club Name" />
 			<odt:dataType id="_B1E6544D-140F-4342-BF7F-F95B4DD7AE33" name="Name" />
 			<odt:dataType id="_1DA607A7-951B-4F21-AE48-10582B1F03C4" name="Accessibility" />
 			<odt:dataType id="_38BDD1E3-2E0D-4F5D-8E2C-35285159EE41" name="ID" />
-			<odt:dataType id="_9082A47F-3890-4289-9009-C68DE17A6514" name="EventName" />
+			<odt:dataType id="_9082A47F-3890-4289-9009-C68DE17A6514" name="Event Name" />
 			<odt:dataType id="_A97869EC-C144-4AA1-AAC8-DC2E692193D9" name="Date" />
 			<odt:dataType id="_D1C4A7C7-D9B9-4080-AFF3-3D2435BD36D8" name="Location" />
 			<odt:dataType id="_698BD998-BF45-4065-9E14-6706035CE73B" name="Number" />
-			<odt:dataType id="_807C5E0B-6B8D-4B47-8D7F-7877819BBFC9" name="SeriesName" />
+			<odt:dataType id="_807C5E0B-6B8D-4B47-8D7F-7877819BBFC9" name="Series Name" />
 			<odt:dataType id="_4BDCFFF1-7DA5-40AE-A7AE-26DE5B57BC82" name="Course" />
-			<odt:dataType id="_3D4FC988-20B0-406E-B865-E545E44180BD" name="PointValue" />
+			<odt:dataType id="_3D4FC988-20B0-406E-B865-E545E44180BD" name="Point Value" />
 			<odt:dataType id="_A7D0E117-D290-4BFA-B3B8-6CC3A6E61887" name="Control" />
 		</oial:informationTypeFormats>
 		<oial:conceptTypes>
@@ -1723,7 +1723,7 @@
 					<oial:associationChild ref="_DF8041FF-9BEE-4ECB-94E0-9EB7500937F8" />
 				</oial:association>
 			</oial:conceptType>
-			<oial:conceptType id="_87D93002-58C2-4086-9A51-882E1D796240" name="EventCourse">
+			<oial:conceptType id="_87D93002-58C2-4086-9A51-882E1D796240" name="Event Course">
 				<oial:children>
 					<oial:informationType id="_B8BC1FBD-28CC-4019-A4BB-FE26B572F4D4" ref="_4BDCFFF1-7DA5-40AE-A7AE-26DE5B57BC82" isMandatory="true" name="Course" />
 					<oial:relatedConceptType id="_BA6E1EA7-020E-4BC8-82CF-7F5AD2EB4908" ref="_92485DE7-011A-4495-B8C4-569F061D2A1A" isMandatory="true" name="EventCourse" oppositeName="Event" />
@@ -1739,7 +1739,7 @@
 					<oial:associationChild ref="_B8BC1FBD-28CC-4019-A4BB-FE26B572F4D4" />
 				</oial:association>
 			</oial:conceptType>
-			<oial:conceptType id="_62385636-E8A6-4D12-9B23-B2B80B102F13" name="EventControl">
+			<oial:conceptType id="_62385636-E8A6-4D12-9B23-B2B80B102F13" name="Event Control">
 				<oial:children>
 					<oial:informationType id="_53A29202-6038-41BB-BEE4-56F8AB4E3F53" ref="_3D4FC988-20B0-406E-B865-E545E44180BD" isMandatory="true" name="PointValue" />
 					<oial:informationType id="_3A6015E4-0B04-43DF-8812-B0D3BB6A956C" ref="_A7D0E117-D290-4BFA-B3B8-6CC3A6E61887" isMandatory="true" name="Control" />

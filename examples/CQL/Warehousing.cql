@@ -3,18 +3,18 @@ vocabulary Warehousing;
 /*
  * Value Types
  */
-BinID is written as AutoCounter;
-DispatchID is written as AutoCounter;
-DispatchItemID is written as AutoCounter;
-PartyID is written as AutoCounter;
-ProductID is written as AutoCounter;
-PurchaseOrderID is written as AutoCounter;
-Quantity is written as UnsignedInteger(32);
-ReceiptID is written as AutoCounter;
-ReceivedItemID is written as AutoCounter;
-SalesOrderID is written as AutoCounter;
-TransferRequestID is written as AutoCounter;
-WarehouseID is written as AutoCounter;
+Bin ID is written as Auto Counter;
+Dispatch ID is written as Auto Counter;
+Dispatch Item ID is written as Auto Counter;
+Party ID is written as Auto Counter;
+Product ID is written as Auto Counter;
+Purchase Order ID is written as Auto Counter;
+Quantity is written as Unsigned Integer(32);
+Receipt ID is written as Auto Counter;
+Received Item ID is written as Auto Counter;
+Sales Order ID is written as Auto Counter;
+Transfer Request ID is written as Auto Counter;
+Warehouse ID is written as Auto Counter;
 
 /*
  * Entity Types
@@ -25,72 +25,72 @@ Bin contains one Quantity,
 
 Dispatch is identified by its ID;
 
-DispatchItem is identified by its ID;
-Dispatch is of at least one DispatchItem,
-	DispatchItem is for at most one Dispatch;
-DispatchItem is in one Quantity;
+Dispatch Item is identified by its ID;
+Dispatch is of at least one Dispatch Item,
+	Dispatch Item is for at most one Dispatch;
+Dispatch Item is in one Quantity;
 
 Party is identified by its ID;
 
 Product is identified by its ID;
-DispatchItem is one Product;
+Dispatch Item is one Product;
 Product is stocked in Bin,
 	Bin contains at most one Product;
 
-PurchaseOrder is identified by its ID;
+Purchase Order is identified by its ID;
 
-PurchaseOrderItem is identified by PurchaseOrder and Product where
-	PurchaseOrder includes PurchaseOrderItem,
-	PurchaseOrderItem is part of one PurchaseOrder,
-	PurchaseOrderItem is for one Product;
-PurchaseOrderItem is in one Quantity;
+Purchase Order Item is identified by Purchase Order and Product where
+	Purchase Order includes Purchase Order Item,
+	Purchase Order Item is part of one Purchase Order,
+	Purchase Order Item is for one Product;
+Purchase Order Item is in one Quantity;
 
 Receipt is identified by its ID;
 
-ReceivedItem is identified by its ID;
-Receipt is of at least one ReceivedItem,
-	ReceivedItem has at most one Receipt;
-ReceivedItem is one Product;
-ReceivedItem is for at most one PurchaseOrderItem;
-ReceivedItem is in one Quantity;
+Received Item is identified by its ID;
+Receipt is of at least one Received Item,
+	Received Item has at most one Receipt;
+Received Item is one Product;
+Received Item is for at most one Purchase Order Item;
+Received Item is in one Quantity;
 
-SalesOrder is identified by its ID;
+Sales Order is identified by its ID;
 
-SalesOrderItem is identified by SalesOrder and Product where
-	SalesOrder includes SalesOrderItem,
-	SalesOrderItem is part of one SalesOrder,
-	SalesOrderItem is for one Product;
-DispatchItem is for at most one SalesOrderItem;
-SalesOrderItem is in one Quantity;
+Sales Order Item is identified by Sales Order and Product where
+	Sales Order includes Sales Order Item,
+	Sales Order Item is part of one Sales Order,
+	Sales Order Item is for one Product;
+Dispatch Item is for at most one Sales Order Item;
+Sales Order Item is in one Quantity;
 
 Supplier is a kind of Party;
-PurchaseOrder is to one Supplier,
-	Supplier supplies PurchaseOrder;
+Purchase Order is to one Supplier,
+	Supplier supplies Purchase Order;
 
-TransferRequest is identified by its ID;
-DispatchItem is for at most one TransferRequest;
-ReceivedItem is for at most one TransferRequest;
+Transfer Request is identified by its ID;
+Dispatch Item is for at most one Transfer Request;
+Received Item is for at most one Transfer Request;
 
 Warehouse is identified by its ID;
-PurchaseOrder is to one Warehouse;
-SalesOrder is from one Warehouse;
-TransferRequest is at most one from-Warehouse;
-TransferRequest is at most one to-Warehouse;
+Purchase Order is to one Warehouse;
+Sales Order is from one Warehouse;
+Transfer Request is at most one from-Warehouse;
+Transfer Request is at most one to-Warehouse;
 Warehouse contains at least one Bin;
 
 Customer is a kind of Party;
-Customer made SalesOrder,
-	SalesOrder was made by one Customer;
+Customer made Sales Order,
+	Sales Order was made by one Customer;
 
-DirectOrderMatch is where
-	PurchaseOrderItem matches SalesOrderItem;
+Direct Order Match is where
+	Purchase Order Item matches Sales Order Item;
 
 /*
  * Constraints:
  */
-either DispatchItem is for TransferRequest or DispatchItem is for SalesOrderItem but not both;
-either ReceivedItem is for PurchaseOrderItem or ReceivedItem is for TransferRequest but not both;
-PurchaseOrderItem matches SalesOrderItem
-	only if PurchaseOrderItem is for Product and SalesOrderItem is for Product;
+either Dispatch Item is for Transfer Request or Dispatch Item is for Sales Order Item but not both;
+either Received Item is for Purchase Order Item or Received Item is for Transfer Request but not both;
+Purchase Order Item matches Sales Order Item
+	only if Purchase Order Item is for Product and Sales Order Item is for Product;
 each Bin occurs at most one time in
 	Warehouse contains Bin;
