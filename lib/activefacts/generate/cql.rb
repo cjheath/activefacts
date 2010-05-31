@@ -137,7 +137,7 @@ module ActiveFacts
           value_player = value_role.concept and
           value_player.is_a?(ActiveFacts::Metamodel::ValueType) and
           value_name = value_player.name and
-          residual = value_name.sub(%r{^#{entity_role.concept.name}},'') and
+          residual = value_name.sub(%r{^#{entity_role.concept.name} ?},'') and
           residual != '' and
           residual != value_name
 

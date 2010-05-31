@@ -262,7 +262,8 @@ module ActiveFacts
           vt = nil
           debug :entity, "Preparing value type #{vt_name} for reference mode" do
             # Find or Create an appropriate ValueType called '#{vt_name}', of the supertype '#{mode}'
-            unless vt = @constellation.Concept[[@vocabulary.identifying_role_values, vt_name]]
+            unless vt = @constellation.Concept[[@vocabulary.identifying_role_values, vt_name]] or
+                   vt = @constellation.Concept[[@vocabulary.identifying_role_values, vt_name = "#{name} #{mode}"]]
               base_vt = @constellation.ValueType(@vocabulary, mode)
               vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
               if parameters

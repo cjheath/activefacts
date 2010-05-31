@@ -340,9 +340,6 @@ for each ContextNote exactly one of these holds:
 	ObjectType has ContextNote,
 	FactType has ContextNote,
 	Constraint has ContextNote;
-for each Instance at most one of these holds:
-	Instance has Value,
-	Instance objectifies Fact;
 either ObjectType is an EntityType or ObjectType is a ValueType but not both;
 for each RoleSequence exactly one of these holds:
 	Reading is in RoleSequence,
@@ -350,27 +347,30 @@ for each RoleSequence exactly one of these holds:
 	SubsetConstraint covers subset-RoleSequence,
 	SubsetConstraint covers superset-RoleSequence,
 	SetComparisonConstraint has in Ordinal position RoleSequence;
-RoleValue fulfils Fact and Fact is of FactType
-	if and only if
-	RoleValue is of Role and FactType has Ordinal role;
-Instance plays RoleValue and Instance is of ObjectType
-	if and only if
-	RoleValue is of Role and ObjectType plays Role;
 either SetComparisonConstraint is a SetExclusionConstraint or SetComparisonConstraint is a SetEqualityConstraint but not both;
 either SetConstraint is a SetComparisonConstraint or SetConstraint is a SubsetConstraint but not both;
+either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
+either Unit is fundamental or Unit is derived from base-Unit but not both;
+either ValueConstraint constrains ValueType or ValueConstraint applies to Role but not both;
+either ValueConstraintShape is for ObjectTypeShape or ValueConstraintShape is for RoleDisplay but not both;
+for each Instance at most one of these holds:
+	Instance has Value,
+	Instance objectifies Fact;
 for each Term at most one of these holds:
 	Term designates ObjectType,
-	Term is name of RoleRef;
-for each Term at most one of these holds:
-	Term is secondary for ObjectType,
 	Term is name of RoleRef;
 for each Term at most one of these holds:
 	Term designates ObjectType,
 	Term is secondary for ObjectType;
-either Unit is fundamental or Unit is derived from base-Unit but not both;
-either Unit uses coefficient from EphemeraURL or Unit has Coefficient but not both;
-either ValueConstraint constrains ValueType or ValueConstraint applies to Role but not both;
-either ValueConstraintShape is for ObjectTypeShape or ValueConstraintShape is for RoleDisplay but not both;
+for each Term at most one of these holds:
+	Term is secondary for ObjectType,
+	Term is name of RoleRef;
+Instance plays RoleValue and Instance is of ObjectType
+	if and only if
+	RoleValue is of Role and ObjectType plays Role;
+RoleValue fulfils Fact and Fact is of FactType
+	if and only if
+	RoleValue is of Role and FactType has Ordinal role;
 PresenceConstraint is preferred identifier
 	only if PresenceConstraint has max-Frequency;
 ValueType has Scale

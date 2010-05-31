@@ -20,7 +20,10 @@ module ActiveFacts
 	  &{|s|
 	    # There's an implicit type when we use an identification mode, register it:
 	    mode = s[2].identification_mode
-	    input.context.object_type(s[1].value+mode, "identification mode type") if mode
+	    if mode
+	      input.context.object_type(s[1].value+mode, "identification mode type")
+	      input.context.object_type(s[1].value+' '+mode, "identification mode type")
+	    end
 	    true
 	  }
         mapping_pragmas

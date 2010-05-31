@@ -7,91 +7,93 @@ require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/input/cql'
 
+require 'set'
+
 describe "Sample data" do
   SamplePrefix = %q{
   vocabulary V;
 
-  CompanyName is written as String;
+  Company Name is written as String;
   Company is identified by its Name;
-  Person is identified by its Name where Person is called PersonName;
+  Person is identified by its Name where Person is called Person Name;
   Directorship is where
       Company is directed by Person;
   }
 
   GoodSamples = [
     [   # A simple ValueType instance
-      "CompanyName 'Microsoft';",
-      [{:facts=>[], :instances=>["CompanyName 'Microsoft'"]}]
+      "Company Name 'Microsoft';",
+      [{:facts=>Set[], :instances=>Set["Company Name 'Microsoft'"]}]
     ],
     [   # Re-assert the same instance
-      "CompanyName 'Microsoft'; CompanyName 'Microsoft';",
-      [{:facts=>[], :instances=>["CompanyName 'Microsoft'"]}]
+      "Company Name 'Microsoft'; Company Name 'Microsoft';",
+      [{:facts=>Set[], :instances=>Set["Company Name 'Microsoft'"]}]
     ],
     [   # The same instance, but in a named population
-      "example: CompanyName 'Microsoft';",
-      [{:facts=>[], :instances=>["CompanyName 'Microsoft'"]}]
+      "example: Company Name 'Microsoft';",
+      [{:facts=>Set[], :instances=>Set["Company Name 'Microsoft'"]}]
     ],
     [   # A simply-identified EntityType instance
       "Company 'Microsoft';",
-      [{:facts=>["Company has CompanyName 'Microsoft'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'"]}]
+      [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
     [   # Re-assert the same instance
       "Company 'Microsoft'; Company 'Microsoft';",
-      [{:facts=>["Company has CompanyName 'Microsoft'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'"]}]
+      [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
     [   # The same instance in a named population
       "example: Company 'Microsoft';",
-      [{:facts=>["Company has CompanyName 'Microsoft'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'"]}]
+      [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
     [   # The Company instance asserted with an explicit identifying fact
-      "Company has CompanyName 'Microsoft';",
-      [{:facts=>["Company has CompanyName 'Microsoft'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'"]}]
+      "Company has Company Name 'Microsoft';",
+      [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
     [   # The Company instance asserted with an joined identifying instance
-      "Company has CompanyName, CompanyName 'Microsoft';",
-      [{:facts=>["Company has CompanyName 'Microsoft'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'"]}]
+      "Company has Company Name, Company Name 'Microsoft';",
+      [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
     [   # The same, with an explicit identifying instance join
-      "CompanyName 'Microsoft', Company has CompanyName;",
-      [{:facts=>["Company has CompanyName 'Microsoft'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'"]}]
+      "Company Name 'Microsoft', Company has Company Name;",
+      [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
     [   # A simple fact instance with two simply-identified entities
       "Company 'Microsoft' is directed by Person 'Gates';",
-      [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
+      [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
     ],
     [   # Same with an explicit joined fact
-      "Company 'Microsoft' is directed by Person, Person is called PersonName 'Gates';",
-      [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
+      "Company 'Microsoft' is directed by Person, Person is called Person Name 'Gates';",
+      [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
     ],
     [   # Same with explicitly joined facts and instances
-      "Company is directed by Person, Person is called PersonName, PersonName 'Gates', Company has CompanyName, CompanyName 'Microsoft';",
-      [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
+      "Company is directed by Person, Person is called Person Name, Person Name 'Gates', Company has Company Name, Company Name 'Microsoft';",
+      [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
     ],
     [   # Same in a named population
-      "example: Company is directed by Person, Person is called PersonName, PersonName 'Gates', Company has CompanyName, CompanyName 'Microsoft';",
-      [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
+      "example: Company is directed by Person, Person is called Person Name, Person Name 'Gates', Company has Company Name, Company Name 'Microsoft';",
+      [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
     ],
 
     # Objectification examples
     [   # Same in a named population
       "Directorship (where Company 'Microsoft' is directed by Person 'Gates');",
-      :pending # [{:facts=>["Company has CompanyName 'Microsoft'", "Company is directed by Person", "Person is called PersonName 'Gates'"], :instances=>["Company is identified by CompanyName where Company has CompanyName 'Microsoft'", "CompanyName 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by PersonName where Person is called PersonName 'Gates'", "PersonName 'Gates'"]}]
+      :pending # [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
     ],
   ]
 
   BadSamples =
   [
     [
-      "CompanyName",
-      "CompanyName",
+      "Company Name",
+      "Company Name",
     ],
     [
-      "foo: CompanyName",
-      "CompanyName",
+      "foo: Company Name",
+      "Company Name",
     ],
     [ # Omit the company name:
-      "example: Company is directed by Person, Person is called PersonName, PersonName 'Gates', Company has CompanyName;",
-      [ "Company (lacking CompanyName)", "CompanyName (needs a value)" ]
+      "example: Company is directed by Person, Person is called Person Name, Person Name 'Gates', Company has Company Name;",
+      [ "Company (lacking Company Name)", "Company Name (needs a value)" ]
     ],
   ]
 
@@ -126,7 +128,7 @@ describe "Sample data" do
       " is identified by " +
       identifying_role_refs.map do |rr|
         [ (l = rr.leading_adjective) ? l+"-" : nil,
-          rr.role_name || rr.role.concept.name,
+          rr.role.role_name || rr.role.concept.name,
           (t = rr.trailing_adjective) ? l+"-" : nil
         ].compact*""
       end * " and " +
@@ -145,8 +147,8 @@ describe "Sample data" do
     populations.keys.sort.map do |popname|
       popvalue = populations[popname]
       {
-        :instances => popvalue.all_instance.map { |i| instance_name(i) }.sort,
-        :facts => popvalue.all_fact.map { |fact| instance_name(fact) }.sort
+        :instances => Set[*popvalue.all_instance.map { |i| instance_name(i) }],
+        :facts => Set[*popvalue.all_fact.map { |fact| instance_name(fact) }]
       }
     end
   end

@@ -45,10 +45,12 @@ module ActiveFacts
       end
 
       def value_type_dump(o)
-        is_special_supertype = !o.supertype && %w{Date Time DateAndTime}.include?(o.name)
+        is_special_supertype = !o.supertype && %w{Date Time DateAndTime}.include?(o.name.gsub(/ /,''))
 
         # We map DateAndTime to DateTime; if such a ValueType exists, don't dump this one
-        return if is_special_supertype && o.name == 'DateAndTime' && o.constellation.ValueType[[[o.vocabulary.name], 'DateTime']]
+        return if is_special_supertype && o.name.gsub(/ /,'') == 'DateAndTime' and
+          o.constellation.ValueType[[[o.vocabulary.name], 'DateTime']] ||
+          o.constellation.ValueType[[[o.vocabulary.name], 'Date Time']]
 
         return if !o.supertype && !is_special_supertype
         if o.supertype && o.name == o.supertype.name
@@ -63,14 +65,14 @@ module ActiveFacts
         name = o.name
         ruby_type_name =
           case o.supertype ? o.supertype.name : o.name
-            when "VariableLengthText"; "String"
-            when "Date"; "::Date"
-            when "DateAndTime"; "::DateTime"
-            when "Time"; "::Time"
-            else o.supertype.name
+            when /^Variable ?Length ?Text$/; 'String'
+            when /^Date$/; '::Date'
+            when /^Date ?And ?Time$/; '::DateTime'
+            when /^Time$/; '::Time'
+            else o.supertype.name.gsub(/ /,'')
           end
 
-        name = name.sub(/^[a-z]/) {|i| i.upcase}
+        name = name.sub(/^[a-z]/) {|i| i.upcase}.gsub(/ /,'')
         puts "  class #{name} < #{ruby_type_name}\n" +
              "    value_type #{params}\n"
         if @sql and o.is_table
@@ -86,9 +88,9 @@ module ActiveFacts
         primary_supertype = o && (o.identifying_supertype || o.supertypes[0])
         secondary_supertypes = o.supertypes-[primary_supertype]
 
-        puts "  class #{o.name} < #{ primary_supertype.name }"
+        puts "  class #{o.name.gsub(/ /,'')} < #{ primary_supertype.name.gsub(/ /,'') }"
         puts "    identified_by #{identified_by(o, pi)}" if pi
-        puts "    supertypes "+secondary_supertypes.map(&:name)*", " if secondary_supertypes.size > 0
+        puts "    supertypes "+secondary_supertypes.map{|st| st.name.gsub(/ /,'')}*", " if secondary_supertypes.size > 0
         if @sql and o.is_table
           puts "    table"
         end
@@ -99,7 +101,7 @@ module ActiveFacts
       end
 
       def non_subtype_dump(o, pi)
-        puts "  class #{o.name}"
+        puts "  class #{o.name.gsub(/ /,'')}"
 
         # We want to name the absorption role only when it's absorbed along its single identifying role.
         puts "    identified_by #{identified_by(o, pi)}"
@@ -124,10 +126,10 @@ module ActiveFacts
         pi = o.preferred_identifier
         pi = nil if pi && primary_supertype && primary_supertype.preferred_identifier == pi
 
-        puts "  class #{name}" +
-          (primary_supertype ? " < "+primary_supertype.name : "") +
+        puts "  class #{name.gsub(/ /,'')}" +
+          (primary_supertype ? " < "+primary_supertype.name.gsub(/ /,'') : "") +
           "\n" +
-          secondary_supertypes.map{|sst| "    supertype :#{sst.name}"}*"\n" +
+          secondary_supertypes.map{|sst| "    supertype :#{sst.name.gsub(/ /,'_')}"}*"\n" +
           (pi ? "    identified_by #{identified_by(o, pi)}" : "")
         puts "    table" if @sql and o.is_table
         fact_roles_dump(fact_type)
@@ -149,16 +151,16 @@ module ActiveFacts
 
       def binary_dump(role, role_name, role_player, mandatory = nil, one_to_one = nil, readings = nil, other_role_name = nil, other_method_name = nil)
         # Find whether we need the name of the other role player, and whether it's defined yet:
-        if role_name.camelcase(true) == role_player.name.sub(/^[a-z]/) {|i| i.upcase}
+        if role_name.camelcase(true) == role_player.name.gsub(/ /,'').sub(/^[a-z]/) {|i| i.upcase}
           # Don't use Class name if implied by rolename
           role_reference = nil
         else
           role_reference = ":class => "+concept_reference(role_player)
         end
-        other_role_name = ":counterpart => :"+other_role_name if other_role_name
+        other_role_name = ":counterpart => :"+other_role_name.gsub(/ /,'_') if other_role_name
 
         line = "    #{one_to_one ? "one_to_one" : "has_one" } " +
-                [ ":"+role_name,
+                [ ":"+role_name.gsub(/ /,'_'),
                   role_reference,
                   mandatory ? ":mandatory => true" : nil,
                   readings,
@@ -166,16 +168,16 @@ module ActiveFacts
                   (vr = role.role_value_constraint) ? ":restrict => #{vr}" : nil
                 ].compact*", "+"  "
         line += " "*(48-line.length) if line.length < 48
-        line += "\# See #{role_player.name}.#{other_method_name}" if other_method_name
+        line += "\# See #{role_player.name.gsub(/ /,'')}.#{other_method_name}" if other_method_name
         puts line
         #puts "    \# REVISIT: #{other_role_name} has values restricted to #{role.role_value_constraint}\n" if role.role_value_constraint
       end
 
       def concept_reference concept
         if !@concept_types_dumped[concept]
-          '"'+concept.name+'"'
+          '"'+concept.name.gsub(/ /,'')+'"'
         else
-          role_reference = concept.name
+          role_reference = concept.name.gsub(/ /,'')
         end
       end
 

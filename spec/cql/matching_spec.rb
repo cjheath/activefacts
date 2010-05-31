@@ -372,7 +372,7 @@ describe "Fact Type Role Matching" do
           PreferredIdentifierRolePlayedBy('Thong'),
     ],
 
-    [ # Auto-create Id and ThingId:
+    [ # Auto-create Id and Thing Id:
       %q{Thing is identified by its Id;},
       SingleFact() do |fact_type|
         Readings(fact_type).size.should == 2
@@ -381,10 +381,10 @@ describe "Fact Type Role Matching" do
       ConceptCount(3+BaseConcepts),
       Concept('Thing'),
         PreferredIdentifier(1),
-          PreferredIdentifierRolePlayedBy('ThingId'),
+          PreferredIdentifierRolePlayedBy('Thing Id'),
     ],
 
-    [ # Auto-create ThingId:
+    [ # Auto-create Thing Id:
       %q{Id is written as String;},
       %q{Thing is identified by its Id;},
       SingleFact() do |fact_type|
@@ -394,11 +394,11 @@ describe "Fact Type Role Matching" do
       ConceptCount(3+BaseConcepts),
       Concept('Thing'),
         PreferredIdentifier(1),
-          PreferredIdentifierRolePlayedBy('ThingId'),
+          PreferredIdentifierRolePlayedBy('Thing Id'),
     ],
 
     [ # Auto-create nothing (identifying value type exists already)
-      %q{ThingId is written as String;},
+      %q{Thing Id is written as String;},
       %q{Thing is identified by its Id;},
       SingleFact() do |fact_type|
         Readings(fact_type).size.should == 2
@@ -407,20 +407,20 @@ describe "Fact Type Role Matching" do
       ConceptCount(2+BaseConcepts),
       Concept('Thing'),
         PreferredIdentifier(1),
-          PreferredIdentifierRolePlayedBy('ThingId'),
+          PreferredIdentifierRolePlayedBy('Thing Id'),
     ],
 
     [ # Auto-create nothing (identifying entity type exists already so don't create a VT)
-      %q{ThingId is identified by Id where ThingId has one Id, Id is of one ThingId;},
+      %q{Thing Id is identified by Id where Thing Id has one Id, Id is of one Thing Id;},
       %q{Thing is identified by its Id;},
-      FactHavingPlayers("Thing", "ThingId") do |fact_type|
+      FactHavingPlayers("Thing", "Thing Id") do |fact_type|
         Readings(fact_type).size.should == 2
         PresenceConstraints(fact_type).size.should == 2
       end,
       ConceptCount(3+BaseConcepts),
       Concept('Thing'),
         PreferredIdentifier(1),
-          PreferredIdentifierRolePlayedBy('ThingId'),
+          PreferredIdentifierRolePlayedBy('Thing Id'),
     ],
 
     [
@@ -453,8 +453,8 @@ describe "Fact Type Role Matching" do
       ConceptCount(3+BaseConcepts),
       Concept('Relationship'),
         PreferredIdentifier(1),   # 1 role in PI
-          PreferredIdentifierRolePlayedBy('RelationshipId'),
-      FactHavingPlayers('Relationship', 'RelationshipId') do |fact_type|
+          PreferredIdentifierRolePlayedBy('Relationship Id'),
+      FactHavingPlayers('Relationship', 'Relationship Id') do |fact_type|
         Readings(fact_type).size.should == 2
         PresenceConstraints(fact_type).size.should == 2
         fact_type.all_reading.detect{|r| r.text == '{0} has {1}'}.should_not == nil
@@ -466,12 +466,12 @@ describe "Fact Type Role Matching" do
     ],
 
     [   # Objectified fact type with external identification and explicit reading
-      %q{Relationship is identified by its Id where Boy relates to Girl, Relationship is known by RelationshipId;},
+      %q{Relationship is identified by its Id where Boy relates to Girl, Relationship is known by Relationship Id;},
       ConceptCount(3+BaseConcepts),
       Concept('Relationship'),
         PreferredIdentifier(1),
-          PreferredIdentifierRolePlayedBy('RelationshipId'),
-      FactHavingPlayers('Relationship', 'RelationshipId') do |fact_type|
+          PreferredIdentifierRolePlayedBy('Relationship Id'),
+      FactHavingPlayers('Relationship', 'Relationship Id') do |fact_type|
         Readings(fact_type).size.should == 2
         PresenceConstraints(fact_type).size.should == 2
         fact_type.all_reading.detect{|r| r.text == '{0} is known by {1}'}.should_not == nil

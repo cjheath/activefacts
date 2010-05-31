@@ -146,7 +146,7 @@ module ActiveFacts
         end
       end
 
-      class InputProxy < Object
+      class InputProxy
         attr_reader :context
 
         def initialize(input, context)
