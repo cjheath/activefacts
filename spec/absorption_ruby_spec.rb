@@ -3,6 +3,7 @@
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 
+require 'spec/spec_helper'
 require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/support'
@@ -39,7 +40,7 @@ describe "Column lists from absorption compared with Ruby's" do
 
       # Get the list of tables from the relational composition:
       absorption_tables = vocabulary.tables.sort_by(&:name)
-      absorption_table_names = absorption_tables.map{|at| at.name}
+      absorption_table_names = absorption_tables.map{|at| at.name.gsub(/\s/,'')}
 
       # Build the Ruby and eval it:
       ruby_text = ruby(vocabulary)
@@ -70,27 +71,7 @@ describe "Column lists from absorption compared with Ruby's" do
       ruby_table_names = ruby_tables.map{|c| c.basename}
 
       # Assert that the list of tables is the same:
-      tables = lambda { ruby_table_names.should == absorption_table_names }
-      if broken
-        pending { tables.call }
-      else
-        tables.call
-      end
-
-      # So we get to see the full differences, figure them here and assert them to be empty:
-      diffs = {}
-      ruby_tables.each{|rt|
-        next unless rt.is_entity_type
-        absorption_table = absorption_tables.select{|at| at.name == rt.basename}[0]
-        absorption_columns = absorption_table.columns.map{|c| c.name("").downcase}.sort
-        ruby_columns = rt.columns.map{|c| c.gsub(/\./,'').downcase}.sort
-        missing = absorption_columns - ruby_columns
-        extra = ruby_columns - absorption_columns
-        unless missing.empty? and extra.empty?
-          diffs[rt.basename] = missing.map{|m| "-"+m} + extra.map{|e| '+'+e}
-        end
-      }
-      diffs.should == {}
+      ruby_table_names.should_not differ_from(absorption_table_names)
 
       # Clean up:
       Object.send :remove_const, vocabulary.name.to_sym
