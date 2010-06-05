@@ -54,8 +54,8 @@ module ActiveFacts
       value_type 
     end
 
-    class Exponent < SignedSmallInteger
-      value_type :length => 32
+    class Exponent < SignedInteger
+      value_type :length => 16
     end
 
     class FactId < AutoCounter
@@ -94,8 +94,8 @@ module ActiveFacts
       value_type 
     end
 
-    class Ordinal < UnsignedSmallInteger
-      value_type :length => 32
+    class Ordinal < UnsignedInteger
+      value_type :length => 16
     end
 
     class Pronoun < String
@@ -319,6 +319,7 @@ module ActiveFacts
       identified_by :context_note, :agent
       has_one :agent, :mandatory => true          # See Agent.all_context_according_to
       has_one :context_note, :mandatory => true   # See ContextNote.all_context_according_to
+      has_one :date                               # See Date.all_context_according_to
     end
 
     class ContextAgreedBy
@@ -361,7 +362,7 @@ module ActiveFacts
 
     class ObjectifiedFactTypeNameShape < Shape
       identified_by :fact_type_shape
-      one_to_one :fact_type_shape, :mandatory => true # See FactTypeShape.objectified_fact_type_name_shape
+      one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.objectified_fact_type_name_shape
     end
 
     class Population
@@ -441,7 +442,7 @@ module ActiveFacts
       has_one :scale                              # See Scale.all_value_type
       has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
       has_one :unit                               # See Unit.all_value_type
-      one_to_one :value_constraint               # See ValueConstraint.value_type
+      one_to_one :value_constraint                # See ValueConstraint.value_type
     end
 
     class AllowedRange
