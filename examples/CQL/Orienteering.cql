@@ -3,20 +3,20 @@ vocabulary Orienteering;
 /*
  * Value Types
  */
-Accessibility is written as Fixed Length Text(1) restricted to {'A'..'D'};
-Club Code is written as Variable Length Text(6);
-Club Name is written as Variable Length Text(32);
+Accessibility is written as Char(1) restricted to {'A'..'D'};
+Club Code is written as String(6);
+Club Name is written as String(32);
 Control Number is written as Unsigned Integer(32) restricted to {1..1000};
-Course is written as Variable Length Text(16) restricted to {'A'..'E', 'PW'};
+Course is written as String(16) restricted to {'A'..'E', 'PW'};
 Entry ID is written as Auto Counter;
 Event ID is written as Auto Counter;
-Event Name is written as Variable Length Text(50);
-Family Name is written as Variable Length Text(48);
-Gender is written as Fixed Length Text(1) restricted to {'F', 'M'};
-Given Name is written as Variable Length Text(48);
-Location is written as Variable Length Text(200);
+Event Name is written as String(50);
+Family Name is written as String(48);
+Gender is written as Char(1) restricted to {'F', 'M'};
+Given Name is written as String(48);
+Location is written as String(200);
 Map ID is written as Auto Counter;
-Map Name is written as Variable Length Text(80);
+Map Name is written as String(80);
 Number is written as Unsigned Integer(32) restricted to {1..100};
 Person ID is written as Auto Counter;
 Placing is written as Unsigned Integer(32);
@@ -24,11 +24,11 @@ Point Value is written as Unsigned Integer(32);
 Post Code is written as Unsigned Integer(32);
 Punch ID is written as Auto Counter;
 Score is written as Signed Integer(32);
-Scoring Method is written as Variable Length Text(32) restricted to {'Scatter', 'Score', 'Special'};
+Scoring Method is written as String(32) restricted to {'Scatter', 'Score', 'Special'};
 Series ID is written as Auto Counter;
-Series Name is written as Variable Length Text(40);
-Start Time is written as Date And Time;
-Time is written as Date And Time;
+Series Name is written as String(40);
+Start Time is written as Date Time;
+Time is written as Date Time;
 Year is written as Unsigned Integer(32) restricted to {1900..3000};
 
 /*

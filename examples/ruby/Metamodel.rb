@@ -53,8 +53,8 @@ module ::Metamodel
     value_type 
   end
 
-  class Exponent < SignedSmallInteger
-    value_type :length => 32
+  class Exponent < SignedInteger
+    value_type :length => 16
   end
 
   class FactId < AutoCounter
@@ -93,8 +93,8 @@ module ::Metamodel
     value_type 
   end
 
-  class Ordinal < UnsignedSmallInteger
-    value_type :length => 32
+  class Ordinal < UnsignedInteger
+    value_type :length => 16
   end
 
   class Pronoun < String

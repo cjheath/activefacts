@@ -4,7 +4,7 @@ vocabulary OddIdentifier;
  * Value Types
  */
 Ordinal is written as Signed Integer(32);
-Text is written as Variable Length Text;
+Text is written as String;
 Thing ID is written as Auto Counter;
 
 /*

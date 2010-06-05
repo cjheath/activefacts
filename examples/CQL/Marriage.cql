@@ -3,7 +3,7 @@ vocabulary Marriage;
 /*
  * Value Types
  */
-Name is written as Variable Length Text;
+Name is written as String;
 
 /*
  * Entity Types

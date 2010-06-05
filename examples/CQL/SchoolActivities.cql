@@ -3,9 +3,9 @@ vocabulary SchoolActivities;
 /*
  * Value Types
  */
-Activity Name is written as Variable Length Text(32);
-School Name is written as Variable Length Text;
-Student Name is written as Variable Length Text;
+Activity Name is written as String(32);
+School Name is written as String;
+Student Name is written as String;
 
 /*
  * Entity Types

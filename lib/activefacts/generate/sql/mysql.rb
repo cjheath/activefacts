@@ -15,7 +15,6 @@ module ActiveFacts
       #   afgen --sql/mysql[=options] <file>.cql
       # Options are comma or space separated:
       # * delay_fks Leave all foreign keys until the end, not just those that contain forward-references
-      # * norma Translate valuetypes from NORMA to SQL Server
       class MYSQL
       private
         include Persistence
@@ -61,7 +60,6 @@ module ActiveFacts
           @vocabulary = vocabulary
           @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
           @delay_fks = options.include? "delay_fks"
-          @norma = options.include? "norma"
         end
 
         def puts s
@@ -82,56 +80,75 @@ module ActiveFacts
           end
         end
 
-        # Return SQL type and (modified?) length for the passed NORMA base type
-        def norma_type(type, length)
+        # Return SQL type and (modified?) length for the passed base type
+        def normalise_type(type, length)
           sql_type = case type
-            when /^Auto ?Counter$/; 'int'
+            when /^Auto ?Counter$/
+              'int'
+
             when /^Signed ?Integer$/,
               /^Signed ?Small ?Integer$/
               s = case
-                when length <= 8; 'tinyint'
-                when length <= 16; 'shortint'
-                when length <= 32; 'int'
+                when length <= 8
+                  'tinyint'
+                when length <= 16
+                  'shortint'
+                when length <= 32
+                  'int'
                 else 'bigint'
                 end
               length = nil
               s
+
             when /^Unsigned ?Integer$/,
               /^Unsigned ?Small ?Integer$/,
               /^Unsigned ?Tiny ?Integer$/
               s = case
-                when length <= 8; 'tinyint unsigned'
-                when length <= 16; 'shortint unsigned'
-                when length <= 32; 'int unsigned'
+                when length <= 8
+                  'tinyint unsigned'
+                when length <= 16
+                  'shortint unsigned'
+                when length <= 32
+                  'int unsigned'
                 else 'bigint'
                 end
               length = nil
               s
-            when /^Decimal$/; 'decimal'
 
-            when /^Fixed ?Length ?Text$/
-            when "FixedLengthText"; 
+            when /^Decimal$/
+                'decimal'
+
+            when /^Fixed ?Length ?Text$/, /^Char$/
                 length ||= DefaultCharColLength
                 "char"
-            when /^Variable ?Length ?Text$/
+            when /^Variable ?Length ?Text$/, /^String$/
                 length ||= DefaultCharColLength
                 "varchar"
             # There are several large length text types; If you need to store more than 65k chars, look at using MEDIUMTEXT or LONGTEXT
             # CQL does not yet allow you to specify a length for LargeLengthText.
-            when /^Large ?Length ?Text$/; "text"
+            when /^Large ?Length ?Text$/, /^Text$/
+              'text'
 
-            when /^Date ?And ?Time$/; 'datetime'
-            when /^Date$/; 'date'
-            when /^Time$/; 'time'
-            when /^Auto ?Timestamp$/; 'timestamp'
+            when /^Date ?And ?Time$/, /^Date ?Time$/
+              'datetime'
+            when /^Date$/
+              'date'
+            when /^Time$/
+              'time'
+            when /^Auto ?Time ?Stamp$/
+              'timestamp'
 
-            when /^Money$/; 'decimal'
+            when /^Money$/
+              'decimal'
             # Warning: Max 65 kbytes. To use larger types, try MediumBlob (16mb) or LongBlob (4gb)
-            when /^Picture ?Raw ?Data$/; 'blob'
-            when /^Variable ?Length ?Raw ?Data$/; 'blob'
+            when /^Picture ?Raw ?Data$/, /^Image$/
+              'blob'
+            when /^Variable ?Length ?Raw ?Data$/, /^Blob$/
+              'blob'
             # Assuming you only want a boolean out of this. Should we specify length instead?
-            when /^BIT$/; 'bit'
-            else type # raise "SQL type unknown for NORMA type #{type}"
+            when /^BIT$/
+              'bit'
+            else type # raise "SQL type unknown for standard type #{type}"
             end
           [sql_type, length]
         end
@@ -166,7 +183,7 @@ module ActiveFacts
               length &&= length.to_i
               scale = params[:scale]
               scale &&= scale.to_i
-              type, length = norma_type(type, length) if @norma
+              type, length = normalise_type(type, length)
               sql_type = "#{type}#{
                 if !length
                   ""

@@ -4,8 +4,8 @@ vocabulary SubtypePI;
  * Value Types
  */
 Entrant ID is written as Auto Counter;
-Family Name is written as Variable Length Text;
-Given Name is written as Variable Length Text;
+Family Name is written as String;
+Given Name is written as String;
 Team ID is written as Auto Counter;
 
 /*

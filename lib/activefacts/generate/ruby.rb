@@ -45,34 +45,28 @@ module ActiveFacts
       end
 
       def value_type_dump(o)
-        is_special_supertype = !o.supertype && %w{Date Time DateAndTime}.include?(o.name.gsub(/ /,''))
-
-        # We map DateAndTime to DateTime; if such a ValueType exists, don't dump this one
-        return if is_special_supertype && o.name.gsub(/ /,'') == 'DateAndTime' and
-          o.constellation.ValueType[[[o.vocabulary.name], 'DateTime']] ||
-          o.constellation.ValueType[[[o.vocabulary.name], 'Date Time']]
-
-        return if !o.supertype && !is_special_supertype
-        if o.supertype && o.name == o.supertype.name
-          # In ActiveFacts, parameterising a ValueType will create a new ValueType
-          # throw Can't handle parameterized value type of same name as its ValueType" if ...
-        end
-
         length = (l = o.length) && l > 0 ? ":length => #{l}" : nil
         scale = (s = o.scale) && s > 0 ? ":scale => #{s}" : nil
         params = [length,scale].compact * ", "
 
+        return if
+          !o.supertype &&                   # No supertype, i.e. a base type
+          o.all_role.size == 0 &&           # No roles
+          !o.is_independent &&              # not independent
+          o.all_instance.size == 0          # No instances
+
         name = o.name
         ruby_type_name =
-          case o.supertype ? o.supertype.name : o.name
-            when /^Variable ?Length ?Text$/; 'String'
-            when /^Date$/; '::Date'
-            when /^Date ?And ?Time$/; '::DateTime'
-            when /^Time$/; '::Time'
-            else o.supertype.name.gsub(/ /,'')
-          end
-
+            if o.supertype
+              o.supertype.name.gsub(/ /,'')
+            else
+              o.name.gsub(/ /,'')
+            end
         name = name.sub(/^[a-z]/) {|i| i.upcase}.gsub(/ /,'')
+        if ruby_type_name == name
+          ruby_type_name = '::'+ruby_type_name
+        end
+
         puts "  class #{name} < #{ruby_type_name}\n" +
              "    value_type #{params}\n"
         if @sql and o.is_table

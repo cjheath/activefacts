@@ -3,39 +3,39 @@ vocabulary ServiceDirector;
 /*
  * Value Types
  */
-Company Code is written as Fixed Length Text(5);
+Company Code is written as Char(5);
 Credential Nr is written as Signed Integer(32);
 DDMMYYYY is written as Date;
-Data Store Name is written as Variable Length Text(15);
-Email Address is written as Variable Length Text(50);
+Data Store Name is written as String(15);
+Email Address is written as String(50);
 HHMMSS is written as Time;
-Host System Name is written as Variable Length Text(15);
-IP is written as Variable Length Text(16);
-MDYHMS is written as Auto Timestamp;
-Message Data is written as Variable Length Raw Data(8000);
-Message Header is written as Variable Length Text(30);
+Host System Name is written as String(15);
+IP is written as String(16);
+MDYHMS is written as Auto Time Stamp;
+Message Data is written as Blob(8000);
+Message Header is written as String(30);
 Monitor Id is written as Auto Counter;
-Monitoring Application Name is written as Variable Length Text(10);
-Name is written as Variable Length Text(15);
-Netmask is written as Variable Length Text(16);
+Monitoring Application Name is written as String(10);
+Name is written as String(15);
+Netmask is written as String(16);
 Network Nr is written as Signed Integer(32);
 Notification Level Nr is written as Signed Integer(32);
-Notification Type Name is written as Variable Length Text(20);
-Password is written as Variable Length Text;
-Path is written as Variable Length Text(20);
+Notification Type Name is written as String(20);
+Password is written as String;
+Path is written as String(20);
 Port is written as Signed Integer(32);
-Provider Type Id is written as Signed Small Integer(20);
+Provider Type Id is written as Signed Integer(20);
 Recurring Schedule Id is written as Auto Counter;
 Satellite Message Id is written as Unsigned Integer(32);
 Seconds is written as Unsigned Integer(32);
-Serial Number is written as Variable Length Text(20);
-Service Type is written as Variable Length Text(15);
+Serial Number is written as String(20);
+Service Type is written as String(15);
 Subscription Nr is written as Signed Integer(32);
 Switch Id is written as Auto Counter;
 Transaction Nr is written as Unsigned Integer(32);
 Truck PCID is written as Unsigned Integer(32);
-User Name is written as Variable Length Text(20);
-Version is written as Fixed Length Text(5);
+User Name is written as String(20);
+Version is written as Char(5);
 
 /*
  * Entity Types
@@ -112,8 +112,8 @@ Provider Type is identified by its Id;
 Recurring Schedule is identified by its Id;
 Monitor has All- Exclusion Recurring Schedule,
 	All- Exclusion Recurring Schedule applies to at most one Monitor;
-Monitor has Integration- Exclusion Recurring Schedule,
-	Integration- Exclusion Recurring Schedule applies to at most one Monitor;
+Monitor (as IntegratingMonitor) has Integration- Exclusion Recurring Schedule,
+	Integration- Exclusion Recurring Schedule applies to at most one IntegratingMonitor;
 Recurring Schedule has one Duration;
 Recurring Schedule friday;
 Recurring Schedule monday;

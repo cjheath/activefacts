@@ -1,13 +1,12 @@
 vocabulary CompanyDirectorEmployee;
 
-Date is written as Date;
-
 /*
  * Value Types
  */
-Company Name is written as Variable Length Text(48);
+Company Name is written as String(48);
+Date is written as Date;
 Employee Nr is written as Signed Integer(32);
-Name is written as Variable Length Text(48);
+Name is written as String(48);
 
 /*
  * Entity Types
@@ -50,4 +49,4 @@ Manager is ceo;
 /*
  * Constraints:
  */
-either Employee is ceo or Employee is supervised by Manager but not both;
+either Employee is supervised by Manager or Employee is ceo but not both;

@@ -66,6 +66,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Marriage.orm</DependentUpon>
     </Compile>
+    <Compile Include="Metamodel-RoleOccurrence._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel-RoleOccurrence.orm</DependentUpon>
+    </Compile>
     <Compile Include="Metamodel._ORMCustomToolReport.cs">
       <DependentUpon>Metamodel.orm</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -217,9 +221,25 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Marriage._ORMCustomToolReport.cs</LastGenOutput>
     </None>
+    <None Include="Metamodel-RoleOccurrence.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Metamodel-RoleOccurrence._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Metamodel.DCIL.xml">
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
+    <None Include="Metamodel.DDIL.xml">
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
     <None Include="Metamodel.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Metamodel._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Metamodel.SQLServer.sql">
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
     </None>
     <None Include="MetamodelNext.orm">
       <Generator>ORMCustomTool</Generator>
@@ -490,23 +510,6 @@
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('Metamodel.orm')">
-    <None Include="Metamodel.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Metamodel.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Metamodel.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('WindowInRoomInBldg.orm')">
     <None Include="WindowInRoomInBldg.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -762,6 +765,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ServiceDirector.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Metamodel-RoleOccurrence.orm')">
+    <None Include="Metamodel-RoleOccurrence.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel-RoleOccurrence.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Metamodel-RoleOccurrence.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel-RoleOccurrence.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Metamodel-RoleOccurrence.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel-RoleOccurrence.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

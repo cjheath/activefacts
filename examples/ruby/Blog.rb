@@ -26,7 +26,7 @@ module ::Blog
     value_type :length => 20
   end
 
-  class Text < LargeLengthText
+  class Text < ::Text
     value_type 
   end
 

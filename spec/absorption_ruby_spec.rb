@@ -17,7 +17,6 @@ describe "Column lists from absorption compared with Ruby's" do
   ABSORPTION_RUBY_FAILURES = {
     "Metamodel" => "Overlaps with ActiveFacts Metamodel",
     "MetamodelNext" => "Overlaps with ActiveFacts Metamodel",
-    "ServiceDirector" => "Lacks standard AutoTimestamp class",
     "UnaryIdentification" => "No PI for VisitStatus",
   }
 

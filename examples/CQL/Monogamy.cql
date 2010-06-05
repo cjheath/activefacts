@@ -3,7 +3,7 @@ vocabulary Monogamy;
 /*
  * Value Types
  */
-Name is written as Variable Length Text;
+Name is written as String;
 Person ID is written as Auto Counter;
 
 /*

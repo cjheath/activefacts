@@ -4,8 +4,8 @@ vocabulary SeparateSubtype;
  * Value Types
  */
 Claim ID is written as Auto Counter;
-Date Time is written as Date And Time;
-Driver Name is written as Variable Length Text;
+Date Time is written as Date Time;
+Driver Name is written as String;
 
 /*
  * Entity Types

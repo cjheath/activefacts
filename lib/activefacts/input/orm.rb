@@ -36,31 +36,31 @@ module ActiveFacts
       end
 
       DataTypeMapping = {
-        "FixedLengthText" => "String",
+        "FixedLengthText" => "Char",
         "VariableLengthText" => "String",
-        "LargeLengthTextText" => "String",
-        "SignedIntegerNumeric" => "Integer(32)",
-        "SignedSmallIntegerNumeric" => " Integer(16)",
-        "SignedLargeIntegerNumeric" => " Integer(64)",
-        "UnsignedIntegerNumeric" => "Integer(32)",
-        "UnsignedTinyIntegerNumeric" => "Integer(8)",
-        "UnsignedSmallIntegerNumeric" => " Integer(16)",
-        "UnsignedLargeIntegerNumeric" => " Integer(64)",
-        "AutoCounterNumeric" => "AutoCounter",
+        "LargeLengthText" => "Text",
+        "SignedIntegerNumeric" => "Signed Integer(32)",
+        "SignedSmallIntegerNumeric" => "Signed Integer(16)",
+        "SignedLargeIntegerNumeric" => "Signed Integer(64)",
+        "UnsignedIntegerNumeric" => "Unsigned Integer(32)",
+        "UnsignedTinyIntegerNumeric" => "Unsigned Integer(8)",
+        "UnsignedSmallIntegerNumeric" => "Unsigned Integer(16)",
+        "UnsignedLargeIntegerNumeric" => "Unsigned Integer(64)",
+        "AutoCounterNumeric" => "Auto Counter",
         "FloatingPointNumeric" => "Real(64)",
         "SinglePrecisionFloatingPointNumeric" => " Real(32)",
         "DoublePrecisionFloatingPointNumeric" => " Real(32)",
         "DecimalNumeric" => "Decimal",
-        "MoneyNumeric" => "Decimal",
+        "MoneyNumeric" => "Money",
         "FixedLengthRawData" => "Blob",
         "VariableLengthRawData" => "Blob",
         "LargeLengthRawData" => "Blob",
         "PictureRawData" => "Image",
         "OleObjectRawData" => "Blob",
-        "AutoTimestampTemporal" => "TimeStamp",
+        "AutoTimestampTemporal" => "Auto Time Stamp",
         "TimeTemporal" => "Time",
         "DateTemporal" => "Date",
-        "DateAndTimeTemporal" => "DateTime",
+        "DateAndTimeTemporal" => "Date Time",
         "TrueOrFalseLogical" => "Boolean",
         "YesOrNoLogical" => "Boolean",
         "RowIdOther" => "Integer(8)",
@@ -184,19 +184,11 @@ module ActiveFacts
           type_name.sub!(/^orm:/,'')
 
           type_name.sub!(/DataType\Z/,'')
-#=begin
-          type_name.sub!(/Numeric\Z/,'')
-          type_name.sub!(/Temporal\Z/,'')
-          type_name.gsub!(/([a-z])([A-Z])/,'\1 \2')
-          length = 32 if type_name =~ /Integer\Z/ && length.to_i == 0 # Set default integer length
-#=end
-=begin
           type_name = DataTypeMapping[type_name] || type_name
-          unless length
-            length = type_name.sub(/\(([0-9]*)\)/,"\1").to_i
-            length = nil if length <= 0
+          if !length and type_name =~ /\(([0-9]+)\)/
+            length = $1.to_i
           end
-=end
+          type_name = type_name.sub(/\(([0-9]*)\)/,'')
 
           # REVISIT: Need to handle standard types better here:
           value_super_type = type_name != name ? @constellation.ValueType(@vocabulary, type_name) : nil
@@ -491,7 +483,6 @@ module ActiveFacts
             %r| ?(#{leading_adjectives_re})? *\{#{i}\} *(#{trailing_adjectives_re})? ?|
 
           #stop = false
-          #debugger if text =~ /Heart-/
           text.gsub!(role_with_adjectives_re) {
             # REVISIT: Don't want to strip all spaces here any more:
             #puts "text=#{text.inspect}, la=#{$1.inspect}, ta=#{$2.inspect}" if $1 || $2

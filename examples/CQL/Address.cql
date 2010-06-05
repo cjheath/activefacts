@@ -3,13 +3,13 @@ vocabulary Address;
 /*
  * Value Types
  */
-City is written as Variable Length Text(64);
-Company Name is written as Variable Length Text;
-Family Name is written as Variable Length Text(20);
-Given Names is written as Variable Length Text(20);
-Number is written as Variable Length Text(12);
-Postcode is written as Variable Length Text;
-Street Line is written as Variable Length Text(64);
+City is written as String(64);
+Company Name is written as String;
+Family Name is written as String(20);
+Given Names is written as String(20);
+Number is written as String(12);
+Postcode is written as String;
+Street Line is written as String(64);
 
 /*
  * Entity Types

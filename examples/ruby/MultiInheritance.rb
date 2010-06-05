@@ -10,7 +10,7 @@ module ::MultiInheritance
     value_type 
   end
 
-  class TFN < FixedLengthText
+  class TFN < Char
     value_type :length => 9
   end
 

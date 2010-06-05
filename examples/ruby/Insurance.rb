@@ -2,7 +2,7 @@ require 'activefacts/api'
 
 module ::Insurance
 
-  class Alias < FixedLengthText
+  class Alias < Char
     value_type :length => 3
   end
 
@@ -39,7 +39,7 @@ module ::Insurance
     value_type 
   end
 
-  class ContactMethod < FixedLengthText
+  class ContactMethod < Char
     value_type :length => 1
     restrict 'B', 'H', 'M'
   end
@@ -48,7 +48,7 @@ module ::Insurance
     value_type :length => 32
   end
 
-  class CoverTypeCode < FixedLengthText
+  class CoverTypeCode < Char
     value_type 
   end
 
@@ -89,7 +89,7 @@ module ::Insurance
     value_type 
   end
 
-  class LiabilityCode < FixedLengthText
+  class LiabilityCode < Char
     value_type :length => 1
     restrict 'D', 'L', 'R', 'U'
   end
@@ -106,7 +106,7 @@ module ::Insurance
     value_type 
   end
 
-  class LossTypeCode < FixedLengthText
+  class LossTypeCode < Char
     value_type 
   end
 
@@ -163,8 +163,8 @@ module ::Insurance
     value_type :length => 80
   end
 
-  class ProductCode < UnsignedTinyInteger
-    value_type :length => 32
+  class ProductCode < UnsignedInteger
+    value_type :length => 8
     restrict 1..99
   end
 
@@ -172,7 +172,7 @@ module ::Insurance
     value_type 
   end
 
-  class RegistrationNr < FixedLengthText
+  class RegistrationNr < Char
     value_type :length => 8
   end
 
@@ -180,8 +180,8 @@ module ::Insurance
     value_type :length => 32
   end
 
-  class StateCode < UnsignedTinyInteger
-    value_type :length => 32
+  class StateCode < UnsignedInteger
+    value_type :length => 8
     restrict 0..9
   end
 

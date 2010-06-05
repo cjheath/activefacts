@@ -6,10 +6,6 @@ module ::ORMModel1
     value_type :length => 32
   end
 
-  class Date < ::Date
-    value_type 
-  end
-
   class PartyId < AutoCounter
     value_type 
   end
@@ -18,7 +14,7 @@ module ::ORMModel1
     value_type 
   end
 
-  class Ymd < ::Date
+  class Ymd < Date
     value_type 
   end
 

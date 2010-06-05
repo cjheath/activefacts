@@ -5,12 +5,12 @@ vocabulary OilSupply;
  */
 Cost is written as Money;
 Month Nr is written as Signed Integer(32);
-Product Name is written as Variable Length Text;
+Product Name is written as String;
 Quantity is written as Unsigned Integer(32);
-Refinery Name is written as Variable Length Text(80);
-Region Name is written as Variable Length Text;
-Season is written as Variable Length Text(6) restricted to {'Autumn', 'Spring', 'Summer', 'Winter'};
-Transport Method is written as Variable Length Text restricted to {'Rail', 'Road', 'Sea'};
+Refinery Name is written as String(80);
+Region Name is written as String;
+Season is written as String(6) restricted to {'Autumn', 'Spring', 'Summer', 'Winter'};
+Transport Method is written as String restricted to {'Rail', 'Road', 'Sea'};
 Year Nr is written as Signed Integer(32);
 
 /*

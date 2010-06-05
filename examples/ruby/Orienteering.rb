@@ -2,7 +2,7 @@ require 'activefacts/api'
 
 module ::Orienteering
 
-  class Accessibility < FixedLengthText
+  class Accessibility < Char
     value_type :length => 1
     restrict 'A'..'D'
   end
@@ -25,10 +25,6 @@ module ::Orienteering
     restrict 'A'..'E', 'PW'
   end
 
-  class DateAndTime < ::DateTime
-    value_type 
-  end
-
   class EntryID < AutoCounter
     value_type 
   end
@@ -45,7 +41,7 @@ module ::Orienteering
     value_type :length => 48
   end
 
-  class Gender < FixedLengthText
+  class Gender < Char
     value_type :length => 1
     restrict 'F', 'M'
   end
@@ -108,11 +104,11 @@ module ::Orienteering
     value_type :length => 40
   end
 
-  class StartTime < ::DateTime
+  class StartTime < DateTime
     value_type 
   end
 
-  class Time < ::DateTime
+  class Time < DateTime
     value_type 
   end
 

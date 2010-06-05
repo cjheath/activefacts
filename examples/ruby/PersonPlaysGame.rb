@@ -2,7 +2,7 @@ require 'activefacts/api'
 
 module ::PersonPlaysGame
 
-  class GameCode < FixedLengthText
+  class GameCode < Char
     value_type 
   end
 

@@ -4,9 +4,8 @@ vocabulary ORMModel1;
  * Value Types
  */
 Accuracy Level is written as Signed Integer(32);
-Date is written as Date;
 Party Id is written as Auto Counter;
-Party Name is written as Variable Length Text;
+Party Name is written as String;
 ymd is written as Date;
 
 /*

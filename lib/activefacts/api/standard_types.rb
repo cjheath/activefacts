@@ -65,26 +65,23 @@ class Decimal < BigDecimal #:nodoc:
     end
   end
 end
-# REVISIT: Fix these NORMA types
+
+# These types are generated on conversion from NORMA's types:
+class Char < String #:nodoc:  # FixedLengthText
+end
+class Text < String #:nodoc:  # LargeLengthText
+end
+class Image < String #:nodoc: # PictureRawData
+end
 class SignedInteger < Int #:nodoc:
 end
-class SignedSmallInteger < Int #:nodoc:
+class UnsignedInteger < Int   #:nodoc:
 end
-class SignedTinyInteger < Int #:nodoc:
+class AutoTimeStamp < String  #:nodoc: AutoTimeStamp
 end
-class UnsignedInteger < Int #:nodoc:
+class Blob < String           #:nodoc: VariableLengthRawData
 end
-class UnsignedSmallInteger < Int #:nodoc:
-end
-class UnsignedTinyInteger < Int #:nodoc:
-end
-class LargeLengthText < String #:nodoc:
-end
-class FixedLengthText < String #:nodoc:
-end
-class PictureRawData < String #:nodoc:
-end
-class DateAndTime < DateTime #:nodoc:
-end
-class Money < Decimal #:nodoc:
+unless Object.const_defined?("Money")
+  class Money < Decimal       #:nodoc:
+  end
 end

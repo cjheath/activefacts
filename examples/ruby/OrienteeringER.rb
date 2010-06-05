@@ -2,7 +2,7 @@ require 'activefacts/api'
 
 module ::OrienteeringER
 
-  class Accessibility < FixedLengthText
+  class Accessibility < Char
     value_type 
   end
 
@@ -10,7 +10,7 @@ module ::OrienteeringER
     value_type 
   end
 
-  class Code < FixedLengthText
+  class Code < Char
     value_type 
   end
 
@@ -18,15 +18,11 @@ module ::OrienteeringER
     value_type :length => 32
   end
 
-  class Course < FixedLengthText
+  class Course < Char
     value_type 
   end
 
-  class DateAndTime < ::DateTime
-    value_type 
-  end
-
-  class Date < ::DateTime
+  class Date < DateTime
     value_type 
   end
 

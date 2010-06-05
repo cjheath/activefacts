@@ -9,7 +9,7 @@ GO
 
 CREATE TABLE Seat (
 	-- Seat has Number,
-	Number                                  int NOT NULL,
+	Number                                  shortint NOT NULL,
 	-- Seat is in Reserve,
 	Reserve                                 varchar(20) NOT NULL,
 	-- Seat is in Row,
@@ -24,7 +24,7 @@ CREATE TABLE Ticket (
 	-- Ticket is for Event and Event has Event Id,
 	EventId                                 int NOT NULL,
 	-- Ticket is for Seat and Seat has Number,
-	SeatNumber                              int NOT NULL,
+	SeatNumber                              shortint NOT NULL,
 	-- Ticket is for Seat and Seat is in Reserve,
 	SeatReserve                             varchar(20) NOT NULL,
 	-- Ticket is for Seat and Seat is in Row,

@@ -2,7 +2,7 @@ require 'activefacts/api'
 
 module ::ServiceDirector
 
-  class CompanyCode < FixedLengthText
+  class CompanyCode < Char
     value_type :length => 5
   end
 
@@ -10,11 +10,7 @@ module ::ServiceDirector
     value_type :length => 32
   end
 
-  class Date < ::Date
-    value_type 
-  end
-
-  class DDMMYYYY < ::Date
+  class DDMMYYYY < Date
     value_type 
   end
 
@@ -26,11 +22,7 @@ module ::ServiceDirector
     value_type :length => 50
   end
 
-  class Time < ::Time
-    value_type 
-  end
-
-  class HHMMSS < ::Time
+  class HHMMSS < Time
     value_type 
   end
 
@@ -42,11 +34,11 @@ module ::ServiceDirector
     value_type :length => 16
   end
 
-  class MDYHMS < AutoTimestamp
+  class MDYHMS < AutoTimeStamp
     value_type 
   end
 
-  class MessageData < VariableLengthRawData
+  class MessageData < Blob
     value_type :length => 8000
   end
 
@@ -94,7 +86,7 @@ module ::ServiceDirector
     value_type :length => 32
   end
 
-  class ProviderTypeId < SignedSmallInteger
+  class ProviderTypeId < SignedInteger
     value_type :length => 20
   end
 
@@ -138,7 +130,7 @@ module ::ServiceDirector
     value_type :length => 20
   end
 
-  class Version < FixedLengthText
+  class Version < Char
     value_type :length => 5
   end
 
@@ -252,9 +244,9 @@ module ::ServiceDirector
     identified_by :recurring_schedule_id
     has_one :duration, :mandatory => true       # See Duration.all_recurring_schedule
     maybe :friday
+    has_one :integrating_monitor, :class => Monitor, :counterpart => :integration_exclusion_recurring_schedule  # See Monitor.all_integration_exclusion_recurring_schedule
     maybe :monday
     has_one :monitor, :counterpart => :all_exclusion_recurring_schedule  # See Monitor.all_all_exclusion_recurring_schedule
-    has_one :monitor, :counterpart => :integration_exclusion_recurring_schedule  # See Monitor.all_integration_exclusion_recurring_schedule
     one_to_one :recurring_schedule_id, :mandatory => true  # See RecurringScheduleId.recurring_schedule
     maybe :saturday
     has_one :start_time, :class => "Time", :mandatory => true  # See Time.all_recurring_schedule_as_start_time

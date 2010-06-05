@@ -65,14 +65,21 @@ module ActiveFacts
       end
 
       def value_type_dump(o)
-        return unless o.supertype    # An imported type
+        # Ignore Vaue Types that don't do anything:
+        return if
+          !o.supertype &&
+          o.all_role.size == 0 &&
+          !o.is_independent &&
+          o.all_context_note.size == 0 &&
+          o.all_instance.size == 0
+        # No need to dump it if the only thing it does is be a supertype; it'll be created automatically
+        # return if o.all_value_type_as_supertype.size == 0
 
-        # REVISIT: A ValueType that is only used as a reference mode need not be emitted here. We haven't detected this situation yet however...
-
-        if o.name == o.supertype.name
-            # In ActiveFacts, parameterising a ValueType will create a new ValueType
-            # throw Can't handle parameterized value type of same name as its ValueType" if ...
-        end
+        # REVISIT: A ValueType that is only used as a reference mode need not be emitted here.
+        # We'll dump the subtypes before any roles, so we don't need to dump this here.
+        return if
+          o.all_value_type_as_supertype.size != 0 &&
+          o.all_role.size != 0
 
         parameters =
           [ o.length != 0 || o.scale != 0 ? o.length : nil,
@@ -80,7 +87,7 @@ module ActiveFacts
           ].compact
         parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : ""
 
-        puts "#{o.name} is written as #{o.supertype.name}#{ parameters }#{
+        puts "#{o.name} is written as #{(o.supertype || o).name}#{ parameters }#{
             o.value_constraint && " "+o.value_constraint.describe
           };"
       end

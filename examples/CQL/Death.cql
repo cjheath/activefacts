@@ -3,8 +3,8 @@ vocabulary Death;
 /*
  * Value Types
  */
-Cause Of Death is written as Variable Length Text;
-Person Name is written as Variable Length Text(40);
+Cause Of Death is written as String;
+Person Name is written as String(40);
 
 /*
  * Entity Types

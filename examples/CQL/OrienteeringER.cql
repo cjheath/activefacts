@@ -3,19 +3,19 @@ vocabulary OrienteeringER;
 /*
  * Value Types
  */
-Accessibility is written as Fixed Length Text;
-Club Name is written as Variable Length Text;
-Code is written as Fixed Length Text;
+Accessibility is written as Char;
+Club Name is written as String;
+Code is written as Char;
 Control is written as Unsigned Integer(32);
-Course is written as Fixed Length Text;
-Date is written as Date And Time;
-Event Name is written as Variable Length Text;
+Course is written as Char;
+Date is written as Date Time;
+Event Name is written as String;
 ID is written as Auto Counter;
-Location is written as Variable Length Text;
-Name is written as Variable Length Text;
+Location is written as String;
+Name is written as String;
 Number is written as Signed Integer(32);
 Point Value is written as Unsigned Integer(32);
-Series Name is written as Variable Length Text;
+Series Name is written as String;
 
 /*
  * Entity Types

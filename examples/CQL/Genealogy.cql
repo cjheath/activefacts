@@ -3,25 +3,25 @@ vocabulary Genealogy;
 /*
  * Value Types
  */
-Address is written as Variable Length Text(128);
-Certificate is written as Variable Length Text(64);
+Address is written as String(128);
+Certificate is written as String(64);
 Day is written as Unsigned Integer(32) restricted to {1..31};
-Email is written as Variable Length Text(64);
+Email is written as String(64);
 Event ID is written as Auto Counter;
-Event Location is written as Variable Length Text(128);
-Event Role Name is written as Variable Length Text restricted to {'Celebrant', 'Father', 'Husband', 'Mother', 'Subject', 'Wife'};
+Event Location is written as String(128);
+Event Role Name is written as String restricted to {'Celebrant', 'Father', 'Husband', 'Mother', 'Subject', 'Wife'};
 Event Type ID is written as Auto Counter;
-Event Type Name is written as Variable Length Text(16) restricted to {'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'};
-Gender is written as Fixed Length Text(1) restricted to {'F', 'M'};
+Event Type Name is written as String(16) restricted to {'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'};
+Gender is written as Char(1) restricted to {'F', 'M'};
 Month is written as Unsigned Integer(32) restricted to {1..12};
-Name is written as Variable Length Text(128);
-Occupation is written as Variable Length Text(128);
-Official is written as Variable Length Text(64);
+Name is written as String(128);
+Occupation is written as String(128);
+Official is written as String(64);
 Person ID is written as Auto Counter;
-Picture is written as Picture Raw Data(20);
+Picture is written as Image(20);
 Role ID is written as Auto Counter;
 Source ID is written as Auto Counter;
-Source Name is written as Variable Length Text(128);
+Source Name is written as String(128);
 User ID is written as Auto Counter;
 Year is written as Unsigned Integer(32);
 

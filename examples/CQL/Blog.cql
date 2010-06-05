@@ -5,11 +5,11 @@ vocabulary Blog;
  */
 Author Id is written as Auto Counter;
 Comment Id is written as Auto Counter;
-Name is written as Variable Length Text(64);
+Name is written as String(64);
 Ordinal is written as Unsigned Integer(32);
 Post Id is written as Auto Counter;
-Style is written as Variable Length Text(20);
-Text is written as Large Length Text;
+Style is written as String(20);
+Text is written as Text;
 Topic Id is written as Auto Counter;
 
 /*

@@ -4,9 +4,9 @@ vocabulary JoinEquality;
  * Value Types
  */
 Event Id is written as Auto Counter;
-Number is written as Unsigned Small Integer(32);
-Reserve is written as Variable Length Text(20);
-Row is written as Fixed Length Text(2);
+Number is written as Unsigned Integer(16);
+Reserve is written as String(20);
+Row is written as Char(2);
 Venue Id is written as Auto Counter;
 
 /*

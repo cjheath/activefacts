@@ -36,7 +36,7 @@ describe "CQL Loader with SQL output" do
   # Generate and return the SQL for the given vocabulary
   def sql(vocabulary)
     output = StringIO.new
-    @dumper = ActiveFacts::Generate::SQL::SERVER.new(vocabulary.constellation, "norma")
+    @dumper = ActiveFacts::Generate::SQL::SERVER.new(vocabulary.constellation)
     @dumper.generate(output)
     output.rewind
     output.read

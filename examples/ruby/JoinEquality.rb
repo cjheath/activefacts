@@ -6,15 +6,15 @@ module ::JoinEquality
     value_type 
   end
 
-  class Number < UnsignedSmallInteger
-    value_type :length => 32
+  class Number < UnsignedInteger
+    value_type :length => 16
   end
 
   class Reserve < String
     value_type :length => 20
   end
 
-  class Row < FixedLengthText
+  class Row < Char
     value_type :length => 2
   end
 

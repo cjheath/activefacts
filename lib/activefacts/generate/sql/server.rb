@@ -15,7 +15,6 @@ module ActiveFacts
       #   afgen --sql/server[=options] <file>.cql
       # Options are comma or space separated:
       # * delay_fks Leave all foreign keys until the end, not just those that contain forward-references
-      # * norma Translate valuetypes from NORMA to SQL Server
       class SERVER
       private
         include Persistence
@@ -48,7 +47,6 @@ module ActiveFacts
           @vocabulary = vocabulary
           @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
           @delay_fks = options.include? "delay_fks"
-          @norma = options.include? "norma"
           @underscore = options.include?("underscore") ? "_" : ""
         end
 
@@ -71,39 +69,58 @@ module ActiveFacts
           end
         end
 
-        # Return SQL type and (modified?) length for the passed NORMA base type
-        def norma_type(type, length)
+        # Return SQL type and (modified?) length for the passed base type
+        def normalise_type(type, length)
           sql_type = case type
-            when /^Auto ?Counter$/; 'int'
+            when /^Auto ?Counter$/
+              'int'
+
             when /^Unsigned ?Integer$/,
               /^Signed ?Integer$/,
               /^Unsigned ?Small ?Integer$/,
               /^Signed ?Small ?Integer$/,
               /^Unsigned ?Tiny ?Integer$/
               s = case
-                when length <= 8; 'tinyint'
-                when length <= 16; 'shortint'
-                when length <= 32; 'int'
-                else 'bigint'
+                when length <= 8
+                  'tinyint'
+                when length <= 16
+                  'shortint'
+                when length <= 32
+                  'int'
+                else
+                  'bigint'
                 end
               length = nil
               s
-            when /^Decimal$/; 'decimal'
 
-            when /^Fixed ?Length ?Text$/; 'char'
-            when /^Variable ?Length ?Text$/; 'varchar'
-            when /^Large ?Length ?Text$/; 'text'
+            when /^Decimal$/
+              'decimal'
 
-            when /^Date ?And ?Time$/; 'datetime'
-            when /^Date$/; 'datetime' # SQLSVR 2K5: 'date'
-            when /^Time$/; 'datetime' # SQLSVR 2K5: 'time'
-            when /^Auto ?Timestamp$/; 'timestamp'
+            when /^Fixed ?Length ?Text$/, /^Char$/
+              'char'
+            when /^Variable ?Length ?Text$/, /^String$/
+              'varchar'
+            when /^Large ?Length ?Text$/, /^Text$/
+              'text'
 
-            when /^Money$/; 'decimal'
-            when /^Picture ?Raw ?Data$/; 'image'
-            when /^Variable ?Length ?Raw ?Data$/; 'varbinary'
-            when /^BIT$/; 'bit'
-            else type # raise "SQL type unknown for NORMA type #{type}"
+            when /^Date ?And ?Time$/, /^Date ?Time$/
+              'datetime'
+            when /^Date$/
+              'datetime' # SQLSVR 2K5: 'date'
+            when /^Time$/
+              'datetime' # SQLSVR 2K5: 'time'
+            when /^Auto ?Time ?Stamp$/
+              'timestamp'
+
+            when /^Money$/
+              'decimal'
+            when /^Picture ?Raw ?Data$/, /^Image$/
+              'image'
+            when /^Variable ?Length ?Raw ?Data$/, /^Blob$/
+              'varbinary'
+            when /^BIT$/
+              'bit'
+            else type # raise "SQL type unknown for standard type #{type}"
             end
           [sql_type, length]
         end
@@ -138,7 +155,7 @@ module ActiveFacts
               length &&= length.to_i
               scale = params[:scale]
               scale &&= scale.to_i
-              type, length = norma_type(type, length) if @norma
+              type, length = normalise_type(type, length)
               sql_type = "#{type}#{
                 if !length
                   ""

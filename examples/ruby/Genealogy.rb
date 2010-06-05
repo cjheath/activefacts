@@ -41,7 +41,7 @@ module ::Genealogy
     restrict 'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'
   end
 
-  class Gender < FixedLengthText
+  class Gender < Char
     value_type :length => 1
     restrict 'F', 'M'
   end
@@ -67,7 +67,7 @@ module ::Genealogy
     value_type 
   end
 
-  class Picture < PictureRawData
+  class Picture < Image
     value_type :length => 20
   end
 

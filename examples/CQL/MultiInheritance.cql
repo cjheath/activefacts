@@ -4,8 +4,8 @@ vocabulary MultiInheritance;
  * Value Types
  */
 Employee ID is written as Auto Counter;
-Person Name is written as Variable Length Text;
-TFN is written as Fixed Length Text(9);
+Person Name is written as String;
+TFN is written as Char(9);
 
 /*
  * Entity Types

@@ -43,13 +43,13 @@ CREATE TABLE [Constraint] (
 	-- maybe Ring Constraint is a kind of Constraint and maybe other-Role is of Ring Constraint and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RingConstraintOtherRoleFactTypeId       int NULL,
 	-- maybe Ring Constraint is a kind of Constraint and maybe other-Role is of Ring Constraint and Role is where Fact Type has Ordinal role,
-	RingConstraintOtherRoleOrdinal          int NULL,
+	RingConstraintOtherRoleOrdinal          shortint NULL,
 	-- maybe Ring Constraint is a kind of Constraint and Ring Constraint is of Ring Type,
 	RingConstraintRingType                  varchar NULL,
 	-- maybe Ring Constraint is a kind of Constraint and maybe Role is of Ring Constraint and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RingConstraintRoleFactTypeId            int NULL,
 	-- maybe Ring Constraint is a kind of Constraint and maybe Role is of Ring Constraint and Role is where Fact Type has Ordinal role,
-	RingConstraintRoleOrdinal               int NULL,
+	RingConstraintRoleOrdinal               shortint NULL,
 	-- maybe Set Constraint is a kind of Constraint and maybe Set Comparison Constraint is a kind of Set Constraint and maybe Set Exclusion Constraint is a kind of Set Comparison Constraint and Set Exclusion Constraint is mandatory,
 	SetExclusionConstraintIsMandatory       bit NULL,
 	-- maybe Set Constraint is a kind of Constraint and maybe Subset Constraint is a kind of Set Constraint and Subset Constraint covers subset-Role Sequence and Role Sequence has Role Sequence Id,
@@ -59,7 +59,7 @@ CREATE TABLE [Constraint] (
 	-- maybe Value Constraint is a kind of Constraint and maybe Role has role-Value Constraint and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	ValueConstraintRoleFactTypeId           int NULL,
 	-- maybe Value Constraint is a kind of Constraint and maybe Role has role-Value Constraint and Role is where Fact Type has Ordinal role,
-	ValueConstraintRoleOrdinal              int NULL,
+	ValueConstraintRoleOrdinal              shortint NULL,
 	-- maybe Vocabulary contains Constraint and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NULL,
 	PRIMARY KEY(ConstraintId)
@@ -141,7 +141,7 @@ CREATE TABLE Derivation (
 	-- Derivation is where Derived Unit is derived from Base Unit and Unit has Unit Id,
 	DerivedUnitId                           int NOT NULL,
 	-- maybe Derivation has Exponent,
-	Exponent                                int NULL,
+	Exponent                                shortint NULL,
 	PRIMARY KEY(DerivedUnitId, BaseUnitId)
 )
 GO
@@ -248,13 +248,13 @@ CREATE TABLE [Join] (
 	-- maybe Join has input-Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	InputRoleFactTypeId                     int NULL,
 	-- maybe Join has input-Role and Role is where Fact Type has Ordinal role,
-	InputRoleOrdinal                        int NULL,
+	InputRoleOrdinal                        shortint NULL,
 	-- is anti Join,
 	IsAnti                                  bit NOT NULL,
 	-- Join is outer,
 	IsOuter                                 bit NOT NULL,
 	-- Join is where Role Ref has Join Step join,
-	JoinStep                                int NOT NULL,
+	JoinStep                                shortint NOT NULL,
 	-- maybe Join traverses Object Type and Term is where Vocabulary contains Name,
 	ObjectTypeName                          varchar(64) NULL,
 	-- maybe Join traverses Object Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
@@ -262,9 +262,9 @@ CREATE TABLE [Join] (
 	-- maybe Join has output-Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	OutputRoleFactTypeId                    int NULL,
 	-- maybe Join has output-Role and Role is where Fact Type has Ordinal role,
-	OutputRoleOrdinal                       int NULL,
+	OutputRoleOrdinal                       shortint NULL,
 	-- Join is where Role Ref has Join Step join and Role Ref is where Role Sequence in Ordinal position includes Role,
-	RoleRefOrdinal                          int NOT NULL,
+	RoleRefOrdinal                          shortint NOT NULL,
 	-- Join is where Role Ref has Join Step join and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
 	RoleRefRoleSequenceId                   int NOT NULL,
 	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep)
@@ -296,7 +296,7 @@ CREATE TABLE Reading (
 	-- Fact Type has Reading and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
 	-- Reading is in Ordinal position,
-	Ordinal                                 int NOT NULL,
+	Ordinal                                 shortint NOT NULL,
 	-- Reading is in Role Sequence and Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int NOT NULL,
 	-- Reading has Text,
@@ -314,7 +314,7 @@ CREATE TABLE Role (
 	-- Object Type plays Role and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Role is where Fact Type has Ordinal role,
-	Ordinal                                 int NOT NULL,
+	Ordinal                                 shortint NOT NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
@@ -324,11 +324,11 @@ CREATE TABLE RoleDisplay (
 	-- Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Shape Id,
 	FactTypeShapeId                         int NOT NULL,
 	-- Role Display is where Fact Type Shape displays Role in Ordinal position,
-	Ordinal                                 int NOT NULL,
+	Ordinal                                 shortint NOT NULL,
 	-- Role Display is where Fact Type Shape displays Role in Ordinal position and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RoleFactTypeId                          int NOT NULL,
 	-- Role Display is where Fact Type Shape displays Role in Ordinal position and Role is where Fact Type has Ordinal role,
-	RoleOrdinal                             int NOT NULL,
+	RoleOrdinal                             shortint NOT NULL,
 	PRIMARY KEY(FactTypeShapeId, Ordinal),
 	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 )
@@ -338,7 +338,7 @@ CREATE TABLE RoleRef (
 	-- maybe Role Ref has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role,
-	Ordinal                                 int NOT NULL,
+	Ordinal                                 shortint NOT NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RoleFactTypeId                          int NOT NULL,
 	-- maybe Role Name is name of Role Ref and Term is where Vocabulary contains Name,
@@ -346,7 +346,7 @@ CREATE TABLE RoleRef (
 	-- maybe Role Name is name of Role Ref and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	RoleNameVocabularyName                  varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role,
-	RoleOrdinal                             int NOT NULL,
+	RoleOrdinal                             shortint NOT NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int NOT NULL,
 	-- maybe Role Ref has trailing-Adjective,
@@ -378,7 +378,7 @@ CREATE TABLE RoleValue (
 	-- Role Value is of Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	RoleFactTypeId                          int NOT NULL,
 	-- Role Value is of Role and Role is where Fact Type has Ordinal role,
-	RoleOrdinal                             int NOT NULL,
+	RoleOrdinal                             shortint NOT NULL,
 	PRIMARY KEY(InstanceId, FactId),
 	FOREIGN KEY (FactId) REFERENCES Fact (FactId),
 	FOREIGN KEY (InstanceId) REFERENCES Instance (InstanceId),
@@ -388,7 +388,7 @@ GO
 
 CREATE TABLE SetComparisonRoles (
 	-- Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence,
-	Ordinal                                 int NOT NULL,
+	Ordinal                                 shortint NOT NULL,
 	-- Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence and Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int NOT NULL,
 	-- Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence and Constraint has Constraint Id,
@@ -418,7 +418,7 @@ CREATE TABLE Shape (
 	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Reading Shape and Reading Shape is for Reading and Fact Type has Reading and Fact Type has Fact Type Id,
 	FactTypeShapeReadingFactTypeId          int NULL,
 	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Reading Shape and Reading Shape is for Reading and Reading is in Ordinal position,
-	FactTypeShapeReadingOrdinal             int NULL,
+	FactTypeShapeReadingOrdinal             shortint NULL,
 	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Rotation Setting,
 	FactTypeShapeRotationSetting            varchar NULL CHECK(FactTypeShapeRotationSetting = 'left' OR FactTypeShapeRotationSetting = 'right'),
 	-- Shape is expanded,
@@ -440,7 +440,7 @@ CREATE TABLE Shape (
 	-- maybe Role Name Shape is a kind of Shape and Role Name Shape is for Role Display and Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Shape Id,
 	RoleNameShapeRoleDisplayFactTypeShapeId int NULL,
 	-- maybe Role Name Shape is a kind of Shape and Role Name Shape is for Role Display and Role Display is where Fact Type Shape displays Role in Ordinal position,
-	RoleNameShapeRoleDisplayOrdinal         int NULL,
+	RoleNameShapeRoleDisplayOrdinal         shortint NULL,
 	-- Shape has Shape Id,
 	ShapeId                                 int IDENTITY NOT NULL,
 	-- maybe Constraint Shape is a kind of Shape and maybe Value Constraint Shape is a kind of Constraint Shape and maybe Value Constraint Shape is for Object Type Shape and Shape has Shape Id,
@@ -448,7 +448,7 @@ CREATE TABLE Shape (
 	-- maybe Constraint Shape is a kind of Shape and maybe Value Constraint Shape is a kind of Constraint Shape and maybe Role Display has Value Constraint Shape and Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Shape Id,
 	ValueConstraintShapeRoleDisplayFactTypeShapeId int NULL,
 	-- maybe Constraint Shape is a kind of Shape and maybe Value Constraint Shape is a kind of Constraint Shape and maybe Role Display has Value Constraint Shape and Role Display is where Fact Type Shape displays Role in Ordinal position,
-	ValueConstraintShapeRoleDisplayOrdinal  int NULL,
+	ValueConstraintShapeRoleDisplayOrdinal  shortint NULL,
 	PRIMARY KEY(ShapeId),
 	FOREIGN KEY (ConstraintShapeConstraintId) REFERENCES [Constraint] (ConstraintId),
 	FOREIGN KEY (ModelNoteShapeContextNoteId) REFERENCES ContextNote (ContextNoteId),
@@ -472,20 +472,20 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameDiagramNamePositionXPositionY ON dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY(DiagramVocabularyName, DiagramName, PositionX, PositionY)
 GO
 
-CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
-	SELECT FactTypeShapeId FROM dbo.Shape
-	WHERE	FactTypeShapeId IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
-GO
-
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
 	SELECT FactTypeShapeId FROM dbo.Shape
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+GO
+
+CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
+	SELECT FactTypeShapeId FROM dbo.Shape
+	WHERE	FactTypeShapeId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS

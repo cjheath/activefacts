@@ -1080,8 +1080,8 @@
 			</orm:UniquenessConstraint>
 			<orm:MandatoryConstraint id="_D367C771-D61A-48AC-A512-B7A099EE3399" Name="EmployeeMustBeCeoOrHaveManager">
 				<orm:RoleSequence>
-					<orm:Role id="_A2B56EF0-F742-4B71-879C-C9F74C0940EE" ref="_336909EA-CF10-45C4-8100-5139BA2D82BD" />
 					<orm:Role id="_B65BD1DE-D2CF-4693-B121-EC09493587A9" ref="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" />
+					<orm:Role id="_499AD320-C336-4E0A-8CBE-182D4F858952" ref="_336909EA-CF10-45C4-8100-5139BA2D82BD" />
 				</orm:RoleSequence>
 				<orm:ExclusiveOrExclusionConstraint ref="_21860382-C68B-4903-B753-EE6AA0507521" />
 			</orm:MandatoryConstraint>
@@ -1201,11 +1201,11 @@
 			</orm:MandatoryConstraint>
 			<orm:ExclusionConstraint id="_21860382-C68B-4903-B753-EE6AA0507521" Name="EmployeeCantBeCeoAndHaveManager">
 				<orm:RoleSequences>
-					<orm:RoleSequence id="_BAADFADD-FBD9-4844-8231-470C330986C8">
-						<orm:Role id="_1B65DBAE-6938-4DF6-8E4E-8146D6659782" ref="_336909EA-CF10-45C4-8100-5139BA2D82BD" />
-					</orm:RoleSequence>
 					<orm:RoleSequence id="_3185F6D8-FFF0-4725-B286-10B13783D487">
 						<orm:Role id="_D23091D4-3DF8-4A8C-BD00-A55410C7E785" ref="_42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB" />
+					</orm:RoleSequence>
+					<orm:RoleSequence id="_E74498F3-918E-49A7-A430-FC6D560C10C9">
+						<orm:Role id="_E8264FFA-019B-4437-9DF5-D9B17291AE45" ref="_336909EA-CF10-45C4-8100-5139BA2D82BD" />
 					</orm:RoleSequence>
 				</orm:RoleSequences>
 				<orm:ExclusiveOrMandatoryConstraint ref="_D367C771-D61A-48AC-A512-B7A099EE3399" />

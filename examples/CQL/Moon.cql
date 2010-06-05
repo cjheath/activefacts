@@ -3,9 +3,9 @@ vocabulary Moon;
 /*
  * Value Types
  */
-Moon Name is written as Variable Length Text;
+Moon Name is written as String;
 Nr Days Nr is written as Signed Integer(32);
-Planet Name is written as Variable Length Text;
+Planet Name is written as String;
 
 /*
  * Entity Types

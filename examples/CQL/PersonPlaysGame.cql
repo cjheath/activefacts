@@ -3,8 +3,8 @@ vocabulary PersonPlaysGame;
 /*
  * Value Types
  */
-Game Code is written as Fixed Length Text;
-Person Name is written as Variable Length Text;
+Game Code is written as Char;
+Person Name is written as String;
 
 /*
  * Entity Types
