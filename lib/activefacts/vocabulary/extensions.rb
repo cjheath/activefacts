@@ -84,8 +84,7 @@ module ActiveFacts
 
     class RoleRef
       def describe
-        # The reference traverses the Joins in sequence to the final role:
-        all_join.sort_by{|jp| jp.join_step}.map{ |jp| jp.describe + "." }*"" + role_name
+        role_name
       end
 
       def role_name(joiner = "-")
@@ -101,14 +100,7 @@ module ActiveFacts
       # Two RoleRefs are equal if they have the same role and Joins with matching roles
       def ==(role_ref)
         role_ref.is_a?(ActiveFacts::Metamodel::RoleRef) &&
-        role_ref.role == role &&
-        all_join.size == role_ref.all_join.size &&
-        !all_join.sort_by{|j|j.join_step}.
-          zip(role_ref.all_join.sort_by{|j|j.join_step}).
-          detect{|j1,j2|
-            j1.input_role != j2.input_role ||
-            j1.output_role != j2.output_role
-          }
+        role_ref.role == role
       end
     end
 

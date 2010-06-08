@@ -48,7 +48,7 @@ describe "Relational Composition from NORMA" do
   pattern = ENV["AFTESTS"] || "*"
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     exception = Exceptions[File.basename(orm_file, ".orm")]
-    sql_file_pattern = orm_file.sub(/\.orm\Z/, '*.sql')
+    sql_file_pattern = orm_file.sub(/\.orm\Z/, '.*sql')
     sql_file = Dir[sql_file_pattern][0]
     next unless sql_file
 

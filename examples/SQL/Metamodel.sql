@@ -201,6 +201,10 @@ CREATE TABLE FactType (
 	EntityTypeVocabularyName                varchar(64) NULL,
 	-- Fact Type has Fact Type Id,
 	FactTypeId                              int IDENTITY NOT NULL,
+	-- maybe Implicit Fact Type is a kind of Fact Type and Implicit Fact Type is implied by Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
+	ImplicitFactTypeRoleFactTypeId          int NULL,
+	-- maybe Implicit Fact Type is a kind of Fact Type and Implicit Fact Type is implied by Role and Role is where Fact Type has Ordinal role,
+	ImplicitFactTypeRoleOrdinal             shortint NULL,
 	-- maybe Type Inheritance is a kind of Fact Type and maybe Assimilation applies to Type Inheritance,
 	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
@@ -283,31 +287,20 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
-CREATE TABLE [Join] (
-	-- maybe Join traverses Concept and Concept is called Name,
-	ConceptName                             varchar(64) NULL,
-	-- maybe Join traverses Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	ConceptVocabularyName                   varchar(64) NULL,
-	-- maybe Join has input-Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
-	InputRoleFactTypeId                     int NULL,
-	-- maybe Join has input-Role and Role is where Fact Type has Ordinal role,
-	InputRoleOrdinal                        shortint NULL,
-	-- is anti Join,
+CREATE TABLE JoinStep (
+	-- Join Step has input-Join Node and Join includes Join Node and Join has Join Id,
+	InputJoinNodeJoinId                     int NOT NULL,
+	-- Join Step has input-Join Node and Join Node has Ordinal position,
+	InputJoinNodeOrdinal                    shortint NOT NULL,
+	-- is anti Join Step,
 	IsAnti                                  bit NOT NULL,
-	-- Join is outer,
+	-- Join Step is outer,
 	IsOuter                                 bit NOT NULL,
-	-- Join is where Role Ref has Join Step join,
-	JoinStep                                shortint NOT NULL,
-	-- maybe Join has output-Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
-	OutputRoleFactTypeId                    int NULL,
-	-- maybe Join has output-Role and Role is where Fact Type has Ordinal role,
-	OutputRoleOrdinal                       shortint NULL,
-	-- Join is where Role Ref has Join Step join and Role Ref is where Role Sequence in Ordinal position includes Role,
-	RoleRefOrdinal                          shortint NOT NULL,
-	-- Join is where Role Ref has Join Step join and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
-	RoleRefRoleSequenceId                   int NOT NULL,
-	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName)
+	-- Join Step has output-Join Node and Join includes Join Node and Join has Join Id,
+	OutputJoinNodeJoinId                    int NOT NULL,
+	-- Join Step has output-Join Node and Join Node has Ordinal position,
+	OutputJoinNodeOrdinal                   shortint NOT NULL,
+	PRIMARY KEY(InputJoinNodeOrdinal, InputJoinNodeJoinId, OutputJoinNodeOrdinal, OutputJoinNodeJoinId)
 )
 GO
 
@@ -379,6 +372,10 @@ CREATE TABLE RoleDisplay (
 GO
 
 CREATE TABLE RoleRef (
+	-- maybe Role Ref connects to Join Node and Join includes Join Node and Join has Join Id,
+	JoinNodeJoinId                          int NULL,
+	-- maybe Role Ref connects to Join Node and Join Node has Ordinal position,
+	JoinNodeOrdinal                         shortint NULL,
 	-- maybe Role Ref has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role,
@@ -513,20 +510,20 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameDiagramNamePositionXPositionY ON dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY(DiagramVocabularyName, DiagramName, PositionX, PositionY)
 GO
 
-CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
-	SELECT FactTypeShapeId FROM dbo.Shape
-	WHERE	FactTypeShapeId IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
-GO
-
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
 	SELECT FactTypeShapeId FROM dbo.Shape
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+GO
+
+CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
+	SELECT FactTypeShapeId FROM dbo.Shape
+	WHERE	FactTypeShapeId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
@@ -633,16 +630,8 @@ ALTER TABLE Fact
 	ADD FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 GO
 
-ALTER TABLE [Join]
-	ADD FOREIGN KEY (InputRoleFactTypeId, InputRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
-GO
-
-ALTER TABLE [Join]
-	ADD FOREIGN KEY (OutputRoleFactTypeId, OutputRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
-GO
-
-ALTER TABLE [Join]
-	ADD FOREIGN KEY (RoleRefOrdinal, RoleRefRoleSequenceId) REFERENCES RoleRef (Ordinal, RoleSequenceId)
+ALTER TABLE FactType
+	ADD FOREIGN KEY (ImplicitFactTypeRoleFactTypeId, ImplicitFactTypeRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE Reading

@@ -360,8 +360,8 @@ for each Term at most one of these holds:
 	Term designates Object Type,
 	Term is name of Role Ref;
 for each Term at most one of these holds:
-	Term designates Object Type,
-	Term is secondary for Object Type;
+	Term designates Object Type(1),
+	Term is secondary for Object Type(2);
 for each Term at most one of these holds:
 	Term is secondary for Object Type,
 	Term is name of Role Ref;

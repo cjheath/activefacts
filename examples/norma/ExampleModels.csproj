@@ -225,21 +225,9 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Metamodel-RoleOccurrence._ORMCustomToolReport.cs</LastGenOutput>
     </None>
-    <None Include="Metamodel.DCIL.xml">
-      <DependentUpon>Metamodel.orm</DependentUpon>
-      <AutoGen>True</AutoGen>
-    </None>
-    <None Include="Metamodel.DDIL.xml">
-      <DependentUpon>Metamodel.orm</DependentUpon>
-      <AutoGen>True</AutoGen>
-    </None>
     <None Include="Metamodel.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Metamodel._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
-    <None Include="Metamodel.SQLServer.sql">
-      <DependentUpon>Metamodel.orm</DependentUpon>
-      <AutoGen>True</AutoGen>
     </None>
     <None Include="MetamodelNext.orm">
       <Generator>ORMCustomTool</Generator>
@@ -781,6 +769,23 @@
     <None Include="Metamodel-RoleOccurrence.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>Metamodel-RoleOccurrence.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Metamodel.orm')">
+    <None Include="Metamodel.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Metamodel.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Metamodel.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>

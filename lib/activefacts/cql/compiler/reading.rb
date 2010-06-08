@@ -34,12 +34,16 @@ module ActiveFacts
         def identify_players_with_role_name context
           role_refs.each do |role_ref|
             role_ref.identify_player(context) if role_ref.role_name
+            # Include players in an objectification join, if any
+            role_ref.objectification_join.identify_players_with_role_name(context) if role_ref.objectification_join
           end
         end
 
         def identify_other_players context
           role_refs.each do |role_ref|
             role_ref.identify_player(context) unless role_ref.player
+            # Include players in an objectification join, if any
+            role_ref.objectification_join.identify_other_players(context) if role_ref.objectification_join
           end
         end
 
@@ -56,7 +60,11 @@ module ActiveFacts
             raise "Duplicate role #{rn.is_a?(Integer) ? "subscript" : "name"} '#{rn}' in reading"
           end
 
-          role_refs.each { |role_ref| role_ref.bind context }
+          role_refs.each do |role_ref|
+            role_ref.bind context
+            # Include players in an objectification join, if any
+            role_ref.objectification_join.bind_roles(context) if role_ref.objectification_join
+          end
         end
 
         def phrases_match(phrases)
@@ -83,10 +91,24 @@ module ActiveFacts
 
           raise "A fact type must involve at least one object type, but there are none in '#{inspect}'" if players.size == 0
 
+          # Match existing fact types in objectification joins first:
+          rrs.each do |role_ref|
+            next unless objectification_join = role_ref.objectification_join
+            objectified_fact_type =
+              objectification_join.match_existing_fact_type(context)
+            raise "Unrecognised fact type #{objectification_join.inspect} in #{self.class}" unless objectified_fact_type
+            objectified_as = objectified_fact_type.entity_type
+            raise "Fact type #{objectification_join.reading.expand} is not objectified as #{role_ref.inspect}" unless objectified_as || objectified_as != role_ref.player
+            role_ref.objectification_of = objectified_fact_type
+          end
+
           # For each role player, find the compatible types (the set of all subtypes and supertypes).
+          # For a player that's an objectification, we don't allow implicit supertype joins
           player_related_types =
-            players.map do |player|
-              (player.supertypes_transitive+player.subtypes_transitive).uniq
+            rrs.map do |role_ref|
+              player = role_ref.player
+              ((role_ref.objectification_of ? [] : player.supertypes_transitive) +
+                player.subtypes_transitive).uniq
             end
 
           # The candidate fact types have the right number of role players of related types.
@@ -558,6 +580,7 @@ module ActiveFacts
         attr_accessor :reading    # The reading that this RoleRef is part of
         attr_accessor :role       # This refers to the ActiveFacts::Metamodel::Role
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
+        attr_accessor :objectification_of # If objectification_join is set, this is the fact type it objectifies
         attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
 
         def initialize term, leading_adjective = nil, trailing_adjective = nil, quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, objectification_join = nil
