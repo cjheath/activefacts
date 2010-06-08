@@ -121,6 +121,7 @@ Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
+other-Role is of Ring Constraint;
 other-Role is of Ring Constraint,
 	Ring Constraint has at most one other-Role;
 
@@ -324,6 +325,7 @@ Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
 Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
 	Supertype is supertype of Value Type;
+Value Type is auto-assigned;
 
 Allowed Range is where
 	Value Constraint allows at least one Value Range;

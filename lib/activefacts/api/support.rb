@@ -25,7 +25,9 @@ class String #:nodoc:
   end
 
   def camelwords
-    gsub(/([a-z])([A-Z])/,'\1_\2').split(/[_\s]+/)
+    gsub(/-([a-zA-Z])/){ $1.upcase }.                 # Break and upcase on hyphenated words
+      gsub(/([a-z])([A-Z])/,'\1_\2').
+      split(/[_\s]+/)
   end
 end
 

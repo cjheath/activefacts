@@ -28,6 +28,8 @@ CREATE TABLE Concept (
 	Name                                    varchar(64) NOT NULL,
 	-- maybe Concept uses Pronoun,
 	Pronoun                                 varchar(20) NULL CHECK(Pronoun = 'feminine' OR Pronoun = 'masculine' OR Pronoun = 'neuter' OR Pronoun = 'personal'),
+	-- maybe Value Type is a kind of Concept and Value Type is auto-assigned,
+	ValueTypeIsAutoAssigned                 bit NULL,
 	-- maybe Value Type is a kind of Concept and maybe Value Type has Length,
 	ValueTypeLength                         int NULL,
 	-- maybe Value Type is a kind of Concept and maybe Value Type has Scale,

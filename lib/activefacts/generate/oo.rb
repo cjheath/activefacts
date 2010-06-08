@@ -105,7 +105,7 @@ module ActiveFacts
         return "" if role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
 
         if is_for && role.fact_type.entity_type == is_for && role.fact_type.all_role.size == 1
-          return role.concept.name.gsub(' ','_').snakecase
+          return role.concept.name.gsub(/[- ]/,'_').snakecase
         end
 
         # debug "Looking for preferred_role_name of #{describe_fact_type(role.fact_type, role)}"
@@ -117,7 +117,7 @@ module ActiveFacts
         # Unaries are a hack, with only one role for what is effectively a binary:
         if (role.fact_type.all_role.size == 1)
           return (role.role_name && role.role_name.snakecase) ||
-            reading.text.gsub(/ *\{0\} */,'').gsub(' ','_').downcase
+            reading.text.gsub(/ *\{0\} */,'').gsub(/[- ]/,'_').downcase
         end
 
         # debug "\tleading_adjective=#{(p=preferred_role_ref).leading_adjective}, role_name=#{role.role_name}, role player=#{role.concept.name}, trailing_adjective=#{p.trailing_adjective}"

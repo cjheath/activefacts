@@ -465,6 +465,7 @@ module ::Metamodel
   end
 
   class ValueType < Concept
+    maybe :is_auto_assigned
     has_one :length                             # See Length.all_value_type
     has_one :scale                              # See Scale.all_value_type
     has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
