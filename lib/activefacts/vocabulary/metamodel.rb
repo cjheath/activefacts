@@ -193,7 +193,6 @@ module ActiveFacts
     end
 
     class ImplicitFactType < FactType
-      has_one :role, :mandatory => true           # See Role.all_implicit_fact_type
     end
 
     class Instance
@@ -257,6 +256,7 @@ module ActiveFacts
       has_one :fact_type, :mandatory => true      # See FactType.all_role
       has_one :ordinal, :mandatory => true        # See Ordinal.all_role
       has_one :concept, :mandatory => true        # See Concept.all_role
+      one_to_one :implicit_fact_type              # See ImplicitFactType.role
       has_one :role_name, :class => Name          # See Name.all_role_as_role_name
     end
 

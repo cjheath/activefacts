@@ -306,33 +306,6 @@ module ActiveFacts
           n = 'aeiouh'.include?(subtype_role.concept.name.downcase[0]) ? 1 : 0
           @constellation.Reading(inheritance_fact, 2+n, :role_sequence => rs2, :text => "{0} is a {1}")
           @constellation.Reading(inheritance_fact, 3-n, :role_sequence => rs2, :text => "{0} is an {1}")
-
-          # The required uniqueness constraints are already present in the NORMA file, don't duplicate them
-=begin
-          # Create uniqueness constraints over the subtyping fact type
-          p1rs = @constellation.RoleSequence(:new)
-          @constellation.RoleRef(p1rs, 0).role = subtype_role
-          pc1 = @constellation.PresenceConstraint(:new)
-          pc1.name = "#{subtype.name}MustHaveSupertype#{supertype.name}"
-          pc1.vocabulary = @vocabulary
-          pc1.role_sequence = p1rs
-          pc1.is_mandatory = true   # A subtype instance must have a supertype instance
-          pc1.min_frequency = 1
-          pc1.max_frequency = 1
-          pc1.is_preferred_identifier = false
-
-          # The supertype role often identifies the subtype:
-          p2rs = @constellation.RoleSequence(:new)
-          @constellation.RoleRef(p2rs, 0).role = supertype_role
-          pc2 = @constellation.PresenceConstraint(:new)
-          pc2.name = "#{supertype.name}MayBeA#{subtype.name}"
-          pc2.vocabulary = @vocabulary
-          pc2.role_sequence = p2rs
-          pc2.is_mandatory = false
-          pc2.min_frequency = 0
-          pc2.max_frequency = 1
-          pc2.is_preferred_identifier = inheritance_fact.provides_identification
-=end
         }
       end
 
@@ -364,6 +337,10 @@ module ActiveFacts
               @by_id[id] =
               nested_type = @constellation.EntityType(@vocabulary, name)
             nested_type.fact_type = fact_type
+            # Create the phantom roles here. These will be used later when we create objectification joins,
+            # but for now there's nothing we import from NORMA which requires objectification joins.
+            # Consequently there's no need to index them against NORMA's phantom roles.
+            nested_type.create_implicit_fact_types
           end
         }
       end

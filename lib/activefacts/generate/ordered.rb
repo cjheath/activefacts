@@ -370,6 +370,7 @@ module ActiveFacts
           roles.map(&:fact_type).uniq.select{|fact_type|
               # The fact type hasn't already been dumped but all its role players have
               !@fact_types_dumped[fact_type] &&
+                !fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType) &&
                 !fact_type.all_role.detect{|r| !@concept_types_dumped[r.concept] } &&
                 !fact_type.entity_type
 #                !(fact_type.entity_type && (p = @precursors[fact_type.entity_type]) && p.size > 0)
@@ -454,7 +455,8 @@ module ActiveFacts
 
         # REVISIT: Find out why some fact types are missed during entity dumping:
         @vocabulary.constellation.FactType.values.select{|fact_type|
-            !fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+            !fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) &&
+              !fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
           }.sort_by{|fact_type|
             fact_type_key(fact_type)
           }.each{|fact_type|

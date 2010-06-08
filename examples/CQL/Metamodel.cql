@@ -116,7 +116,7 @@ Ring Constraint is of one Ring Type;
 Role is where
 	Fact Type has at least one Ordinal role;
 Implicit Fact Type is implied by one Role,
-	Role implies Implicit Fact Type;
+	Role implies at most one Implicit Fact Type;
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 Role has at most one role-Name,

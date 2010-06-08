@@ -203,10 +203,6 @@ CREATE TABLE FactType (
 	EntityTypeVocabularyName                varchar(64) NULL,
 	-- Fact Type has Fact Type Id,
 	FactTypeId                              int IDENTITY NOT NULL,
-	-- maybe Implicit Fact Type is a kind of Fact Type and Implicit Fact Type is implied by Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
-	ImplicitFactTypeRoleFactTypeId          int NULL,
-	-- maybe Implicit Fact Type is a kind of Fact Type and Implicit Fact Type is implied by Role and Role is where Fact Type has Ordinal role,
-	ImplicitFactTypeRoleOrdinal             shortint NULL,
 	-- maybe Type Inheritance is a kind of Fact Type and maybe Assimilation applies to Type Inheritance,
 	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
@@ -349,14 +345,25 @@ CREATE TABLE Role (
 	ConceptVocabularyName                   varchar(64) NOT NULL,
 	-- Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
+	-- maybe Implicit Fact Type is implied by Role and Fact Type has Fact Type Id,
+	ImplicitFactTypeId                      int NULL,
 	-- Role is where Fact Type has Ordinal role,
 	Ordinal                                 shortint NOT NULL,
 	-- maybe Role has role-Name,
 	RoleName                                varchar(64) NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
 	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
+	FOREIGN KEY (ImplicitFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
+GO
+
+CREATE VIEW dbo.Role_ImplicitFactTypeId (ImplicitFactTypeId) WITH SCHEMABINDING AS
+	SELECT ImplicitFactTypeId FROM dbo.Role
+	WHERE	ImplicitFactTypeId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_RoleByImplicitFactTypeId ON dbo.Role_ImplicitFactTypeId(ImplicitFactTypeId)
 GO
 
 CREATE TABLE RoleDisplay (
@@ -512,20 +519,20 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameDiagramNamePositionXPositionY ON dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY(DiagramVocabularyName, DiagramName, PositionX, PositionY)
 GO
 
-CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
-	SELECT FactTypeShapeId FROM dbo.Shape
-	WHERE	FactTypeShapeId IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
-GO
-
 CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
 	SELECT FactTypeShapeId FROM dbo.Shape
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
+GO
+
+CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
+	SELECT FactTypeShapeId FROM dbo.Shape
+	WHERE	FactTypeShapeId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
@@ -630,10 +637,6 @@ GO
 
 ALTER TABLE Fact
 	ADD FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
-GO
-
-ALTER TABLE FactType
-	ADD FOREIGN KEY (ImplicitFactTypeRoleFactTypeId, ImplicitFactTypeRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE Reading

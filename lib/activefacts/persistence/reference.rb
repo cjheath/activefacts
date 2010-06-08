@@ -236,7 +236,7 @@ module ActiveFacts
 
       def populate_references           #:nodoc:
         all_role.each do |role|
-          populate_reference role
+          populate_reference role unless role.fact_type.is_a?(ImplicitFactType)
         end
       end
 

@@ -310,6 +310,17 @@ module ActiveFacts
         debug "Failed to find identifying supertype of #{name}"
         return nil
       end
+
+      # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
+      def create_implicit_fact_types
+        fact_type.all_role.each do |role|
+          next if role.implicit_fact_type     # Already exists
+          implicit_fact_type = @constellation.ImplicitFactType(:new, :role => role)
+          phantom_role = @constellation.Role(implicit_fact_type, 0, :concept => self)
+          # We could create a copy of the visible external role here, but there's no need yet...
+          # Nor is there a need for a presence constraint, readings, etc.
+        end
+      end
     end
 
     class Reading

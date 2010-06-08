@@ -193,6 +193,8 @@ module ActiveFacts
           raise "#{@name} cannot objectify a fact type that's already objectified" if fact_type.entity_type
           raise "#{@name} must only objectify one fact type" if @fact_type
           @fact_type = @entity_type.fact_type = fact_type
+          @entity_type.create_implicit_fact_types
+          @fact_type
         end
 
         def add_supertype(supertype_name, not_identifying)
