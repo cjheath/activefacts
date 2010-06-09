@@ -35,7 +35,7 @@ module ActiveFacts
           role_refs.each do |role_ref|
             role_ref.identify_player(context) if role_ref.role_name
             # Include players in an objectification join, if any
-            role_ref.objectification_join.identify_players_with_role_name(context) if role_ref.objectification_join
+            role_ref.objectification_join.each{|reading| reading.identify_players_with_role_name(context)} if role_ref.objectification_join
           end
         end
 
@@ -43,7 +43,7 @@ module ActiveFacts
           role_refs.each do |role_ref|
             role_ref.identify_player(context) unless role_ref.player
             # Include players in an objectification join, if any
-            role_ref.objectification_join.identify_other_players(context) if role_ref.objectification_join
+            role_ref.objectification_join.each{|reading| reading.identify_other_players(context)} if role_ref.objectification_join
           end
         end
 
@@ -63,7 +63,7 @@ module ActiveFacts
           role_refs.each do |role_ref|
             role_ref.bind context
             # Include players in an objectification join, if any
-            role_ref.objectification_join.bind_roles(context) if role_ref.objectification_join
+            role_ref.objectification_join.each{|reading| reading.bind_roles(context)} if role_ref.objectification_join
           end
         end
 
@@ -93,7 +93,7 @@ module ActiveFacts
 
           # Match existing fact types in objectification joins first:
           rrs.each do |role_ref|
-            next unless objectification_join = role_ref.objectification_join
+            next unless objectification_join = role_ref.objectification_join && role_ref.objectification_join[0]
             objectified_fact_type =
               objectification_join.match_existing_fact_type(context)
             raise "Unrecognised fact type #{objectification_join.inspect} in #{self.class}" unless objectified_fact_type
@@ -593,7 +593,6 @@ module ActiveFacts
           @value_constraint = value_constraint
           @literal = literal
           @objectification_join = objectification_join
-          raise "REVISIT: Objectification joins #{@objectification_join.text_value} are not yet implemented" if @objectification_join
         end
 
         def inspect
