@@ -244,30 +244,35 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
-CREATE TABLE [Join] (
-	-- maybe Join has input-Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
-	InputRoleFactTypeId                     int NULL,
-	-- maybe Join has input-Role and Role is where Fact Type has Ordinal role,
-	InputRoleOrdinal                        shortint NULL,
-	-- is anti Join,
+CREATE TABLE JoinNode (
+	-- Join includes Join Node and Join has Join Id,
+	JoinId                                  int NOT NULL,
+	-- Join Node is for Object Type and Term is where Vocabulary contains Name,
+	ObjectTypeName                          varchar(64) NOT NULL,
+	-- Join Node is for Object Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	ObjectTypeVocabularyName                varchar(64) NOT NULL,
+	-- Join Node has Ordinal position,
+	Ordinal                                 shortint NOT NULL,
+	PRIMARY KEY(JoinId, Ordinal)
+)
+GO
+
+CREATE TABLE JoinStep (
+	-- Join Step has input-Join Node and Join includes Join Node and Join has Join Id,
+	InputJoinNodeJoinId                     int NOT NULL,
+	-- Join Step has input-Join Node and Join Node has Ordinal position,
+	InputJoinNodeOrdinal                    shortint NOT NULL,
+	-- is anti Join Step,
 	IsAnti                                  bit NOT NULL,
-	-- Join is outer,
+	-- Join Step is outer,
 	IsOuter                                 bit NOT NULL,
-	-- Join is where Role Ref has Join Step join,
-	JoinStep                                shortint NOT NULL,
-	-- maybe Join traverses Object Type and Term is where Vocabulary contains Name,
-	ObjectTypeName                          varchar(64) NULL,
-	-- maybe Join traverses Object Type and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	ObjectTypeVocabularyName                varchar(64) NULL,
-	-- maybe Join has output-Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
-	OutputRoleFactTypeId                    int NULL,
-	-- maybe Join has output-Role and Role is where Fact Type has Ordinal role,
-	OutputRoleOrdinal                       shortint NULL,
-	-- Join is where Role Ref has Join Step join and Role Ref is where Role Sequence in Ordinal position includes Role,
-	RoleRefOrdinal                          shortint NOT NULL,
-	-- Join is where Role Ref has Join Step join and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
-	RoleRefRoleSequenceId                   int NOT NULL,
-	PRIMARY KEY(RoleRefRoleSequenceId, RoleRefOrdinal, JoinStep)
+	-- Join Step has output-Join Node and Join includes Join Node and Join has Join Id,
+	OutputJoinNodeJoinId                    int NOT NULL,
+	-- Join Step has output-Join Node and Join Node has Ordinal position,
+	OutputJoinNodeOrdinal                   shortint NOT NULL,
+	PRIMARY KEY(InputJoinNodeJoinId, InputJoinNodeOrdinal, OutputJoinNodeJoinId, OutputJoinNodeOrdinal),
+	FOREIGN KEY (InputJoinNodeJoinId, InputJoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal),
+	FOREIGN KEY (OutputJoinNodeJoinId, OutputJoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal)
 )
 GO
 
@@ -309,6 +314,8 @@ GO
 CREATE TABLE Role (
 	-- Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
+	-- maybe Implicit Fact Type is implied by Role and Fact Type has Fact Type Id,
+	ImplicitFactTypeId                      int NULL,
 	-- Object Type plays Role and Term is where Vocabulary contains Name,
 	ObjectTypeName                          varchar(64) NOT NULL,
 	-- Object Type plays Role and Term is where Vocabulary contains Name and Vocabulary is called Name,
@@ -316,8 +323,17 @@ CREATE TABLE Role (
 	-- Role is where Fact Type has Ordinal role,
 	Ordinal                                 shortint NOT NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
+	FOREIGN KEY (ImplicitFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 )
+GO
+
+CREATE VIEW dbo.Role_ImplicitFactTypeId (ImplicitFactTypeId) WITH SCHEMABINDING AS
+	SELECT ImplicitFactTypeId FROM dbo.Role
+	WHERE	ImplicitFactTypeId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_RoleByImplicitFactTypeId ON dbo.Role_ImplicitFactTypeId(ImplicitFactTypeId)
 GO
 
 CREATE TABLE RoleDisplay (
@@ -335,6 +351,10 @@ CREATE TABLE RoleDisplay (
 GO
 
 CREATE TABLE RoleRef (
+	-- maybe Join Node includes Role Ref and Join includes Join Node and Join has Join Id,
+	JoinNodeJoinId                          int NULL,
+	-- maybe Join Node includes Role Ref and Join Node has Ordinal position,
+	JoinNodeOrdinal                         shortint NULL,
 	-- maybe Role Ref has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role,
@@ -353,6 +373,7 @@ CREATE TABLE RoleRef (
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
 	UNIQUE(RoleFactTypeId, RoleOrdinal, RoleSequenceId),
+	FOREIGN KEY (JoinNodeJoinId, JoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal),
 	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 )
 GO
@@ -644,19 +665,7 @@ ALTER TABLE Instance
 	ADD FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES Term (Name, VocabularyName)
 GO
 
-ALTER TABLE [Join]
-	ADD FOREIGN KEY (InputRoleFactTypeId, InputRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
-GO
-
-ALTER TABLE [Join]
-	ADD FOREIGN KEY (OutputRoleFactTypeId, OutputRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
-GO
-
-ALTER TABLE [Join]
-	ADD FOREIGN KEY (RoleRefOrdinal, RoleRefRoleSequenceId) REFERENCES RoleRef (Ordinal, RoleSequenceId)
-GO
-
-ALTER TABLE [Join]
+ALTER TABLE JoinNode
 	ADD FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES Term (Name, VocabularyName)
 GO
 

@@ -73,6 +73,10 @@ module ::Metamodel
     value_type 
   end
 
+  class JoinId < AutoCounter
+    value_type 
+  end
+
   class Length < UnsignedInteger
     value_type :length => 32
   end
@@ -187,6 +191,9 @@ module ::Metamodel
     one_to_one :fact_type_id, :mandatory => true  # See FactTypeId.fact_type
   end
 
+  class ImplicitFactType < FactType
+  end
+
   class Instance
     identified_by :instance_id
     one_to_one :fact                            # See Fact.instance
@@ -194,6 +201,26 @@ module ::Metamodel
     has_one :object_type, :mandatory => true    # See ObjectType.all_instance
     has_one :population, :mandatory => true     # See Population.all_instance
     has_one :value                              # See Value.all_instance
+  end
+
+  class Join
+    identified_by :join_id
+    one_to_one :join_id, :mandatory => true     # See JoinId.join
+  end
+
+  class JoinNode
+    identified_by :join, :ordinal
+    has_one :join, :mandatory => true           # See Join.all_join_node
+    has_one :object_type, :mandatory => true    # See ObjectType.all_join_node
+    has_one :ordinal, :mandatory => true        # See Ordinal.all_join_node
+  end
+
+  class JoinStep
+    identified_by :input_join_node, :output_join_node
+    has_one :input_join_node, :class => JoinNode, :mandatory => true  # See JoinNode.all_join_step_as_input_join_node
+    maybe :is_anti
+    maybe :is_outer
+    has_one :output_join_node, :class => JoinNode, :mandatory => true  # See JoinNode.all_join_step_as_output_join_node
   end
 
   class Position
@@ -228,6 +255,7 @@ module ::Metamodel
     identified_by :fact_type, :ordinal
     has_one :fact_type, :mandatory => true      # See FactType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
+    one_to_one :implicit_fact_type              # See ImplicitFactType.role
     has_one :object_type, :mandatory => true    # See ObjectType.all_role
   end
 
@@ -383,6 +411,7 @@ module ::Metamodel
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role_ref
     has_one :role, :mandatory => true           # See Role.all_role_ref
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
+    has_one :join_node                          # See JoinNode.all_role_ref
     has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
     has_one :role_name, :class => "Term"        # See Term.all_role_ref_as_role_name
     has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
@@ -429,17 +458,6 @@ module ::Metamodel
     has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
   end
 
-  class Join
-    identified_by :role_ref, :join_step
-    has_one :join_step, :class => Ordinal, :mandatory => true  # See Ordinal.all_join_as_join_step
-    has_one :role_ref, :mandatory => true       # See RoleRef.all_join
-    has_one :input_role, :class => Role         # See Role.all_join_as_input_role
-    maybe :is_anti
-    maybe :is_outer
-    has_one :object_type                        # See ObjectType.all_join
-    has_one :output_role, :class => Role        # See Role.all_join_as_output_role
-  end
-
   class ObjectType
     identified_by :term
     maybe :is_independent
@@ -457,6 +475,9 @@ module ::Metamodel
 
   class EntityType < ObjectType
     one_to_one :fact_type                       # See FactType.entity_type
+  end
+
+  class ImplicitBooleanValueType < ValueType
   end
 
   class Parameter

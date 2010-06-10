@@ -20,6 +20,7 @@ Fact Id is written as Auto Counter;
 Fact Type Id is written as Auto Counter;
 Frequency is written as Unsigned Integer(32);
 Instance Id is written as Auto Counter;
+Join Id is written as Auto Counter;
 Length is written as Unsigned Integer(32);
 Literal is written as String;
 Name is written as String(64);
@@ -73,9 +74,24 @@ Fact is of one Fact Type;
 Fact Type has Context Note,
 	Context Note applies to at most one Fact Type;
 
+Implicit Fact Type is a kind of Fact Type;
+
 Instance is identified by its Id;
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
+
+Join is identified by its Id;
+
+Join Node is identified by Join and Ordinal where
+	Join includes Join Node,
+	Join Node is in one Join,
+	Join Node has one Ordinal position;
+
+Join Step is identified by input-Join Node and output-Join Node where
+	Join Step has one input-Join Node,
+	Join Step has one output-Join Node;
+is anti Join Step;
+Join Step is outer;
 
 Position is identified by X and Y where
 	Position is at one X,
@@ -88,7 +104,7 @@ Presence Constraint is mandatory;
 Presence Constraint is preferred identifier;
 
 Reading is identified by Fact Type and Ordinal where
-	Fact Type has at least one Reading,
+	Fact Type has Reading,
 	Reading is for one Fact Type,
 	Reading is in one Ordinal position,
 	Ordinal reading for fact type is Reading;
@@ -99,6 +115,8 @@ Ring Constraint is of one Ring Type;
 
 Role is where
 	Fact Type has at least one Ordinal role;
+Implicit Fact Type is implied by one Role,
+	Role implies at most one Implicit Fact Type;
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 other-Role is of Ring Constraint;
@@ -242,6 +260,8 @@ Role Ref is where
 	Role is in Role Sequence in at most one Ordinal place,
 	Role Sequence includes Role in Ordinal place,
 	Role has Ordinal place in Role Sequence;
+Join Node includes Role Ref,
+	Role Ref connects to at most one Join Node;
 Role Ref has at most one leading-Adjective;
 Role Ref has at most one trailing-Adjective;
 
@@ -276,19 +296,12 @@ Value Range is identified by minimum-Bound and maximum-Bound where
 Allowed Range is where
 	Value Constraint allows at least one Value Range;
 
-Join is where
-	Role Ref has Ordinal (as Join Step) join;
-Join has at most one input-Role;
-is anti Join;
-Join has at most one output-Role;
-Join is outer;
-
 Object Type is identified by Term where
 	Term designates at most one Object Type,
 	Object Type uses one Term;
 Instance is of one Object Type;
-Join traverses at most one Object Type,
-	Object Type is traversed by Join;
+Join Node is for one Object Type,
+	Object Type is referenced in Join Node;
 Object Type has Context Note,
 	Context Note applies to at most one Object Type;
 Object Type uses at most one Pronoun;
@@ -314,6 +327,8 @@ Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
 Entity Type is a kind of Object Type;
 Entity Type nests at most one Fact Type,
 	Fact Type is nested as at most one Entity Type;
+
+ImplicitBooleanValueType is a kind of Value Type;
 
 Parameter is where
 	Name is a parameter of Value Type,
@@ -382,7 +397,6 @@ each combination Diagram, Position occurs at most one time in
 each combination Entity Type, Type Inheritance occurs at most one time in
 	Entity Type is subtype of super-Entity Type,
 	Type Inheritance provides identification;
-either Join has input-Role or Join has output-Role;
 each Presence Constraint occurs at least one time in
 	Presence Constraint has min-Frequency,
 	Presence Constraint has max-Frequency,
