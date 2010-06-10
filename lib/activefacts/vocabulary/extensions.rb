@@ -36,6 +36,15 @@ module ActiveFacts
           end
         end.flatten.compact.uniq
       end
+
+      # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
+      def create_implicit_fact_type_for_unary
+        role = all_role.single
+        next if role.implicit_fact_type     # Already exists
+        implicit_fact_type = @constellation.ImplicitFactType(:new, :role => role)
+        entity_type = @entity_type || @constellation.ImplicitBooleanValueType(role.concept.vocabulary, "_ImplicitBooleanValueType")
+        phantom_role = @constellation.Role(implicit_fact_type, 0, :concept => entity_type)
+      end
     end
 
     class Role
@@ -480,6 +489,158 @@ module ActiveFacts
       def describe(role = nil)
         "#{subtype.name} is a kind of #{supertype.name}"
       end
+    end
+
+    class JoinStep
+      def describe
+        "#{input_join_node.describe}<->#{output_join_node.describe}"
+      end
+
+      def is_unary_step
+        # Preserve this in case we have to use a real join_node for the phantom
+        # input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) && rr.role.fact_type.role.fact_type.all_role.size == 1 }
+        input_join_node == output_join_node
+      end
+
+      def is_objectification_step
+        input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) and f = rr.role.fact_type.role.fact_type and f.entity_type }
+      end
+    end
+
+    class JoinNode
+      def describe
+        concept.name
+      end
+    end
+
+    class Join
+      def contractable_step(next_steps, next_node)
+        next_reading = nil
+        next_step =
+          next_steps.detect do |js|
+            next false if js.is_objectification_step
+            fact_types =    # REVISIT: Store the FactType on the JoinStep to avoid this search?
+              js.input_join_node.all_role_ref.map{|rr| rr.role.fact_type} &
+              js.output_join_node.all_role_ref.map{|rr| rr.role.fact_type}
+            # There can and must be only one fact type involved in this join step
+            raise "Ambiguous or incorrect join step" if fact_types.size != 1
+            fact_type = fact_types[0]
+
+            # If we find a reading here, it can be contracted against the previous one
+            next_reading =
+              fact_type.all_reading.detect do |reading|
+                # This step is contractable iff the FactType has a reading that starts with the role of next_node (no preceding text)
+                reading.text =~ /^\{([0-9])\}/ and
+                  role_ref = reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i} and
+                  role_ref.role.all_role_ref.detect{|rr| rr.join_node == next_node}
+              end
+            next_reading
+          end
+        return [next_step, next_reading]
+      end
+
+      def verbalise_over_role_refs role_refs
+        join_nodes = all_join_node.sort_by{|jn| jn.ordinal}
+
+        # Each join step must be emitted once.
+        join_steps_by_join_node = join_nodes.
+          inject({}) do |h, jn|
+            jn.all_join_step_as_input_join_node.each{|js| (h[jn] ||= []) << js}
+            jn.all_join_step_as_output_join_node.each{|js| (h[jn] ||= []) << js}
+            h
+          end
+
+        join_steps = join_nodes.map{|jn| jn.all_join_step_as_input_join_node.to_a + jn.all_join_step_as_output_join_node.to_a }.flatten.uniq
+        readings = ""
+        next_node = role_refs[0].join_node
+        last_is_contractable = false
+        debug :join, "Join Nodes are #{join_nodes.map{|jn| jn.describe }.inspect}, Join Steps are #{join_steps.map{|js| js.describe }.inspect}" do
+          until join_steps.empty?
+            next_reading = nil
+            # Choose amonst all remaining steps we can take from the next node, if any
+            next_steps = join_steps_by_join_node[next_node]
+            debug :join, "Next Steps from #{next_node.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
+
+            # See if we can find a next step that contracts against the last (if any):
+            next_step = nil
+            if last_is_contractable && next_steps
+              next_step, next_reading = *contractable_step(next_steps, next_node)
+            end
+            debug :join, "Chose #{next_step.describe} because it's contractable against last node #{next_node.all_role_ref.to_a[0].role.concept.name} using #{next_reading.expand}" if next_step
+
+            # If we don't have a next_node against which we can contract,
+            # so just use any join step involving this node, or just any step.
+            debug :join, "Chose new step containing same node #{next_node.describe}: #{next_steps[0].describe}" if !next_step && next_steps && next_steps[0]
+            next_step ||= next_steps && next_steps[0]
+            debug :join, "Chose random step is #{join_steps[0].describe}" if !next_step
+            next_step ||= join_steps[0]
+            raise "Internal error: There are more join steps here, but we failed to choose one" unless next_step
+
+            if !next_reading
+              if next_step.is_unary_step
+                rr = next_step.input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) }
+                next_reading = rr.role.fact_type.role.fact_type.preferred_reading
+              elsif next_step.is_objectification_step
+                # The objectifying entity type is always the input_join_node here:
+                fact_type = next_step.input_join_node.concept.fact_type
+                # REVISIT: We need to use the join role_refs to expand the role players here:
+                readings += " (where #{fact_type.default_reading})" 
+                # REVISIT: We need to delete the join step (if any) for each role of the objectified fact type, not just this step
+              else
+                # REVISIT: Store the FactType on the JoinStep to avoid this search?
+                fact_types =
+                  next_step.input_join_node.all_role_ref.map{|rr| rr.role.fact_type} &
+                  next_step.output_join_node.all_role_ref.map{|rr| rr.role.fact_type}
+                # There can and must be only one fact type involved in this join step
+                raise "Ambiguous or incorrect join step" if fact_types.size != 1
+
+                fact_type = fact_types[0]
+                # REVISIT: this fact type might be an ImplicitFactType in an objectification join, and this will fail.
+                # REVISIT: Prefer a reading that starts with the player of next_node
+                #next_reading = fact_type.preferred_reading
+                next_reading = fact_type.all_reading.
+                  detect do |reading|
+                    reading.text =~ /^\{([0-9])\}/ and
+                      role_ref = reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i} and
+                      role_ref.role.all_role_ref.detect{|rr| rr.join_node == next_node}
+                  end || fact_type.preferred_reading
+                # REVISIT: If this join step and reading has role references with adjectives, we need to expand using those
+              end
+            else
+              readings += " /*REVISIT: contract here*/"
+            end
+            if next_reading
+              readings += " and " unless readings.empty?
+              readings += next_reading.expand
+            end
+
+            # Prepare for contraction following:
+            # The join step we just took is contractable iff
+            # iff the reading we just emitted has the next_node's role player as the final text
+            next_node = next_step.input_join_node != next_node ? next_step.input_join_node : next_step.output_join_node
+            last_is_contractable =
+              next_reading and
+              next_reading.text =~ /\{([0-9])\}$/ and          # Find whether last role has no following text, and its ordinal
+              role_ref = next_reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i} and   # This reading's RoleRef for that role
+              role_ref.role.all_role_ref.detect{|rr| rr.join_node == next_node}
+
+            # Remove this step now that we've processed it:
+            join_steps.delete(next_step)
+            input_node = next_step.input_join_node
+            output_node = next_step.output_join_node
+            steps = join_steps_by_join_node[input_node]
+            steps.delete(next_step)
+            join_steps_by_join_node.delete(input_node) if steps.empty?
+            if (input_node != output_node)
+              steps = join_steps_by_join_node[output_node]
+              steps.delete(next_step)
+              join_steps_by_join_node.delete(output_node) if steps.empty?
+            end
+          end
+        end
+        readings
+      end
+
     end
 
   end

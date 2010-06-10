@@ -104,7 +104,7 @@ module ActiveFacts
       def value_type_chain_dump(o)
         return if @value_type_dumped[o]
         value_type_chain_dump(o.supertype) if (o.supertype && !@value_type_dumped[o.supertype])
-        value_type_dump(o)
+        value_type_dump(o) if o.name != "_ImplicitBooleanValueType"
         @value_type_dumped[o] = true
       end
 
@@ -439,6 +439,7 @@ module ActiveFacts
         fact_collection.keys.select{|fact_id|
                 fact_type = fact_collection[fact_id] and
                 !fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) and
+                !fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType) and
                 !@fact_types_dumped[fact_type] and
                 !skip_fact_type(fact_type) and
                 !fact_type.all_role.detect{|r| r.concept.is_a?(ActiveFacts::Metamodel::EntityType) }

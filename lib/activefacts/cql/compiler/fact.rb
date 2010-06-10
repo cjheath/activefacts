@@ -46,6 +46,8 @@ module ActiveFacts
           reading.role_refs.map do |role_ref|
             next role_ref unless l = role_ref.literal
             player = role_ref.binding.player
+            # raise "A literal may not be an objectification" if role_ref.role_ref.objectification_join
+            # raise "Not processing facts involving objectification joins yet" if role_ref.role_ref
             debug :instance, "Making #{player.class.basename} #{player.name} using #{l.inspect}" do
               @bound_instances[role_ref.binding] =
                 instance_identified_by_literal player, l

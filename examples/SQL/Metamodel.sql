@@ -285,6 +285,20 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
+CREATE TABLE JoinNode (
+	-- Join Node is for Concept and Concept is called Name,
+	ConceptName                             varchar(64) NOT NULL,
+	-- Join Node is for Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
+	ConceptVocabularyName                   varchar(64) NOT NULL,
+	-- Join includes Join Node and Join has Join Id,
+	JoinId                                  int NOT NULL,
+	-- Join Node has Ordinal position,
+	Ordinal                                 shortint NOT NULL,
+	PRIMARY KEY(JoinId, Ordinal),
+	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName)
+)
+GO
+
 CREATE TABLE JoinStep (
 	-- Join Step has input-Join Node and Join includes Join Node and Join has Join Id,
 	InputJoinNodeJoinId                     int NOT NULL,
@@ -298,7 +312,9 @@ CREATE TABLE JoinStep (
 	OutputJoinNodeJoinId                    int NOT NULL,
 	-- Join Step has output-Join Node and Join Node has Ordinal position,
 	OutputJoinNodeOrdinal                   shortint NOT NULL,
-	PRIMARY KEY(InputJoinNodeOrdinal, InputJoinNodeJoinId, OutputJoinNodeOrdinal, OutputJoinNodeJoinId)
+	PRIMARY KEY(InputJoinNodeJoinId, InputJoinNodeOrdinal, OutputJoinNodeJoinId, OutputJoinNodeOrdinal),
+	FOREIGN KEY (InputJoinNodeJoinId, InputJoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal),
+	FOREIGN KEY (OutputJoinNodeJoinId, OutputJoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal)
 )
 GO
 
@@ -399,6 +415,7 @@ CREATE TABLE RoleRef (
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
 	UNIQUE(RoleFactTypeId, RoleOrdinal, RoleSequenceId),
+	FOREIGN KEY (JoinNodeJoinId, JoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal),
 	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 )
 GO

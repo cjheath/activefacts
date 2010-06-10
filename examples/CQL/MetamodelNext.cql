@@ -365,12 +365,12 @@ for each Term at most one of these holds:
 for each Term at most one of these holds:
 	Term is secondary for Object Type,
 	Term is name of Role Ref;
-Instance plays Role Value and Instance is of Object Type
+Role Value is of Instance that is of Object Type
 	if and only if
-	Role Value is of Role and Object Type plays Role;
-Role Value fulfils Fact and Fact is of Fact Type
+	Role Value is of Role that is played by Object Type;
+Role Value fulfils Fact that is of Fact Type
 	if and only if
-	Role Value is of Role and Fact Type has Ordinal role;
+	Role Value is of Role (where Fact Type has Ordinal role);
 Presence Constraint is preferred identifier
 	only if Presence Constraint has max-Frequency;
 Value Type has Scale

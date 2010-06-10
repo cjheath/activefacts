@@ -50,6 +50,7 @@ module ActiveFacts
             @fact_type = first_reading.make_fact_type(@vocabulary)
             first_reading.make_reading(@vocabulary, @fact_type)
             first_reading.make_embedded_constraints vocabulary
+            @fact_type.create_implicit_fact_type_for_unary if @fact_type.all_role.size == 1 && !@name
             @existing_readings = [first_reading]
           elsif (n = @readings.size - @existing_readings.size) > 0
             debug :binding, "Extending existing fact type with #{n} new readings"
@@ -72,7 +73,7 @@ module ActiveFacts
             if @fact_type.entity_type and @name != @fact_type.entity_type.name
               raise "Cannot objectify fact type as #{@name} and as #{@fact_type.entity_type.name}"
             end
-            @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type)
+            @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type).create_implicit_fact_types
           end
 
           # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint

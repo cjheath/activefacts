@@ -67,6 +67,17 @@ module ActiveFacts
           # Override for constraint types that need loose binding (same role player matching with different adjectives)
         end
 
+        # Return the unique array of all bindings in these readings, including in objectification joins
+        def all_bindings_in_readings readings
+          readings.map do |reading|
+            reading.role_refs.map do |rr|
+              [rr.binding] + (rr.objectification_join ? all_bindings_in_readings(rr.objectification_join) : [])
+            end
+          end.
+            flatten.
+            uniq
+        end
+
         def bind_readings
           @context = CompilationContext.new(@vocabulary)
 
@@ -87,30 +98,13 @@ module ActiveFacts
           # each join list, and build an array of the bindings that are involved in the join steps.
           @bindings_by_list =
             @readings_lists.map do |readings_list|
-              # Find the bindings that occur more than once in this readings_list.
-              # They join the readings. Each must occur exactly twice
-              all_bindings = []
-              bindings_count = {}
-              readings_list.each do |reading|
-                reading.role_refs.each do |rr|
-                  all_bindings << rr.binding
-                  bindings_count[rr.binding] ||= 0
-                  bindings_count[rr.binding] += 1
-                end
-              end
-              join_bindings = bindings_count.
-                select{|b,c| c > 1}.
-                map do |b, c|
-                  raise "Join role #{b.inspect} must occur only twice to form a valid join" if c != 2
-                  b
-                end
-              # At present, only ORM2 implicit joins are allowed.
-              # That means the join_bindings may only contain a single element at most
-              # (This will be a binding to the constrained object)
-              raise "REVISIT: No constraint joins (except ORM2's implicit joins) are currently supported" if join_bindings.size > 1
-              all_bindings.uniq
+              all_bindings_in_readings(readings_list)
             end
 
+          warn_ignored_joins
+        end
+
+        def warn_ignored_joins
           # Warn about ignored joins
           @readings_lists.each do |readings_list|
             fact_types = readings_list.map{|join| join.role_refs[0].role_ref.role.fact_type}.uniq
@@ -272,30 +266,118 @@ module ActiveFacts
           super context_note, enforcement, readings_lists
         end
 
-        def role_sequences_for_common_bindings ignore_trailing_joins = false
-          @readings_lists.
-            zip(@bindings_by_list).
-            map do |readings_list, bindings|
-              role_sequence = @constellation.RoleSequence(:new)
-              join_bindings = bindings-@common_bindings
-              unless join_bindings.empty? or ignore_trailing_joins && join_bindings.size <= 1
-                debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_bindings.inspect} to #{join_bindings.inspect} in #{readings_list.inspect}"
-              end
-              @common_bindings.each do |binding|
-                roles = readings_list.
-                  map do |reading|
-                    reading.role_refs.detect{|rr| rr.binding == binding }
-                  end.
-                  compact.  # A join reading will probably not have the common binding
-                  map do |role_ref|
-                    role_ref.role_ref && role_ref.role_ref.role or role_ref.role
-                  end.
-                  compact
-                # REVISIT: Should use reading side effects to preserve residual adjectives here.
-                @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => roles[0])
-              end
-              role_sequence
+        def warn_ignored_joins
+          # No warnings needed here any more
+        end
+
+        # Make a JoinNode for every binding present in these readings
+        def build_join_nodes(readings_list)
+          join = @constellation.Join(:new)
+          all_bindings_in_readings(readings_list).
+            each do |binding|
+              binding.join_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => binding.player)
             end
+        end
+
+        def build_join_steps reading, constrained_rs, objectification_node = nil
+          role_sequence = nil
+          #puts "Creating Join Role Sequence for #{reading.inspect} with @{reading.role_refs.size} role refs"
+          reading.role_refs.each do |role_ref|
+            # These role_refs are the Compiler::RoleRefs. These have associated Metamodel::RoleRefs,
+            # but we need new RoleRefs to attach to the join (and save any residual_adjectives)
+            binding = role_ref.binding
+            role = role_ref.role || role_ref.role_ref.role
+
+            if (reading.fact_type.entity_type)
+              # This reading is of an objectified fact type. The second role ref is to a phantom role.
+              # We don't need join steps for roles that have only one role_ref (this one) in their binding
+              if (binding.refs.size > 1)
+                role_sequence ||= @constellation.RoleSequence(:new)
+                @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)
+                unless objectification_node
+                  # We need to create a JoinNode for this object, even though it has no RoleRefs
+                  # REVISIT: Or just complain and make the user show the objectification explicitly. Except that doesn't work, see Warehouse...
+                  raise "Can't join over fact type '#{reading.fact_type.default_reading}' because it's not objectified" unless reading.fact_type.entity_type
+                  join = binding.join_node.join
+                  objectification_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => reading.fact_type.entity_type)
+                end
+                @constellation.RoleRef(role_sequence, 1, :role => role.implicit_fact_type.all_role.single, :join_node => objectification_node)
+                @constellation.JoinStep(objectification_node, binding.join_node)
+                role_sequence = nil # Make a new role sequence for the next role, if any
+              end
+            else
+              role_sequence ||= @constellation.RoleSequence(:new)
+              @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)
+            end
+
+            if role_ref.objectification_join
+              # We are looking at a role whose player is an objectification of a fact type,
+              # which will have ImplicitFactTypes for each role.
+              # Each of these ImplicitFactTypes has a single phantom role played by the objectifying entity type
+              # One of these phantom roles is likely to be the subject of an objectification join step.
+              role_ref.objectification_join.each do |r|
+                build_join_steps r, constrained_rs, binding.join_node
+              end
+            end
+            if (@common_bindings.include?(binding))
+              @constellation.RoleRef(constrained_rs, constrained_rs.all_role_ref.size, :role => role, :join_node => binding.join_node)
+            end
+          end
+
+          if role_sequence
+            if !reading.fact_type.entity_type and role = reading.fact_type.all_role.single
+              # REVISIT: It might prove to be evil to use the same JoinNode twice for the same JoinStep here... but I don't have a real 
+              @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role.implicit_fact_type.all_role.single, :join_node => role_sequence.all_role_ref.single.join_node)
+            end
+            # We aren't talking about objectification here, so there must be exactly two roles.
+            raise "REVISIT: Internal error constructing join for #{reading.inspect}" if role_sequence.all_role_ref.size != 2
+            @constellation.JoinStep(*role_sequence.all_role_ref.map{|rr|rr.join_node})
+          end
+        end
+
+        def role_sequences_for_common_bindings ignore_trailing_joins = false
+          if @readings_lists.detect{|rl| rl.size > 1}
+
+            @readings_lists.map do |readings_list|
+              # Every Binding in these readings becomes a Join Node,
+              # and every reading becomes a JoinStep (and a RoleSequence).
+              # The returned RoleSequences contains the RoleRefs for the common_bindings.
+
+              # Create a join with a join node for every binding:
+              join = build_join_nodes(readings_list)
+
+              constrained_rs = @constellation.RoleSequence(:new)
+              readings_list.each do |reading|
+                build_join_steps(reading, constrained_rs)
+              end
+
+              constrained_rs
+            end
+          else
+            @readings_lists.
+              zip(@bindings_by_list).
+              map do |readings_list, bindings|
+                role_sequence = @constellation.RoleSequence(:new)
+                join_bindings = bindings-@common_bindings
+                unless join_bindings.empty? or ignore_trailing_joins && join_bindings.size <= 1
+                  debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_bindings.inspect} to #{join_bindings.inspect} in #{readings_list.inspect}"
+                end
+                @common_bindings.each do |binding|
+                  roles = readings_list.
+                    map do |reading|
+                      reading.role_refs.detect{|rr| rr.binding == binding }
+                    end.
+                    compact.  # A join reading will probably not have the common binding
+                    map do |role_ref|
+                      role_ref.role_ref && role_ref.role_ref.role or role_ref.role
+                    end.
+                    compact
+                  # REVISIT: Should use reading side effects to preserve residual adjectives here.
+                  @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => roles[0])
+                end
+                role_sequence
+              end
+          end
         end
       end
 

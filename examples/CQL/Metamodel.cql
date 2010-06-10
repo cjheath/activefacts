@@ -199,6 +199,8 @@ Concept plays Role,
 	Role is played by one Concept;
 Concept is independent;
 Instance is of one Concept;
+Join Node is for one Concept,
+	Concept is referenced in Join Node;
 
 Constraint Shape is a kind of Shape;
 Constraint Shape is for one Constraint;
@@ -281,7 +283,7 @@ Role Ref is where
 	Role Sequence includes Role in Ordinal place,
 	Role has Ordinal place in Role Sequence;
 Role Ref connects to at most one Join Node,
-	Join Node includes at least one Role Ref;
+	Join Node includes Role Ref;
 Role Ref has at most one leading-Adjective;
 Role Ref has at most one trailing-Adjective;
 
@@ -330,6 +332,8 @@ Value Type is auto-assigned;
 Allowed Range is where
 	Value Constraint allows at least one Value Range;
 
+ImplicitBooleanValueType is a kind of Value Type;
+
 Parameter is where
 	Name is a parameter of Value Type,
 	Value Type has parameter called Name;
@@ -358,12 +362,12 @@ either Value Constraint constrains Value Type or Value Constraint applies to Rol
 for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
-Instance plays Role Value and Instance is of Concept
+Role Value is of Instance that is of Concept
 	if and only if
-	Role Value is of Role and Concept plays Role;
-Role Value fulfils Fact and Fact is of Fact Type
+	Role Value is of Role that is played by Concept;
+Role Value fulfils Fact that is of Fact Type
 	if and only if
-	Role Value is of Role and Fact Type has Ordinal role;
+	Role Value is of Role (where Fact Type has Ordinal role);
 Presence Constraint is preferred identifier
 	only if Presence Constraint has max-Frequency;
 Value Type has Scale

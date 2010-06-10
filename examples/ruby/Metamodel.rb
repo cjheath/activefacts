@@ -210,6 +210,7 @@ module ::Metamodel
 
   class JoinNode
     identified_by :join, :ordinal
+    has_one :concept, :mandatory => true        # See Concept.all_join_node
     has_one :join, :mandatory => true           # See Join.all_join_node
     has_one :ordinal, :mandatory => true        # See Ordinal.all_join_node
   end
@@ -477,6 +478,9 @@ module ::Metamodel
     identified_by :value_constraint, :value_range
     has_one :value_constraint, :mandatory => true  # See ValueConstraint.all_allowed_range
     has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
+  end
+
+  class ImplicitBooleanValueType < ValueType
   end
 
   class Parameter

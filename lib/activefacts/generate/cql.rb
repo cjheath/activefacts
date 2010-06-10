@@ -350,9 +350,32 @@ module ActiveFacts
       end
 
       def dump_set_constraint(c)
+        scrseqs = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}.map{|scr|scr.role_sequence}
+        if scrseqs[0].all_role_ref.detect{|rr| rr.join_node}
+          # This set constraint has an explicit join. Verbalise it.
+          readings_list = scrseqs.
+            map do |rs|
+              join = rs.all_role_ref.detect{|rr| rr.join_node}.join_node.join
+              join.verbalise_over_role_refs(rs.all_role_ref.to_a)
+            end
+          if c.is_a?(ActiveFacts::Metamodel::SetEqualityConstraint)
+            puts readings_list.join("\n\tif and only if\n\t") + ';'
+            return
+          end
+          if readings_list.size == 2 && c.is_mandatory  # XOR constraint
+            puts "either " + readings_list.join(" or ") + " but not both;"
+            return
+          end
+          mode = c.is_mandatory ? "exactly one" : "at most one"
+          puts "for each #{players.map{|p| p.name}*", "} #{mode} of these holds:\n\t" +
+            readings_list.join(",\n\t") +
+            ';'
+          return
+        end
+
         # Each constraint involves two or more occurrences of one or more players.
         #
-        # The constrained roles will usually be in fact types also having unconstrained roles.
+        # The constrained roles will usually be in fact types which also have unconstrained roles.
         # It's possible that unconstrained roles are played by a concept that plays a constrained role.
         # (an unconstrained role may form joins; not handled here yet)
         #

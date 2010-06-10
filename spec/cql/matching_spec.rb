@@ -18,8 +18,9 @@ describe "Fact Type Role Matching" do
 
   def self.SingleFact &b
     lambda {|c|
-      c.FactType.size.should == 1
-      @fact_type = c.FactType.values[0]
+      real_fact_types = c.FactType.values-c.ImplicitFactType.values
+      real_fact_types.size.should == 1
+      @fact_type = real_fact_types[0]
       b.call(@fact_type) if b
       @fact_type
     }
