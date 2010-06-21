@@ -15,10 +15,6 @@ module ::Metamodel
     restrict 'partitioned', 'separate'
   end
 
-  class ConstraintId < AutoCounter
-    value_type 
-  end
-
   class ContextNoteId < AutoCounter
     value_type 
   end
@@ -61,12 +57,12 @@ module ::Metamodel
     value_type 
   end
 
-  class FactTypeId < AutoCounter
-    value_type 
-  end
-
   class Frequency < UnsignedInteger
     value_type :length => 32
+  end
+
+  class GUID < String
+    value_type 
   end
 
   class InstanceId < AutoCounter
@@ -155,9 +151,12 @@ module ::Metamodel
     has_one :numerator, :mandatory => true      # See Numerator.all_coefficient
   end
 
-  class Constraint
-    identified_by :constraint_id
-    one_to_one :constraint_id, :mandatory => true  # See ConstraintId.constraint
+  class Concept
+    identified_by :guid
+    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.concept
+  end
+
+  class Constraint < Concept
     has_one :name                               # See Name.all_constraint
     has_one :vocabulary                         # See Vocabulary.all_constraint
   end
@@ -186,9 +185,7 @@ module ::Metamodel
     has_one :population, :mandatory => true     # See Population.all_fact
   end
 
-  class FactType
-    identified_by :fact_type_id
-    one_to_one :fact_type_id, :mandatory => true  # See FactTypeId.fact_type
+  class FactType < Concept
   end
 
   class ImplicitFactType < FactType
@@ -223,6 +220,11 @@ module ::Metamodel
     has_one :output_join_node, :class => JoinNode, :mandatory => true  # See JoinNode.all_join_step_as_output_join_node
   end
 
+  class ObjectType < Concept
+    maybe :is_independent
+    has_one :pronoun                            # See Pronoun.all_object_type
+  end
+
   class Position
     identified_by :x, :y
     has_one :x, :mandatory => true              # See X.all_position
@@ -251,8 +253,7 @@ module ::Metamodel
     has_one :role                               # See Role.all_ring_constraint
   end
 
-  class Role
-    identified_by :fact_type, :ordinal
+  class Role < Concept
     has_one :fact_type, :mandatory => true      # See FactType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
     one_to_one :implicit_fact_type              # See ImplicitFactType.role
@@ -312,6 +313,14 @@ module ::Metamodel
     one_to_one :role, :counterpart => :role_value_constraint  # See Role.role_value_constraint
   end
 
+  class ValueType < ObjectType
+    has_one :length                             # See Length.all_value_type
+    has_one :scale                              # See Scale.all_value_type
+    has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
+    has_one :unit                               # See Unit.all_value_type
+    one_to_one :value_constraint                # See ValueConstraint.value_type
+  end
+
   class Vocabulary
     identified_by :name
     one_to_one :name, :mandatory => true        # See Name.vocabulary
@@ -359,10 +368,17 @@ module ::Metamodel
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_diagram
   end
 
+  class EntityType < ObjectType
+    one_to_one :fact_type                       # See FactType.entity_type
+  end
+
   class FactTypeShape < Shape
     has_one :display_role_names_setting         # See DisplayRoleNamesSetting.all_fact_type_shape
     has_one :fact_type, :mandatory => true      # See FactType.all_fact_type_shape
     has_one :rotation_setting                   # See RotationSetting.all_fact_type_shape
+  end
+
+  class ImplicitBooleanValueType < ValueType
   end
 
   class ModelNoteShape < Shape
@@ -377,6 +393,12 @@ module ::Metamodel
   class ObjectifiedFactTypeNameShape < Shape
     identified_by :fact_type_shape
     one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.objectified_fact_type_name_shape
+  end
+
+  class Parameter
+    identified_by :name, :value_type
+    has_one :name, :mandatory => true           # See Name.all_parameter
+    has_one :value_type, :mandatory => true     # See ValueType.all_parameter
   end
 
   class Population
@@ -438,7 +460,16 @@ module ::Metamodel
     identified_by :vocabulary, :name
     has_one :name, :mandatory => true           # See Name.all_term
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_term
-    has_one :object_type                        # See ObjectType.all_term
+    one_to_one :object_type                     # See ObjectType.term
+    has_one :secondary, :class => ObjectType    # See ObjectType.all_term_as_secondary
+  end
+
+  class TypeInheritance < FactType
+    identified_by :subtype, :supertype
+    has_one :subtype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_subtype
+    has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
+    has_one :assimilation                       # See Assimilation.all_type_inheritance
+    maybe :provides_identification
   end
 
   class ValueConstraintShape < ConstraintShape
@@ -456,42 +487,6 @@ module ::Metamodel
     identified_by :value_constraint, :value_range
     has_one :value_constraint, :mandatory => true  # See ValueConstraint.all_allowed_range
     has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
-  end
-
-  class ObjectType
-    identified_by :term
-    maybe :is_independent
-    has_one :pronoun                            # See Pronoun.all_object_type
-    one_to_one :term, :mandatory => true        # See Term.object_type
-  end
-
-  class ValueType < ObjectType
-    has_one :length                             # See Length.all_value_type
-    has_one :scale                              # See Scale.all_value_type
-    has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
-    has_one :unit                               # See Unit.all_value_type
-    one_to_one :value_constraint                # See ValueConstraint.value_type
-  end
-
-  class EntityType < ObjectType
-    one_to_one :fact_type                       # See FactType.entity_type
-  end
-
-  class ImplicitBooleanValueType < ValueType
-  end
-
-  class Parameter
-    identified_by :name, :value_type
-    has_one :name, :mandatory => true           # See Name.all_parameter
-    has_one :value_type, :mandatory => true     # See ValueType.all_parameter
-  end
-
-  class TypeInheritance < FactType
-    identified_by :subtype, :supertype
-    has_one :subtype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_subtype
-    has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
-    has_one :assimilation                       # See Assimilation.all_type_inheritance
-    maybe :provides_identification
   end
 
   class ParamValue

@@ -6,7 +6,6 @@ vocabulary Metamodel;
 Adjective is written as String(64);
 Agent Name is written as String;
 Assimilation is written as String restricted to {'partitioned', 'separate'};
-Constraint Id is written as Auto Counter;
 Context Note Id is written as Auto Counter;
 Context Note Kind is written as String restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
 Date is written as Date;
@@ -17,8 +16,8 @@ Enforcement Code is written as String(16);
 Ephemera URL is written as String;
 Exponent is written as Signed Integer(16);
 Fact Id is written as Auto Counter;
-Fact Type Id is written as Auto Counter;
 Frequency is written as Unsigned Integer(32);
+GUID is written as String;
 Instance Id is written as Auto Counter;
 Join Id is written as Auto Counter;
 Length is written as Unsigned Integer(32);
@@ -48,7 +47,11 @@ Coefficient is identified by Numerator and Denominator and Coefficient is precis
 	Coefficient has one Denominator,
 	Coefficient is precise;
 
-Constraint is identified by its Id;
+Concept is identified by GUID where
+	Concept has one GUID,
+	GUID is of at most one Concept;
+
+Constraint is a kind of Concept [partitioned];
 Name is of Constraint,
 	Constraint is called at most one Name;
 
@@ -69,7 +72,7 @@ Enforcement has one Enforcement Code,
 
 Fact is identified by its Id;
 
-Fact Type is identified by its Id;
+Fact Type is a kind of Concept [partitioned];
 Fact is of one Fact Type;
 Fact Type has Context Note,
 	Context Note applies to at most one Fact Type;
@@ -93,6 +96,15 @@ Join Step is identified by input-Join Node and output-Join Node where
 is anti Join Step;
 Join Step is outer;
 
+Object Type is a kind of Concept [partitioned];
+Instance is of one Object Type;
+Join Node is for one Object Type,
+	Object Type is referenced in Join Node;
+Object Type has Context Note,
+	Context Note applies to at most one Object Type;
+Object Type uses at most one Pronoun;
+Object Type is independent;
+
 Position is identified by X and Y where
 	Position is at one X,
 	Position is at one Y;
@@ -113,10 +125,12 @@ Reading has one Text;
 Ring Constraint is a kind of Constraint;
 Ring Constraint is of one Ring Type;
 
-Role is where
+Role is a kind of Concept [partitioned] where
 	Fact Type has at least one Ordinal role;
 Implicit Fact Type is implied by one Role,
 	Role implies at most one Implicit Fact Type;
+Object Type plays Role,
+	Role is played by one Object Type;
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 other-Role is of Ring Constraint;
@@ -168,6 +182,17 @@ Value Constraint is a kind of Constraint;
 Role has at most one role-Value Constraint,
 	Value Constraint applies to at most one Role;
 
+Value Type is a kind of Object Type;
+Value Type has at most one Length,
+	Length is of Value Type;
+Value Type has at most one Scale,
+	Scale is of Value Type;
+Value Type is of at most one Unit;
+Value Type has at most one Value Constraint,
+	Value Constraint constrains at most one Value Type;
+Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
+	Supertype is supertype of Value Type;
+
 Vocabulary is identified by Name where
 	Vocabulary is called one Name;
 Vocabulary contains Constraint,
@@ -210,21 +235,33 @@ Diagram is identified by Vocabulary and Name where
 Shape is in one Diagram,
 	Diagram includes Shape;
 
+Entity Type is a kind of Object Type;
+Entity Type nests at most one Fact Type,
+	Fact Type is nested as at most one Entity Type;
+
 Fact Type Shape is a kind of Shape;
 Fact Type Shape has at most one Display Role Names Setting;
 Fact Type Shape is for one Fact Type,
 	Fact Type has Fact Type Shape;
 Fact Type Shape has at most one Rotation Setting;
 
+ImplicitBooleanValueType is a kind of Value Type;
+
 Model Note Shape is a kind of Shape;
 Model Note Shape is for one Context Note;
 
 Object Type Shape is a kind of Shape;
+Object Type Shape is for one Object Type,
+	Object Type has Object Type Shape;
 Object Type Shape has expanded reference mode;
 
 Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shape where
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
+
+Parameter is where
+	Name is a parameter of Value Type,
+	Value Type has parameter called Name;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -280,8 +317,19 @@ Set Exclusion Constraint is mandatory;
 
 Term is where
 	Vocabulary contains Name;
+Term designates at most one Object Type,
+	Object Type uses one Term;
+Term is secondary for at most one Object Type (as Secondary),
+	Secondary has secondary-Term;
 Term (as Role Name) is name of Role Ref,
 	Role Ref has at most one Role Name;
+
+Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
+	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
+	Supertype is supertype of Subtype;
+Assimilation applies to Type Inheritance,
+	Type Inheritance uses at most one Assimilation;
+Type Inheritance provides identification;
 
 Value Constraint Shape is a kind of Constraint Shape;
 Role Display has at most one Value Constraint Shape,
@@ -296,57 +344,17 @@ Value Range is identified by minimum-Bound and maximum-Bound where
 Allowed Range is where
 	Value Constraint allows at least one Value Range;
 
-Object Type is identified by Term where
-	Term designates at most one Object Type,
-	Object Type uses one Term;
-Instance is of one Object Type;
-Join Node is for one Object Type,
-	Object Type is referenced in Join Node;
-Object Type has Context Note,
-	Context Note applies to at most one Object Type;
-Object Type uses at most one Pronoun;
-Object Type plays Role,
-	Role is played by one Object Type;
-Object Type is independent;
-Object Type Shape is for one Object Type,
-	Object Type has Object Type Shape;
-Term is secondary for at most one Object Type,
-	Object Type has secondary-Term;
-
-Value Type is a kind of Object Type;
-Value Type has at most one Length,
-	Length is of Value Type;
-Value Type has at most one Scale,
-	Scale is of Value Type;
-Value Type is of at most one Unit;
-Value Type has at most one Value Constraint,
-	Value Constraint constrains at most one Value Type;
-Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
-	Supertype is supertype of Value Type;
-
-Entity Type is a kind of Object Type;
-Entity Type nests at most one Fact Type,
-	Fact Type is nested as at most one Entity Type;
-
-ImplicitBooleanValueType is a kind of Value Type;
-
-Parameter is where
-	Name is a parameter of Value Type,
-	Value Type has parameter called Name;
-
-Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
-	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
-	Supertype is supertype of Subtype;
-Assimilation applies to Type Inheritance,
-	Type Inheritance uses at most one Assimilation;
-Type Inheritance provides identification;
-
 Param Value is where
 	Value for Parameter applies to at most one Value Type;
 
 /*
  * Constraints:
  */
+for each Concept exactly one of these holds:
+	Object Type is a kind of Concept,
+	Fact Type is a kind of Concept,
+	Constraint is a kind of Concept,
+	Role is a kind of Concept;
 for each Constraint exactly one of these holds:
 	Presence Constraint is a kind of Constraint,
 	Set Constraint is a kind of Constraint,
