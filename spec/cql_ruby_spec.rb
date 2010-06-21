@@ -10,8 +10,6 @@ require 'activefacts/support'
 require 'activefacts/input/cql'
 require 'activefacts/generate/ruby'
 
-include ActiveFacts
-
 class String
   def strip_comments()
     c_comment = %r{/\*((?!\*/).)*\*/}m

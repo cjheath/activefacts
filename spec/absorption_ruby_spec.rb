@@ -11,12 +11,8 @@ require 'activefacts/input/orm'
 require 'activefacts/persistence'
 require 'activefacts/generate/ruby'
 
-include ActiveFacts
-
 describe "Column lists from absorption compared with Ruby's" do
   ABSORPTION_RUBY_FAILURES = {
-    "Metamodel" => "Overlaps with ActiveFacts Metamodel",
-    "MetamodelNext" => "Overlaps with ActiveFacts Metamodel",
     "UnaryIdentification" => "No PI for VisitStatus",
   }
 
@@ -46,16 +42,33 @@ describe "Column lists from absorption compared with Ruby's" do
       File.open(actual_file, "w") { |f| f.write ruby_text }
 
       broken = ABSORPTION_RUBY_FAILURES[File.basename(orm_file, ".orm")]
-      eval_it = lambda { Object.send :eval, ruby_text }
+      eval_it = lambda {
+        Object.send :eval, ruby_text
+      }
+      exception = nil
       if broken
         pending(broken) {
           lambda {
-            eval_it.call
+            begin
+              eval_it.call
+            rescue => exception
+              if debug :exception
+                puts exception.to_s+": \n\t"+exception.backtrace*"\n\t"
+              end
+              raise
+            end
           }.should_not raise_error
         }
       else
         lambda {
+          begin
             eval_it.call
+          rescue => exception
+            if debug :exception
+              puts exception.to_s+": \n\t"+exception.backtrace*"\n\t"
+            end
+            raise
+          end
         }.should_not raise_error
       end
 

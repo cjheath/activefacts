@@ -11,9 +11,6 @@ require 'activefacts/persistence'
 require 'activefacts/input/orm'
 require 'activefacts/generate/sql/server'
 
-include ActiveFacts
-include ActiveFacts::Metamodel
-
 describe "NORMA Loader with SQL output" do
   # Generate and return the SQL for the given vocabulary
   def sql(vocabulary)

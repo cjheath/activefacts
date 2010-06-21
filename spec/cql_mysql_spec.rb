@@ -10,9 +10,6 @@ require 'activefacts/support'
 require 'activefacts/input/cql'
 require 'activefacts/generate/sql/mysql'
 
-include ActiveFacts
-include ActiveFacts::Metamodel
-
 describe "CQL Loader with SQL output" do
   cql_failures = {
     "Airline" => "Contains queries, unsupported",

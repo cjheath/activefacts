@@ -10,9 +10,6 @@ require 'activefacts/support'
 require 'activefacts/input/cql'
 require 'activefacts/generate/sql/server'
 
-include ActiveFacts
-include ActiveFacts::Metamodel
-
 describe "CQL Loader with SQL output" do
   cql_failures = {
     "Airline" => "Contains unsupported queries",
@@ -20,17 +17,8 @@ describe "CQL Loader with SQL output" do
   }
   cql_sql_failures = {
     "Blog" => "Drops uniqueness constraints",
-    "CompanyDirectorEmployee" => "Names an index automatically from CQL, but explicitly from NORMA",
-    "Insurance" => "CQL doesn't have an option for subtype separation",
-    "Metamodel" =>
-        "Names an index automatically from CQL, but explicitly from NORMA" + " " +
-        "Drops uniqueness constraints",
-    "Orienteering" =>
-        "Names an index automatically from CQL, but explicitly from NORMA" + " " +
-        "Drops uniqueness constraints",
-#    "RedundantDependency" => "Drops uniqueness constraints",
-    "SubtypePI" => "Names an index automatically from CQL, but explicitly from NORMA",
-    "Tests.Test5.Load" => "Names an index automatically from CQL, but explicitly from NORMA",
+    "Metamodel" => "Drops uniqueness constraints",
+    "Orienteering" => "Drops uniqueness constraints",
   }
 
   # Generate and return the SQL for the given vocabulary
@@ -71,6 +59,9 @@ describe "CQL Loader with SQL output" do
           sql_text.should_not differ_from(expected_text)
         }
       else
+        # Discard index names:
+        sql_text.gsub!(/(CREATE .* INDEX )([^ ]* )ON /, '\1ON ')
+        expected_text.gsub!(/(CREATE .* INDEX )([^ ]* )ON /, '\1ON ')
         sql_text.should_not differ_from(expected_text)
         File.delete(actual_file)  # It succeeded, we don't need the file.
       end

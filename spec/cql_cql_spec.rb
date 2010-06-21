@@ -10,8 +10,6 @@ require 'activefacts/support'
 require 'activefacts/input/cql'
 require 'activefacts/generate/cql'
 
-include ActiveFacts
-
 describe "CQL Loader" do
   cql_failures = {
     "Airline" => "Contains queries, unsupported",

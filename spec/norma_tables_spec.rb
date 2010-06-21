@@ -14,13 +14,10 @@ require 'activefacts/persistence'
 require 'activefacts/support'
 require 'activefacts/input/orm'
 
-include ActiveFacts
-include ActiveFacts::Metamodel
-
 # The exceptions table is keyed by the model name, and contains the added and removed table names vs NORMA
 Exceptions = {
   "Metamodel" => [[], %w{Agreement Enforcement}],                   # ActiveFacts absorbs Agreement into ContextNote, Enforcement into Constraint
-  "MetamodelNext" => [[], %w{Agreement Enforcement ObjectType}],    # ActiveFacts absorbs ObjectType into Term
+  "MetamodelNext" => [[], %w{Agreement Enforcement}],
   "Orienteering" => [%w{Punch}, []],                                # NORMA doesn't make a table for the IDENTITY field
   "OrienteeringER" => [%w{SeriesEvent}, []],                        # NORMA doesn't make a table for the IDENTITY field
   "RedundantDependency" => [%w{Politician StateOrProvince}, %w{LegislativeDistrict}],   # NORMA doesn't make a table for the 3 IDENTITY fields

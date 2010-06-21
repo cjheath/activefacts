@@ -65,7 +65,7 @@ module ActiveFacts
 
       # The name of a view that can be created to enforce uniqueness over non-null key values
       def view_name
-        "#{over.name.gsub(' ','')}#{on == over ? "" : "In"+on.name}"
+        "#{over.name.gsub(' ','')}#{on == over ? "" : "In"+on.name.gsub(' ','')}"
       end
 
       def to_s  #:nodoc:

@@ -10,8 +10,6 @@ require 'activefacts/support'
 require 'activefacts/input/orm'
 require 'activefacts/generate/cql'
 
-include ActiveFacts
-
 describe "Norma Loader" do
   orm_cql_failures = {
 #    "OddIdentifier" => "Strange identification pattern is incorrectly verbalised to CQL",  # Fixed
