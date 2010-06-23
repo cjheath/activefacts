@@ -593,7 +593,13 @@ module ActiveFacts
 
             raise "Internal error: There are more join steps here, but we failed to choose one" unless next_step
 
-            if !next_reading
+            if next_reading
+              # This is a contractable step
+              # readings += " /*REVISIT: contract here*/"
+              expansion = next_reading.expand
+              readings += expansion.sub(/\S+ /,' that ')
+              next_reading = nil
+            else
               if next_step.is_unary_step
                 rr = next_step.input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) }
                 next_reading = rr.role.fact_type.role.fact_type.preferred_reading
@@ -626,12 +632,11 @@ module ActiveFacts
                   end || fact_type.preferred_reading
                 # REVISIT: If this join step and reading has role references with adjectives, we need to expand using those
               end
-            else
-              readings += " /*REVISIT: contract here*/"
             end
             if next_reading
               readings += " and " unless readings.empty?
               readings += next_reading.expand
+            # else it was an objectification join
             end
 
             # Prepare for contraction following:
@@ -667,7 +672,6 @@ module ActiveFacts
       def describe
         input_role_ref = input_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
         output_role_ref = output_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
-        # REVISIT: Use expand(literals) here to mark input and output roles
         "from #{input_role_ref ? input_role_ref.role.concept.name : input_join_node.concept.name}"+
         " to #{output_role_ref ? output_role_ref.role.concept.name : output_join_node.concept.name}"+
         ": #{is_anti && 'not '}#{is_outer && 'maybe '}#{fact_type.default_reading}"
