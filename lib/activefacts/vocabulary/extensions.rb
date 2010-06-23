@@ -594,10 +594,10 @@ module ActiveFacts
             raise "Internal error: There are more join steps here, but we failed to choose one" unless next_step
 
             if next_reading
-              # This is a contractable step
-              # readings += " /*REVISIT: contract here*/"
+              # This is a contractable step, do it.
+              # REVISIT: This might fail if there are extra adjectives or a role name - but we don't do that yet anyhow.
               expansion = next_reading.expand
-              readings += expansion.sub(/\S+ /,' that ')
+              readings += expansion.sub(%r{#{next_node.concept.name} },' that ')
               next_reading = nil
             else
               if next_step.is_unary_step
