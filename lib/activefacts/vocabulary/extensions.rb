@@ -604,9 +604,12 @@ module ActiveFacts
                 fact_type = next_step.fact_type.role.fact_type
                 # The objectifying entity type is always the input_join_node here.
 
+                if !last_is_contractable || next_node != next_step.input_join_node
+                  readings += " and " unless readings.empty?
+                  readings += "/* REVISIT: should have already emitted this objectification */ #{next_step.input_join_node.concept.name}" 
+                end
                 # REVISIT: We need to use the join role_refs to expand the role players here:
-                readings += " and " unless readings.empty?
-                readings += "#{next_step.input_join_node.concept.name} (where #{fact_type.default_reading})" 
+                readings += " (where #{fact_type.default_reading})" 
                 # REVISIT: We need to delete the join step (if any) for each role of the objectified fact type, not just this step
               else
                 fact_type = next_step.fact_type
@@ -636,9 +639,9 @@ module ActiveFacts
             # iff the reading we just emitted has the next_node's role player as the final text
             next_node = next_step.input_join_node != next_node ? next_step.input_join_node : next_step.output_join_node
             last_is_contractable =
-              next_reading and
-              next_reading.text =~ /\{([0-9])\}$/ and          # Find whether last role has no following text, and its ordinal
-              role_ref = next_reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i} and   # This reading's RoleRef for that role
+              next_reading &&
+              (next_reading.text =~ /\{([0-9])\}$/) &&          # Find whether last role has no following text, and its ordinal
+              (role_ref = next_reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i}) &&   # This reading's RoleRef for that role
               role_ref.role.all_role_ref.detect{|rr| rr.join_node == next_node}
 
             # Remove this step now that we've processed it:
