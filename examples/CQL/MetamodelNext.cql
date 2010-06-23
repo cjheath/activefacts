@@ -93,6 +93,7 @@ Join Node is identified by Join and Ordinal where
 Join Step is identified by input-Join Node and output-Join Node where
 	Join Step has one input-Join Node,
 	Join Step has one output-Join Node;
+Join Step traverses one Fact Type;
 is anti Join Step;
 Join Step is outer;
 

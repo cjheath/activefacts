@@ -217,6 +217,7 @@ module ::Metamodel
 
   class JoinStep
     identified_by :input_join_node, :output_join_node
+    has_one :fact_type, :mandatory => true      # See FactType.all_join_step
     has_one :input_join_node, :class => JoinNode, :mandatory => true  # See JoinNode.all_join_step_as_input_join_node
     maybe :is_anti
     maybe :is_outer

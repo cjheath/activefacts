@@ -43,6 +43,7 @@ arg, *options = *arg.split(/=/)
 extension = arg.sub(/\A.*\./,'').downcase
 input_handler = "activefacts/input/#{extension}"
 require input_handler
+
 input_class = extension.upcase
 input_klass = ActiveFacts::Input.const_get(input_class.to_sym)
 raise "Expected #{input_handler} to define #{input_class}" unless input_klass

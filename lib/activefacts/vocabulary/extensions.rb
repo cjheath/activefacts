@@ -41,6 +41,8 @@ module ActiveFacts
       def create_implicit_fact_type_for_unary
         role = all_role.single
         next if role.implicit_fact_type     # Already exists
+        # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
+        # We only do it when the unary fact type is not objectified
         implicit_fact_type = @constellation.ImplicitFactType(:new, :role => role)
         entity_type = @entity_type || @constellation.ImplicitBooleanValueType(role.concept.vocabulary, "_ImplicitBooleanValueType")
         phantom_role = @constellation.Role(implicit_fact_type, 0, :concept => entity_type)
@@ -503,7 +505,8 @@ module ActiveFacts
       end
 
       def is_objectification_step
-        input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) and f = rr.role.fact_type.role.fact_type and f.entity_type }
+        fact_type.is_a?(ImplicitFactType) &&
+          (fact_type.role.implicit_fact_type == fact_type ? true : (puts "!!! ImplicitFactType not self !!!"; false))
       end
     end
 
@@ -551,7 +554,7 @@ module ActiveFacts
           end
 
         join_steps = join_nodes.map{|jn| jn.all_join_step_as_input_join_node.to_a + jn.all_join_step_as_output_join_node.to_a }.flatten.uniq
-        readings = ""
+        readings = ''
         next_node = role_refs[0].join_node
         last_is_contractable = false
         debug :join, "Join Nodes are #{join_nodes.map{|jn| jn.describe }.inspect}, Join Steps are #{join_steps.map{|js| js.describe }.inspect}" do
@@ -570,10 +573,24 @@ module ActiveFacts
 
             # If we don't have a next_node against which we can contract,
             # so just use any join step involving this node, or just any step.
-            debug :join, "Chose new step containing same node #{next_node.describe}: #{next_steps[0].describe}" if !next_step && next_steps && next_steps[0]
-            next_step ||= next_steps && next_steps[0]
-            debug :join, "Chose random step is #{join_steps[0].describe}" if !next_step
-            next_step ||= join_steps[0]
+            if !next_step && next_steps
+              ok_next = next_steps.detect { |ns| (readings != '' || !ns.is_objectification_step) }
+              debug :join, "Chose new prefixed or non-objectification step: #{ok_next.describe}" if ok_next
+              next_step = ok_next
+            end
+
+            if !next_step && !join_steps.empty?
+              # debug :join, "looking for random prefixed step with readings=#{readings.inspect}"
+              ok_next = join_steps.detect { |ns| (readings != '' || !ns.is_objectification_step) }
+              debug :join, "Chose random prefixed or non-objectification step: #{ok_next.describe}" if ok_next
+              next_step = ok_next
+            end
+
+            if !next_step
+              next_step = join_steps[0]
+              debug :join, "Chose new random step from #{join_steps.size}: #{next_step.describe}" if next_step
+            end
+
             raise "Internal error: There are more join steps here, but we failed to choose one" unless next_step
 
             if !next_reading
@@ -581,20 +598,20 @@ module ActiveFacts
                 rr = next_step.input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) }
                 next_reading = rr.role.fact_type.role.fact_type.preferred_reading
               elsif next_step.is_objectification_step
-                # The objectifying entity type is always the input_join_node here:
-                fact_type = next_step.input_join_node.concept.fact_type
+                # REVISIT: This objectification join should have been appended to a player in an earlier reading
+                # This requires this whole function to be rewritten recursively, with a shared list of outstanding join steps.
+                # Do I feel a JoinVerbaliser class coming on?
+                fact_type = next_step.fact_type.role.fact_type
+                # The objectifying entity type is always the input_join_node here.
+
                 # REVISIT: We need to use the join role_refs to expand the role players here:
-                readings += " (where #{fact_type.default_reading})" 
+                readings += " and " unless readings.empty?
+                readings += "#{next_step.input_join_node.concept.name} (where #{fact_type.default_reading})" 
                 # REVISIT: We need to delete the join step (if any) for each role of the objectified fact type, not just this step
               else
-                # REVISIT: Store the FactType on the JoinStep to avoid this search?
-                fact_types =
-                  next_step.input_join_node.all_role_ref.map{|rr| rr.role.fact_type} &
-                  next_step.output_join_node.all_role_ref.map{|rr| rr.role.fact_type}
-                # There can and must be only one fact type involved in this join step
-                raise "Ambiguous or incorrect join step" if fact_types.size != 1
-
-                fact_type = fact_types[0]
+                fact_type = next_step.fact_type
+                raise "Mildly surprised here... is this a unary?" if fact_type.is_a?(ImplicitFactType)
+                fact_type = fact_type.role.fact_type if fact_type.is_a?(ImplicitFactType)
                 # REVISIT: this fact type might be an ImplicitFactType in an objectification join, and this will fail.
                 # REVISIT: Prefer a reading that starts with the player of next_node
                 #next_reading = fact_type.preferred_reading
@@ -641,6 +658,29 @@ module ActiveFacts
         readings
       end
 
+    end
+
+    class JoinStep
+      def describe
+        input_role_ref = input_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
+        output_role_ref = output_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
+        # REVISIT: Use expand(literals) here to mark input and output roles
+        "from #{input_role_ref ? input_role_ref.role.concept.name : input_join_node.concept.name}"+
+        " to #{output_role_ref ? output_role_ref.role.concept.name : output_join_node.concept.name}"+
+        ": #{is_anti && 'not '}#{is_outer && 'maybe '}#{fact_type.default_reading}"
+      end
+    end
+
+    class ImplicitFactType
+      def default_reading
+        # There are two cases, where role is in a unary fact type, and where the fact type is objectified
+        # If a unary fact type is objectified, only the ImplicitFactType for the objectification is asserted
+        if objectification = role.fact_type.entity_type
+          "#{objectification.name} involves #{role.concept.name}"
+        else
+          role.fact_type.default_reading  # Must be a unary FT
+        end
+      end
     end
 
   end

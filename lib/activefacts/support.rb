@@ -10,6 +10,19 @@
   $debug_nested = false
   $debug_keys = nil
   $debug_available = {}
+
+  def debug_enabled(args)
+    # Figure out whether this trace is enabled and nests:
+    control = (!args.empty? && Symbol === args[0]) ? args.shift : :all
+    key = control.to_s.sub(/_\Z/, '').to_sym
+    $debug_available[key] ||= key
+    enabled = $debug_nested || $debug_keys[key]
+    nesting = control.to_s =~ /_\Z/
+    old_nested = $debug_nested
+    $debug_nested = nesting
+    [(enabled ? 1 : 0), old_nested]
+  end
+
   def debug(*args, &block)
     unless $debug_indent
       # First time, initialise the tracing environment
@@ -25,28 +38,21 @@
       end
     end
 
-    # Figure out whether this trace is enabled and nests:
-    control = (!args.empty? && Symbol === args[0]) ? args.shift : :all
-    key = control.to_s.sub(/_\Z/, '').to_sym
-    $debug_available[key] ||= key
-    enabled = $debug_nested || $debug_keys[key]
-    nesting = control.to_s =~ /_\Z/
-    old_nested = $debug_nested
-    $debug_nested = nesting
+    enabled, old_nested = debug_enabled(args)
 
     # Emit the message if enabled or a parent is:
-    puts "# "+"  "*$debug_indent + args.join(' ') if args.size > 0 && enabled
+    puts "# "+"  "*$debug_indent + args.join(' ') if args.size > 0 && enabled == 1
 
     if block
       begin
-        $debug_indent += 1 if enabled
+        $debug_indent += enabled
         r = yield       # Return the value of the block
       ensure
-        $debug_indent -= 1 if enabled
+        $debug_indent -= enabled
         $debug_nesting = old_nested
       end
     else
-      r = enabled     # Return whether enabled
+      r = enabled == 1     # If no block, return whether enabled
     end
     r
   end

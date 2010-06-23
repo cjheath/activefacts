@@ -275,68 +275,87 @@ module ActiveFacts
           join = @constellation.Join(:new)
           all_bindings_in_readings(readings_list).
             each do |binding|
+              debug :join, "Creating join node #{join.all_join_node.size} for #{binding.inspect}"
               binding.join_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => binding.player)
             end
         end
 
         def build_join_steps reading, constrained_rs, objectification_node = nil
           role_sequence = nil
-          #puts "Creating Join Role Sequence for #{reading.inspect} with @{reading.role_refs.size} role refs"
-          reading.role_refs.each do |role_ref|
-            # These role_refs are the Compiler::RoleRefs. These have associated Metamodel::RoleRefs,
-            # but we need new RoleRefs to attach to the join (and save any residual_adjectives)
-            binding = role_ref.binding
-            role = role_ref.role || role_ref.role_ref.role
+          role_refs = []
+          debug :join, "Creating join Role Sequence for #{reading.inspect} with #{reading.role_refs.size} role refs" do
+            reading.role_refs.each do |role_ref|
+              # These role_refs are the Compiler::RoleRefs. These have associated Metamodel::RoleRefs,
+              # but we need new RoleRefs to attach to the join (and save any residual_adjectives)
+              binding = role_ref.binding
+              role = role_ref.role || role_ref.role_ref.role
 
-            if (reading.fact_type.entity_type)
-              # This reading is of an objectified fact type. The second role ref is to a phantom role.
-              # We don't need join steps for roles that have only one role_ref (this one) in their binding
-              if (binding.refs.size > 1)
-                role_sequence ||= @constellation.RoleSequence(:new)
-                @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)
-                unless objectification_node
-                  # We need to create a JoinNode for this object, even though it has no RoleRefs
-                  # REVISIT: Or just complain and make the user show the objectification explicitly. Except that doesn't work, see Warehouse...
-                  raise "Can't join over fact type '#{reading.fact_type.default_reading}' because it's not objectified" unless reading.fact_type.entity_type
-                  join = binding.join_node.join
-                  objectification_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => reading.fact_type.entity_type)
+              if (reading.fact_type.entity_type)
+                # This reading is of an objectified fact type. The second role ref is to a phantom role.
+                # We don't need join steps for roles that have only one role_ref (this one) in their binding
+                debug :join, "#{binding.refs.size > 1 ? 'Creating' : 'Skipping'} Role Ref and objectification Join Step for #{role_ref.inspect}" do
+
+                  if (binding.refs.size > 1)
+                    role_sequence ||= @constellation.RoleSequence(:new)
+                    role_refs <<
+                      @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)
+                    unless objectification_node
+                      # We need to create a JoinNode for this object, even though it has no RoleRefs
+                      # REVISIT: Or just complain and make the user show the objectification explicitly. Except that doesn't work, see Warehouse...
+                      raise "Can't join over fact type '#{reading.fact_type.default_reading}' because it's not objectified" unless reading.fact_type.entity_type
+                      join = binding.join_node.join
+                      debug :join, "Creating join node #{join.all_join_node.size} for #{reading.fact_type.entity_type.name} in objectification"
+                      objectification_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => reading.fact_type.entity_type)
+                    end
+                    @constellation.RoleRef(role_sequence, 1, :role => role.implicit_fact_type.all_role.single, :join_node => objectification_node)
+                    js = @constellation.JoinStep(objectification_node, binding.join_node, :fact_type => role.implicit_fact_type)
+                    debug :join, "New Join Step #{js.describe}"
+                    role_sequence = nil # Make a new role sequence for the next role, if any
+                  end
                 end
-                @constellation.RoleRef(role_sequence, 1, :role => role.implicit_fact_type.all_role.single, :join_node => objectification_node)
-                @constellation.JoinStep(objectification_node, binding.join_node)
-                role_sequence = nil # Make a new role sequence for the next role, if any
+              else
+                debug :join, "Creating Role Ref for #{role_ref.inspect}" do
+                  role_sequence ||= @constellation.RoleSequence(:new)
+                  role_refs <<
+                    @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)
+                end
               end
-            else
-              role_sequence ||= @constellation.RoleSequence(:new)
-              @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)
-            end
 
-            if role_ref.objectification_join
-              # We are looking at a role whose player is an objectification of a fact type,
-              # which will have ImplicitFactTypes for each role.
-              # Each of these ImplicitFactTypes has a single phantom role played by the objectifying entity type
-              # One of these phantom roles is likely to be the subject of an objectification join step.
-              role_ref.objectification_join.each do |r|
-                build_join_steps r, constrained_rs, binding.join_node
+              if role_ref.objectification_join
+                # We are looking at a role whose player is an objectification of a fact type,
+                # which will have ImplicitFactTypes for each role.
+                # Each of these ImplicitFactTypes has a single phantom role played by the objectifying entity type
+                # One of these phantom roles is likely to be the subject of an objectification join step.
+                role_ref.objectification_join.each do |r|
+                  debug :join, "Building objectification join for #{role_ref.objectification_join.inspect}" do
+                    build_join_steps r, constrained_rs, binding.join_node
+                  end
+                end
               end
-            end
-            if (@common_bindings.include?(binding))
-              @constellation.RoleRef(constrained_rs, constrained_rs.all_role_ref.size, :role => role, :join_node => binding.join_node)
+              if (@common_bindings.include?(binding))
+                debug :join, "#{binding.inspect} is a constrained binding, add the Role Ref"
+                barf unless role
+                @constellation.RoleRef(constrained_rs, constrained_rs.all_role_ref.size, :role => role, :join_node => binding.join_node)
+              end
             end
           end
 
           if role_sequence
             if !reading.fact_type.entity_type and role = reading.fact_type.all_role.single
               # REVISIT: It might prove to be evil to use the same JoinNode twice for the same JoinStep here... but I don't have a real 
-              @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role.implicit_fact_type.all_role.single, :join_node => role_sequence.all_role_ref.single.join_node)
+              role_refs <<
+                @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role.implicit_fact_type.all_role.single, :join_node => role_sequence.all_role_ref.single.join_node)
             end
             # We aren't talking about objectification here, so there must be exactly two roles.
-            raise "REVISIT: Internal error constructing join for #{reading.inspect}" if role_sequence.all_role_ref.size != 2
-            @constellation.JoinStep(*role_sequence.all_role_ref.map{|rr|rr.join_node})
+            raise "REVISIT: Internal error constructing join for #{reading.inspect}" if role_sequence.all_role_ref.size != 2 && role_refs.size == 2
+            js = @constellation.JoinStep(role_refs[0].join_node, role_refs[1].join_node, :fact_type => reading.fact_type)
+            debug :join, "New Join Step #{js.describe}"
           end
         end
 
         def role_sequences_for_common_bindings ignore_trailing_joins = false
-          if @readings_lists.detect{|rl| rl.size > 1}
+          if @readings_lists.detect { |rl| rl.size > 1 || rl.detect{|reading| reading.role_refs.detect{|role_ref| role_ref.objectification_join } } }
+            # Take this path if there are joins:
 
             @readings_lists.map do |readings_list|
               # Every Binding in these readings becomes a Join Node,
