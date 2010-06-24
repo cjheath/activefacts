@@ -29,7 +29,7 @@ Recurring Schedule Id is written as Auto Counter;
 Satellite Message Id is written as Unsigned Integer(32);
 Seconds is written as Unsigned Integer(32);
 Serial Number is written as String(20);
-Service Type is written as String(15);
+Service Type is written as String(15) [independent];
 Subscription Nr is written as Signed Integer(32);
 Switch Id is written as Auto Counter;
 Transaction Nr is written as Unsigned Integer(32);
@@ -197,6 +197,7 @@ Data Store File Host System is where
 Data Store File Host System has one Internal-Credential;
 
 Data Store Service is where
+	Service is from at least one Data Store,
 	Data Store has Service;
 Data Store Service belongs to one Client;
 Data Store Service requires at least one Credential;
@@ -267,8 +268,6 @@ each Recurring Schedule occurs at least one time in
 	Recurring Schedule friday,
 	Recurring Schedule saturday,
 	Recurring Schedule sunday;
-each Service occurs at least one time in
-	Data Store has Service;
 each Service occurs one time in
 	Vendor provides Service;
 each Subscription occurs at most one time in
