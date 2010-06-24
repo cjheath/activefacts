@@ -24,13 +24,13 @@ CREATE TABLE Politician (
 )
 GO
 
-CREATE VIEW dbo.Politician_LegislativeDistrictStateOrProvinceIdLegislativeDistrictNumber (LegislativeDistrictStateOrProvinceId, LegislativeDistrictNumber) WITH SCHEMABINDING AS
-	SELECT LegislativeDistrictStateOrProvinceId, LegislativeDistrictNumber FROM dbo.Politician
-	WHERE	LegislativeDistrictStateOrProvinceId IS NOT NULL
-	  AND	LegislativeDistrictNumber IS NOT NULL
+CREATE VIEW dbo.Politician_LegislativeDistrictNumberLegislativeDistrictStateOrProvinceId (LegislativeDistrictNumber, LegislativeDistrictStateOrProvinceId) WITH SCHEMABINDING AS
+	SELECT LegislativeDistrictNumber, LegislativeDistrictStateOrProvinceId FROM dbo.Politician
+	WHERE	LegislativeDistrictNumber IS NOT NULL
+	  AND	LegislativeDistrictStateOrProvinceId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_PoliticianByLegislativeDistrictStateOrProvinceIdLegislativeDistrictNumber ON dbo.Politician_LegislativeDistrictStateOrProvinceIdLegislativeDistrictNumber(LegislativeDistrictStateOrProvinceId, LegislativeDistrictNumber)
+CREATE UNIQUE CLUSTERED INDEX IX_PoliticianByLegislativeDistrictNumberLegislativeDistrictStateOrProvinceId ON dbo.Politician_LegislativeDistrictNumberLegislativeDistrictStateOrProvinceId(LegislativeDistrictNumber, LegislativeDistrictStateOrProvinceId)
 GO
 
 CREATE TABLE StateOrProvince (

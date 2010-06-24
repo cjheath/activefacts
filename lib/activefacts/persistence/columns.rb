@@ -327,11 +327,15 @@ module ActiveFacts
         debug :columns, "All Columns for #{name}" do
           columns = []
           sups = supertypes
+          pi_roles = preferred_identifier.role_sequence.all_role_ref.map{|rr| rr.role}
           references_from.sort_by do |ref|
-            # Put supertypes first, in order, then non-subtype references, then subtypes, otherwise retaining their order:
-            sups.index(ref.to) ||
-              (!ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) && references_from.size+references_from.index(ref)) ||
-              references_from.size*2+references_from.index(ref)
+            # Put supertypes first, in order, then PI roles, non-subtype references by name, then subtypes by name:
+            next [0, p] if p = sups.index(ref.to)
+            if !ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+              next [1, p] if p = pi_roles.index(ref.to_role)
+              next [2, ref.to_names]
+            end
+            [3, ref.to_names]
           end.each do |ref|
             debug :columns, "Columns absorbed via #{ref}" do
               if (ref.role_type == :supertype)
