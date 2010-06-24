@@ -40,7 +40,7 @@ CREATE TABLE [Constraint] (
 	PresenceConstraintMinFrequency          int NULL CHECK(PresenceConstraintMinFrequency >= 2),
 	-- maybe Presence Constraint is a kind of Constraint and Presence Constraint covers Role Sequence and Role Sequence has Role Sequence Id,
 	PresenceConstraintRoleSequenceId        int NULL,
-	-- maybe Ring Constraint is a kind of Constraint and maybe other-Role is of Ring Constraint and Role is a kind of Concept and Concept has GUID,
+	-- maybe Ring Constraint is a kind of Constraint and maybe Ring Constraint has other-Role and Role is a kind of Concept and Concept has GUID,
 	RingConstraintOtherRoleGUID             varchar NULL,
 	-- maybe Ring Constraint is a kind of Constraint and Ring Constraint is of Ring Type,
 	RingConstraintRingType                  varchar NULL,
@@ -496,20 +496,20 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameDiagramNamePositionXPositionY ON dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY(DiagramVocabularyName, DiagramName, PositionX, PositionY)
 GO
 
-CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
-	SELECT FactTypeShapeId FROM dbo.Shape
-	WHERE	FactTypeShapeId IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
-GO
-
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
 	SELECT FactTypeShapeId FROM dbo.Shape
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+GO
+
+CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
+	SELECT FactTypeShapeId FROM dbo.Shape
+	WHERE	FactTypeShapeId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS

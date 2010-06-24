@@ -122,9 +122,9 @@ Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
-other-Role is of Ring Constraint;
-other-Role is of Ring Constraint,
-	Ring Constraint has at most one other-Role;
+Ring Constraint has at most one other-Role;
+Ring Constraint has other-Role,
+	other-Role is of Ring Constraint;
 
 Role Sequence is identified by its Id;
 Presence Constraint covers one Role Sequence;

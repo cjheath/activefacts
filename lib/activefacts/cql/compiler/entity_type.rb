@@ -192,7 +192,7 @@ module ActiveFacts
         def objectify_existing_fact_type fact_type
           raise "#{@name} cannot objectify a fact type that's already objectified" if fact_type.entity_type
           raise "#{@name} must only objectify one fact type" if @fact_type
-          if fact_type.internal_presence_constraints.size == 0
+          if fact_type.internal_presence_constraints.select{|pc| pc.max_frequency == 1}.size == 0
             # If there's no existing uniqueness constraint over this fact type, make a spanning one.
             @constellation.PresenceConstraint(
               :new,

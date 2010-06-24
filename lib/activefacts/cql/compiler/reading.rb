@@ -708,8 +708,8 @@ module ActiveFacts
           constellation = vocabulary.constellation
 
           debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role_ref.role.concept.name} in #{fact_type.describe}" do
-            constrained_roles = fact_type.all_role.to_a.clone
-            constrained_roles.delete(@role_ref.role)
+            # Preserve the role order of the reading, excluding this role:
+            constrained_roles = (@reading.role_refs-[self]).map{|rr| rr.role_ref.role}
             if constrained_roles.empty?
               debug :constraint, "Quantifier over unary role has no effect"
               return

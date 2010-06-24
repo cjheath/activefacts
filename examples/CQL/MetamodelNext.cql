@@ -134,9 +134,9 @@ Object Type plays Role,
 	Role is played by one Object Type;
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
-other-Role is of Ring Constraint;
-other-Role is of Ring Constraint,
-	Ring Constraint has at most one other-Role;
+Ring Constraint has at most one other-Role;
+Ring Constraint has other-Role,
+	other-Role is of Ring Constraint;
 
 Role Sequence is identified by its Id;
 Presence Constraint covers one Role Sequence;

@@ -2096,7 +2096,7 @@
 					<orm:UniquenessConstraint ref="_9798CD94-3920-42A9-962D-666E9CFA89BE" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_2AAE7D42-E3A6-49D3-AB53-75D5B85AA93C" _Name="OtherRoleIsOfRingConstraint">
+			<orm:Fact id="_2AAE7D42-E3A6-49D3-AB53-75D5B85AA93C" _Name="RingConstraintHasOtherRole">
 				<orm:FactRoles>
 					<orm:Role id="_25812868-E95A-4F4E-A915-672C4258B159" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_ABCDC9B2-822F-4E84-83D4-3732C029BB1B" />
@@ -2106,17 +2106,6 @@
 					</orm:Role>
 				</orm:FactRoles>
 				<orm:ReadingOrders>
-					<orm:ReadingOrder id="_FA1B078F-6B76-420E-BAE6-FD7AE50A1FF6">
-						<orm:Readings>
-							<orm:Reading id="_F4458BA8-2ED5-4661-9B84-664301FACC81">
-								<orm:Data>other- {0} is of {1}</orm:Data>
-							</orm:Reading>
-						</orm:Readings>
-						<orm:RoleSequence>
-							<orm:Role ref="_25812868-E95A-4F4E-A915-672C4258B159" />
-							<orm:Role ref="_C350956A-F892-4031-A40C-D95C349390AC" />
-						</orm:RoleSequence>
-					</orm:ReadingOrder>
 					<orm:ReadingOrder id="_6B895768-B553-4374-81B4-BDB433EF953F">
 						<orm:Readings>
 							<orm:Reading id="_3DEE5516-E08F-42BE-B3DD-22C58F4E63FB">
@@ -2126,6 +2115,17 @@
 						<orm:RoleSequence>
 							<orm:Role ref="_C350956A-F892-4031-A40C-D95C349390AC" />
 							<orm:Role ref="_25812868-E95A-4F4E-A915-672C4258B159" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_FA1B078F-6B76-420E-BAE6-FD7AE50A1FF6">
+						<orm:Readings>
+							<orm:Reading id="_F4458BA8-2ED5-4661-9B84-664301FACC81">
+								<orm:Data>other- {0} is of {1}</orm:Data>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_25812868-E95A-4F4E-A915-672C4258B159" />
+							<orm:Role ref="_C350956A-F892-4031-A40C-D95C349390AC" />
 						</orm:RoleSequence>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
@@ -12692,7 +12692,6 @@ The Role Refs may contain verbalisation text.</orm:Text>
 		<ormtooial:FactTypeMapsTowardsRole id="_16FC1555-2168-4A98-BBE2-D6D5A508073E" FactType="_35609A41-B8D0-4780-9678-FD43A03B77E0" TowardsRole="_6765133F-29AF-4FBD-9AF0-AE94AC9A9FA9" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_A355AF06-A55D-4BB2-986D-B7DF29A97E3E" FactType="_4B05A24B-B2CA-4C40-968B-9B6259AC3777" TowardsRole="_1C327A51-3E51-4CCC-9DBC-62FE51AE3B77" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_4FBB0C1F-30FB-4A78-9769-2D0963B87F91" FactType="_127B3009-4130-4EF2-80D6-0569D6749015" TowardsRole="_124B5674-E7A0-4DC8-8900-3EE7CAC12E6B" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_A20B2366-5854-47B8-BD6A-30D1780986E7" FactType="_2AAE7D42-E3A6-49D3-AB53-75D5B85AA93C" TowardsRole="_C350956A-F892-4031-A40C-D95C349390AC" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_1F6D1C75-84D1-49B0-A7C1-343633E1B4F4" FactType="_1EC66EAE-EB4B-4BA5-9BE4-BF1FD3CF22ED" TowardsRole="_C1F4B676-F2B5-4CCB-A50E-93E4D9F1B1DB" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_7A86A3D4-80B5-4933-901D-CC0C13861245" FactType="_3A0AE024-7DBE-4EB4-BD0C-6CDA3848D9AA" TowardsRole="_0DB3659A-BD1A-4036-89FC-52F4450DF5EC" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_8E1A7E52-F2BB-4014-B916-FCB482EC7A6E" FactType="_36680BA6-C124-4246-B7E5-3EA443305093" TowardsRole="_7B2C170A-80C2-42EF-9EB3-0B739196896A" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
@@ -12713,6 +12712,7 @@ The Role Refs may contain verbalisation text.</orm:Text>
 		<ormtooial:FactTypeMapsTowardsRole id="_6DC24A1B-E49A-4C5B-8842-16E13E72816F" FactType="_A92AC809-6E2B-4E72-ACB5-DEB5A9AC73F6" TowardsRole="_F2460494-83FE-4B17-9852-931FC38C3CFB" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_B5F8BDBC-E3BC-4E89-8823-59D498344382" FactType="_0EE73C36-918C-492B-BB3E-5EBBCD63DDD6" TowardsRole="_777D8F66-C0F0-43F9-85D5-00B4A3041CC1" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_9B2D9DF5-AC61-43C0-A5F8-1B07A306A71C" FactType="_BF273B8B-B841-47A2-88F0-B542D88BA65A" TowardsRole="_2C10F7FF-ABDA-4C09-851E-B9BC10C9C3DB" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_A20B2366-5854-47B8-BD6A-30D1780986E7" FactType="_2AAE7D42-E3A6-49D3-AB53-75D5B85AA93C" TowardsRole="_C350956A-F892-4031-A40C-D95C349390AC" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_E548AFE0-584A-4604-97B2-B93A0F55ED20" FactType="_0D07A827-8936-4878-BCC8-BFA8E7A49883" TowardsRole="_F1705C01-32BB-4BB7-8B73-E845805BAF09" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_3F43C11D-81A4-4632-90A2-9692C9ED2D1A" FactType="_56BB45FC-543B-43EC-BBA7-717F6AEE2398" TowardsRole="_B934A88D-00C5-42DD-8F3A-FA722EEEF0D1" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_40B74DFB-7F32-412A-9216-8D5C2A9A18C0" FactType="_11DBFA6C-00ED-4742-A05B-091C849F4112" TowardsRole="_4EC45FEB-2A86-4823-8043-902371D527A9" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
