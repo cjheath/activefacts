@@ -16,8 +16,8 @@ describe "CQL Loader with SQL output" do
     "CompanyQuery" => "Contains unsupported queries",
   }
   cql_sql_failures = {
-    "Metamodel" => "Creates extra uniqueness constraint onother-Role of RingConstraint
-    "MetamodelNext" => "Creates extra uniqueness constraint onother-Role of RingConstraint
+    "Metamodel" => "Creates extra uniqueness constraint on other-Role of RingConstraint",
+    "MetamodelNext" => "Creates extra uniqueness constraint on other-Role of RingConstraint",
     "OrienteeringER" => "Invalid model, it just works differently in CQL"
   }
 

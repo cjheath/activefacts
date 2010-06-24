@@ -21,6 +21,7 @@ describe "CQL Loader with Ruby output" do
   cql_failures = {
     "Airline" => "Contains queries, not supported",
     "CompanyQuery" => "Contains queries, not supported",
+    "OrienteeringER" => "Invalid model, it just works differently in CQL"
   }
 
   # Generate and return the Ruby for the given vocabulary
