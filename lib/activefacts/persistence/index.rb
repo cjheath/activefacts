@@ -119,7 +119,6 @@ module ActiveFacts
               ref_path.each do |ref|
                 next unless ref.to_role
                 #debug :index2, "Considering #{ref_path.map(&:to_s)*" and "} yielding columns #{all_column_by_ref_path[ref_path].map{|c| c.name(".")}*", "}"
-                #debugger if name == 'VehicleIncident' && ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
                 ref.to_role.all_role_ref.each do |role_ref|
                   all_pcs = role_ref.role_sequence.all_presence_constraint
     #puts "pcs over #{ref_path.map{|r| r.to_names}.flatten*"."}: #{role_ref.role_sequence.all_presence_constraint.map(&:describe)*"; "}" if all_pcs.size > 0

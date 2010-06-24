@@ -192,6 +192,18 @@ module ActiveFacts
         def objectify_existing_fact_type fact_type
           raise "#{@name} cannot objectify a fact type that's already objectified" if fact_type.entity_type
           raise "#{@name} must only objectify one fact type" if @fact_type
+          if fact_type.internal_presence_constraints.size == 0
+            # If there's no existing uniqueness constraint over this fact type, make a spanning one.
+            @constellation.PresenceConstraint(
+              :new,
+              :vocabulary => @vocabulary,
+              :name => @entity_type.name+"UQ",
+              :role_sequence => fact_type.preferred_reading.role_sequence,
+              :is_preferred_identifier => false,  # We only get here when there is a reference mode on the entity type
+              :max_frequency => 1
+            )
+          end
+
           @fact_type = @entity_type.fact_type = fact_type
           @entity_type.create_implicit_fact_types
           @fact_type

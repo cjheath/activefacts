@@ -111,15 +111,17 @@ module ActiveFacts
           # It's possible that this fact type is objectified and inherits identification through a supertype.
           return if @fact_type.entity_type and @fact_type.entity_type.all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification}
 
-          # If there's a preferred alethic uniqueness constraint over the fact type already, we're done
-          return if @fact_type.all_role.
-            detect do |r|
-              r.all_role_ref.detect do |rr|
-                rr.role_sequence.all_presence_constraint.detect do |pc|
-                  pc.max_frequency == 1 && !pc.enforcement && pc.is_preferred_identifier
+          # If it's a non-objectified binary and there's an alethic uniqueness constraint over the fact type already, we're done
+          return if !@fact_type.entity_type &&
+            @fact_type.all_role.size == 2 &&
+            @fact_type.all_role.
+              detect do |r|
+                r.all_role_ref.detect do |rr|
+                  rr.role_sequence.all_presence_constraint.detect do |pc|
+                    pc.max_frequency == 1 && !pc.enforcement
+                  end
                 end
               end
-            end
 
           # If there's an existing presence constraint that can be converted into a PC, do that:
           @readings.each do |reading|
@@ -139,7 +141,6 @@ module ActiveFacts
             :vocabulary => @vocabulary,
             :name => @fact_type.entity_type ? @fact_type.entity_type.name+"PK" : '',
             :role_sequence => @fact_type.preferred_reading.role_sequence,
-            :is_preferred_identifier => true,
             :max_frequency => 1,
             :is_preferred_identifier => prefer
           )

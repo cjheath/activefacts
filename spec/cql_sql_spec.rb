@@ -16,9 +16,9 @@ describe "CQL Loader with SQL output" do
     "CompanyQuery" => "Contains unsupported queries",
   }
   cql_sql_failures = {
-    "Blog" => "Drops uniqueness constraints",
-    "Metamodel" => "Drops uniqueness constraints",
-    "Orienteering" => "Drops uniqueness constraints",
+    "Metamodel" => "Creates extra uniqueness constraint onother-Role of RingConstraint
+    "MetamodelNext" => "Creates extra uniqueness constraint onother-Role of RingConstraint
+    "OrienteeringER" => "Invalid model, it just works differently in CQL"
   }
 
   # Generate and return the SQL for the given vocabulary
