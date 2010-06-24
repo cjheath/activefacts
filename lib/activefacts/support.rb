@@ -16,11 +16,11 @@
     control = (!args.empty? && Symbol === args[0]) ? args.shift : :all
     key = control.to_s.sub(/_\Z/, '').to_sym
     $debug_available[key] ||= key
-    enabled = $debug_nested || $debug_keys[key]
+    enabled = $debug_nested || $debug_keys[key] || $debug_keys[:all]
     nesting = control.to_s =~ /_\Z/
     old_nested = $debug_nested
     $debug_nested = nesting
-    [(enabled ? 1 : 0), old_nested]
+    [(enabled ? 1 : 0), $debug_keys[:all] ? " %-15s"%control : nil, old_nested]
   end
 
   def debug(*args, &block)
@@ -38,15 +38,15 @@
       end
     end
 
-    enabled, old_nested = debug_enabled(args)
+    enabled, show_key, old_nested = debug_enabled(args)
 
     # Emit the message if enabled or a parent is:
-    puts "# "+"  "*$debug_indent + args.join(' ') if args.size > 0 && enabled == 1
+    puts "\##{show_key} "+"  "*$debug_indent + args.join(' ') if args.size > 0 && enabled == 1
 
     if block
       begin
         $debug_indent += enabled
-        r = yield       # Return the value of the block
+        return yield       # Return the value of the block
       ensure
         $debug_indent -= enabled
         $debug_nesting = old_nested
