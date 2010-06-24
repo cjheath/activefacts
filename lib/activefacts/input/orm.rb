@@ -198,7 +198,7 @@ module ActiveFacts
             vt = @constellation.ValueType(@vocabulary, name)
           vt.supertype = value_super_type
           vt.length = length if length
-          vt.scale = scale if scale
+          vt.scale = scale if scale && scale != 0
           independent = x['IsIndependent']
           vt.is_independent = true if independent && independent == 'true'
           personal = x['IsPersonal']
