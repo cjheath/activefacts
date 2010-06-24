@@ -83,6 +83,7 @@ module ActiveFacts
 
           # Create and initialise the ValueType:
           vt = @constellation.ValueType(@vocabulary, @name)
+          vt.is_independent = true if (@pragmas.include? 'independent')
           vt.supertype = base_type if base_type
           vt.length = length if length
           vt.scale = scale if scale
