@@ -11,8 +11,11 @@ require 'activefacts/input/orm'
 require 'activefacts/generate/cql'
 
 describe "Norma Loader" do
+  orm_failures = {
+    "SubtypePI" => "Has an illegal uniqueness join constraint",
+  }
   orm_cql_failures = {
-#    "OddIdentifier" => "Strange identification pattern is incorrectly verbalised to CQL",  # Fixed
+    # "OddIdentifier" => "Strange identification pattern is incorrectly verbalised to CQL",  # Fixed
     "UnaryIdentification" => "No PI for VisitStatus",
   }
   # Generate and return the CQL for the given vocabulary
@@ -28,9 +31,15 @@ describe "Norma Loader" do
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{/norma/(.*).orm\Z}, '/CQL/\1.cql')
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.cql')
+    base = File.basename(orm_file, ".orm")
 
     it "should load #{orm_file} and dump CQL matching #{expected_file}" do
-      vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      begin
+        vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      rescue => e
+        raise unless orm_failures.include?(base)
+        pending orm_failures[base]
+      end
 
       cql_text = cql(vocabulary)
       # Save the actual file:
@@ -40,7 +49,7 @@ describe "Norma Loader" do
 
       expected_text = File.open(expected_file) {|f| f.read }
 
-      broken = orm_cql_failures[File.basename(orm_file, ".orm")]
+      broken = orm_cql_failures[base]
       if broken
         pending(broken) {
           cql_text.should_not differ_from(expected_text)

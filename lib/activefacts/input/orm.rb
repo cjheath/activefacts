@@ -495,15 +495,16 @@ module ActiveFacts
 
         # Make a new RoleSequence:
         role_sequence = @constellation.RoleSequence(:new) unless role_sequence
-        role_array.each_with_index{|r, i|
+        role_array.each_with_index do |r, i|
           role_ref = @constellation.RoleRef(role_sequence, i)
           role_ref.role = r
-          }
+        end
+
         role_sequence
       end
 
       def map_roles(x_roles, why = nil)
-        role_array = x_roles.map{|x|
+        role_array = x_roles.map do |x|
           id = x['ref']
           role = @by_id[id]
           if (why && !role)
@@ -534,8 +535,10 @@ module ActiveFacts
             end
           end
           role
-        }
-        role_array.include?(nil) ? nil : get_role_sequence(role_array)
+        end
+        return nil if role_array.include?(nil)
+
+        get_role_sequence(role_array)
       end
 
       def read_constraints
@@ -560,43 +563,47 @@ module ActiveFacts
           name = nil if name.size == 0
 
           # As of Feb 2008, all NORMA ValueTypes have an implied mandatory constraint.
-          if x.xpath("orm:ImpliedByObjectType").size > 0
-            # $stderr.puts "Skipping ImpliedMandatoryConstraint #{name} over #{roles}"
-            next
-          end
+          next if x.xpath("orm:ImpliedByObjectType").size > 0
 
           x_roles = x.xpath("orm:RoleSequence/orm:Role")
-          roles = map_roles(x_roles, "mandatory constraint #{name}")
-          next if !roles
+          role_sequence = map_roles(x_roles, "mandatory constraint #{name}")
+          next if !role_sequence
 
-          # If X-OR mandatory, the Exclusion is accessed by:
-    #       x_exclusion = (ex = x.xpath("orm:ExclusiveOrExclusionConstraint")[0]) &&
-    #             @x_by_id[ex['ref']]
-    #       puts "Mandatory #{name}(#{roles}) is paired with exclusive #{x_exclusion['Name']}" if x_exclusion
-
-          @mandatory_constraints_by_rs[roles] = x
-          @mandatory_constraint_rs_by_id[x['id']] = roles
+          @mandatory_constraints_by_rs[role_sequence] = x
+          @mandatory_constraint_rs_by_id[x['id']] = role_sequence
         }
       end
 
+      # Mandatory constraints that didn't get merged with an exclusion constraint or a uniqueness constraint are simple mandatories
       def read_residual_mandatory_constraints
-        @mandatory_constraints_by_rs.each { |roles, x|
+        @mandatory_constraints_by_rs.each { |role_sequence, x|
           id = x['id']
           # Create a simply-mandatory PresenceConstraint for each mandatory constraint
           name = x["Name"] || ''
           name = nil if name.size == 0
-          #puts "Residual Mandatory #{name}: #{roles.to_s}"
+          #puts "Residual Mandatory #{name}: #{role_sequence.to_s}"
+
+          if (players = role_sequence.all_role_ref.map{|rr| rr.role.concept}).uniq.size > 1
+            common_supertypes = players[1..-1].
+              inject(players[0].supertypes_transitive) do |remaining, player|
+                remaining & player.supertypes_transitive
+              end
+            join_over = common_supertypes[0]
+
+            raise "Mandatory join constraint #{name} has incompatible players #{players.map{|o| o.name}.inspect}" unless join_over
+            #puts "subtyping join simple mandatory constraint #{name} over #{join_over.name}"
+          end
 
           pc = @constellation.PresenceConstraint(:new)
           pc.vocabulary = @vocabulary
           pc.name = name
-          pc.role_sequence = roles
+          pc.role_sequence = role_sequence
           pc.is_mandatory = true
           pc.min_frequency = 1 
           pc.max_frequency = nil
           pc.is_preferred_identifier = false
 
-          (@constraints_by_rs[roles] ||= []) << pc
+          (@constraints_by_rs[role_sequence] ||= []) << pc
           @by_id[id] = pc
         }
       end
@@ -611,24 +618,45 @@ module ActiveFacts
           pi = x_pi ? @by_id[eref = x_pi['ref']] : nil
 
           # Skip uniqueness constraints on implied concepts
-          if x_pi && !pi
-            puts "Skipping uniqueness constraint #{name}, entity not found"
-            next
-          end
-
-          # A uniqueness constraint on a fact having an implied objectification isn't preferred:
-  #       if pi &&
-  #         (x_pi_for = @x_by_id[eref]) &&
-  #         (np = x_pi_for.xpath('orm:NestedPredicate')[0]) &&
-  #         np['IsImplied']
-  #           pi = nil
-  #       end
+          next if x_pi && !pi
 
           # Get the RoleSequence:
           x_roles = x.xpath("orm:RoleSequence/orm:Role")
           next if x_roles.size == 0
-          roles = map_roles(x_roles, "uniqueness constraint #{name}")
-          next if !roles
+          role_sequence = map_roles(x_roles, "uniqueness constraint #{name}")
+          next if !role_sequence
+
+          # Check for a join
+          if (fact_types = role_sequence.all_role_ref.map{|rr| rr.role.fact_type}).uniq.size > 1
+            internal = role_sequence.all_role_ref.map{|rr|rr.role.fact_type}.uniq.size == 1
+            objectification = nil
+            puts "Handling internal UC in external code!" if internal   # Will we ever even get an IUC here?
+            players = role_sequence.all_role_ref.
+              map do |rr|
+                other_roles = rr.role.fact_type.all_role.to_a-[rr.role]
+                raise "Internal error in NORMA uniqueness constraint, fact type '#{rr.role.fact_type.default_reading}' is not binary" if other_roles.size > 1
+                if rr.role.fact_type.all_role.size == 1
+                  rr.role.concept
+                elsif !internal && rr.role.fact_type.entity_type
+                  objectification = 'objectification '
+                  rr.role.fact_type.entity_type
+                else other_roles[0]
+                  other_roles[0].concept
+                end
+              end.uniq
+
+            # A join uniqueness constraint must only have one inheritance path.
+            # That is, the join is over the most derived type, and the other roles must all be supertypes
+            common_subtypes = players[1..-1].
+              inject(players[0].subtypes_transitive) do |remaining, player|
+                remaining & player.subtypes_transitive
+              end
+            join_over = common_subtypes[0]
+
+            raise "Uniqueness join constraint #{name} has incompatible players #{players.map{|o| o.name}.inspect}" unless join_over
+            subtyping = players.size > 1 ? 'subtyping ' : ''
+            #puts "#{subtyping}#{objectification}join uniqueness constraint over #{join_over.name} in #{fact_types.map(&:default_reading)*', '}"
+          end
 
           # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
           if (x_roles.size == 1 &&
@@ -636,8 +664,6 @@ module ActiveFacts
               (x_role = @x_by_id[id]) &&
               (nodes = x_role.parent.elements).size == 2 &&
               (sibling = nodes[1]) &&
-#              x_role.parent.children.size == 2 &&
-#              (sibling = x_role.parent.children[1]) &&
               (ib_id = sibling.elements[0]['ref']) &&
               (ib = @x_by_id[ib_id]) &&
               ib['IsImplicitBooleanValue'])
@@ -645,23 +671,18 @@ module ActiveFacts
           end
 
           mc_id = nil
-          if (mc = @mandatory_constraints_by_rs[roles])
+          if (mc = @mandatory_constraints_by_rs[role_sequence])
             # Remove absorbed mandatory constraints, leaving residual ones.
             # puts "Absorbing MC #{mc['Name']}"
-            @mandatory_constraints_by_rs.delete(roles)
+            @mandatory_constraints_by_rs.delete(role_sequence)
             mc_id = mc['id']
             @mandatory_constraint_rs_by_id.delete(mc['id'])
           end
 
-          # A UC that spans more than one Role of a fact will be a Preferred Id for the implied object
-          #puts "Unique" + rs.to_s +
-          #    (pi ? " (preferred id for #{pi.name})" : "") +
-          #    (mc ? " (mandatory)" : "") if pi && !mc
-
           # A TypeInheritance fact type has a uniqueness constraint on each role.
           # If this UC is on the supertype and identifies the subtype, it's preferred:
           is_supertype_constraint =
-            (rr = roles.all_role_ref.single) &&
+            (rr = role_sequence.all_role_ref.single) &&
             (role = rr.role) &&
             (fact_type = role.fact_type) &&
             fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) &&
@@ -671,16 +692,16 @@ module ActiveFacts
           pc = @constellation.PresenceConstraint(:new)
           pc.vocabulary = @vocabulary
           pc.name = name
-          pc.role_sequence = roles
+          pc.role_sequence = role_sequence
           pc.is_mandatory = true if mc
           pc.min_frequency = mc ? 1 : 0
           pc.max_frequency = 1 
           pc.is_preferred_identifier = true if pi || unary_identifier || is_supertype_constraint
-          #puts "#{name} covers #{roles.describe} has min=#{pc.min_frequency}, max=1, preferred=#{pc.is_preferred_identifier.inspect}" if emit_special_debug
+          #puts "#{name} covers #{role_sequence.describe} has min=#{pc.min_frequency}, max=1, preferred=#{pc.is_preferred_identifier.inspect}" if emit_special_debug
 
-          #puts roles.all_role_ref.to_a[0].role.fact_type.describe + " is subject to " + pc.describe if roles.all_role_ref.all?{|r| r.role.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance }
+          #puts role_sequence.all_role_ref.to_a[0].role.fact_type.describe + " is subject to " + pc.describe if role_sequence.all_role_ref.all?{|r| r.role.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance }
 
-          (@constraints_by_rs[roles] ||= []) << pc
+          (@constraints_by_rs[role_sequence] ||= []) << pc
           @by_id[uc_id] = pc
           @by_id[mc_id] = pc if mc_id
         }
@@ -707,6 +728,21 @@ module ActiveFacts
             mc_rs = @mandatory_constraint_rs_by_id[mc_id]
             @mandatory_constraint_rs_by_id.delete(mc_id)
             @mandatory_constraints_by_rs.delete(mc_rs)
+          end
+
+          # Check for a join
+          role_sequences[0].all_role_ref.size.times do |i|
+            role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
+            next if (players = role_refs.map{|rr| rr.role.concept}).uniq.size == 1
+
+            common_subtypes = players[1..-1].
+              inject(players[0].subtypes_transitive) do |remaining, player|
+                remaining & player.subtypes_transitive
+              end
+            join_over = common_subtypes[0]
+
+            raise "Exclusion join constraint #{name} has incompatible players #{players.map{|o| o.name}.inspect}" unless join_over
+            #puts "join #{x_mandatory ? 'mandatory ' : ''}exclusion constraint over #{join_over.name} in #{role_refs.map{|rr| rr.role.fact_type.default_reading}*', '}"
           end
 
           ec = @constellation.SetExclusionConstraint(:new)
@@ -736,6 +772,19 @@ module ActiveFacts
                   "equality constraint #{name}"
                 )
               }
+          role_sequences[0].all_role_ref.size.times do |i|
+            role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
+            next if (players = role_refs.map{|rr| rr.role.concept}).uniq.size == 1
+
+            common_supertypes = players[1..-1].
+              inject(players[0].supertypes_transitive) do |remaining, player|
+                remaining & player.supertypes_transitive
+              end
+            join_over = common_supertypes[0]
+
+            raise "Equality join constraint #{name} has incompatible players #{names*', '}" if common_supertypes.size == 0
+            #puts "join equality constraint over #{join_over.name} in #{role_refs.map{|rr| rr.role.fact_type.default_reading}*', '}"
+          end
 
           ec = @constellation.SetEqualityConstraint(:new)
           ec.vocabulary = @vocabulary
@@ -762,6 +811,19 @@ module ActiveFacts
                   "equality constraint #{name}"
                 )
               }
+          role_sequences[0].all_role_ref.size.times do |i|
+            role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
+            next if (players = role_refs.map{|rr| rr.role.concept}).uniq.size == 1
+
+            common_supertypes = players[1..-1].
+              inject(players[0].supertypes_transitive) do |remaining, player|
+                remaining & player.supertypes_transitive
+              end
+            join_over = common_supertypes[0]
+            raise "join subset constraint #{name} has incompatible players #{names*', '}" if common_supertypes.size == 0
+
+            # puts "join subset constraint #{name} over #{join_over.name} in #{role_refs.map{|rr| rr.role.fact_type.default_reading}*', '}"
+          end
 
           ec = @constellation.SubsetConstraint(:new)
           ec.vocabulary = @vocabulary
@@ -780,16 +842,17 @@ module ActiveFacts
           name = x["Name"] || ''
           name = nil if name.size == 0
           type = x["Type"]
-  #       begin
-  #         # Convert the RingConstraint name to a number:
-  #         type_num = eval("::ActiveFacts::RingConstraint::#{type}") 
-  #       rescue => e
-  #         throw "RingConstraint type #{type} isn't known"
-  #       end
 
-          from, to = *x.xpath("orm:RoleSequence/orm:Role").map{|xr|
-                  @by_id[xr['ref']]
-                }
+          from, to = *x.xpath("orm:RoleSequence/orm:Role").
+            map do |xr|
+              @by_id[xr['ref']]
+            end
+          if from.concept != to.concept
+            common_supertypes = from.concept.supertypes_transitive & to.concept.supertypes_transitive
+            join_over = common_supertypes[0]
+            raise "Ring constraint has incompatible players #{from.concept.name}, #{to.concept.name}" if common_supertypes.size == 0
+            #puts "join ring constraint over #{join_over.name}"
+          end
           rc = @constellation.RingConstraint(:new)
           rc.vocabulary = @vocabulary
           rc.name = name

@@ -747,23 +747,6 @@
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('Metamodel-RoleOccurrence.orm')">
-    <None Include="Metamodel-RoleOccurrence.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel-RoleOccurrence.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Metamodel-RoleOccurrence.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel-RoleOccurrence.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Metamodel-RoleOccurrence.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Metamodel-RoleOccurrence.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('Metamodel.orm')">
     <None Include="Metamodel.DCIL.xml">
       <AutoGen>True</AutoGen>

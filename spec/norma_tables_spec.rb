@@ -15,12 +15,16 @@ require 'activefacts/support'
 require 'activefacts/input/orm'
 
 # The exceptions table is keyed by the model name, and contains the added and removed table names vs NORMA
-Exceptions = {
+orm_failures = {
+  "SubtypePI" => "Has an illegal uniqueness join constraint",
+}
+norma_table_exceptions = {
   "Metamodel" => [[], %w{Agreement Enforcement}],                   # ActiveFacts absorbs Agreement into ContextNote, Enforcement into Constraint
   "MetamodelNext" => [[], %w{Agreement Enforcement}],
   "Orienteering" => [%w{Punch}, []],                                # NORMA doesn't make a table for the IDENTITY field
   "OrienteeringER" => [%w{SeriesEvent}, []],                        # NORMA doesn't make a table for the IDENTITY field
   "RedundantDependency" => [%w{Politician StateOrProvince}, %w{LegislativeDistrict}],   # NORMA doesn't make a table for the 3 IDENTITY fields
+  "SubtypePI" => "Has an illegal uniqueness join constraint",
   "SeparateSubtype" => [%w{Claim}, %w{Incident}],                   # NORMA doesn't make a table for the IDENTITY field. Even when Claim is independent, it still doesn't absorb Incident either and I don't know why, must ask Matt.
   "Warehousing" => [%w{Product Warehouse}, []],                     # NORMA doesn't make a table for the IDENTITY field
   "ServiceDirector" => [%w{DataStoreService MonitorNotificationUser}, %w{DataStoreFileHostSystem }],
@@ -44,17 +48,23 @@ end
 describe "Relational Composition from NORMA" do
   pattern = ENV["AFTESTS"] || "*"
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
-    exception = Exceptions[File.basename(orm_file, ".orm")]
+    exception = norma_table_exceptions[File.basename(orm_file, ".orm")]
     sql_file_pattern = orm_file.sub(/\.orm\Z/, '.*sql')
     sql_file = Dir[sql_file_pattern][0]
     next unless sql_file
+    base = File.basename(orm_file, ".orm")
 
     it "should load #{orm_file} and compute #{
         (exception ? "a modified" :  "the same") + " list of tables similar to those in #{sql_file}"
       }" do
 
       # Read the ORM file:
-      vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      begin
+        vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      rescue => e
+        raise unless orm_failures.include?(base)
+        pending orm_failures[base]
+      end
 
       # Get the list of tables from NORMA's SQL:
       expected_tables = extract_created_tables_from_sql(sql_file)

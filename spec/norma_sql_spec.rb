@@ -12,6 +12,9 @@ require 'activefacts/input/orm'
 require 'activefacts/generate/sql/server'
 
 describe "NORMA Loader with SQL output" do
+  orm_failures = {
+    "SubtypePI" => "Has an illegal uniqueness join constraint",
+  }
   # Generate and return the SQL for the given vocabulary
   def sql(vocabulary)
     output = StringIO.new
@@ -25,9 +28,15 @@ describe "NORMA Loader with SQL output" do
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'examples/SQL/\1.sql')
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.sql')
+    base = File.basename(orm_file, ".orm")
 
     it "should load #{orm_file} and dump SQL matching #{expected_file}" do
-      vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      begin
+        vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      rescue => e
+        raise unless orm_failures.include?(base)
+        pending orm_failures[base]
+      end
 
       # Build and save the actual file:
       sql_text = sql(vocabulary)

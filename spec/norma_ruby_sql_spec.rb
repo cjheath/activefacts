@@ -12,8 +12,12 @@ require 'activefacts/persistence'
 require 'activefacts/generate/ruby'
 
 describe "Column lists from absorption compared with Ruby's" do
-  ABSORPTION_RUBY_FAILURES = {
+  orm_failures = {
+    "SubtypePI" => "Has an illegal uniqueness join constraint",
+  }
+  norma_ruby_failures = {
     "UnaryIdentification" => "No PI for VisitStatus",
+    "SubtypePI" => "Has an illegal uniqueness join constraint",
   }
 
   # Generate and return the Ruby for the given vocabulary
@@ -29,9 +33,15 @@ describe "Column lists from absorption compared with Ruby's" do
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'examples/ruby/\1.rb')
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.rb')
+    base = File.basename(orm_file, ".orm")
 
     it "should load #{orm_file} and generate relational composition and Ruby with matching column names" do
-      vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      begin
+        vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      rescue => e
+        raise unless orm_failures.include?(base)
+        pending orm_failures[base]
+      end
 
       # Get the list of tables from the relational composition:
       absorption_tables = vocabulary.tables.sort_by(&:name)
@@ -41,7 +51,7 @@ describe "Column lists from absorption compared with Ruby's" do
       ruby_text = ruby(vocabulary)
       File.open(actual_file, "w") { |f| f.write ruby_text }
 
-      broken = ABSORPTION_RUBY_FAILURES[File.basename(orm_file, ".orm")]
+      broken = norma_ruby_failures[base]
       eval_it = lambda {
         Object.send :eval, ruby_text
       }

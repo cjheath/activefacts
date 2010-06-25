@@ -18,6 +18,10 @@ class String
 end
 
 describe "NORMA Loader with Ruby output" do
+  orm_failures = {
+    "SubtypePI" => "Has an illegal uniqueness join constraint",
+  }
+
   # Generate and return the Ruby for the given vocabulary
   def ruby(vocabulary)
     output = StringIO.new
@@ -31,9 +35,15 @@ describe "NORMA Loader with Ruby output" do
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'examples/ruby/\1.rb')
     actual_file = orm_file.sub(%r{examples/norma/(.*).orm\Z}, 'spec/actual/\1.rb')
+    base = File.basename(orm_file, ".orm")
 
     it "should load #{orm_file} and dump Ruby matching #{expected_file}" do
-      vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      begin
+        vocabulary = ActiveFacts::Input::ORM.readfile(orm_file)
+      rescue => e
+        raise unless orm_failures.include?(base)
+        pending orm_failures[base]
+      end
 
       # Build and save the actual file:
       ruby_text = ruby(vocabulary)
