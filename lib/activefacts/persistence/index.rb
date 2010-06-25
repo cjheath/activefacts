@@ -172,7 +172,7 @@ module ActiveFacts
           compact.
           sort_by do |index|
             # Put the indices in a defined order:
-            index.columns.map(&:name)+[index.over.name]
+            index.columns.map(&:name)+['', index.over.name]
           end
         end
       end
