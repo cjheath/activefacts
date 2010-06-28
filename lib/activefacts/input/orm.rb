@@ -134,6 +134,7 @@ module ActiveFacts
         read_nested_types
         read_subtypes
         read_roles
+        complete_nested_types
         read_constraints
         read_instances if @options.include?("instances")
         read_diagrams if @options.include?("diagrams")
@@ -313,7 +314,7 @@ module ActiveFacts
         # Process NestedTypes, but ignore ones having a NestedPredicate with IsImplied="true"
         # We'll ignore the fact roles (and constraints) that implied objectifications have.
         # This happens for all ternaries and higher order facts
-        nested_types = []
+        @nested_types = []
         x_nested_types = @x_model.xpath("orm:Objects/orm:ObjectifiedType")
         x_nested_types.each{|x|
           id = x['id']
@@ -333,16 +334,21 @@ module ActiveFacts
           #else
           begin
             #puts "NestedType #{name} is #{id}, nests #{fact_type.fact_type_id}"
-            nested_types <<
+            @nested_types <<
               @by_id[id] =
               nested_type = @constellation.EntityType(@vocabulary, name)
             nested_type.fact_type = fact_type
-            # Create the phantom roles here. These will be used later when we create objectification joins,
-            # but for now there's nothing we import from NORMA which requires objectification joins.
-            # Consequently there's no need to index them against NORMA's phantom roles.
-            nested_type.create_implicit_fact_types
           end
         }
+      end
+
+      def complete_nested_types
+        @nested_types.each do |nested_type|
+          # Create the phantom roles here. These will be used later when we create objectification joins,
+          # but for now there's nothing we import from NORMA which requires objectification joins.
+          # Consequently there's no need to index them against NORMA's phantom roles.
+          nested_type.create_implicit_fact_types
+        end
       end
 
       def read_roles
@@ -707,6 +713,105 @@ module ActiveFacts
         }
       end
 
+      def join(join_over, role_refs)
+        j = @constellation.Join(:new)
+        jrr = role_refs.detect{|rr| rr.role.concept == join_over}
+        @constellation.JoinNode(j, 0, :role_ref => jrr)
+        (role_refs-[jrr]).each do |role_ref|
+          puts "join step(s) from #{role_ref.role.concept.name} to #{join_over.name}"
+        end
+      end
+
+      # Equality and subset joins involve two or more role sequences,
+      # and the respective roles from each sequence must be compatible,
+      # Compatibility might involve subtyping joins but not objectification joins
+      # to the respective end-point (constrained object type).
+      # Also, all roles in each sequence constitute a join over a single
+      # object type, which might involve subtyping or objectification joins.
+      def make_joins(constraint_type, name, role_sequences)
+        # Get the object types constrained for each position in the role sequences.
+        # Supertyping joins may be needed to reach them.
+        end_points = []
+        end_joins = []
+        role_sequences[0].all_role_ref.size.times do |i|
+          role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
+          next if (fact_types = role_refs.map{|rr| rr.role.fact_type}).uniq.size == 1
+          if (players = role_refs.map{|rr| rr.role.concept}).uniq.size == 1
+            end_point = players[0]
+            end_joins[i] = false
+          else
+            # Can the players be joined using a subtyping join?
+            common_supertypes = players[1..-1].
+              inject(players[0].supertypes_transitive) do |remaining, player|
+                remaining & player.supertypes_transitive
+              end
+            end_point = common_supertypes[0]
+
+            raise "constrained roles of #{constraint_type} constraint #{name} are incompatible (#{names*', '})" if common_supertypes.size == 0
+            end_joins[i] = true
+          end
+          end_points[i] = end_point
+        end
+
+        sequence_join_objects = []
+        if role_sequences[0].all_role_ref.size > 1    # There are joins within each sequence.
+          sequence_join_objects =
+            role_sequences.map do |rs|
+              next nil if (fts = rs.all_role_ref.map{|rr| rr.role.fact_type}.uniq).size == 1 && !fts[0].entity_type
+              direct_sups, obj_sups =
+                *rs.all_role_ref.inject(nil) do |a, rr|
+                  # All roles in this sequence must join to the same object type.
+                  # A role in an objectified fact type may indicate either the objectification (not preferred) or the counterpart player.
+                  direct_role_supertypes =
+                    if rr.role.fact_type.all_role.size > 2
+                      # REVISIT: This is little more than guesswork. Perhaps I should just load the joins that NORMA created?
+                      # The best I can say is that seems to mimic NORMA's automatically created join paths in all cases I've found.
+                      possible_roles = rr.role.fact_type.all_role.select{|role| a && a[0].include?(role.concept) }
+                      if possible_roles.size == 1 # Only one candidate matches the types of the possible join nodes
+                        a[0]
+                      else
+                        # puts "#{constraint_type} #{name}: Awkward, try direct-role join on a >2ary '#{rr.role.fact_type.default_reading}'"
+                        rr.role.fact_type.all_role.map{|role| role.concept.supertypes_transitive}.flatten.uniq
+                      end
+                    else
+                      # Get the supertypes of the counterpart role (care with unaries):
+                      roles = rr.role.fact_type.all_role.to_a
+                      (roles[0] == rr.role ? roles[-1] : roles[0]).concept.supertypes_transitive
+                    end
+                  objectification_role_supertypes =
+                    rr.role.fact_type.entity_type ? rr.role.fact_type.entity_type.supertypes_transitive+rr.role.concept.supertypes_transitive : direct_role_supertypes
+                  if !a
+                    #puts "#{constraint_type} #{name} rs #{role_sequences.index(rs)} starts #{direct_role_supertypes.map(&:name).inspect} or #{objectification_role_supertypes.map(&:name).inspect}"
+                    a = [direct_role_supertypes, objectification_role_supertypes]
+                  else
+                    #puts "#{constraint_type} #{name} rs #{role_sequences.index(rs)} continues #{direct_role_supertypes.map(&:name).inspect} or #{objectification_role_supertypes.map(&:name).inspect}"
+                    a[0] &= direct_role_supertypes
+                    a[1] &= objectification_role_supertypes
+                    #puts "... leaving #{a[0].map(&:name).inspect} or #{a[1].map(&:name).inspect}"
+                  end
+                  a
+                end # inject
+                common_supertypes = direct_sups.empty? ? obj_sups : direct_sups
+                raise "Join path in #{constraint_type} #{name} is incomplete" if common_supertypes.size == 0
+                join_over = common_supertypes[0]
+              end # map
+        end
+
+        return if sequence_join_objects.compact.empty? && !end_joins.detect{|e| true}
+
+        debug :join, "#{constraint_type} #{name} constrains #{
+          end_points.zip(end_joins).map{|(p,j)| p.name+(j ? ' & subtypes':'')}*', '
+          }#{
+          if role_sequences[0].all_role_ref.size > 1
+            ", joined over #{sequence_join_objects.map{|o| o ? o.name : '(none)'}*', '}"
+          else
+            ''
+          end
+        }"
+
+        # puts "join #{constraint_type} constraint over #{players[0].name} between #{fact_types.map{|fact_type| fact_type.default_reading}*', '}"
+      end
+
       def read_exclusion_constraints
         x_exclusion_constraints = @x_model.xpath("orm:Constraints/orm:ExclusionConstraint")
         x_exclusion_constraints.each{|x|
@@ -730,20 +835,7 @@ module ActiveFacts
             @mandatory_constraints_by_rs.delete(mc_rs)
           end
 
-          # Check for a join
-          role_sequences[0].all_role_ref.size.times do |i|
-            role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
-            next if (players = role_refs.map{|rr| rr.role.concept}).uniq.size == 1
-
-            common_subtypes = players[1..-1].
-              inject(players[0].subtypes_transitive) do |remaining, player|
-                remaining & player.subtypes_transitive
-              end
-            join_over = common_subtypes[0]
-
-            raise "Exclusion join constraint #{name} has incompatible players #{players.map{|o| o.name}.inspect}" unless join_over
-            #puts "join #{x_mandatory ? 'mandatory ' : ''}exclusion constraint over #{join_over.name} in #{role_refs.map{|rr| rr.role.fact_type.default_reading}*', '}"
-          end
+          make_joins('exclusion', name, role_sequences)
 
           ec = @constellation.SetExclusionConstraint(:new)
           ec.vocabulary = @vocabulary
@@ -772,19 +864,8 @@ module ActiveFacts
                   "equality constraint #{name}"
                 )
               }
-          role_sequences[0].all_role_ref.size.times do |i|
-            role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
-            next if (players = role_refs.map{|rr| rr.role.concept}).uniq.size == 1
 
-            common_supertypes = players[1..-1].
-              inject(players[0].supertypes_transitive) do |remaining, player|
-                remaining & player.supertypes_transitive
-              end
-            join_over = common_supertypes[0]
-
-            raise "Equality join constraint #{name} has incompatible players #{names*', '}" if common_supertypes.size == 0
-            #puts "join equality constraint over #{join_over.name} in #{role_refs.map{|rr| rr.role.fact_type.default_reading}*', '}"
-          end
+          make_joins('equality', name, role_sequences)
 
           ec = @constellation.SetEqualityConstraint(:new)
           ec.vocabulary = @vocabulary
@@ -811,19 +892,7 @@ module ActiveFacts
                   "equality constraint #{name}"
                 )
               }
-          role_sequences[0].all_role_ref.size.times do |i|
-            role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
-            next if (players = role_refs.map{|rr| rr.role.concept}).uniq.size == 1
-
-            common_supertypes = players[1..-1].
-              inject(players[0].supertypes_transitive) do |remaining, player|
-                remaining & player.supertypes_transitive
-              end
-            join_over = common_supertypes[0]
-            raise "join subset constraint #{name} has incompatible players #{names*', '}" if common_supertypes.size == 0
-
-            # puts "join subset constraint #{name} over #{join_over.name} in #{role_refs.map{|rr| rr.role.fact_type.default_reading}*', '}"
-          end
+          make_joins('subset', name, role_sequences)
 
           ec = @constellation.SubsetConstraint(:new)
           ec.vocabulary = @vocabulary
