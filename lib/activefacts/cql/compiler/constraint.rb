@@ -272,12 +272,14 @@ module ActiveFacts
 
         # Make a JoinNode for every binding present in these readings
         def build_join_nodes(readings_list)
-          join = @constellation.Join(:new)
-          all_bindings_in_readings(readings_list).
-            each do |binding|
-              debug :join, "Creating join node #{join.all_join_node.size} for #{binding.inspect}"
-              binding.join_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => binding.player)
-            end
+          debug :join, "Building join nodes" do
+            join = @constellation.Join(:new)
+            all_bindings_in_readings(readings_list).
+              each do |binding|
+                debug :join, "Creating join node #{join.all_join_node.size} for #{binding.inspect}"
+                binding.join_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => binding.player)
+              end
+          end
         end
 
         def build_join_steps reading, constrained_rs, objectification_node = nil
@@ -357,21 +359,28 @@ module ActiveFacts
           if @readings_lists.detect { |rl| rl.size > 1 || rl.detect{|reading| reading.role_refs.detect{|role_ref| role_ref.objectification_join } } }
             # Take this path if there are joins:
 
-            @readings_lists.map do |readings_list|
-              # Every Binding in these readings becomes a Join Node,
-              # and every reading becomes a JoinStep (and a RoleSequence).
-              # The returned RoleSequences contains the RoleRefs for the common_bindings.
+            debug :join, "Building joins for #{@readings_lists.size} readings lists" do
+              @readings_lists.map do |readings_list|
+                debug :join, "Building join for #{readings_list.inspect}" do
+                  # Every Binding in these readings becomes a Join Node,
+                  # and every reading becomes a JoinStep (and a RoleSequence).
+                  # The returned RoleSequences contains the RoleRefs for the common_bindings.
 
-              # Create a join with a join node for every binding:
-              join = build_join_nodes(readings_list)
+                  # Create a join with a join node for every binding:
+                  join = build_join_nodes(readings_list)
 
-              constrained_rs = @constellation.RoleSequence(:new)
-              readings_list.each do |reading|
-                build_join_steps(reading, constrained_rs)
+                  constrained_rs = @constellation.RoleSequence(:new)
+                  debug :join, "Building join steps" do
+                    readings_list.each do |reading|
+                      build_join_steps(reading, constrained_rs)
+                    end
+                  end
+
+                  constrained_rs
+                end
               end
-
-              constrained_rs
             end
+
           else
             @readings_lists.
               zip(@bindings_by_list).
