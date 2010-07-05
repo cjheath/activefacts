@@ -100,6 +100,8 @@ module ActiveFacts
       end
 
       rule acyclic 'acyclic' !alphanumeric end
+      rule antisymmetric 'antisymmetric' !alphanumeric end
+      rule asymmetric 'asymmetric' !alphanumeric end
       rule alias 'alias' !alphanumeric end 
       rule all 'all' !alphanumeric end
       rule and 'and' !alphanumeric end
@@ -125,6 +127,7 @@ module ActiveFacts
       rule import 'import' !alphanumeric end
       rule includes 'includes' !alphanumeric end
       rule intransitive 'intransitive' !alphanumeric end
+      rule irreflexive 'irreflexive' !alphanumeric end
       rule is 'is' !alphanumeric end 
       rule its 'its' !alphanumeric end
       rule least 'least' !alphanumeric end
@@ -143,6 +146,7 @@ module ActiveFacts
       rule partitioned 'partitioned' !alphanumeric end 
       rule personal 'personal' !alphanumeric end 
       rule restricted 'restricted' !alphanumeric end
+      rule reflexive 'reflexive' !alphanumeric end
       rule returning 'returning' !alphanumeric end
       rule separate 'separate' !alphanumeric end 
       rule some 'some' !alphanumeric end

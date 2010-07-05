@@ -123,7 +123,7 @@ module ActiveFacts
                   role.fact_type.is_a?(Metamodel::TypeInheritance) and
                   [players[0].name, players[1].name].sort != all_roles.map{|r| r.concept.name}.sort
                   # REVISIT: Perhaps this subtyping match can be made transitive in future:
-                  debug :matching, "Requiring exact match for TypeInheritance invocation want (#{players.map{|p|p.name}.sort*', '}), discounting (#{all_roles.map{|r|r.concept.name}.sort*', '})"
+                  #debug :matching, "Requiring exact match for TypeInheritance invocation want (#{players.map{|p|p.name}.sort*', '}), discounting (#{all_roles.map{|r|r.concept.name}.sort*', '})"
                   next
                 end
 
@@ -299,6 +299,11 @@ module ActiveFacts
                 role_has_residual_adjectives = true
               end
 
+              if a = phrase.role_name and e = role_ref.role.role_name and a != e
+                debug :matching, "Role names #{e} for #{player.name} and #{a} for #{next_player_phrase.player.name} don't match"
+                return nil
+              end
+
               residual_adjectives ||= role_has_residual_adjectives
               if residual_adjectives && next_player_phrase.binding.refs.size == 1
                 debug :matching_fails, "Residual adjectives have no other purpose, so this match fails"
@@ -383,7 +388,7 @@ module ActiveFacts
             @phrases.each do |phrase|
               next unless phrase.is_a?(RoleRef)
               phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase.player)
-              phrase.role.role_name = phrase.role_name if phrase.role_name
+              phrase.role.role_name = phrase.role_name if phrase.role_name && phrase.role_name.is_a?(String)
             end
           end
           fact_type
@@ -429,6 +434,9 @@ module ActiveFacts
               else
                 phrase
               end
+            end
+            if existing = @fact_type.all_reading.detect{|r| r.text == reading_words*' '}
+              raise "Reading '#{existing.expand}' already exists, so why are we creating a duplicate?"
             end
             constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ")
           end
@@ -477,22 +485,26 @@ module ActiveFacts
                 role_ref.trailing_adjective = a
                 extra_adjectives << "-"+a
               end
-              if a = rp.role_name
+              if (a = rp.role_name) && (e = rp.role_ref.role.role_name) && a != e
+                raise "Can't create new reading '#{reading_text}' for '#{reading.expand}' with alternate role name #{a}"
                 extra_adjectives << "(as #{a})"
               end
             end
-            debug :matching, "Making new role sequence for new reading #{reading_words*" "} due to #{extra_adjectives.inspect}"
+            debug :matching, "Making new role sequence for new reading #{reading_text} due to #{extra_adjectives.inspect}"
           else
             # Use existing RoleSequence
             @role_sequence = role_phrases[0].role_ref.role_sequence
             if @role_sequence.all_reading.detect{|r| r.text == reading_text }
-              debug :matching, "No need to re-create identical reading for #{reading_words*" "}"
+              debug :matching, "No need to re-create identical reading for #{reading_text}"
               return @role_sequence
             else
-              debug :matching, "Using existing role sequence for new reading '#{reading_words*" "}'"
+              debug :matching, "Using existing role sequence for new reading '#{reading_text}'"
             end
           end
-          constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ")
+          if @fact_type.all_reading.detect{|r| r.text == reading_text}
+            raise "Reading '#{@reading.expand}' already exists, so why are we creating a duplicate (with #{extra_adjectives.inspect})?"
+          end
+          constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_text)
           @role_sequence
         end
 
