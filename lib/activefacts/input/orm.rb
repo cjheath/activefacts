@@ -66,6 +66,9 @@ module ActiveFacts
         "RowIdOther" => "Integer(8)",
         "ObjectIdOther" => "Integer(8)"
       }
+    RESERVED_WORDS = %w{
+      and but each each either false if maybe no none not one or some that true where
+    }
 
     private
       def self.readfile(filename, *options)
@@ -446,7 +449,7 @@ module ActiveFacts
               reading = @constellation.Reading(fact_type, fact_type.all_reading.size)
               reading.role_sequence = role_sequence
               # REVISIT: The downcase here only needs to be the initial letter of each word, but be safe:
-              reading.text = extract_adjectives(x.text, role_sequence).downcase
+              reading.text = extract_adjectives(x.text, role_sequence)
             }
           }
         }
@@ -459,13 +462,12 @@ module ActiveFacts
           role_ref = all_role_refs[i]
           role = role_ref.role
 
-          word = '\b[A-Za-z][A-Za-z0-9_]+\b'
+          word = '\b[A-Za-z_][A-Za-z0-9_]+\b'
           leading_adjectives_re = "#{word}-(?: +#{word})*"
           trailing_adjectives_re = "(?:#{word} +)*-#{word}"
           role_with_adjectives_re =
             %r| ?(#{leading_adjectives_re})? *\{#{i}\} *(#{trailing_adjectives_re})? ?|
 
-          #stop = false
           text.gsub!(role_with_adjectives_re) {
             # REVISIT: Don't want to strip all spaces here any more:
             #puts "text=#{text.inspect}, la=#{$1.inspect}, ta=#{$2.inspect}" if $1 || $2
@@ -482,8 +484,31 @@ module ActiveFacts
             " {#{i}} "
           }
         }
-        text.sub!(/\A /, '')
-        text.sub!(/ \Z/, '')
+        text.sub!(/\s\s*/, ' ')   # Compress extra spaces
+        text.strip!
+        text.downcase!    # Check for reserved words and object type names *after* downcasing
+        elided = ''
+        text.gsub!(/( |-?\b[A-Za-z_][A-Za-z0-9_]*\b-?|\{\d\})|./) do |w|
+          case w
+          when /[A-Za-z]/
+            if RESERVED_WORDS.include?(w)
+              $stderr.puts "Masking reserved word '#{w}' in '#{text}'"
+              next "_#{w}"
+            elsif @constellation.Concept[[[@vocabulary.name], w]]
+              $stderr.puts "Masking object type name '#{w}' in '#{text}'"
+              next "_#{w}"
+            end
+            next w
+          when /\{\d\}/
+            next w
+          when / /
+            next w
+          else
+            elided << w
+            next ''
+          end
+        end
+        $stderr.puts "Elided illegal characters '#{elided}' from reading" unless elided.empty?
         text
       end
 
