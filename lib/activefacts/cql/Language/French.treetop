@@ -53,8 +53,8 @@ module ActiveFacts
 
       rule quantifier
 	(
-	  # REVISIT: each s                   { def value; [1, nil]; end }
-	  / ('a' s 'certaines' / un s 'certain' 'e'? ) s    { def value; nil; end }
+	  # REVISIT: each s                   { def value; [1, nil]; end } /
+	  ('a' s 'certaines' / un s 'certain' 'e'? ) s    { def value; nil; end }
 	  / 'que' s ('ce'/'cette'/'ces') s	    { def value; nil; end } # ce is masculine, ces is plural
 
 	  / un s                    { def value; [1, 1]; end }
@@ -77,8 +77,6 @@ module ActiveFacts
 	    Compiler::Quantifier.new(v[0], v[1])
 	  end
 	}
-      end
-
       end
 
       rule quantity

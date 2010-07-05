@@ -118,6 +118,7 @@ module ActiveFacts
               related_type.all_role.select do |role|
                 all_roles = role.fact_type.all_role
                 next if all_roles.size != players.size      # Wrong number of players
+                next if role.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
 
                 if players.size == 2 and
                   role.fact_type.is_a?(Metamodel::TypeInheritance) and
