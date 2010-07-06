@@ -88,13 +88,10 @@ module ActiveFacts
         s q:qualifier? s reading s p:post_qualifiers? s c:context_note?
         {
 	  def ast
-	    qualifiers = (q.empty? ? [] : [ q.text_value ]) +
-	      (p.empty? ? [] : p.list)
-	    # REVISIT: When we implement objectification joins, we might get multiple readings here...
-	    r = reading.ast
+	    r = reading.ast	# An array of readings
 	    r[0].qualifiers << q.text_value unless q.empty?
-	    r[0].qualifiers += p.list unless p.empty?
-	    r[0].context_note = c.ast unless c.empty?
+	    r[-1].qualifiers += p.list unless p.empty?
+	    r[-1].context_note = c.ast unless c.empty?
 	    r
 	  end
         }
@@ -142,24 +139,37 @@ module ActiveFacts
 	  def ast
 	    asts = elements.map{ |r| r.ast }
 	    contraction = []
-	    if asts[-1].is_a?(Array)
-	      contraction = asts.pop
-	      asts.push(contraction.shift)
+	    qualifiers = []
+	    if asts[-1].is_a?(Array)	    # A contracted_reading (Array of [role, qualifiers, *readings])
+	      contraction = asts.pop	    # Pull off the contraction
+	      contracted_role = contraction.shift
+	      qualifiers = contraction.shift
+	      asts.push(contracted_role)  # And replace it by the role removed from the contraction
 	    end
-	     [Compiler::Reading.new(asts)] + contraction
+	    reading = Compiler::Reading.new(asts)
+	    reading.qualifiers += qualifiers
+	    [reading] + contraction
 	  end
         }
       end
 
       # REVISIT: and later, similarly for contracted conditions (including comparisons)
       rule contracted_reading
-	role that s q:qualifier? s reading p:post_qualifiers? s
+	role p:post_qualifiers? that s q:qualifier? s reading s
 	{
 	  def ast
-	    readings = [role.ast, *Compiler::Reading.new([role.ast, *reading.elements.map{|r| r.ast}])]
-	    readings[1].qualifiers << q.text_value unless q.empty?  # Add maybe/definitely
-	    readings[1].qualifiers += p.list unless p.empty?	    # Add transitive, etc qualifiers
-	    readings
+	    # reading.ast will return an array of Readings, but the first reading is special. We must:
+	    # * prepend a new role
+	    # * attach the qualifiers
+	    readings = reading.ast
+	    readings[0].phrases.unshift(role.ast)
+	    readings[0].qualifiers << q.text_value unless q.empty?  # Add maybe/definitely
+
+	    # A contracted_reading returns an array containing:
+	    # * a role AST
+	    # * a qualifiers array
+	    # * an array of Readings
+	    [role.ast, p.empty? ? [] : p.list] + readings
 	  end
 	}
       end
