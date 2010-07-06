@@ -154,6 +154,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
     </Compile>
+    <Compile Include="WaiterTips._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WaiterTips.orm</DependentUpon>
+    </Compile>
     <Compile Include="Warehousing._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Warehousing.orm</DependentUpon>
@@ -296,6 +300,10 @@
     <None Include="Tests.Test5.Load.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Tests.Test5.Load._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="WaiterTips.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>WaiterTips._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Warehousing.orm">
       <Generator>ORMCustomTool</Generator>
@@ -778,6 +786,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Metamodel.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Supervision.orm')">
+    <None Include="Supervision.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Supervision.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Supervision.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Supervision.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Supervision.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Supervision.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
