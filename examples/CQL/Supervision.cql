@@ -32,3 +32,7 @@ either Employee reports to Manager or Employee is a Manager that is a CEO that r
 CEO runs Company
 	if and only if
 	CEO is a Manager that is an Employee that works for Company;
+// This constraint cannot be expressed in NORMA until it adds explicit join paths:
+Employee(1) reports to Manager that is an Employee(2) that works for Company
+	if and only if
+	Employee(1) works for Company;
