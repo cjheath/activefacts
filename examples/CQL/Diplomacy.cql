@@ -13,8 +13,8 @@ LanguageName is written as String;
 Country is identified by its Name;
 
 Diplomat is identified by its Name;
-Diplomat is from at most one Country;
-Diplomat serves in at most one Country;
+Diplomat represents one Country;
+Diplomat serves in one Country;
 
 Language is identified by its Name;
 
@@ -23,20 +23,24 @@ LanguageUse is where
 	Country uses at least one Language;
 
 Ambassador is a kind of Diplomat;
-Ambassador is to at most one Country,
-	Country receives at most one Ambassador;
 
 Fluency is where
 	Diplomat speaks at least one Language,
 	Language is spoken by Diplomat;
 
+Representation is where
+	Ambassador is from Country(1) to Country(2),
+	Country(1) is represented in Country(2) by one Ambassador;
+
 /*
  * Constraints:
  */
-for each Diplomat and Country at most one of these holds:
+for each Diplomat, Country at most one of these holds:
 	Diplomat serves in Country,
-	Diplomat is from Country;
-Ambassador is to Country
-	only if Ambassador is a Diplomat that serves in Country;
+	Diplomat represents Country;
+Ambassador is from Country(1) to Country(2)
+	only if Ambassador is a Diplomat that represents Country(1);
+Ambassador is from Country(1) to Country(2)
+	only if Diplomat serves in Country(2);
 Diplomat serves in Country
 	only if Diplomat speaks Language that is spoken in Country;
