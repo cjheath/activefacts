@@ -38,7 +38,6 @@ module ActiveFacts
       rule prescan
         s (
           term_definition_name s entity_prefix
-		#&{|e| debugger if e[2].text_value =~ /kind/; true}
 		&{|e| input.context.object_type(e[0].value, "entity type"); true }
           /
           t1:term_definition_name written_as t2:term_definition_name

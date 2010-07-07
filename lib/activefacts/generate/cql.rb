@@ -367,14 +367,28 @@ module ActiveFacts
         return common, players_differ
       end
 
-      def dump_set_constraint(c)
-        scrseqs = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}.map{|scr|scr.role_sequence}
-        if scrseqs[0].all_role_ref.detect{|rr| rr.join_node}
+      def verbalise_role_sequences(role_sequences)
+        if role_sequences.all_role_ref.detect{|rr| rr.join_node}
+          join = role_sequences.all_role_ref.detect{|rr| rr.join_node}.join_node.join
+          join.verbalise_over_role_refs(role_sequences.all_role_ref.to_a)
+        else
+          fact_types = role_sequences.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.role.fact_type}
+          fact_types.uniq!
+
+          # This doesn't use the name of the common supertype of constrained roles
+
+          fact_types.map{|ft| ft.default_reading([], nil)}*' and '
+        end
+      end
+
+      def dump_set_comparison_constraint(c)
+        role_sequences = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}.map{|scr|scr.role_sequence}
+
+        if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.join_node}}
           # This set constraint has an explicit join. Verbalise it.
-          readings_list = scrseqs.
+          readings_list = role_sequences.
             map do |rs|
-              join = rs.all_role_ref.detect{|rr| rr.join_node}.join_node.join
-              join.verbalise_over_role_refs(rs.all_role_ref.to_a)
+              verbalise_role_sequences(rs) 
             end
           if c.is_a?(ActiveFacts::Metamodel::SetEqualityConstraint)
             puts readings_list.join("\n\tif and only if\n\t") + ';'
@@ -549,9 +563,9 @@ module ActiveFacts
         end
 
         puts \
-          "#{subset_fact_types.map{|ft| ft.default_reading([], nil)}*" and "}" +
+          verbalise_role_sequences(c.subset_role_sequence) +
           "\n\tonly if " +
-          "#{superset_fact_types.map{|ft| ft.default_reading([], nil)}*" and "}" +
+          verbalise_role_sequences(c.superset_role_sequence) +
           ";"
       end
 
@@ -567,7 +581,7 @@ module ActiveFacts
           when ActiveFacts::Metamodel::RingConstraint
             dump_ring_constraint(c)
           when ActiveFacts::Metamodel::SetComparisonConstraint # includes SetExclusionConstraint, SetEqualityConstraint
-            dump_set_constraint(c)
+            dump_set_comparison_constraint(c)
           when ActiveFacts::Metamodel::SubsetConstraint
             dump_subset_constraint(c)
           else

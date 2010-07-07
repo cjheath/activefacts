@@ -279,6 +279,7 @@ module ActiveFacts
                 debug :join, "Creating join node #{join.all_join_node.size} for #{binding.inspect}"
                 binding.join_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => binding.player)
               end
+            join
           end
         end
 
@@ -356,55 +357,53 @@ module ActiveFacts
         end
 
         def role_sequences_for_common_bindings ignore_trailing_joins = false
-          if @readings_lists.detect { |rl| rl.size > 1 || rl.detect{|reading| reading.role_refs.detect{|role_ref| role_ref.objectification_join } } }
-            # Take this path if there are joins:
-
-            debug :join, "Building joins for #{@readings_lists.size} readings lists" do
-              @readings_lists.map do |readings_list|
-                debug :join, "Building join for #{readings_list.inspect}" do
-                  # Every Binding in these readings becomes a Join Node,
-                  # and every reading becomes a JoinStep (and a RoleSequence).
-                  # The returned RoleSequences contains the RoleRefs for the common_bindings.
-
-                  # Create a join with a join node for every binding:
-                  join = build_join_nodes(readings_list)
-
-                  constrained_rs = @constellation.RoleSequence(:new)
-                  debug :join, "Building join steps" do
-                    readings_list.each do |reading|
-                      build_join_steps(reading, constrained_rs)
-                    end
-                  end
-
-                  constrained_rs
-                end
-              end
-            end
-
-          else
-            @readings_lists.
+          @readings_lists.
               zip(@bindings_by_list).
               map do |readings_list, bindings|
-                role_sequence = @constellation.RoleSequence(:new)
-                join_bindings = bindings-@common_bindings
-                unless join_bindings.empty? or ignore_trailing_joins && join_bindings.size <= 1
-                  debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_bindings.inspect} to #{join_bindings.inspect} in #{readings_list.inspect}"
+            # Does this readings_list involve a join?
+            if readings_list.size > 1 or
+              readings_list.detect{|reading| reading.role_refs.detect{|role_ref| role_ref.objectification_join } }
+
+              debug :join, "Building join for #{readings_list.inspect}" do
+                # Every Binding in these readings becomes a Join Node,
+                # and every reading becomes a JoinStep (and a RoleSequence).
+                # The returned RoleSequences contains the RoleRefs for the common_bindings.
+
+                # Create a join with a join node for every binding:
+                join = build_join_nodes(readings_list)
+
+                constrained_rs = @constellation.RoleSequence(:new)
+                debug :join, "Building join steps" do
+                  readings_list.each do |reading|
+                    build_join_steps(reading, constrained_rs)
+                  end
                 end
-                @common_bindings.each do |binding|
-                  roles = readings_list.
-                    map do |reading|
-                      reading.role_refs.detect{|rr| rr.binding == binding }
-                    end.
-                    compact.  # A join reading will probably not have the common binding
-                    map do |role_ref|
-                      role_ref.role_ref && role_ref.role_ref.role or role_ref.role
-                    end.
-                    compact
-                  # REVISIT: Should use reading side effects to preserve residual adjectives here.
-                  @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => roles[0])
-                end
-                role_sequence
+                join.validate
+
+                constrained_rs
               end
+            else
+              # There's no join in this readings_list, just create a role_sequence
+              role_sequence = @constellation.RoleSequence(:new)
+              join_bindings = bindings-@common_bindings
+              unless join_bindings.empty? or ignore_trailing_joins && join_bindings.size <= 1
+                debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_bindings.inspect} to #{join_bindings.inspect} in #{readings_list.inspect}"
+              end
+              @common_bindings.each do |binding|
+                roles = readings_list.
+                  map do |reading|
+                    reading.role_refs.detect{|rr| rr.binding == binding }
+                  end.
+                  compact.  # A join reading will probably not have the common binding
+                  map do |role_ref|
+                    role_ref.role_ref && role_ref.role_ref.role or role_ref.role
+                  end.
+                  compact
+                # REVISIT: Should use reading side effects to preserve residual adjectives here.
+                @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => roles[0])
+              end
+              role_sequence
+            end
           end
         end
       end

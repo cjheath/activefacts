@@ -81,18 +81,6 @@ module ActiveFacts
       end
     end
 
-    class Join
-      def column_name(joiner = '-')
-        concept == input_role.concept ? input_role.preferred_reference.role_name(joiner) : Array(concept.name)
-      end
-
-      def describe
-        "#{input_role.fact_type.describe(input_role)}->" +
-          concept.name +
-          (output_role ? "->#{output_role.fact_type.describe(output_role)}":"")
-      end
-    end
-
     class RoleRef
       def describe
         role_name
@@ -495,7 +483,11 @@ module ActiveFacts
 
     class JoinStep
       def describe
-        "#{input_join_node.describe}<->#{output_join_node.describe}"
+        input_role_ref = input_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
+        output_role_ref = output_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
+        "from node #{input_join_node.ordinal} #{input_role_ref ? input_role_ref.role.concept.name : input_join_node.concept.name}"+
+        " to node #{output_join_node.ordinal} #{output_role_ref ? output_role_ref.role.concept.name : output_join_node.concept.name}"+
+        ": #{is_anti && 'not '}#{is_outer && 'maybe '}#{fact_type.default_reading}"
       end
 
       def is_unary_step
@@ -522,16 +514,10 @@ module ActiveFacts
         next_step =
           next_steps.detect do |js|
             next false if js.is_objectification_step
-            fact_types =    # REVISIT: Store the FactType on the JoinStep to avoid this search?
-              js.input_join_node.all_role_ref.map{|rr| rr.role.fact_type} &
-              js.output_join_node.all_role_ref.map{|rr| rr.role.fact_type}
-            # There can and must be only one fact type involved in this join step
-            raise "Ambiguous or incorrect join step" if fact_types.size != 1
-            fact_type = fact_types[0]
 
             # If we find a reading here, it can be contracted against the previous one
             next_reading =
-              fact_type.all_reading.detect do |reading|
+              js.fact_type.all_reading.detect do |reading|
                 # This step is contractable iff the FactType has a reading that starts with the role of next_node (no preceding text)
                 reading.text =~ /^\{([0-9])\}/ and
                   role_ref = reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i} and
@@ -666,15 +652,78 @@ module ActiveFacts
         readings
       end
 
-    end
+      def show
+        debug :join, "Displaying full contents of Join #{join_id}" do
+          all_join_node.sort_by{|jn| jn.ordinal}.each do |join_node|
+            debug :join, "Node #{join_node.ordinal} for #{join_node.concept.name}" do
+              (join_node.all_join_step_as_input_join_node.to_a +
+                join_node.all_join_step_as_output_join_node.to_a).
+                uniq.
+                each do |join_step|
+                  debug :join, "#{
+                      join_step.is_unary_step ? 'unary ' : ''
+                    }#{
+                      join_step.is_objectification_step ? 'objectification ' : ''
+                    }step #{join_step.describe}"
+                end
+              join_node.all_role_ref.each do |role_ref|
+                debug :join, "reference #{role_ref.describe} in #{role_ref.role_sequence.describe} over '#{role_ref.role.fact_type.default_reading}'"
+              end
+            end
+          end
+        end
+      end
 
-    class JoinStep
-      def describe
-        input_role_ref = input_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
-        output_role_ref = output_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
-        "from #{input_role_ref ? input_role_ref.role.concept.name : input_join_node.concept.name}"+
-        " to #{output_role_ref ? output_role_ref.role.concept.name : output_join_node.concept.name}"+
-        ": #{is_anti && 'not '}#{is_outer && 'maybe '}#{fact_type.default_reading}"
+      def validate
+        show
+        return
+
+        # Check all parts of this join for validity
+        jns = all_join_node.sort_by{|jn| jn.ordinal}
+        jns.each_with_index do |jn, i|
+          raise "Join node #{i} should have ordinal #{jn.ordinal}" unless jn.ordinal == i
+        end
+
+        # Check the join nodes:
+        steps = []
+        jns.each_with_index do |join_node, i|
+          raise "Join Node #{i} has missing concept" unless join_node.concept
+          if join_node.all_role_ref.detect{|rr| rr.role.concept != join_node.concept }
+            raise "All role references for join node #{join_node.ordinal} should be for #{
+                join_node.concept.name
+              } but we have #{
+                (join_node.all_role_ref.map{|rr| rr.role.concept.name}-[join_node.concept.name]).uniq*', '
+              }"
+          end
+          steps += join_node.all_join_step_as_input_join_node.to_a
+          steps += join_node.all_join_step_as_output_join_node.to_a
+
+          # REVISIT: All Role References must be in a role sequence that covers one fact type exactly (why?)
+          # REVISIT: All such role references must have a join node in this join. (why?)
+        end
+
+        # Check the join steps:
+        steps.uniq!
+        steps.each_with_index do |join_step, i|
+          raise "Join Step #{i} has missing fact type" unless join_step.fact_type
+          raise "Join Step #{i} has missing input node" unless join_step.input_join_node
+          raise "Join Step #{i} has missing output node" unless join_step.output_join_node
+          debugger
+          p join_step.fact_type.default_reading
+          p join_step.input_join_node.all_role_ref.map(&:describe)
+          p join_step.output_join_node.all_role_ref.map(&:describe)
+=begin
+          unless join_step.input_join_node.all_role_ref.
+              detect do |rr|
+                rr.role.fact_type == join_step.fact_type
+                or rr.role.fact_type.is_a?(ImplicitFactType) && rr.role.fact_type.role.fact_type == rr.join_step.concept
+              end
+            raise "Join Step #{join_step.describe} has nodes not matching its fact type"
+          end
+=end
+        end
+
+        # REVISIT: Do a connectivity check
       end
     end
 
@@ -685,8 +734,27 @@ module ActiveFacts
         if objectification = role.fact_type.entity_type
           "#{objectification.name} involves #{role.concept.name}"
         else
-          role.fact_type.default_reading  # Must be a unary FT
+          role.fact_type.default_reading+" Boolean"  # Must be a unary FT
         end
+      end
+
+      # This is only used for debugging, from RoleRef#describe
+      class ImplicitReading
+        attr_accessor :fact_type, :text
+
+        def initialize(fact_type, text)
+          @fact_type = fact_type
+          @text = text
+        end
+
+        def ordinal; 0; end
+      end
+
+      def all_reading
+        [@reading ||= ImplicitReading.new(
+          self,
+          role.fact_type.entity_type ? "{0} involves {1}" : role.fact_type.default_reading+" Boolean"
+        )]
       end
     end
 

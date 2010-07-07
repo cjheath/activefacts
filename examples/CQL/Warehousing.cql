@@ -42,7 +42,8 @@ Purchase Order is identified by its ID;
 Purchase Order Item is identified by Purchase Order and Product where
 	Purchase Order includes Purchase Order Item,
 	Purchase Order Item is part of one Purchase Order,
-	Purchase Order Item is for one Product;
+	Purchase Order Item is for one Product,
+	Product is in Purchase Order Item;
 Purchase Order Item is in one Quantity;
 
 Receipt is identified by its ID;
@@ -59,7 +60,8 @@ Sales Order is identified by its ID;
 Sales Order Item is identified by Sales Order and Product where
 	Sales Order includes Sales Order Item,
 	Sales Order Item is part of one Sales Order,
-	Sales Order Item is for one Product;
+	Sales Order Item is for one Product,
+	Product is in Sales Order Item;
 Dispatch Item is for at most one Sales Order Item;
 Sales Order Item is in one Quantity;
 
@@ -91,6 +93,6 @@ Direct Order Match is where
 either Dispatch Item is for Transfer Request or Dispatch Item is for Sales Order Item but not both;
 either Received Item is for Purchase Order Item or Received Item is for Transfer Request but not both;
 Purchase Order Item matches Sales Order Item
-	only if Purchase Order Item is for Product and Sales Order Item is for Product;
+	only if Purchase Order Item is for Product that is in Sales Order Item;
 each Bin occurs at most one time in
 	Warehouse contains Bin;
