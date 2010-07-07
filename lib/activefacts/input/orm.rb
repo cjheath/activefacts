@@ -149,7 +149,7 @@ module ActiveFacts
         x_entity_types = @x_model.xpath("orm:Objects/orm:EntityType")
         x_entity_types.each{|x|
           id = x['id']
-          name = x['Name'] || ""
+          name = (x['Name'] || "").gsub(/\s+/,' ').strip
           name = nil if name.size == 0
           entity_types <<
             @by_id[id] =
@@ -174,7 +174,7 @@ module ActiveFacts
         #pp x_value_types
         x_value_types.each{|x|
           id = x['id']
-          name = x['Name'] || ""
+          name = (x['Name'] || "").gsub(/\s+/,' ').strip
           name = nil if name.size == 0
 
           cdt = x.xpath('orm:ConceptualDataType')[0]
@@ -262,7 +262,7 @@ module ActiveFacts
 
         @x_subtypes.each{|x|
           id = x['id']
-          name = x['Name'] || x['_Name'] || ''
+          name = (x['Name'] || x['_Name'] || '').gsub(/\s+/,' ').strip
           name = nil if name.size == 0
           # puts "FactType #{name || id}"
 
@@ -321,7 +321,7 @@ module ActiveFacts
         x_nested_types = @x_model.xpath("orm:Objects/orm:ObjectifiedType")
         x_nested_types.each{|x|
           id = x['id']
-          name = x['Name'] || ""
+          name = (x['Name'] || "").gsub(/\s+/,' ').strip
           name = nil if name.size == 0
 
           x_fact_type = x.xpath('orm:NestedPredicate')[0]
@@ -367,7 +367,7 @@ module ActiveFacts
 
           # Deal with FactRoles (Roles):
           x_fact_roles.each{|x|
-            name = x['Name'] || ""
+            name = (x['Name'] || "").gsub(/\s+/,' ').strip
             name = nil if name.size == 0
 
             # _IsMandatory = x['_IsMandatory']
@@ -406,8 +406,6 @@ module ActiveFacts
             #puts "#{@vocabulary}, Name=#{x['Name']}, concept=#{concept}"
             throw "Role is played by #{concept.class} not Concept" if !(@constellation.vocabulary.concept(:Concept) === concept)
 
-            name = x['Name'] || ''
-            name = nil if name.size == 0
             #puts "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.fact_type_id} played by #{concept.name}"
 
             role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :concept => concept)
@@ -471,7 +469,6 @@ module ActiveFacts
           text.gsub!(role_with_adjectives_re) {
             # REVISIT: Don't want to strip all spaces here any more:
             #puts "text=#{text.inspect}, la=#{$1.inspect}, ta=#{$2.inspect}" if $1 || $2
-            #debugger if $1 || $2
             la = ($1||'').gsub(/\s+/,' ').sub(/-/,'').strip
             ta = ($2||'').gsub(/\s+/,' ').sub(/-/,'').strip
             #puts "Setting leading adj #{la.inspect} from #{text.inspect} for #{role_ref.role.concept.name}" if la != ""
@@ -492,10 +489,13 @@ module ActiveFacts
           case w
           when /[A-Za-z]/
             if RESERVED_WORDS.include?(w)
-              $stderr.puts "Masking reserved word '#{w}' in '#{text}'"
+              $stderr.puts "Masking reserved word '#{w}' in reading '#{text}'"
               next "_#{w}"
             elsif @constellation.Concept[[[@vocabulary.name], w]]
-              $stderr.puts "Masking object type name '#{w}' in '#{text}'"
+              $stderr.puts "Masking object type name '#{w}' in reading '#{text}'"
+              next "_#{w}"
+            elsif all_role_refs.detect{|rr| rr.role.role_name == w}
+              $stderr.puts "Masking role name '#{w}' in reading '#{text}'"
               next "_#{w}"
             end
             next w
@@ -622,7 +622,7 @@ module ActiveFacts
             join_over = common_supertypes[0]
 
             raise "Mandatory join constraint #{name} has incompatible players #{players.map{|o| o.name}.inspect}" unless join_over
-            #puts "subtyping join simple mandatory constraint #{name} over #{join_over.name}"
+            debug :join, "subtyping join simple mandatory constraint #{name} over #{join_over.name}"
           end
 
           pc = @constellation.PresenceConstraint(:new)
@@ -686,7 +686,7 @@ module ActiveFacts
 
             raise "Uniqueness join constraint #{name} has incompatible players #{players.map{|o| o.name}.inspect}" unless join_over
             subtyping = players.size > 1 ? 'subtyping ' : ''
-            #puts "#{subtyping}#{objectification}join uniqueness constraint over #{join_over.name} in #{fact_types.map(&:default_reading)*', '}"
+            # debug :join, "#{subtyping}#{objectification}join uniqueness constraint over #{join_over.name} in #{fact_types.map(&:default_reading)*', '}"
           end
 
           # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
@@ -738,15 +738,6 @@ module ActiveFacts
         }
       end
 
-      def join(join_over, role_refs)
-        j = @constellation.Join(:new)
-        jrr = role_refs.detect{|rr| rr.role.concept == join_over}
-        @constellation.JoinNode(j, 0, :role_ref => jrr)
-        (role_refs-[jrr]).each do |role_ref|
-          puts "join step(s) from #{role_ref.role.concept.name} to #{join_over.name}"
-        end
-      end
-
       # Equality and subset joins involve two or more role sequences,
       # and the respective roles from each sequence must be compatible,
       # Compatibility might involve subtyping joins but not objectification joins
@@ -778,13 +769,13 @@ module ActiveFacts
           end_points[i] = end_point
         end
 
-        sequence_join_objects = []
+        sequence_join_over = []
         if role_sequences[0].all_role_ref.size > 1    # There are joins within each sequence.
-          sequence_join_objects =
+          sequence_join_over =
             role_sequences.map do |rs|
-              next nil if (fts = rs.all_role_ref.map{|rr| rr.role.fact_type}.uniq).size == 1 && !fts[0].entity_type
+              next nil if (fts = rs.all_role_ref.map{|rr| rr.role.fact_type}.uniq).size == 1 # REVISIT: If we can stay inside this objectified FT, why not? # && !fts[0].entity_type
               direct_sups, obj_sups =
-                *rs.all_role_ref.inject(nil) do |a, rr|
+                *rs.all_role_ref.sort_by{|rr| rr.ordinal}.inject(nil) do |a, rr|
                   # All roles in this sequence must join to the same object type.
                   # A role in an objectified fact type may indicate either the objectification (not preferred) or the counterpart player.
                   direct_role_supertypes =
@@ -822,19 +813,113 @@ module ActiveFacts
               end # map
         end
 
-        return if sequence_join_objects.compact.empty? && !end_joins.detect{|e| true}
+        # If there are no joins, we can drop out here.
+        if sequence_join_over.compact.empty? && !end_joins.detect{|e| true}
+          return
+        end
 
-        debug :join, "#{constraint_type} #{name} constrains #{
-          end_points.zip(end_joins).map{|(p,j)| p.name+(j ? ' & subtypes':'')}*', '
+        debug :join, "#{constraint_type} join constraint #{name} over #{role_sequences.map{|rs|rs.describe}*', '}"
+
+      return  # REVISIT: Disabled until we get the join verbaliser working.
+
+        join = nil
+        debug :join, "#{constraint_type} join constraint #{name} constrains #{
+            end_points.zip(end_joins).map{|(p,j)| p.name+(j ? ' & subtypes':'')}*', '
           }#{
           if role_sequences[0].all_role_ref.size > 1
-            ", joined over #{sequence_join_objects.map{|o| o ? o.name : '(none)'}*', '}"
+            ", joined over #{sequence_join_over.map{|o| o ? o.name : '(none)'}*', '}"
           else
             ''
           end
-        }"
+        }" do
 
-        # puts "join #{constraint_type} constraint over #{players[0].name} between #{fact_types.map{|fact_type| fact_type.default_reading}*', '}"
+          # There may be one join per role sequence:
+          role_sequences.zip(sequence_join_over).map do |role_sequence, join_over|
+            # Skip if there's no join here (sequence join nor end-point subset join)
+            role_refs = role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}
+            next unless join_over or role_refs.detect{|rr| rr.role.concept != end_points[rr.ordinal]}
+
+            replacement_rs = @constellation.RoleSequence(:new)
+            join = @constellation.Join(:new)
+            join_node = nil
+            role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}.each_with_index do |role_ref, i|
+              end_point = end_points[i]
+              debug :join, "Join Node #{join.all_join_node.size} is for #{end_point.name}"
+              end_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => end_point)
+              role_node = end_node
+
+              if role_ref.role.concept != end_point
+                subtype = role_ref.role.concept
+                debug :join, "Making subtyping join step #{join.all_join_node.size} from #{subtype.name} to #{end_point.name}" do
+                  role_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => role_ref.role.concept)
+                  ti = role_ref.role.concept.all_type_inheritance_as_subtype.detect{|ti| ti.supertype == end_point}
+                  raise "REVISIT: Can't yet handle multiple subtyping levels in subtyping join" unless ti
+
+                  # Make a new role sequence over the subtyping fact type:
+                  rs = @constellation.RoleSequence(:new)
+                  @constellation.RoleRef(rs, 0, :role => ti.all_role.detect{|r| r.concept == role_ref.role.concept}, :join_node => role_node)
+                  @constellation.RoleRef(rs, 1, :role => ti.all_role.detect{|r| r.concept == end_point}, :join_node => end_node)
+
+                  js = @constellation.JoinStep(role_node, end_node, :fact_type => ti)
+                  debug :join, "New subtyping join step #{js.describe}"
+                end
+              end
+
+              @constellation.RoleRef(replacement_rs, 0, :role => role_ref.role, :join_node => end_node)
+
+              # REVISIT: Something here needs to handle unaries, which have a join step over two copies of the same JoinNode
+
+              if join_over
+                if !join_node
+                  debug :join, "Join Node #{join.all_join_node.size} is over #{join_over.name}"
+                  join_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => join_over)
+                end
+                debug :join, "Making join step from #{end_point.name} to #{join_over.name}" do
+                  role = role_ref.role
+                  # Detect an objectification step. Here, the role is in an objectified type, but the end_point isn't another role player of that fact type... or is there a better test?
+                  if join_over == role.fact_type.entity_type
+                    p join_over.name
+                    p role.fact_type.default_reading
+                    p end_point.name
+                    raise "REVISIT: Incomplete"
+                  elsif end_point == role.fact_type.entity_type
+                    fact_type = role.implicit_fact_type
+                    # REVISIT: Might these be reversed... sometimes?
+                    end_role = fact_type.all_role.single
+                    join_role = role
+                  else
+                    fact_type = role.fact_type
+                    end_role = role
+                    # This is unambiguous, since it's come from NORMA which only supports (unambiguous) implicit joins:
+                    join_role = role.fact_type.all_role.detect{|r| r.concept == join_over}
+                    # debugger unless join_role && end_role
+                  end
+
+                  rs = @constellation.RoleSequence(:new)
+                  # Detect the fact type over which we're joining (may involve objectification)
+                  @constellation.RoleRef(rs, 0, :role => end_role, :join_node => end_node)
+                  @constellation.RoleRef(rs, 1, :role => join_role, :join_node => join_node)
+                  js = @constellation.JoinStep(end_node, join_node, :fact_type => fact_type)
+                  debug :join, "New join step #{js.describe}"
+                end
+              else
+                debug :join, "Need join step for non-join_over role #{end_point.name} #{role_ref.describe} in #{role_ref.role.fact_type.default_reading}"
+                if role_ref.role.fact_type.all_role.size > 1
+                  raise unimplemented
+                else
+                  js = @constellation.JoinStep(role_node, role_node, :fact_type => role_ref.role.fact_type)
+                end
+              end
+            end
+
+            # Thoroughly check that this is a valid join
+            join.validate
+
+            # Constrain the replacement role sequence, which has the attached join:
+            role_sequences[role_sequences.index(role_sequence)] = replacement_rs
+          end
+        end
+
       end
 
       def read_exclusion_constraints
@@ -935,7 +1020,7 @@ module ActiveFacts
           id = x['id']
           name = x["Name"] || ''
           name = nil if name.size == 0
-          type = x["Type"]
+          ring_type = x["Type"]
 
           from, to = *x.xpath("orm:RoleSequence/orm:Role").
             map do |xr|
@@ -945,7 +1030,7 @@ module ActiveFacts
             common_supertypes = from.concept.supertypes_transitive & to.concept.supertypes_transitive
             join_over = common_supertypes[0]
             raise "Ring constraint has incompatible players #{from.concept.name}, #{to.concept.name}" if common_supertypes.size == 0
-            #puts "join ring constraint over #{join_over.name}"
+            debug :join, "join ring constraint over #{join_over.name}"
           end
           rc = @constellation.RingConstraint(:new)
           rc.vocabulary = @vocabulary
@@ -953,7 +1038,7 @@ module ActiveFacts
           # rc.enforcement = 
           rc.role = from
           rc.other_role = to
-          rc.ring_type = type
+          rc.ring_type = ring_type.gsub(/PurelyReflexive/,'Reflexive')
           @by_id[id] = rc
         }
       end
@@ -1112,7 +1197,7 @@ module ActiveFacts
       def read_diagrams
         x_diagrams = @document.root.xpath("ormDiagram:ORMDiagram")
         x_diagrams.each do |x|
-          name = (x["Name"] || '').gsub(/\s/,'')
+          name = (x["Name"] || '').strip
           diagram = @constellation.Diagram(@vocabulary, name)
           debug :diagram, "Starting to read diagram #{name}"
           shapes = x.xpath("ormDiagram:Shapes/*")
