@@ -139,6 +139,7 @@ Ring Constraint has other-Role,
 	other-Role is of Ring Constraint;
 
 Role Sequence is identified by its Id;
+Join projects one Role Sequence;
 Presence Constraint covers one Role Sequence;
 Reading is in one Role Sequence,
 	Role Sequence is for Reading;

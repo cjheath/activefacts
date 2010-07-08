@@ -39,7 +39,7 @@ for each Diplomat, Country at most one of these holds:
 	Diplomat serves in Country,
 	Diplomat represents Country;
 Ambassador is from Country(1) to Country(2)
-	only if Ambassador is a Diplomat that represents Country(1);
+	only if Ambassador is a kind of Diplomat that represents Country(1);
 Ambassador is from Country(1) to Country(2)
 	only if Diplomat serves in Country(2);
 Diplomat serves in Country

@@ -83,13 +83,17 @@ module ActiveFacts
 
     class RoleRef
       def describe
-        role_name
+        role_name + (join_node ? " JN#{join_node.ordinal}" : '')
       end
 
       def role_name(joiner = "-")
         name_array =
           if role.fact_type.all_role.size == 1
-            role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.split(/\s/)
+            if role.fact_type.is_a?(ImplicitFactType)
+              "#{role.concept.name} phantom for #{role.fact_type.role.concept.name}"
+            else
+              role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.split(/\s/)
+            end
           else
             role.role_name || [leading_adjective, role.concept.name, trailing_adjective].compact.map{|w| w.split(/\s/)}.flatten
           end
@@ -108,6 +112,10 @@ module ActiveFacts
         "("+
           all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.describe }*", "+
         ")"
+      end
+
+      def all_role_ref_in_order
+        all_role_ref.sort_by{|rr| rr.ordinal}
       end
     end
 
@@ -497,8 +505,7 @@ module ActiveFacts
       end
 
       def is_objectification_step
-        fact_type.is_a?(ImplicitFactType) &&
-          (fact_type.role.implicit_fact_type == fact_type ? true : (puts "!!! ImplicitFactType not self !!!"; false))
+        fact_type.is_a?(ImplicitFactType)
       end
     end
 
@@ -667,7 +674,7 @@ module ActiveFacts
                     }step #{join_step.describe}"
                 end
               join_node.all_role_ref.each do |role_ref|
-                debug :join, "reference #{role_ref.describe} in #{role_ref.role_sequence.describe} over '#{role_ref.role.fact_type.default_reading}'"
+                debug :join, "reference #{role_ref.describe} in '#{role_ref.role.fact_type.default_reading}' over #{role_ref.role_sequence.describe}#{role_ref.role_sequence == role_sequence ? ' (projected)' : ''}"
               end
             end
           end

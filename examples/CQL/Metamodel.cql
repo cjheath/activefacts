@@ -127,6 +127,7 @@ Ring Constraint has other-Role,
 	other-Role is of Ring Constraint;
 
 Role Sequence is identified by its Id;
+Join projects one Role Sequence;
 Presence Constraint covers one Role Sequence;
 Reading is in one Role Sequence,
 	Role Sequence is for Reading;
@@ -377,6 +378,11 @@ either Agreement was reached by Agent or Agreement was on Date;
 each combination Diagram, Position occurs at most one time in
 	Shape is in Diagram,
 	Shape is at Position;
+// Correct verbalisation of this UC (using the OWA for the "provides identification" unary):
+/*
+each Entity Type(1) occurs at most one time in
+	Type Inheritance (where Entity Type(1) is a supertype of Entity Type(2)) provides identification;
+*/
 each combination Entity Type, Type Inheritance occurs at most one time in
 	Entity Type is subtype of super-Entity Type,
 	Type Inheritance provides identification;

@@ -233,6 +233,8 @@ module ActiveFacts
             @constellation.RoleRef(rs, 0, :role => sub_role)
             @constellation.RoleRef(rs, 1, :role => super_role)
             @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a kind of {1}")
+            # REVISIT: Can we get away with adding "{0} is a/n {1}" here?
+            # REVISIT: Can we deprecate the "is a subtype of" reading?
             @constellation.Reading(inheritance_fact, 1, :role_sequence => rs, :text => "{0} is a subtype of {1}")
 
             rs2 = @constellation.RoleSequence(:new)

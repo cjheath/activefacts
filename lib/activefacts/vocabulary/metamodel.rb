@@ -207,6 +207,7 @@ module ActiveFacts
     class Join
       identified_by :join_id
       one_to_one :join_id, :mandatory => true     # See JoinId.join
+      has_one :role_sequence, :mandatory => true  # See RoleSequence.all_join
     end
 
     class JoinNode

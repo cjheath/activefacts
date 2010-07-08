@@ -285,6 +285,15 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
+CREATE TABLE [Join] (
+	-- Join has Join Id,
+	JoinId                                  int IDENTITY NOT NULL,
+	-- Join projects Role Sequence and Role Sequence has Role Sequence Id,
+	RoleSequenceId                          int NOT NULL,
+	PRIMARY KEY(JoinId)
+)
+GO
+
 CREATE TABLE JoinNode (
 	-- Join Node is for Concept and Concept is called Name,
 	ConceptName                             varchar(64) NOT NULL,
@@ -295,7 +304,8 @@ CREATE TABLE JoinNode (
 	-- Join Node has Ordinal position,
 	Ordinal                                 shortint NOT NULL,
 	PRIMARY KEY(JoinId, Ordinal),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName)
+	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
+	FOREIGN KEY (JoinId) REFERENCES [Join] (JoinId)
 )
 GO
 
@@ -657,6 +667,10 @@ GO
 
 ALTER TABLE Fact
 	ADD FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
+GO
+
+ALTER TABLE [Join]
+	ADD FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
 GO
 
 ALTER TABLE Reading

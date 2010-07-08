@@ -130,6 +130,7 @@ module ActiveFacts
                     select do |key, binding|
                       binding.player == role_ref.binding.player and
                         binding != role_ref.binding and
+                        binding.role_name == role_ref.binding.role_name and  # Both will be nil if they match
                         # REVISIT: Don't bind to a binding with a role occurrence in the same reading
                         !binding.refs.detect{|rr|
                           x = rr.reading == reading
@@ -336,8 +337,7 @@ module ActiveFacts
                 end
               end
               if (@common_bindings.include?(binding))
-                debug :join, "#{binding.inspect} is a constrained binding, add the Role Ref"
-                barf unless role
+                debug :join, "#{binding.inspect} is a constrained binding, add the Role Ref for #{role.concept.name}"
                 @constellation.RoleRef(constrained_rs, constrained_rs.all_role_ref.size, :role => role, :join_node => binding.join_node)
               end
             end
@@ -365,6 +365,7 @@ module ActiveFacts
               readings_list.detect{|reading| reading.role_refs.detect{|role_ref| role_ref.objectification_join } }
 
               debug :join, "Building join for #{readings_list.inspect}" do
+                debug :join, "Constrained bindings are #{@common_bindings.inspect}"
                 # Every Binding in these readings becomes a Join Node,
                 # and every reading becomes a JoinStep (and a RoleSequence).
                 # The returned RoleSequences contains the RoleRefs for the common_bindings.
@@ -372,15 +373,15 @@ module ActiveFacts
                 # Create a join with a join node for every binding:
                 join = build_join_nodes(readings_list)
 
-                constrained_rs = @constellation.RoleSequence(:new)
+                join.role_sequence = @constellation.RoleSequence(:new)
                 debug :join, "Building join steps" do
                   readings_list.each do |reading|
-                    build_join_steps(reading, constrained_rs)
+                    build_join_steps(reading, join.role_sequence)
                   end
                 end
                 join.validate
 
-                constrained_rs
+                join.role_sequence
               end
             else
               # There's no join in this readings_list, just create a role_sequence

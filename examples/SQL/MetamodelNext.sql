@@ -223,6 +223,15 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
+CREATE TABLE [Join] (
+	-- Join has Join Id,
+	JoinId                                  int IDENTITY NOT NULL,
+	-- Join projects Role Sequence and Role Sequence has Role Sequence Id,
+	RoleSequenceId                          int NOT NULL,
+	PRIMARY KEY(JoinId)
+)
+GO
+
 CREATE TABLE JoinNode (
 	-- Join includes Join Node and Join has Join Id,
 	JoinId                                  int NOT NULL,
@@ -230,7 +239,8 @@ CREATE TABLE JoinNode (
 	ObjectTypeGUID                          varchar NOT NULL,
 	-- Join Node has Ordinal position,
 	Ordinal                                 shortint NOT NULL,
-	PRIMARY KEY(JoinId, Ordinal)
+	PRIMARY KEY(JoinId, Ordinal),
+	FOREIGN KEY (JoinId) REFERENCES [Join] (JoinId)
 )
 GO
 
@@ -649,6 +659,10 @@ GO
 
 ALTER TABLE Instance
 	ADD FOREIGN KEY (ObjectTypeGUID) REFERENCES ObjectType (ConceptGUID)
+GO
+
+ALTER TABLE [Join]
+	ADD FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
 GO
 
 ALTER TABLE JoinNode

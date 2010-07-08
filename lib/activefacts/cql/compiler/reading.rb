@@ -126,14 +126,6 @@ module ActiveFacts
                   next if all_roles.size != players.size      # Wrong number of players
                   next if role.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
 
-                  if players.size == 2 and
-                    role.fact_type.is_a?(Metamodel::TypeInheritance) and
-                    [players[0].name, players[1].name].sort != all_roles.map{|r| r.concept.name}.sort
-                    # REVISIT: Perhaps this subtyping match can be made transitive in future:
-                    #debug :matching, "Requiring exact match for TypeInheritance invocation want (#{players.map{|p|p.name}.sort*', '}), discounting (#{all_roles.map{|r|r.concept.name}.sort*', '})"
-                    next
-                  end
-
                   all_players = all_roles.map{|r| r.concept}  # All the players of this candidate fact type
 
                   next if player_related_types[1..-1].        # We know the first player is compatible, check the rest
@@ -173,13 +165,22 @@ module ActiveFacts
               # This requires the final decision on fact type matching to be postponed until
               # the whole declaration has been processed and the extra adjectives can be matched.
 
-              best_matches = matches.keys.sort_by{|match| matches[match].cost}
+              best_matches = matches.keys.sort_by{|match|
+                # Between equivalents, prefer the one without a join on the first role
+                (m = matches[match]).cost*2 + ((!(e = m.role_side_effects[0]) || e.cost) == 0 ? 0 : 1)
+              }
               debug :matching_fails, "Found #{matches.size} valid matches#{matches.size > 0 ? ', best is '+best_matches[0].expand : ''}"
 
-              if matches.size > 1 and (b = matches[best_matches[0]].cost) > 0 || b == matches[best_matches[1]].cost
-                # Complain if there's more than one inexact match:
-                raise "#{@phrases.inspect} could match any of the following:\n\t"+
-                  best_matches.map { |reading| reading.expand + " with " + matches[reading].describe } * "\n\t"
+              if matches.size > 1
+                first = matches[best_matches[0]]
+                cost = first.cost
+                equal_best = matches.select{|k,m| m.cost == cost}
+
+                if equal_best.size > 1 and equal_best.detect{|k,m| !m.fact_type.is_a?(Metamodel::TypeInheritance)}
+                  # Complain if there's more than one equivalent cost match (unless all are TypeInheritance):
+                  raise "#{@phrases.inspect} could match any of the following:\n\t"+
+                    best_matches.map { |reading| reading.expand + " with " + matches[reading].describe } * "\n\t"
+                end
               end
 
               if matches.size >= 1
@@ -263,7 +264,8 @@ module ActiveFacts
                   debug :matching_fails, "Reading discounted because next player #{player.name} doesn't match #{next_player_phrase.player.name}"
                   return nil
                 end
-                debug :matching, "Subtype join is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
+
+                debug :matching_fails, "Subtype join is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
               end
 
               # It's the right player. Do the adjectives match? This must include the intervening_words, if any.
@@ -309,10 +311,19 @@ module ActiveFacts
                 role_has_residual_adjectives = true
               end
 
-              if a = phrase.role_name and e = role_ref.role.role_name and a != e
-                debug :matching, "Role names #{e} for #{player.name} and #{a} for #{next_player_phrase.player.name} don't match"
+              # REVISIT: I'm not even sure I should be caring about role names here.
+              # Role names are on roles, and are only useful within the fact type definition.
+              # At some point, we need to worry about role names on readings within fact type derivations,
+              # which means they'll move to the Role Ref class; but even then they only match within the
+              # definition that creates that Role Ref.
+=begin
+              if a = (!phrase.role_name.is_a?(Integer) && phrase.role_name) and
+                  e = role_ref.role.role_name and
+                  a != e
+                debug :matching, "Role names #{e.inspect} for #{player.name} and #{a.inspect} for #{next_player_phrase.player.name} don't match"
                 return nil
               end
+=end
 
               residual_adjectives ||= role_has_residual_adjectives
               if residual_adjectives && next_player_phrase.binding.refs.size == 1
@@ -321,7 +332,7 @@ module ActiveFacts
               end
 
               # The phrases matched this reading's next role_ref, save data to apply the side-effects:
-              debug :matching, "Saving side effects for #{next_player_phrase.term}, absorbs #{absorbed_precursors}/#{absorbed_followers}#{common_supertype ? ', join over supertype '+ common_supertype.name : ''}" if absorbed_precursors+absorbed_followers+(common_supertype ? 1 : 0) > 0
+              debug :matching_fails, "Saving side effects for #{next_player_phrase.term}, absorbs #{absorbed_precursors}/#{absorbed_followers}#{common_supertype ? ', join over supertype '+ common_supertype.name : ''}" if absorbed_precursors+absorbed_followers+(common_supertype ? 1 : 0) > 0
               side_effects << ReadingMatchSideEffect.new(next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers, common_supertype, role_has_residual_adjectives)
             end
 
@@ -329,6 +340,27 @@ module ActiveFacts
               debug :matching_fails, "Extra words #{(intervening_words + @phrases[phrase_num..-1]).inspect}"
               return nil
             end
+
+            if fact_type.is_a?(Metamodel::TypeInheritance)
+              # There may be only one subtyping join on a TypeInheritance fact type.
+              ti_joins = side_effects.select{|se| se.common_supertype}
+              if ti_joins.size > 1   # Not allowed
+                debug :matching_fails, "Can't have more than one subtyping join on a TypeInheritance fact type"
+                return nil
+              end
+
+              if ti = ti_joins[0]
+                # The Type Inheritance join must continue in the same direction as this reading.
+                allowed = fact_type.supertype == ti.role_ref.role.concept ?
+                    fact_type.subtype.supertypes_transitive :
+                    fact_type.supertype.subtypes_transitive
+                if !allowed.include?(ti.common_supertype)
+                  debug :matching_fails, "Implicit subtyping join extends in the wrong direction"
+                  return nil
+                end
+              end
+            end
+
             debug :matching, "Matched reading '#{reading.expand}' with #{side_effects.map{|se| se.absorbed_precursors+se.absorbed_followers + (se.common_supertype ? 1 : 0)
             }.inspect} side effects#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
@@ -344,6 +376,7 @@ module ActiveFacts
             side_effects.apply_all do |se|
 
               # We re-use the role_ref if possible (no extra adjectives were used, no rolename or join, etc).
+              debug :matching, "side-effect means binding #{se.phrase.inspect} matches role ref #{se.role_ref.role.concept.name}"
               se.phrase.role_ref = se.role_ref
 
               changed = false
@@ -444,7 +477,11 @@ module ActiveFacts
                 phrase
               end
             end
-            if existing = @fact_type.all_reading.detect{|r| r.text == reading_words*' '}
+            if existing = @fact_type.all_reading.detect{|r|
+                r.text == reading_words*' ' and
+                  r.role_sequence.all_role_ref_in_order.map{|rr| rr.role.concept} ==
+                    role_sequence.all_role_ref_in_order.map{|rr| rr.role.concept}
+              }
               raise "Reading '#{existing.expand}' already exists, so why are we creating a duplicate?"
             end
             constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ")
