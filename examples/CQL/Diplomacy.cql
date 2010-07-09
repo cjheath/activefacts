@@ -41,6 +41,6 @@ for each Diplomat, Country at most one of these holds:
 Ambassador is from Country(1) to Country(2)
 	only if Ambassador is a kind of Diplomat that represents Country(1);
 Ambassador is from Country(1) to Country(2)
-	only if Diplomat serves in Country(2);
+	only if Ambassador is a kind of Diplomat that serves in Country(2);
 Diplomat serves in Country
 	only if Diplomat speaks Language that is spoken in Country;

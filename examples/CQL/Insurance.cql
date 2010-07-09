@@ -299,7 +299,7 @@ Motor Fleet Policy is a kind of Motor Policy;
 either Motor Policy is a Single Motor Policy or Motor Policy is a Motor Fleet Policy but not both;
 Party is a company
 	if and only if
-	Party is a Company that has contact-Person;
+	Party is a Company that has contact Person;
 each Contact Methods occurs at least one time in
 	Contact Methods includes mobile-Phone,
 	Contact Methods includes home-Phone,

@@ -6,3 +6,4 @@
 #
 require 'activefacts/vocabulary/metamodel'
 require 'activefacts/vocabulary/extensions'
+require 'activefacts/vocabulary/verbaliser'
