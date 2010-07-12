@@ -161,7 +161,7 @@ module ActiveFacts
             debug :join, "Emitting objectification allows deleting #{other_step.describe}"
             step_completed(other_step)
           end
-          [ reading, exit_step.input_join_node, exit_step]
+          [ reading, exit_step ? exit_step.input_join_node : exit_node, exit_step]
         end
 
         # Expand this reading (or partial reading, during contraction)
@@ -221,6 +221,7 @@ module ActiveFacts
                   fact_type = next_step.fact_type.role.fact_type
                   if last_is_contractable && next_node.concept.fact_type == fact_type
                     readings += objectification_verbalisation(fact_type.entity_type)
+                    debugger unless next_step.input_join_node
                   else
                     # This objectified fact type does not need to be made explicit.
                     # Need to step_completed the other steps in this OFT.
@@ -231,6 +232,8 @@ module ActiveFacts
                       readings += " and " unless readings.empty?
                       readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence)
                     end
+                    # No need to continue; we might have just deleted the last step
+                    break if @join_steps.empty?
                   end
                 else
                   fact_type = next_step.fact_type
