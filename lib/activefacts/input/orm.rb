@@ -149,7 +149,7 @@ module ActiveFacts
         x_entity_types = @x_model.xpath("orm:Objects/orm:EntityType")
         x_entity_types.each{|x|
           id = x['id']
-          name = (x['Name'] || "").gsub(/\s+/,' ').strip
+          name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
           name = nil if name.size == 0
           entity_types <<
             @by_id[id] =
@@ -174,7 +174,7 @@ module ActiveFacts
         #pp x_value_types
         x_value_types.each{|x|
           id = x['id']
-          name = (x['Name'] || "").gsub(/\s+/,' ').strip
+          name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
           name = nil if name.size == 0
 
           cdt = x.xpath('orm:ConceptualDataType')[0]
@@ -262,7 +262,7 @@ module ActiveFacts
 
         @x_subtypes.each{|x|
           id = x['id']
-          name = (x['Name'] || x['_Name'] || '').gsub(/\s+/,' ').strip
+          name = (x['Name'] || x['_Name'] || '').gsub(/\s+/,' ').gsub(/-/,'_').strip
           name = nil if name.size == 0
           # puts "FactType #{name || id}"
 
@@ -321,7 +321,7 @@ module ActiveFacts
         x_nested_types = @x_model.xpath("orm:Objects/orm:ObjectifiedType")
         x_nested_types.each{|x|
           id = x['id']
-          name = (x['Name'] || "").gsub(/\s+/,' ').strip
+          name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
           name = nil if name.size == 0
 
           x_fact_type = x.xpath('orm:NestedPredicate')[0]
@@ -367,7 +367,7 @@ module ActiveFacts
 
           # Deal with FactRoles (Roles):
           x_fact_roles.each{|x|
-            name = (x['Name'] || "").gsub(/\s+/,' ').strip
+            name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
             name = nil if name.size == 0
 
             # _IsMandatory = x['_IsMandatory']
@@ -657,6 +657,7 @@ module ActiveFacts
           role_sequence = map_roles(x_roles, "uniqueness constraint #{name}")
           next if !role_sequence
 
+=begin
           # Check for a join
           if (fact_types = role_sequence.all_role_ref.map{|rr| rr.role.fact_type}).uniq.size > 1
             internal = role_sequence.all_role_ref.map{|rr|rr.role.fact_type}.uniq.size == 1
@@ -688,6 +689,7 @@ module ActiveFacts
             subtyping = players.size > 1 ? 'subtyping ' : ''
             # debug :join, "#{subtyping}#{objectification}join uniqueness constraint over #{join_over.name} in #{fact_types.map(&:default_reading)*', '}"
           end
+=end
 
           # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
           if (x_roles.size == 1 &&
