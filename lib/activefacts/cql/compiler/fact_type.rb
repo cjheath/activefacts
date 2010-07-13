@@ -92,6 +92,7 @@ module ActiveFacts
             select{ |reading| reading.match_existing_fact_type @context }.
             sort_by{ |reading| reading.side_effects.cost }
           fact_types = @existing_readings.map{ |reading| reading.fact_type }.uniq.compact
+          return nil if fact_types.empty? || @existing_readings[0].side_effects.cost != 0
           if (fact_types.size > 1)
             # There must be only one fact type with exact matches:
             if @existing_readings[0].side_effects.cost != 0 or
