@@ -641,6 +641,7 @@ module ActiveFacts
         attr_accessor :objectification_of # If objectification_join is set, this is the fact type it objectifies
         attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
         attr_writer :leading_adjective
+        attr_writer :role_name    # For assigning subscript when found in identifying roles list
 
         def initialize term, leading_adjective = nil, trailing_adjective = nil, quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, objectification_join = nil
           @term = term
