@@ -123,6 +123,15 @@ module ActiveFacts
             x.context[:term]
           end
         }
+	/
+	s head:id '-' s term	&{|s| s[4].ast.leading_adjective == nil }
+	{
+	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, objectification_join = nil
+	    ast = term.ast(quantifier, function_call, role_name, value_constraint, literal, objectification_join)
+	    ast.leading_adjective = head.text_value
+	    ast
+	  end
+	}
       end
 
       rule x
