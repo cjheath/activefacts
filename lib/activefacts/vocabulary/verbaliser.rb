@@ -251,8 +251,10 @@ module ActiveFacts
                 end
               end
 
-              # Try to continue on the same join path:
-              next_node = next_step.input_join_node != next_node ? next_step.input_join_node : next_step.output_join_node
+              # Continue from this step with the node having the most steps remaining
+              input_steps = @join_steps_by_join_node[next_step.input_join_node] || []
+              output_steps = @join_steps_by_join_node[next_step.output_join_node] || []
+              next_node = input_steps.size > output_steps.size ? next_step.input_join_node : next_step.output_join_node
               # Prepare for possible contraction following:
               last_is_contractable = next_reading && node_contractable_against_reading(next_node, next_reading)
 
