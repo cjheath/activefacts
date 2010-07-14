@@ -367,12 +367,12 @@ module ActiveFacts
         return common, players_differ
       end
 
-      def verbalise_role_sequences(role_sequences)
+      def verbalise_over_role_sequence(role_sequences)
         if role_sequences.all_role_ref.detect{|rr| rr.join_node}
           join = role_sequences.all_role_ref.detect{|rr| rr.join_node}.join_node.join
           join.verbalise_over_role_refs(role_sequences.all_role_ref.to_a)
         else
-          fact_types = role_sequences.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.role.fact_type}
+          fact_types = role_sequences.all_role_ref_in_order.map{|rr| rr.role.fact_type}
           fact_types.uniq!
 
           # This doesn't use the name of the common supertype of constrained roles
@@ -382,13 +382,17 @@ module ActiveFacts
       end
 
       def dump_set_comparison_constraint(c)
-        role_sequences = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}.map{|scr|scr.role_sequence}
+        scrs = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}
+        role_sequences = scrs.map{|scr|scr.role_sequence}
 
         if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.join_node}}
+          # The argument to this constructor needs to be a transposed 2D array of the role_refs in these sequences.
+          # ActiveFacts::Metamodel::Verbaliser.new(role_refs)
+
           # This set constraint has an explicit join. Verbalise it.
           readings_list = role_sequences.
             map do |rs|
-              verbalise_role_sequences(rs) 
+              verbalise_over_role_sequence(rs) 
             end
           if c.is_a?(ActiveFacts::Metamodel::SetEqualityConstraint)
             puts readings_list.join("\n\tif and only if\n\t") + ';'
@@ -412,7 +416,7 @@ module ActiveFacts
         # (an unconstrained role may form joins; not handled here yet)
         #
         # The readings chosen may apply non-matching adjectives to the occurrences of the constrained roles.
-        # REVISIT: These constraints will not compile!
+        # REVISIT: These constraints will not compile! - subscripts must be added.
         #
         # It's not clear when (if ever) the usage some/that (some X.... that X...) is useful.
         #
@@ -424,8 +428,7 @@ module ActiveFacts
 
         # For each player, a subtype may be involved in the occurrences.
         # Find the common supertype of each player.
-        scrs = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}
-        player_count = scrs[0].role_sequence.all_role_ref.size
+        player_count = scrs[0].role_sequence.all_role_ref.size  # Must be the same in the other role_sequences
         role_seq_count = scrs.size
 
         #raise "Can't verbalise constraint over many players and facts" if player_count > 1 and role_seq_count > 1
@@ -436,7 +439,7 @@ module ActiveFacts
         players = (0...player_count).map do |pindex|
           # Find the common supertype of the players of the pindex'th role in each sequence
           concepts = scrs.map do |r|
-            r.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[pindex].role.concept
+            r.role_sequence.all_role_ref_in_order[pindex].role.concept
           end
           # Here, "concepts" is an array of the object types that all play the same role position "pindex"
           player, players_differ[pindex] = common_supertype(concepts)
@@ -538,9 +541,9 @@ module ActiveFacts
       def dump_subset_constraint(c)
         # If the role players are identical and not duplicated, we can simply say "reading1 only if reading2"
         subset_roles, subset_fact_types =
-          c.subset_role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| [rr.role, rr.role.fact_type]}.transpose
+          c.subset_role_sequence.all_role_ref_in_order.map{|rr| [rr.role, rr.role.fact_type]}.transpose
         superset_roles, superset_fact_types =
-          c.superset_role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| [rr.role, rr.role.fact_type]}.transpose
+          c.superset_role_sequence.all_role_ref_in_order.map{|rr| [rr.role, rr.role.fact_type]}.transpose
 
         subset_fact_types.uniq!
         superset_fact_types.uniq!
@@ -563,9 +566,9 @@ module ActiveFacts
         end
 
         puts \
-          verbalise_role_sequences(c.subset_role_sequence) +
+          verbalise_over_role_sequence(c.subset_role_sequence) +
           "\n\tonly if " +
-          verbalise_role_sequences(c.superset_role_sequence) +
+          verbalise_over_role_sequence(c.superset_role_sequence) +
           ";"
       end
 

@@ -746,11 +746,12 @@ module ActiveFacts
       # to the respective end-point (constrained object type).
       # Also, all roles in each sequence constitute a join over a single
       # object type, which might involve subtyping or objectification joins.
+      #
       def make_joins(constraint_type, name, role_sequences)
         # Get the object types constrained for each position in the role sequences.
         # Supertyping joins may be needed to reach them.
-        end_points = []
-        end_joins = []
+        end_points = []   # An array of the common supertype for matching role_refs across the sequences
+        end_joins = []    # An array of booleans indicating whether any role_sequence requires a subtyping join
         role_sequences[0].all_role_ref.size.times do |i|
           role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
           next if (fact_types = role_refs.map{|rr| rr.role.fact_type}).uniq.size == 1
@@ -771,48 +772,10 @@ module ActiveFacts
           end_points[i] = end_point
         end
 
+        # For each role_sequence, find the object type over which the join is implied (nil if no join)
         sequence_join_over = []
         if role_sequences[0].all_role_ref.size > 1    # There are joins within each sequence.
-          sequence_join_over =
-            role_sequences.map do |rs|
-              next nil if (fts = rs.all_role_ref.map{|rr| rr.role.fact_type}.uniq).size == 1 # REVISIT: If we can stay inside this objectified FT, why not? # && !fts[0].entity_type
-              direct_sups, obj_sups =
-                *rs.all_role_ref.sort_by{|rr| rr.ordinal}.inject(nil) do |a, rr|
-                  # All roles in this sequence must join to the same object type.
-                  # A role in an objectified fact type may indicate either the objectification (not preferred) or the counterpart player.
-                  direct_role_supertypes =
-                    if rr.role.fact_type.all_role.size > 2
-                      # REVISIT: This is little more than guesswork. Perhaps I should just load the joins that NORMA created?
-                      # The best I can say is that seems to mimic NORMA's automatically created join paths in all cases I've found.
-                      possible_roles = rr.role.fact_type.all_role.select{|role| a && a[0].include?(role.concept) }
-                      if possible_roles.size == 1 # Only one candidate matches the types of the possible join nodes
-                        a[0]
-                      else
-                        # puts "#{constraint_type} #{name}: Awkward, try direct-role join on a >2ary '#{rr.role.fact_type.default_reading}'"
-                        rr.role.fact_type.all_role.map{|role| role.concept.supertypes_transitive}.flatten.uniq
-                      end
-                    else
-                      # Get the supertypes of the counterpart role (care with unaries):
-                      roles = rr.role.fact_type.all_role.to_a
-                      (roles[0] == rr.role ? roles[-1] : roles[0]).concept.supertypes_transitive
-                    end
-                  objectification_role_supertypes =
-                    rr.role.fact_type.entity_type ? rr.role.fact_type.entity_type.supertypes_transitive+rr.role.concept.supertypes_transitive : direct_role_supertypes
-                  if !a
-                    #puts "#{constraint_type} #{name} rs #{role_sequences.index(rs)} starts #{direct_role_supertypes.map(&:name).inspect} or #{objectification_role_supertypes.map(&:name).inspect}"
-                    a = [direct_role_supertypes, objectification_role_supertypes]
-                  else
-                    #puts "#{constraint_type} #{name} rs #{role_sequences.index(rs)} continues #{direct_role_supertypes.map(&:name).inspect} or #{objectification_role_supertypes.map(&:name).inspect}"
-                    a[0] &= direct_role_supertypes
-                    a[1] &= objectification_role_supertypes
-                    #puts "... leaving #{a[0].map(&:name).inspect} or #{a[1].map(&:name).inspect}"
-                  end
-                  a
-                end # inject
-                common_supertypes = direct_sups.empty? ? obj_sups : direct_sups
-                raise "Join path in #{constraint_type} #{name} is incomplete" if common_supertypes.size == 0
-                join_over = common_supertypes[0]
-              end # map
+          sequence_join_over = role_sequences.map { |rs| rs.join_over }
         end
 
         # If there are no joins, we can drop out here.
@@ -821,8 +784,6 @@ module ActiveFacts
         end
 
         debug :join, "#{constraint_type} join constraint #{name} over #{role_sequences.map{|rs|rs.describe}*', '}"
-
-      return  # REVISIT: Disabled until we get the join verbaliser working.
 
         join = nil
         debug :join, "#{constraint_type} join constraint #{name} constrains #{
@@ -834,6 +795,10 @@ module ActiveFacts
             ''
           end
         }" do
+
+        end
+      return  # REVISIT: Disabled until we get the join verbaliser working.
+        while false
 
           # There may be one join per role sequence:
           role_sequences.zip(sequence_join_over).map do |role_sequence, join_over|

@@ -117,6 +117,52 @@ module ActiveFacts
       def all_role_ref_in_order
         all_role_ref.sort_by{|rr| rr.ordinal}
       end
+
+      # All roles in this sequence must join to the same object type. Find it.
+      def join_over
+        fact_types = all_role_ref.map{|rr| rr.role.fact_type}.uniq
+        return nil if fact_types.size == 1 # REVISIT: If we can stay inside this objectified FT, why not?
+        direct_sups, obj_sups =
+          *all_role_ref_in_order.inject(nil) do |a, rr|
+            concept = rr.role.concept
+            fact_type = rr.role.fact_type
+
+            # A role in an objectified fact type may indicate either the objectification or the counterpart player.
+            # This could be ambiguous. Figure out both and prefer the counterpart over the objectification.
+            direct_role_supertypes =
+              if fact_type.all_role.size > 2
+                # REVISIT: Should just load the joins that NORMA created here.
+                # This seems to mimic NORMA's created join paths though...
+                possible_roles = fact_type.all_role.select{|r| a && a[0].include?(r.concept) }
+                if possible_roles.size == 1 # Only one candidate matches the types of the possible join nodes
+                  a[0]
+                else
+                  # puts "#{constraint_type} #{name}: Awkward, try direct-role join on a >2ary '#{fact_type.default_reading}'"
+                  # Hopefully we don't have two roles with a matching candidate here:
+                  fact_type.all_role.map{|r| r.concept.supertypes_transitive}.flatten.uniq
+                end
+              else
+                # Get the supertypes of the counterpart role (care with unaries):
+                roles = rr.role.fact_type.all_role.to_a
+                (roles[0] == rr.role ? roles[-1] : roles[0]).concept.supertypes_transitive
+              end
+            objectification_role_supertypes =
+              fact_type.entity_type ? fact_type.entity_type.supertypes_transitive+concept.supertypes_transitive : direct_role_supertypes
+            if !a
+              #puts "#{constraint_type} #{name} rs #{role_sequences.index(rs)} starts #{direct_role_supertypes.map(&:name).inspect} or #{objectification_role_supertypes.map(&:name).inspect}"
+              a = [direct_role_supertypes, objectification_role_supertypes]
+            else
+              #puts "#{constraint_type} #{name} rs #{role_sequences.index(rs)} continues #{direct_role_supertypes.map(&:name).inspect} or #{objectification_role_supertypes.map(&:name).inspect}"
+              a[0] &= direct_role_supertypes
+              a[1] &= objectification_role_supertypes
+              #puts "... leaving #{a[0].map(&:name).inspect} or #{a[1].map(&:name).inspect}"
+            end
+            a
+          end # inject
+        common_supertypes = direct_sups.empty? ? obj_sups : direct_sups
+        raise "Join path in #{constraint_type} #{name} is incomplete" if common_supertypes.size == 0
+        common_supertypes[0]
+      end
     end
 
     class ValueType
@@ -517,7 +563,7 @@ module ActiveFacts
 
     class Join
       def verbalise_over_role_refs role_refs
-        Verbaliser.new(self, role_refs).verbalise
+        ActiveFacts::Metamodel::Verbaliser.new(role_refs).verbalise_join(self)
       end
 
       def show
