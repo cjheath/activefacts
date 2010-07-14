@@ -328,7 +328,7 @@ module ActiveFacts
           puts \
             "either #{
               c.role_sequence.all_role_ref.map { |rr|
-                rr.role.fact_type.default_reading([], nil)
+                rr.role.fact_type.default_reading
               }*" or "
             };"
         else
@@ -341,7 +341,7 @@ module ActiveFacts
           pl = (min&&min>1)||(max&&max>1) ? 's' : ''
           puts \
             "each #{players.size > 1 ? "combination " : ""}#{players*", "} occurs #{c.frequency} time#{pl} in\n\t"+
-            "#{fact_types.map{|ft| ft.default_reading([], nil)}*",\n\t"}" +
+            "#{fact_types.map{|ft| ft.default_reading}*",\n\t"}" +
               ";"
         end
       end
@@ -377,7 +377,7 @@ module ActiveFacts
 
           # This doesn't use the name of the common supertype of constrained roles
 
-          fact_types.map{|ft| ft.default_reading([], nil)}*' and '
+          fact_types.map{|ft| ft.default_reading}*' and '
         end
       end
 
@@ -452,7 +452,7 @@ module ActiveFacts
           # REVISIT: Need a proper approach to some/that and adjective disambiguation:
           puts \
             scrs.map{|scr|
-              scr.role_sequence.all_role_ref.map{|rr| rr.role.fact_type.default_reading([], nil) }*" and "
+              scr.role_sequence.all_role_ref.map{|rr| rr.role.fact_type.default_reading }*" and "
             } * "\n\tif and only if\n\t" + ";"
           return
         end
@@ -574,7 +574,7 @@ module ActiveFacts
 
       def dump_ring_constraint(c)
         # At present, no ring constraint can be missed to be handled in this pass
-        puts "// #{c.ring_type} ring over #{c.role.fact_type.default_reading([], nil)}"
+        puts "// #{c.ring_type} ring over #{c.role.fact_type.default_reading}"
       end
 
       def constraint_dump(c)

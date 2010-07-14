@@ -23,7 +23,7 @@ module ActiveFacts
         '('+all_role.map{|role| role.describe(highlight) }*", "+')'
       end
 
-      def default_reading(frequency_constraints = [], define_role_names = false)
+      def default_reading(frequency_constraints = [], define_role_names = nil)
         preferred_reading.expand(frequency_constraints, define_role_names)
       end
 
@@ -385,19 +385,16 @@ module ActiveFacts
       # REVISIT: This should probably be changed to be the fact role sequence.
       #
       # define_role_names here is false (use defined names), true (define names) or nil (neither)
-      def expand(frequency_constraints = [], define_role_names = false, literals = [])
+      def expand(frequency_constraints = [], define_role_names = nil, literals = [])
         expanded = "#{text}"
         role_refs = role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
         (0...role_refs.size).each{|i|
             role_ref = role_refs[i]
             role = role_ref.role
-            la = "#{role_ref.leading_adjective}"
-            la.sub!(/(.\b|.\Z)/, '\1-')
-            la.sub!(/- /,'-  ')
+            la = "#{role_ref.leading_adjective}".sub(/(.\b|.\Z)/, '\1-').sub(/- /,'-  ')
             la = nil if la == ""
-            ta = "#{role_ref.trailing_adjective}"
-            ta.sub!(/(\b.|\A.)/, '-\1')
-            ta.sub!(/ -/,'  -')   # Double the space to compensate for space removed below
+            # Double the space to compensate for space removed below
+            ta = "#{role_ref.trailing_adjective}".sub(/(\b.|\A.)/, '-\1').sub(/ -/,'  -')
             ta = nil if ta == ""
 
             expanded.gsub!(/\{#{i}\}/) {

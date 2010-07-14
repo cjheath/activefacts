@@ -172,7 +172,7 @@ module ActiveFacts
 
       # The reading for the fact type underlying this Reference
       def reading
-        is_self_value ? "#{from.name} has value" : @fact_type.default_reading
+        is_self_value ? "#{from.name} has value" : @fact_type.default_reading([], true) # Include role name defn's
       end
 
       def inspect #:nodoc:
