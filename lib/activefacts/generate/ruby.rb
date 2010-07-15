@@ -133,7 +133,7 @@ module ActiveFacts
         @fact_types_dumped[fact_type] = true
       end
 
-      def identified_by_roles_and_facts(entity_type, identifying_roles, identifying_facts, preferred_readings)
+      def identified_by_roles_and_facts(entity_type, identifying_roles, identifying_facts)
         identifying_roles.map{|role|
             ":"+preferred_role_name(role, entity_type)
           }*", "

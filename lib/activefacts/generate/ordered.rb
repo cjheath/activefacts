@@ -208,15 +208,9 @@ module ActiveFacts
 
         # We need to get the adjectives for the roles from the identifying fact's preferred readings:
         identifying_facts = ([o.fact_type]+role_refs.map{|rr| rr.role.fact_type }).compact.uniq
-        preferred_readings = identifying_facts.inject({}){|reading_hash, fact_type|
-            pr = fact_type.preferred_reading
-            reading_hash[fact_type] = pr
-            reading_hash
-          }
-        #p identifying_facts.map{|f| f.preferred_reading }
 
         identifying_roles = role_refs.map(&:role)
-        identification = identified_by_roles_and_facts(o, identifying_roles, identifying_facts, preferred_readings)
+        identification = identified_by_roles_and_facts(o, identifying_roles, identifying_facts)
         #identifying_facts.each{|f| @fact_types_dumped[f] = true }
 
         identification
