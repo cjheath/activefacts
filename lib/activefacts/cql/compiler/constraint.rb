@@ -297,9 +297,13 @@ module ActiveFacts
               if (reading.fact_type.entity_type)
                 # This reading is of an objectified fact type. The second role ref is to a phantom role.
                 # We don't need join steps for roles that have only one role_ref (this one) in their binding
-                debug :join, "#{binding.refs.size > 1 ? 'Creating' : 'Skipping'} Role Ref and objectification Join Step for #{role_ref.inspect}" do
+                refs_count = binding.refs.size
+                objectification_ref_count = 0
+                role_ref.objectification_join.each{|r| objectification_ref_count += r.role_refs.select{|rr| rr.binding.refs.size > 1}.size} if role_ref.objectification_join
+                refs_count += objectification_ref_count
+                debug :join, "#{refs_count > 1 ? 'Creating' : 'Skipping'} Role Ref #{role_ref.inspect} (counts #{refs_count}/#{objectification_ref_count}) and objectification Join Step for #{role_ref.inspect}" do
 
-                  if (binding.refs.size > 1)
+                  if (refs_count > 1)
                     role_sequence ||= @constellation.RoleSequence(:new)
                     role_refs <<
                       @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)

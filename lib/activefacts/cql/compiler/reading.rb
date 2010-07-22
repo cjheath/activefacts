@@ -664,6 +664,8 @@ module ActiveFacts
             @role_name and @role_name.is_a?(Integer) ? "(#{@role_name})" : " (as #{@role_name})" }#{
             @literal && ' '+@literal.inspect }#{
             @value_constraint && ' '+@value_constraint.inspect
+            }#{
+            @objectification_join ? "(where #{@objectification_join.inspect})" : ""
           }>"
         end
 
