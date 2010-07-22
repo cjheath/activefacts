@@ -128,32 +128,6 @@ module ActiveFacts
         "]"
       end
 
-      def identifying_role_names identifying_roles
-        identifying_roles.map do |role|
-          preferred_role_ref = role.fact_type.preferred_reading.role_sequence.all_role_ref.detect{|reading_rr|
-              reading_rr.role == role
-            }
-          role_words = []
-          # REVISIT: Consider whether NOT to use the adjective if it's a prefix of the role_name
-
-          role_name = role.role_name
-          role_name = nil if role_name == ""
-          # debug "concept.name=#{preferred_role_ref.role.concept.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
-
-          if (role.fact_type.all_role.size == 1)
-            # REVISIT: Guard against unary reading containing the illegal words "and" and "where".
-            role.fact_type.default_reading    # Need whole reading for a unary.
-          elsif (role_name)
-            role_name
-          else
-            role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
-            role_words << preferred_role_ref.role.concept.name
-            role_words << preferred_role_ref.trailing_adjective if preferred_role_ref.trailing_adjective != ""
-            role_words.compact*"-"
-          end
-        end
-      end
-
       def value_role_identification(entity_type, identifying_facts)
         external_identifying_facts = identifying_facts - [entity_type.fact_type]
         fact_type = external_identifying_facts[0]
@@ -364,27 +338,6 @@ module ActiveFacts
             "#{fact_types.map{|ft| ft.default_reading}*",\n\t"}" +
               ";"
         end
-      end
-
-      # Find the common supertype of these concepts.
-      # N.B. This will only work if all concepts are on the direct path to the deepest.
-      def common_supertype(concepts)
-        players_differ = false
-        common =
-          concepts[1..-1].inject(concepts[0]) do |supertype, concept|
-            if !supertype || concept == supertype
-              concept   # Most common case
-            elsif concept.supertypes_transitive.include?(supertype)
-              players_differ = true
-              supertype
-            elsif supertype.supertypes_transitive.include?(concept)
-              players_differ = true
-              concept
-            else
-              return nil  # No common supertype
-            end
-          end
-        return common, players_differ
       end
 
       def verbalise_over_role_sequence(role_sequences)
@@ -610,6 +563,53 @@ module ActiveFacts
           else
             "#{c.class.basename} #{c.name}: unhandled constraint type"
           end
+      end
+
+      def identifying_role_names identifying_roles
+        identifying_roles.map do |role|
+          preferred_role_ref = role.fact_type.preferred_reading.role_sequence.all_role_ref.detect{|reading_rr|
+              reading_rr.role == role
+            }
+          role_words = []
+          # REVISIT: Consider whether NOT to use the adjective if it's a prefix of the role_name
+
+          role_name = role.role_name
+          role_name = nil if role_name == ""
+          # debug "concept.name=#{preferred_role_ref.role.concept.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
+
+          if (role.fact_type.all_role.size == 1)
+            # REVISIT: Guard against unary reading containing the illegal words "and" and "where".
+            role.fact_type.default_reading    # Need whole reading for a unary.
+          elsif (role_name)
+            role_name
+          else
+            role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
+            role_words << preferred_role_ref.role.concept.name
+            role_words << preferred_role_ref.trailing_adjective if preferred_role_ref.trailing_adjective != ""
+            role_words.compact*"-"
+          end
+        end
+      end
+
+      # Find the common supertype of these concepts.
+      # N.B. This will only work if all concepts are on the direct path to the deepest.
+      def common_supertype(concepts)
+        players_differ = false
+        common =
+          concepts[1..-1].inject(concepts[0]) do |supertype, concept|
+            if !supertype || concept == supertype
+              concept   # Most common case
+            elsif concept.supertypes_transitive.include?(supertype)
+              players_differ = true
+              supertype
+            elsif supertype.supertypes_transitive.include?(concept)
+              players_differ = true
+              concept
+            else
+              return nil  # No common supertype
+            end
+          end
+        return common, players_differ
       end
 
       def fact_readings_with_constraints(fact_type, fact_constraints = nil)
