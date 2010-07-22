@@ -611,6 +611,77 @@ module ActiveFacts
             "#{c.class.basename} #{c.name}: unhandled constraint type"
           end
       end
+
+      def fact_readings_with_constraints(fact_type, fact_constraints = nil)
+        define_role_names = true
+        fact_constraints ||= @presence_constraints_by_fact[fact_type]
+        readings = fact_type.all_reading_by_ordinal.inject([]) do |reading_array, reading|
+          reading_array << expanded_reading(reading, fact_constraints, define_role_names)
+
+          define_role_names = false     # No need to define role names in subsequent readings
+
+          reading_array
+        end
+
+        readings
+      end
+
+      def expanded_reading(reading, fact_constraints, define_role_names)
+        # Find all role numbers in order of occurrence in this reading:
+        role_refs = reading.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
+        role_numbers = reading.text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
+        roles = role_numbers.map{|m| role_refs[m].role }
+        # debug "Considering #{reading.text} having #{role_numbers.inspect}"
+
+        # Find the constraints that constrain frequency over each role we can verbalise:
+        frequency_constraints = []
+        value_constraints = []
+        roles.each do |role|
+          # Find a mandatory constraint that's *not* unique; this will need an extra reading
+          role_is_first_in = reading.fact_type.all_reading.detect{|r|
+              role == r.role_sequence.all_role_ref.sort_by{|role_ref|
+                  role_ref.ordinal
+                }[0].role
+            }
+
+          if vr = role.role_value_constraint
+            if @constraints_used[vr]
+              vr = nil
+            else
+              @constraints_used[vr] = true
+              vr = vr.describe
+            end
+          end
+          value_constraints << vr
+          if (role == roles.last)   # First role of the reading?
+            # REVISIT: With a ternary, doing this on other than the last role can be ambiguous,
+            # in case both the 2nd and 3rd roles have frequencies. Think some more!
+
+            constraint = fact_constraints.find{|c|  # Find a UC that spans all other Roles
+                # internal uniqueness constraints span all roles but one, the residual:
+                c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) &&
+                  !@constraints_used[c] &&  # Already verbalised
+                  roles-c.role_sequence.all_role_ref.map(&:role) == [role]
+              }
+            # Index the frequency implied by the constraint under the role position in the reading
+            if constraint     # Mark this constraint as "verbalised" so we don't do it again:
+              @constraints_used[constraint] = true
+            end
+            frequency_constraints << show_frequency(role, constraint)
+          else
+            frequency_constraints << show_frequency(role, nil)
+          end
+        end
+
+        expanded = reading.expand(frequency_constraints, define_role_names, value_constraints)
+
+        if (ft_rings = @ring_constraints_by_fact[reading.fact_type]) &&
+           (ring = ft_rings.detect{|rc| !@constraints_used[rc]})
+          @constraints_used[ring] = true
+          append_ring_to_reading(expanded, ring)
+        end
+        expanded
+      end
     end
   end
 end
