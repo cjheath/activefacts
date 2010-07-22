@@ -71,6 +71,7 @@ module ActiveFacts
           !o.supertype &&
           o.all_role.size == 0 &&
           !o.is_independent &&
+          !o.value_constraint &&
           o.all_context_note.size == 0 &&
           o.all_instance.size == 0
         # No need to dump it if the only thing it does is be a supertype; it'll be created automatically
@@ -172,6 +173,7 @@ module ActiveFacts
         end
       end
 
+      # This entity is identified by a single value, so find whether standard refmode readings were used
       def detect_standard_refmode_readings fact_type, entity_role, value_role
         forward_reading = reverse_reading = nil
         fact_type.all_reading.each do |reading|
@@ -189,11 +191,12 @@ module ActiveFacts
             end
           end
         end
-        debug :mode, "------------------- Didn't find standard forward reading" unless forward_reading
-        debug :mode, "------------------- Didn't find standard reverse reading" unless reverse_reading
+        debug :mode, "Didn't find standard forward reading" unless forward_reading
+        debug :mode, "Didn't find standard reverse reading" unless reverse_reading
         [forward_reading, reverse_reading]
       end
 
+      # This entity is identified by a refmode. Generate the identification and fact reading text.
       def identified_by_refmode(entity_type, value_residual, fact_type, value_role, nonstandard_readings)
         # Elide the constraints that would have been emitted on those readings.
         # If there is a UC that's not in the standard form for a reference mode,
@@ -221,8 +224,8 @@ module ActiveFacts
           )
         )*",\n\t"
 
-        value_constraint = value_role.role_value_constraint || value_role.concept.value_constraint
-        # REVISIT: If both constraints apply and differ, we can't use a reference mode
+        # If we emitted a reading, it'll include the role_value_constraint already
+        value_constraint = fact_text.empty? && value_role.role_value_constraint
         constraint_text = value_constraint ? " "+value_constraint.describe : ""
         return " identified by its #{value_residual}#{constraint_text}#{mapping_pragma(entity_type)}" +
           (fact_text != "" ? " where\n\t" + fact_text : "")
