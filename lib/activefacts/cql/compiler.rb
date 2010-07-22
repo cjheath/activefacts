@@ -21,6 +21,7 @@ module ActiveFacts
       def initialize(filename = "stdin")
         @filename = filename
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
+        debug :file, "Parsing '#{filename}'"
       end
 
       def compile input
