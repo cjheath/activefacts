@@ -74,6 +74,13 @@ module ActiveFacts
         next_step = @join_steps[0]
         if next_step
           debug :join, "Chose new random step from #{join_steps.size}: #{next_step.describe}"
+          if next_step.is_objectification_step
+            # if this objectification plays any roles (other than its FT roles) in remaining steps, use one of those first:
+            fact_type = next_step.fact_type.role.fact_type
+            jn = [next_step.input_join_node, next_step.output_join_node].detect{|jn| jn.concept == fact_type.entity_type}
+            sr = @join_steps_by_join_node[jn].reject{|t| t.fact_type.role and t.fact_type.role.fact_type == fact_type}
+            next_step = sr[0] if sr.size > 0 
+          end
           return next_step
         end
         raise "Internal error: There are more join steps here, but we failed to choose one"
@@ -152,6 +159,7 @@ module ActiveFacts
               reading_starts_with_node(reading, next_node)
             end
         end
+        last_is_contractable = false unless reading
         reading ||= fact_type.preferred_reading
 
         # Find which role occurs last in the reading, and which Join Node is attached
@@ -171,7 +179,7 @@ module ActiveFacts
           debug :join, "Emitting objectification allows deleting #{other_step.describe}"
           step_completed(other_step)
         end
-        [ reading, exit_step ? exit_step.input_join_node : exit_node, exit_step]
+        [ reading, exit_step ? exit_step.input_join_node : exit_node, exit_step, last_is_contractable]
       end
 
       # Expand this reading (or partial reading, during contraction)
@@ -230,21 +238,22 @@ module ActiveFacts
                 step_completed(next_step)
               elsif next_step.is_objectification_step
                 fact_type = next_step.fact_type.role.fact_type
-                if last_is_contractable && next_node.concept.fact_type == fact_type
+                if last_is_contractable and next_node.concept.is_a?(EntityType) and next_node.concept.fact_type == fact_type
+                  # The last reading we emitted ended with the name of the objectification of this fact type, so we can contract the objectification
                   readings += objectification_verbalisation(fact_type.entity_type)
-                  debugger unless next_step.input_join_node
                 else
                   # This objectified fact type does not need to be made explicit.
-                  # Need to step_completed the other steps in this OFT.
-                  next_reading, next_node, next_step = *elided_objectification(next_step, fact_type, last_is_contractable, next_node)
+                  next_reading, next_node, next_step, last_is_contractable =
+                    *elided_objectification(next_step, fact_type, last_is_contractable, next_node)
                   if last_is_contractable
                     readings += expand_contracted_text(next_step, next_reading)
                   else
                     readings += " and " unless readings.empty?
                     readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence)
                   end
-                  # No need to continue; we might have just deleted the last step
+                  # No need to continue if we just deleted the last step
                   break if @join_steps.empty?
+
                 end
               else
                 fact_type = next_step.fact_type
