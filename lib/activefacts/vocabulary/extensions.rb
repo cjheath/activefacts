@@ -47,6 +47,12 @@ module ActiveFacts
         entity_type = @entity_type || @constellation.ImplicitBooleanValueType(role.concept.vocabulary, "_ImplicitBooleanValueType")
         phantom_role = @constellation.Role(implicit_fact_type, 0, :concept => entity_type)
       end
+
+      def reading_preferably_starting_with_role role
+        all_reading.detect do |reading|
+          reading.text =~ /\{\d\}/ and reading.role_sequence.all_role_ref_in_order[$1.to_i].role == role
+        end || preferred_reading
+      end
     end
 
     class Role
@@ -116,52 +122,6 @@ module ActiveFacts
 
       def all_role_ref_in_order
         all_role_ref.sort_by{|rr| rr.ordinal}
-      end
-
-      # All roles in this sequence must join to the same object type. Find it.
-      def join_over
-        fact_types = all_role_ref.map{|rr| rr.role.fact_type}.uniq
-        return nil if fact_types.size == 1 # REVISIT: If we can stay inside this objectified FT, why not?
-        direct_sups, obj_sups =
-          *all_role_ref_in_order.inject(nil) do |a, rr|
-            concept = rr.role.concept
-            fact_type = rr.role.fact_type
-
-            # A role in an objectified fact type may indicate either the objectification or the counterpart player.
-            # This could be ambiguous. Figure out both and prefer the counterpart over the objectification.
-            direct_role_supertypes =
-              if fact_type.all_role.size > 2
-                # REVISIT: Should just load the joins that NORMA created here.
-                # This seems to mimic NORMA's created join paths though...
-                possible_roles = fact_type.all_role.select{|r| a && a[0].include?(r.concept) }
-                if possible_roles.size == 1 # Only one candidate matches the types of the possible join nodes
-                  a[0]
-                else
-                  # puts "#{constraint_type} #{name}: Awkward, try direct-role join on a >2ary '#{fact_type.default_reading}'"
-                  # Hopefully we don't have two roles with a matching candidate here:
-                  fact_type.all_role.map{|r| r.concept.supertypes_transitive}.flatten.uniq
-                end
-              else
-                # Get the supertypes of the counterpart role (care with unaries):
-                roles = rr.role.fact_type.all_role.to_a
-                (roles[0] == rr.role ? roles[-1] : roles[0]).concept.supertypes_transitive
-              end
-            objectification_role_supertypes =
-              fact_type.entity_type ? fact_type.entity_type.supertypes_transitive+concept.supertypes_transitive : direct_role_supertypes
-            if !a
-              #puts "#{constraint_type} #{name} rs #{role_sequences.index(rs)} starts #{direct_role_supertypes.map(&:name).inspect} or #{objectification_role_supertypes.map(&:name).inspect}"
-              a = [direct_role_supertypes, objectification_role_supertypes]
-            else
-              #puts "#{constraint_type} #{name} rs #{role_sequences.index(rs)} continues #{direct_role_supertypes.map(&:name).inspect} or #{objectification_role_supertypes.map(&:name).inspect}"
-              a[0] &= direct_role_supertypes
-              a[1] &= objectification_role_supertypes
-              #puts "... leaving #{a[0].map(&:name).inspect} or #{a[1].map(&:name).inspect}"
-            end
-            a
-          end # inject
-        common_supertypes = direct_sups.empty? ? obj_sups : direct_sups
-        raise "Join path in #{constraint_type} #{name} is incomplete" if common_supertypes.size == 0
-        common_supertypes[0]
       end
     end
 
@@ -559,10 +519,6 @@ module ActiveFacts
     end
 
     class Join
-      def verbalise_over_role_refs role_refs
-        ActiveFacts::Metamodel::Verbaliser.new(role_refs).verbalise_join(self)
-      end
-
       def show
         debug :join, "Displaying full contents of Join #{join_id}" do
           all_join_node.sort_by{|jn| jn.ordinal}.each do |join_node|
@@ -667,6 +623,70 @@ module ActiveFacts
           role.fact_type.entity_type ? "{0} involves {1}" : role.fact_type.default_reading+" Boolean"
         )]
       end
+    end
+
+    # Some joins must be over the proximate roles, some over the counterpart roles.
+    # Return the common superclass of the appropriate roles
+    def self.join_roles_over roles, options = :both   # Or :proximate, :counterpart
+      # If we can stay inside this objectified FT, there's no join:
+      roles = Array(roles)  # To be safe, in case we get a role collection proxy
+      return nil if roles.size == 1 or
+        options != :counterpart && roles.map{|role| role.fact_type}.uniq.size == 1
+      proximate_sups, counterpart_sups, obj_sups =
+        *roles.inject(nil) do |d_c_o, role|
+          concept = role.concept
+          fact_type = role.fact_type
+
+          proximate_role_supertypes = concept.supertypes_transitive
+
+          # A role in an objectified fact type may indicate either the objectification or the counterpart player.
+          # This could be ambiguous. Figure out both and prefer the counterpart over the objectification.
+          counterpart_role_supertypes =
+            if fact_type.all_role.size > 2
+              possible_roles = fact_type.all_role.select{|r| d_c_o && d_c_o[1].include?(r.concept) }
+              if possible_roles.size == 1 # Only one candidate matches the types of the possible join nodes
+                d_c_o[1]  # No change
+              else
+                # puts "#{constraint_type} #{name}: Awkward, try counterpart-role join on a >2ary '#{fact_type.default_reading}'"
+                # Try all roles; hopefully we don't have two roles with a matching candidate here:
+                fact_type.all_role.map{|r| r.concept.supertypes_transitive}.flatten.uniq
+              end
+            else
+              # Get the supertypes of the counterpart role (care with unaries):
+              ftr = role.fact_type.all_role.to_a
+              (ftr[0] == role ? ftr[-1] : ftr[0]).concept.supertypes_transitive
+            end
+
+          objectification_role_supertypes =
+            fact_type.entity_type ? fact_type.entity_type.supertypes_transitive+concept.supertypes_transitive : counterpart_role_supertypes
+
+          if !d_c_o
+            d_c_o = [proximate_role_supertypes, counterpart_role_supertypes, objectification_role_supertypes]
+            #puts "role player supertypes starts #{d_c_o.map{|dco| dco.map(&:name).inspect}*' or '}"
+          else
+            #puts "continues #{[proximate_role_supertypes, counterpart_role_supertypes, objectification_role_supertypes]map{|dco| dco.map(&:name).inspect}*' or '}"
+            d_c_o[0] &= proximate_role_supertypes
+            d_c_o[1] &= counterpart_role_supertypes
+            d_c_o[2] &= objectification_role_supertypes
+            #puts "... leaving #{d_c_o.map{|dco| dco.map(&:name).inspect}*' or '}"
+          end
+          d_c_o
+        end # inject
+
+      # Discount a subtype join over an object type that's not a player here,
+      # if we can use an objectification join to an object type that is:
+      if counterpart_sups.size > 0 && obj_sups.size > 0 && counterpart_sups[0] != obj_sups[0]
+        debug :join, "ambiguous join, could be over #{counterpart_sups[0].name} or #{obj_sups[0].name}"
+        if !roles.detect{|r| r.concept == counterpart_sups[0]} and roles.detect{|r| r.concept == obj_sups[0]}
+          debug :join, "discounting #{counterpart_sups[0].name} in favour of direct objectification"
+          counterpart_sups = []
+        end
+      end
+
+      # Choose the first entry in the first non-empty supertypes list:
+      ( (options != :counterpart ? proximate_sups : []) +
+        (options != :proximate ? counterpart_sups + obj_sups : [])
+      )[0]
     end
 
   end

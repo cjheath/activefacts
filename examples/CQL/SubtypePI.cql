@@ -27,5 +27,5 @@ Competitor has one Family Name;
  */
 either Entrant is a Competitor or Entrant is a Team but not both;
 each combination Family Name, Given Name occurs at most one time in
-	Competitor has Family Name,
+	Entrant has Family Name,
 	Entrant has Given Name;

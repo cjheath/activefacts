@@ -132,11 +132,11 @@ Implicit Fact Type is implied by one Role,
 	Role implies at most one Implicit Fact Type;
 Object Type plays Role,
 	Role is played by one Object Type;
-Role is of Ring Constraint,
-	Ring Constraint has at most one Role;
 Ring Constraint has at most one other-Role;
 Ring Constraint has other-Role,
 	other-Role is of Ring Constraint;
+Role is of Ring Constraint,
+	Ring Constraint has at most one Role;
 
 Role Sequence is identified by its Id;
 Join projects one Role Sequence;
@@ -353,21 +353,21 @@ Param Value is where
  * Constraints:
  */
 for each Concept exactly one of these holds:
-	Object Type is a kind of Concept,
-	Fact Type is a kind of Concept,
-	Constraint is a kind of Concept,
-	Role is a kind of Concept;
+	Concept is a Object Type,
+	Concept is a Fact Type,
+	Concept is a Constraint,
+	Concept is a Role;
 for each Constraint exactly one of these holds:
-	Presence Constraint is a kind of Constraint,
-	Set Constraint is a kind of Constraint,
-	Ring Constraint is a kind of Constraint;
+	Constraint is a Presence Constraint,
+	Constraint is a Set Constraint,
+	Constraint is a Ring Constraint;
 for each Context Note exactly one of these holds:
-	Object Type has Context Note,
-	Fact Type has Context Note,
-	Constraint has Context Note;
+	Context Note applies to Concept,
+	Context Note applies to Fact Type,
+	Context Note applies to Constraint;
 either Object Type is an Entity Type or Object Type is a Value Type but not both;
 for each Role Sequence exactly one of these holds:
-	Reading is in Role Sequence,
+	Role Sequence is for Reading
 	Presence Constraint covers Role Sequence,
 	Subset Constraint covers subset-Role Sequence,
 	Subset Constraint covers superset-Role Sequence,
@@ -421,8 +421,8 @@ each Term occurs at least one time in
 	Term is name of Role Ref;
 either Value Range has minimum-Bound or Value Range has maximum-Bound;
 each combination Vocabulary, Name occurs at most one time in
-	Vocabulary contains Constraint,
-	Name is of Constraint;
+	Constraint belongs to Vocabulary,
+	Constraint is called Name;
 each combination Vocabulary, Name occurs at most one time in
-	Vocabulary includes Unit,
-	Name is of Unit;
+	Unit is in Vocabulary,
+	Unit is called Name;

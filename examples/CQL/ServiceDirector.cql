@@ -214,9 +214,9 @@ for each Credential exactly one of these holds:
 	Data Store File Host System has Internal-Credential,
 	Data Store has Internal-Credential;
 for each Network exactly one of these holds:
-	Host System uses Network,
+	Network is used by Host System,
 	Company has Origin-Network,
-	Data Store has Tcp- Proxy Network;
+	Tcp- Proxy Network is in Data Store;
 for each Network exactly one of these holds:
 	Network is ip_single,
 	Network is ip_subnet,

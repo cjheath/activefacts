@@ -118,13 +118,13 @@ Role is where
 	Fact Type has at least one Ordinal role;
 Implicit Fact Type is implied by one Role,
 	Role implies at most one Implicit Fact Type;
+Ring Constraint has at most one other-Role;
+Ring Constraint has other-Role,
+	other-Role is of Ring Constraint;
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
-Ring Constraint has at most one other-Role;
-Ring Constraint has other-Role,
-	other-Role is of Ring Constraint;
 
 Role Sequence is identified by its Id;
 Join projects one Role Sequence;
@@ -348,13 +348,13 @@ Param Value is where
  */
 either Concept is an Entity Type or Concept is a Value Type but not both;
 for each Constraint exactly one of these holds:
-	Presence Constraint is a kind of Constraint,
-	Set Constraint is a kind of Constraint,
-	Ring Constraint is a kind of Constraint;
+	Constraint is a Presence Constraint,
+	Constraint is a Set Constraint,
+	Constraint is a Ring Constraint;
 for each Context Note exactly one of these holds:
-	Concept has Context Note,
-	Fact Type has Context Note,
-	Constraint has Context Note;
+	Context Note applies to Concept,
+	Context Note applies to Fact Type,
+	Context Note applies to Constraint;
 either Set Comparison Constraint is a Set Exclusion Constraint or Set Comparison Constraint is a Set Equality Constraint but not both;
 either Set Constraint is a Set Comparison Constraint or Set Constraint is a Subset Constraint but not both;
 either Unit uses coefficient from Ephemera URL or Unit has Coefficient but not both;
@@ -378,10 +378,12 @@ either Agreement was reached by Agent or Agreement was on Date;
 each combination Diagram, Position occurs at most one time in
 	Shape is in Diagram,
 	Shape is at Position;
-// Correct verbalisation of this UC (using the OWA for the "provides identification" unary):
 /*
-each Entity Type(1) occurs at most one time in
-	Type Inheritance (where Entity Type(1) is a supertype of Entity Type(2)) provides identification;
+// Correct verbalisation of this UC (using the OWA for the "provides identification" unary):
+// The join is not yet generated here, so doesn't emit correctly
+// REVISIT: Also need to allow subscripts in an each... list
+each Entity Type occurs at most one time in
+	Type Inheritance (where Entity Type is supertype of Entity Type (as Subtype)) provides identification;
 */
 each combination Entity Type, Type Inheritance occurs at most one time in
 	Entity Type is subtype of super-Entity Type,
@@ -396,8 +398,8 @@ each Set Comparison Constraint occurs at least 2 times in
 	Set Comparison Constraint has in Ordinal position Role Sequence;
 either Value Range has minimum-Bound or Value Range has maximum-Bound;
 each combination Vocabulary, Name occurs at most one time in
-	Vocabulary contains Constraint,
-	Name is of Constraint;
+	Constraint belongs to Vocabulary,
+	Constraint is called Name;
 each combination Vocabulary, Name occurs at most one time in
-	Vocabulary includes Unit,
-	Name is of Unit;
+	Unit is in Vocabulary,
+	Unit is called Name;

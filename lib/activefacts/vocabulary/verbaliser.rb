@@ -6,19 +6,58 @@
 #
 module ActiveFacts
   module Metamodel
-
-    # A Verbaliser has a set of distinguished RoleRefs, and is able
-    # to verbalise either a Join (that spans those RoleRefs), or
-    # a list of RoleSequences that have an implicit join over the referenced roles.
+    # A Verbaliser has a set of distinguished RoleRefs (projected from a join),
+    # and is able to verbalise either a explicit Join (that spans those RoleRefs),
+    # or a list of RoleSequences that have an implicit join over the referenced roles.
+    #
+    # REVISIT: The simple list of role_refs isn't enough.
+    # What it needs is a list of role groups, such that every role group corresponds to one join node.
+    # All roles in a group have the same player (possibly via subtype joins).
+    #
+    # It also needs to know
+    # - whether loose binding will apply.
+    # - whether to include constraints (presence, value, ring) (and report which it used)
+    # - whether to use role names (define/use; must keep history for each)
+    #
     class Verbaliser
       attr_reader :join, :role_refs
       attr_reader :join_nodes                 # All Join Nodes
       attr_reader :join_steps                 # All remaining unemitted Join Steps
       attr_reader :join_steps_by_join_node    # A Hash by Join Node containing an array of remaining steps
 
-      def initialize role_refs
+      def initialize role_refs = nil
         @role_refs = role_refs
         # REVISIT: These role refs may need to be assigned subscripts, which will persist in this Verbaliser
+      end
+
+      def verbalise_over_role_sequence role_sequence, joiner = ' and ', role_proximity = :both
+        @role_refs = role_sequence.is_a?(Array) ? role_sequence : role_sequence.all_role_ref.to_a
+        if jrr = role_refs.detect{|rr| rr.join_node}
+          return verbalise_join(jrr.join_node.join)
+        end
+
+        # First, figure out whether there's a join:
+        join_over = Metamodel.join_roles_over(role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
+
+        readings = @role_refs.map{|rr| rr.role.fact_type}.uniq.map do |fact_type|
+          name_substitutions = []
+          if (join_over)
+            # Find a reading starting with the joined_over role, preferably:
+            joined_role = fact_type.all_role.select{|r| join_over.subtypes_transitive.include?(r.concept)}[0]
+            # This next short-cut occurs where joined_over is objectified. The verbalisation will leave the objectification implicit
+            next fact_type.default_reading unless joined_role
+            reading = fact_type.reading_preferably_starting_with_role joined_role
+
+            # Use the name of the joined_over object, not the role player, in case of a subtype join:
+            rrr = reading.role_sequence.all_role_ref_in_order
+            role_index = (0..rrr.size).detect{|i| rrr[i].role == joined_role }
+            name_substitutions[role_index] = [nil, join_over.name]
+          else
+            reading = fact_type.preferred_reading
+          end
+          reading.expand(name_substitutions)
+        end
+        joiner ? readings*joiner : readings
       end
 
       def prepare_join join
@@ -119,6 +158,7 @@ module ActiveFacts
               end
             next_reading
           end
+        debug :join, "#{next_reading ? "'"+next_reading.expand+"'" : "No reading"} contracts against last node '#{next_node.concept.name}'"
         return [next_step, next_reading]
       end
 
@@ -187,7 +227,12 @@ module ActiveFacts
         rrs = role_sequence.all_role_ref_in_order
         text.gsub(/\{(\d)\}/) do
           role_ref = rrs[$1.to_i]
-          # REVISIT: We need to use the step's role_refs to expand the role players here, not the reading's one
+          # REVISIT: We may need to use the step's role_refs to expand the role players here, not the reading's one (extra adjectives?)
+          # REVISIT: If this role_ref related to a join node, the node player's common subtype name should be used (with subscript, if needed)
+          # REVISIT: There's no way to get hyphens (for adjectives) or role names to be emitted here
+          # REVISIT: There's no way to get presence constraints to be emitted here
+          # REVISIT: There's no way to get literals to be emitted here
+          # REVISIT: Need to consider whether some/that is sufficient to disambiguate here
           concept = role_ref.role.concept
           [
             role_ref.leading_adjective,
@@ -219,7 +264,7 @@ module ActiveFacts
             next_step = nil
             if last_is_contractable && next_steps
               next_step, next_reading = *contractable_step(next_steps, next_node)
-            end
+                end
 
             if next_step
               debug :join, "Chose #{next_step.describe} because it's contractable against last node #{next_node.all_role_ref.to_a[0].role.concept.name} using #{next_reading.expand}"

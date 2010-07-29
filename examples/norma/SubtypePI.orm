@@ -505,6 +505,15 @@
 			<orm:VariableLengthTextDataType id="_A7A1236F-BA2A-41A6-BD6E-B34206718FCA" />
 			<orm:AutoCounterNumericDataType id="_295503D6-C17B-4C00-AE6B-67253D321381" />
 		</orm:DataTypes>
+		<orm:ModelNotes>
+			<orm:ModelNote id="_53B40562-6D71-4509-92B8-9ED64838355C">
+				<orm:Text>This means that no two competitors can share a Given Name and a Family Name
+Even though they may also have other Given Names that don't match</orm:Text>
+				<orm:ReferencedBy>
+					<orm:SetConstraint ref="_1D8C571C-06B4-4E71-8BD4-5D9FE4C7960A" />
+				</orm:ReferencedBy>
+			</orm:ModelNote>
+		</orm:ModelNotes>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_0A59BD66-5290-40BA-82C4-C8FE917110A3" FormatString="{1}" ReferenceModeType="General" />
 			<orm:ReferenceModeKind id="_2A250A7E-9082-4012-8443-B7A86AB19D4B" FormatString="{0} {1}" ReferenceModeType="Popular" />
@@ -565,7 +574,7 @@
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_D5240A34-2D34-4623-A270-51C61F2B2596" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ExternalConstraintShape id="_87BD086E-C93B-4BED-B526-FEC86025EA12" IsExpanded="true" AbsoluteBounds="2.8124998410542807, 1.914577529325036, 0.16, 0.16">
+			<ormDiagram:ExternalConstraintShape id="_87BD086E-C93B-4BED-B526-FEC86025EA12" IsExpanded="true" AbsoluteBounds="2.0520831743876142, 1.9041608626583695, 0.16, 0.16">
 				<ormDiagram:Subject ref="_1D8C571C-06B4-4E71-8BD4-5D9FE4C7960A" />
 			</ormDiagram:ExternalConstraintShape>
 			<ormDiagram:ObjectTypeShape id="_D698E4CB-AEBF-4EE9-B3DC-B8946A4343B3" IsExpanded="true" AbsoluteBounds="1.0813564409812289, 0.5, 0.42864572525024414, 0.35900605320930479">
@@ -574,6 +583,9 @@
 			<ormDiagram:ExternalConstraintShape id="_188C1AF5-6AE6-4545-9B15-BE41EA822568" IsExpanded="true" AbsoluteBounds="0.5, 1.3749999602635694, 0.16, 0.16">
 				<ormDiagram:Subject ref="_02DDD38D-22B5-40EA-8662-498388677151" />
 			</ormDiagram:ExternalConstraintShape>
+			<ormDiagram:ModelNoteShape id="_5F63E755-E976-4139-8443-2DD3C44C7F53" IsExpanded="true" AbsoluteBounds="2.5416665871938071, 1.9479167064030967, 3.8453333333333335, 0.262">
+				<ormDiagram:Subject ref="_53B40562-6D71-4509-92B8-9ED64838355C" />
+			</ormDiagram:ModelNoteShape>
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_EFE849F1-FE1C-4AD2-B4AB-FAB161E696D0" />
 	</ormDiagram:ORMDiagram>

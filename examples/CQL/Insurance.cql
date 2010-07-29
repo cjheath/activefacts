@@ -117,7 +117,7 @@ Police Report was at at most one station-Name;
 
 Policy Wording is identified by its Text;
 
-Product is identified by its Code restricted to {1..99};
+Product is identified by its Code;
 Alias is of at most one Product,
 	Product has at most one Alias;
 Prod Description is of at most one Product,
@@ -125,7 +125,7 @@ Prod Description is of at most one Product,
 
 Registration is identified by its Nr;
 
-State is identified by its Code restricted to {0..9} [independent];
+State is identified by its Code [independent];
 State Name is of at most one State,
 	State has at most one State Name;
 
@@ -297,9 +297,9 @@ Motor Fleet Policy is a kind of Motor Policy;
  * Constraints:
  */
 either Motor Policy is a Single Motor Policy or Motor Policy is a Motor Fleet Policy but not both;
-Party is a company
+Party is a Company that has contact Person
 	if and only if
-	Party is a Company that has contact Person;
+	Party is a company;
 each Contact Methods occurs at least one time in
 	Contact Methods includes mobile-Phone,
 	Contact Methods includes home-Phone,

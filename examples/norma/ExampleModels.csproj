@@ -46,6 +46,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Blog.orm</DependentUpon>
     </Compile>
+    <Compile Include="BPMN._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BPMN.orm</DependentUpon>
+    </Compile>
     <Compile Include="CompanyDirectorEmployee._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
@@ -213,6 +217,10 @@
   <ItemGroup Condition="Exists('Units.orm')">
   </ItemGroup>
   <ItemGroup>
+    <None Include="BPMN.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>BPMN._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="CompanyDirectorEmployee.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirectorEmployee._ORMCustomToolReport.cs</LastGenOutput>
