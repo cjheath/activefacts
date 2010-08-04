@@ -485,9 +485,14 @@ module ActiveFacts
           if c.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
             # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
             fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
-            next if fact_types.size == 1 &&
+            if fact_types.size == 1 &&
+              !c.role_sequence.all_role_ref.detect{|rr| rr.join_node } &&
               c.max_frequency == 1 &&         # Uniqueness
               fact_types[0].all_role.size == c.role_sequence.all_role_ref.size
+              # debugger if !$constraint_id || c.constraint_id.object_id == $foo
+              # $constraint_id ||= 1
+              next
+            end
 
             # Skip internal PresenceConstraints over TypeInheritances:
             next if c.role_sequence.all_role_ref.size == 1 &&
