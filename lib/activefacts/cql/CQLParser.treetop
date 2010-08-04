@@ -48,6 +48,7 @@ module ActiveFacts
         / constraint
         / unit_definition   # REVISIT: Move this above the prescan?
         / concept
+	/ s ';' s { def ast; nil; end }
       end
 
       rule vocabulary_definition

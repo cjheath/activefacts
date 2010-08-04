@@ -32,11 +32,13 @@ module ActiveFacts
           debug :parse, "Parsed '#{node.text_value.gsub(/\s+/,' ').strip}'" do
             begin
               ast = node.ast
+              next unless ast
               debug :ast, ast.inspect
               ast.source = node.body
               ast.constellation = @constellation
               ast.vocabulary = @vocabulary
               value = compile_definition ast
+              debug :definition, "Compiled to #{value.verbalise}" if value
               @vocabulary = value if ast.is_a?(Compiler::Vocabulary)
             rescue => e
               # Augment the exception message, but preserve the backtrace
