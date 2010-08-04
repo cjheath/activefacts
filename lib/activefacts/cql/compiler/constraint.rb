@@ -198,7 +198,8 @@ module ActiveFacts
 
         def compile
           @readings = @readings_lists.map do |readings_list|
-            raise "REVISIT: Join presence constraints not supported yet" if readings_list.size > 1
+            raise "REVISIT: Join presence constraints not supported yet" if readings_list.size > 1 or
+              readings_list.detect{|reading| reading.role_refs.detect{|rr| rr.objectification_join } }
             readings_list[0]
           end
 
