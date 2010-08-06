@@ -396,7 +396,9 @@ module ActiveFacts
                   end
                 elsif se.absorbed_followers > 0
                   se.phrase.wipe_trailing_adjective
-                  @phrases.slice!(se.num+1, se.absorbed_followers)
+                  # This phrase is absorbing non-hyphenated adjective(s), which changes its binding
+                  se.phrase.trailing_adjective = @phrases.slice!(se.num+1, se.absorbed_followers)*' '
+                  se.phrase.rebind context
                   changed = true
                 end
               end
@@ -414,7 +416,9 @@ module ActiveFacts
                   end
                 elsif se.absorbed_precursors > 0
                   se.phrase.wipe_leading_adjective
-                  @phrases.slice!(se.num-se.absorbed_precursors, se.absorbed_precursors)
+                  # This phrase is absorbing non-hyphenated adjective(s), which changes its binding
+                  se.phrase.leading_adjective = @phrases.slice!(se.num-se.absorbed_precursors, se.absorbed_precursors)*' '
+                  se.phrase.rebind context
                   changed = true
                 end
               end
@@ -722,6 +726,10 @@ module ActiveFacts
         def unbind context
           # The key has changed.
           @binding.refs.delete(self)
+          if @binding.refs.empty?
+            # Remove the binding from the context if this was the last reference
+            context.bindings.delete_if {|k,v| v == @binding }
+          end
           @binding = nil
         end
 
