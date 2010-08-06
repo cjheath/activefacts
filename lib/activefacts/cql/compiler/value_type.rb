@@ -55,6 +55,7 @@ module ActiveFacts
               @constellation.Derivation(:derived_unit => plural_unit, :base_unit => unit, :exponent => 1)
             end
 =end
+            unit
           end
         end
       end
