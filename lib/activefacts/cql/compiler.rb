@@ -38,7 +38,7 @@ module ActiveFacts
               ast.constellation = @constellation
               ast.vocabulary = @vocabulary
               value = compile_definition ast
-              debug :definition, "Compiled to #{value.verbalise}" if value
+              debug :definition, "Compiled to #{value.is_a?(Array) ? value.map{|v| v.verbalise}*', ' : value.verbalise}" if value
               @vocabulary = value if ast.is_a?(Compiler::Vocabulary)
             rescue => e
               # Augment the exception message, but preserve the backtrace

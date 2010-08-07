@@ -34,9 +34,9 @@ CREATE TABLE Concept (
 	ValueTypeLength                         int NULL,
 	-- maybe Value Type is a kind of Concept and maybe Value Type has Scale,
 	ValueTypeScale                          int NULL,
-	-- maybe Value Type is a kind of Concept and maybe Value Type is subtype of Supertype and Concept is called Name,
+	-- maybe Value Type is a kind of Concept and maybe Value Type is subtype of super-Value Type (as Supertype) and Concept is called Name,
 	ValueTypeSupertypeName                  varchar(64) NULL,
-	-- maybe Value Type is a kind of Concept and maybe Value Type is subtype of Supertype and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Value Type is a kind of Concept and maybe Value Type is subtype of super-Value Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name,
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
 	-- maybe Value Type is a kind of Concept and maybe Value Type is of Unit and Unit has Unit Id,
 	ValueTypeUnitId                         int NULL,
@@ -108,7 +108,7 @@ CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceI
 	  AND	SubsetConstraintSupersetRoleSequenceId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
+CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
 GO
 
 CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal (ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
@@ -117,7 +117,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueCo
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -173,9 +173,9 @@ CREATE TABLE ContextNote (
 GO
 
 CREATE TABLE Derivation (
-	-- Derivation is where Derived Unit is derived from Base Unit and Unit has Unit Id,
+	-- Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id,
 	BaseUnitId                              int NOT NULL,
-	-- Derivation is where Derived Unit is derived from Base Unit and Unit has Unit Id,
+	-- Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id,
 	DerivedUnitId                           int NOT NULL,
 	-- maybe Derivation has Exponent,
 	Exponent                                shortint NULL,
@@ -207,13 +207,13 @@ CREATE TABLE FactType (
 	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
 	TypeInheritanceProvidesIdentification   bit NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Concept is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept is called Name,
 	TypeInheritanceSubtypeName              varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSubtypeVocabularyName    varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Concept is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept is called Name,
 	TypeInheritanceSupertypeName            varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSupertypeVocabularyName  varchar(64) NULL,
 	PRIMARY KEY(FactTypeId),
 	FOREIGN KEY (EntityTypeName, EntityTypeVocabularyName) REFERENCES Concept (Name, VocabularyName),
@@ -228,7 +228,7 @@ CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocab
 	  AND	EntityTypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
+CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeVocabularyNameEntityTypeName ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
@@ -249,7 +249,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX TypeInheritanceUQ ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
 GO
 
 CREATE TABLE Instance (
@@ -554,7 +554,7 @@ CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeSha
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAObjectifiedFactTypeNameShape ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
@@ -562,7 +562,7 @@ CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEM
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAReadingShape ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS

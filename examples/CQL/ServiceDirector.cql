@@ -208,11 +208,11 @@ Data Store Service has one Subscription;
  */
 either Company is client or Company is vendor but not both;
 for each Credential exactly one of these holds:
-	Data Store requires Credential,
+	Data Store(1) requires Credential,
 	Data Store Service requires Credential,
 	Vendor requires Credential,
 	Data Store File Host System has Internal-Credential,
-	Data Store has Internal-Credential;
+	Data Store(2) has Internal-Credential;
 for each Network exactly one of these holds:
 	Network is used by Host System,
 	Company has Origin-Network,
@@ -225,41 +225,41 @@ either Host System runs Switch or Data Store has Legacy-Switch but not both;
 for each Network at most one of these holds:
 	Network is ip_single,
 	Network has Ending-IP;
-Network has Ending-IP
+Network has Ending IP
 	if and only if
 	Network is ip_range;
 Network is ip_subnet
 	if and only if
 	Network uses Netmask;
-Switch is on private-Network
+Switch is on private Network
 	if and only if
-	Data Store has Legacy-Switch;
-Client has default-Data Store
+	Data Store has Legacy Switch;
+Client has default Data Store
 	only if Data Store belongs to Client;
-Data Store has Tcp- Proxy Network
+Data Store has Tcp Proxy Network
 	only if Network is ip_single;
-Network uses Domain-Name
+Network uses Domain Name
 	only if Network is ip_single;
 each Credential occurs at most one time in
-	Data Store File Host System has Internal-Credential;
+	Data Store File Host System has Internal Credential;
 each Credential occurs at most one time in
 	Data Store Service requires Credential;
 each Credential occurs at most one time in
-	Data Store has Internal-Credential;
+	Data Store has Internal Credential;
 each Credential occurs at most one time in
 	Data Store requires Credential;
 each Credential occurs at most one time in
 	Vendor requires Credential;
 each IP occurs at most one time in
-	Network has Ending-IP;
+	Network has Ending IP;
 each IP occurs at most one time in
-	Network has Initial-IP;
+	Network has Initial IP;
 each Name occurs at most one time in
-	Data Store has Friendly-Name;
+	Data Store has Friendly Name;
 each Network occurs at most one time in
-	Company has Origin-Network;
+	Company has Origin Network;
 each Port occurs at most one time in
-	Switch has monitoring-Port;
+	Switch has monitoring Port;
 each Recurring Schedule occurs at least one time in
 	Recurring Schedule monday,
 	Recurring Schedule tuesday,
@@ -271,11 +271,11 @@ each Recurring Schedule occurs at least one time in
 each Service occurs one time in
 	Vendor provides Service;
 each Subscription occurs at most one time in
-	Company has Driver- Tech Subscription;
+	Company has Driver Tech Subscription;
 each Subscription occurs at most one time in
 	Data Store Service has Subscription;
 each Switch occurs at most one time in
-	Data Store has Legacy-Switch;
+	Data Store has Legacy Switch;
 each combination User Name, Vendor, Data Store Service, Data Store occurs at most one time in
 	Credential has User Name,
 	Vendor requires Credential,

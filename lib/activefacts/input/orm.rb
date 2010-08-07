@@ -630,7 +630,7 @@ module ActiveFacts
             #puts "Residual Mandatory #{name}: #{role_sequence.to_s}"
 
             if (players = role_sequence.all_role_ref.map{|rr| rr.role.concept}).uniq.size > 1
-              join_over = ActiveFacts::Metamodel.join_roles_over(role_sequence.all_role_ref.map{|rr| rr.role}, :proximate)
+              join_over, = *ActiveFacts::Metamodel.join_roles_over(role_sequence.all_role_ref.map{|rr| rr.role}, :proximate)
               raise "Mandatory join constraint #{name} has incompatible players #{players.map{|o| o.name}.inspect}" unless join_over
               if players.detect{|p| p != join_over}
                 debug :join, "subtyping join simple mandatory constraint #{name} over #{join_over.name}"
@@ -678,7 +678,7 @@ module ActiveFacts
 
             # Check for a join
             if (fact_types = role_sequence.all_role_ref.map{|rr| rr.role.fact_type}).uniq.size > 1
-              join_over = ActiveFacts::Metamodel.join_roles_over(role_sequence.all_role_ref.map{|rr| rr.role})
+              join_over, = *ActiveFacts::Metamodel.join_roles_over(role_sequence.all_role_ref.map{|rr| rr.role}, :counterpart)
 
               players = role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
               raise "Uniqueness join constraint #{name} has incompatible players #{players.inspect}" unless join_over
@@ -775,7 +775,8 @@ module ActiveFacts
         sequence_join_over = []
         if role_sequences[0].all_role_ref.size > 1    # There are joins within each sequence.
           sequence_join_over = role_sequences.map do |rs|
-            ActiveFacts::Metamodel.join_roles_over(rs.all_role_ref.map{|rr| rr.role})
+            join_over, joined_roles = *ActiveFacts::Metamodel.join_roles_over(rs.all_role_ref.map{|rr| rr.role})
+            join_over
           end
         end
 
@@ -1002,7 +1003,7 @@ module ActiveFacts
                 @by_id[xr['ref']]
               end
             if from.concept != to.concept
-              join_over = ActiveFacts::Metamodel.join_roles_over([from, to], :counterpart)
+              join_over, = *ActiveFacts::Metamodel.join_roles_over([from, to], :counterpart)
               raise "Ring constraint has incompatible players #{from.concept.name}, #{to.concept.name}" if !join_over
               debug :join, "join ring constraint over #{join_over.name}"
             end

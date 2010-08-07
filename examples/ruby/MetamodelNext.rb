@@ -163,12 +163,10 @@ module ::Metamodel
 
   class ContextNote
     identified_by :context_note_id
-    has_one :constraint                         # See Constraint.all_context_note
+    has_one :concept                            # See Concept.all_context_note
     one_to_one :context_note_id, :mandatory => true  # See ContextNoteId.context_note
     has_one :context_note_kind, :mandatory => true  # See ContextNoteKind.all_context_note
     has_one :discussion, :mandatory => true     # See Discussion.all_context_note
-    has_one :fact_type                          # See FactType.all_context_note
-    has_one :object_type                        # See ObjectType.all_context_note
   end
 
   class Enforcement

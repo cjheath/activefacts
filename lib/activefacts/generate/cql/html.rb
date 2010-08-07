@@ -197,11 +197,6 @@ module ActiveFacts
             @identifying_fact_text
         end
 
-        def show_frequency role, constraint
-          # REVISIT: Need to also colorize the adjectives here:
-          [ constraint ? keyword(constraint.frequency) : nil, concept(role.concept.name) ]
-        end
-
         def entity_type_banner
           puts(keyword("/*\n * Entity Types\n */"))
         end

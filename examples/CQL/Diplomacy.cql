@@ -40,8 +40,8 @@ for each Diplomat, Country at most one of these holds:
 	Diplomat represents Country;
 Ambassador is from Country(1) to Country(2)
 	only if Ambassador is a kind of Diplomat that represents Country(1);
-Ambassador is from Country(1) to Country(2)
-	only if Ambassador is a kind of Diplomat that serves in Country(2);
+Ambassador is from Country(2) to Country(1)
+	only if Ambassador is a kind of Diplomat that serves in Country(1);
 Diplomat serves in Country
 	only if Diplomat speaks Language that is spoken in Country;
 each Ambassador occurs at least one time in

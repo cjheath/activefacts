@@ -301,11 +301,11 @@ Party is a Company that has contact Person
 	if and only if
 	Party is a company;
 each Contact Methods occurs at least one time in
-	Contact Methods includes mobile-Phone,
-	Contact Methods includes home-Phone,
-	Contact Methods includes business-Phone,
+	Contact Methods includes mobile Phone,
+	Contact Methods includes home Phone,
+	Contact Methods includes business Phone,
 	Contact Methods includes Email;
 each combination Policy, Claim Sequence occurs at most one time in
 	Claim is on Policy,
 	Claim has Claim Sequence;
-either Witness lives at Address or Witness has contact-Phone;
+either Witness lives at Address or Witness has contact Phone;

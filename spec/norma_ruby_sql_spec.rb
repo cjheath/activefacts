@@ -17,7 +17,8 @@ describe "Column lists from absorption compared with Ruby's" do
   }
   norma_ruby_failures = {
     "UnaryIdentification" => "No PI for VisitStatus",
-    "SubtypePI" => "Has an illegal uniqueness join constraint",
+    "BPMN" => "Has duplicate column names",
+    "Diplomacy" => "Has duplicate column names",
   }
 
   # Generate and return the Ruby for the given vocabulary

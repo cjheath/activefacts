@@ -56,8 +56,8 @@ Name is of Constraint,
 	Constraint is called at most one Name;
 
 Context Note is identified by its Id;
-Constraint has Context Note,
-	Context Note applies to at most one Constraint;
+Concept has Context Note,
+	Context Note applies to at most one Concept;
 Context Note has one Context Note Kind,
 	Context Note Kind is of Context Note;
 Context Note has one Discussion,
@@ -74,8 +74,6 @@ Fact is identified by its Id;
 
 Fact Type is a kind of Concept [partitioned];
 Fact is of one Fact Type;
-Fact Type has Context Note,
-	Context Note applies to at most one Fact Type;
 
 Implicit Fact Type is a kind of Fact Type;
 
@@ -101,8 +99,6 @@ Object Type is a kind of Concept [partitioned];
 Instance is of one Object Type;
 Join Node is for one Object Type,
 	Object Type is referenced in Join Node;
-Object Type has Context Note,
-	Context Note applies to at most one Object Type;
 Object Type uses at most one Pronoun;
 Object Type is independent;
 
@@ -361,17 +357,13 @@ for each Constraint exactly one of these holds:
 	Constraint is a Presence Constraint,
 	Constraint is a Set Constraint,
 	Constraint is a Ring Constraint;
-for each Context Note exactly one of these holds:
-	Context Note applies to Concept,
-	Context Note applies to Fact Type,
-	Context Note applies to Constraint;
 either Object Type is an Entity Type or Object Type is a Value Type but not both;
 for each Role Sequence exactly one of these holds:
-	Role Sequence is for Reading
+	Role Sequence is for Reading,
 	Presence Constraint covers Role Sequence,
-	Subset Constraint covers subset-Role Sequence,
-	Subset Constraint covers superset-Role Sequence,
-	Set Comparison Constraint has in Ordinal position Role Sequence;
+	Subset Constraint(1) covers subset-Role Sequence,
+	Subset Constraint(2) covers superset-Role Sequence,
+	Role Sequence is Ordinal in Set Comparison Constraint;
 either Set Comparison Constraint is a Set Exclusion Constraint or Set Comparison Constraint is a Set Equality Constraint but not both;
 either Set Constraint is a Set Comparison Constraint or Set Constraint is a Subset Constraint but not both;
 either Unit uses coefficient from Ephemera URL or Unit has Coefficient but not both;
@@ -397,7 +389,7 @@ Role Value fulfils Fact that is of Fact Type
 	if and only if
 	Role Value is of Role (where Fact Type has Ordinal role);
 Presence Constraint is preferred identifier
-	only if Presence Constraint has max-Frequency;
+	only if Presence Constraint has max Frequency;
 Value Type has Scale
 	only if Value Type has Length;
 either Agreement was reached by Agent or Agreement was on Date;
@@ -405,11 +397,11 @@ each combination Diagram, Position occurs at most one time in
 	Shape is in Diagram,
 	Shape is at Position;
 each combination Entity Type, Type Inheritance occurs at most one time in
-	Entity Type is subtype of super-Entity Type,
+	Entity Type is subtype of super Entity Type,
 	Type Inheritance provides identification;
 each Presence Constraint occurs at least one time in
-	Presence Constraint has min-Frequency,
-	Presence Constraint has max-Frequency,
+	Presence Constraint has min Frequency,
+	Presence Constraint has max Frequency,
 	Presence Constraint is mandatory;
 each Role Sequence occurs at least one time in
 	Role Sequence in Ordinal position includes Role;
@@ -419,7 +411,7 @@ each Term occurs at least one time in
 	Term designates Object Type,
 	Term is secondary for Object Type,
 	Term is name of Role Ref;
-either Value Range has minimum-Bound or Value Range has maximum-Bound;
+either Value Range has minimum Bound or Value Range has maximum Bound;
 each combination Vocabulary, Name occurs at most one time in
 	Constraint belongs to Vocabulary,
 	Constraint is called Name;

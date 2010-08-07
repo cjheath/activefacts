@@ -171,9 +171,29 @@ module ActiveFacts
         [forward_reading, reverse_reading]
       end
 
-      # This entity is identified by a refmode. Generate the identification and fact reading text.
-      def identified_by_refmode(entity_type, value_residual, fact_type, value_role, nonstandard_readings)
-        # Elide the constraints that would have been emitted on those readings.
+      # If this entity_type is identified by a reference mode, return the verbalisation
+      def identified_by_ref_mode(entity_type, identifying_facts)
+        fact_type, entity_role, value_role, value_residual =
+          *value_role_identification(entity_type, identifying_facts)
+        return nil unless fact_type
+
+        # This EntityType is identified by its association with a single ValueType
+        # whose name is an extension (the value_residual) of the EntityType's name.
+        # If we have at least one of the standard refmode readings, dump it that way,
+        # else exit and use the long-hand verbalisation instead.
+
+        forward_reading, reverse_reading =
+          *detect_standard_refmode_readings(fact_type, entity_role, value_role)
+        return nil unless (forward_reading || reverse_reading)
+
+        # We can't subscript reference modes.
+        # If an objectified fact type has a role played by its identifying player, go long-hand.
+        return nil if entity_type.fact_type and
+          entity_type.fact_type.all_role.detect{|role| role.concept == value_role.concept }
+
+        @fact_types_dumped[fact_type] = true  # We've covered this fact type
+
+        # Elide the constraints that would have been emitted on the standard readings.
         # If there is a UC that's not in the standard form for a reference mode,
         # we have to emit the standard reading anyhow.
         fact_constraints = @presence_constraints_by_fact[fact_type]
@@ -183,61 +203,61 @@ module ActiveFacts
             @constraints_used[pc] = true
           end
         end
-        fact_constraints += Array(@presence_constraints_by_fact[entity_type.fact_type])
 
-        @fact_types_dumped[fact_type] = true
-
-        # Figure out whether any non-standard readings exist:
+        # Figure out which non-standard readings exist, if any:
+        nonstandard_readings = fact_type.all_reading - [forward_reading, reverse_reading]
         debug :mode, "--- nonstandard_readings.size now = #{nonstandard_readings.size}" if nonstandard_readings.size > 0
 
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
-#!!! Verbaliser
-        # REVISIT: Announce? to the Verbaliser that we know about entity_type.name and value_role.concept.name
-        # Verbalise only these constraints, and value constraints (there'll be no ring constraints)
-        # verbaliser.constraints = fact_constraints
-        # All role references played by these entity types must be unambiguous (loose binding helps!)
-        fact_text = (
-          nonstandard_readings.map do |reading|
-            expanded_reading(verbaliser, reading, fact_constraints, true)
-          end +
-          (entity_type.fact_type ?
-            fact_readings_with_constraints(verbaliser, entity_type.fact_type, fact_constraints) : []
-          )
-        )*",\n\t"
 
-        # If we emitted a reading, it'll include the role_value_constraint already
-        value_constraint = fact_text.empty? && value_role.role_value_constraint
-        constraint_text = value_constraint ? " "+value_constraint.describe : ""
-        return " identified by its #{value_residual}#{constraint_text}#{mapping_pragma(entity_type)}" +
-          (fact_text != "" ? " where\n\t" + fact_text : "")
-      end
+        # The verbaliser needs to have a Player for the roles of entity_type, so it doesn't get subscripted.
+        entity_roles =
+          nonstandard_readings.map{|r| r.role_sequence.all_role_ref.detect{|rr| rr.role.concept == entity_type}}.compact
+        verbaliser.role_refs_have_same_player entity_roles
 
-      def identified_by_roles_and_facts(entity_type, identifying_roles, identifying_facts)
-        verbaliser = ActiveFacts::Metamodel::Verbaliser.new
-        irn = identifying_role_names verbaliser, identifying_roles
-
-        # Detect standard reference-mode scenarios
-        fact_type, entity_role, value_role, value_residual =
-          *value_role_identification(entity_type, identifying_facts)
-        if fact_type
-          # The EntityType is identified by its association with a single ValueType
-          # whose name is an extension (the value_residual) of the EntityType's name.
-          # If we have at least one of the standard refmode readings, dump it that way.
-
-          forward_reading, reverse_reading =
-            *detect_standard_refmode_readings(fact_type, entity_role, value_role)
-
-          if (forward_reading || reverse_reading)
-            nonstandard_readings = fact_type.all_reading - [forward_reading, reverse_reading]
-
-            return identified_by_refmode(entity_type, value_residual, fact_type, value_role, nonstandard_readings)
-          end
+        verbaliser.alternate_readings nonstandard_readings
+        if entity_type.fact_type
+          verbaliser.alternate_readings entity_type.fact_type.all_reading
         end
 
-        identifying_facts.each{|f| @fact_types_dumped[f] = true }
-        # REVISIT: The verbaliser must detect and fix ambiguities between the identifying roles.
-        # The entity type itself cannot be ambiguous because it's being defined here (it might have various adjectives but those will be loose-bound)
-        # but there may be more than one role played by the same other player, perhaps without adjectives or role names, which will need subscripts
+        verbaliser.create_subscripts      # Ok, the Verbaliser is ready to fly
+
+        fact_readings =
+          nonstandard_readings.map { |reading| expanded_reading(verbaliser, reading, fact_constraints, true) }
+        fact_readings +=
+          fact_readings_with_constraints(verbaliser, entity_type.fact_type) if entity_type.fact_type
+
+        # If we emitted a reading for the refmode, it'll include any role_value_constraint already
+        if nonstandard_readings.size == 0 and c = value_role.role_value_constraint
+          constraint_text = " "+c.describe
+        end
+        return " identified by its #{value_residual}#{constraint_text}#{mapping_pragma(entity_type)}" +
+          (fact_readings.size > 0 ? " where\n\t" : "") +
+          fact_readings*",\n\t"
+      end
+
+      def identified_by_roles_and_facts(entity_type, identifying_role_refs, identifying_facts)
+        # Detect standard reference-mode scenarios:
+        if srm = identified_by_ref_mode(entity_type, identifying_facts)
+          return srm
+        end
+
+        verbaliser = ActiveFacts::Metamodel::Verbaliser.new
+
+        # Announce all the identifying fact roles to the verbaliser so it can decide on any necessary subscripting.
+        # The verbaliser needs to have a Player for the roles of entity_type, so it doesn't get subscripted.
+        entity_roles =
+          identifying_facts.map{|ft| ft.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role.concept == entity_type}}.compact
+        verbaliser.role_refs_have_same_player entity_roles
+        identifying_facts.each do |fact_type|
+          # The RoleRefs for corresponding roles across all readings are for the same player.
+          verbaliser.alternate_readings fact_type.all_reading
+          @fact_types_dumped[fact_type] = true
+        end
+        verbaliser.create_subscripts
+
+        irn = verbaliser.identifying_role_names identifying_role_refs
+
         identifying_fact_text = 
             identifying_facts.map{|f|
                 fact_readings_with_constraints(verbaliser, f)
@@ -265,8 +285,15 @@ module ActiveFacts
 
         print mapping_pragma(o)
 
-        verbaliser = ActiveFacts::Metamodel::Verbaliser.new
-        print " where\n\t" + fact_readings_with_constraints(verbaliser, o.fact_type)*",\n\t" if o.fact_type
+        if o.fact_type
+          verbaliser = ActiveFacts::Metamodel::Verbaliser.new
+          # Announce all the objectified fact roles to the verbaliser so it can decide on any necessary subscripting.
+          # The RoleRefs for corresponding roles across all readings are for the same player.
+          verbaliser.alternate_readings o.fact_type.all_reading
+          verbaliser.create_subscripts
+
+          print " where\n\t" + fact_readings_with_constraints(verbaliser, o.fact_type)*",\n\t"
+        end
         puts ";\n"
       end
 
@@ -291,8 +318,11 @@ module ActiveFacts
           print " where\n\t"
         end
 
-        verbaliser = ActiveFacts::Metamodel::Verbaliser.new
         # There can be no roles of the objectified fact type in the readings, so no need to tell the Verbaliser anything special
+        verbaliser = ActiveFacts::Metamodel::Verbaliser.new
+        verbaliser.alternate_readings fact_type.all_reading
+        verbaliser.create_subscripts
+
         puts(fact_readings_with_constraints(verbaliser, fact_type)*",\n\t"+";")
       end
 
@@ -328,15 +358,22 @@ module ActiveFacts
         # For a mandatory constraint (min_frequency == 1, max == nil or 1) any subtyping join is over the proximate role player
         # For all other presence constraints any subtyping join is over the counterpart player
         role_proximity = c.min_frequency == 1 && [nil, 1].include?(c.max_frequency) ? :proximate : :counterpart
+        if role_proximity == :proximate
+          verbaliser.role_refs_are_subtype_joined(c.role_sequence)
+        else
+          join_over, joined_roles = ActiveFacts::Metamodel.join_roles_over(c.role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
+          verbaliser.roles_have_same_player(joined_roles) if join_over
+        end
+
+        verbaliser.prepare_role_sequence(c.role_sequence)
+
         expanded_readings = verbaliser.verbalise_over_role_sequence(c.role_sequence, nil, role_proximity)
         if c.min_frequency == 1 && c.max_frequency == nil and c.role_sequence.all_role_ref.size == 2
           puts "either #{expanded_readings*' or '};"
         else
           roles = c.role_sequence.all_role_ref.map{|rr| rr.role }
-          # The uniq's are bad here; they mean there is more than one player of the same type and we should subscript
-          # This list of players should come from the verbaliser:
-          players = c.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
-          fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
+          players = c.role_sequence.all_role_ref.map{|rr| verbaliser.subscripted_player(rr) }
+          players.uniq! if role_proximity == :proximate
           min, max = c.min_frequency, c.max_frequency
           pl = (min&&min>1)||(max&&max>1) ? 's' : ''
           puts \
@@ -348,10 +385,19 @@ module ActiveFacts
       def dump_set_comparison_constraint(c)
         scrs = c.all_set_comparison_roles.sort_by{|scr| scr.ordinal}
         role_sequences = scrs.map{|scr|scr.role_sequence}
-
+        transposed_role_refs = scrs.map{|scr| scr.role_sequence.all_role_ref_in_order.to_a}.transpose
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
+
+        # Tell the verbaliser all we know, so it can figure out which players to subscript:
+        transposed_role_refs.each { |role_refs| verbaliser.role_refs_are_subtype_joined role_refs }
+        role_sequences.each do |role_sequence|
+          verbaliser.prepare_role_sequence role_sequence
+        end
+        verbaliser.create_subscripts
+
         if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.join_node}}
           # This set constraint has an explicit join. Verbalise it.
+
           readings_list = role_sequences.
             map do |rs|
               verbaliser.verbalise_over_role_sequence(rs) 
@@ -380,7 +426,6 @@ module ActiveFacts
         end
 
         # A constrained role may involve a subtyping join. We substitute the name of the supertype for all occurrences.
-        transposed_role_refs = scrs.map{|scr| scr.role_sequence.all_role_ref_in_order.to_a}.transpose
         players = transposed_role_refs.map{|role_refs| common_supertype(role_refs.map{|rr| rr.role.concept})}
         raise "Constraint must cover matching roles" if players.compact.size < players.size
 
@@ -393,7 +438,7 @@ module ActiveFacts
             # These should instead be passed to the verbaliser (one join node per index, role_refs for each).
             fact_types_processed = {}
             constrained_roles = scr.role_sequence.all_role_ref_in_order.map{|rr| rr.role}
-            join_over = Metamodel.join_roles_over(constrained_roles)
+            join_over, joined_roles = *Metamodel.join_roles_over(constrained_roles)
             constrained_roles.map do |constrained_role|
               fact_type = constrained_role.fact_type
               next nil if fact_types_processed[fact_type] # Don't emit the same fact type twice (in case of objectification join)
@@ -418,11 +463,14 @@ module ActiveFacts
           c.subset_role_sequence.all_role_ref_in_order.map{|rr| [rr.role, rr.role.fact_type]}.transpose
         superset_roles, superset_fact_types =
           c.superset_role_sequence.all_role_ref_in_order.map{|rr| [rr.role, rr.role.fact_type]}.transpose
-
-        subset_fact_types.uniq!
-        superset_fact_types.uniq!
+        transposed_role_refs = [c.subset_role_sequence, c.superset_role_sequence].map{|rs| rs.all_role_ref_in_order.to_a}.transpose
 
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
+        transposed_role_refs.each { |role_refs| verbaliser.role_refs_are_subtype_joined role_refs }
+        verbaliser.prepare_role_sequence c.subset_role_sequence
+        verbaliser.prepare_role_sequence c.superset_role_sequence
+        verbaliser.create_subscripts
+
         puts \
           verbaliser.verbalise_over_role_sequence(c.subset_role_sequence) +
           "\n\tonly if " +
@@ -462,95 +510,52 @@ module ActiveFacts
       #============================================================
       # Verbalisation functions for fact type and entity type definitions
       #============================================================
-      # Return an array of the names of these identifying_roles
-      def identifying_role_names verbaliser, identifying_roles
-        identifying_roles.map do |role|
-          preferred_role_ref = role.fact_type.preferred_reading.role_sequence.all_role_ref.detect{|reading_rr|
-              reading_rr.role == role
-            }
-          role_words = []
-          # REVISIT: Consider whether NOT to use the adjective if it's a prefix of the role_name
 
-          role_name = role.role_name
-          role_name = nil if role_name == ""
-          # debug "concept.name=#{preferred_role_ref.role.concept.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
-
-          if (role.fact_type.all_role.size == 1)
-            # REVISIT: Guard against unary reading containing the illegal words "and" and "where".
-            role.fact_type.default_reading    # Need whole reading for a unary.
-          elsif (role_name)
-            role_name
-          else
-            role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
-            role_words << preferred_role_ref.role.concept.name
-            role_words << preferred_role_ref.trailing_adjective if preferred_role_ref.trailing_adjective != ""
-            role_words.compact*"-"
-          end
-        end
-      end
-
-      def fact_readings_with_constraints(verbaliser, fact_type, fact_constraints = nil)
+      def fact_readings_with_constraints(verbaliser, fact_type)
+        fact_constraints = @presence_constraints_by_fact[fact_type]
+        readings = []
         define_role_names = true
-        fact_constraints ||= @presence_constraints_by_fact[fact_type]
-        readings = fact_type.all_reading_by_ordinal.inject([]) do |reading_array, reading|
-          reading_array << expanded_reading(verbaliser, reading, fact_constraints, define_role_names)
-
+        fact_type.all_reading_by_ordinal.each do |reading|
+          readings << expanded_reading(verbaliser, reading, fact_constraints, define_role_names)
           define_role_names = false     # No need to define role names in subsequent readings
-
-          reading_array
         end
-
         readings
       end
 
       def expanded_reading(verbaliser, reading, fact_constraints, define_role_names)
-        # Find all role numbers in order of occurrence in this reading:
-        role_refs = reading.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
+        # Arrange the roles in order they occur in this reading:
+        role_refs = reading.role_sequence.all_role_ref_in_order
         role_numbers = reading.text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
         roles = role_numbers.map{|m| role_refs[m].role }
-        # debug "Considering #{reading.text} having #{role_numbers.inspect}"
 
         # Find the constraints that constrain frequency over each role we can verbalise:
         frequency_constraints = []
         value_constraints = []
         roles.each do |role|
-          # Find a mandatory constraint that's *not* unique; this will need an extra reading
-          role_is_first_in = reading.fact_type.all_reading.detect{|r|
-              role == r.role_sequence.all_role_ref.sort_by{|role_ref|
-                  role_ref.ordinal
-                }[0].role
-            }
-
-          if vr = role.role_value_constraint
-            if @constraints_used[vr]
-              vr = nil
+          value_constraints <<
+            if vc = role.role_value_constraint and !@constraints_used[vc]
+              @constraints_used[vc] = true
+              vc.describe
             else
-              @constraints_used[vr] = true
-              vr = vr.describe
+              nil
             end
-          end
-          value_constraints << vr
-          if (role == roles.last)   # First role of the reading?
-            # REVISIT: With a ternary, doing this on other than the last role can be ambiguous,
-            # in case both the 2nd and 3rd roles have frequencies. Think some more!
 
-            constraint = fact_constraints.find{|c|  # Find a UC that spans all other Roles
-                # internal uniqueness constraints span all roles but one, the residual:
-                c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) &&
-                  !@constraints_used[c] &&  # Already verbalised
-                  roles-c.role_sequence.all_role_ref.map(&:role) == [role]
-              }
-            # Index the frequency implied by the constraint under the role position in the reading
-            if constraint     # Mark this constraint as "verbalised" so we don't do it again:
-              @constraints_used[constraint] = true
+          frequency_constraints <<
+            if (role == roles.last)   # On the last role of the reading, emit any presence constraint
+              constraint = fact_constraints.
+                detect do |c|  # Find a UC that spans all other Roles
+                  c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) &&
+                    !@constraints_used[c] &&  # Already verbalised
+                    roles-c.role_sequence.all_role_ref.map(&:role) == [role]
+                end
+              @constraints_used[constraint] = true if constraint
+              constraint && constraint.frequency
+            else
+              nil
             end
-            frequency_constraints << show_frequency(role, constraint)
-          else
-            frequency_constraints << show_frequency(role, nil)
-          end
         end
 
-        expanded = reading.expand(frequency_constraints, define_role_names, value_constraints)
+        expanded = verbaliser.expand_reading(reading, frequency_constraints, define_role_names, value_constraints)
 
         if (ft_rings = @ring_constraints_by_fact[reading.fact_type]) &&
            (ring = ft_rings.detect{|rc| !@constraints_used[rc]})
@@ -572,8 +577,7 @@ module ActiveFacts
           end
         frequency_constraints = [] unless frequency_constraints.detect{|fc| fc[0] != "some" }
 
-#!!! Verbaliser
-        reading.expand(frequency_constraints, nil)
+        verbaliser.expand_reading(reading, frequency_constraints)
       end
 
     end

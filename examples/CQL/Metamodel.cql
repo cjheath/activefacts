@@ -371,32 +371,25 @@ Role Value fulfils Fact that is of Fact Type
 	if and only if
 	Role Value is of Role (where Fact Type has Ordinal role);
 Presence Constraint is preferred identifier
-	only if Presence Constraint has max-Frequency;
+	only if Presence Constraint has max Frequency;
 Value Type has Scale
 	only if Value Type has Length;
 either Agreement was reached by Agent or Agreement was on Date;
 each combination Diagram, Position occurs at most one time in
 	Shape is in Diagram,
 	Shape is at Position;
-/*
-// Correct verbalisation of this UC (using the OWA for the "provides identification" unary):
-// The join is not yet generated here, so doesn't emit correctly
-// REVISIT: Also need to allow subscripts in an each... list
-each Entity Type occurs at most one time in
-	Type Inheritance (where Entity Type is supertype of Entity Type (as Subtype)) provides identification;
-*/
 each combination Entity Type, Type Inheritance occurs at most one time in
-	Entity Type is subtype of super-Entity Type,
+	Entity Type is subtype of super Entity Type,
 	Type Inheritance provides identification;
 each Presence Constraint occurs at least one time in
-	Presence Constraint has min-Frequency,
-	Presence Constraint has max-Frequency,
+	Presence Constraint has min Frequency,
+	Presence Constraint has max Frequency,
 	Presence Constraint is mandatory;
 each Role Sequence occurs at least one time in
 	Role Sequence in Ordinal position includes Role;
 each Set Comparison Constraint occurs at least 2 times in
 	Set Comparison Constraint has in Ordinal position Role Sequence;
-either Value Range has minimum-Bound or Value Range has maximum-Bound;
+either Value Range has minimum Bound or Value Range has maximum Bound;
 each combination Vocabulary, Name occurs at most one time in
 	Constraint belongs to Vocabulary,
 	Constraint is called Name;

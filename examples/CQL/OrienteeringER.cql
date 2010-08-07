@@ -45,14 +45,14 @@ Event Course is where
  * Constraints:
  */
 each Club occurs at least one time in
-	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
+	event ID is Series Event called Event Name run by Club using Map on Date at Location;
 each Event Name occurs at most one time in
-	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
+	event ID is Series Event called Event Name run by Club using Map on Date at Location;
 each Event occurs at least one time in
 	Event includes Control which is worth Point Value;
 each ID occurs one time in
-	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
+	event ID is Series Event called Event Name run by Club using Map on Date at Location;
 each Name occurs at most one time in
-	map-Name having Accessibility belongs to Club;
+	map Name having Accessibility belongs to Club;
 each Series Event occurs at most one time in
-	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
+	event ID is Series Event called Event Name run by Club using Map on Date at Location;

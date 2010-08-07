@@ -96,7 +96,7 @@ CREATE TABLE Map (
 	MapID                                   int IDENTITY NOT NULL,
 	-- Map has Map Name,
 	MapName                                 varchar(80) NOT NULL,
-	-- Owner owns Map and Club has Club Code,
+	-- Club (as Owner) owns Map and Club has Club Code,
 	OwnerCode                               varchar(6) NOT NULL,
 	PRIMARY KEY(MapID),
 	UNIQUE(MapName),
@@ -146,7 +146,7 @@ CREATE TABLE PunchPlacement (
 GO
 
 CREATE TABLE Series (
-	-- Series has Name,
+	-- Series has Series Name (as Name),
 	Name                                    varchar(40) NOT NULL,
 	-- Series has Series ID,
 	SeriesID                                int IDENTITY NOT NULL,

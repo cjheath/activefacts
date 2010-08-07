@@ -109,27 +109,22 @@ GO
 CREATE TABLE ContextNote (
 	-- maybe Context Note was added by Agreement and maybe Agreement was on Date,
 	AgreementDate                           datetime NULL,
-	-- maybe Constraint has Context Note and Constraint is a kind of Concept and Concept has GUID,
-	ConstraintGUID                          varchar NULL,
+	-- maybe Concept has Context Note and Concept has GUID,
+	ConceptGUID                             varchar NULL,
 	-- Context Note has Context Note Id,
 	ContextNoteId                           int IDENTITY NOT NULL,
 	-- Context Note has Context Note Kind,
 	ContextNoteKind                         varchar NOT NULL CHECK(ContextNoteKind = 'as_opposed_to' OR ContextNoteKind = 'because' OR ContextNoteKind = 'so_that' OR ContextNoteKind = 'to_avoid'),
 	-- Context Note has Discussion,
 	Discussion                              varchar NOT NULL,
-	-- maybe Fact Type has Context Note and Fact Type is a kind of Concept and Concept has GUID,
-	FactTypeGUID                            varchar NULL,
-	-- maybe Object Type has Context Note and Object Type is a kind of Concept and Concept has GUID,
-	ObjectTypeGUID                          varchar NULL,
-	PRIMARY KEY(ContextNoteId),
-	FOREIGN KEY (ConstraintGUID) REFERENCES [Constraint] (ConceptGUID)
+	PRIMARY KEY(ContextNoteId)
 )
 GO
 
 CREATE TABLE Derivation (
-	-- Derivation is where Derived Unit is derived from Base Unit and Unit has Unit Id,
+	-- Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id,
 	BaseUnitId                              int NOT NULL,
-	-- Derivation is where Derived Unit is derived from Base Unit and Unit has Unit Id,
+	-- Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id,
 	DerivedUnitId                           int NOT NULL,
 	-- maybe Derivation has Exponent,
 	Exponent                                shortint NULL,
@@ -159,9 +154,9 @@ CREATE TABLE FactType (
 	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
 	TypeInheritanceProvidesIdentification   bit NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Object Type is a kind of Concept and Concept has GUID,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is a kind of Concept and Concept has GUID,
 	TypeInheritanceSubtypeGUID              varchar NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Subtype is subtype of Supertype and Object Type is a kind of Concept and Concept has GUID,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is a kind of Concept and Concept has GUID,
 	TypeInheritanceSupertypeGUID            varchar NULL,
 	PRIMARY KEY(ConceptGUID)
 )
@@ -277,7 +272,7 @@ CREATE TABLE ObjectType (
 	ValueTypeLength                         int NULL,
 	-- maybe Value Type is a kind of Object Type and maybe Value Type has Scale,
 	ValueTypeScale                          int NULL,
-	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of Supertype and Object Type is a kind of Concept and Concept has GUID,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type is a kind of Concept and Concept has GUID,
 	ValueTypeSupertypeGUID                  varchar NULL,
 	-- maybe Value Type is a kind of Object Type and maybe Value Type is of Unit and Unit has Unit Id,
 	ValueTypeUnitId                         int NULL,
@@ -379,9 +374,9 @@ CREATE TABLE RoleRef (
 	Ordinal                                 shortint NOT NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role is a kind of Concept and Concept has GUID,
 	RoleGUID                                varchar NOT NULL,
-	-- maybe Role Name is name of Role Ref and Term is where Vocabulary contains Name,
+	-- maybe Term (as Role Name) is name of Role Ref and Term is where Vocabulary contains Name,
 	RoleName                                varchar(64) NULL,
-	-- maybe Role Name is name of Role Ref and Term is where Vocabulary contains Name and Vocabulary is called Name,
+	-- maybe Term (as Role Name) is name of Role Ref and Term is where Vocabulary contains Name and Vocabulary is called Name,
 	RoleNameVocabularyName                  varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int NOT NULL,
@@ -545,7 +540,7 @@ CREATE TABLE Term (
 	Name                                    varchar(64) NOT NULL,
 	-- maybe Term designates Object Type and Object Type is a kind of Concept and Concept has GUID,
 	ObjectTypeGUID                          varchar NULL,
-	-- maybe Term is secondary for Secondary and Object Type is a kind of Concept and Concept has GUID,
+	-- maybe Term is secondary for Object Type (as Secondary) and Object Type is a kind of Concept and Concept has GUID,
 	SecondaryGUID                           varchar NULL,
 	-- Term is where Vocabulary contains Name and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,
@@ -623,14 +618,6 @@ GO
 
 ALTER TABLE ContextAgreedBy
 	ADD FOREIGN KEY (AgreementContextNoteId) REFERENCES ContextNote (ContextNoteId)
-GO
-
-ALTER TABLE ContextNote
-	ADD FOREIGN KEY (FactTypeGUID) REFERENCES FactType (ConceptGUID)
-GO
-
-ALTER TABLE ContextNote
-	ADD FOREIGN KEY (ObjectTypeGUID) REFERENCES ObjectType (ConceptGUID)
 GO
 
 ALTER TABLE Derivation

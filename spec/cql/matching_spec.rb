@@ -412,6 +412,7 @@ describe "Fact Type Role Matching" do
     ],
 
     [ # Auto-create nothing (identifying entity type exists already so don't create a VT)
+      %q{Id is written as Id;},
       %q{Thing Id is identified by Id where Thing Id has one Id, Id is of one Thing Id;},
       %q{Thing is identified by its Id;},
       FactHavingPlayers("Thing", "Thing Id") do |fact_type|

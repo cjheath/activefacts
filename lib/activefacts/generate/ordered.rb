@@ -204,20 +204,15 @@ module ActiveFacts
         # Here, we must find the role_ref containing the adjectives that we need for each identifier,
         # which will be attached to the uniqueness constraint on this object in the binary FT that
         # attaches that identifying role.
-        role_refs = pi.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
+        identifying_role_refs = pi.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
 
         # We need to get the adjectives for the roles from the identifying fact's preferred readings:
-        identifying_facts = ([o.fact_type]+role_refs.map{|rr| rr.role.fact_type }).compact.uniq
+        identifying_facts = ([o.fact_type]+identifying_role_refs.map{|rr| rr.role.fact_type }).compact.uniq
 
-        identifying_roles = role_refs.map(&:role)
-        identification = identified_by_roles_and_facts(o, identifying_roles, identifying_facts)
+        identification = identified_by_roles_and_facts(o, identifying_role_refs, identifying_facts)
         #identifying_facts.each{|f| @fact_types_dumped[f] = true }
 
         identification
-      end
-
-      def show_frequency role, constraint
-        constraint ? constraint.frequency : nil
       end
 
       def describe_fact_type(fact_type, highlight = nil)

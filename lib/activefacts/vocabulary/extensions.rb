@@ -49,7 +49,7 @@ module ActiveFacts
       end
 
       def reading_preferably_starting_with_role role
-        all_reading.detect do |reading|
+        all_reading_by_ordinal.detect do |reading|
           reading.text =~ /\{\d\}/ and reading.role_sequence.all_role_ref_in_order[$1.to_i].role == role
         end || preferred_reading
       end
@@ -105,18 +105,12 @@ module ActiveFacts
           end
         return joiner ? Array(name_array)*joiner : Array(name_array)
       end
-
-      # Two RoleRefs are equal if they have the same role and Joins with matching roles
-      def ==(role_ref)
-        role_ref.is_a?(ActiveFacts::Metamodel::RoleRef) &&
-        role_ref.role == role
-      end
     end
 
     class RoleSequence
-      def describe
+      def describe(highlighted_role_ref = nil)
         "("+
-          all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.describe }*", "+
+          all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.describe + (highlighted_role_ref == rr ? '*' : '') }*", "+
         ")"
       end
 
@@ -345,7 +339,7 @@ module ActiveFacts
       # REVISIT: This should probably be changed to be the fact role sequence.
       #
       # define_role_names here is false (use defined names), true (define names) or nil (neither)
-      def expand(frequency_constraints = [], define_role_names = nil, literals = [])
+      def expand(frequency_constraints = [], define_role_names = nil, literals = [], &subscript_block)
         expanded = "#{text}"
         role_refs = role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
         (0...role_refs.size).each{|i|
@@ -358,7 +352,8 @@ module ActiveFacts
             ta = nil if ta == ""
 
             expanded.gsub!(/\{#{i}\}/) {
-                player = role_refs[i].role.concept
+                role_ref = role_refs[i]
+                player = role_ref.role.concept
                 role_name = role.role_name
                 role_name = nil if role_name == ""
                 if role_name && define_role_names == false
@@ -380,7 +375,8 @@ module ActiveFacts
                   define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil,
                   # Can't have both a literal and a value constraint, but we don't enforce that here:
                   literal ? literal : nil
-                ].compact*" "
+                ].compact*" " +
+                  (subscript_block ? subscript_block.call(role_ref) : "")
             }
         }
         expanded.gsub!(/ ?- ?/, '-')        # Remove single spaces around adjectives
@@ -614,6 +610,41 @@ module ActiveFacts
           @text = text
         end
 
+        class ImplicitReadingRoleSequence
+          class ImplicitReadingRoleRef
+            attr_reader :role
+            attr_reader :role_sequence
+            def initialize(role, role_sequence)
+              @role = role
+              @role_sequence = role_sequence
+            end
+            def join_node; nil; end
+            def leading_adjective; nil; end
+            def trailing_adjective; nil; end
+            def describe
+              @role.concept.name
+            end
+          end
+
+          def initialize roles
+            @role_refs = roles.map{|role| ImplicitReadingRoleRef.new(role, self) }
+          end
+
+          def all_role_ref
+            @role_refs
+          end
+          def describe
+            '('+@role_refs.map(&:describe)*', '+')'
+          end
+          def all_reading
+            []
+          end
+        end
+
+        def role_sequence
+          ImplicitReadingRoleSequence.new([@fact_type.role, @fact_type.all_role.single])
+        end
+
         def ordinal; 0; end
       end
 
@@ -626,13 +657,13 @@ module ActiveFacts
     end
 
     # Some joins must be over the proximate roles, some over the counterpart roles.
-    # Return the common superclass of the appropriate roles
+    # Return the common superclass of the appropriate roles, and the actual roles
     def self.join_roles_over roles, options = :both   # Or :proximate, :counterpart
       # If we can stay inside this objectified FT, there's no join:
       roles = Array(roles)  # To be safe, in case we get a role collection proxy
       return nil if roles.size == 1 or
         options != :counterpart && roles.map{|role| role.fact_type}.uniq.size == 1
-      proximate_sups, counterpart_sups, obj_sups =
+      proximate_sups, counterpart_sups, obj_sups, counterpart_roles, objectification_roles =
         *roles.inject(nil) do |d_c_o, role|
           concept = role.concept
           fact_type = role.fact_type
@@ -645,30 +676,48 @@ module ActiveFacts
             if fact_type.all_role.size > 2
               possible_roles = fact_type.all_role.select{|r| d_c_o && d_c_o[1].include?(r.concept) }
               if possible_roles.size == 1 # Only one candidate matches the types of the possible join nodes
+                counterpart_role = possible_roles[0]
                 d_c_o[1]  # No change
               else
                 # puts "#{constraint_type} #{name}: Awkward, try counterpart-role join on a >2ary '#{fact_type.default_reading}'"
                 # Try all roles; hopefully we don't have two roles with a matching candidate here:
-                fact_type.all_role.map{|r| r.concept.supertypes_transitive}.flatten.uniq
+                # Find which role is compatible with the existing supertypes, if any
+                if d_c_o
+                  st = nil
+                  counterpart_role =
+                    fact_type.all_role.detect{|r| ((st = r.concept.supertypes_transitive) & d_c_o[1]).size > 0}
+                  st
+                else
+                  counterpart_role = nil  # This can't work, we don't have any basis for a decision (must be objectification)
+                  []
+                end
+                #fact_type.all_role.map{|r| r.concept.supertypes_transitive}.flatten.uniq
               end
             else
               # Get the supertypes of the counterpart role (care with unaries):
               ftr = role.fact_type.all_role.to_a
-              (ftr[0] == role ? ftr[-1] : ftr[0]).concept.supertypes_transitive
+              (counterpart_role = ftr[0] == role ? ftr[-1] : ftr[0]).concept.supertypes_transitive
             end
 
-          objectification_role_supertypes =
-            fact_type.entity_type ? fact_type.entity_type.supertypes_transitive+concept.supertypes_transitive : counterpart_role_supertypes
+          if fact_type.entity_type
+            objectification_role_supertypes =
+              fact_type.entity_type.supertypes_transitive+concept.supertypes_transitive
+            objectification_role = role.implicit_fact_type.all_role.single # Find the phantom role here
+          else
+            objectification_role_supertypes = counterpart_role_supertypes
+            objectification_role = nil
+          end
 
           if !d_c_o
-            d_c_o = [proximate_role_supertypes, counterpart_role_supertypes, objectification_role_supertypes]
+            d_c_o = [proximate_role_supertypes, counterpart_role_supertypes, objectification_role_supertypes, [counterpart_role], [objectification_role]]
             #puts "role player supertypes starts #{d_c_o.map{|dco| dco.map(&:name).inspect}*' or '}"
           else
             #puts "continues #{[proximate_role_supertypes, counterpart_role_supertypes, objectification_role_supertypes]map{|dco| dco.map(&:name).inspect}*' or '}"
             d_c_o[0] &= proximate_role_supertypes
             d_c_o[1] &= counterpart_role_supertypes
             d_c_o[2] &= objectification_role_supertypes
-            #puts "... leaving #{d_c_o.map{|dco| dco.map(&:name).inspect}*' or '}"
+            d_c_o[3] << (counterpart_role || objectification_role)
+            d_c_o[4] << (objectification_role || counterpart_role)
           end
           d_c_o
         end # inject
@@ -684,9 +733,13 @@ module ActiveFacts
       end
 
       # Choose the first entry in the first non-empty supertypes list:
-      ( (options != :counterpart ? proximate_sups : []) +
-        (options != :proximate ? counterpart_sups + obj_sups : [])
-      )[0]
+      if options != :counterpart
+        [ proximate_sups[0], roles ]
+      elsif !counterpart_sups.empty?
+        [ counterpart_sups[0], counterpart_roles ]
+      else
+        [ obj_sups[0], objectification_roles ]
+      end
     end
 
   end
