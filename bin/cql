@@ -19,8 +19,6 @@ end
 require 'activefacts'
 require 'activefacts/cql/compiler'
 
-puts "This is a stub for the CQL interactive commandline. At the moment it only parses CQL and shows the parse trees."
-
 class InteractiveCQL < ActiveFacts::CQL::Compiler
   def initialize *a
     @show_tree = false  # Show the raw Treetop parse tree
@@ -30,15 +28,55 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
 
   def metacommand(line)
     # meta-commands start with /
-    case (words = line.split).shift
+    words = line.split
+    case cmd = words.shift
     when "/tree"
       @show_tree = !@show_tree
       puts "Will #{@show_tree ? "" : "not "}show the parse tree"
     when "/root"
       self.root = words[0] && words[0].to_sym || :definition
       puts "Looking for a #{self.root}"
+    when "/list"
+      concepts_by_vocabulary = {}
+      @constellation.Concept.keys.
+	each do |v,t|
+	  (concepts_by_vocabulary[v[0]] ||= []) << t
+	end
+      concepts_by_vocabulary.keys.sort.each do |v|
+	puts "#{v}:\n\t" + concepts_by_vocabulary[v].sort*"\n\t"
+      end
+    when "/about"
+      concept = @constellation.Concept[[@vocabulary.identifying_role_values, words[0]]]
+      unless concept
+	puts "Concept #{words[0]} is unknown in #{@vocabulary.name}"
+	return
+      end
+      if concept.is_a?(ActiveFacts::Metamodel::ValueType)
+	puts "\t#{concept.name} is written as #{concept.supertype.name};" if concept.supertype
+	concept.all_value_type_as_supertype.each do |st|
+	  puts "#{st.name} is written as #{concept.name};"
+	end
+      end
+      concept.all_role.map{|role| role.fact_type}.uniq.each do |fact_type|
+	puts "\t#{fact_type.default_reading}"
+      end
+    when "/load"
+      begin
+	vocabularies = @constellation.Vocabulary.keys
+	@results = []
+	compile_file words*' '
+	new_vocabularies = @constellation.Vocabulary.keys-vocabularies
+	puts "Loaded new vocabularies: #{new_vocabularies*', '}" unless new_vocabularies.empty?
+      rescue Errno::ENOENT => e
+	$stderr.puts e.message
+      end
     else
-      puts "Unknown metacommand #{line}, did you mean /root <rule>?"
+      if cmd == "/help" or cmd == "/"
+	help words
+      else
+	puts "Unknown metacommand #{line}?"
+	help
+      end
     end
   end
 
@@ -60,18 +98,241 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     result
   end
 
+  def help words = []
+    if words.empty?
+      puts %Q{
+Meta-commands are:
+  /about term\t\tDisplay the fact types in which term plays a part
+  /help\t\t\tThis help message
+  /help topic\t\thelp on a specific topic
+  /help topics\t\tList the available help topics
+  /list\t\t\tList all object type names (terms)
+  /load file.cql\tLoad a CQL file
+  /root rule\t\tParse just a fragment of a CQL statement, matching syntax rule only
+  /tree\t\t\tDisplay the abstract syntax tree from each statement parsed
+}
+    else
+      words.each do |word|
+	case word
+	when /topics/
+	  puts %Q{
+constraint\tHow to enter external constraints
+entity\t\tHow to define a new entity type
+fact\t\tHow to define a new fact type
+instance\tHow to assert instance data (facts)
+query\tHow to formulate queries (and derived fact types)
+term\t\tHow to name object types
+value\t\tHow to define a new value type
+vocabulary\tHow to specify the target vocabulary
+}
+	when /constraint/
+	  puts %Q{
+External Constraints are of various types, and use fact readings with
+role players that may occur in more than one reading. Adjectives, role
+names and subscripts may be used to disambiguate multiple occurrences
+of the same term.
+
+	// A subset constraint:
+	Person is an Employee
+		only if Person has Tax File Number;
+
+	// Mandatory constraint:
+	each Person occurs at least one time in
+		Person has mobile Phone Nr,
+		Person has mailing Address;
+	// Alternate syntax:
+	either Person has mobile Phone Nr or Phone has mailing Address;
+
+	// Uniqueness constraint:
+	each combination Series, Number occurs at most one time in
+		Event is in Series,
+		Event has Number;
+
+	// Disjunctive mandatory constraint:
+	each Person occurs one time in
+		Person is employeed by Company,
+		Person receives Unemployment Benefits;
+		Person is unsupported,
+	// Alternate syntax
+	either Employee reports to Manager or Employee runs Company but not both;
+
+	// Equality constraint with joins:
+	Ticket is for Seat that is at Venue
+		if and only if
+		Ticket is for Event that is held at Venue;
+}
+	when /entity/
+	  puts %q{
+Entity Type with simple identification (a one-to-one with a value type):
+
+	Employee is identified by its Nr; // Asserts the value type 'Employee Nr'
+
+The Value Type 'Employee Nr' is created if necessary, and the supertype 'Nr'
+also.  You may add alternate readings (to "...has..." and "...is for...")
+in a where clause.
+
+Entity Type with a compound identifier:
+
+	Person is identified by given Name and family Name where
+		Person is called given-Name,
+		Person has family-Name;
+
+An Entity Type may be a subtype of one or more other Entity Types.
+If no identification is declared for a subtype, it uses the identification
+of its first supertype:
+
+Vehicle Policy is a kind of Insurance Policy;
+}
+	when /fact/
+	  puts %Q{
+A Fact Type consists of one or more readings, where every reading has
+the same role players interspersed amongst unrestricted (almost!) text.
+Each role player is a Term (/help term) which denotes a Value Type or
+Entity Type (including an objectified Fact Type). Terms are always
+singular (except where a singular group is indicated).
+
+The last role player in each reading may be preceded by a quantifier
+(one, at most one, at least one, etc). Note that "one" or "at least one"
+make the relevant fact instance mandatory:
+
+	Person directs Company,
+		Company is directed by at least 2 Person;
+
+Any role player may be preceeded or followed by an adjective, using
+an adjacent hyphen to indicate the adjective. The hyphen is required
+only for one occurrence of the adjective, and other occurrences will
+be recognised.  Other hyphenated words are allowed in readings, as
+long as neither word is an existing term.
+
+	// Using the Entity Type 'Person' and Value Type 'Name':
+	Person has one family Name, family-Name is of Person;
+
+	// Using the Entity Type 'Personne' and Value Type 'Nom':
+	Personne à Nom-donné;
+
+Multiple adjectives may be used, as long as the hyphen has adjacent space:
+
+	Person driving semi-trailer avoided stray- farm Animal;
+
+Any role player may define a Role Name, which is used to refer to
+this player in other readings of this fact type:
+
+	Person (as Director) directs Company,
+		Company is directed by Director;
+
+Any role player may be followed by a role value restriction (/help constraint):
+
+	Person was born on one birth-Date restricted to {'1900/01/01'..};
+
+A Fact Type which has no embedded uniqueness constraint must be
+objectified (named) by prefixing it with an "is where" clause.
+An objectified fact type is an Entity Type, so maye be used as a
+player in subsequent Fact Types:
+
+	Directorship is where
+		Person directs Company;
+	Directorship began on at most one appointment-Date;
+
+Finally, an objectified Fact Type may be a subtype, and may also have
+separate identification like an Entity Type (/help entity):
+
+	Vehicle Claim is a kind of Insurance Claim identified by Incident ID where
+		Incident ID is of one Vehicle Claim,
+		Vehicle Claim has one Incident ID,
+		Insured Person claimed against Policy on Date;
+}
+	when /instance/
+	  puts %Q{
+An instance (or a collection of instances) is a reading or term (or
+joined collection of readings) with values following the Value Types.
+Simply-identified entities may be contracted by providing the value directly.
+Adjectives, role names and subscripts may be used to differentiate multiple
+occurrences of the same object types.
+
+	Company Name 'Microsoft';   // An instance of Company Name (a Value Type)
+	Company 'Sun';		    // An instance of Company identified by the Company Name 'Sun'
+	Company 'Sun' was founded on Date '1982-02-24';	// A simple binary fact over two objects
+	family Name 'Smith' is of Person, Person has given Name 'Daniel'; // Two facts joined
+	family Name 'Smith' is of Person who has given Name 'Daniel'; // The same, contracted
+	// A collection of facts involving several kinds of join:
+	Directorship (where Person directs Company 'Sun') began in Year '1982',
+		family Name 'Joy' is of Person that has given Name 'Bill',
+		Person was born on Date '1954-11-8;
+}
+	when /query/
+	  puts %Q{
+Queries are not yet implemented
+}
+	when /term/
+	  puts %Q{
+A Term is used to identify a Value Type or Entity Type (collectively, Object
+Types). A Term may be any word or sequence of words, each word being one
+or more alphanumeric characters (or underscore) but not starting with a
+digit. Terms are preferably capitalised; this makes it easier to construct
+unambiguous fact type readings.
+
+Many keywords are disallowed as Terms, but not all.
+}
+	when /value/
+	  puts %Q{
+A Value Type is a kind of Object Type which has an accepted written form.
+For example, a Name or a Date can be written, but a Person cannot. A Year
+is not a Value Type, but a Year Number is.
+
+Every written value must uniquely identify one instance of that Value Type.
+A value may have more than one written form. For example, the number 10000
+may also be written 10E4. A written value may identify a single instance of
+more than one value type however; the string '9/11' may identify a fraction,
+or an event.
+
+Value Types are asserted by the phrase "is written as":
+
+	Birth Date is written as Date;
+	Employee Nr is written as Integer;
+
+If the supertype (the value type after "is written as") is unknown, it is
+also asserted as a Value Type.
+
+A Value Type may have implicit length and scale properties, and in future,
+may also have custom properties. Property values are defined in parentheses
+after the supertype:
+
+	Money Amount is written as Decimal(14, 2);
+	Company Name is written as String(60);
+
+After any parameter list, a Value Type may be associated with a Unit, and be
+subject to a Value Restriction (using "restricted to { <values or ranges> }").
+Either the low end or the high end of a range may be omitted for an open range.
+
+	Drill Size is written as Real in mm restricted to { 0.3, 0.5..15.0};
+}
+	when /vocabulary/
+	  %q{
+Every CQL definition or instance exists in some vocabulary, so you must
+specify a vocabulary name before any other definitions:
+
+	vocabulary Employment;
+	... definitions...
+}
+	else
+	  puts "topic #{word} is unknown"
+	end
+      end
+    end
+  end
 end
 
 compiler = InteractiveCQL.new
 statement = nil
+puts "Enter / for help on special commands"
 while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
   statement = statement ? statement + "\n"+line : line
   if line =~ %r{\A/}
     compiler.metacommand(line)
     statement = nil
   elsif compiler.root != :definition or
-      line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /;/
-    # After stripping string literals the line contains a ';', we've found the last line of the command:
+      line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /[;?]/
+    # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
     compiler.process(statement)
     statement = nil
   end

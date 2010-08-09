@@ -13,15 +13,17 @@
   </h2>
 
   <p>
-  ActiveFacts is <a href="http://rubygems.rubyforge.org/">packaged</a>
-  as a <a href="http://www.ruby-lang.org/">Ruby</a> <a href="http://gems.rubyforge.org/">GEM</a>.
-  You should install Ruby, and say
+  ActiveFacts is packaged as a <a href="http://www.ruby-lang.org/">Ruby</a> <a href="http://gems.rubyforge.org/">GEM</a>.
+  If you have Ruby installed, just say (omit "sudo" on Windows):
   </p>
 
   <pre>
   sudo gem install activefacts
   </pre>
 
+  <h3 class="title">
+    API Documentation
+  </h3>
   <p>
   After installing, you can read the Ruby API documentation by visiting
   <a href="http://localhost:8808/">http://localhost:8808/</a> in your browser after starting
@@ -30,41 +32,63 @@
   gem server
   </pre>
 
+  <h3 class="title">
+    The ActiveFacts generator
+  </h3>
   <p>
-  CQL Examples are provided in a directory under your gem directory, and you can generate
-  code from them using commands like the following (change the path to your gem repository):
+  CQL Examples are provided in the <b>examples/CQL</b> directory under activefacts in your gem directory
+  (mine is <b>/opt/local/lib/ruby/gems/1.8/gems/</b>).  Copy the files you're interested in and you can
+  generate code from them using commands like the following:
   </p>
 
   <pre>
-  afgen --ruby /opt/local/lib/ruby/gems/1.8/gems/activefacts-0.6.0/examples/CQL/OilSupply.cql
-  afgen --sql/server /opt/local/lib/ruby/gems/1.8/gems/activefacts-0.6.0/examples/CQL/Warehousing.cql
+  afgen --ruby OilSupply.cql
+  afgen --sql/server Warehousing.cql
   </pre>
 
   <p>
   <em>afgen</em> also reads <em>.orm</em> files from <a href="http://ormfoundation.org/files">NORMA</a>.
+  You might also try the CQL command line tool.
+  </p>
+
+  <h3 class="title">
+    Installing on Windows
+  </h3>
+  <p>
+  Use the Ruby 1.8.7 installer from <a href="http://rubyinstaller.org/downloads/">RubyInstaller</a>.
+  After running the installer, you need to add Ruby to your PATH. The default install location is
+  C:\Ruby187\, so execute the following command in a Windows command prompt:
+  </p>
+  <pre>
+  PATH C:\Ruby187\bin;%PATH%
+  </pre>
+  <p>
+  Or right-click "My Computer" -%gt; Properties -%gt; Advanced  -%gt; Environment Variables -%gt; System Variables
+  Scroll down to find the entry for Path and double-click it. Click in the Variable value: text widget and move the cursor to the start of the value before typing <b>C:\Ruby187;</b> before the first entry. Hit Ok three times and start a new command prompt.
+  </p>
+  <p>
+  If you got that all right, you should be able to enter the interactive Ruby
+  interpreter in the command prompt by typing <b>irb &lt;ENTER&gt;</b>. Exit
+  from irb (^D) and you should be able to use <b>gem install activefacts</b>
+  as above. If your computer is behind a firewall, download the activefacts
+  gem file, along with those for
+  <a href="http://rubygems.org/gems/treetop/versions/1.4.8">Treetop</a>,
+  <a href="http://rubygems.org/gems/polyglot/versions/0.3.1">Polyglot</a> and
+  <a href="http://rubygems.org/gems/rake/versions/0.8.7">Rake</a>, and use
+  <b>gem install &lt;file&gt;.gem</b> to install those in the reverse order.
   </p>
 
   <h3>Source Code Repository</h3>
   <p>
-  The <a href="http://subversion.tigris.org/">Subversion</a> repository is also available
-  at <a href="http://rubyforge.org/projects/activefacts/">RubyForge</a>.
-  If you're on Windows and don't have Subversion installed, you can also
-  get a client like Tortoise or cygwin. If you use a command-line <em>svn</em> client, say:
+  The source code is available at <a href="http://github.com/cjheath/activefacts/">GitHub</a>.
   </p>
-  <pre>
-  svn checkout http://activefacts.rubyforge.org/svn/
-
-    or
-
-  svn checkout svn://rubyforge.org/var/svn/activefacts
-  </pre>
 
   <h3>Object Role Modeling</h3>
   <p>
-  If you want to draw your own <a href="www.orm.net">Object Role Modeling</a>
+  If you want to draw your own <a href="http://www.orm.net">Object Role Modeling</a>
   diagrams and have a copy of Windows Visual Studio (pro only, not Express),
   you can freely download and install the <a href="http://www.ormfoundation.com/files/">Neumont ORM Architect</a>.
-  The example models are available in the correct format from the SVN repository.
+  The example models are available in the correct format from the <a href="examples/">examples directory</a>.
   The ActiveFacts generator <em>afgen</em> can process ORM files as easily as
   CQL files, though a little slower due to the volume of XML to be parsed.
   </p>

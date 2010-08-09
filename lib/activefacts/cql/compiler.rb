@@ -24,6 +24,15 @@ module ActiveFacts
         debug :file, "Parsing '#{filename}'"
       end
 
+      def compile_file filename
+        old_filename = @filename
+        @filename = filename
+        File.open(filename) do |f|
+          compile(f.read)
+        end
+        @filename = old_filename
+      end
+
       def compile input
         @string = input
         # The syntax tree created from each parsed CQL statement gets passed to the block.

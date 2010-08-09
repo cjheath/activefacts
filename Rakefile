@@ -1,6 +1,12 @@
 %w[rubygems hoe rake rake/clean fileutils newgem rubigen spec spec/rake/spectask].each { |f| require f }
 
-require 'hanna/rdoctask'
+# Use mislav-hanna to the API format documentation, if it's installed:
+begin
+  require 'hanna/rdoctask'
+  HANNA = true
+rescue
+  HANNA = false
+end
 
 require File.dirname(__FILE__) + '/lib/activefacts'
 
@@ -10,23 +16,11 @@ $hoe = Hoe.spec('activefacts') do |p|
   p.version = ActiveFacts::VERSION
   p.summary = "A semantic modeling and query language (CQL) and application runtime (the Constellation API)"
   p.description = %q{
-ActiveFacts is a semantic modeling toolkit, comprising an implementation
-of the Constellation Query Language, the Constellation API, and code
-generators that receive CQL or ORM (Object Role Modeling files, from
-NORMA) to emit CQL, Ruby and SQL.
-
-Semantic modeling is a refinement of fact-based modeling techniques
-that draw on natural language verbalisation and formal logic. Fact
-based modeling is essentially the same as relational modeling in the
-sixth normal form. The tools provided here automatically condense
-that to third normal form for efficient storage. They also generate
-object models as a Ruby module which has an effective mapping to
-both the original semantic model and to the generated SQL.
-
-The result is a formal language that reads like plain English, and
-allows creation of relational and object models that are guaranteed
-equivalent, and much more stable in the face of schema evolution than
-SQL is.
+ActiveFacts provides a semantic modeling language, the Constellation
+Query Language (CQL).  CQL combines natural language verbalisation and
+formal logic, producing a formal language that reads like plain
+English. ActiveFacts converts semantic models from CQL to relational
+and object models in SQL, Ruby and other languages.
 }
   p.url = "http://dataconstellation.com/ActiveFacts/"
   p.developer('Clifford Heath', 'cjh@dataconstellation.org')
@@ -35,6 +29,7 @@ SQL is.
   p.rubyforge_name       = "cjheath@rubyforge.org"
   p.extra_deps         = [
     ['treetop','>= 1.4.1'],
+    ['rake','>= 1.8.7'],
   ]
   p.extra_dev_deps = [
     ['newgem', ">= #{::Newgem::VERSION}"]
@@ -42,8 +37,9 @@ SQL is.
   p.spec_extras[:extensions] = 'lib/activefacts/cql/Rakefile'
   # Magic Hoe hook to prevent the generation of diagrams:
   ENV['NODOT'] = 'yes'
-  p.spec_extras[:rdoc_options] = %w{
-      -S -T hanna
+  p.spec_extras[:rdoc_options] = ['-S'] +
+    (HANNA ? %w{ -S -T hanna} : []) +
+    %w{
       -A has_one -A one_to_one -A maybe
       -x lib/activefacts/cql/.*.rb
       -x lib/activefacts/vocabulary/.*.rb

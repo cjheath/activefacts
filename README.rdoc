@@ -2,42 +2,26 @@
 
 * http://dataconstellation.com/ActiveFacts/
 
-== DESCRIPTION:
+== DESCRIPTION
 
-ActiveFacts is a semantic modeling toolkit, comprising an implementation
-of the Constellation Query Language, the Constellation API, and code
-generators that receive CQL or ORM (Object Role Modeling files, from
-NORMA) to emit CQL, Ruby and SQL.
+ActiveFacts provides a semantic modeling language, the Constellation
+Query Language (CQL).  CQL combines natural language verbalisation and
+formal logic, producing a formal language that reads like plain
+English. ActiveFacts converts semantic models from CQL to relational
+and object models in SQL, Ruby and other languages.
+
+The generated models are guaranteed congruent, which eliminates the
+object-relational impedance mismatch.  Semantic models are much more
+stable under evolving requirements than either relational or
+object-oriented models, because they directly express the underlying
+elementary facts, so are not susceptible to ramifying change in the
+way those attribute-oriented approaches are.
 
 Semantic modeling is a refinement of fact-based modeling techniques
-that draw on natural language verbalisation and formal logic. Fact
-based modeling is essentially the same as relational modeling in the
-sixth normal form. The tools provided here automatically condense
-that to third normal form for efficient storage. They also generate
-object models as a Ruby module which has an effective mapping to
-both the original semantic model and to the generated SQL.
-
-The result is a formal language that reads like plain English, and
-allows creation of relational and object models that are guaranteed
-equivalent, and much more stable in the face of schema evolution than
-SQL is.
-
-== FEATURES/PROBLEMS:
-
- * Queries are parsed, but not yet generated to SQL. DDL is complete.
-
- * The Constellation API lacks SQL persistence (but is already useful;
-   the CQL compiler uses the generated Ruby code extensively)
-
- * Re-invoking a fact type to add new readings doesn't work
-
- * Some types of external constraints (when adjectives mis-match)
-   don't yet pass the CQL parser's semantic analysis.
-
- * Validation of semantic models (and many other areas) is incomplete
-
- * There's no interactive CQL interpreter yet; the cql command merely
-   shows the parse tree.
+such as ORM2, NIAM and others. ActiveFacts can convert ORM2 files from
+NORMA to CQL. Fact-based modeling is closely related to relational
+modeling in the sixth normal form, but doesn't suffer from 6NF
+inefficiency.  The relational models it derives are highly efficient.
 
 == SYNOPSIS:
 
@@ -45,15 +29,25 @@ SQL is.
   afgen --ruby myfile.cql
   afgen --cql myfile.orm
 
-== REQUIREMENTS:
-
-* Treetop parser generator
-* Optional: NORMA, see <http://www.ormfoundation.org/files/>
-  (needs Visual Studio pro edition), if you want to use ORM
-
 == INSTALL:
 
 * sudo gem install activefacts
+
+== UNIMPLEMENTED FEATURES
+
+ * Queries are parsed, but not yet generated to SQL.
+
+ * The Constellation API lacks SQL persistence (but is already useful;
+   the CQL compiler uses the generated Ruby code extensively)
+
+ * Validation of semantic models is incomplete
+
+== REQUIREMENTS:
+
+* Treetop parser generator
+
+* NORMA (see <http://www.ormfoundation.org/files/>), if you want to
+  use ORM (needs Visual Studio Pro edition)
 
 == LICENSE:
 
