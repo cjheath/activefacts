@@ -19,7 +19,7 @@ Meal is identified by its Id;
 Waiter is identified by its Nr;
 
 WaiterTip is where
-	Waiter for serving Meal reported a tip of at most one Amount;
+	Waiter for serving Meal reported a tip of one Amount;
 
 Service is where
 	Waiter served Meal;

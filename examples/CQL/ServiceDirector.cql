@@ -193,7 +193,7 @@ Service is identified by Vendor and Service Type where
 	Service is of one Service Type;
 
 Data Store File Host System is where
-	Data Store has at most one File Host System;
+	Data Store has one File Host System;
 Data Store File Host System has one Internal-Credential;
 
 Data Store Service is where

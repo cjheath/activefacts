@@ -700,12 +700,19 @@ module ActiveFacts
             end
 
             mc_id = nil
+
             if (mc = @mandatory_constraints_by_rs[role_sequence])
               # Remove absorbed mandatory constraints, leaving residual ones.
               debug :orm, "Absorbing MC #{mc['Name']} over #{role_sequence.describe}"
               @mandatory_constraints_by_rs.delete(role_sequence)
               mc_id = mc['id']
               @mandatory_constraint_rs_by_id.delete(mc['id'])
+            elsif (fts = role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq).size == 1 and
+              fts[0].entity_type
+              # this uniqueness constraint is an internal UC on an objectified fact type,
+              # so the covered roles are always mandatory (wrt the OFT)
+              # That is, the phantom roles are mandatory, even if the visible roles are not.
+              mc = true
             else
               debug :orm, "No MC to absorb over #{role_sequence.describe}"
             end

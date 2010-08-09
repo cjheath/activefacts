@@ -54,7 +54,7 @@ Event Control has at most one Point Value;
 
 Event Scoring Method is where
 	Scoring Method is used for Course of Event,
-	Course of Event uses at most one Scoring Method;
+	Course of Event uses one Scoring Method;
 
 Map is identified by its ID;
 Club (as Owner) owns Map,
@@ -87,7 +87,7 @@ Series has one Series Name (as Name),
 
 Entry is identified by its ID where
 	Person entered Course of Event,
-	Person entered Event in at most one Course;
+	Person entered Event in one Course;
 Entry received at most one Score;
 Entry finished in at most one finish-Placing;
 

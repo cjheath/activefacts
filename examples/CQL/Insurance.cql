@@ -205,7 +205,7 @@ Vehicle was sold by at most one Dealer;
 Driver is a kind of Person;
 
 Driving is where
-	Vehicle Incident involves at most one Driver,
+	Vehicle Incident involves one Driver,
 	Driver drove covered vehicle in at least one Vehicle Incident;
 Driving followed at most one Intoxication;
 Driving resulted in at most one blood-Test Result;
@@ -215,7 +215,7 @@ Driving was without owners consent for at most one nonconsent-Reason;
 Driving was unlicenced for at most one unlicensed-Reason;
 
 Driving Charge is where
-	Driving resulted in at most one Charge;
+	Driving resulted in one Charge;
 Driving Charge is a warning;
 
 Finance Institution is a kind of Company;
@@ -236,7 +236,7 @@ License was granted in at most one Year restricted to {1990..2100};
 License is international;
 
 Lodgement is where
-	Claim was lodged by at most one Person;
+	Claim was lodged by one Person;
 Lodgement was made at at most one Date Time;
 
 Policy is identified by p_year and p_product and p_state and p_serial where

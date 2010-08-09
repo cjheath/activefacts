@@ -284,15 +284,15 @@ Ring Constraint Shape is attached to one Fact Type;
 
 Role Display is where
 	Fact Type Shape displays Role in Ordinal position,
-	Fact Type Shape displays in Ordinal position at most one Role;
+	Fact Type Shape displays in Ordinal position one Role;
 
 Role Name Shape is a kind of Shape;
 Role Name Shape is for one Role Display,
 	Role Display has at most one Role Name Shape;
 
 Role Ref is where
-	Role Sequence in Ordinal position includes at most one Role,
-	Role is in Role Sequence in at most one Ordinal place,
+	Role Sequence in Ordinal position includes one Role,
+	Role is in Role Sequence in one Ordinal place,
 	Role Sequence includes Role in Ordinal place,
 	Role has Ordinal place in Role Sequence;
 Join Node includes Role Ref,
@@ -303,10 +303,10 @@ Role Ref has at most one trailing-Adjective;
 Set Comparison Constraint is a kind of Set Constraint;
 
 Set Comparison Roles is where
-	Set Comparison Constraint has in Ordinal position at most one Role Sequence,
+	Set Comparison Constraint has in Ordinal position one Role Sequence,
 	Role Sequence is Ordinal in Set Comparison Constraint,
 	in Ordinal position Set Comparison Constraint has Role Sequence,
-	Set Comparison Constraint has Role Sequence in at most one Ordinal position;
+	Set Comparison Constraint has Role Sequence in one Ordinal position;
 
 Set Equality Constraint is a kind of Set Comparison Constraint;
 
@@ -343,7 +343,7 @@ Allowed Range is where
 	Value Constraint allows at least one Value Range;
 
 Param Value is where
-	Value for Parameter applies to at most one Value Type;
+	Value for Parameter applies to one Value Type;
 
 /*
  * Constraints:

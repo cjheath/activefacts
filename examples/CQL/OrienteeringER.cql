@@ -21,8 +21,8 @@ Series Name is written as String;
  * Entity Types
  */
 Club is where
-	Code is of the club called at most one Club Name,
-	the club called Club Name has at most one Code;
+	Code is of the club called one Club Name,
+	the club called Club Name has one Code;
 
 Map is where
 	map-Name having Accessibility belongs to Club;
@@ -35,7 +35,7 @@ Event is where
 	event-ID is Series Event called Event Name run by Club using Map on Date at Location;
 
 Event Control is where
-	Event includes Control which is worth at most one Point Value;
+	Event includes Control which is worth one Point Value;
 
 Event Course is where
 	Course is available at Event,
@@ -46,13 +46,13 @@ Event Course is where
  */
 each Club occurs at least one time in
 	event ID is Series Event called Event Name run by Club using Map on Date at Location;
-each Event Name occurs at most one time in
+each Event Name occurs one time in
 	event ID is Series Event called Event Name run by Club using Map on Date at Location;
 each Event occurs at least one time in
 	Event includes Control which is worth Point Value;
 each ID occurs one time in
 	event ID is Series Event called Event Name run by Club using Map on Date at Location;
-each Name occurs at most one time in
+each Name occurs one time in
 	map Name having Accessibility belongs to Club;
-each Series Event occurs at most one time in
+each Series Event occurs one time in
 	event ID is Series Event called Event Name run by Club using Map on Date at Location;
