@@ -29,7 +29,7 @@ and object models in SQL, Ruby and other languages.
   p.rubyforge_name       = "cjheath@rubyforge.org"
   p.extra_deps         = [
     ['treetop','>= 1.4.1'],
-    ['rake','>= 1.8.7'],
+    ['rake','>= 0.8.7'],
   ]
   p.extra_dev_deps = [
     ['newgem', ">= #{::Newgem::VERSION}"]
