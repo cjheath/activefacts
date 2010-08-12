@@ -389,9 +389,17 @@ module ActiveFacts
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
 
         # Tell the verbaliser all we know, so it can figure out which players to subscript:
-        transposed_role_refs.each { |role_refs| verbaliser.role_refs_are_subtype_joined role_refs }
-        role_sequences.each do |role_sequence|
-          verbaliser.prepare_role_sequence role_sequence
+        debug :subscript, "Preparing join across projected roles in set comparison constraint" do
+          transposed_role_refs.each do |role_refs|
+            verbaliser.role_refs_are_subtype_joined role_refs
+          end
+        end
+        debug :subscript, "Preparing join between roles in set comparison constraint" do
+          role_sequences.each do |role_sequence|
+            debug :subscript, "role sequence is #{role_sequence.describe}" do
+              verbaliser.prepare_role_sequence role_sequence
+            end
+          end
         end
         verbaliser.create_subscripts
 

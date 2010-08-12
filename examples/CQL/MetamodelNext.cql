@@ -349,7 +349,7 @@ Param Value is where
  * Constraints:
  */
 for each Concept exactly one of these holds:
-	Concept is a Object Type,
+	Concept is an Object Type,
 	Concept is a Fact Type,
 	Concept is a Constraint,
 	Concept is a Role;

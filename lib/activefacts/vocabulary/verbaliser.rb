@@ -151,6 +151,7 @@ module ActiveFacts
       def role_refs_have_same_player role_refs
         role_refs = role_refs.is_a?(Array) ? role_refs : role_refs.all_role_ref.to_a
         return if role_refs.empty?
+
         # If any of these role_refs are for a known player, use that, else make a new player.
         existing_players =
           role_refs.map{|rr| @player_by_role_ref[rr] || @player_by_join_node[rr.join_node] }.compact.uniq
@@ -158,8 +159,16 @@ module ActiveFacts
           raise "Can't join these role_refs to more than one existing player: #{existing_players.map{|p|p.concept.name}*', '}!"
         end
         p = existing_players[0] || player(role_refs[0])
+
         debug :subscript, "#{existing_players[0] ? 'Adding to existing' : 'Creating new'} player for #{role_refs.map{|rr| rr.role.concept.name}.uniq*', '}" do
           role_refs.each do |rr|
+            unless p.concept == rr.role.concept
+              # This happens in SubtypePI because uniqueness constraint is built without its implicit subtyping join.
+              # For now, explode only if there's no common supertype:
+              if 0 == (p.concept.supertypes_transitive & rr.role.concept.supertypes_transitive).size
+                raise "REVISIT: Internal error, trying to add role of #{rr.role.concept.name} to player #{p.concept.name}"
+              end
+            end
             add_role_player(p, rr)
           end
         end
@@ -229,7 +238,7 @@ module ActiveFacts
           prrs = fact_type.preferred_reading.role_sequence.all_role_ref
           residual_roles = fact_type.all_role.select{|r| !@role_refs.detect{|rr| rr.role == r} }
           residual_roles.each do |role|
-            debug :subscript, "Adding residual role for #{role.concept.name} not covered in role sequence"
+            debug :subscript, "Adding residual role for #{role.concept.name} (in #{fact_type.default_reading}) not covered in role sequence"
             preferred_role_ref = prrs.detect{|rr| rr.role == role}
             if p = @player_by_role_ref[preferred_role_ref] and !p.role_refs.include?(preferred_role_ref)
               raise "Adding DUPLICATE residual role for #{role.concept.name}"
@@ -240,28 +249,41 @@ module ActiveFacts
       end
 
       def prepare_join_players join
-        debug :subscript, "Indexing roles of fact types in #{@join_steps.size} join steps" do
+        debug :subscript, "Indexing roles of fact types in #{join.all_join_node.map{|jn| jn.all_join_step_as_input_join_node.to_a+jn.all_join_step_as_output_join_node.to_a}.flatten.uniq.size} join steps" do
           join_steps = []
           # Register all references to each join node as being for the same player:
           join.all_join_node.sort_by{|jn| jn.ordinal}.each do |join_node|
-            role_refs_have_same_player(join_node.all_role_ref.to_a)
-            join_steps += join_node.all_join_step_as_input_join_node.to_a + join_node.all_join_step_as_output_join_node.to_a 
+            debug :subscript, "Roles of #{join_node.concept.name} JN#{join_node.ordinal} are" do
+              role_refs_have_same_player(join_node.all_role_ref.to_a)
+              join_steps += join_node.all_join_step_as_input_join_node.to_a + join_node.all_join_step_as_output_join_node.to_a 
+            end
           end
           # For each fact type traversed, register a player for each role *not* linked to this join
           # REVISIT: Using the preferred_reading role_ref is wrong here; the same preferred_reading might occur twice,
           # so the respective concept will need more than one Player and will be subscripted to keep them from being joined.
           # Accordingly, there must be a join step for each such role, and to enforce that, I raise an exception here on duplication.
-          join_steps.map{|js|js.fact_type}.uniq.each do |fact_type|
+         
+          join_steps.map do |js|
+            if js.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+              js.fact_type.role.fact_type
+            else
+              js.fact_type
+            end
+          end.uniq.each do |fact_type|
+          #join_steps.map{|js|js.fact_type}.uniq.each do |fact_type|
             next if fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
-            prrs = fact_type.preferred_reading.role_sequence.all_role_ref
-            residual_roles = fact_type.all_role.select{|r| !r.all_role_ref.detect{|rr| rr.join_node && rr.join_node.join == join} }
-            residual_roles.each do |r|
-              debug :subscript, "Adding residual role for #{r.concept.name} not covered in join"
-              preferred_role_ref = prrs.detect{|rr| rr.role == r}
-              if p = @player_by_role_ref[preferred_role_ref] and !p.role_refs.include?(preferred_role_ref)
-                raise "Adding DUPLICATE residual role for #{r.concept.name} not covered in join"
+
+            debug :subscript, "Residual roles in '#{fact_type.default_reading}' are" do
+              prrs = fact_type.preferred_reading.role_sequence.all_role_ref
+              residual_roles = fact_type.all_role.select{|r| !r.all_role_ref.detect{|rr| rr.join_node && rr.join_node.join == join} }
+              residual_roles.each do |r|
+                debug :subscript, "Adding residual role for #{r.concept.name} (in #{fact_type.default_reading}) not covered in join"
+                preferred_role_ref = prrs.detect{|rr| rr.role == r}
+                if p = @player_by_role_ref[preferred_role_ref] and !p.role_refs.include?(preferred_role_ref)
+                  raise "Adding DUPLICATE residual role for #{r.concept.name} not covered in join"
+                end
+                role_refs_have_same_player([preferred_role_ref])
               end
-              role_refs_have_same_player([preferred_role_ref])
             end
           end
         end
@@ -277,10 +299,12 @@ module ActiveFacts
         # First, figure out whether there's a join:
         join_over, joined_roles = *Metamodel.join_roles_over(role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
 
-        fact_types = @role_refs.map{|rr| rr.role.fact_type}.uniq
+        role_by_fact_type = {}
+        fact_types = @role_refs.map{|rr| ft = rr.role.fact_type; role_by_fact_type[ft] ||= rr.role; ft}.uniq
         readings = fact_types.map do |fact_type|
           name_substitutions = []
-          reading = fact_type.preferred_reading
+          # Choose a reading that start with the (first) role which caused us to emit this fact type:
+          reading = fact_type.reading_preferably_starting_with_role(role_by_fact_type[fact_type])
           if join_over and      # Find a reading preferably starting with the joined_over role:
             joined_role = fact_type.all_role.select{|r| join_over.subtypes_transitive.include?(r.concept)}[0]
             reading = fact_type.reading_preferably_starting_with_role joined_role
@@ -317,7 +341,7 @@ module ActiveFacts
             if !subscript and
               pp = @players.select{|p|p.concept == rr.role.concept} and
               pp.detect{|p|p.subscript}
-              raise "Internal error: Subscripted players (of the same concept #{p.concept.name}) when this player isn't subscripted"
+              # raise "Internal error: Subscripted players (of the same concept #{pp[0].concept.name}) when this player isn't subscripted"
             end
 
             subscripted_player(rr, role_ref) +
@@ -425,7 +449,7 @@ module ActiveFacts
       def reading_starts_with_node(reading, next_node)
         reading.text =~ /^\{([0-9])\}/ and
           role_ref = reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i} and
-          role_ref.role.all_role_ref.detect{|rr| rr.join_node == next_node}
+          role_ref.role.concept == next_node.concept
       end
 
       # The last reading we emitted ended with the object type name for next_node.
@@ -567,11 +591,6 @@ module ActiveFacts
                 fact_type = next_step.fact_type.role.fact_type
                 if last_is_contractable and next_node.concept.is_a?(EntityType) and next_node.concept.fact_type == fact_type
                   # The last reading we emitted ended with the name of the objectification of this fact type, so we can contract the objectification
-#                  if (n = next_step.input_join_node).concept == fact_type.entity_type ||
-#                    (n = next_step.output_join_node).concept == fact_type.entity_type
-#                    debugger
-#                    p n.concept.name  # This is the join_node which has the role_ref (and subscript!) we should use for the objectification_verbalisation
-#                  end
                   # REVISIT: Do we need to use step_role_refs here (if this objectification is traversed twice and so is subscripted)
                   readings += objectification_verbalisation(fact_type.entity_type)
                 else
@@ -593,9 +612,7 @@ module ActiveFacts
                 # Prefer a reading that starts with the player of next_node
                 next_reading = fact_type.all_reading_by_ordinal.
                   detect do |reading|
-                    reading.text =~ /^\{([0-9])\}/ and
-                      role_ref = reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i} and
-                      role_ref.role.all_role_ref.detect{|rr| rr.join_node == next_node}
+                    reading_starts_with_node(reading, next_node)
                   end || fact_type.preferred_reading
                 # REVISIT: If this join step and reading has role references with adjectives, we need to expand using those
                 readings += " and " unless readings.empty?

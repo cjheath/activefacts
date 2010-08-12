@@ -235,8 +235,8 @@ Switch is on private Network
 	if and only if
 	Data Store has Legacy Switch;
 Client has default Data Store
-	only if Data Store belongs to Client;
-Data Store has Tcp Proxy Network
+	only if Client uses Data Store;
+Tcp Proxy Network is in Data Store
 	only if Network is ip_single;
 Network uses Domain Name
 	only if Network is ip_single;

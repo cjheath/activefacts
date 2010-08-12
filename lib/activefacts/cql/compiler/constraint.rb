@@ -300,12 +300,17 @@ module ActiveFacts
                 # We don't need join steps for roles that have only one role_ref (this one) in their binding
                 refs_count = binding.refs.size
                 objectification_ref_count = 0
-                role_ref.objectification_join.each{|r| objectification_ref_count += r.role_refs.select{|rr| rr.binding.refs.size > 1}.size} if role_ref.objectification_join
+                if role_ref.objectification_join
+                  role_ref.objectification_join.each do |r|
+                    objectification_ref_count += r.role_refs.select{|rr| rr.binding.refs.size > 1}.size
+                  end
+                end
                 refs_count += objectification_ref_count
                 debug :join, "#{refs_count > 1 ? 'Creating' : 'Skipping'} Role Ref #{role_ref.inspect} (counts #{refs_count}/#{objectification_ref_count}) and objectification Join Step for #{role_ref.inspect}" do
 
                   if (refs_count > 1)
                     role_sequence ||= @constellation.RoleSequence(:new)
+                    raise "Internal error: Trying to add role of #{role.concept.name} to join node for #{binding.join_node.concept.name}" unless binding.join_node.concept == role.concept
                     role_refs <<
                       @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)
                     unless objectification_node
@@ -316,6 +321,7 @@ module ActiveFacts
                       debug :join, "Creating join node #{join.all_join_node.size} for #{reading.fact_type.entity_type.name} in objectification"
                       objectification_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => reading.fact_type.entity_type)
                     end
+                    raise "Internal error: Trying to add role of #{role.implicit_fact_type.all_role.single.concept.name} to join node for #{objectification_node.concept.name}" unless objectification_node.concept == role.implicit_fact_type.all_role.single.concept
                     @constellation.RoleRef(role_sequence, 1, :role => role.implicit_fact_type.all_role.single, :join_node => objectification_node)
                     js = @constellation.JoinStep(objectification_node, binding.join_node, :fact_type => role.implicit_fact_type)
                     debug :join, "New Join Step #{js.describe}"
@@ -325,6 +331,12 @@ module ActiveFacts
               else
                 debug :join, "Creating Role Ref for #{role_ref.inspect}" do
                   role_sequence ||= @constellation.RoleSequence(:new)
+                  if binding.join_node.concept != role.concept and
+                    # REVISIT: If there's an implicit subtyping join here, create it; then always raise the error here.
+                    # I don't want to do this for now because the verbaliser will always verbalise all join steps.
+                    0 == (binding.join_node.concept.supertypes_transitive & role.concept.supertypes_transitive).size
+                    raise "Internal error: Trying to add role of #{role.concept.name} to join node for #{binding.join_node.concept.name} in '#{reading.fact_type.default_reading}'"
+                  end
                   role_refs <<
                     @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_node => binding.join_node)
                 end
@@ -343,20 +355,23 @@ module ActiveFacts
               end
               if (@common_bindings.include?(binding))
                 debug :join, "#{binding.inspect} is a constrained binding, add the Role Ref for #{role.concept.name}"
+                raise "Internal error: Trying to add role of #{role.concept.name} to join node for #{binding.join_node.concept.name}" unless binding.join_node.concept == role.concept
                 @constellation.RoleRef(constrained_rs, constrained_rs.all_role_ref.size, :role => role, :join_node => binding.join_node)
               end
             end
           end
 
           if role_sequence
+            end_node = role_refs[-1].join_node
             if !reading.fact_type.entity_type and role = reading.fact_type.all_role.single
-              # REVISIT: It might prove to be evil to use the same JoinNode twice for the same JoinStep here... but I don't have a real 
+              # Don't give the ImplicitBoolean a join_node. We can live without one, for now.
+              # The Join Step will have a duplicate node, and the fact type will tell us what's happening
               role_refs <<
-                @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role.implicit_fact_type.all_role.single, :join_node => role_sequence.all_role_ref.single.join_node)
+                @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role.implicit_fact_type.all_role.single)
             end
             # We aren't talking about objectification here, so there must be exactly two roles.
             raise "REVISIT: Internal error constructing join for #{reading.inspect}" if role_sequence.all_role_ref.size != 2 && role_refs.size == 2
-            js = @constellation.JoinStep(role_refs[0].join_node, role_refs[1].join_node, :fact_type => reading.fact_type)
+            js = @constellation.JoinStep(role_refs[0].join_node, end_node, :fact_type => reading.fact_type)
             debug :join, "New Join Step #{js.describe}"
           end
         end

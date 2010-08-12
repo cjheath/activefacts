@@ -486,6 +486,14 @@ module ActiveFacts
       def describe(role = nil)
         "#{subtype.name} is a kind of #{supertype.name}"
       end
+
+      def supertype_role
+        (roles = all_role.to_a)[0].concept == supertype ? roles[0] : roles[1]
+      end
+
+      def subtype_role
+        (roles = all_role.to_a)[0].concept == subtype ? roles[0] : roles[1]
+      end
     end
 
     class JoinStep
@@ -705,7 +713,7 @@ module ActiveFacts
             objectification_role = role.implicit_fact_type.all_role.single # Find the phantom role here
           else
             objectification_role_supertypes = counterpart_role_supertypes
-            objectification_role = nil
+            objectification_role = counterpart_role
           end
 
           if !d_c_o
@@ -733,7 +741,7 @@ module ActiveFacts
       end
 
       # Choose the first entry in the first non-empty supertypes list:
-      if options != :counterpart
+      if options != :counterpart && proximate_sups[0]
         [ proximate_sups[0], roles ]
       elsif !counterpart_sups.empty?
         [ counterpart_sups[0], counterpart_roles ]
