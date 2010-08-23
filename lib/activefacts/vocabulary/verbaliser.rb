@@ -112,7 +112,12 @@ module ActiveFacts
         # If more than one set of adjectives was used, this player must have been subject to loose binding.
         # This method is used to decide when subscripts aren't needed.
         def role_adjuncts
-          adjuncts = @role_refs.map{|rr| [rr.leading_adjective, rr.role.role_name, rr.trailing_adjective].compact}.uniq.sort
+          adjuncts = @role_refs.map{|rr|
+            [
+              rr.leading_adjective,
+              # rr.role.role_name,
+              rr.trailing_adjective
+            ].compact}.uniq.sort
           adjuncts.flatten*"_"
         end
 
