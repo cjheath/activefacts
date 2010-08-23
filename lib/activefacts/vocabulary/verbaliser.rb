@@ -636,7 +636,6 @@ module ActiveFacts
       def verbalise_join join
         prepare_join join
         readings = ''
-        debugger unless @role_refs[0].join_role
         next_node = @role_refs[0].join_role.join_node   # Choose a place to start
         last_is_contractable = false
         debug :join, "Join Nodes are #{@join_nodes.map{|jn| jn.describe }.inspect}, Join Steps are #{@join_steps.map{|js| js.describe }.inspect}" do

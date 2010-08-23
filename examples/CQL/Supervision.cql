@@ -29,11 +29,10 @@ CEO runs Company,
  * Constraints:
  */
 either Employee reports to Manager(1) or Employee is a Manager(2) that is a CEO that runs Company but not both;
-// Importing from NORMA drops the "that runs Company" fact type here, find out why:
-// either Employee reports to Manager(1) or Employee is a Manager(2) that is a CEO but not both;
 Employee is a Manager that is a CEO that runs Company
 	if and only if
 	Employee works for Company;
+
 // This constraint cannot be expressed in NORMA until it adds explicit join paths:
 Employee(1) reports to Manager that is a kind of Employee(2) that works for Company
 	if and only if
