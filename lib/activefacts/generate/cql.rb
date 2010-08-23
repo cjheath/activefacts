@@ -365,7 +365,7 @@ module ActiveFacts
           verbaliser.roles_have_same_player(joined_roles) if join_over
         end
 
-        verbaliser.prepare_role_sequence(c.role_sequence)
+        verbaliser.prepare_role_sequence(c.role_sequence, join_over)
 
         expanded_readings = verbaliser.verbalise_over_role_sequence(c.role_sequence, nil, role_proximity)
         if c.min_frequency == 1 && c.max_frequency == nil and c.role_sequence.all_role_ref.size == 2
@@ -403,7 +403,7 @@ module ActiveFacts
         end
         verbaliser.create_subscripts
 
-        if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.join_node}}
+        if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.join_role}}
           # This set constraint has an explicit join. Verbalise it.
 
           readings_list = role_sequences.

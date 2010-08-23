@@ -752,9 +752,11 @@ module ActiveFacts
         supertype_node = join.all_join_node.detect{|jn| jn.concept == ti.supertype } ||
           @constellation.JoinNode(join, join.all_join_node.size, :concept => ti.supertype)
         rs = @constellation.RoleSequence(:new)
-        @constellation.RoleRef(rs, 0, :role => ti.subtype_role, :join_node => subtype_node)
-        @constellation.RoleRef(rs, 1, :role => ti.supertype_role, :join_node => supertype_node)
-        js = @constellation.JoinStep(subtype_node, supertype_node, :fact_type => ti)
+        @constellation.RoleRef(rs, 0, :role => ti.subtype_role)
+        sub_jr = @constellation.JoinRole(subtype_node, ti.subtype_role)
+        @constellation.RoleRef(rs, 1, :role => ti.supertype_role)
+        sup_jr = @constellation.JoinRole(supertype_node, ti.supertype_role)
+        js = @constellation.JoinStep(sub_jr, sup_jr, :fact_type => ti)
         debug :join, "New subtyping join step #{js.describe}"
         js
       end
@@ -847,7 +849,7 @@ module ActiveFacts
           # There may be one join per role sequence:
           role_sequences.zip(sequence_join_over||[], sequence_joined_roles||[]).map do |role_sequence, join_over, joined_roles|
             # Skip if there's no join here (sequence join nor end-point subset join)
-            role_refs = role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}
+            role_refs = role_sequence.all_role_ref_in_order
             if !join_over and !role_refs.detect{|rr| rr.role.concept != end_points[rr.ordinal]}
               # No sequence join nor end_point join here
               next
@@ -859,7 +861,7 @@ module ActiveFacts
             join = @constellation.Join(:new)
             join_node = nil
             join_role = nil
-            role_sequence.all_role_ref_in_order.zip(joined_roles||[]).each_with_index do |(role_ref, joined_role), i|
+            role_refs.zip(joined_roles||[]).each_with_index do |(role_ref, joined_role), i|
               # Each role_ref is to an object joined via joined_role to join_node (or which will be the join_node)
 
               # Create a join node for the actual end-point (supertype of the constrained roles)
@@ -872,22 +874,26 @@ module ActiveFacts
               end_role = role_ref.role
 
               # Create subtyping join steps at the end-point, if needed:
+              projecting_jr = nil
               if (subtype = role_ref.role.concept) != end_point
                 debug :join, "Making subtyping join steps from #{subtype.name} to #{end_point.name}" do
                   # There may be more than one supertyping level. Make the steps:
                   js = subtype_join_steps(join, subtype, end_point)
 
+
                   # Replace the constrained role and node with the supertype ones:
                   end_node = join.all_join_node.detect{|jn| jn.concept == end_point }
+                  projecting_jr = js.output_join_role
                   end_role = js.fact_type.all_role.detect{|r| r.concept == end_point }
                   role_node = join.all_join_node.detect{|jn| jn.concept == role_ref.role.concept }
                 end
               end
 
               raise "Internal error: making illegal reference to join node" if end_role.concept != end_node.concept
-              @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => end_role, :join_node => end_node)
+              rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => end_role)
+              projecting_jr ||= @constellation.JoinRole(end_node, end_role)
+              projecting_jr.role_ref = rr
 
-              # REVISIT: Something here needs to handle unaries, which have a join step over two copies of the same JoinNode
 
               if join_over
                 if !join_node     # Create the JoinNode when processing the first role
@@ -898,23 +904,32 @@ module ActiveFacts
                   rs = @constellation.RoleSequence(:new)
                   # Detect the fact type over which we're joining (may involve objectification)
                   raise "Internal error: making illegal reference to join node" if role_ref.role.concept != role_node.concept
-                  @constellation.RoleRef(rs, 0, :role => role_ref.role, :join_node => role_node)
+                  @constellation.RoleRef(rs, 0, :role => role_ref.role)
+                  role_jr = @constellation.JoinRole(role_node, role_ref.role)
                   raise "Internal error: making illegal reference to join node" if joined_role.concept != join_node.concept
-                  @constellation.RoleRef(rs, 1, :role => joined_role, :join_node => join_node)
+                  @constellation.RoleRef(rs, 1, :role => joined_role)
+                  join_jr = @constellation.JoinRole(join_node, joined_role)
 
-                  js = @constellation.JoinStep(role_node, join_node, :fact_type => joined_role.fact_type)
+                  js = @constellation.JoinStep(role_jr, join_jr, :fact_type => joined_role.fact_type)
                   debug :join, "New join step #{js.describe}"
                 end
               else
                 debug :join, "Need join step for non-join_over role #{end_point.name} #{role_ref.describe} in #{role_ref.role.fact_type.default_reading}"
-                if role_ref.role.fact_type.all_role.size > 1
+                if (roles = role_ref.role.fact_type.all_role.to_a).size > 1
                   # Here we have an end join (step already created) but no sequence join
                   if join_node
                     raise "Internal error: making illegal join step" if role_ref.role.concept != role_node.concept
                     rs = @constellation.RoleSequence(:new)
-                    @constellation.RoleRef(rs, 0, :role => join_role, :join_node => join_node)
-                    @constellation.RoleRef(rs, 1, :role => role_ref.role, :join_node => role_node)
-                    js = @constellation.JoinStep(join_node, role_node, :fact_type => role_ref.role.fact_type)
+                    @constellation.RoleRef(rs, 0, :role => join_role)
+                    join_jr = @constellation.JoinRole(join_node, join_role)
+                    @constellation.RoleRef(rs, 1, :role => role_ref.role)
+                    role_jr = @constellation.JoinRole(role_node, role_ref.role)
+                    js = @constellation.JoinStep(join_jr, role_jr, :fact_type => role_ref.role.fact_type)
+                    roles -= [join_role, role_ref.role]
+                    roles.each do |incidental_role|
+                      jn = @constellation.JoinNode(join, join.all_join_node.size, :concept => incidental_role.concept)
+                      jr = @constellation.JoinRole(jn, incidental_role, :join_step => js)
+                    end
                   else
                     join_node = role_node
                     join_role = role_ref.role
@@ -922,7 +937,7 @@ module ActiveFacts
                 else
                   # Unary fact type. We need a Join Step from this not to this node, but over the implicit fact type
                   raise "Internal error: making illegal join step" if !role_ref.role.fact_type.all_role.detect{|r| r.concept == role_node.concept}
-                  js = @constellation.JoinStep(role_node, role_node, :fact_type => role_ref.role.fact_type)
+                  js = @constellation.JoinStep(role_jr, role_jr, :fact_type => role_ref.role.fact_type)
                 end
               end
             end
@@ -930,6 +945,12 @@ module ActiveFacts
             # Thoroughly check that this is a valid join
             join.validate
             debug :join, "Join has projected nodes #{replacement_rs.describe}"
+
+            replacement_rs.all_role_ref.each{|rr|
+              next if rr.join_role
+              debugger
+              raise "Replacement role sequence contains role ref #{rr.describe} that is projected from no JoinRole"
+            }
 
             # Constrain the replacement role sequence, which has the attached join:
             role_sequences[role_sequences.index(role_sequence)] = replacement_rs

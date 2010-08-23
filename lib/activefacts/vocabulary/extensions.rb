@@ -89,7 +89,7 @@ module ActiveFacts
 
     class RoleRef
       def describe
-        role_name + (join_node ? " JN#{join_node.ordinal}" : '')
+        role_name
       end
 
       def role_name(joiner = "-")
@@ -498,100 +498,116 @@ module ActiveFacts
 
     class JoinStep
       def describe
-        input_role_ref = input_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
-        output_role_ref = output_join_node.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
-        "from node #{input_join_node.ordinal} #{input_role_ref ? input_role_ref.role.concept.name : input_join_node.concept.name}"+
-        " to node #{output_join_node.ordinal} #{output_role_ref ? output_role_ref.role.concept.name : output_join_node.concept.name}"+
-        ": #{is_anti && 'not '}#{is_outer && 'maybe '}#{fact_type.default_reading}"
+        "JoinStep " +
+          "#{is_outer && 'maybe '}" +
+          (is_unary_step ? " (unary) " : "from #{input_join_role.describe} ") +
+          "#{is_anti && 'not '}" +
+          "to #{output_join_role.describe} " +
+          "over " + (is_objectification_step ? 'objectification ' : '') +
+          "'#{fact_type.default_reading}'"
       end
 
       def is_unary_step
         # Preserve this in case we have to use a real join_node for the phantom
-        # input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) && rr.role.fact_type.role.fact_type.all_role.size == 1 }
-        input_join_node == output_join_node
+        input_join_role == output_join_role
       end
 
       def is_objectification_step
         fact_type.is_a?(ImplicitFactType)
       end
+
+      def all_join_role
+        [input_join_role, output_join_role].uniq + all_incidental_join_role.to_a
+      end
+
+      def external_fact_type
+        fact_type.is_a?(ImplicitFactType) ? fact_type.role.fact_type : fact_type
+      end
     end
 
     class JoinNode
       def describe
-        concept.name
+        concept.name +
+          (subscript ? "(#{subscript})" : '') +
+          " JN#{ordinal}" +
+#          (all_join_role.detect{|jr| jr.role_ref} ? " (projected)" : "") +
+          (value ? ' = '+value.describe : '')
+      end
+
+      def all_join_step
+        all_join_role.map do |jr|
+          jr.all_join_step_as_input_join_role.to_a +
+            jr.all_join_step_as_output_join_role.to_a
+        end.
+          flatten.
+          uniq
+      end
+    end
+
+    class JoinRole
+      def describe
+        "#{role.concept.name} JN#{join_node.ordinal}" +
+          (role_ref ? " (projected)" : "")
+      end
+
+      def all_join_step
+        (all_join_step_as_input_join_role.to_a +
+          all_join_step_as_output_join_role.to_a +
+          [join_step]).flatten.compact.uniq
       end
     end
 
     class Join
       def show
+        steps_shown = {}
         debug :join, "Displaying full contents of Join #{join_id}" do
           all_join_node.sort_by{|jn| jn.ordinal}.each do |join_node|
-            debug :join, "Node #{join_node.ordinal} for #{join_node.concept.name}" do
-              (join_node.all_join_step_as_input_join_node.to_a +
-                join_node.all_join_step_as_output_join_node.to_a).
-                uniq.
+            debug :join, "#{join_node.describe}" do
+              join_node.all_join_step.
                 each do |join_step|
-                  debug :join, "#{
-                      join_step.is_unary_step ? 'unary ' : ''
-                    }#{
-                      join_step.is_objectification_step ? 'objectification ' : ''
-                    }step #{join_step.describe}"
+                  next if steps_shown[join_step]
+                  steps_shown[join_step] = true
+                  debug :join, "#{join_step.describe}"
                 end
-              join_node.all_role_ref.each do |role_ref|
-                debug :join, "reference #{role_ref.describe} in '#{role_ref.role.fact_type.default_reading}' over #{role_ref.role_sequence.describe}#{role_ref.role_sequence == role_sequence ? ' (projected)' : ''}"
+              join_node.all_join_role.each do |join_role|
+                debug :join, "role of #{join_role.describe} in '#{join_role.role.fact_type.default_reading}'"
               end
             end
           end
         end
       end
 
+      def all_join_step
+        all_join_node.map{|jn| jn.all_join_step.to_a}.flatten.uniq
+      end
+
+      # Check all parts of this join for validity
       def validate
         show
         return
 
-        # Check all parts of this join for validity
-        jns = all_join_node.sort_by{|jn| jn.ordinal}
-        jns.each_with_index do |jn, i|
-          raise "Join node #{i} should have ordinal #{jn.ordinal}" unless jn.ordinal == i
-        end
-
         # Check the join nodes:
-        steps = []
-        jns.each_with_index do |join_node, i|
+        join_steps = []
+        join_nodes = all_join_node.sort_by{|jn| jn.ordinal}
+        join_nodes.each_with_index do |join_node, i|
+          raise "Join node #{i} should have ordinal #{join_node.ordinal}" unless join_node.ordinal == i
           raise "Join Node #{i} has missing concept" unless join_node.concept
-          if join_node.all_role_ref.detect{|rr| rr.role.concept != join_node.concept }
-            raise "All role references for join node #{join_node.ordinal} should be for #{
-                join_node.concept.name
-              } but we have #{
-                (join_node.all_role_ref.map{|rr| rr.role.concept.name}-[join_node.concept.name]).uniq*', '
-              }"
+          join_node.all_join_role do |join_role|
+            raise "Join Node for #{concept.name} includes role played by #{join_role.concept.name}" unless join_role.concept == concept
           end
-          steps += join_node.all_join_step_as_input_join_node.to_a
-          steps += join_node.all_join_step_as_output_join_node.to_a
-
-          # REVISIT: All Role References must be in a role sequence that covers one fact type exactly (why?)
-          # REVISIT: All such role references must have a join node in this join. (why?)
+          join_steps += join_node.all_join_step
         end
+        join_steps.uniq!
 
         # Check the join steps:
-        steps.uniq!
-        steps.each_with_index do |join_step, i|
-          raise "Join Step #{i} has missing fact type" unless join_step.fact_type
-          raise "Join Step #{i} has missing input node" unless join_step.input_join_node
-          raise "Join Step #{i} has missing output node" unless join_step.output_join_node
-          debugger
-          p join_step.fact_type.default_reading
-          p join_step.input_join_node.all_role_ref.map(&:describe)
-          p join_step.output_join_node.all_role_ref.map(&:describe)
-=begin
-          unless join_step.input_join_node.all_role_ref.
-              detect do |rr|
-                rr.role.fact_type == join_step.fact_type
-                or rr.role.fact_type.is_a?(ImplicitFactType) && rr.role.fact_type.role.fact_type == rr.join_step.concept
-              end
-            raise "Join Step #{join_step.describe} has nodes not matching its fact type"
+        join_steps.each do |join_step|
+          raise "Join Step has missing fact type" unless join_step.fact_type
+          raise "Join Step has missing input node" unless join_step.input_join_role
+          raise "Join Step has missing output node" unless join_step.output_join_role
+          if (role = input_join_role).role.fact_type != fact_type or
+            (role = output_join_role).role.fact_type != fact_type
+            raise "Join Step has role #{role.describe} which doesn't belong to the fact type '#{fact_type.default_reading}' it traverses"
           end
-=end
         end
 
         # REVISIT: Do a connectivity check
@@ -627,6 +643,7 @@ module ActiveFacts
               @role_sequence = role_sequence
             end
             def join_node; nil; end
+            def join_role; nil; end
             def leading_adjective; nil; end
             def trailing_adjective; nil; end
             def describe

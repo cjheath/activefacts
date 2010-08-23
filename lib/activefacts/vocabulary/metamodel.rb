@@ -128,6 +128,10 @@ module ActiveFacts
       value_type 
     end
 
+    class Subscript < UnsignedInteger
+      value_type :length => 16
+    end
+
     class Text < String
       value_type :length => 256
     end
@@ -207,7 +211,6 @@ module ActiveFacts
     class Join
       identified_by :join_id
       one_to_one :join_id, :mandatory => true     # See JoinId.join
-      has_one :role_sequence, :mandatory => true  # See RoleSequence.all_join
     end
 
     class JoinNode
@@ -215,15 +218,8 @@ module ActiveFacts
       has_one :concept, :mandatory => true        # See Concept.all_join_node
       has_one :join, :mandatory => true           # See Join.all_join_node
       has_one :ordinal, :mandatory => true        # See Ordinal.all_join_node
-    end
-
-    class JoinStep
-      identified_by :input_join_node, :output_join_node
-      has_one :fact_type, :mandatory => true      # See FactType.all_join_step
-      has_one :input_join_node, :class => JoinNode, :mandatory => true  # See JoinNode.all_join_step_as_input_join_node
-      maybe :is_anti
-      maybe :is_outer
-      has_one :output_join_node, :class => JoinNode, :mandatory => true  # See JoinNode.all_join_step_as_output_join_node
+      has_one :subscript                          # See Subscript.all_join_node
+      has_one :value                              # See Value.all_join_node
     end
 
     class Position
@@ -381,6 +377,22 @@ module ActiveFacts
       has_one :rotation_setting                   # See RotationSetting.all_fact_type_shape
     end
 
+    class JoinRole
+      identified_by :join_node, :role
+      has_one :join_node, :mandatory => true      # See JoinNode.all_join_role
+      has_one :role, :mandatory => true           # See Role.all_join_role
+      has_one :join_step, :counterpart => :incidental_join_role  # See JoinStep.all_incidental_join_role
+    end
+
+    class JoinStep
+      identified_by :input_join_role, :output_join_role
+      has_one :fact_type, :mandatory => true      # See FactType.all_join_step
+      has_one :input_join_role, :class => JoinRole, :mandatory => true  # See JoinRole.all_join_step_as_input_join_role
+      maybe :is_anti
+      maybe :is_outer
+      has_one :output_join_role, :class => JoinRole, :mandatory => true  # See JoinRole.all_join_step_as_output_join_role
+    end
+
     class ModelNoteShape < Shape
       has_one :context_note, :mandatory => true   # See ContextNote.all_model_note_shape
     end
@@ -427,7 +439,7 @@ module ActiveFacts
       has_one :ordinal, :mandatory => true        # See Ordinal.all_role_ref
       has_one :role, :mandatory => true           # See Role.all_role_ref
       has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
-      has_one :join_node                          # See JoinNode.all_role_ref
+      one_to_one :join_role                       # See JoinRole.role_ref
       has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
       has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
     end
