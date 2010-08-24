@@ -161,7 +161,7 @@ module ActiveFacts
                 key = rr.key.compact
                 role_refs_by_reading_and_key[[reading, key]] = rr
                 key
-              end.sort
+              end.sort_by{|a| a.map{|k|k.to_s}}
               raise "Fact types may not have duplicate roles" if keys.uniq.size < keys.size
               (hash[keys] ||= []) << reading
               hash

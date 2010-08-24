@@ -13,8 +13,8 @@ LanguageName is written as String;
 Country is identified by its Name;
 
 Diplomat is identified by its Name;
-Diplomat represents one Country;
-Diplomat serves in one Country;
+Diplomat represents one Country (as Represented Country);
+Diplomat serves in one Country (as Served Country);
 
 Language is identified by its Name;
 
@@ -29,8 +29,8 @@ Fluency is where
 	Language is spoken by Diplomat;
 
 Representation is where
-	Ambassador is from Country(1) to Country(2),
-	Country(1) is represented in Country(2) by one Ambassador;
+	Ambassador is from Country (as Represented Country) to Country(2),
+	Represented Country(1) is represented in Country(2) by one Ambassador;
 
 /*
  * Constraints:

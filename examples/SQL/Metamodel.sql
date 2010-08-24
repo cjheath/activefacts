@@ -238,7 +238,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
+CREATE UNIQUE CLUSTERED INDEX IX_TypeInheritanceInFactTypeByTypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdent ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
@@ -285,15 +285,6 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
-CREATE TABLE [Join] (
-	-- Join has Join Id,
-	JoinId                                  int IDENTITY NOT NULL,
-	-- Join projects Role Sequence and Role Sequence has Role Sequence Id,
-	RoleSequenceId                          int NOT NULL,
-	PRIMARY KEY(JoinId)
-)
-GO
-
 CREATE TABLE JoinNode (
 	-- Join Node is for Concept and Concept is called Name,
 	ConceptName                             varchar(64) NOT NULL,
@@ -303,31 +294,76 @@ CREATE TABLE JoinNode (
 	JoinId                                  int NOT NULL,
 	-- Join Node has Ordinal position,
 	Ordinal                                 shortint NOT NULL,
+	-- maybe Join Node has Subscript,
+	Subscript                               shortint NULL,
+	-- maybe Join Node has Value and Value is a string,
+	ValueIsAString                          bit NULL,
+	-- maybe Join Node has Value and Value is represented by Literal,
+	ValueLiteral                            varchar NULL,
+	-- maybe Join Node has Value and maybe Value is in Unit and Unit has Unit Id,
+	ValueUnitId                             int NULL,
 	PRIMARY KEY(JoinId, Ordinal),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
-	FOREIGN KEY (JoinId) REFERENCES [Join] (JoinId)
+	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName)
+)
+GO
+
+CREATE TABLE JoinRole (
+	-- Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	JoinNodeJoinId                          int NOT NULL,
+	-- Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	JoinNodeOrdinal                         shortint NOT NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
+	JoinStepInputJoinRoleFactTypeId         int NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	JoinStepInputJoinRoleJoinNodeJoinId     int NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	JoinStepInputJoinRoleJoinNodeOrdinal    shortint NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role,
+	JoinStepInputJoinRoleOrdinal            shortint NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
+	JoinStepOutputJoinRoleFactTypeId        int NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	JoinStepOutputJoinRoleJoinNodeJoinId    int NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	JoinStepOutputJoinRoleJoinNodeOrdinal   shortint NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role,
+	JoinStepOutputJoinRoleOrdinal           shortint NULL,
+	-- Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
+	RoleFactTypeId                          int NOT NULL,
+	-- Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role,
+	RoleOrdinal                             shortint NOT NULL,
+	PRIMARY KEY(JoinNodeJoinId, JoinNodeOrdinal, RoleFactTypeId, RoleOrdinal),
+	FOREIGN KEY (JoinNodeJoinId, JoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal)
 )
 GO
 
 CREATE TABLE JoinStep (
 	-- Join Step traverses Fact Type and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
-	-- Join Step has input-Join Node and Join includes Join Node and Join has Join Id,
-	InputJoinNodeJoinId                     int NOT NULL,
-	-- Join Step has input-Join Node and Join Node has Ordinal position,
-	InputJoinNodeOrdinal                    shortint NOT NULL,
+	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
+	InputJoinRoleFactTypeId                 int NOT NULL,
+	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	InputJoinRoleJoinNodeJoinId             int NOT NULL,
+	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	InputJoinRoleJoinNodeOrdinal            shortint NOT NULL,
+	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role,
+	InputJoinRoleOrdinal                    shortint NOT NULL,
 	-- is anti Join Step,
 	IsAnti                                  bit NOT NULL,
 	-- Join Step is outer,
 	IsOuter                                 bit NOT NULL,
-	-- Join Step has output-Join Node and Join includes Join Node and Join has Join Id,
-	OutputJoinNodeJoinId                    int NOT NULL,
-	-- Join Step has output-Join Node and Join Node has Ordinal position,
-	OutputJoinNodeOrdinal                   shortint NOT NULL,
-	PRIMARY KEY(InputJoinNodeJoinId, InputJoinNodeOrdinal, OutputJoinNodeJoinId, OutputJoinNodeOrdinal),
+	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
+	OutputJoinRoleFactTypeId                int NOT NULL,
+	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	OutputJoinRoleJoinNodeJoinId            int NOT NULL,
+	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	OutputJoinRoleJoinNodeOrdinal           shortint NOT NULL,
+	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role,
+	OutputJoinRoleOrdinal                   shortint NOT NULL,
+	PRIMARY KEY(InputJoinRoleJoinNodeJoinId, InputJoinRoleJoinNodeOrdinal, InputJoinRoleFactTypeId, InputJoinRoleOrdinal, OutputJoinRoleJoinNodeJoinId, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleFactTypeId, OutputJoinRoleOrdinal),
 	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId),
-	FOREIGN KEY (InputJoinNodeJoinId, InputJoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal),
-	FOREIGN KEY (OutputJoinNodeJoinId, OutputJoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal)
+	FOREIGN KEY (InputJoinRoleJoinNodeJoinId, InputJoinRoleJoinNodeOrdinal, InputJoinRoleFactTypeId, InputJoinRoleOrdinal) REFERENCES JoinRole (JoinNodeJoinId, JoinNodeOrdinal, RoleFactTypeId, RoleOrdinal),
+	FOREIGN KEY (OutputJoinRoleJoinNodeJoinId, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleFactTypeId, OutputJoinRoleOrdinal) REFERENCES JoinRole (JoinNodeJoinId, JoinNodeOrdinal, RoleFactTypeId, RoleOrdinal)
 )
 GO
 
@@ -410,10 +446,14 @@ CREATE TABLE RoleDisplay (
 GO
 
 CREATE TABLE RoleRef (
-	-- maybe Role Ref connects to Join Node and Join includes Join Node and Join has Join Id,
-	JoinNodeJoinId                          int NULL,
-	-- maybe Role Ref connects to Join Node and Join Node has Ordinal position,
-	JoinNodeOrdinal                         shortint NULL,
+	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
+	JoinRoleFactTypeId                      int NULL,
+	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	JoinRoleJoinNodeJoinId                  int NULL,
+	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	JoinRoleJoinNodeOrdinal                 shortint NULL,
+	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role,
+	JoinRoleOrdinal                         shortint NULL,
 	-- maybe Role Ref has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role,
@@ -428,9 +468,20 @@ CREATE TABLE RoleRef (
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
 	UNIQUE(RoleFactTypeId, RoleOrdinal, RoleSequenceId),
-	FOREIGN KEY (JoinNodeJoinId, JoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal),
+	FOREIGN KEY (JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleFactTypeId, JoinRoleOrdinal) REFERENCES JoinRole (JoinNodeJoinId, JoinNodeOrdinal, RoleFactTypeId, RoleOrdinal),
 	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 )
+GO
+
+CREATE VIEW dbo.RoleRef_JoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleFactTypeIdJoinRoleOrdinal (JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleFactTypeId, JoinRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleFactTypeId, JoinRoleOrdinal FROM dbo.RoleRef
+	WHERE	JoinRoleJoinNodeJoinId IS NOT NULL
+	  AND	JoinRoleJoinNodeOrdinal IS NOT NULL
+	  AND	JoinRoleFactTypeId IS NOT NULL
+	  AND	JoinRoleOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByJoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleFactTypeIdJoinRoleOrdinal ON dbo.RoleRef_JoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleFactTypeIdJoinRoleOrdinal(JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleFactTypeId, JoinRoleOrdinal)
 GO
 
 CREATE TABLE RoleSequence (
@@ -669,8 +720,12 @@ ALTER TABLE Fact
 	ADD FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 GO
 
-ALTER TABLE [Join]
-	ADD FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
+ALTER TABLE JoinRole
+	ADD FOREIGN KEY (JoinStepInputJoinRoleFactTypeId, JoinStepInputJoinRoleJoinNodeJoinId, JoinStepInputJoinRoleJoinNodeOrdinal, JoinStepInputJoinRoleOrdinal, JoinStepOutputJoinRoleFactTypeId, JoinStepOutputJoinRoleJoinNodeJoinId, JoinStepOutputJoinRoleJoinNodeOrdinal, JoinStepOutputJoinRoleOrdinal) REFERENCES JoinStep (InputJoinRoleFactTypeId, InputJoinRoleJoinNodeJoinId, InputJoinRoleJoinNodeOrdinal, InputJoinRoleOrdinal, OutputJoinRoleFactTypeId, OutputJoinRoleJoinNodeJoinId, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleOrdinal)
+GO
+
+ALTER TABLE JoinRole
+	ADD FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
 
 ALTER TABLE Reading

@@ -66,7 +66,7 @@ CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceI
 	  AND	SubsetConstraintSupersetRoleSequenceId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
+CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
 GO
 
 CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID (ValueConstraintRoleGUID) WITH SCHEMABINDING AS
@@ -74,7 +74,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID (ValueConstr
 	WHERE	ValueConstraintRoleGUID IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID(ValueConstraintRoleGUID)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleGUID ON dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID(ValueConstraintRoleGUID)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -167,7 +167,7 @@ CREATE VIEW dbo.FactType_EntityTypeGUID (EntityTypeGUID) WITH SCHEMABINDING AS
 	WHERE	EntityTypeGUID IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeGUID(EntityTypeGUID)
+CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeGUID ON dbo.FactType_EntityTypeGUID(EntityTypeGUID)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceProvidesIdentification (TypeInheritanceSubtypeGUID, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
@@ -176,7 +176,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInherita
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceProvidesIdentification(TypeInheritanceSubtypeGUID, TypeInheritanceProvidesIdentification)
+CREATE UNIQUE CLUSTERED INDEX IX_TypeInheritanceInFactTypeByTypeInheritanceSubtypeGUIDTypeInheritanceProvidesIdentification ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceProvidesIdentification(TypeInheritanceSubtypeGUID, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUID (TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID) WITH SCHEMABINDING AS
@@ -185,7 +185,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInherita
 	  AND	TypeInheritanceSupertypeGUID IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUID(TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID)
+CREATE UNIQUE CLUSTERED INDEX TypeInheritanceUQ ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUID(TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID)
 GO
 
 CREATE TABLE Instance (
@@ -218,15 +218,6 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
-CREATE TABLE [Join] (
-	-- Join has Join Id,
-	JoinId                                  int IDENTITY NOT NULL,
-	-- Join projects Role Sequence and Role Sequence has Role Sequence Id,
-	RoleSequenceId                          int NOT NULL,
-	PRIMARY KEY(JoinId)
-)
-GO
-
 CREATE TABLE JoinNode (
 	-- Join includes Join Node and Join has Join Id,
 	JoinId                                  int NOT NULL,
@@ -234,30 +225,39 @@ CREATE TABLE JoinNode (
 	ObjectTypeGUID                          varchar NOT NULL,
 	-- Join Node has Ordinal position,
 	Ordinal                                 shortint NOT NULL,
-	PRIMARY KEY(JoinId, Ordinal),
-	FOREIGN KEY (JoinId) REFERENCES [Join] (JoinId)
+	-- maybe Join Node has Subscript,
+	Subscript                               varchar NULL,
+	-- maybe Join Node has Value and Value is a string,
+	ValueIsAString                          bit NULL,
+	-- maybe Join Node has Value and Value is represented by Literal,
+	ValueLiteral                            varchar NULL,
+	-- maybe Join Node has Value and maybe Value is in Unit and Unit has Unit Id,
+	ValueUnitId                             int NULL,
+	PRIMARY KEY(JoinId, Ordinal)
 )
 GO
 
 CREATE TABLE JoinStep (
 	-- Join Step traverses Fact Type and Fact Type is a kind of Concept and Concept has GUID,
 	FactTypeGUID                            varchar NOT NULL,
-	-- Join Step has input-Join Node and Join includes Join Node and Join has Join Id,
-	InputJoinNodeJoinId                     int NOT NULL,
-	-- Join Step has input-Join Node and Join Node has Ordinal position,
-	InputJoinNodeOrdinal                    shortint NOT NULL,
+	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is a kind of Concept and Concept has GUID,
+	InputJoinRoleGUID                       varchar NOT NULL,
+	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	InputJoinRoleJoinNodeJoinId             int NOT NULL,
+	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	InputJoinRoleJoinNodeOrdinal            shortint NOT NULL,
 	-- is anti Join Step,
 	IsAnti                                  bit NOT NULL,
 	-- Join Step is outer,
 	IsOuter                                 bit NOT NULL,
-	-- Join Step has output-Join Node and Join includes Join Node and Join has Join Id,
-	OutputJoinNodeJoinId                    int NOT NULL,
-	-- Join Step has output-Join Node and Join Node has Ordinal position,
-	OutputJoinNodeOrdinal                   shortint NOT NULL,
-	PRIMARY KEY(InputJoinNodeJoinId, InputJoinNodeOrdinal, OutputJoinNodeJoinId, OutputJoinNodeOrdinal),
-	FOREIGN KEY (FactTypeGUID) REFERENCES FactType (ConceptGUID),
-	FOREIGN KEY (InputJoinNodeJoinId, InputJoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal),
-	FOREIGN KEY (OutputJoinNodeJoinId, OutputJoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal)
+	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is a kind of Concept and Concept has GUID,
+	OutputJoinRoleGUID                      varchar NOT NULL,
+	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	OutputJoinRoleJoinNodeJoinId            int NOT NULL,
+	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	OutputJoinRoleJoinNodeOrdinal           shortint NOT NULL,
+	PRIMARY KEY(InputJoinRoleJoinNodeJoinId, InputJoinRoleJoinNodeOrdinal, InputJoinRoleGUID, OutputJoinRoleJoinNodeJoinId, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleGUID),
+	FOREIGN KEY (FactTypeGUID) REFERENCES FactType (ConceptGUID)
 )
 GO
 
@@ -364,10 +364,12 @@ CREATE TABLE RoleDisplay (
 GO
 
 CREATE TABLE RoleRef (
-	-- maybe Join Node includes Role Ref and Join includes Join Node and Join has Join Id,
-	JoinNodeJoinId                          int NULL,
-	-- maybe Join Node includes Role Ref and Join Node has Ordinal position,
-	JoinNodeOrdinal                         shortint NULL,
+	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Role is a kind of Concept and Concept has GUID,
+	JoinRoleGUID                            varchar NULL,
+	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	JoinRoleJoinNodeJoinId                  int NULL,
+	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	JoinRoleJoinNodeOrdinal                 shortint NULL,
 	-- maybe Role Ref has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role,
@@ -384,9 +386,18 @@ CREATE TABLE RoleRef (
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
 	UNIQUE(RoleGUID, RoleSequenceId),
-	FOREIGN KEY (JoinNodeJoinId, JoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal),
 	FOREIGN KEY (RoleGUID) REFERENCES Role (ConceptGUID)
 )
+GO
+
+CREATE VIEW dbo.RoleRef_JoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleGUID (JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleGUID) WITH SCHEMABINDING AS
+	SELECT JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleGUID FROM dbo.RoleRef
+	WHERE	JoinRoleJoinNodeJoinId IS NOT NULL
+	  AND	JoinRoleJoinNodeOrdinal IS NOT NULL
+	  AND	JoinRoleGUID IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByJoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleGUID ON dbo.RoleRef_JoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleGUID(JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleGUID)
 GO
 
 CREATE TABLE RoleSequence (
@@ -506,7 +517,7 @@ CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeSha
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAObjectifiedFactTypeNameShape ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
@@ -514,7 +525,7 @@ CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEM
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAReadingShape ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
@@ -646,10 +657,6 @@ GO
 
 ALTER TABLE Instance
 	ADD FOREIGN KEY (ObjectTypeGUID) REFERENCES ObjectType (ConceptGUID)
-GO
-
-ALTER TABLE [Join]
-	ADD FOREIGN KEY (RoleSequenceId) REFERENCES RoleSequence (RoleSequenceId)
 GO
 
 ALTER TABLE JoinNode

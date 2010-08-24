@@ -276,7 +276,7 @@ module ActiveFacts
       # and also define adjectives by using the hyphenated form (on at least the first occurrence).
       def expand_reading(reading, frequency_constraints = [], define_role_names = nil, value_constraints = [], &subscript_block)
         reading.expand(frequency_constraints, define_role_names, value_constraints) do |role_ref|
-          (p = player(role_ref) and p.subscript) ? "(#{p.subscript})" : ""
+          (!(role_ref.role.role_name and define_role_names) and p = player(role_ref) and p.subscript) ? "(#{p.subscript})" : ""
         end
       end
 

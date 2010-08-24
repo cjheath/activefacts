@@ -235,8 +235,8 @@ Fact Type Shape is for one Fact Type,
 Fact Type Shape has at most one Rotation Setting;
 
 Join Role is where
-	Role connects to Join Node,
-	Join Node includes at least one Role;
+	Join Node includes at least one Role,
+	Role connects to Join Node;
 
 Join Step is identified by input-Join Role and output-Join Role where
 	Join Step has one input-Join Role,

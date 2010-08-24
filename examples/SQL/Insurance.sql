@@ -32,7 +32,7 @@ CREATE VIEW dbo.VehicleInAsset_VIN (VehicleVIN) WITH SCHEMABINDING AS
 	WHERE	VehicleVIN IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX PK_VehicleInAsset ON dbo.VehicleInAsset_VIN(VehicleVIN)
+CREATE UNIQUE CLUSTERED INDEX VehiclePK ON dbo.VehicleInAsset_VIN(VehicleVIN)
 GO
 
 CREATE TABLE Claim (
@@ -58,10 +58,10 @@ CREATE TABLE Claim (
 	IncidentReporterName                    varchar(256) NULL,
 	-- maybe Claim concerns Incident and maybe Incident is covered by Police Report and maybe Police Report was at station-Name,
 	IncidentStationName                     varchar(256) NULL,
-	-- maybe Lodgement is where Claim was lodged by Person and maybe Lodgement was made at Date Time,
+	-- Lodgement is where Claim was lodged by Person and maybe Lodgement was made at Date Time,
 	LodgementDateTime                       datetime NULL,
-	-- maybe Lodgement is where Claim was lodged by Person and Lodgement is where Claim was lodged by Person and Party has Party ID,
-	LodgementPersonID                       int NULL,
+	-- Lodgement is where Claim was lodged by Person and Lodgement is where Claim was lodged by Person and Party has Party ID,
+	LodgementPersonID                       int NOT NULL,
 	-- Claim has Claim Sequence (as p_sequence),
 	PSequence                               int NOT NULL CHECK((PSequence >= 1 AND PSequence <= 999)),
 	-- Claim is on Policy and Policy is for product having Product (as p_product) and Product has Product Code,
@@ -238,7 +238,7 @@ CREATE VIEW dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr 
 	  AND	DriverYearNr IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_LicenseInPartyByDriverLicenseNumberDriverLicenseTypeDriverYearNr ON dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr(DriverLicenseNumber, DriverLicenseType, DriverYearNr)
+CREATE UNIQUE CLUSTERED INDEX DriverMustHaveSupertypePerson ON dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr(DriverLicenseNumber, DriverLicenseType, DriverYearNr)
 GO
 
 CREATE TABLE Policy (
@@ -366,23 +366,23 @@ GO
 CREATE TABLE VehicleIncident (
 	-- maybe Vehicle Incident has Description,
 	Description                             varchar(1024) NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and maybe Driving resulted in blood-Test Result,
+	-- Driving is where Vehicle Incident involves Driver and maybe Driving resulted in blood-Test Result,
 	DrivingBloodTestResult                  varchar NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and maybe Driving resulted in breath-Test Result,
+	-- Driving is where Vehicle Incident involves Driver and maybe Driving resulted in breath-Test Result,
 	DrivingBreathTestResult                 varchar NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and maybe Driving Charge is where Driving resulted in Charge and Driving Charge is where Driving resulted in Charge,
-	DrivingCharge                           varchar NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and Driving is where Vehicle Incident involves Driver and Party has Party ID,
-	DrivingDriverID                         int NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and maybe Driving (as driver_hospitalised) resulted in driver taken to hospital-Name,
+	-- Driving is where Vehicle Incident involves Driver and Driving Charge is where Driving resulted in Charge and Driving Charge is where Driving resulted in Charge,
+	DrivingCharge                           varchar NOT NULL,
+	-- Driving is where Vehicle Incident involves Driver and Driving is where Vehicle Incident involves Driver and Party has Party ID,
+	DrivingDriverID                         int NOT NULL,
+	-- Driving is where Vehicle Incident involves Driver and maybe Driving (as driver_hospitalised) resulted in driver taken to hospital-Name,
 	DrivingHospitalName                     varchar(256) NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and maybe Driving followed Intoxication,
+	-- Driving is where Vehicle Incident involves Driver and maybe Driving followed Intoxication,
 	DrivingIntoxication                     varchar NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and maybe Driving Charge is where Driving resulted in Charge and Driving Charge is a warning,
-	DrivingIsAWarning                       bit NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and maybe Driving was without owners consent for nonconsent-Reason,
+	-- Driving is where Vehicle Incident involves Driver and Driving Charge is where Driving resulted in Charge and Driving Charge is a warning,
+	DrivingIsAWarning                       bit NOT NULL,
+	-- Driving is where Vehicle Incident involves Driver and maybe Driving was without owners consent for nonconsent-Reason,
 	DrivingNonconsentReason                 varchar NULL,
-	-- maybe Driving is where Vehicle Incident involves Driver and maybe Driving was unlicenced for unlicensed-Reason,
+	-- Driving is where Vehicle Incident involves Driver and maybe Driving was unlicenced for unlicensed-Reason,
 	DrivingUnlicensedReason                 varchar NULL,
 	-- Vehicle Incident is a kind of Incident and Claim has Claim ID,
 	IncidentID                              int IDENTITY NOT NULL,

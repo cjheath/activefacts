@@ -380,6 +380,7 @@ module ::Metamodel
     identified_by :join_node, :role
     has_one :join_node, :mandatory => true      # See JoinNode.all_join_role
     has_one :role, :mandatory => true           # See Role.all_join_role
+    has_one :join_step, :counterpart => :incidental_join_role  # See JoinStep.all_incidental_join_role
   end
 
   class JoinStep

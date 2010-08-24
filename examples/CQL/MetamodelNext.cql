@@ -32,6 +32,7 @@ Role Sequence Id is written as Auto Counter;
 Rotation Setting is written as String restricted to {'left', 'right'};
 Scale is written as Unsigned Integer(32);
 Shape Id is written as Auto Counter;
+Subscript is written as String;
 Text is written as String(256);
 Unit Id is written as Auto Counter;
 X is written as Signed Integer(32);
@@ -87,13 +88,8 @@ Join Node is identified by Join and Ordinal where
 	Join includes Join Node,
 	Join Node is in one Join,
 	Join Node has one Ordinal position;
-
-Join Step is identified by input-Join Node and output-Join Node where
-	Join Step has one input-Join Node,
-	Join Step has one output-Join Node;
-Join Step traverses one Fact Type;
-is anti Join Step;
-Join Step is outer;
+Join Node has at most one Subscript,
+	Subscript is of Join Node;
 
 Object Type is a kind of Concept [partitioned];
 Instance is of one Object Type;
@@ -129,13 +125,12 @@ Implicit Fact Type is implied by one Role,
 Object Type plays Role,
 	Role is played by one Object Type;
 Ring Constraint has at most one other-Role;
-Ring Constraint has other-Role,
+Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 
 Role Sequence is identified by its Id;
-Join projects one Role Sequence;
 Presence Constraint covers one Role Sequence;
 Reading is in one Role Sequence,
 	Role Sequence is for Reading;
@@ -175,6 +170,7 @@ Value is identified by Literal and Value is a string and Unit where
 	Value is in at most one Unit,
 	Unit is of Value;
 Instance has at most one Value;
+Join Node has at most one Value;
 
 Value Constraint is a kind of Constraint;
 Role has at most one role-Value Constraint,
@@ -245,6 +241,18 @@ Fact Type Shape has at most one Rotation Setting;
 
 ImplicitBooleanValueType is a kind of Value Type;
 
+Join Role is where
+	Join Node includes Role,
+	Role connects to Join Node;
+
+Join Step is identified by input-Join Role and output-Join Role where
+	Join Step has one input-Join Role,
+	Join Step has one output-Join Role;
+Join Step traverses one Fact Type,
+	Fact Type directs Join Step;
+is anti Join Step;
+Join Step is outer;
+
 Model Note Shape is a kind of Shape;
 Model Note Shape is for one Context Note;
 
@@ -295,8 +303,7 @@ Role Ref is where
 	Role is in Role Sequence in one Ordinal place,
 	Role Sequence includes Role in Ordinal place,
 	Role has Ordinal place in Role Sequence;
-Join Node includes Role Ref,
-	Role Ref connects to at most one Join Node;
+Join Role projects at most one Role Ref;
 Role Ref has at most one leading-Adjective;
 Role Ref has at most one trailing-Adjective;
 
@@ -382,6 +389,9 @@ for each Term at most one of these holds:
 for each Term at most one of these holds:
 	Term is secondary for Object Type,
 	Term is name of Role Ref;
+Join Node is for Object Type that plays Role
+	if and only if
+	Join Node includes Role;
 Role Value is of Instance that is of Object Type
 	if and only if
 	Role Value is of Role that is played by Object Type;
@@ -403,6 +413,8 @@ each Presence Constraint occurs at least one time in
 	Presence Constraint has min Frequency,
 	Presence Constraint has max Frequency,
 	Presence Constraint is mandatory;
+each Role Ref occurs at most one time in
+	Join Role projects Role Ref;
 each Role Sequence occurs at least one time in
 	Role Sequence in Ordinal position includes Role;
 each Set Comparison Constraint occurs at least 2 times in
