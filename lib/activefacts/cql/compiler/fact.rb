@@ -65,36 +65,40 @@ module ActiveFacts
           end
         end
 
+        def bind_reading reading
+          # See if we can create the fact instance for this reading yet
+
+          # Find the roles of this reading that do not yet have an entry in @bound_instances:
+          bare_roles = reading.role_refs.
+            select do |role_ref|
+              !role_ref.literal && !@bound_instances[role_ref.binding]
+            end
+
+          debug :instance, "Considering '#{reading.fact_type.preferred_reading.expand}' with bare roles: #{bare_roles.map{|role_ref| role_ref.player.name}*", "} "
+
+          if bare_roles.size == 0
+            return :complete if bind_complete_fact reading
+          elsif bare_roles.size == 1 &&
+              (binding = bare_roles[0].binding) &&
+              (et = binding.player).is_a?(ActiveFacts::Metamodel::EntityType) &&
+              et.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == reading.fact_type}
+            return :complete if bind_entity_if_identifier_ready reading, et, binding
+          end
+          nil
+        end
+
         # Take one pass through the @unbound_readings, processing (and removing) any that have all pre-requisites
         def bind_more_facts
           @pass += 1
 
           progress = false
           debug :instance, "Pass #{@pass} with #{@unbound_readings.size} readings to consider" do
-            @unbound_readings.map! do |reading|
-              # See if we can create the fact instance for this reading yet
-
-              # Find the roles of this reading that do not yet have an entry in @bound_instances:
-              bare_roles = reading.role_refs.
-                select do |role_ref|
-                  !role_ref.literal && !@bound_instances[role_ref.binding]
-                end
-
-              debug :instance, "Considering '#{reading.fact_type.preferred_reading.expand}' with bare roles: #{bare_roles.map{|role_ref| role_ref.player.name}*", "} "
-
-              if bare_roles.size == 0
-                reading = nil if bind_complete_fact reading
-              elsif bare_roles.size == 1 &&
-                  (binding = bare_roles[0].binding) &&
-                  (et = binding.player).is_a?(ActiveFacts::Metamodel::EntityType) &&
-                  et.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == reading.fact_type}
-
-                reading = nil if bind_entity_if_identifier_ready reading, et, binding
+            @unbound_readings =
+              @unbound_readings.select do |reading|
+                action = bind_reading(reading)
+                progress = true if action
+                action != :complete
               end
-              progress = true unless reading
-              reading
-            end
-            @unbound_readings.compact!
           end # debug
           progress
         end
