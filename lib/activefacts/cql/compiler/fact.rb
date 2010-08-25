@@ -83,16 +83,18 @@ module ActiveFacts
           debug :instance, "Considering '#{reading.fact_type.preferred_reading.expand}' with "+
             (bare_roles.empty? ? "no bare roles" : "bare roles: #{bare_roles.map{|role_ref| role_ref.player.name}*", "}") do
 
-            if bare_roles.size == 0
-              return :complete if bind_complete_fact reading
-            elsif bare_roles.size == 1 &&
+            # If all the roles are in place, we can bind the rest of this reading:
+            return :complete if bare_roles.size == 0 && bind_complete_fact(reading)
+
+            if bare_roles.size == 1 &&
                 (binding = bare_roles[0].binding) &&
                 (et = binding.player).is_a?(ActiveFacts::Metamodel::EntityType) &&
-                et.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == reading.fact_type}
-              return :complete if bind_entity_if_identifier_ready reading, et, binding
+                et.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == reading.fact_type} &&
+                bind_entity_if_identifier_ready(reading, et, binding)
+              return :complete
             end
+            nil
           end
-          nil
         end
 
         # Take one pass through the @unbound_readings, processing (and removing) any that have all pre-requisites
