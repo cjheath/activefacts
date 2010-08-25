@@ -14,10 +14,12 @@ describe "Sample data" do
   vocabulary V;
 
   Company Name is written as String;
+  Date is written as Date;
   Company is identified by its Name;
   Person is identified by its Name where Person is called Person Name;
   Directorship is where
       Company is directed by Person;
+  Directorship began on appointment-Date;
   }
 
   GoodSamples = [
@@ -77,6 +79,10 @@ describe "Sample data" do
     # Objectification examples
     [   # Same in a named population
       "Directorship (where Company 'Microsoft' is directed by Person 'Gates');",
+      :pending # [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
+    ],
+    [   # Same in a named population
+      "Directorship (where Company 'Microsoft' is directed by Person 'Gates') began on appointment Date '20/02/1981';",
       :pending # [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
     ],
   ]
