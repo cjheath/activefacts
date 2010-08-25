@@ -60,29 +60,37 @@ module ActiveFacts
             # @bound_instances[role_ref.binding]
             nil # Nothing to see here, move along
           else
-            @bound_fact_types << reading.match_existing_fact_type(@context)
+            bound_fact_type = reading.match_existing_fact_type(@context)
+            raise "Fact Type not found: '#{reading.display}'" unless bound_fact_type
+            @bound_fact_types << bound_fact_type
             reading
           end
         end
 
+        #
+        # Try to bind this reading, and return:
+        # :complete if it can be completed
+        # :partial if we made progress
+        # nil otherwise
+        #
         def bind_reading reading
-          # See if we can create the fact instance for this reading yet
-
           # Find the roles of this reading that do not yet have an entry in @bound_instances:
           bare_roles = reading.role_refs.
             select do |role_ref|
               !role_ref.literal && !@bound_instances[role_ref.binding]
             end
 
-          debug :instance, "Considering '#{reading.fact_type.preferred_reading.expand}' with bare roles: #{bare_roles.map{|role_ref| role_ref.player.name}*", "} "
+          debug :instance, "Considering '#{reading.fact_type.preferred_reading.expand}' with "+
+            (bare_roles.empty? ? "no bare roles" : "bare roles: #{bare_roles.map{|role_ref| role_ref.player.name}*", "}") do
 
-          if bare_roles.size == 0
-            return :complete if bind_complete_fact reading
-          elsif bare_roles.size == 1 &&
-              (binding = bare_roles[0].binding) &&
-              (et = binding.player).is_a?(ActiveFacts::Metamodel::EntityType) &&
-              et.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == reading.fact_type}
-            return :complete if bind_entity_if_identifier_ready reading, et, binding
+            if bare_roles.size == 0
+              return :complete if bind_complete_fact reading
+            elsif bare_roles.size == 1 &&
+                (binding = bare_roles[0].binding) &&
+                (et = binding.player).is_a?(ActiveFacts::Metamodel::EntityType) &&
+                et.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == reading.fact_type}
+              return :complete if bind_entity_if_identifier_ready reading, et, binding
+            end
           end
           nil
         end
@@ -99,6 +107,7 @@ module ActiveFacts
                 progress = true if action
                 action != :complete
               end
+            debug :instance, "end of pass, unbound readings are #{@unbound_readings.map(&:display)}"
           end # debug
           progress
         end
@@ -120,9 +129,12 @@ module ActiveFacts
           unless fact
             fact = @constellation.Fact(:new, :fact_type => reading.fact_type, :population => @population)
             @bound_facts << fact
-            instance =
-              @constellation.Instance(:new, :concept => reading.fact_type.entity_type, :fact => fact, :population => @population)
-            @bound_facts << instance
+            if reading.fact_type.entity_type
+              # Objectified fact type; create the instance
+              instance =
+                @constellation.Instance(:new, :concept => reading.fact_type.entity_type, :fact => fact, :population => @population)
+              @bound_facts << instance
+            end
             reading.reading.role_sequence.all_role_ref.zip(instances).each do |rr, instance|
               debug :instance, "New fact has #{instance.concept.name} role #{instance.value.inspect}"
               # REVISIT: Any residual adjectives after the fact type matching are lost here.
@@ -180,17 +192,18 @@ module ActiveFacts
             return false
           end
 
-          debug :instance, "Going ahead with creating #{binding.player.name} using #{identifiers.size} roles"
-          instance = @constellation.Instance(:new, :concept => entity_type, :population => @population)
-          @bound_instances[binding] = instance
-          @bound_facts << instance
-          identifiers.each do |rr, fact_a, identifying_binding, identifying_instance|
-            # This reading provides the identifying literal for the entity_type
-            id_fact = @constellation.Fact(:new, :fact_type => rr.role.fact_type, :population => @population)
-            @bound_facts << id_fact
-            role = (rr.role.fact_type.all_role.to_a-[rr.role])[0]
-            @constellation.RoleValue(:instance => instance, :fact => id_fact, :population => @population, :role => role)
-            @constellation.RoleValue(:instance => identifying_instance, :fact => id_fact, :role => rr.role, :population => @population)
+          debug :instance, "Going ahead with creating #{binding.player.name} using #{identifiers.size} roles" do
+            instance = @constellation.Instance(:new, :concept => entity_type, :population => @population)
+            @bound_instances[binding] = instance
+            @bound_facts << instance
+            identifiers.each do |rr, fact_a, identifying_binding, identifying_instance|
+              # This reading provides the identifying literal for the entity_type
+              id_fact = @constellation.Fact(:new, :fact_type => rr.role.fact_type, :population => @population)
+              @bound_facts << id_fact
+              role = (rr.role.fact_type.all_role.to_a-[rr.role])[0]
+              @constellation.RoleValue(:instance => instance, :fact => id_fact, :population => @population, :role => role)
+              @constellation.RoleValue(:instance => identifying_instance, :fact => id_fact, :role => rr.role, :population => @population)
+            end
           end
 
           true  # Done with this reading

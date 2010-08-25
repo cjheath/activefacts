@@ -27,6 +27,16 @@ module ActiveFacts
             !@phrases[0].literal
         end
 
+        def display
+          "#{
+            @qualifiers && @qualifiers.size > 0 ? @qualifiers.inspect+' ' : nil
+          }#{
+            @phrases.map{|p| p.to_s }*" "
+          }#{
+            @context_note && ' '+@context_note.inspect
+          }"
+        end
+
         def inspect
           "#{@qualifiers && @qualifiers.size > 0 ? @qualifiers.inspect+' ' : nil}#{@phrases.map{|p|p.inspect}*" "}#{@context_note && ' '+@context_note.inspect}"
         end
@@ -671,6 +681,16 @@ module ActiveFacts
             }#{
             @objectification_join ? "(where #{@objectification_join.inspect})" : ""
           }>"
+        end
+
+        def to_s
+          "#{
+            @quantifier && @quantifier.inspect+' ' }#{
+            @leading_adjective && @leading_adjective.sub(/ |$/,'- ').sub(/ *$/,' ') }#{
+            @role_name || @term }#{
+            @trailing_adjective && ' '+@trailing_adjective.sub(/(.* |^)/, '\1-') }#{
+            @literal && ' '+@literal.inspect }#{
+            @value_constraint && ' '+@value_constraint.inspect }"
         end
 
         def <=>(other)
