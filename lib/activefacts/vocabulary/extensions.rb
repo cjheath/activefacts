@@ -787,7 +787,7 @@ module ActiveFacts
             end
           end
           next nil unless v
-          v.to_s.sub(/\S*\s/,'')
+          v.to_s.sub(/(#{rv.instance.concept.name}|\S*)\s/,'')
         end
         reading.expand([], false, instance_verbalisations)
       end
@@ -804,7 +804,7 @@ module ActiveFacts
         pi = concept.preferred_identifier
         identifying_role_refs = pi.role_sequence.all_role_ref_in_order
         "#{concept.name}" +
-          " is identified by " +
+          " is identified by " +      # REVISIT: Where the single fact type is TypeInheritance, we can shrink this
           if identifying_role_refs.size == 1 &&
             (role = identifying_role_refs[0].role) &&
             (my_role = (role.fact_type.all_role.to_a-[role])[0]) &&

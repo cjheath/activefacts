@@ -43,8 +43,9 @@ module ActiveFacts
 
           # Any clause that has one binding and no other word is
           # either a value instance or a simply-identified entity.
-          reading.role_refs.map do |role_ref|
-            next role_ref unless l = role_ref.literal
+          reading.role_refs.each do |role_ref|
+            next unless l = role_ref.literal    # No literal
+            next if role_ref.binding.instance   # Already bound
             player = role_ref.binding.player
             # raise "A literal may not be an objectification" if role_ref.role_ref.objectification_join
             # raise "Not processing facts involving objectification joins yet" if role_ref.role_ref
@@ -109,6 +110,7 @@ module ActiveFacts
 
         # Take one pass through the @unbound_readings, processing (and removing) any that have all pre-requisites
         def bind_more_facts
+          return false unless @unbound_readings.size > 0
           @pass += 1
 
           progress = false
