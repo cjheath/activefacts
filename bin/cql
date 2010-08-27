@@ -30,6 +30,14 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     # meta-commands start with /
     words = line.split
     case cmd = words.shift
+    when "/trace"
+      if words.empty?
+	puts debug_keys*", "
+      else
+	words.each { |word|
+	  puts "#{word} #{debug_toggle(word) ? "en" : "dis"}abled"
+	}
+      end
     when "/tree"
       @show_tree = !@show_tree
       puts "Will #{@show_tree ? "" : "not "}show the parse tree"
@@ -69,6 +77,9 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
 	puts "Loaded new vocabularies: #{new_vocabularies*', '}" unless new_vocabularies.empty?
       rescue Errno::ENOENT => e
 	$stderr.puts e.message
+      rescue => e
+	puts e.message
+	puts "\t#{e.backtrace*"\n\t"}" if debug :exception
       end
     else
       if cmd == "/help" or cmd == "/"
@@ -110,6 +121,7 @@ Meta-commands are:
   /load file.cql\tLoad a CQL file
   /root rule\t\tParse just a fragment of a CQL statement, matching syntax rule only
   /tree\t\t\tDisplay the abstract syntax tree from each statement parsed
+  /trace key\t\tToggle debug tracing key, or list available keys
 }
     else
       words.each do |word|

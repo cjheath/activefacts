@@ -11,7 +11,41 @@
   $debug_keys = nil
   $debug_available = {}
 
-  def debug_enabled(args)
+  def debug_initialize
+    # First time, initialise the tracing environment
+    $debug_indent = 0
+    $debug_keys = {}
+    if (e = ENV["DEBUG"])
+      e.split(/[^_a-zA-Z0-9]/).each{|k| debug_enable(k) }
+      if $debug_keys[:help]
+        at_exit {
+          $stderr.puts "---\nDebugging keys available: #{$debug_available.keys.map{|s| s.to_s}.sort*", "}"
+        }
+      end
+    end
+  end
+
+  def debug_keys
+    $debug_available.keys
+  end
+
+  def debug_enabled key
+    !key.empty? && $debug_keys[key.to_sym]
+  end
+
+  def debug_enable key
+    !key.empty? && $debug_keys[key.to_sym] = true
+  end
+
+  def debug_disable key
+    !key.empty? && $debug_keys.delete(key.to_sym)
+  end
+
+  def debug_toggle key
+    !key.empty? and debug_enabled(key) ? (debug_disable(key); false) : (debug_enable(key); true)
+  end
+
+  def debug_selected(args)
     # Figure out whether this trace is enabled and nests:
     control = (!args.empty? && Symbol === args[0]) ? args.shift : :all
     key = control.to_s.sub(/_\Z/, '').to_sym
@@ -24,24 +58,14 @@
   end
 
   def debug(*args, &block)
-    unless $debug_indent
-      # First time, initialise the tracing environment
-      $debug_indent = 0
-      $debug_keys = {}
-      if (e = ENV["DEBUG"])
-        e.split(/[^_a-zA-Z0-9]/).each{|k| !k.empty? && $debug_keys[k.to_sym] = true }
-        if $debug_keys[:help]
-          at_exit {
-            $stderr.puts "---\nDebugging keys available: #{$debug_available.keys.map{|s| s.to_s}.sort*", "}"
-          }
-        end
-      end
-    end
+    debug_initialize unless $debug_indent
 
-    enabled, show_key, old_nested = debug_enabled(args)
+    enabled, show_key, old_nested = debug_selected(args)
 
     # Emit the message if enabled or a parent is:
-    puts "\##{show_key} "+"  "*$debug_indent + args.join(' ') if args.size > 0 && enabled == 1
+    if args.size > 0 && enabled == 1
+      puts "\##{show_key} "+"  "*$debug_indent + args.join(' ')
+    end
 
     if block
       begin
