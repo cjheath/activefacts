@@ -26,17 +26,71 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     self.root = :definition
   end
 
+  def list_instances name
+    if name.empty?
+      @vocabulary.constellation.Instance.values
+    else
+      if !@vocabulary.constellation.Concept[[[@vocabulary.name], name]]
+	puts "Object type '#{name}' does not exist in vocabulary '#{@vocabulary.name}'"
+	[]
+      else
+	@vocabulary.constellation.Instance.values.select{|i| i.concept.supertypes_transitive.detect{|k| k.name == name}}
+      end
+    end.select do |instance|
+      instance.concept.vocabulary == @vocabulary
+    end.map do |instance|
+      instance.verbalise
+    end.sort.each do |verbalisation|
+      puts verbalisation
+    end
+  end
+
+  def toggle_trace words
+    words.each { |word|
+      puts "#{word} #{debug_toggle(word) ? "en" : "dis"}abled"
+    }
+  end
+
+  def list_object_types
+    concepts_by_vocabulary = {}
+    @constellation.Concept.keys.
+      each do |v,t|
+	(concepts_by_vocabulary[v[0]] ||= []) << t
+      end
+    concepts_by_vocabulary.keys.sort.each do |v|
+      puts "#{v}:\n\t" + concepts_by_vocabulary[v].sort*"\n\t"
+    end
+  end
+
+  def list_connotations word
+    concept = @constellation.Concept[[@vocabulary.identifying_role_values, word]]
+    unless concept
+      puts "Object type '#{word}' is unknown in #{@vocabulary.name}"
+      return
+    end
+    puts "Fact types in which '#{word}' plays a part:"
+    if concept.is_a?(ActiveFacts::Metamodel::ValueType)
+      puts "\t#{concept.name} is written as #{concept.supertype.name};" if concept.supertype
+      concept.all_value_type_as_supertype.each do |st|
+	puts "#{st.name} is written as #{concept.name};"
+      end
+    end
+    concept.all_role.map{|role| role.fact_type}.uniq.each do |fact_type|
+      puts "\t#{fact_type.default_reading}"
+    end
+  end
+
   def metacommand(line)
     # meta-commands start with /
     words = line.split
     case cmd = words.shift
+    when /(\w*)\?/
+      list_instances $1
     when "/trace"
       if words.empty?
 	puts debug_keys*", "
       else
-	words.each { |word|
-	  puts "#{word} #{debug_toggle(word) ? "en" : "dis"}abled"
-	}
+	toggle_trace words
       end
     when "/tree"
       @show_tree = !@show_tree
@@ -45,42 +99,13 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
       self.root = words[0] && words[0].to_sym || :definition
       puts "Looking for a #{self.root}"
     when "/list"
-      concepts_by_vocabulary = {}
-      @constellation.Concept.keys.
-	each do |v,t|
-	  (concepts_by_vocabulary[v[0]] ||= []) << t
-	end
-      concepts_by_vocabulary.keys.sort.each do |v|
-	puts "#{v}:\n\t" + concepts_by_vocabulary[v].sort*"\n\t"
-      end
+      list_object_types
     when "/about"
-      concept = @constellation.Concept[[@vocabulary.identifying_role_values, words[0]]]
-      unless concept
-	puts "Concept #{words[0]} is unknown in #{@vocabulary.name}"
-	return
-      end
-      if concept.is_a?(ActiveFacts::Metamodel::ValueType)
-	puts "\t#{concept.name} is written as #{concept.supertype.name};" if concept.supertype
-	concept.all_value_type_as_supertype.each do |st|
-	  puts "#{st.name} is written as #{concept.name};"
-	end
-      end
-      concept.all_role.map{|role| role.fact_type}.uniq.each do |fact_type|
-	puts "\t#{fact_type.default_reading}"
+      words.each do |word|
+	list_connotations word
       end
     when "/load"
-      begin
-	vocabularies = @constellation.Vocabulary.keys
-	@results = []
-	compile_file words*' '
-	new_vocabularies = @constellation.Vocabulary.keys-vocabularies
-	puts "Loaded new vocabularies: #{new_vocabularies*', '}" unless new_vocabularies.empty?
-      rescue Errno::ENOENT => e
-	$stderr.puts e.message
-      rescue => e
-	puts e.message
-	puts "\t#{e.backtrace*"\n\t"}" if debug :exception
-      end
+      load_file(words*' ')
     else
       if cmd == "/help" or cmd == "/"
 	help words
@@ -88,6 +113,21 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
 	puts "Unknown metacommand #{line}?"
 	help
       end
+    end
+  end
+
+  def load_file filename
+    begin
+      vocabularies = @constellation.Vocabulary.keys
+      @results = []
+      compile_file filename
+      new_vocabularies = @constellation.Vocabulary.keys-vocabularies
+      puts "Loaded new vocabularies: #{new_vocabularies*', '}" unless new_vocabularies.empty?
+    rescue Errno::ENOENT => e
+      $stderr.puts e.message
+    rescue => e
+      puts e.message
+      puts "\t#{e.backtrace*"\n\t"}" if debug :exception
     end
   end
 
@@ -336,10 +376,17 @@ end
 
 compiler = InteractiveCQL.new
 statement = nil
+ARGV.each do |arg|
+  compiler.load_file(arg)
+end
 puts "Enter / for help on special commands"
+
 while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
   statement = statement ? statement + "\n"+line : line
-  if line =~ %r{\A/}
+  if statement =~ /\s*(.*?)\s*\?\s*$/
+    compiler.list_instances $1
+    statement = nil
+  elsif line =~ %r{\A/}
     compiler.metacommand(line)
     statement = nil
   elsif compiler.root != :definition or

@@ -92,6 +92,10 @@ module ActiveFacts
         role_name
       end
 
+      def preferred_role_ref
+        role.fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == role}
+      end
+
       def role_name(joiner = "-")
         name_array =
           if role.fact_type.all_role.size == 1
@@ -764,6 +768,68 @@ module ActiveFacts
         [ counterpart_sups[0], counterpart_roles ]
       else
         [ obj_sups[0], objectification_roles ]
+      end
+    end
+
+    class Fact
+      def verbalise(context = nil)
+        reading = fact_type.preferred_reading
+        reading_roles = reading.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}.map{|rr| rr.role }
+        role_values_in_reading_order = all_role_value.sort_by{|rv| reading_roles.index(rv.role) }
+        instance_verbalisations = role_values_in_reading_order.map do |rv|
+          if rv.instance.value
+            v = rv.instance.verbalise
+          else
+            if (c = rv.instance.concept).is_a?(EntityType)
+              if !c.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
+                v = rv.instance.verbalise
+              end
+            end
+          end
+          next nil unless v
+          v.to_s.sub(/\S*\s/,'')
+        end
+        reading.expand([], false, instance_verbalisations)
+      end
+    end
+
+    class Instance
+      def verbalise(context = nil)
+        return "#{concept.name} #{value}" if concept.is_a?(ValueType)
+
+        return "#{concept.name} where #{fact.verbalise(context)}" if concept.fact_type
+
+        # It's an entity that's not an objectified fact type
+        # REVISIT: If it has a simple identifier, there's no need to fully verbalise the identifying facts
+        pi = concept.preferred_identifier
+        identifying_role_refs = pi.role_sequence.all_role_ref_in_order
+        "#{concept.name}" +
+          " is identified by " +
+          if identifying_role_refs.size == 1 &&
+            (role = identifying_role_refs[0].role) &&
+            (my_role = (role.fact_type.all_role.to_a-[role])[0]) &&
+            (identifying_fact = my_role.all_role_value.detect{|rv| rv.instance == self}.fact) &&
+            (identifying_instance = identifying_fact.all_role_value.detect{|rv| rv.role == role}.instance)
+
+              "its #{identifying_instance.verbalise(context)}"
+          else
+            identifying_role_refs.map do |rr|
+              rr = rr.preferred_role_ref
+              [ (l = rr.leading_adjective) ? l+"-" : nil,
+                rr.role.role_name || rr.role.concept.name,
+                (t = rr.trailing_adjective) ? l+"-" : nil
+              ].compact*""
+            end * " and " +
+            " where " +
+            identifying_role_refs.map do |rr|  # Go through the identifying roles and emit the facts that define them
+              instance_role = concept.all_role.detect{|r| r.fact_type == rr.role.fact_type}
+              identifying_fact = all_role_value.detect{|rv| rv.fact.fact_type == rr.role.fact_type}.fact
+              #counterpart_role = (rr.role.fact_type.all_role.to_a-[instance_role])[0]
+              #identifying_instance = counterpart_role.all_role_value.detect{|rv| rv.fact == identifying_fact}.instance
+              identifying_fact.verbalise(context)
+            end*", "
+          end
+
       end
     end
 
