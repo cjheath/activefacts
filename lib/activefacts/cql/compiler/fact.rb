@@ -20,7 +20,7 @@ module ActiveFacts
           # Figure out the simple existential facts and find fact types:
           @bound_facts = []
           @ojr_by_role_ref = {}
-          @unbound_readings = @readings.
+          @unbound_readings = all_readings.
             map do |reading|
               bind_literal_or_fact_type reading
             end.
@@ -71,12 +71,11 @@ module ActiveFacts
         end
 
         #
-        # Try to bind this reading, and return:
-        # :complete if it can be completed
-        # :partial if we made progress
-        # nil otherwise
+        # Try to bind this reading, and return true if it can be completed
         #
         def bind_reading reading
+          return true if reading.fact
+
           # Find the roles of this reading that do not yet have an instance
           bare_roles = reading.role_refs.
             select do |role_ref|
@@ -90,7 +89,7 @@ module ActiveFacts
             (bare_roles.empty? ? "no bare roles" : "bare roles: #{bare_roles.map{|role_ref| role_ref.player.name}*", "}") do
 
             # If all the roles are in place, we can bind the rest of this reading:
-            return :complete if bare_roles.size == 0 && bind_complete_fact(reading)
+            return true if bare_roles.size == 0 && bind_complete_fact(reading)
 
             progress = false
             if bare_roles.size == 1 &&
@@ -102,42 +101,7 @@ module ActiveFacts
               end
             end
 
-            complete = true
-            bare_roles.each do |br|
-              if !br.objectification_join
-                complete = false                     # This is a role with no join but no bound value either; incomplete
-                next
-              end
-
-              readings = (@ojr_by_role_ref[br] ||= [] + br.objectification_join)
-              # debug :instance, "#{binding.inspect} has outstanding objectification readings #{readings.map{|r|r.display}*', '}"
-              readings.replace(
-                readings.select do |o_reading|
-                  action = bind_reading(o_reading)
-                  progress = true if action
-                  if action == :complete
-                    # The entity instance that objectifies this fact has already been created, but I don't know that it will be available where needed
-                    if fact = o_reading.fact and
-                      instance = o_reading.fact.instance and
-                      instance.concept == br.binding.player
-                      br.binding.instance = instance
-                      false
-                    else
-                      true
-                    end
-                  else
-                    true
-                    #complete = false                  # We aren't done with this bare_role yet
-                  end
-                end
-              )
-              complete = false if readings.size > 0
-            end
-
-            # debug :instance, "bind_reading returning #{progress && complete ? :complete : (progress ? :partial : 'nil')}"
-
-            return :complete if progress && complete
-            return :partial if progress
+            return true if progress
             debug :instance, "Can't make progress on '#{reading.display}'"
             nil
           end
@@ -153,7 +117,7 @@ module ActiveFacts
               @unbound_readings.select do |reading|
                 action = bind_reading(reading)
                 progress = true if action
-                action != :complete
+                !action
               end
             debug :instance, "end of pass, unbound readings are #{@unbound_readings.map(&:display)*', '}"
           end # debug
@@ -173,15 +137,21 @@ module ActiveFacts
           instances = reading.role_refs.map{|rr| rr.binding.instance}
           debug :instance, "Instances are #{instances.map{|i| "#{i.concept.name} #{i.value.inspect}"}*", "}"
 
-          # Check that this fact doesn't already exist
-          fact = reading.fact_type.all_fact.detect{|f|
-            # Get the role values of this fact in the order of the reading we just bound
-            role_values_in_reading_order = f.all_role_value.sort_by do |rv|
-              reading.reading.role_sequence.all_role_ref.detect{|rr| rr.role == rv.role}.ordinal
+          if e = reading.fact_type.entity_type and
+            reading.role_refs[0].binding.instance.concept == e
+            fact = reading.role_refs[0].binding.instance.fact
+          else
+            # Check that this fact doesn't already exist
+            fact = reading.fact_type.all_fact.detect do |f|
+              # Get the role values of this fact in the order of the reading we just bound
+              role_values_in_reading_order = f.all_role_value.sort_by do |rv|
+                debugger unless reading.reading
+                reading.reading.role_sequence.all_role_ref.detect{|rr| rr.role == rv.role}.ordinal
+              end
+              # If all this fact's role values are played by the bound instances, it's the same fact
+              !role_values_in_reading_order.zip(instances).detect{|rv, i| rv.instance != i }
             end
-            # If all this fact's role values are played by the bound instances, it's the same fact
-            !role_values_in_reading_order.zip(instances).detect{|rv, i| rv.instance != i }
-          }
+          end
           if fact
             reading.fact = fact
             debug :instance, "Found existing fact type instance"
@@ -206,6 +176,14 @@ module ActiveFacts
               @constellation.Instance(:new, :concept => reading.fact_type.entity_type, :fact => fact, :population => @population)
             @bound_facts << instance
           end
+
+          if reading.fact and
+            reading.objectified_as and
+            instance = reading.fact.instance and
+            instance.concept == reading.objectified_as.binding.player
+            reading.objectified_as.binding.instance = instance
+          end
+
           true
         end
 

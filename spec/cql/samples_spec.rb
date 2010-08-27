@@ -83,7 +83,7 @@ describe "Sample data" do
     ],
     [
       "Directorship (where Company 'Microsoft' is directed by Person 'Gates') began on appointment Date '20/02/1981';",
-      [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Person is identified by Person Name where Person is called Person Name 'Gates'", "Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person Name 'Gates'", "Date '20/02/1981'"]}]
+      [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Directorship began on appointment-Date '20/02/1981'", "Person is called Person Name 'Gates'"], :instances=>Set["Person is identified by Person Name where Person is called Person Name 'Gates'", "Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person Name 'Gates'", "Date '20/02/1981'"]}]
     ],
   ]
 
