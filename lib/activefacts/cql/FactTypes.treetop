@@ -49,6 +49,18 @@ module ActiveFacts
         }
       end
 
+      rule fact_clauses
+        fact_clause
+          ftail:( (',' / and ) s fact_clause s )*
+	{
+	  def ast
+            readings = fact_clause.ast
+            ftail.elements.each{|e| readings += e.fact_clause.ast }
+	    readings
+	  end
+	}
+      end
+
       rule returning_clause
         returning return (',' return)*
       end
@@ -212,10 +224,10 @@ module ActiveFacts
       end
 
       rule objectification_join
-        '(' s where s fact_clause s ')' s
+        '(' s where s facts:fact_clauses s ')' s
 	{
 	  def ast
-	    fact_clause.ast
+	    facts.ast
 	  end
 	}
       end

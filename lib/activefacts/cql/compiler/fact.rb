@@ -21,6 +21,7 @@ module ActiveFacts
           @bound_instances = {}  # Instances indexed by binding
           @bound_fact_types = []
           @bound_facts = []
+          @ojr_by_role_ref = {}
           @unbound_readings = @readings.
             map do |reading|
               bind_literal_or_fact_type reading
@@ -68,10 +69,9 @@ module ActiveFacts
               nil # Nothing to see here, move along
             end
           else
-            bound_fact_type = reading.fact_type || reading.match_existing_fact_type(@context)
-            raise "Fact Type not found: '#{reading.display}'" unless bound_fact_type
+            raise "Fact Type not found: '#{reading.display}'" unless reading.fact_type
             # This instance will be associated with its binding by our caller
-            @bound_fact_types << bound_fact_type
+            @bound_fact_types << reading.fact_type
             reading
           end
         end
@@ -117,23 +117,32 @@ module ActiveFacts
                 next
               end
 
-              br.objectification_join.each do |o_reading|
-                action = bind_reading(o_reading)      # REVISIT: Shortcut if we've already bound this reading
-                progress = true if action
-                if action == :complete
-                  # The entity instance that objectifies this fact has already been created, but I don't know that it will be available where needed
-                  instance = o_reading.fact.instance
-                  if instance.concept == br.binding.player
-                    br.binding.instance = instance
+              readings = (@ojr_by_role_ref[br] ||= [] + br.objectification_join)
+              # debug :instance, "#{binding.inspect} has outstanding objectification readings #{readings.map{|r|r.display}*', '}"
+              readings.replace(
+                readings.select do |o_reading|
+                  action = bind_reading(o_reading)
+                  progress = true if action
+                  if action == :complete
+                    # The entity instance that objectifies this fact has already been created, but I don't know that it will be available where needed
+                    if fact = o_reading.fact and
+                      instance = o_reading.fact.instance and
+                      instance.concept == br.binding.player
+                      br.binding.instance = instance
+                      false
+                    else
+                      true
+                    end
                   else
-                    raise "REVISIT: Can it be any other way?"
-                    complete = false if reading.role_refs.size > 1
+                    true
+                    #complete = false                  # We aren't done with this bare_role yet
                   end
-                else
-                  complete = false                  # We aren't done with this bare_role yet
                 end
-              end
+              )
+              complete = false if readings.size > 0
             end
+
+            # debug :instance, "bind_reading returning #{progress && complete ? :complete : (progress ? :partial : 'nil')}"
 
             return :complete if progress && complete
             return :partial if progress
@@ -157,6 +166,13 @@ module ActiveFacts
             debug :instance, "end of pass, unbound readings are #{@unbound_readings.map(&:display)*', '}"
           end # debug
           progress
+        end
+
+        # Occasionally we need to search through all the readings:
+        def all_readings
+          @readings.map do |reading|
+            [reading] + reading.role_refs.map{|rr| rr.objectification_join}
+          end.flatten.compact
         end
 
         def bind_complete_fact reading
@@ -238,7 +254,12 @@ module ActiveFacts
           # Then we have to create an instance of each fact
           identifiers =
             pi_role_refs.map do |rr|
-              identifying_reading = @readings.detect{|reading| rr.role.fact_type == reading.fact_type}
+              # Find a reading that provides the identifying_role_ref for this player:
+              identifying_reading = all_readings.detect do |reading|
+                rr.role.fact_type == reading.fact_type &&
+                  reading.role_refs.detect{|r1| r1.binding == binding}
+              end
+              return false unless identifying_reading
               identifying_role_ref = identifying_reading.role_refs.select{|role_ref| role_ref.binding != binding}[0]
               identifying_binding = identifying_role_ref ? identifying_role_ref.binding : nil
               identifying_instance = @bound_instances[identifying_binding]

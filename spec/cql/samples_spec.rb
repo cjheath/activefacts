@@ -79,7 +79,7 @@ describe "Sample data" do
     # Objectification examples
     [
       "Directorship (where Company 'Microsoft' is directed by Person 'Gates');",
-      [:pending] # [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
+      [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Person is identified by Person Name where Person is called Person Name 'Gates'", "Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person Name 'Gates'"]}]
     ],
     [
       "Directorship (where Company 'Microsoft' is directed by Person 'Gates') began on appointment Date '20/02/1981';",

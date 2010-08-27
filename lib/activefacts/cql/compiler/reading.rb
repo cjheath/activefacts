@@ -9,6 +9,7 @@ module ActiveFacts
         attr_reader :side_effects
         attr_writer :fact_type          # Assigned for a bare (existential) objectification fact
         attr_accessor :fact             # When binding fact instances the fact goes here
+        attr_accessor :objectified_as   # The Reading::RoleRef which objectified this fact type
 
         def initialize role_refs_and_words, qualifiers = [], context_note = nil
           @phrases = role_refs_and_words
@@ -97,6 +98,7 @@ module ActiveFacts
         # As this match may not necessarily be used (depending on the side effects),
         # no change is made to this Reading object - those will be done later.
         def match_existing_fact_type context
+          raise "Internal error, reading already matched, should not match again" if @fact_type
           rrs = role_refs
           players = rrs.map{|rr| rr.player}
           raise "Must identify players before matching fact types" if players.include? nil
@@ -109,13 +111,16 @@ module ActiveFacts
 
             # Match existing fact types in objectification joins first:
             rrs.each do |role_ref|
-              next unless objectification_join = role_ref.objectification_join && role_ref.objectification_join[0]
-              objectified_fact_type =
-                objectification_join.match_existing_fact_type(context)
-              raise "Unrecognised fact type #{objectification_join.inspect} in #{self.class}" unless objectified_fact_type
-              objectified_as = objectified_fact_type.entity_type
-              raise "Fact type #{objectification_join.reading.expand} is not objectified as #{role_ref.inspect}" unless objectified_as || objectified_as != role_ref.player
-              role_ref.objectification_of = objectified_fact_type
+              next unless joins = role_ref.objectification_join and !joins.empty?
+              role_ref.objectification_join.each do |oj|
+                ft = oj.match_existing_fact_type(context)
+                raise "Unrecognised fact type #{oj.display}" unless ft
+                if (ft && ft.entity_type == role_ref.player)
+                  role_ref.objectification_of = ft
+                  oj.objectified_as = role_ref
+                end
+              end
+              raise "#{role_ref.inspect} contains objectification joins that do not objectify it" unless role_ref.objectification_of
             end
 
             # For each role player, find the compatible types (the set of all subtypes and supertypes).
