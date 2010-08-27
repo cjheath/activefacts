@@ -629,23 +629,25 @@
 						<orm:Role id="_D8D5260B-5E9C-4785-8D41-D79FEAF651EF" ref="_F1617316-B197-44A0-8239-F44F7CC23E01" />
 						<orm:Role id="_779CA228-C8DC-40D6-8EA7-21DD3CB9E366" ref="_7682B9D5-2BAC-4BA6-AAB6-3311A5CB642B" />
 						<orm:JoinRule>
-							<orm:JoinPath id="_B4E55028-BD3B-41B9-B3CB-9B6BE0ED1165" IsAutomatic="true">
+							<orm:JoinPath id="_B4E55028-BD3B-41B9-B3CB-9B6BE0ED1165">
 								<orm:PathComponents>
 									<orm:RolePath id="_19936D48-AF2F-4283-9295-BABEEEE62604">
+										<orm:RootObjectType id="_AA7BDBE9-9CD8-4302-9D89-8BB6FFC8EE01" ref="_57141FDB-D80D-428D-88E3-B195C7634307" />
 										<orm:PathedRoles>
-											<orm:PathedRole id="_B2B3C44B-0BE6-487E-AA56-9ABD72ED39AB" ref="_2CE47270-0CCC-4E39-AD4F-13E0F595E579" Purpose="StartRole" />
+											<orm:PathedRole id="_B2B3C44B-0BE6-487E-AA56-9ABD72ED39AB" ref="_2CE47270-0CCC-4E39-AD4F-13E0F595E579" Purpose="PostInnerJoin" />
 											<orm:PathedRole id="_AC289936-C2C2-4E2F-9EE6-A21D40F58DC3" ref="_F1617316-B197-44A0-8239-F44F7CC23E01" Purpose="SameFactType" />
-											<orm:PathedRole id="_638BB215-3F48-4681-95D9-25EAE38AC77B" ref="_5C53904B-FBB2-42A3-B220-98A0D5DFE82A" Purpose="PostInnerJoin" />
-											<orm:PathedRole id="_88CE957B-3A8C-4C71-81B5-A6A93F877389" ref="_7682B9D5-2BAC-4BA6-AAB6-3311A5CB642B" Purpose="SameFactType" />
+											<orm:PathedRole id="_90900F70-640D-432B-B385-CB176DB8EE69" ref="_F1617316-B197-44A0-8239-F44F7CC23E01" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_0382CE24-7DE7-4DFD-B4B0-8C5383F5DFCA" ref="_8F80BA10-6143-4200-A0E0-901BA9384FDE" Purpose="SameFactType" />
+											<orm:PathedRole id="_D67E2050-D7AD-42EB-BC9C-C5D52CB06DBB" ref="_5C53904B-FBB2-42A3-B220-98A0D5DFE82A" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_2A806174-766B-446B-B4CA-48E294EFD43C" ref="_7682B9D5-2BAC-4BA6-AAB6-3311A5CB642B" Purpose="SameFactType" />
 										</orm:PathedRoles>
-										<orm:RootObjectType ref="_57141FDB-D80D-428D-88E3-B195C7634307" />
 									</orm:RolePath>
 								</orm:PathComponents>
 								<orm:JoinPathProjections>
 									<orm:JoinPathProjection id="_245F08BD-3DC2-4B3B-83A2-B4CFA20C1CB2" ref="_19936D48-AF2F-4283-9295-BABEEEE62604">
 										<orm:ConstraintRoleProjection id="_02BDC4CD-0E38-469F-AE0F-A635DA6B31E0" ref="_ECF02C13-4324-4316-9CC4-39270CE8243C">
 											<orm:ProjectedFrom>
-												<orm:PathedRole ref="_B2B3C44B-0BE6-487E-AA56-9ABD72ED39AB" />
+												<orm:PathRoot ref="_AA7BDBE9-9CD8-4302-9D89-8BB6FFC8EE01" />
 											</orm:ProjectedFrom>
 										</orm:ConstraintRoleProjection>
 										<orm:ConstraintRoleProjection id="_8A7DCD9A-875A-4F0B-83EA-3F996731E22E" ref="_D8D5260B-5E9C-4785-8D41-D79FEAF651EF">
@@ -653,9 +655,9 @@
 												<orm:PathedRole ref="_AC289936-C2C2-4E2F-9EE6-A21D40F58DC3" />
 											</orm:ProjectedFrom>
 										</orm:ConstraintRoleProjection>
-										<orm:ConstraintRoleProjection id="_EEB536B4-1F52-43C1-AA4A-06B770E04B91" ref="_779CA228-C8DC-40D6-8EA7-21DD3CB9E366">
+										<orm:ConstraintRoleProjection id="_BC4A9DEC-C63B-4E65-BF07-86B3E4CF361B" ref="_779CA228-C8DC-40D6-8EA7-21DD3CB9E366">
 											<orm:ProjectedFrom>
-												<orm:PathedRole ref="_88CE957B-3A8C-4C71-81B5-A6A93F877389" />
+												<orm:PathedRole ref="_2A806174-766B-446B-B4CA-48E294EFD43C" />
 											</orm:ProjectedFrom>
 										</orm:ConstraintRoleProjection>
 									</orm:JoinPathProjection>
@@ -676,11 +678,6 @@
 			<orm:AutoCounterNumericDataType id="_003382D9-D573-4B14-85BB-57EFF2E51C2E" />
 			<orm:MoneyNumericDataType id="_6E85FFD7-1195-425A-8933-81F4387447ED" />
 		</orm:DataTypes>
-		<orm:ModelErrors>
-			<orm:JoinedPathRoleRequiresCompatibleRolePlayerError id="_3207ACC6-D553-4837-9717-1A06C768C0E6" Name="Join path for sequence '1' of constraint 'EqualityConstraint1' in model 'WaiterTips' joins to a path role with an incompatible role player.">
-				<orm:PathedRole ref="_638BB215-3F48-4681-95D9-25EAE38AC77B" />
-			</orm:JoinedPathRoleRequiresCompatibleRolePlayerError>
-		</orm:ModelErrors>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_5416315D-499E-44E1-BC36-B99C75118157" FormatString="{1}" ReferenceModeType="General" />
 			<orm:ReferenceModeKind id="_21A34225-EC19-4F11-A732-80DDB3EBE9A8" FormatString="{0}{1}" ReferenceModeType="Popular" />
