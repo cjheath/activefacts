@@ -18,7 +18,6 @@ module ActiveFacts
           @readings.each{ |reading| reading.match_existing_fact_type @context }
 
           # Figure out the simple existential facts and find fact types:
-          @bound_instances = {}  # Instances indexed by binding
           @bound_fact_types = []
           @bound_facts = []
           @ojr_by_role_ref = {}
@@ -51,9 +50,8 @@ module ActiveFacts
             # raise "A literal may not be an objectification" if role_ref.role_ref.objectification_join
             # raise "Not processing facts involving objectification joins yet" if role_ref.role_ref
             debug :instance, "Making #{player.class.basename} #{player.name} using #{l.inspect}" do
-              @bound_instances[role_ref.binding] =
-                role_ref.binding.instance =
-                instance_identified_by_literal(player, l)
+              role_ref.binding.instance =
+              instance_identified_by_literal(player, l)
             end
             role_ref
           end
@@ -65,7 +63,6 @@ module ActiveFacts
               reading
             else
               # This is an existential fact (like "Name 'foo'", or "Company 'Microsoft'")
-              # @bound_instances[role_ref.binding]
               nil # Nothing to see here, move along
             end
           else
@@ -83,14 +80,13 @@ module ActiveFacts
         # nil otherwise
         #
         def bind_reading reading
-          # Find the roles of this reading that do not yet have an entry in @bound_instances:
+          # Find the roles of this reading that do not yet have an instance
           bare_roles = reading.role_refs.
             select do |role_ref|
-              next false if @bound_instances[role_ref.binding]
+              next false if role_ref.binding.instance
               next false if role_ref.literal and
-                @bound_instances[role_ref.binding] =
-                  role_ref.binding.instance =
-                  instance_identified_by_literal(role_ref.binding.player, role_ref.literal)
+                role_ref.binding.instance =
+                instance_identified_by_literal(role_ref.binding.player, role_ref.literal)
               true
             end
 
@@ -178,7 +174,7 @@ module ActiveFacts
         def bind_complete_fact reading
           return true unless reading.fact_type  # An bare objectification
           debug :instance, "All bindings in '#{reading.display}' contain instances; create the fact type"
-          instances = reading.role_refs.map{|rr| @bound_instances[rr.binding]}
+          instances = reading.role_refs.map{|rr| rr.binding.instance}
           debug :instance, "Instances are #{instances.map{|i| "#{i.concept.name} #{i.value.inspect}"}*", "}"
 
           # Check that this fact doesn't already exist
@@ -224,7 +220,7 @@ module ActiveFacts
           # Check this instance doesn't already exist already:
           identifying_binding = (reading.role_refs.map{|rr| rr.binding}-[binding])[0]
           return false unless identifying_binding # This happens when we have a bare objectification
-          identifying_instance = @bound_instances[identifying_binding]
+          identifying_instance = identifying_binding.instance
           preferred_identifier = entity_type.preferred_identifier
 
           debug :instance, "This clause associates a new #{binding.player.name} with a #{identifying_binding.player.name}#{identifying_instance ? " which exists" : ""}"
@@ -243,9 +239,7 @@ module ActiveFacts
           if role_value
             instance = (role_value.fact.all_role_value.to_a-[role_value])[0].instance
             debug :instance, "Found an existing instance (of #{instance.concept.name}) from a previous definition"
-            @bound_instances[binding] =
-              binding.instance =
-              instance
+            binding.instance = instance
             return true  # Done with this reading
           end
 
@@ -262,7 +256,7 @@ module ActiveFacts
               return false unless identifying_reading
               identifying_role_ref = identifying_reading.role_refs.select{|role_ref| role_ref.binding != binding}[0]
               identifying_binding = identifying_role_ref ? identifying_role_ref.binding : nil
-              identifying_instance = @bound_instances[identifying_binding]
+              identifying_instance = identifying_binding.instance
 
               [rr, identifying_reading, identifying_binding, identifying_instance]
             end
@@ -273,9 +267,7 @@ module ActiveFacts
 
           debug :instance, "Going ahead with creating #{binding.player.name} using #{identifiers.size} roles" do
             instance = @constellation.Instance(:new, :concept => entity_type, :population => @population)
-            @bound_instances[binding] =
-              binding.instance =
-              instance
+            binding.instance = instance
             @bound_facts << instance
             identifiers.each do |rr, identifying_reading, identifying_binding, identifying_instance|
               # This reading provides the identifying literal for the entity_type
@@ -366,7 +358,7 @@ module ActiveFacts
               map do |reading|
                 reading.role_refs.
                   select do |rr|
-                    !@bound_instances[rr.binding]
+                    !rr.binding.instance
                   end.
                   map do |role_ref|
                     role_ref.binding
