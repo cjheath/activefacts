@@ -18,7 +18,6 @@ module ActiveFacts
           @readings.each{ |reading| reading.match_existing_fact_type @context }
 
           # Figure out the simple existential facts and find fact types:
-          @bound_fact_types = []
           @bound_facts = []
           @ojr_by_role_ref = {}
           @unbound_readings = @readings.
@@ -50,8 +49,7 @@ module ActiveFacts
             # raise "A literal may not be an objectification" if role_ref.role_ref.objectification_join
             # raise "Not processing facts involving objectification joins yet" if role_ref.role_ref
             debug :instance, "Making #{player.class.basename} #{player.name} using #{l.inspect}" do
-              role_ref.binding.instance =
-              instance_identified_by_literal(player, l)
+              role_ref.binding.instance = instance_identified_by_literal(player, l)
             end
             role_ref
           end
@@ -68,7 +66,6 @@ module ActiveFacts
           else
             raise "Fact Type not found: '#{reading.display}'" unless reading.fact_type
             # This instance will be associated with its binding by our caller
-            @bound_fact_types << reading.fact_type
             reading
           end
         end
@@ -85,8 +82,7 @@ module ActiveFacts
             select do |role_ref|
               next false if role_ref.binding.instance
               next false if role_ref.literal and
-                role_ref.binding.instance =
-                instance_identified_by_literal(role_ref.binding.player, role_ref.literal)
+                role_ref.binding.instance = instance_identified_by_literal(role_ref.binding.player, role_ref.literal)
               true
             end
 
