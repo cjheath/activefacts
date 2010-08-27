@@ -7,6 +7,8 @@ module ActiveFacts
         attr_accessor :qualifiers, :context_note
         attr_reader :fact_type, :reading, :role_sequence    # These are the Metamodel objects
         attr_reader :side_effects
+        attr_writer :fact_type          # Assigned for a bare (existential) objectification fact
+        attr_accessor :fact             # When binding fact instances the fact goes here
 
         def initialize role_refs_and_words, qualifiers = [], context_note = nil
           @phrases = role_refs_and_words
@@ -58,7 +60,7 @@ module ActiveFacts
         end
 
         def includes_literals
-          role_refs.detect{|role_ref| role_ref.literal }
+          role_refs.detect{|role_ref| role_ref.literal || (ja = role_ref.objectification_join and ja.detect{|jr| jr.includes_literals })}
         end
 
         def bind_roles context

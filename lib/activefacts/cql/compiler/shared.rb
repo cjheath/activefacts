@@ -11,11 +11,12 @@ module ActiveFacts
       # In some situations a Binding will have some RoleRefs with the same adjectives,
       # and one or more RoleRefs with no adjectives - this is called "loose binding".
       class Binding
-        attr_reader :player   # The Concept (object type)
-        attr_reader :refs     # an array of the RoleRefs
+        attr_reader :player             # The Concept (object type)
+        attr_reader :refs               # an array of the RoleRefs
         attr_reader :role_name
-        attr_accessor :rebound_to   # Loose binding may set this to another binding
+        attr_accessor :rebound_to       # Loose binding may set this to another binding
         attr_accessor :join_node
+        attr_accessor :instance         # When binding fact instances, the instance goes here
 
         def initialize player, role_name = nil
           @player = player

@@ -77,13 +77,13 @@ describe "Sample data" do
     ],
 
     # Objectification examples
-    [   # Same in a named population
+    [
       "Directorship (where Company 'Microsoft' is directed by Person 'Gates');",
-      :pending # [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
+      [:pending] # [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
     ],
-    [   # Same in a named population
+    [
       "Directorship (where Company 'Microsoft' is directed by Person 'Gates') began on appointment Date '20/02/1981';",
-      :pending # [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person is identified by Person Name where Person is called Person Name 'Gates'", "Person Name 'Gates'"]}]
+      [{:facts=>Set["Company has Company Name 'Microsoft'", "Company is directed by Person", "Person is called Person Name 'Gates'"], :instances=>Set["Person is identified by Person Name where Person is called Person Name 'Gates'", "Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'", "Directorship where Company is directed by Person", "Person Name 'Gates'", "Date '20/02/1981'"]}]
     ],
   ]
 
@@ -166,9 +166,18 @@ describe "Sample data" do
 
     it "should handle #{source.inspect}" do
       @text = SamplePrefix+source
-      pending if expected == :pending
+      #pending if expected == [:pending]
+      exception = nil
       lambda do
-        @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+        begin
+          @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+        rescue => exception
+          if debug :exception
+            puts "#{exception.message}"
+            puts "\t#{exception.backtrace*"\n\t"}"
+          end
+          raise
+        end
       end.should_not raise_error
       result = instance_data(@vocabulary)
 
@@ -182,9 +191,18 @@ describe "Sample data" do
     it "should de-duplicate #{source.inspect}" do
       # Make sure you don't get anything duplicated
       @text = SamplePrefix+source+source
-      pending if expected == :pending
+      #pending if expected == [:pending]
+      exception = nil
       lambda do
-        @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+        begin
+          @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+        rescue => exception
+          if debug :exception
+            puts "#{exception.message}"
+            puts "\t#{exception.backtrace*"\n\t"}"
+          end
+          raise
+        end
       end.should_not raise_error
       result = instance_data(@vocabulary)
       result[0].should == expected[0]
