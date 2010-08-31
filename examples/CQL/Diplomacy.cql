@@ -29,8 +29,8 @@ Fluency is where
 	Language is spoken by Diplomat;
 
 Representation is where
-	Ambassador is from Country (as Represented Country) to Country(2),
-	Represented Country(1) is represented in Country(2) by one Ambassador;
+	Ambassador is from Country (as Represented Country) to Country,
+	Represented Country is represented in Country by one Ambassador;
 
 /*
  * Constraints:
