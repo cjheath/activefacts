@@ -67,7 +67,7 @@ module ActiveFacts
           # other_role is a phantom played by the entity type that objectifies this fact type.
           # REVISIT: No rolename can be provided for the phantom role, so _as_XYZ doesn't occur
           other_player = fact_type.entity_type
-          return unless @concept_types_dumped[other_player]
+          return unless @concepts_dumped[other_player]
 
           other_role_name = other_player.name.gsub(/ /,'_').snakecase
           other_role_method = role.concept.name.gsub(/ /,'_').snakecase
@@ -81,7 +81,7 @@ module ActiveFacts
           # It's a one_to_one if there's a uniqueness constraint on the other role:
           one_to_one = ucs.find {|c| c.role_sequence.all_role_ref.map(&:role) == [other_role] }
           if one_to_one &&
-              !@concept_types_dumped[other_role.concept]
+              !@concepts_dumped[other_role.concept]
             #debug "Will dump 1:1 later for #{role} in #{fact_type}"
             return
           end

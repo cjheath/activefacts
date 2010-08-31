@@ -32,7 +32,7 @@ module ActiveFacts
         vocabulary_start(@vocabulary)
 
         build_indices
-        @concept_types_dumped = {}
+        @concepts_dumped = {}
         @fact_types_dumped = {}
         units_dump()
         value_types_dump()
@@ -95,7 +95,7 @@ module ActiveFacts
             done_banner = true
 
             value_type_chain_dump(o)
-            @concept_types_dumped[o] = true
+            @concepts_dumped[o] = true
           }
         value_type_end if done_banner
       end
@@ -124,7 +124,7 @@ module ActiveFacts
           count_this_pass = 0
           skipped_this_pass = 0
           sorted.each{|o|
-              next if @concept_types_dumped[o]    # Already done
+              next if @concepts_dumped[o]    # Already done
 
               # Can we do this yet?
               if (o != panic and                  # We don't *have* to do it (panic mode)
@@ -160,7 +160,7 @@ module ActiveFacts
               if panic        # We were already panicing... what to do now?
                 # This won't happen again unless the above code is changed to decide it can't dump "panic".
                 raise "Unresolvable cycle of forward references: " +
-                  (bad = sorted.select{|o| EntityType === o && !@concept_types_dumped[o]}).map{|o| o.name }.inspect +
+                  (bad = sorted.select{|o| EntityType === o && !@concepts_dumped[o]}).map{|o| o.name }.inspect +
                   ":\n\t" + bad.map{|o|
                     o.name +
                     ": " +
@@ -170,10 +170,10 @@ module ActiveFacts
                 # Find the object that has the most followers and no fwd-ref'd supertypes:
                 # This selection might be better if we allow PI roles to be fwd-ref'd...
                 panic = sorted.
-                  select{|o| !@concept_types_dumped[o] }.
+                  select{|o| !@concepts_dumped[o] }.
                   sort_by{|o|
                       f = @followers[o] || []; 
-                      o.supertypes.detect{|s| !@concept_types_dumped[s] } ? 0 : -f.size
+                      o.supertypes.detect{|s| !@concepts_dumped[s] } ? 0 : -f.size
                     }[0]
                 # debug "Panic mode, selected #{panic.name} next"
               end
@@ -185,7 +185,7 @@ module ActiveFacts
       end
 
       def entity_type_dump(o)
-        @concept_types_dumped[o] = true
+        @concepts_dumped[o] = true
         pi = o.preferred_identifier
 
         supers = o.supertypes
@@ -210,7 +210,6 @@ module ActiveFacts
         identifying_facts = ([o.fact_type]+identifying_role_refs.map{|rr| rr.role.fact_type }).compact.uniq
 
         identification = identified_by_roles_and_facts(o, identifying_role_refs, identifying_facts)
-        #identifying_facts.each{|f| @fact_types_dumped[f] = true }
 
         identification
       end
@@ -289,7 +288,7 @@ module ActiveFacts
               # The fact type hasn't already been dumped but all its role players have
               !@fact_types_dumped[fact_type] &&
                 !fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType) &&
-                !fact_type.all_role.detect{|r| !@concept_types_dumped[r.concept] } &&
+                !fact_type.all_role.detect{|r| !@concepts_dumped[r.concept] } &&
                 !fact_type.entity_type
 #                !(fact_type.entity_type && (p = @precursors[fact_type.entity_type]) && p.size > 0)
             }.sort_by{|fact_type|
@@ -307,8 +306,9 @@ module ActiveFacts
         # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
         # These will come up as un-handled constraints:
         pcs = @presence_constraints_by_fact[f]
-        f.is_a?(ActiveFacts::Metamodel::TypeInheritance) ||
-          (pcs && pcs.size > 0 && !pcs.detect{|c| !@constraints_used[c] })
+        return true if f.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+        return false if f.entity_type && !@concepts_dumped[f.entity_type]
+        pcs && pcs.size > 0 && !pcs.detect{|c| !@constraints_used[c] }
       end
 
       # Dump one fact type.
@@ -341,7 +341,7 @@ module ActiveFacts
         # REVISIT: Go through the residual constraints and re-process appropriate readings to show them
 
         @fact_types_dumped[fact_type] = true
-        @concept_types_dumped[fact_type.entity_type] = true if fact_type.entity_type
+        @concepts_dumped[fact_type.entity_type] = true if fact_type.entity_type
       end
 
       # Dump fact types.

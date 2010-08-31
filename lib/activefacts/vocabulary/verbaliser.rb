@@ -111,11 +111,11 @@ module ActiveFacts
         # What words are used (across all roles) for disambiguating the references to this player?
         # If more than one set of adjectives was used, this player must have been subject to loose binding.
         # This method is used to decide when subscripts aren't needed.
-        def role_adjuncts
+        def role_adjuncts include_rolenames
           adjuncts = @role_refs.map{|rr|
             [
               rr.leading_adjective,
-              # rr.role.role_name,
+              include_rolenames ? rr.role.role_name : nil,
               rr.trailing_adjective
             ].compact}.uniq.sort
           adjuncts.flatten*"_"
@@ -182,11 +182,7 @@ module ActiveFacts
           elsif role_name = role_ref.role.role_name and role_name != ''
             role_name
           else
-            role_words = []
-            role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
-            role_words << preferred_role_ref.role.concept.name
-            role_words << preferred_role_ref.trailing_adjective if preferred_role_ref.trailing_adjective != ""
-            role_name = role_words.compact*"-"
+            role_name = preferred_role_ref.cql_name
             if p = player(preferred_role_ref) and p.subscript
               role_name += "(#{p.subscript})"
             end
@@ -251,14 +247,19 @@ module ActiveFacts
         end
       end
 
-      def create_subscripts
+      # REVISIT: include_rolenames is a bit of a hack. Role names generally serve to disambiguate players,
+      # so subscripts wouldn't be needed, but where a constraint refers to a fact type which is defined with
+      # role names, those are considered. We should instead consider only the role names that are defined
+      # within the constraint, not in the underlying fact types. For now, this parameter is passed as true
+      # from all the object type verbalisations, and not from constraints.
+      def create_subscripts(include_rolenames = false)
         # Create subscripts, where necessary
         @players.each { |p| p.subscript = nil } # Wipe subscripts
         @players.
           map{|p| [p, p.concept] }.
           each do |player, concept|
             next if player.subscript  # Done previously
-            dups = @players.select{|p| p.concept == concept && p.role_adjuncts == player.role_adjuncts }
+            dups = @players.select{|p| p.concept == concept && p.role_adjuncts(include_rolenames) == player.role_adjuncts(include_rolenames) }
             if dups.size == 1
               debug :subscript, "No subscript needed for #{concept.name}"
               next
@@ -276,7 +277,7 @@ module ActiveFacts
       # and also define adjectives by using the hyphenated form (on at least the first occurrence).
       def expand_reading(reading, frequency_constraints = [], define_role_names = nil, value_constraints = [], &subscript_block)
         reading.expand(frequency_constraints, define_role_names, value_constraints) do |role_ref|
-          (!(role_ref.role.role_name and define_role_names) and p = player(role_ref) and p.subscript) ? "(#{p.subscript})" : ""
+          (!(role_ref.role.role_name and define_role_names != nil) and p = player(role_ref) and p.subscript) ? "(#{p.subscript})" : ""
         end
       end
 

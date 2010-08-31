@@ -109,6 +109,19 @@ module ActiveFacts
           end
         return joiner ? Array(name_array)*joiner : Array(name_array)
       end
+
+      def cql_name
+        if role.fact_type.all_role.size == 1
+          role_name
+        elsif role.role_name
+          role.role_name
+        else
+          # Where an adjective has multiple words, the hyphen is inserted outside the outermost space, leaving the space
+          (leading_adjective ? leading_adjective.strip.sub(/ |$/, '-\0').sub(/[^-]$/,'\0 ') : '') +
+            role.concept.name+
+            (trailing_adjective ? ' '+trailing_adjective.strip.sub(/.* |^/, '\0-').sub(/^[^-]/,' \0') : '')
+        end
+      end
     end
 
     class RoleSequence
@@ -475,7 +488,7 @@ module ActiveFacts
         [
             ((min && min > 0 && min != max) ? "at least #{min == 1 ? "one" : min.to_s}" : nil),
             ((max && min != max) ? "at most #{max == 1 ? "one" : max.to_s}" : nil),
-            ((max && min == max) ? "#{max == 1 ? "one" : max.to_s}" : nil)
+            ((max && min == max) ? "#{max == 1 ? "one" : "exactly "+max.to_s}" : nil)
         ].compact * " and "
       end
 

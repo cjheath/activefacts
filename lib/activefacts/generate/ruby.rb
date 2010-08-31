@@ -168,7 +168,7 @@ module ActiveFacts
       end
 
       def concept_reference concept
-        if !@concept_types_dumped[concept]
+        if !@concepts_dumped[concept]
           '"'+concept.name.gsub(/ /,'')+'"'
         else
           role_reference = concept.name.gsub(/ /,'')

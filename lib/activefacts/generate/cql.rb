@@ -220,7 +220,7 @@ module ActiveFacts
           verbaliser.alternate_readings entity_type.fact_type.all_reading
         end
 
-        verbaliser.create_subscripts      # Ok, the Verbaliser is ready to fly
+        verbaliser.create_subscripts(true)      # Ok, the Verbaliser is ready to fly
 
         fact_readings =
           nonstandard_readings.map { |reading| expanded_reading(verbaliser, reading, fact_constraints, true) }
@@ -252,9 +252,9 @@ module ActiveFacts
         identifying_facts.each do |fact_type|
           # The RoleRefs for corresponding roles across all readings are for the same player.
           verbaliser.alternate_readings fact_type.all_reading
-          @fact_types_dumped[fact_type] = true
+          @fact_types_dumped[fact_type] = true unless fact_type.entity_type # Must dump objectification still!
         end
-        verbaliser.create_subscripts
+        verbaliser.create_subscripts(true)
 
         irn = verbaliser.identifying_role_names identifying_role_refs
 
@@ -290,7 +290,7 @@ module ActiveFacts
           # Announce all the objectified fact roles to the verbaliser so it can decide on any necessary subscripting.
           # The RoleRefs for corresponding roles across all readings are for the same player.
           verbaliser.alternate_readings o.fact_type.all_reading
-          verbaliser.create_subscripts
+          verbaliser.create_subscripts(true)
 
           print " where\n\t" + fact_readings_with_constraints(verbaliser, o.fact_type)*",\n\t"
         end
@@ -321,7 +321,7 @@ module ActiveFacts
         # There can be no roles of the objectified fact type in the readings, so no need to tell the Verbaliser anything special
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
         verbaliser.alternate_readings fact_type.all_reading
-        verbaliser.create_subscripts
+        verbaliser.create_subscripts(true)
 
         puts(fact_readings_with_constraints(verbaliser, fact_type)*",\n\t"+";")
       end
