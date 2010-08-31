@@ -91,7 +91,7 @@ module ActiveFacts
               id.bind_roles context
               matching_reading =
                 @readings.detect { |reading| reading.phrases_match id.phrases }
-              raise "Unary identifying role 'id.inspect' is not found in the defined fact types" unless matching_reading
+              raise "Unary identifying role '#{id.inspect}' is not found in the defined fact types" unless matching_reading
               matching_reading.fact_type.all_role.single
             end
           end
