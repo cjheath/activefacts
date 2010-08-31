@@ -225,6 +225,9 @@ either Host System runs Switch or Data Store has Legacy-Switch but not both;
 for each Network at most one of these holds:
 	Network is ip_single,
 	Network has Ending-IP;
+Data Store Service (where Service is from Data Store) belongs to Client
+	if and only if
+	Client has default Data Store;
 Network has Ending IP
 	if and only if
 	Network is ip_range;
