@@ -321,7 +321,7 @@ module ActiveFacts
             r.tabulate
           end
         else
-          raise "Illegal role type, #{role.fact_type.describe(role)} no uniqueness constraint"
+          raise "Role #{role.concept.name} in '#{role.fact_type.default_reading}' lacks a uniqueness constraint"
         end
       end
     end
