@@ -177,6 +177,8 @@ module ActiveFacts
           name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
           name = nil if name.size == 0
 
+          next if x['IsImplicitBooleanValue']
+
           cdt = x.xpath('orm:ConceptualDataType')[0]
           scale = cdt['Scale']
           scale = scale != "" && scale.to_i
@@ -244,6 +246,7 @@ module ActiveFacts
             name = "<unnamed>" if !name
             name = "" if !name || name.size == 0
             # Note that the new metamodel doesn't have a name for a facttype unless it's objectified
+            next if x.xpath("orm:DerivationRule").size > 0
 
             debug :orm, "FactType #{name || id}"
             facts << @by_id[id] = fact_type = @constellation.FactType(:new)
@@ -334,6 +337,7 @@ module ActiveFacts
 
             fact_id = x_fact_type['ref']
             fact_type = @by_id[fact_id]
+            next if x.xpath("orm:DerivationRule").size > 0
             throw "Nested fact #{fact_id} not found" if !fact_type
 
             #if is_implied
@@ -364,6 +368,7 @@ module ActiveFacts
         debug :orm, "Reading roles and readings" do
           @x_facts.each{|x|
             id = x['id']
+            next if x.xpath("orm:DerivationRule").size > 0
             fact_type = @by_id[id]
             fact_name = x['Name'] || x['_Name'] || ''
             #fact_name.gsub!(/\s/,'')
@@ -387,7 +392,6 @@ module ActiveFacts
 
                 # Find the concept that plays the role:
                 concept = @by_id[ref]
-                throw "RolePlayer for '#{name}' #{ref} was not found" if !concept
 
                 # Skip implicit roles added by NORMA to make unaries into binaries.
                 # This would make constraints over the deleted roles impossible,
@@ -406,10 +410,10 @@ module ActiveFacts
                   role_name = x['Name']
                   other_role.role_name = role_name if role_name && role_name != ''
 
-                  concept.retract       # Delete our object for the implicit boolean ValueType
                   @by_id.delete(ref)    # and de-index it from our list
                   next
                 end
+                throw "RolePlayer for '#{name}' #{ref} was not found" if !concept
 
                 debug :orm, "#{@vocabulary.name}, RoleName=#{x['Name'].inspect} played by concept=#{concept.name}"
                 throw "Role is played by #{concept.class} not Concept" if !(@constellation.vocabulary.concept(:Concept) === concept)
@@ -558,11 +562,14 @@ module ActiveFacts
             if (x_object.name.to_s == 'ObjectifiedType')
               x_nests = x_object.xpath('orm:NestedPredicate')[0]
               implied = x_nests['IsImplied']
+              # x_fact is the fact of which the role player is an objectification, not the fact this role belongs to
               x_fact = @x_by_id[x_nests['ref']]
             end
 
             # This might have been a role of an ImpliedFact, which makes it safe to ignore.
             next if 'ImpliedFact' == x_role.parent.parent.name
+
+            next if x_role.parent.parent.xpath('orm:DerivationRule').size > 0
 
             # Talk about why this wasn't found - this shouldn't happen.
             if (!x_nests || !implied)
@@ -994,6 +1001,8 @@ module ActiveFacts
               @mandatory_constraints_by_rs.delete(mc_rs)
             end
 
+            next if role_sequences.compact.size != role_sequences.size  # Role sequence missing; includes a derived fact type role
+
             make_joins('exclusion', name+(x_mandatory ? '/'+x_mandatory['Name'] : ''), role_sequences)
 
             ec = @constellation.SetExclusionConstraint(:new)
@@ -1026,6 +1035,7 @@ module ActiveFacts
                   )
                 }
 
+            next if role_sequences.compact.size != role_sequences.size  # Role sequence missing; includes a derived fact type role
             make_joins('equality', name, role_sequences)
 
             ec = @constellation.SetEqualityConstraint(:new)
@@ -1055,6 +1065,7 @@ module ActiveFacts
                     "equality constraint #{name}"
                   )
                 }
+            next if role_sequences.compact.size != role_sequences.size  # Role sequence missing; includes a derived fact type role
             make_joins('subset', name, role_sequences)
 
             ec = @constellation.SubsetConstraint(:new)
@@ -1081,6 +1092,7 @@ module ActiveFacts
               map do |xr|
                 @by_id[xr['ref']]
               end
+            next unless from && to  # Roles missing; covers a derived fact type
             if from.concept != to.concept
               join_over, = *ActiveFacts::Metamodel.join_roles_over([from, to], :counterpart)
               raise "Ring constraint has incompatible players #{from.concept.name}, #{to.concept.name}" if !join_over
@@ -1111,6 +1123,7 @@ module ActiveFacts
             role = @by_id[x_roles[0]["ref"]]
             role_sequence = @constellation.RoleSequence(:new)
             role_ref = @constellation.RoleRef(role_sequence, 0, :role => role)
+            next unless role  # Role missing; belongs to a derived fact type
             debug :orm, "FrequencyConstraint(min #{min_frequency.inspect} max #{max_frequency.inspect} over #{role.fact_type.describe(role)} #{id} role ref = #{x_roles[0]["ref"]}"
             @by_id[id] = @constellation.PresenceConstraint(
                 :new,
