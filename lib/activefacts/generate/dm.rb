@@ -113,7 +113,7 @@ module ActiveFacts
             identifying_role_refs = pi.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
             identifying_facts = ([o.fact_type]+identifying_role_refs.map{|rr| rr.role.fact_type }).compact.uniq
 
-            puts "class #{o.name}#{supertype ? " < #{supertype.name}" : ''}"
+            puts "class #{class_name(o.name)}#{supertype ? " < #{class_name(supertype.name)}" : ''}"
             puts "  include DataMapper::Resource\n\n" unless supertype
 
             columns = o.columns
@@ -190,7 +190,7 @@ module ActiveFacts
 
       # Return DataMapper type and (modified?) length for the passed base type
       def normalise_type(type, length)
-        sql_type = case type
+        dm_type = case type
           when /^Auto ?Counter$/
             'Serial'
 
@@ -229,9 +229,11 @@ module ActiveFacts
             'String'
           when /^BIT$/
             'Boolean'
-          else type # raise "SQL type unknown for standard type #{type}"
+          else
+            # raise "DataMapper type unknown for standard type #{type}"
+            type
           end
-        [sql_type, length]
+        [dm_type, length]
       end
 
     end
