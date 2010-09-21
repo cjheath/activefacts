@@ -63,12 +63,16 @@ module ActiveFacts
       # * If the names retained so far end in XYZ and the to_names start with XYZ, remove the duplication
       # * If we have retained the name of an entity, and this reference is the sole identifying role of an entity, and the identifying object has a name that is prefixed by the name of the object it identifies, remove the prefix and use just the suffix.
       def name(joiner = "")
+        self.class.name(@references, joiner)
+      end
+
+      def self.name(refs, joiner = "")
         last_names = []
-        names = @references.
+        names = refs.
           inject([]) do |a, ref|
 
             # Skip any object after the first which is identified by this reference
-            if ref != @references[0] and
+            if ref != refs[0] and
                 !ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) and
                 ref.to and
                 ref.to.is_a?(ActiveFacts::Metamodel::EntityType) and

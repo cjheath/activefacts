@@ -131,6 +131,27 @@ module ActiveFacts
         end
       end
 
+      # Return the array of names for the (perhaps implicit) *from_role* of this Reference
+      def from_names
+        case
+        when is_unary
+          if @from && @from.fact_type
+            @from.name.camelwords
+          else
+            @from_role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.camelwords
+          end
+        when @from && !@from_role           # @from is an objectified fact type so @from_role is a phantom
+          @from.name.camelwords
+        when !@from_role                  # Self-value role of an independent ValueType
+          @from.name.camelwords + ["Value"]
+        when @from_role.role_name         # Named role
+          @from_role.role_name.camelwords
+        else                            # Use the name from the preferred reading
+          role_ref = @from_role.preferred_reference
+          [role_ref.leading_adjective, @from_role.concept.name, role_ref.trailing_adjective].compact.map{|w| w.camelwords}.flatten.reject{|s| s == ''}
+        end
+      end
+
       # For a one-to-one (or a subtyping fact type), reverse the direction.
       def flip                          #:nodoc:
         raise "Illegal flip of #{self}" unless @to and [:one_one, :subtype, :supertype].include?(role_type)

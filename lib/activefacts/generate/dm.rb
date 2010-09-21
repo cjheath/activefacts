@@ -2,11 +2,6 @@
 #       ActiveFacts Generators.
 #       Generate Ruby code for Data Mapper from an ActiveFacts vocabulary.
 #
-# REVISIT: This is very rudimentary and will probably only work for the simplest cases.
-# I'm not even sure that the approach is right, working from a relational schema and
-# trying to guess the DM models that will result in the required tables.  We probably
-# should begin with the OO mapping instead, just using 'persistence' to determine tables...
-#
 # A testing strategy:
 #   Generate and load a set of models
 #   call DataMapper::finalize to check they're consistent
@@ -16,10 +11,11 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/persistence'
+require 'activefacts/generate/oo'
 
 module ActiveFacts
   module Generate
-    class DM #:nodoc:
+    class DM < OO #:nodoc:
       # Generate SQL for DataMapper for an ActiveFacts vocabulary.
       # Invoke as
       #   afgen --dm[=options] <file>.cql
@@ -38,62 +34,6 @@ module ActiveFacts
 
       def puts s
         @out.puts s
-      end
-
-      # Return SQL type and (modified?) length for the passed base type
-      def normalise_type(type, length)
-        sql_type = case type
-          when /^Auto ?Counter$/
-            'int'
-
-          when /^Unsigned ?Integer$/,
-            /^Signed ?Integer$/,
-            /^Unsigned ?Small ?Integer$/,
-            /^Signed ?Small ?Integer$/,
-            /^Unsigned ?Tiny ?Integer$/
-            s = case
-              when length <= 8
-                'tinyint'
-              when length <= 16
-                'shortint'
-              when length <= 32
-                'int'
-              else
-                'bigint'
-              end
-            length = nil
-            s
-
-          when /^Decimal$/
-            'decimal'
-
-          when /^Fixed ?Length ?Text$/, /^Char$/
-            'char'
-          when /^Variable ?Length ?Text$/, /^String$/
-            'varchar'
-          when /^Large ?Length ?Text$/, /^Text$/
-            'text'
-
-          when /^Date ?And ?Time$/, /^Date ?Time$/
-            'datetime'
-          when /^Date$/
-            'datetime' # SQLSVR 2K5: 'date'
-          when /^Time$/
-            'datetime' # SQLSVR 2K5: 'time'
-          when /^Auto ?Time ?Stamp$/
-            'timestamp'
-
-          when /^Money$/
-            'decimal'
-          when /^Picture ?Raw ?Data$/, /^Image$/
-            'image'
-          when /^Variable ?Length ?Raw ?Data$/, /^Blob$/
-            'varbinary'
-          when /^BIT$/
-            'bit'
-          else type # raise "SQL type unknown for standard type #{type}"
-          end
-        [sql_type, length]
       end
 
       def model_file(name)
@@ -116,159 +56,183 @@ module ActiveFacts
         return unless @mixins
         @out.flush
         @out = File.open(model_file(name), "w")
-        puts "require 'dm-core'\n\n"
+        puts "require 'datamapper'\n\n"
+      end
+
+      def key_fields(ref)
+        # Compute and return child_key and parent_key if necessary
+        from = ref.from
+        until from.is_table
+          from = from.absorbed_via.from
+        end
+        fks = from.foreign_keys
+        fk = fks.detect{|k| k.reference == ref}
+        # REVISIT: The column names for columns belonging to absorbed subtypes are incorrectly generated here.
+        child_key = fk.from_columns.map{|c| column_name(c)}
+        parent_key = fk.to_columns.map{|c| column_name(c)}
+        if child_key != parent_key
+          ", :child_key => [:#{child_key*', :'}], :parent_key => [:#{parent_key*', :'}]"
+        else
+          ''
+        end
       end
 
       public
+
         def generate(out = $>)      #:nodoc:
           @out = out
 
-          @vocabulary.tables.each do |table|
-            new_output(table.name)
+          # Calculate the relational absorption:
+          tables = @vocabulary.tables
 
-            puts "class #{class_name(table.name)}"
-            puts "  include DataMapper::Resource\n\n"
+          # Figure out which Concept will be models (tables and their subtypes)
+          models =
+            @vocabulary.all_concept.sort_by{|o| o.name}.select do |o|
+              o.is_table || (o.absorbed_via && o.absorbed_via.role_type == :supertype)
+            end
+          is_model = models.inject({}) { |h, m| h[m] = true; h }
 
-            has_associations = false
+          puts "require 'dm-core'\n\n"
 
-            #debugger if table.name == 'Vehicle Incident'
+          # Dump tables until all done, subtypes before supertypes:
+          until models.empty?
+            # Choose another object type that we can dump now:
+            o = models.detect do |o|
+              next true if o.is_table
+              next true if a = o.absorbed_via and a.role_type == :supertype and supertype = a.from and !models.include?(supertype)
+              false
+            end
+            models.delete(o)
 
-            # All belongs_to and has1's:
-            columns = table.columns
-            table.references_from.
-              select{|ref| ref.is_simple_reference }.
-              each do |ref|
-                #puts "to #{table.name} in #{ref.inspect}"
-                fk_columns = columns.select{|c| c.references[0] == ref}
-                fk_column_names = fk_columns.map{|c| symbol_name(c.name)}
-                pk_columns = ref.to.identifier_columns
-                pk_column_names = pk_columns.map{|c| symbol_name(c.name)}
-                type = [:supertype, :subtype, :one_one].include?(ref.role_type) ? 'has 1,' : 'belongs_to'
+            supertype = (a = o.absorbed_via and a.role_type == :supertype) ? supertype = a.from : nil
+            secondary_supertypes = o.supertypes-[supertype]
+            if secondary_supertypes.size > 0
+              raise "Cannot handle models that contain classes like #{o.name} with secondary supertypes (#{secondary_supertypes*", "})"
+            end
+            pi = o.preferred_identifier
+            identifying_role_refs = pi.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
+            identifying_facts = ([o.fact_type]+identifying_role_refs.map{|rr| rr.role.fact_type }).compact.uniq
 
-                # If the target was absorbed, find the target model
-                # The target model may be a subtype, absorbed into a supertype table
-                eventual_target = to = ref.to
-                until eventual_target.is_table
-                  break if eventual_target.absorbed_via.role_type == :subtype  # Handle STI
-                  eventual_target = eventual_target.absorbed_via.from
-                end
+            puts "class #{o.name}#{supertype ? " < #{supertype.name}" : ''}"
+            puts "  include DataMapper::Resource\n\n" unless supertype
 
-                target_class_name = eventual_target.name.gsub(/\s/,'')
-                # REVISIT: Need to account for the role names here:
-                if ref.to_role and rn = ref.to_role.role_name
-                  to = nil
-                  association_name = symbol_name(rn)
-                else
-                  association_name = symbol_name(ref.to.name)
-                end
-
-                puts "  #{type} :#{association_name}" +
-                  (eventual_target != to ? ", '#{target_class_name}'" : '') +
-                  (fk_column_names != pk_column_names ?
-                    ", :child_key => [:#{fk_column_names*', :'}], :parent_key => [:#{pk_column_names*', :'}]" : ''
-                  )
-                has_associations = true
+            columns = o.columns
+            o.references_from.each do |ref|
+              # A (set of) columns
+              if !columns
+                # absorbed subtypes didn't have columns populated
+                columns = o.all_columns({})
               end
 
-            # All "has n"s:
-            table.references_to.
-              select{|ref| ref.is_simple_reference }.
-              each do |ref|
-                from_columns = ref.from.columns
-                pk_columns = ref.to.identifier_columns
-                pk_column_names = pk_columns.map{|c| symbol_name(c.name)}
-
-                if ref.from.is_table
-                  fk_columns = from_columns.select{|c| c.references[0] == ref}
-                  fk_column_names = fk_columns.map{|c| symbol_name(c.name)}
-                  type = [:supertype, :subtype, :one_one].include?(ref.role_type) ? 'has 1' : 'has n'
-
-                  # If the target was absorbed, find the target model
-                  # The target model may be a subtype, absorbed into a supertype table
-                  eventual_target = ref.from
-                  until eventual_target.is_table
-                    break if eventual_target.absorbed_via.role_type == 'subtype'  # Handle STI
-                    eventual_target = eventual_target.absorbed_via.from
-                  end
-
-                  target_class_name = eventual_target.name.gsub(/\s/,'')
-                  # REVISIT: Need to account for the role names here:
-                  if ref.from_role && ref.from_role.role_name
-                    debugger
-                    p ref # .from_role.role_name
-                  end
-                  association_name = symbol_name(ref.from.name)
-
-                  puts "  #{type}, :#{association_name}" +
-                    (eventual_target != ref.from ? ", '#{target_class_name}'" : '') +
-                    (fk_column_names != pk_column_names ?
-                      ", :child_key => [:#{fk_column_names*', :'}], :parent_key => [:#{pk_column_names*', :'}]" : ''
-                    )
-                else
-                  # REVISIT: "from" is fully absorbed, so we need to emit a "has n" for each ref.from.references_to (transitively)
-                end
-
-                if (ref.from.fact_type)
-                  # REVISIT: Objectified fact type, do "has n,... :through =>"
-                  #puts "  has n, #{symbol_name(ref.from.name))}"
-                end
-                has_associations = true
+              next if [:subtype, :supertype].include?(ref.role_type)
+              # debugger if ref_columns.detect{|c| [:subtype, :supertype].include?(c.references[0].role_type)}
+              ref_columns = columns.select{|c| c.references[0] == ref }
+              # puts "  \# #{ref.reading}:"
+              ref_columns.each do |column|
+                type, params, constraints = column.type
+                length = params[:length]
+                length &&= length.to_i
+                scale = params[:scale]
+                scale &&= scale.to_i
+                type, length = normalise_type(type, length)
+                key = identifying_facts.include?(column.references[0].fact_type)
+                cname = column_name(column)
+                puts "  property :#{column_name(column)}, #{type}#{length ? ", :length => "+length.to_s : ''}, :required => #{column.is_mandatory}#{key ? ', :key => true' : ''}\t\# #{column.comment}"
               end
 
-            puts "\n" if has_associations
+              if is_model[ref.to]
+                # An association
+                association_type =
+                  case ref.role_type
+                  when :one_one
+                    "has 1,"
+                  when :one_many, :many_one
+                    "belongs_to"
+                  when :supertype
+                    next
+                  when :subtype
+                    next
+                  else
+                    raise "role type #{ref.role_type} not handled"
+                  end
 
-            # We sort the columns here, not in the persistence layer, because it affects
-            # the ordering of columns in an index :-(.
-            absorbed_subtype_columns = {}
-            table.columns.sort_by { |column| column.name(@underscore) }.map do |column|
-              type, params, constraints = column.type
-              length = params[:length]
-              length &&= length.to_i
-              scale = params[:scale]
-              scale &&= scale.to_i
-              type, length = normalise_type(type, length)
-
-              if column.references[0].role_type != :supertype
-                # REVISIT: Add :key => true for PK columns
-                puts "  property :#{column_name(column)}, :#{type}#{length ? ", :length => "+length.to_s : ''}, :required => #{true}"
-              else
-                subtype = column.references.detect{|r| r.role_type != :supertype}.from
-                (absorbed_subtype_columns[subtype] ||= []) <<
-                  "  property :#{column_name(column)}, :#{type}#{length ? ", :length => "+length.to_s : ''}, :required => #{true}"
+                association_name = (ref.to_names*'_')
+                model_name = association_name != ref.to.name ? model_name = ", '#{class_name(ref.to.name)}'" : ''
+                comment = o.fact_type ? "#{association_name} is involved in #{o.name}" : ref.reading
+                keys = key_fields(ref)
+                puts "  #{association_type} :#{association_name.downcase}#{model_name}#{keys}\t\# #{comment}"
               end
             end
 
-            # Indexes
-            indices = table.indices
-            indices.each do |index|
-              # REVISIT: No indexing is performed here
-              # puts "index [#{columns.map{|c| column_name(c)}*','}]"
-            end
+            # Emit the "has n," associations
+            o.references_to.each do |ref|
+              next unless is_model[ref.from]
+              association_type =
+                case ref.role_type
+                when :one_one
+                  "has 1,"
+                when :many_one, :one_many
+                  "has n,"
+                else
+                  next
+                end
+              association_name = (ref.from_names*'_')
+              model_name = association_name != ref.from.name ? model_name = ", '#{class_name(ref.from.name)}'" : ''
+              comment = o.fact_type ? "#{association_name} is involved in #{o.name}" : ref.reading
+              keys = key_fields(ref)
 
+              puts "  #{association_type} :#{association_name.downcase}#{model_name}#{keys}\t\# #{comment}"
+            end
             puts "end\n\n"
-
-            # Emit STI'd subtypes:
-            until absorbed_subtype_columns.empty?
-              subtypes = absorbed_subtype_columns.keys.sort_by{|c| c.name}
-              subtypes.each do |subtype|
-                columns = absorbed_subtype_columns[subtype]
-                supertype_ref = subtype.absorbed_via
-                if !absorbed_subtype_columns[supertype = supertype_ref.from]
-                  puts "class #{class_name(subtype.name)} < #{class_name(supertype.name)}"
-                  puts "  include DataMapper::Resource\n\n"
-                  absorbed_subtype_columns[subtype].each do |prop|
-                    # The property names here are the column names, which include the class name.
-                    # REVISIT: Need to separate the property name from the column name
-                    puts prop
-                  end
-                  puts "end\n\n"
-                  absorbed_subtype_columns.delete(subtype)
-                end
-              end
-            end
-
           end
         end
+
+
+      # Return DataMapper type and (modified?) length for the passed base type
+      def normalise_type(type, length)
+        sql_type = case type
+          when /^Auto ?Counter$/
+            'Serial'
+
+          when /^Unsigned ?Integer$/,
+            /^Signed ?Integer$/,
+            /^Unsigned ?Small ?Integer$/,
+            /^Signed ?Small ?Integer$/,
+            /^Unsigned ?Tiny ?Integer$/
+            length = nil
+            'Integer'
+
+          when /^Decimal$/
+            'Decimal'
+
+          when /^Fixed ?Length ?Text$/, /^Char$/
+            'String'
+          when /^Variable ?Length ?Text$/, /^String$/
+            'String'
+          when /^Large ?Length ?Text$/, /^Text$/
+            'Text'
+
+          when /^Date ?And ?Time$/, /^Date ?Time$/
+            'DateTime'
+          when /^Date$/
+            'DateTime'
+          when /^Time$/
+            'DateTime'
+          when /^Auto ?Time ?Stamp$/
+            'DateTime'
+
+          when /^Money$/
+            'Decimal'
+          when /^Picture ?Raw ?Data$/, /^Image$/
+            'String'
+          when /^Variable ?Length ?Raw ?Data$/, /^Blob$/
+            'String'
+          when /^BIT$/
+            'Boolean'
+          else type # raise "SQL type unknown for standard type #{type}"
+          end
+        [sql_type, length]
+      end
 
     end
   end

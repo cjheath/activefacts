@@ -14,7 +14,7 @@ module ActiveFacts
       def to; @to; end
 
       # What reference created the FK?
-      def reference; @reference; end
+      def reference; @fk_ref; end
 
       # What columns in the *from* table form the FK
       def from_columns; @from_columns; end
