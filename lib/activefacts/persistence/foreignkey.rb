@@ -61,7 +61,7 @@ module ActiveFacts
         fk_ref_paths.map do |fk_ref_path|
           debug :fk, "\nFK: " + fk_ref_path.map{|fk_ref| fk_ref.reading }*" and " do
 
-            from_columns = columns.select{|column|
+            from_columns = (columns||all_columns({})).select{|column|
               column.references[0...fk_ref_path.size] == fk_ref_path
             }
             debug :fk, "from_columns = #{from_columns.map { |column| column.name }*", "}"
