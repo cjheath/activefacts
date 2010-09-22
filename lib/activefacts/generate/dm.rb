@@ -59,19 +59,14 @@ module ActiveFacts
         puts "require 'datamapper'\n\n"
       end
 
-      def key_fields(ref)
+      def key_fields(ref, reverse = false)
         # Compute and return child_key and parent_key if necessary
-        from = ref.from
-        until from.is_table
-          from = from.absorbed_via.from
-        end
-        fks = from.foreign_keys
-        fk = fks.detect{|k| k.reference == ref}
-        # REVISIT: The column names for columns belonging to absorbed subtypes are incorrectly generated here.
+        fk = ref.from.foreign_keys.detect{|k| k.reference == ref}
         child_key = fk.from_columns.map{|c| column_name(c)}
         parent_key = fk.to_columns.map{|c| column_name(c)}
         if child_key != parent_key
-          ", :child_key => [:#{child_key*', :'}], :parent_key => [:#{parent_key*', :'}]"
+          c, p = *(reverse ? ['parent', 'child'] : ['child', 'parent'])
+          ", :#{c}_key => [:#{child_key*', :'}], :#{p}_key => [:#{parent_key*', :'}]"
         else
           ''
         end
@@ -88,6 +83,7 @@ module ActiveFacts
           # Figure out which Concept will be models (tables and their subtypes)
           models =
             @vocabulary.all_concept.sort_by{|o| o.name}.select do |o|
+              next false if o.name =~ /_?ImplicitBooleanValueType/
               o.is_table || (o.absorbed_via && o.absorbed_via.role_type == :supertype)
             end
           is_model = models.inject({}) { |h, m| h[m] = true; h }
@@ -142,9 +138,11 @@ module ActiveFacts
 
               if is_model[ref.to]
                 # An association
+                reverse = false
                 association_type =
                   case ref.role_type
                   when :one_one
+                    reverse = true
                     "has 1,"
                   when :one_many, :many_one
                     "belongs_to"
@@ -159,7 +157,7 @@ module ActiveFacts
                 association_name = (ref.to_names*'_')
                 model_name = association_name != ref.to.name ? model_name = ", '#{class_name(ref.to.name)}'" : ''
                 comment = o.fact_type ? "#{association_name} is involved in #{o.name}" : ref.reading
-                keys = key_fields(ref)
+                keys = key_fields(ref, reverse)
                 puts "  #{association_type} :#{association_name.downcase}#{model_name}#{keys}\t\# #{comment}"
               end
             end
