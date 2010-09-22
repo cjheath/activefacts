@@ -101,13 +101,17 @@ module ActiveFacts
             models.delete(o)
 
             supertype = (a = o.absorbed_via and a.role_type == :supertype) ? supertype = a.from : nil
-            secondary_supertypes = o.supertypes-[supertype]
-            if secondary_supertypes.size > 0
-              raise "Cannot handle models that contain classes like #{o.name} with secondary supertypes (#{secondary_supertypes*", "})"
+            if o.is_a?(ActiveFacts::Metamodel::EntityType)
+              if secondary_supertypes = o.supertypes-[supertype] and
+                secondary_supertypes.size > 0
+                raise "Cannot handle models that contain classes like #{o.name} with external supertypes (#{secondary_supertypes.map{|t|t.name}*", "})"
+              end
+              pi = o.preferred_identifier
+              identifying_role_refs = pi.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
+              identifying_facts = ([o.fact_type]+identifying_role_refs.map{|rr| rr.role.fact_type }).compact.uniq
+            else
+              identifying_facts = []
             end
-            pi = o.preferred_identifier
-            identifying_role_refs = pi.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}
-            identifying_facts = ([o.fact_type]+identifying_role_refs.map{|rr| rr.role.fact_type }).compact.uniq
 
             puts "class #{class_name(o.name)}#{supertype ? " < #{class_name(supertype.name)}" : ''}"
             puts "  include DataMapper::Resource\n\n" unless supertype
@@ -131,7 +135,8 @@ module ActiveFacts
                 scale = params[:scale]
                 scale &&= scale.to_i
                 type, length = normalise_type(type, length)
-                key = identifying_facts.include?(column.references[0].fact_type)
+                key = identifying_facts.include?(column.references[0].fact_type) ||
+                  (identifying_facts.empty? && ref.is_self_value)
                 cname = column_name(column)
                 puts "  property :#{column_name(column)}, #{type}#{length ? ", :length => "+length.to_s : ''}, :required => #{column.is_mandatory}#{key ? ', :key => true' : ''}\t\# #{column.comment}"
               end
@@ -176,7 +181,7 @@ module ActiveFacts
                 end
               association_name = (ref.from_names*'_')
               model_name = association_name != ref.from.name ? model_name = ", '#{class_name(ref.from.name)}'" : ''
-              comment = o.fact_type ? "#{association_name} is involved in #{o.name}" : ref.reading
+              comment = o.is_a?(ActiveFacts::Metamodel::EntityType) && o.fact_type ? "#{association_name} is involved in #{o.name}" : ref.reading
               keys = key_fields(ref)
 
               puts "  #{association_type} :#{association_name.downcase}#{model_name}#{keys}\t\# #{comment}"
