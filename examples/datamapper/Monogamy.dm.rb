@@ -12,7 +12,7 @@ class Boy < Person
 end
 
 class Girl < Person
-  property :boyfriend_id, Serial, :required => false	# maybe Girl (as Girlfriend) is going out with Boy (as Boyfriend) and Person has Person ID
+  property :boyfriend_id, Integer, :required => false	# maybe Girl (as Girlfriend) is going out with Boy (as Boyfriend) and Person has Person ID
   has 1, :boyfriend, 'Boy', :parent_key => [:boyfriend_id], :child_key => [:person_id]	# Girl (as Girlfriend) is going out with Boy (as Boyfriend)
 end
 

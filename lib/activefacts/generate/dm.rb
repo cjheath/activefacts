@@ -138,6 +138,7 @@ module ActiveFacts
                 key = identifying_facts.include?(column.references[0].fact_type) ||
                   (identifying_facts.empty? && ref.is_self_value)
                 cname = column_name(column)
+                type = 'Integer' if type == 'Serial' and !key
                 puts "  property :#{column_name(column)}, #{type}#{length ? ", :length => "+length.to_s : ''}, :required => #{column.is_mandatory}#{key ? ', :key => true' : ''}\t\# #{column.comment}"
               end
 

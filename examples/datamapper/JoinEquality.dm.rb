@@ -4,7 +4,7 @@ class Event
   include DataMapper::Resource
 
   property :event_id, Serial, :required => true, :key => true	# Event has Event Id
-  property :venue_id, Serial, :required => true	# Event is held at Venue and Venue has Venue Id
+  property :venue_id, Integer, :required => true	# Event is held at Venue and Venue has Venue Id
   belongs_to :venue	# Event is held at Venue
   has n, :ticket	# Ticket is for Event
 end

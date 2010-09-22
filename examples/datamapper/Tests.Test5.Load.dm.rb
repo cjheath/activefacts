@@ -10,7 +10,7 @@ end
 
 class Person < Party
   property :birth_event_date_ymd, DateTime, :required => true	# Birth is where Person was born on Event Date and Birth is where Person was born on Event Date and Event Date has ymd
-  property :birth_attending_doctor_id, Serial, :required => false	# Birth is where Person was born on Event Date and maybe Birth was assisted by attending-Doctor and Party has Party Id
+  property :birth_attending_doctor_id, Integer, :required => false	# Birth is where Person was born on Event Date and maybe Birth was assisted by attending-Doctor and Party has Party Id
   property :death_event_date_ymd, DateTime, :required => false	# Death is where Person died and maybe Death occurred on death-Event Date and Event Date has ymd
 end
 

@@ -34,9 +34,9 @@ class Event
   property :number, Integer, :required => false	# maybe Event has Number
   property :start_time, DateTime, :required => true	# Event is held on Start Time
   property :start_location, String, :length => 200, :required => true	# Event starts at start-Location
-  property :map_id, Serial, :required => true	# Map is map for Event and Map has Map ID
+  property :map_id, Integer, :required => true	# Map is map for Event and Map has Map ID
   belongs_to :map	# Map is map for Event
-  property :series_id, Serial, :required => false	# maybe Event is in Series and Series has Series ID
+  property :series_id, Integer, :required => false	# maybe Event is in Series and Series has Series ID
   belongs_to :series	# Event is in Series
   has n, :event_control, 'EventControl'	# Event includes Control Number
   has n, :event_scoring_method, 'EventScoringMethod'	# Scoring Method is used for Course of Event

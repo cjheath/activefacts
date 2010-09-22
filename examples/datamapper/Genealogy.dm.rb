@@ -11,7 +11,7 @@ class Event
   property :event_date_max_year, Integer, :required => false	# maybe Event occurred on Event Date and maybe Event Date wasnt after max-Year
   property :event_date_month, Integer, :required => false	# maybe Event occurred on Event Date and maybe Event Date occurred in Month
   property :event_date_day, Integer, :required => false	# maybe Event occurred on Event Date and maybe Event Date occurred on Day
-  property :event_type_id, Serial, :required => false	# maybe Event is of Event Type and Event Type has Event Type ID
+  property :event_type_id, Integer, :required => false	# maybe Event is of Event Type and Event Type has Event Type ID
   belongs_to :event_type, 'EventType'	# Event is of Event Type
   has n, :participation	# Person played Role in Event according to Source
 end
@@ -74,7 +74,7 @@ class Source
 
   property :source_id, Serial, :required => true, :key => true	# Source has Source ID
   property :source_name, String, :length => 128, :required => true	# Source has Source Name
-  property :user_id, Serial, :required => true	# User provided Source and User has User ID
+  property :user_id, Integer, :required => true	# User provided Source and User has User ID
   belongs_to :user	# User provided Source
   has n, :participation	# Person played Role in Event according to Source
 end

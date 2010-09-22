@@ -5,9 +5,9 @@ class Bin
 
   property :bin_id, Serial, :required => true, :key => true	# Bin has Bin ID
   property :quantity, Integer, :required => true	# Bin contains Quantity
-  property :product_id, Serial, :required => false	# maybe Product is stocked in Bin and Product has Product ID
+  property :product_id, Integer, :required => false	# maybe Product is stocked in Bin and Product has Product ID
   belongs_to :product	# Product is stocked in Bin
-  property :warehouse_id, Serial, :required => false	# maybe Warehouse contains Bin and Warehouse has Warehouse ID
+  property :warehouse_id, Integer, :required => false	# maybe Warehouse contains Bin and Warehouse has Warehouse ID
   belongs_to :warehouse	# Warehouse contains Bin
 end
 
@@ -26,14 +26,14 @@ class DispatchItem
   include DataMapper::Resource
 
   property :dispatch_item_id, Serial, :required => true, :key => true	# Dispatch Item has Dispatch Item ID
-  property :dispatch_id, Serial, :required => false	# maybe Dispatch is of Dispatch Item and Dispatch has Dispatch ID
+  property :dispatch_id, Integer, :required => false	# maybe Dispatch is of Dispatch Item and Dispatch has Dispatch ID
   property :quantity, Integer, :required => true	# Dispatch Item is in Quantity
-  property :product_id, Serial, :required => true	# Dispatch Item is Product and Product has Product ID
+  property :product_id, Integer, :required => true	# Dispatch Item is Product and Product has Product ID
   belongs_to :product	# Dispatch Item is Product
-  property :sales_order_item_sales_order_id, Serial, :required => false	# maybe Dispatch Item is for Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID
-  property :sales_order_item_product_id, Serial, :required => false	# maybe Dispatch Item is for Sales Order Item and Sales Order Item is for Product and Product has Product ID
+  property :sales_order_item_sales_order_id, Integer, :required => false	# maybe Dispatch Item is for Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID
+  property :sales_order_item_product_id, Integer, :required => false	# maybe Dispatch Item is for Sales Order Item and Sales Order Item is for Product and Product has Product ID
   belongs_to :sales_order_item, 'SalesOrderItem', :child_key => [:sales_order_item_product_id, :sales_order_item_sales_order_id], :parent_key => [:product_id, :sales_order_id]	# Dispatch Item is for Sales Order Item
-  property :transfer_request_id, Serial, :required => false	# maybe Dispatch Item is for Transfer Request and Transfer Request has Transfer Request ID
+  property :transfer_request_id, Integer, :required => false	# maybe Dispatch Item is for Transfer Request and Transfer Request has Transfer Request ID
   belongs_to :transfer_request, 'TransferRequest'	# Dispatch Item is for Transfer Request
 end
 
@@ -62,9 +62,9 @@ class PurchaseOrder
   include DataMapper::Resource
 
   property :purchase_order_id, Serial, :required => true, :key => true	# Purchase Order has Purchase Order ID
-  property :supplier_id, Serial, :required => true	# Purchase Order is to Supplier and Party has Party ID
+  property :supplier_id, Integer, :required => true	# Purchase Order is to Supplier and Party has Party ID
   belongs_to :supplier, :child_key => [:supplier_id], :parent_key => [:party_id]	# Purchase Order is to Supplier
-  property :warehouse_id, Serial, :required => true	# Purchase Order is to Warehouse and Warehouse has Warehouse ID
+  property :warehouse_id, Integer, :required => true	# Purchase Order is to Warehouse and Warehouse has Warehouse ID
   belongs_to :warehouse	# Purchase Order is to Warehouse
   has n, :purchase_order_item, 'PurchaseOrderItem'	# Purchase Order includes Purchase Order Item
 end
@@ -85,14 +85,14 @@ class ReceivedItem
   include DataMapper::Resource
 
   property :received_item_id, Serial, :required => true, :key => true	# Received Item has Received Item ID
-  property :receipt_id, Serial, :required => false	# maybe Receipt is of Received Item and Receipt has Receipt ID
-  property :product_id, Serial, :required => true	# Received Item is Product and Product has Product ID
+  property :receipt_id, Integer, :required => false	# maybe Receipt is of Received Item and Receipt has Receipt ID
+  property :product_id, Integer, :required => true	# Received Item is Product and Product has Product ID
   belongs_to :product	# Received Item is Product
-  property :purchase_order_item_purchase_order_id, Serial, :required => false	# maybe Received Item is for Purchase Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID
-  property :purchase_order_item_product_id, Serial, :required => false	# maybe Received Item is for Purchase Order Item and Purchase Order Item is for Product and Product has Product ID
+  property :purchase_order_item_purchase_order_id, Integer, :required => false	# maybe Received Item is for Purchase Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID
+  property :purchase_order_item_product_id, Integer, :required => false	# maybe Received Item is for Purchase Order Item and Purchase Order Item is for Product and Product has Product ID
   belongs_to :purchase_order_item, 'PurchaseOrderItem', :child_key => [:purchase_order_item_product_id, :purchase_order_item_purchase_order_id], :parent_key => [:product_id, :purchase_order_id]	# Received Item is for Purchase Order Item
   property :quantity, Integer, :required => true	# Received Item is in Quantity
-  property :transfer_request_id, Serial, :required => false	# maybe Received Item is for Transfer Request and Transfer Request has Transfer Request ID
+  property :transfer_request_id, Integer, :required => false	# maybe Received Item is for Transfer Request and Transfer Request has Transfer Request ID
   belongs_to :transfer_request, 'TransferRequest'	# Received Item is for Transfer Request
 end
 
@@ -100,9 +100,9 @@ class SalesOrder
   include DataMapper::Resource
 
   property :sales_order_id, Serial, :required => true, :key => true	# Sales Order has Sales Order ID
-  property :warehouse_id, Serial, :required => true	# Sales Order is from Warehouse and Warehouse has Warehouse ID
+  property :warehouse_id, Integer, :required => true	# Sales Order is from Warehouse and Warehouse has Warehouse ID
   belongs_to :warehouse	# Sales Order is from Warehouse
-  property :customer_id, Serial, :required => true	# Customer made Sales Order and Party has Party ID
+  property :customer_id, Integer, :required => true	# Customer made Sales Order and Party has Party ID
   belongs_to :customer, :child_key => [:customer_id], :parent_key => [:party_id]	# Customer made Sales Order
   has n, :sales_order_item, 'SalesOrderItem'	# Sales Order includes Sales Order Item
 end
@@ -127,9 +127,9 @@ class TransferRequest
   include DataMapper::Resource
 
   property :transfer_request_id, Serial, :required => true, :key => true	# Transfer Request has Transfer Request ID
-  property :from_warehouse_id, Serial, :required => false	# maybe Transfer Request is from-Warehouse and Warehouse has Warehouse ID
+  property :from_warehouse_id, Integer, :required => false	# maybe Transfer Request is from-Warehouse and Warehouse has Warehouse ID
   belongs_to :from_warehouse, 'Warehouse', :child_key => [:from_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is from-Warehouse
-  property :to_warehouse_id, Serial, :required => false	# maybe Transfer Request is to-Warehouse and Warehouse has Warehouse ID
+  property :to_warehouse_id, Integer, :required => false	# maybe Transfer Request is to-Warehouse and Warehouse has Warehouse ID
   belongs_to :to_warehouse, 'Warehouse', :child_key => [:to_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is to-Warehouse
   has n, :dispatch_item, 'DispatchItem'	# Dispatch Item is for Transfer Request
   has n, :received_item, 'ReceivedItem'	# Received Item is for Transfer Request
