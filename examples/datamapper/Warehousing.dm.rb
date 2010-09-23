@@ -14,11 +14,11 @@ end
 class DirectOrderMatch
   include DataMapper::Resource
 
-  property :purchase_order_item_purchase_order_id, Serial, :required => true, :key => true	# Direct Order Match is where Purchase Order Item matches Sales Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID
-  property :purchase_order_item_product_id, Serial, :required => true, :key => true	# Direct Order Match is where Purchase Order Item matches Sales Order Item and Purchase Order Item is for Product and Product has Product ID
+  property :purchase_order_item_purchase_order_id, Integer, :required => true, :key => true	# Direct Order Match is where Purchase Order Item matches Sales Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID
+  property :purchase_order_item_product_id, Integer, :required => true, :key => true	# Direct Order Match is where Purchase Order Item matches Sales Order Item and Purchase Order Item is for Product and Product has Product ID
   belongs_to :purchase_order_item, 'PurchaseOrderItem', :child_key => [:purchase_order_item_product_id, :purchase_order_item_purchase_order_id], :parent_key => [:product_id, :purchase_order_id]	# Purchase_Order_Item is involved in Direct Order Match
-  property :sales_order_item_sales_order_id, Serial, :required => true, :key => true	# Direct Order Match is where Purchase Order Item matches Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID
-  property :sales_order_item_product_id, Serial, :required => true, :key => true	# Direct Order Match is where Purchase Order Item matches Sales Order Item and Sales Order Item is for Product and Product has Product ID
+  property :sales_order_item_sales_order_id, Integer, :required => true, :key => true	# Direct Order Match is where Purchase Order Item matches Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID
+  property :sales_order_item_product_id, Integer, :required => true, :key => true	# Direct Order Match is where Purchase Order Item matches Sales Order Item and Sales Order Item is for Product and Product has Product ID
   belongs_to :sales_order_item, 'SalesOrderItem', :child_key => [:sales_order_item_product_id, :sales_order_item_sales_order_id], :parent_key => [:product_id, :sales_order_id]	# Sales_Order_Item is involved in Direct Order Match
 end
 
@@ -72,9 +72,9 @@ end
 class PurchaseOrderItem
   include DataMapper::Resource
 
-  property :product_id, Serial, :required => true, :key => true	# Purchase Order Item is for Product and Product has Product ID
+  property :product_id, Integer, :required => true, :key => true	# Purchase Order Item is for Product and Product has Product ID
   belongs_to :product	# Purchase Order Item is for Product
-  property :purchase_order_id, Serial, :required => true, :key => true	# Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID
+  property :purchase_order_id, Integer, :required => true, :key => true	# Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID
   belongs_to :purchase_order, 'PurchaseOrder'	# Purchase Order includes Purchase Order Item
   property :quantity, Integer, :required => true	# Purchase Order Item is in Quantity
   has n, :received_item, 'ReceivedItem', :child_key => [:purchase_order_item_product_id, :purchase_order_item_purchase_order_id], :parent_key => [:product_id, :purchase_order_id]	# Received Item is for Purchase Order Item
@@ -110,9 +110,9 @@ end
 class SalesOrderItem
   include DataMapper::Resource
 
-  property :product_id, Serial, :required => true, :key => true	# Sales Order Item is for Product and Product has Product ID
+  property :product_id, Integer, :required => true, :key => true	# Sales Order Item is for Product and Product has Product ID
   belongs_to :product	# Sales Order Item is for Product
-  property :sales_order_id, Serial, :required => true, :key => true	# Sales Order includes Sales Order Item and Sales Order has Sales Order ID
+  property :sales_order_id, Integer, :required => true, :key => true	# Sales Order includes Sales Order Item and Sales Order has Sales Order ID
   belongs_to :sales_order, 'SalesOrder'	# Sales Order includes Sales Order Item
   property :quantity, Integer, :required => true	# Sales Order Item is in Quantity
   has n, :dispatch_item, 'DispatchItem', :child_key => [:sales_order_item_product_id, :sales_order_item_sales_order_id], :parent_key => [:product_id, :sales_order_id]	# Dispatch Item is for Sales Order Item

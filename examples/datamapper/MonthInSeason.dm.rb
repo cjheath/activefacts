@@ -11,7 +11,7 @@ end
 class Occurrence
   include DataMapper::Resource
 
-  property :event_id, Serial, :required => true, :key => true	# Occurrence is where Event occurred in Month and Event has Event Id
+  property :event_id, Integer, :required => true, :key => true	# Occurrence is where Event occurred in Month and Event has Event Id
   property :month_value, String, :required => true, :key => true	# Occurrence is where Event occurred in Month and Month has value
   belongs_to :month	# Month is involved in Occurrence
 end

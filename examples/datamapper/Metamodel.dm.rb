@@ -3,15 +3,15 @@ require 'dm-core'
 class AllowedRange
   include DataMapper::Resource
 
-  property :value_constraint_id, Serial, :required => true, :key => true	# Allowed Range is where Value Constraint allows Value Range and Constraint has Constraint Id
+  property :value_constraint_id, Integer, :required => true, :key => true	# Allowed Range is where Value Constraint allows Value Range and Constraint has Constraint Id
   belongs_to :value_constraint, 'ValueConstraint', :child_key => [:value_constraint_id], :parent_key => [:constraint_id]	# Value_Constraint is involved in Allowed Range
   property :value_range_minimum_bound_value_literal, String, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound has Value and Value is represented by Literal
   property :value_range_minimum_bound_value_is_a_string, Boolean, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound has Value and Value is a string
-  property :value_range_minimum_bound_value_unit_id, Serial, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit has Unit Id
+  property :value_range_minimum_bound_value_unit_id, Integer, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit has Unit Id
   property :value_range_minimum_bound_is_inclusive, Boolean, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound is inclusive
   property :value_range_maximum_bound_value_literal, String, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound has Value and Value is represented by Literal
   property :value_range_maximum_bound_value_is_a_string, Boolean, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound has Value and Value is a string
-  property :value_range_maximum_bound_value_unit_id, Serial, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound has Value and maybe Value is in Unit and Unit has Unit Id
+  property :value_range_maximum_bound_value_unit_id, Integer, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound has Value and maybe Value is in Unit and Unit has Unit Id
   property :value_range_maximum_bound_is_inclusive, Boolean, :required => false, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound is inclusive
 end
 
@@ -44,7 +44,7 @@ end
 class ContextAccordingTo
   include DataMapper::Resource
 
-  property :context_note_id, Serial, :required => true, :key => true	# Context According To is where Context Note is according to Agent and Context Note has Context Note Id
+  property :context_note_id, Integer, :required => true, :key => true	# Context According To is where Context Note is according to Agent and Context Note has Context Note Id
   belongs_to :context_note, 'ContextNote'	# Context_Note is involved in Context According To
   property :agent_name, String, :required => true, :key => true	# Context According To is where Context Note is according to Agent and Agent has Agent Name
   property :date, DateTime, :required => false	# maybe Context According To was lodged on Date
@@ -53,7 +53,7 @@ end
 class ContextAgreedBy
   include DataMapper::Resource
 
-  property :agreement_context_note_id, Serial, :required => true, :key => true	# Context Agreed By is where Agreement was reached by Agent and Context Note has Context Note Id
+  property :agreement_context_note_id, Integer, :required => true, :key => true	# Context Agreed By is where Agreement was reached by Agent and Context Note has Context Note Id
   property :agent_name, String, :required => true, :key => true	# Context Agreed By is where Agreement was reached by Agent and Agent has Agent Name
 end
 
@@ -78,9 +78,9 @@ end
 class Derivation
   include DataMapper::Resource
 
-  property :derived_unit_id, Serial, :required => true, :key => true	# Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id
+  property :derived_unit_id, Integer, :required => true, :key => true	# Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id
   belongs_to :derived_unit, 'Unit', :child_key => [:derived_unit_id], :parent_key => [:unit_id]	# Derived_Unit is involved in Derivation
-  property :base_unit_id, Serial, :required => true, :key => true	# Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id
+  property :base_unit_id, Integer, :required => true, :key => true	# Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id
   belongs_to :base_unit, 'Unit', :child_key => [:base_unit_id], :parent_key => [:unit_id]	# Base_Unit is involved in Derivation
   property :exponent, Integer, :required => false	# maybe Derivation has Exponent
 end
@@ -144,7 +144,7 @@ class JoinNode
   include DataMapper::Resource
 
   property :ordinal, Integer, :required => true, :key => true	# Join Node has Ordinal position
-  property :join_id, Serial, :required => true, :key => true	# Join includes Join Node and Join has Join Id
+  property :join_id, Integer, :required => true, :key => true	# Join includes Join Node and Join has Join Id
   property :subscript, Integer, :required => false	# maybe Join Node has Subscript
   property :value_literal, String, :required => false	# maybe Join Node has Value and Value is represented by Literal
   property :value_is_a_string, Boolean, :required => false	# maybe Join Node has Value and Value is a string
@@ -158,10 +158,10 @@ end
 class JoinRole
   include DataMapper::Resource
 
-  property :join_node_join_id, Serial, :required => true, :key => true	# Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
+  property :join_node_join_id, Integer, :required => true, :key => true	# Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
   property :join_node_ordinal, Integer, :required => true, :key => true	# Join Role is where Join Node includes Role and Join Node has Ordinal position
   belongs_to :join_node, 'JoinNode', :child_key => [:join_node_join_id, :join_node_ordinal], :parent_key => [:join_id, :ordinal]	# Join_Node is involved in Join Role
-  property :role_fact_type_id, Serial, :required => true, :key => true	# Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
+  property :role_fact_type_id, Integer, :required => true, :key => true	# Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :role_ordinal, Integer, :required => true, :key => true	# Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role
   belongs_to :role, :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Role is involved in Join Role
   property :join_step_input_join_role_join_node_join_id, Integer, :required => false	# maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
@@ -181,14 +181,14 @@ end
 class JoinStep
   include DataMapper::Resource
 
-  property :input_join_role_join_node_join_id, Serial, :required => true, :key => true	# Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
+  property :input_join_role_join_node_join_id, Integer, :required => true, :key => true	# Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
   property :input_join_role_join_node_ordinal, Integer, :required => true, :key => true	# Join Step has input-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position
-  property :input_join_role_fact_type_id, Serial, :required => true, :key => true	# Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
+  property :input_join_role_fact_type_id, Integer, :required => true, :key => true	# Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :input_join_role_ordinal, Integer, :required => true, :key => true	# Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role
   belongs_to :input_join_role, 'JoinRole', :child_key => [:input_join_role_join_node_join_id, :input_join_role_join_node_ordinal, :input_join_role_fact_type_id, :input_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join Step has input-Join Role
-  property :output_join_role_join_node_join_id, Serial, :required => true, :key => true	# Join Step has output-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
+  property :output_join_role_join_node_join_id, Integer, :required => true, :key => true	# Join Step has output-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
   property :output_join_role_join_node_ordinal, Integer, :required => true, :key => true	# Join Step has output-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position
-  property :output_join_role_fact_type_id, Serial, :required => true, :key => true	# Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
+  property :output_join_role_fact_type_id, Integer, :required => true, :key => true	# Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :output_join_role_ordinal, Integer, :required => true, :key => true	# Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role
   belongs_to :output_join_role, 'JoinRole', :child_key => [:output_join_role_join_node_join_id, :output_join_role_join_node_ordinal, :output_join_role_fact_type_id, :output_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join Step has output-Join Role
   property :fact_type_id, Integer, :required => true	# Join Step traverses Fact Type and Fact Type has Fact Type Id
@@ -203,7 +203,7 @@ class ParamValue
 
   property :value_literal, String, :required => true, :key => true	# Param Value is where Value for Parameter applies to Value Type and Value is represented by Literal
   property :value_is_a_string, Boolean, :required => true, :key => true	# Param Value is where Value for Parameter applies to Value Type and Value is a string
-  property :value_unit_id, Serial, :required => false, :key => true	# Param Value is where Value for Parameter applies to Value Type and maybe Value is in Unit and Unit has Unit Id
+  property :value_unit_id, Integer, :required => false, :key => true	# Param Value is where Value for Parameter applies to Value Type and maybe Value is in Unit and Unit has Unit Id
   property :parameter_name, String, :length => 64, :required => true, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type
   property :parameter_value_type_vocabulary_name, String, :length => 64, :required => true, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Concept belongs to Vocabulary and Vocabulary is called Name
   property :parameter_value_type_name, String, :length => 64, :required => true, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Concept is called Name
@@ -225,7 +225,7 @@ class Reading
   include DataMapper::Resource
 
   property :ordinal, Integer, :required => true, :key => true	# Reading is in Ordinal position
-  property :fact_type_id, Serial, :required => true, :key => true	# Fact Type has Reading and Fact Type has Fact Type Id
+  property :fact_type_id, Integer, :required => true, :key => true	# Fact Type has Reading and Fact Type has Fact Type Id
   belongs_to :fact_type, 'FactType'	# Fact Type has Reading
   property :text, String, :length => 256, :required => true	# Reading has Text
   property :role_sequence_id, Integer, :required => true	# Reading is in Role Sequence and Role Sequence has Role Sequence Id
@@ -245,7 +245,7 @@ end
 class Role
   include DataMapper::Resource
 
-  property :fact_type_id, Serial, :required => true, :key => true	# Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
+  property :fact_type_id, Integer, :required => true, :key => true	# Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   belongs_to :fact_type, 'FactType'	# Fact_Type is involved in Role
   property :ordinal, Integer, :required => true, :key => true	# Role is where Fact Type has Ordinal role
   property :implicit_fact_type_id, Integer, :required => false	# maybe Implicit Fact Type is implied by Role and Fact Type has Fact Type Id
@@ -266,9 +266,9 @@ end
 class RoleDisplay
   include DataMapper::Resource
 
-  property :fact_type_shape_id, Serial, :required => true, :key => true	# Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Shape Id
+  property :fact_type_shape_id, Integer, :required => true, :key => true	# Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Shape Id
   belongs_to :fact_type_shape, 'FactTypeShape', :child_key => [:fact_type_shape_id], :parent_key => [:shape_id]	# Fact_Type_Shape is involved in Role Display
-  property :role_fact_type_id, Serial, :required => true, :key => true	# Role Display is where Fact Type Shape displays Role in Ordinal position and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
+  property :role_fact_type_id, Integer, :required => true, :key => true	# Role Display is where Fact Type Shape displays Role in Ordinal position and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :role_ordinal, Integer, :required => true, :key => true	# Role Display is where Fact Type Shape displays Role in Ordinal position and Role is where Fact Type has Ordinal role
   belongs_to :role, :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Role is involved in Role Display
   property :ordinal, Integer, :required => true, :key => true	# Role Display is where Fact Type Shape displays Role in Ordinal position
@@ -279,10 +279,10 @@ end
 class RoleRef
   include DataMapper::Resource
 
-  property :role_sequence_id, Serial, :required => true, :key => true	# Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id
+  property :role_sequence_id, Integer, :required => true, :key => true	# Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id
   belongs_to :role_sequence, 'RoleSequence'	# Role_Sequence is involved in Role Ref
   property :ordinal, Integer, :required => true, :key => true	# Role Ref is where Role Sequence in Ordinal position includes Role
-  property :role_fact_type_id, Serial, :required => true, :key => true	# Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
+  property :role_fact_type_id, Integer, :required => true, :key => true	# Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :role_ordinal, Integer, :required => true, :key => true	# Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role
   belongs_to :role, :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Role is involved in Role Ref
   property :join_role_join_node_join_id, Integer, :required => false	# maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
@@ -310,9 +310,9 @@ end
 class RoleValue
   include DataMapper::Resource
 
-  property :fact_id, Serial, :required => true, :key => true	# Role Value fulfils Fact and Fact has Fact Id
+  property :fact_id, Integer, :required => true, :key => true	# Role Value fulfils Fact and Fact has Fact Id
   belongs_to :fact	# Role Value fulfils Fact
-  property :instance_id, Serial, :required => true, :key => true	# Instance plays Role Value and Instance has Instance Id
+  property :instance_id, Integer, :required => true, :key => true	# Instance plays Role Value and Instance has Instance Id
   belongs_to :instance	# Instance plays Role Value
   property :role_fact_type_id, Integer, :required => true	# Role Value is of Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :role_ordinal, Integer, :required => true	# Role Value is of Role and Role is where Fact Type has Ordinal role
@@ -324,10 +324,10 @@ end
 class SetComparisonRoles
   include DataMapper::Resource
 
-  property :set_comparison_constraint_id, Serial, :required => true, :key => true	# Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence and Constraint has Constraint Id
+  property :set_comparison_constraint_id, Integer, :required => true, :key => true	# Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence and Constraint has Constraint Id
   belongs_to :set_comparison_constraint, 'SetComparisonConstraint', :child_key => [:set_comparison_constraint_id], :parent_key => [:constraint_id]	# Set_Comparison_Constraint is involved in Set Comparison Roles
   property :ordinal, Integer, :required => true, :key => true	# Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence
-  property :role_sequence_id, Serial, :required => true, :key => true	# Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence and Role Sequence has Role Sequence Id
+  property :role_sequence_id, Integer, :required => true, :key => true	# Set Comparison Roles is where Set Comparison Constraint has in Ordinal position Role Sequence and Role Sequence has Role Sequence Id
   belongs_to :role_sequence, 'RoleSequence'	# Role_Sequence is involved in Set Comparison Roles
 end
 

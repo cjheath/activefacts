@@ -13,7 +13,7 @@ class Seat
   include DataMapper::Resource
 
   property :number, Integer, :required => true, :key => true	# Seat has Number
-  property :venue_id, Serial, :required => true, :key => true	# Seat is at Venue and Venue has Venue Id
+  property :venue_id, Integer, :required => true, :key => true	# Seat is at Venue and Venue has Venue Id
   belongs_to :venue	# Seat is at Venue
   property :row, String, :length => 2, :required => true, :key => true	# Seat is in Row
   property :reserve, String, :length => 20, :required => true, :key => true	# Seat is in Reserve
@@ -23,9 +23,9 @@ end
 class Ticket
   include DataMapper::Resource
 
-  property :event_id, Serial, :required => true, :key => true	# Ticket is for Event and Event has Event Id
+  property :event_id, Integer, :required => true, :key => true	# Ticket is for Event and Event has Event Id
   belongs_to :event	# Ticket is for Event
-  property :seat_venue_id, Serial, :required => true, :key => true	# Ticket is for Seat and Seat is at Venue and Venue has Venue Id
+  property :seat_venue_id, Integer, :required => true, :key => true	# Ticket is for Seat and Seat is at Venue and Venue has Venue Id
   property :seat_reserve, String, :length => 20, :required => true, :key => true	# Ticket is for Seat and Seat is in Reserve
   property :seat_row, String, :length => 2, :required => true, :key => true	# Ticket is for Seat and Seat is in Row
   property :seat_number, Integer, :required => true, :key => true	# Ticket is for Seat and Seat has Number

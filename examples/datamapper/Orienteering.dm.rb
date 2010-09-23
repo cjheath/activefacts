@@ -46,7 +46,7 @@ end
 class EventControl
   include DataMapper::Resource
 
-  property :event_id, Serial, :required => true, :key => true	# Event Control is where Event includes Control Number and Event has Event ID
+  property :event_id, Integer, :required => true, :key => true	# Event Control is where Event includes Control Number and Event has Event ID
   belongs_to :event	# Event is involved in Event Control
   property :control_number, Integer, :required => true, :key => true	# Event Control is where Event includes Control Number
   property :point_value, Integer, :required => false	# maybe Event Control has Point Value
@@ -58,7 +58,7 @@ class EventScoringMethod
 
   property :scoring_method, String, :length => 32, :required => true, :key => true	# Event Scoring Method is where Scoring Method is used for Course of Event
   property :course, String, :length => 16, :required => true, :key => true	# Event Scoring Method is where Scoring Method is used for Course of Event
-  property :event_id, Serial, :required => true, :key => true	# Event Scoring Method is where Scoring Method is used for Course of Event and Event has Event ID
+  property :event_id, Integer, :required => true, :key => true	# Event Scoring Method is where Scoring Method is used for Course of Event and Event has Event ID
   belongs_to :event	# Event is involved in Event Scoring Method
 end
 
@@ -98,9 +98,9 @@ end
 class PunchPlacement
   include DataMapper::Resource
 
-  property :punch_id, Serial, :required => true, :key => true	# Punch Placement is where Punch is placed at Event Control and Punch has Punch ID
+  property :punch_id, Integer, :required => true, :key => true	# Punch Placement is where Punch is placed at Event Control and Punch has Punch ID
   belongs_to :punch	# Punch is involved in Punch Placement
-  property :event_control_event_id, Serial, :required => true, :key => true	# Punch Placement is where Punch is placed at Event Control and Event Control is where Event includes Control Number and Event has Event ID
+  property :event_control_event_id, Integer, :required => true, :key => true	# Punch Placement is where Punch is placed at Event Control and Event Control is where Event includes Control Number and Event has Event ID
   property :event_control_number, Integer, :required => true, :key => true	# Punch Placement is where Punch is placed at Event Control and Event Control is where Event includes Control Number
   belongs_to :event_control, 'EventControl', :child_key => [:event_control_number, :event_control_event_id], :parent_key => [:control_number, :event_id]	# Event_Control is involved in Punch Placement
 end
@@ -116,9 +116,9 @@ end
 class Visit
   include DataMapper::Resource
 
-  property :punch_id, Serial, :required => true, :key => true	# Visit is where Punch was visited by Entry at Time and Punch has Punch ID
+  property :punch_id, Integer, :required => true, :key => true	# Visit is where Punch was visited by Entry at Time and Punch has Punch ID
   belongs_to :punch	# Punch is involved in Visit
-  property :entry_id, Serial, :required => true, :key => true	# Visit is where Punch was visited by Entry at Time and Entry has Entry ID
+  property :entry_id, Integer, :required => true, :key => true	# Visit is where Punch was visited by Entry at Time and Entry has Entry ID
   belongs_to :entry	# Entry is involved in Visit
   property :time, DateTime, :required => true, :key => true	# Visit is where Punch was visited by Entry at Time
 end

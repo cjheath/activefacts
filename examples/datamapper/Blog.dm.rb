@@ -25,7 +25,7 @@ end
 class Paragraph
   include DataMapper::Resource
 
-  property :post_id, Serial, :required => true, :key => true	# Paragraph is where Post includes Ordinal paragraph and Post has Post Id
+  property :post_id, Integer, :required => true, :key => true	# Paragraph is where Post includes Ordinal paragraph and Post has Post Id
   belongs_to :post	# Post is involved in Paragraph
   property :ordinal, Integer, :required => true, :key => true	# Paragraph is where Post includes Ordinal paragraph
   property :content_style, String, :length => 20, :required => false	# Content is of Paragraph and maybe Content is of Style

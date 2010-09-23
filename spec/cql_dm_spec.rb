@@ -66,6 +66,7 @@ describe "CQL Loader with DataMapper output" do
       end.should_not raise_error
 
       if m = mapping_failures[base]
+        File.delete(actual_file)
         pending m
       end
 
@@ -80,6 +81,7 @@ describe "CQL Loader with DataMapper output" do
         end
       end.should_not raise_error
       if m = dm_failures[base]
+        File.delete(actual_file)
         pending m
       end
 

@@ -14,7 +14,7 @@ end
 class EntrantGivenName
   include DataMapper::Resource
 
-  property :entrant_id, Serial, :required => true, :key => true	# Entrant Given Name is where Entrant has Given Name and Entrant has Entrant ID
+  property :entrant_id, Integer, :required => true, :key => true	# Entrant Given Name is where Entrant has Given Name and Entrant has Entrant ID
   belongs_to :entrant	# Entrant is involved in Entrant Given Name
   property :given_name, String, :required => true, :key => true	# Entrant Given Name is where Entrant has Given Name
 end
