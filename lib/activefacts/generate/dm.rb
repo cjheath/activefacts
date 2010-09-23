@@ -138,11 +138,16 @@ module ActiveFacts
                 key = identifying_facts.include?(column.references[0].fact_type) ||
                   (identifying_facts.empty? && ref.is_self_value)
                 cname = column_name(column)
-                if type == 'Serial' and
-                  !key || o.preferred_identifier.role_sequence.all_role_ref.size != 1
-                  type = 'Integer'
+                required = column.is_mandatory && !key ? ", :required => true" : "" # Key fields are implicitly required
+                if type == 'Serial'
+                  if !key || o.preferred_identifier.role_sequence.all_role_ref.size != 1
+                    type = 'Integer'
+                  else
+                    key = false # This is implicit
+                  end
                 end
-                puts "  property :#{column_name(column)}, #{type}#{length ? ", :length => "+length.to_s : ''}, :required => #{column.is_mandatory}#{key ? ', :key => true' : ''}\t\# #{column.comment}"
+                $stderr.puts "Warning: non-mandatory key field #{o.name}.#{column.name} is forced to mandatory" if !column.is_mandatory && key
+                puts "  property :#{column_name(column)}, #{type}#{length ? ", :length => "+length.to_s : ''}#{required}#{key ? ', :key => true' : ''}\t\# #{column.comment}"
               end
 
               if is_model[ref.to]

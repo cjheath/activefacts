@@ -3,19 +3,19 @@ require 'dm-core'
 class Attendance
   include DataMapper::Resource
 
-  property :attendee_given_name, String, :length => 48, :required => true, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Person has given-Name
-  property :attendee_family_name, String, :length => 48, :required => false, :key => true	# Attendance is where Person (as Attendee) attended Meeting and maybe family-Name is of Person
+  property :attendee_given_name, String, :length => 48, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Person has given-Name
+  property :attendee_family_name, String, :length => 48, :key => true	# Attendance is where Person (as Attendee) attended Meeting and maybe family-Name is of Person
   belongs_to :attendee, 'Person', :child_key => [:attendee_family_name, :attendee_given_name], :parent_key => [:family_name, :given_name]	# Attendee is involved in Attendance
-  property :meeting_date, DateTime, :required => true, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Meeting is held on Date
-  property :meeting_is_board_meeting, Boolean, :required => true, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Meeting is board meeting
-  property :meeting_company_name, String, :length => 48, :required => true, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Company held Meeting and Company is called Company Name
+  property :meeting_date, DateTime, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Meeting is held on Date
+  property :meeting_is_board_meeting, Boolean, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Meeting is board meeting
+  property :meeting_company_name, String, :length => 48, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Company held Meeting and Company is called Company Name
   belongs_to :meeting, :child_key => [:meeting_company_name, :meeting_date, :meeting_is_board_meeting], :parent_key => [:company_name, :date, :is_board_meeting]	# Meeting is involved in Attendance
 end
 
 class Company
   include DataMapper::Resource
 
-  property :company_name, String, :length => 48, :required => true, :key => true	# Company is called Company Name
+  property :company_name, String, :length => 48, :key => true	# Company is called Company Name
   property :is_listed, Boolean, :required => true	# Company is listed
   has n, :meeting	# Company held Meeting
   has n, :directorship	# Person (as Director) directs Company
@@ -25,10 +25,10 @@ end
 class Directorship
   include DataMapper::Resource
 
-  property :director_given_name, String, :length => 48, :required => true, :key => true	# Directorship is where Person (as Director) directs Company and Person has given-Name
-  property :director_family_name, String, :length => 48, :required => false, :key => true	# Directorship is where Person (as Director) directs Company and maybe family-Name is of Person
+  property :director_given_name, String, :length => 48, :key => true	# Directorship is where Person (as Director) directs Company and Person has given-Name
+  property :director_family_name, String, :length => 48, :key => true	# Directorship is where Person (as Director) directs Company and maybe family-Name is of Person
   belongs_to :director, 'Person', :child_key => [:director_family_name, :director_given_name], :parent_key => [:family_name, :given_name]	# Director is involved in Directorship
-  property :company_name, String, :length => 48, :required => true, :key => true	# Directorship is where Person (as Director) directs Company and Company is called Company Name
+  property :company_name, String, :length => 48, :key => true	# Directorship is where Person (as Director) directs Company and Company is called Company Name
   belongs_to :company	# Company is involved in Directorship
   property :appointment_date, DateTime, :required => true	# Directorship began on appointment-Date
 end
@@ -36,28 +36,28 @@ end
 class Meeting
   include DataMapper::Resource
 
-  property :company_name, String, :length => 48, :required => true, :key => true	# Company held Meeting and Company is called Company Name
+  property :company_name, String, :length => 48, :key => true	# Company held Meeting and Company is called Company Name
   belongs_to :company	# Company held Meeting
-  property :date, DateTime, :required => true, :key => true	# Meeting is held on Date
-  property :is_board_meeting, Boolean, :required => true, :key => true	# Meeting is board meeting
+  property :date, DateTime, :key => true	# Meeting is held on Date
+  property :is_board_meeting, Boolean, :key => true	# Meeting is board meeting
   has n, :attendance, :child_key => [:meeting_company_name, :meeting_date, :meeting_is_board_meeting], :parent_key => [:company_name, :date, :is_board_meeting]	# Person (as Attendee) attended Meeting
 end
 
 class Person
   include DataMapper::Resource
 
-  property :family_name, String, :length => 48, :required => false, :key => true	# maybe family-Name is of Person
-  property :given_name, String, :length => 48, :required => true, :key => true	# Person has given-Name
-  property :birth_date, DateTime, :required => false	# maybe Person was born on birth-Date
+  property :family_name, String, :length => 48, :key => true	# maybe family-Name is of Person
+  property :given_name, String, :length => 48, :key => true	# Person has given-Name
+  property :birth_date, DateTime	# maybe Person was born on birth-Date
   has n, :attendance, :child_key => [:attendee_family_name, :attendee_given_name], :parent_key => [:family_name, :given_name]	# Person (as Attendee) attended Meeting
   has n, :directorship, :child_key => [:director_family_name, :director_given_name], :parent_key => [:family_name, :given_name]	# Person (as Director) directs Company
 end
 
 class Employee < Person
-  property :employee_nr, Integer, :required => true, :key => true	# Employee has Employee Nr
+  property :employee_nr, Integer, :key => true	# Employee has Employee Nr
   property :company_name, String, :length => 48, :required => true	# Employee works at Company and Company is called Company Name
   belongs_to :company	# Employee works at Company
-  property :manager_nr, Integer, :required => false	# maybe Employee is supervised by Manager and Employee has Employee Nr
+  property :manager_nr, Integer	# maybe Employee is supervised by Manager and Employee has Employee Nr
   belongs_to :manager, :child_key => [:manager_nr], :parent_key => [:employee_nr]	# Employee is supervised by Manager
 end
 
