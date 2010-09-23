@@ -49,8 +49,8 @@ class Person
   property :family_name, String, :length => 48, :key => true	# maybe family-Name is of Person
   property :given_name, String, :length => 48, :key => true	# Person has given-Name
   property :birth_date, DateTime	# maybe Person was born on birth-Date
-  has n, :attendance, :child_key => [:attendee_family_name, :attendee_given_name], :parent_key => [:family_name, :given_name]	# Person (as Attendee) attended Meeting
-  has n, :directorship, :child_key => [:director_family_name, :director_given_name], :parent_key => [:family_name, :given_name]	# Person (as Director) directs Company
+  has n, :attendance_as_attendee, 'Attendance', :child_key => [:attendee_family_name, :attendee_given_name], :parent_key => [:family_name, :given_name]	# Person (as Attendee) attended Meeting
+  has n, :directorship_as_director, 'Directorship', :child_key => [:director_family_name, :director_given_name], :parent_key => [:family_name, :given_name]	# Person (as Director) directs Company
 end
 
 class Employee < Person

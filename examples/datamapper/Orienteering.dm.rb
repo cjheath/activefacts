@@ -6,7 +6,7 @@ class Club
   property :club_code, String, :length => 6, :key => true	# Club has Club Code
   property :club_name, String, :length => 32, :required => true	# Club Name is name of Club
   has n, :event	# Club runs Event
-  has n, :map, :child_key => [:owner_code], :parent_key => [:club_code]	# Club (as Owner) owns Map
+  has n, :map_as_owner, 'Map', :child_key => [:owner_code], :parent_key => [:club_code]	# Club (as Owner) owns Map
   has n, :person	# Person is member of Club
 end
 

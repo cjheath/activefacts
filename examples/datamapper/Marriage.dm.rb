@@ -16,7 +16,7 @@ class Person
 
   property :family_name, String, :key => true	# Person has family-Name
   property :given_name, String, :key => true	# Person has given-Name
-  has n, :marriage, :child_key => [:wife_family_name, :wife_given_name], :parent_key => [:family_name, :given_name]	# Marriage is of wife-Person (as Wife)
-  has n, :marriage, :child_key => [:husband_family_name, :husband_given_name], :parent_key => [:family_name, :given_name]	# Marriage is by husband-Person (as Husband)
+  has n, :marriage_as_wife, 'Marriage', :child_key => [:wife_family_name, :wife_given_name], :parent_key => [:family_name, :given_name]	# Marriage is of wife-Person (as Wife)
+  has n, :marriage_as_husband, 'Marriage', :child_key => [:husband_family_name, :husband_given_name], :parent_key => [:family_name, :given_name]	# Marriage is by husband-Person (as Husband)
 end
 

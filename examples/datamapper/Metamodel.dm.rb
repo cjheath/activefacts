@@ -87,8 +87,8 @@ end
 
 class EntityType < Concept
   has 1, :fact_type, 'FactType', :child_key => [:entity_type_name, :entity_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type nests Fact Type
-  has n, :type_inheritance, 'TypeInheritance', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
-  has n, :type_inheritance, 'TypeInheritance', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
+  has n, :type_inheritance_as_subtype, 'TypeInheritance', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
+  has n, :type_inheritance_as_supertype, 'TypeInheritance', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
 end
 
 class Fact
@@ -428,8 +428,8 @@ class Unit
   property :plural_name, String, :length => 64	# maybe Unit has plural-Name
   property :is_fundamental, Boolean, :required => true	# Unit is fundamental
   property :vocabulary_name, String, :length => 64, :required => true	# Vocabulary includes Unit and Vocabulary is called Name
-  has n, :derivation, :child_key => [:derived_unit_id], :parent_key => [:unit_id]	# Unit (as Derived Unit) is derived from base-Unit (as Base Unit)
-  has n, :derivation, :child_key => [:base_unit_id], :parent_key => [:unit_id]	# Unit (as Derived Unit) is derived from base-Unit (as Base Unit)
+  has n, :derivation_as_derived_unit, 'Derivation', :child_key => [:derived_unit_id], :parent_key => [:unit_id]	# Unit (as Derived Unit) is derived from base-Unit (as Base Unit)
+  has n, :derivation_as_base_unit, 'Derivation', :child_key => [:base_unit_id], :parent_key => [:unit_id]	# Unit (as Derived Unit) is derived from base-Unit (as Base Unit)
   has n, :value_type, 'ValueType'	# Value Type is of Unit
 end
 
@@ -460,7 +460,7 @@ class ValueType < Concept
   property :supertype_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Concept is called Name
   belongs_to :supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)
   property :is_auto_assigned, Boolean, :required => true	# Value Type is auto-assigned
-  has n, :value_type, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)
+  has n, :value_type_as_supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)
   has n, :param_value, 'ParamValue', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value for Parameter applies to Value Type
 end
 

@@ -8,7 +8,7 @@ class Person
 end
 
 class Boy < Person
-  has 1, :girlfriend, 'Girl', :child_key => [:boyfriend_id], :parent_key => [:person_id]	# Girl (as Girlfriend) is going out with Boy (as Boyfriend)
+  has 1, :girlfriend_as_boyfriend, 'Girl', :child_key => [:boyfriend_id], :parent_key => [:person_id]	# Girl (as Girlfriend) is going out with Boy (as Boyfriend)
 end
 
 class Girl < Person
