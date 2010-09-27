@@ -52,6 +52,6 @@ class Topic
   belongs_to :parent_topic, 'Topic', :child_key => [:parent_topic_id], :parent_key => [:topic_id]	# Topic belongs to parent-Topic
   property :topic_name, String, :length => 64, :required => true	# Topic is called topic-Name
   has n, :post	# Post belongs to Topic
-  has n, :topic, :child_key => [:parent_topic_id], :parent_key => [:topic_id]	# Topic belongs to parent-Topic
+  has n, :topic_as_parent_topic, 'Topic', :child_key => [:parent_topic_id], :parent_key => [:topic_id]	# Topic belongs to parent-Topic
 end
 

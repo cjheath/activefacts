@@ -129,13 +129,18 @@ CREATE TABLE SalesOrderItem (
 GO
 
 CREATE TABLE TransferRequest (
-	-- maybe Transfer Request is from-Warehouse and Warehouse has Warehouse ID,
-	FromWarehouseID                         int NULL,
-	-- maybe Transfer Request is to-Warehouse and Warehouse has Warehouse ID,
-	ToWarehouseID                           int NULL,
+	-- Transfer Request is from Warehouse (as From Warehouse) and Warehouse has Warehouse ID,
+	FromWarehouseID                         int NOT NULL,
+	-- Transfer Request is for Product and Product has Product ID,
+	ProductID                               int NOT NULL,
+	-- Transfer Request is for Quantity,
+	Quantity                                int NOT NULL,
+	-- Transfer Request is to Warehouse (as To Warehouse) and Warehouse has Warehouse ID,
+	ToWarehouseID                           int NOT NULL,
 	-- Transfer Request has Transfer Request ID,
 	TransferRequestID                       int IDENTITY NOT NULL,
-	PRIMARY KEY(TransferRequestID)
+	PRIMARY KEY(TransferRequestID),
+	FOREIGN KEY (ProductID) REFERENCES Product (ProductID)
 )
 GO
 

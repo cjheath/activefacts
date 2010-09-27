@@ -192,11 +192,10 @@ module ActiveFacts
                 else
                   next
                 end
-              our_role_ref = ref.fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == ref.to_role}
+              prr = ref.fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == ref.to_role}
               association_name = (ref.from_names*'_')
-              if our_role_ref && our_role_ref.role.role_name
-                # Avoid duplicate association names (e.g. has n, :type_inheritance_as_subtype in Metamodel)
-                association_name += "_as_"+symbol_name(our_role_ref.role.role_name)
+              if prr && (prr.role.role_name || prr.leading_adjective || prr.trailing_adjective)
+                association_name += "_as_"+symbol_name(ref.to_names*'_')
               end
               model_name = association_name != ref.from.name ? model_name = ", '#{class_name(ref.from.name)}'" : ''
               comment = o.is_a?(ActiveFacts::Metamodel::EntityType) && o.fact_type ? "#{association_name} is involved in #{o.name}" : ref.reading

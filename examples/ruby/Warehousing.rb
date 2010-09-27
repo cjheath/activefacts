@@ -131,8 +131,10 @@ module ::Warehousing
 
   class TransferRequest
     identified_by :transfer_request_id
-    has_one :from_warehouse, :class => "Warehouse"  # See Warehouse.all_transfer_request_as_from_warehouse
-    has_one :to_warehouse, :class => "Warehouse"  # See Warehouse.all_transfer_request_as_to_warehouse
+    has_one :from_warehouse, :class => "Warehouse", :mandatory => true  # See Warehouse.all_transfer_request_as_from_warehouse
+    has_one :product, :mandatory => true        # See Product.all_transfer_request
+    has_one :quantity, :mandatory => true       # See Quantity.all_transfer_request
+    has_one :to_warehouse, :class => "Warehouse", :mandatory => true  # See Warehouse.all_transfer_request_as_to_warehouse
     one_to_one :transfer_request_id, :class => TransferRequestID, :mandatory => true  # See TransferRequestID.transfer_request
   end
 

@@ -43,7 +43,7 @@ module ActiveFacts
         next if role.implicit_fact_type     # Already exists
         # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
         # We only do it when the unary fact type is not objectified
-        implicit_fact_type = @constellation.ImplicitFactType(:new, :role => role)
+        implicit_fact_type = @constellation.ImplicitFactType(:new, :implying_role => role)
         entity_type = @entity_type || @constellation.ImplicitBooleanValueType(role.concept.vocabulary, "_ImplicitBooleanValueType")
         phantom_role = @constellation.Role(implicit_fact_type, 0, :concept => entity_type)
       end
@@ -339,7 +339,7 @@ module ActiveFacts
       def create_implicit_fact_types
         fact_type.all_role.each do |role|
           next if role.implicit_fact_type     # Already exists
-          implicit_fact_type = @constellation.ImplicitFactType(:new, :role => role)
+          implicit_fact_type = @constellation.ImplicitFactType(:new, :implying_role => role)
           phantom_role = @constellation.Role(implicit_fact_type, 0, :concept => self)
           # We could create a copy of the visible external role here, but there's no need yet...
           # Nor is there a need for a presence constraint, readings, etc.
@@ -635,10 +635,10 @@ module ActiveFacts
       def default_reading
         # There are two cases, where role is in a unary fact type, and where the fact type is objectified
         # If a unary fact type is objectified, only the ImplicitFactType for the objectification is asserted
-        if objectification = role.fact_type.entity_type
-          "#{objectification.name} involves #{role.concept.name}"
+        if objectification = implying_role.fact_type.entity_type
+          "#{objectification.name} involves #{implying_role.concept.name}"
         else
-          role.fact_type.default_reading+" Boolean"  # Must be a unary FT
+          implying_role.fact_type.default_reading+" Boolean"  # Must be a unary FT
         end
       end
 
@@ -684,7 +684,7 @@ module ActiveFacts
         end
 
         def role_sequence
-          ImplicitReadingRoleSequence.new([@fact_type.role, @fact_type.all_role.single])
+          ImplicitReadingRoleSequence.new([@fact_type.implying_role, @fact_type.all_role.single])
         end
 
         def ordinal; 0; end
@@ -693,7 +693,7 @@ module ActiveFacts
       def all_reading
         [@reading ||= ImplicitReading.new(
           self,
-          role.fact_type.entity_type ? "{0} involves {1}" : role.fact_type.default_reading+" Boolean"
+          implying_role.fact_type.entity_type ? "{0} involves {1}" : implying_role.fact_type.default_reading+" Boolean"
         )]
       end
     end

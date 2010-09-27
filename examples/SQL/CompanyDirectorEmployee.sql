@@ -36,6 +36,18 @@ CREATE TABLE Directorship (
 )
 GO
 
+CREATE TABLE Meeting (
+	-- Company held Meeting and Company is called Company Name,
+	CompanyName                             varchar(48) NOT NULL,
+	-- Meeting is held on Date,
+	Date                                    datetime NOT NULL,
+	-- Meeting is board meeting,
+	IsBoardMeeting                          bit NOT NULL,
+	PRIMARY KEY(Date, IsBoardMeeting, CompanyName),
+	FOREIGN KEY (CompanyName) REFERENCES Company (CompanyName)
+)
+GO
+
 CREATE TABLE Person (
 	-- maybe Person was born on birth-Date,
 	BirthDate                               datetime NULL CHECK(BirthDate >= '1900/01/01'),
@@ -62,6 +74,10 @@ CREATE VIEW dbo.EmployeeInPerson_Nr (EmployeeNr) WITH SCHEMABINDING AS
 GO
 
 CREATE UNIQUE CLUSTERED INDEX NumberIdentifiesEmployee ON dbo.EmployeeInPerson_Nr(EmployeeNr)
+GO
+
+ALTER TABLE Attendance
+	ADD FOREIGN KEY (MeetingCompanyName, MeetingDate, MeetingIsBoardMeeting) REFERENCES Meeting (CompanyName, Date, IsBoardMeeting)
 GO
 
 ALTER TABLE Attendance

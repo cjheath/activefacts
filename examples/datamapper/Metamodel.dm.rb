@@ -120,7 +120,7 @@ class FactType
 end
 
 class ImplicitFactType < FactType
-  has 1, :role, :child_key => [:implicit_fact_type_id], :parent_key => [:fact_type_id]	# Implicit Fact Type is implied by Role
+  has 1, :implying_role, 'Role', :child_key => [:implicit_fact_type_id], :parent_key => [:fact_type_id]	# Implicit Fact Type is implied by Role (as Implying Role)
 end
 
 class Instance
@@ -173,8 +173,8 @@ class JoinRole
   property :join_step_output_join_role_fact_type_id, Integer	# maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :join_step_output_join_role_ordinal, Integer	# maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role
   belongs_to :join_step, 'JoinStep', :child_key => [:join_step_input_join_role_fact_type_id, :join_step_input_join_role_join_node_join_id, :join_step_input_join_role_join_node_ordinal, :join_step_input_join_role_ordinal, :join_step_output_join_role_fact_type_id, :join_step_output_join_role_join_node_join_id, :join_step_output_join_role_join_node_ordinal, :join_step_output_join_role_ordinal], :parent_key => [:input_join_role_fact_type_id, :input_join_role_join_node_join_id, :input_join_role_join_node_ordinal, :input_join_role_ordinal, :output_join_role_fact_type_id, :output_join_role_join_node_join_id, :output_join_role_join_node_ordinal, :output_join_role_ordinal]	# Join_Step is involved in Join Role
-  has n, :join_step, 'JoinStep', :child_key => [:input_join_role_join_node_join_id, :input_join_role_join_node_ordinal, :input_join_role_fact_type_id, :input_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join_Step is involved in Join Role
-  has n, :join_step, 'JoinStep', :child_key => [:output_join_role_join_node_join_id, :output_join_role_join_node_ordinal, :output_join_role_fact_type_id, :output_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join_Step is involved in Join Role
+  has n, :join_step_as_input_join_role, 'JoinStep', :child_key => [:input_join_role_join_node_join_id, :input_join_role_join_node_ordinal, :input_join_role_fact_type_id, :input_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join_Step_as_input_join_role is involved in Join Role
+  has n, :join_step_as_output_join_role, 'JoinStep', :child_key => [:output_join_role_join_node_join_id, :output_join_role_join_node_ordinal, :output_join_role_fact_type_id, :output_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join_Step_as_output_join_role is involved in Join Role
   has 1, :role_ref, 'RoleRef', :child_key => [:join_role_join_node_join_id, :join_role_join_node_ordinal, :join_role_fact_type_id, :join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Role_Ref is involved in Join Role
 end
 
@@ -248,13 +248,13 @@ class Role
   property :fact_type_id, Integer, :key => true	# Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   belongs_to :fact_type, 'FactType'	# Fact_Type is involved in Role
   property :ordinal, Integer, :key => true	# Role is where Fact Type has Ordinal role
-  property :implicit_fact_type_id, Integer	# maybe Implicit Fact Type is implied by Role and Fact Type has Fact Type Id
+  property :implicit_fact_type_id, Integer	# maybe Implicit Fact Type is implied by Role (as Implying Role) and Fact Type has Fact Type Id
   has 1, :implicit_fact_type, 'ImplicitFactType', :parent_key => [:implicit_fact_type_id], :child_key => [:fact_type_id]	# Implicit_Fact_Type is involved in Role
   property :role_name, String, :length => 64	# maybe Role has role-Name
   property :concept_vocabulary_name, String, :length => 64, :required => true	# Concept plays Role and Concept belongs to Vocabulary and Vocabulary is called Name
   property :concept_name, String, :length => 64, :required => true	# Concept plays Role and Concept is called Name
   belongs_to :concept, :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Concept is involved in Role
-  has n, :ring_constraint, 'RingConstraint', :child_key => [:other_role_fact_type_id, :other_role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Ring_Constraint is involved in Role
+  has n, :ring_constraint_as_other_role, 'RingConstraint', :child_key => [:other_role_fact_type_id, :other_role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Ring_Constraint_as_other_role is involved in Role
   has n, :ring_constraint, 'RingConstraint', :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Ring_Constraint is involved in Role
   has n, :role_value, 'RoleValue', :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Role_Value is involved in Role
   has 1, :role_value_constraint, 'ValueConstraint', :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# role_Value_Constraint is involved in Role
@@ -301,8 +301,8 @@ class RoleSequence
   property :has_unused_dependency_to_force_table_in_norma, Boolean, :required => true	# Role Sequence has unused dependency to force table in norma
   has n, :presence_constraint, 'PresenceConstraint'	# Presence Constraint covers Role Sequence
   has n, :reading	# Reading is in Role Sequence
-  has n, :subset_constraint, 'SubsetConstraint', :child_key => [:subset_role_sequence_id], :parent_key => [:role_sequence_id]	# Subset Constraint covers subset-Role Sequence
-  has n, :subset_constraint, 'SubsetConstraint', :child_key => [:superset_role_sequence_id], :parent_key => [:role_sequence_id]	# Subset Constraint covers superset-Role Sequence
+  has n, :subset_constraint_as_subset_role_sequence, 'SubsetConstraint', :child_key => [:subset_role_sequence_id], :parent_key => [:role_sequence_id]	# Subset Constraint covers subset-Role Sequence
+  has n, :subset_constraint_as_superset_role_sequence, 'SubsetConstraint', :child_key => [:superset_role_sequence_id], :parent_key => [:role_sequence_id]	# Subset Constraint covers superset-Role Sequence
   has n, :role_ref, 'RoleRef'	# Role Sequence in Ordinal position includes Role
   has n, :set_comparison_roles, 'SetComparisonRoles'	# Set Comparison Constraint has in Ordinal position Role Sequence
 end

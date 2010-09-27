@@ -72,12 +72,14 @@ Purchase Order is to one Supplier,
 Transfer Request is identified by its ID;
 Dispatch Item is for at most one Transfer Request;
 Received Item is for at most one Transfer Request;
+Transfer Request is for one Product;
+Transfer Request is for one Quantity;
 
 Warehouse is identified by its ID;
 Purchase Order is to one Warehouse;
 Sales Order is from one Warehouse;
-Transfer Request is at most one from-Warehouse;
-Transfer Request is at most one to-Warehouse;
+Transfer Request is from one Warehouse (as From Warehouse);
+Transfer Request is to one Warehouse (as To Warehouse);
 Warehouse contains at least one Bin;
 
 Customer is a kind of Party;

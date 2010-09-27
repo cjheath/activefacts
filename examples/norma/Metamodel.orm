@@ -6555,7 +6555,7 @@
 					<orm:Role id="_6AFE5089-D2B2-4F2F-AA33-AC77DB5E7BED" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_11A7D8B1-EED8-432F-973B-4B303F1D58E4" />
 					</orm:Role>
-					<orm:Role id="_56C08DD7-2B5D-4B91-94E1-FA0FBE7C5909" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
+					<orm:Role id="_56C08DD7-2B5D-4B91-94E1-FA0FBE7C5909" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="Implying Role">
 						<orm:RolePlayer ref="_ABCDC9B2-822F-4E84-83D4-3732C029BB1B" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -10744,6 +10744,9 @@ Type Conversion Fact Type or Arithmetic Fact Type</orm:Text>
 					<ormDiagram:ReadingShape id="_FF3AD212-9591-4442-8FEF-548F6623A098" IsExpanded="true" AbsoluteBounds="3.9065428158874171, 1.5300553524565144, 0.99024564027786255, 0.12950302660465241">
 						<ormDiagram:Subject ref="_3075E162-4B49-4701-9FA3-42F4194A71FD" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_53C65476-7340-40C8-80CF-D1E6FE99425C" IsExpanded="true" AbsoluteBounds="3.706542815887417, 1.0214149501618191, 0.05, 0.05">
+						<ormDiagram:Subject ref="_56C08DD7-2B5D-4B91-94E1-FA0FBE7C5909" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_A18AB5A9-936C-441C-AB04-775C5CE606F0" />
 				<ormDiagram:RoleDisplayOrder>
@@ -13710,7 +13713,7 @@ Type Conversion Fact Type or Arithmetic Fact Type</orm:Text>
 							<rcd:Column id="_AB0CA7D4-65FF-4E4E-B61C-71EF859977E7" Name="typeInheritanceSupertypeName" IsNullable="true" />
 							<rcd:Column id="_85C1A07E-4565-4B9B-BDA3-B71A003270F6" Name="typeInheritanceSubtypeVocabulary" IsNullable="true" />
 							<rcd:Column id="_D297EE9C-7C62-4609-8812-B7E63DAC548D" Name="typeInheritanceSubtypeName" IsNullable="true" />
-							<rcd:Column id="_BA5CA322-5FF9-4055-9476-8389FCDF4191" Name="implicitFactTypeRoleFactTypeId" IsNullable="true" />
+							<rcd:Column id="_BA5CA322-5FF9-4055-9476-8389FCDF4191" Name="implicitFactTypeImplyingRoleFactTypeId" IsNullable="true" />
 							<rcd:Column id="_E5EFB330-1536-4074-9D31-B2F00BFEF3E1" Name="implicitFactTypeOrdinal" IsNullable="true" />
 						</rcd:Columns>
 						<rcd:Constraints>
@@ -14781,13 +14784,13 @@ Type Conversion Fact Type or Arithmetic Fact Type</orm:Text>
 		<oialtocdb:ColumnHasConceptTypeChild id="_F308AECC-8D17-49D1-8787-84680BDA55A9" Column="_F386F964-B329-43FA-AFFA-9C1BB9EF2812" ConceptTypeChild="_8AD7B9A6-9B6D-43C1-BFAC-E4729EAD9151" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_719E5C5A-D142-4B51-ACFD-80E0C02FD016" Column="_F386F964-B329-43FA-AFFA-9C1BB9EF2812" ConceptTypeChild="_1E5DD262-7ED3-4B23-8177-5795775FA1B8" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_0157CBB4-7831-48B8-BCD6-39E35F67C287" Column="_8075DA3D-E91D-4361-93F6-31F54EFFE8DA" ConceptTypeChild="_866BACFC-8362-4952-943F-88DCB5C99EF6" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_E60FA5D2-6FE9-46E7-A73D-940AA688EF84" Column="_E5EFB330-1536-4074-9D31-B2F00BFEF3E1" ConceptTypeChild="_7E762016-FD6D-4167-83A6-5C51E3AE6C92" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_F72C2785-EF69-4BC5-BD85-A99ABB6699F1" Column="_E5EFB330-1536-4074-9D31-B2F00BFEF3E1" ConceptTypeChild="_17D6C99C-6C75-4675-B516-A618280D4795" />
-		<oialtocdb:ColumnHasConceptTypeChild id="_0DE84BE5-1246-4760-90E6-BA991C2570C2" Column="_E5EFB330-1536-4074-9D31-B2F00BFEF3E1" ConceptTypeChild="_1E5DD262-7ED3-4B23-8177-5795775FA1B8" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_9C5893D5-6465-41F4-9F41-B239BC5D64CB" Column="_BA5CA322-5FF9-4055-9476-8389FCDF4191" ConceptTypeChild="_7E762016-FD6D-4167-83A6-5C51E3AE6C92" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_0FE18EEF-92B6-436B-924C-5EE18ACAB6BF" Column="_BA5CA322-5FF9-4055-9476-8389FCDF4191" ConceptTypeChild="_17D6C99C-6C75-4675-B516-A618280D4795" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_A2B893A8-6035-4099-A8FF-AF2F14A25FEF" Column="_BA5CA322-5FF9-4055-9476-8389FCDF4191" ConceptTypeChild="_CDBDBB71-EE31-40B8-A019-5622046C91F1" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_A3FE5896-A843-44B8-B285-2CA006E9308D" Column="_BA5CA322-5FF9-4055-9476-8389FCDF4191" ConceptTypeChild="_95F36DBA-85D0-4210-9F69-CD82971ED4D0" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_E60FA5D2-6FE9-46E7-A73D-940AA688EF84" Column="_E5EFB330-1536-4074-9D31-B2F00BFEF3E1" ConceptTypeChild="_7E762016-FD6D-4167-83A6-5C51E3AE6C92" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_F72C2785-EF69-4BC5-BD85-A99ABB6699F1" Column="_E5EFB330-1536-4074-9D31-B2F00BFEF3E1" ConceptTypeChild="_17D6C99C-6C75-4675-B516-A618280D4795" />
+		<oialtocdb:ColumnHasConceptTypeChild id="_0DE84BE5-1246-4760-90E6-BA991C2570C2" Column="_E5EFB330-1536-4074-9D31-B2F00BFEF3E1" ConceptTypeChild="_1E5DD262-7ED3-4B23-8177-5795775FA1B8" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_CC35D934-A20E-40BD-9DDF-066DA190C566" Column="_B3D98C5E-5E4C-4E29-A60C-FB1E21CC2450" ConceptTypeChild="_F3861ECA-9997-4357-9CCF-64D26B300F61" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_D0755CF7-8101-40E2-BD50-21F895D3C2A8" Column="_B3D98C5E-5E4C-4E29-A60C-FB1E21CC2450" ConceptTypeChild="_8AD7B9A6-9B6D-43C1-BFAC-E4729EAD9151" />
 		<oialtocdb:ColumnHasConceptTypeChild id="_5ACAED30-823C-45C7-A99C-356EE259F1B0" Column="_B3D98C5E-5E4C-4E29-A60C-FB1E21CC2450" ConceptTypeChild="_CDBDBB71-EE31-40B8-A019-5622046C91F1" />

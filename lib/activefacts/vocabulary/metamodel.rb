@@ -255,7 +255,7 @@ module ActiveFacts
       has_one :fact_type, :mandatory => true      # See FactType.all_role
       has_one :ordinal, :mandatory => true        # See Ordinal.all_role
       has_one :concept, :mandatory => true        # See Concept.all_role
-      one_to_one :implicit_fact_type              # See ImplicitFactType.role
+      one_to_one :implicit_fact_type, :counterpart => :implying_role  # See ImplicitFactType.implying_role
       has_one :role_name, :class => Name          # See Name.all_role_as_role_name
     end
 

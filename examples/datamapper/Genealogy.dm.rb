@@ -86,6 +86,6 @@ class User
   property :email, String, :length => 64	# maybe Email is of User
   has n, :source	# User provided Source
   has n, :friend	# User is friend of other-User
-  has n, :friend, :child_key => [:other_user_id], :parent_key => [:user_id]	# User is friend of other-User
+  has n, :friend_as_other_user, 'Friend', :child_key => [:other_user_id], :parent_key => [:user_id]	# User is friend of other-User
 end
 

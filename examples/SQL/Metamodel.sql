@@ -410,7 +410,7 @@ CREATE TABLE Role (
 	ConceptVocabularyName                   varchar(64) NOT NULL,
 	-- Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
-	-- maybe Implicit Fact Type is implied by Role and Fact Type has Fact Type Id,
+	-- maybe Implicit Fact Type is implied by Role (as Implying Role) and Fact Type has Fact Type Id,
 	ImplicitFactTypeId                      int NULL,
 	-- Role is where Fact Type has Ordinal role,
 	Ordinal                                 shortint NOT NULL,
