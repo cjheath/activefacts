@@ -12,11 +12,12 @@ class Symbol #:nodoc:
 end
 
 class String #:nodoc:
-  def camelcase(first=false, on='_\s')
-    if first
-      gsub(/(^|[#{on}]+)([A-Za-z])/){ $2.upcase }
+  # This may be overridden by a version from ActiveSupport. For our purposes, either will work.
+  def camelcase(first_letter = :upper)
+    if first_letter == :upper
+      gsub(/(^|[_\s]+)([A-Za-z])/){ $2.upcase }
     else
-      gsub(/([#{on}]+)([A-Za-z])/){ $2.upcase }
+      gsub(/([_\s]+)([A-Za-z])/){ $2.upcase }
     end
   end
 

@@ -31,17 +31,28 @@ module ActiveFacts
         end
 
         def display
-          "#{
-            @qualifiers && @qualifiers.size > 0 ? @qualifiers.inspect+' ' : nil
-          }#{
-            @phrases.map{|p| p.to_s }*" "
-          }#{
-            @context_note && ' '+@context_note.inspect
-          }"
+          to_s
         end
 
         def inspect
-          "#{@qualifiers && @qualifiers.size > 0 ? @qualifiers.inspect+' ' : nil}#{@phrases.map{|p|p.inspect}*" "}#{@context_note && ' '+@context_note.inspect}"
+          to_s
+        end
+
+        def to_s
+          "#{
+            @qualifiers && @qualifiers.size > 0 ? @qualifiers.inspect+' ' : nil
+          }#{
+            quotes = false
+            @phrases.inject(""){|s, p|
+              if RoleRef === p
+                s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s + ' '
+              else
+                s + (quotes ? '' : (quotes = true; '"')) + p + ' '
+              end
+            }.sub(/ $/,'') + (quotes ? '"' : '')
+          }#{
+            @context_note && ' ' + @context_note.inspect
+          }"
         end
 
         def identify_players_with_role_name context
@@ -677,27 +688,25 @@ module ActiveFacts
         end
 
         def inspect
-          "RoleRef<#{
-            @quantifier && @quantifier.inspect+' ' }#{
-            @leading_adjective && @leading_adjective.sub(/ |$/,'- ').sub(/ *$/,' ') }#{
-            @term }#{
-            @trailing_adjective && ' '+@trailing_adjective.sub(/(.* |^)/, '\1-') }#{
-            @role_name and @role_name.is_a?(Integer) ? "(#{@role_name})" : " (as #{@role_name})" }#{
-            @literal && ' '+@literal.inspect }#{
-            @value_constraint && ' '+@value_constraint.inspect
-            }#{
-            @objectification_join ? "(where #{@objectification_join.inspect})" : ""
-          }>"
+          to_s
         end
 
         def to_s
-          "#{
-            @quantifier && @quantifier.inspect+' ' }#{
-            @leading_adjective && @leading_adjective.sub(/ |$/,'- ').sub(/ *$/,' ') }#{
-            @role_name || @term }#{
-            @trailing_adjective && ' '+@trailing_adjective.sub(/(.* |^)/, '\1-') }#{
-            @literal && ' '+@literal.inspect }#{
-            @value_constraint && ' '+@value_constraint.inspect }"
+          "{#{
+            @quantifier && @quantifier.inspect+' '
+          }#{
+            @leading_adjective && @leading_adjective.sub(/ |$/,'- ').sub(/ *$/,' ')
+          }#{
+            @term
+          }#{
+            @trailing_adjective && ' '+@trailing_adjective.sub(/(.* |^)/, '\1-')
+          }#{
+            @role_name and @role_name.is_a?(Integer) ? "(#{@role_name})" : " (as #{@role_name})"
+          }#{
+            @literal && ' '+@literal.inspect
+          }#{
+            @value_constraint && ' '+@value_constraint.to_s
+          }}"
         end
 
         def <=>(other)

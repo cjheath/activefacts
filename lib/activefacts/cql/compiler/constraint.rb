@@ -187,6 +187,10 @@ module ActiveFacts
           raise "#{self.class} must cover some of the same roles, see #{@bindings_by_list.inspect}" unless @common_bindings.size > 0
           @common_bindings
         end
+
+        def to_s
+          "#{self.class.name.sub(/.*::/,'')}" + (@readings_lists.size > 0 ? " over #{@readings_lists.inspect}" : '')
+        end
       end
 
       class PresenceConstraint < Constraint
@@ -261,6 +265,9 @@ module ActiveFacts
           end
         end
 
+        def to_s
+          "#{super} #{@quantifier.min}-#{@quantifier.max} over (#{@role_refs.map{|rr| rr.inspect}*', '})"
+        end
       end
 
       class SetConstraint < Constraint
@@ -546,7 +553,6 @@ module ActiveFacts
         def loose_binding
           loose_bind_wherever_possible
         end
-
       end
 
       class RingConstraint < Constraint
@@ -606,16 +612,22 @@ module ActiveFacts
           debug :constraint, "Added #{@constraint.verbalise} #{@constraint.class.roles.keys.map{|k|"#{k} => "+@constraint.send(k).verbalise}*", "}"
           super
         end
+
+        def to_s
+          "#{super} #{@rings*','} over #{@readings_lists.inspect}"
+        end
       end
 
       class ValueConstraint < Constraint
-        def initialize value_ranges, enforcement
+        def initialize value_ranges, units, enforcement
           super nil, enforcement
           @value_ranges = value_ranges
+          @units = units
         end
 
         def compile
           @constraint = @constellation.ValueConstraint(:new)
+          $stderr.puts "REVISIT: units on value constraints are not yet processed" if @units
           @value_ranges.each do |range|
             min, max = Array === range ? range : [range, range]
             v_range = @constellation.ValueRange(
@@ -626,6 +638,28 @@ module ActiveFacts
           end
           @enforcement.compile(@constellation, @constraint) if @enforcement
           super
+        end
+
+        def vrto_s vr
+          if Array === vr
+            min = vr[0]
+            max = vr[1]
+            if Numeric === min or Numeric === max
+              infinite = 1.0/0
+              min ||= -infinite
+              max ||= infinite
+            else
+              min ||= 'MIN'
+              max ||= 'MAX'
+            end
+            Range.new(min, max)
+          else
+            vr
+          end
+        end
+
+        def to_s
+          "#{super} to (#{@value_ranges.map{|vr| vrto_s(vr) }.inspect })#{ @units ? " in #{@units.inspect}" : ''}"
         end
       end
 

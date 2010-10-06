@@ -145,7 +145,7 @@ module ActiveFacts
 
       def binary_dump(role, role_name, role_player, mandatory = nil, one_to_one = nil, readings = nil, other_role_name = nil, other_method_name = nil)
         # Find whether we need the name of the other role player, and whether it's defined yet:
-        if role_name.camelcase(true) == role_player.name.gsub(/ /,'').sub(/^[a-z]/) {|i| i.upcase}
+        if role_name.camelcase == role_player.name.gsub(/ /,'').sub(/^[a-z]/) {|i| i.upcase}
           # Don't use Class name if implied by rolename
           role_reference = nil
         else

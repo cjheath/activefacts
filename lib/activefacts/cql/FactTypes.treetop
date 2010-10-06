@@ -213,7 +213,7 @@ module ActiveFacts
 		literal = lr.literal.value
 		raise "Literals with units are not yet processed" unless lr.u.empty?
 	      end
-	      value_constraint = Compiler::ValueConstraint.new(lr.value_constraint.ranges, lr.enforcement.ast) if lr.respond_to?(:value_constraint)
+	      value_constraint = Compiler::ValueConstraint.new(lr.value_constraint.ranges, lr.value_constraint.units, lr.enforcement.ast) if lr.respond_to?(:value_constraint)
 	      raise "It is not permitted to provide both a literal value and a value restriction" if value_constraint and literal
 	    end
 

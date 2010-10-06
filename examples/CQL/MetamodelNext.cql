@@ -329,11 +329,13 @@ Term is secondary for at most one Object Type (as Secondary),
 Term (as Role Name) is name of Role Ref,
 	Role Ref has at most one Role Name;
 
-Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
+Type Inheritance is where
 	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
 	Supertype is supertype of Subtype;
 Assimilation applies to Type Inheritance,
 	Type Inheritance uses at most one Assimilation;
+Type Inheritance implies one Fact Type,
+	Fact Type is implied by at most one Type Inheritance;
 Type Inheritance provides identification;
 
 Value Constraint Shape is a kind of Constraint Shape;

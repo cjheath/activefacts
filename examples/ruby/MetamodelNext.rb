@@ -475,11 +475,12 @@ module ::Metamodel
     has_one :secondary, :class => ObjectType    # See ObjectType.all_term_as_secondary
   end
 
-  class TypeInheritance < FactType
+  class TypeInheritance
     identified_by :subtype, :supertype
     has_one :subtype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_subtype
     has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
     has_one :assimilation                       # See Assimilation.all_type_inheritance
+    one_to_one :fact_type, :mandatory => true   # See FactType.type_inheritance
     maybe :provides_identification
   end
 

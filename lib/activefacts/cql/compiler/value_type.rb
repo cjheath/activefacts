@@ -58,6 +58,28 @@ module ActiveFacts
             unit
           end
         end
+
+        def inspect
+          to_s
+        end
+
+        def to_s
+          super + "Unit(#{
+            @singular
+          }#{
+            @plural ? '/'+@plural : ''
+          }) is #{
+            @numerator
+          }/#{
+            @denominator
+          }+#{
+            @offset
+          } #{
+            @base_units.map{|b,e|
+              b+'^'+e.to_s
+            }*'*'
+          }"
+        end
       end
 
       class ValueType < Concept
@@ -97,6 +119,21 @@ module ActiveFacts
           end
 
           vt
+        end
+
+        def to_s
+          super +
+            " is written as #{
+              @base_type_name
+            }#{
+              @parameters.size > 0 ? "(#{ @parameters.map{|p|p.to_s}*', ' })" : ''
+            }#{
+              @unit && @unit.length > 0 ? " in #{@unit.inspect}" : ''
+            }#{
+              @value_constraint ? " "+@value_constraint.to_s : ''
+            }#{
+              @pragmas.size > 0 ? " pragmas [#{@pragmas*','}]" : ''
+            };"
         end
       end
     end

@@ -365,6 +365,10 @@ module ActiveFacts
           end
         end
 
+        def to_s
+          super+@readings.map(&:to_s)*', '
+        end
+
       end
     end
   end

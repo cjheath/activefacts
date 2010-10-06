@@ -12,7 +12,7 @@ module ActiveFacts
 	comparator s e2:expression
         {
 	  def ast
-	    Compiler::Comparison.new comparator.text_value, e1.ast, e2.ast
+	    [Compiler::Comparison.new comparator.text_value, e1.ast, e2.ast]
 	  end
         }
       end
@@ -31,7 +31,11 @@ module ActiveFacts
         t0:product s tail:( op:add_op s t1:product s )*
         {
 	  def ast
-	    Compiler::Sum.new(t0.ast, *tail.elements.map{|e| e.op.text_value == '-' ? Compiler::Negate.new(e.t1.ast) : e.t1.ast})
+	    if tail.elements.empty?
+	      t0.ast
+	    else
+	      Compiler::Sum.new(t0.ast, *tail.elements.map{|e| e.op.text_value == '-' ? Compiler::Negate.new(e.t1.ast) : e.t1.ast})
+	    end
 	  end
         }
       end
@@ -44,7 +48,11 @@ module ActiveFacts
         f0:factor s tail:( op:mul_op s f1:factor s )*
         {
 	  def ast
-	    Compiler::Product.new(f0.ast, *tail.elements.map{|e| e.op.text_value != '*' ? Compiler::DivideBy.new(e.op.text_value, e.f1.ast) : e.t1.ast})
+	    if tail.elements.empty?
+	      f0.ast
+	    else
+	      Compiler::Product.new(f0.ast, *tail.elements.map{|e| e.op.text_value != '*' ? Compiler::DivideBy.new(e.op.text_value, e.f1.ast) : e.f1.ast})
+	    end
 	  end
         }
       end
@@ -64,7 +72,11 @@ module ActiveFacts
         variable:term s p:function_call*
         {
 	  def ast
-	    Compiler::FunctionCallChain.new(term.ast, *p.elements.each{|f| f.ast})
+	    if p.empty?
+	      variable.ast
+	    else
+	      Compiler::FunctionCallChain.new(variable.ast, *p.elements.each{|f| f.ast})
+	    end
 	  end
         }
       end

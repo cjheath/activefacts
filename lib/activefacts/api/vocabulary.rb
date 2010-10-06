@@ -23,7 +23,7 @@ module ActiveFacts
         return name if name.is_a? Class
 
         # puts "Looking up concept #{name} in #{self.name}"
-        camel = name.to_s.camelcase(true)
+        camel = name.to_s.camelcase
         if (c = @concept[camel])
           __bind(camel)
           return c

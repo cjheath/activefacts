@@ -71,6 +71,10 @@ module ActiveFacts
         def compile
           raise "#{self.class} should implement the compile method"
         end
+
+        def to_s
+          @vocabulary ? "#{vocabulary.to_s}::" : ''
+        end
       end
 
       class Vocabulary < Definition
@@ -81,12 +85,20 @@ module ActiveFacts
         def compile
           @constellation.Vocabulary @name
         end
+
+        def to_s
+          @name
+        end
       end
 
       class Import < Definition
         def initialize name, alias_list
           @name = name
           @alias_list = alias_list
+        end
+
+        def to_s
+          "#{@vocabulary.to_s} imports #{alias_list*', '};"
         end
       end
 
@@ -95,6 +107,10 @@ module ActiveFacts
 
         def initialize name
           @name = name
+        end
+
+        def to_s
+          "#{super}#{@name}"
         end
       end
 

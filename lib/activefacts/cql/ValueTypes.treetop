@@ -21,7 +21,10 @@ module ActiveFacts
 	  def ast
 	    name = term_definition_name.value
 	    params = value_type_parameters.values
-	    value_constraint = r.empty? ? nil : Compiler::ValueConstraint.new(r.value_constraint.ranges, r.enforcement.ast)
+	    value_constraint = nil
+	    unless r.empty? 
+	      value_constraint = Compiler::ValueConstraint.new(r.value_constraint.ranges, r.value_constraint.units, r.enforcement.ast)
+	    end
 	    units = u.empty? ? [] : u.value
 	    Compiler::ValueType.new name, base.value, params, units, value_constraint, mapping_pragmas.value
 	  end
@@ -129,9 +132,12 @@ module ActiveFacts
 	restricted s to s range_list s u:units?
         {
           def ranges
-	    raise "units on value constraints are not yet processed" unless u.empty? # REVISIT: Use the units here
             range_list.ranges
           end
+
+	  def units
+	    u.empty? ? nil : u.value
+	  end
         }
       end
 

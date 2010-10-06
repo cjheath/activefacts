@@ -347,7 +347,7 @@ module ActiveFacts
 
           join_steps.map do |js|
             if js.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
-              js.fact_type.role.fact_type
+              js.fact_type.implying_role.fact_type
             else
               js.fact_type
             end
@@ -516,9 +516,9 @@ module ActiveFacts
           debug :join, "Chose new random step from #{join_steps.size}: #{next_step.describe}"
           if next_step.is_objectification_step
             # if this objectification plays any roles (other than its FT roles) in remaining steps, use one of those first:
-            fact_type = next_step.fact_type.role.fact_type
+            fact_type = next_step.fact_type.implying_role.fact_type
             jn = [next_step.input_join_role.join_node, next_step.output_join_role.join_node].detect{|jn| jn.concept == fact_type.entity_type}
-            sr = @join_steps_by_join_node[jn].reject{|t| t.fact_type.role and t.fact_type.role.fact_type == fact_type}
+            sr = @join_steps_by_join_node[jn].reject{|t| r = t.fact_type.implying_role and r.fact_type == fact_type}
             next_step = sr[0] if sr.size > 0 
           end
           return next_step
@@ -674,12 +674,12 @@ module ActiveFacts
                 # Objectified unaries get emitted as unaries, not as objectifications:
                 # REVISIT: There must be a simpler way of finding the preferred reading here:
                 rr = next_step.input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) }
-                next_reading = rr.role.fact_type.role.fact_type.preferred_reading
+                next_reading = rr.role.fact_type.implying_role.fact_type.preferred_reading
                 readings += " and " unless readings.empty?
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
                 step_completed(next_step)
               elsif next_step.is_objectification_step
-                fact_type = next_step.fact_type.role.fact_type
+                fact_type = next_step.fact_type.implying_role.fact_type
 
                 # This objectification step is over an implicit fact type, so player_by_role won't have all the players
                 # Add the players of other roles associated with steps from this objectified player.

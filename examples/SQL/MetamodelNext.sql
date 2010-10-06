@@ -66,7 +66,7 @@ CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceI
 	  AND	SubsetConstraintSupersetRoleSequenceId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
+CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
 GO
 
 CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID (ValueConstraintRoleGUID) WITH SCHEMABINDING AS
@@ -74,7 +74,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID (ValueConstr
 	WHERE	ValueConstraintRoleGUID IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleGUID ON dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID(ValueConstraintRoleGUID)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID(ValueConstraintRoleGUID)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -150,13 +150,13 @@ CREATE TABLE FactType (
 	ConceptGUID                             varchar NOT NULL,
 	-- maybe Entity Type nests Fact Type and Object Type is a kind of Concept and Concept has GUID,
 	EntityTypeGUID                          varchar NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and maybe Assimilation applies to Type Inheritance,
+	-- maybe Type Inheritance implies Fact Type and maybe Assimilation applies to Type Inheritance,
 	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
+	-- maybe Type Inheritance implies Fact Type and Type Inheritance provides identification,
 	TypeInheritanceProvidesIdentification   bit NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is a kind of Concept and Concept has GUID,
+	-- maybe Type Inheritance implies Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is a kind of Concept and Concept has GUID,
 	TypeInheritanceSubtypeGUID              varchar NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is a kind of Concept and Concept has GUID,
+	-- maybe Type Inheritance implies Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is a kind of Concept and Concept has GUID,
 	TypeInheritanceSupertypeGUID            varchar NULL,
 	PRIMARY KEY(ConceptGUID)
 )
@@ -167,25 +167,18 @@ CREATE VIEW dbo.FactType_EntityTypeGUID (EntityTypeGUID) WITH SCHEMABINDING AS
 	WHERE	EntityTypeGUID IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeGUID ON dbo.FactType_EntityTypeGUID(EntityTypeGUID)
+CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeGUID(EntityTypeGUID)
 GO
 
-CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceProvidesIdentification (TypeInheritanceSubtypeGUID, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
-	SELECT TypeInheritanceSubtypeGUID, TypeInheritanceProvidesIdentification FROM dbo.FactType
+CREATE VIEW dbo.FactType_TypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUIDTypeInheritanceAssimilationTypeInheritanceProvidesIdentif (TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID, TypeInheritanceAssimilation, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
+	SELECT TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID, TypeInheritanceAssimilation, TypeInheritanceProvidesIdentification FROM dbo.FactType
 	WHERE	TypeInheritanceSubtypeGUID IS NOT NULL
+	  AND	TypeInheritanceSupertypeGUID IS NOT NULL
+	  AND	TypeInheritanceAssimilation IS NOT NULL
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_TypeInheritanceInFactTypeByTypeInheritanceSubtypeGUIDTypeInheritanceProvidesIdentification ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceProvidesIdentification(TypeInheritanceSubtypeGUID, TypeInheritanceProvidesIdentification)
-GO
-
-CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUID (TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID) WITH SCHEMABINDING AS
-	SELECT TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID FROM dbo.FactType
-	WHERE	TypeInheritanceSubtypeGUID IS NOT NULL
-	  AND	TypeInheritanceSupertypeGUID IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX TypeInheritanceUQ ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUID(TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID)
+CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByTypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUIDTypeInheritanceAssimilationTypeInheritanceProvidesIde ON dbo.FactType_TypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUIDTypeInheritanceAssimilationTypeInheritanceProvidesIdentif(TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID, TypeInheritanceAssimilation, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE TABLE Instance (
@@ -517,7 +510,7 @@ CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeSha
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAObjectifiedFactTypeNameShape ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
@@ -525,7 +518,7 @@ CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEM
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAReadingShape ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
@@ -645,14 +638,6 @@ GO
 
 ALTER TABLE FactType
 	ADD FOREIGN KEY (EntityTypeGUID) REFERENCES ObjectType (ConceptGUID)
-GO
-
-ALTER TABLE FactType
-	ADD FOREIGN KEY (TypeInheritanceSubtypeGUID) REFERENCES ObjectType (ConceptGUID)
-GO
-
-ALTER TABLE FactType
-	ADD FOREIGN KEY (TypeInheritanceSupertypeGUID) REFERENCES ObjectType (ConceptGUID)
 GO
 
 ALTER TABLE Instance

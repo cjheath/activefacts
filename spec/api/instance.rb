@@ -41,13 +41,13 @@ describe "An instance of every type of Concept" do
       # Each class has a has_one and a one_to_one for all roles.
       # and is identified by the has_one :x role
       @base_types.each do |base_type|
-        eval %Q{
+        code = %Q{
           class TestBy#{base_type.name}
             identified_by :#{base_type.name.snakecase}_value#{
               @role_names.map do |role_name|
                 %Q{
             has_one :#{role_name}
-            one_to_one :one_#{role_name}, :class => #{role_name.to_s.camelcase(true)}}
+            one_to_one :one_#{role_name}, :class => #{role_name.to_s.camelcase}}
               end*""
             }
           end
@@ -57,7 +57,7 @@ describe "An instance of every type of Concept" do
               @role_names.map do |role_name|
                 %Q{
             has_one :#{role_name}
-            one_to_one :one_#{role_name}, :class => #{role_name.to_s.camelcase(true)}}
+            one_to_one :one_#{role_name}, :class => #{role_name.to_s.camelcase}}
               end*""
             }
           end
@@ -70,6 +70,7 @@ describe "An instance of every type of Concept" do
             identified_by :test_by_#{base_type.name.snakecase}
             one_to_one :test_by_#{base_type.name.snakecase}
           end}
+          eval code
       end
     end
 

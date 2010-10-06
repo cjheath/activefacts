@@ -223,6 +223,112 @@ module ActiveFacts
           # else all readings already matched
           end
         end
+
+        def to_s
+          if @conditions.size > 0
+            true
+          end
+          "#{super} #{@readings.inspect}" +
+            if @conditions && !@conditions.empty?
+              " where "+@conditions.map{|c| c.to_s}*', '
+            else
+              ''
+            end
+          # REVISIT: @returning = returning
+        end
+      end
+
+      class Comparison
+        attr_accessor :op, :e1, :e2
+        def initialize op, e1, e2
+          @op, @e1, @e2 = op, e1, e2
+        end
+
+        def to_s
+          "(#{e1.to_s}) #{op} (#{e2.to_s})"
+        end
+
+        def inspect
+          super
+        end
+      end
+
+      class Sum
+        attr_accessor :terms
+        def initialize *terms
+          @terms = terms
+        end
+
+        def to_s
+          @terms.map{|term| "(#{term.to_s})" } * " + "
+        end
+      end
+
+      class Product
+        attr_accessor :factors
+        def initialize *factors
+          @factors = factors
+        end
+
+        def to_s
+          @factors.map{|factor| "(#{factor.to_s})" } * " + "
+        end
+      end
+
+      class DivideBy
+        attr_accessor :factor
+        def initialize factor
+          @factor = factor
+        end
+
+        def to_s
+          "1/(#{factor.to_s})"
+        end
+      end
+
+      class Negate
+        attr_accessor :term
+        def initialize term
+          @term = term
+        end
+
+        def to_s
+          "-(#{term.to_s})"
+        end
+      end
+
+      class FunctionCallChain
+        attr_accessor :variable, :calls
+        def initialize calls
+          @calls = calls
+        end
+
+        def to_s
+          @variable.to_s+@calls.map{|call| '.'+call.to_s}*''
+        end
+      end
+
+      class FunctionCall
+        attr_accessor :name, :params
+        def initialize name, *params
+          @name = name
+          @params = params
+        end
+
+        def to_s
+          "#{@name}(@params.map{|param| param.to_s}*', '})"
+        end
+      end
+
+      class Literal
+        attr_accessor :literal, :unit
+        def initialize literal, unit
+          @literal, @unit = literal, unit
+        end
+
+        def to_s
+          unit ? "#{@literal.to_s} in #{unit.to_s}" : @literal.to_s
+        end
       end
 
     end

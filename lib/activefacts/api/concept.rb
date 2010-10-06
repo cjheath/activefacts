@@ -398,7 +398,7 @@ module ActiveFacts
         when Class
           block.call(concept, *args)    # Execute block in the context of the concept
         when Symbol
-          vocabulary.__delay(concept.to_s.camelcase(true), args, &block)
+          vocabulary.__delay(concept.to_s.camelcase, args, &block)
         when String     # Arrange for this to happen later
           vocabulary.__delay(concept, args, &block)
         else

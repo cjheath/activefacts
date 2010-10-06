@@ -87,7 +87,7 @@ module ActiveFacts
         "#{role_name || self.class.basename}(#{
           self.class.identifying_role_names.map{|role_sym|
               value = send(role_sym)
-              role_name = self.class.roles(role_sym).name.to_s.camelcase(true)
+              role_name = self.class.roles(role_sym).name.to_s.camelcase
               value ? value.verbalise(role_name) : "nil"
             }*", "
         })"
@@ -236,7 +236,7 @@ module ActiveFacts
 
         # verbalise this concept
         def verbalise
-          "#{basename} is identified by #{identifying_role_names.map{|role_sym| role_sym.to_s.camelcase(true)}*" and "};"
+          "#{basename} is identified by #{identifying_role_names.map{|role_sym| role_sym.to_s.camelcase}*" and "};"
         end
       end
 

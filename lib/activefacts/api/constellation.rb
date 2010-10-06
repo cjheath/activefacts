@@ -83,7 +83,7 @@ module ActiveFacts
                   if (single_roles.size > 0)
                     role_values = 
                       single_roles.map{|role|
-                          [ role_name = role.to_s.camelcase(true),
+                          [ role_name = role.to_s.camelcase,
                             value = instance.send(role)]
                         }.select{|role_name, value|
                           value

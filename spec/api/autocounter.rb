@@ -2,6 +2,8 @@
 # ActiveFacts tests: Value instances in the Runtime API
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+require 'activefacts/api'
+
 describe "AutoCounter Value Type instances" do
   before :each do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")

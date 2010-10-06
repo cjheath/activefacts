@@ -10,6 +10,12 @@ module ActiveFacts
           @value_constraint = value_constraint
           @parameters = parameters
         end
+
+        def to_s
+          "identified by its #{name}" +
+            ((p = @parameters).size > 0 ? '('+p*', '+')' : '') +
+            ((v = @value_constraint) ? v.to_s : '')
+        end
       end
 
       class EntityType < Concept
@@ -417,9 +423,19 @@ module ActiveFacts
           end
         end
 
+        def to_s
+          "#{super} #{
+            @supertypes.size > 0 ? "< #{@supertypes*','} " : ''
+          }#{
+            @identification.is_a?(ReferenceMode) ? @identification.to_s : @identification.inspect
+          }#{
+            @readings.size > 0 ? " where #{@readings.inspect}" : ''
+          }#{
+            @pragmas.size > 0 ? " pragmas #{@pragmas*','}" : ''
+          };"
+        end
       end
 
     end
   end
 end
-

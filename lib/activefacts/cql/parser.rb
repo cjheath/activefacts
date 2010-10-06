@@ -201,12 +201,17 @@ module ActiveFacts
 
         @index = 0  # Byte offset to start next parse
         self.consume_all_input = false
+        nodes = []
         begin
           node = parse(InputProxy.new(input, context), :index => @index)
           return nil unless node
-          block.call(node) if block
+          if block
+            block.call(node)
+          else
+            nodes << node
+          end
         end until self.index == @input_length
-        true
+        block ? true : nodes
       end
     end
 
