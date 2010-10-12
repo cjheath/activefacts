@@ -29,7 +29,7 @@ Recurring Schedule Id is written as Auto Counter;
 Satellite Message Id is written as Unsigned Integer(32);
 Seconds is written as Unsigned Integer(32);
 Serial Number is written as String(20);
-Service Type is written as String(15) [independent];
+Service Type [independent] is written as String(15);
 Subscription Nr is written as Signed Integer(32);
 Switch Id is written as Auto Counter;
 Transaction Nr is written as Unsigned Integer(32);
@@ -84,7 +84,7 @@ Monitor is identified by its Id;
 Monitor monitors one Data Store;
 Monitor is disabled;
 
-Monitoring Application is identified by its Name [independent];
+Monitoring Application is independent identified by its Name;
 Monitor is owned by one Monitoring Application;
 
 Network is identified by its Nr;
@@ -105,7 +105,7 @@ Notification Level is identified by its Nr;
 Notification Level has one Initial- Delay Duration;
 Notification Level has one Repeat-Duration;
 
-Notification Type is identified by its Name [independent];
+Notification Type is independent identified by its Name;
 
 Provider Type is identified by its Id;
 

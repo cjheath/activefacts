@@ -234,7 +234,7 @@ Fact Type Shape is for one Fact Type,
 	Fact Type has Fact Type Shape;
 Fact Type Shape has at most one Rotation Setting;
 
-Join Role is where
+Join Role is independent where
 	Join Node includes at least one Role,
 	Role connects to Join Node;
 

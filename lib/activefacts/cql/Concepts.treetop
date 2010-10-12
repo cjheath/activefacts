@@ -161,7 +161,7 @@ module ActiveFacts
         '[' s h:mapping_pragma t:(s ',' s mapping_pragma)* s ']' s
           { def value; t.elements.inject([h.value]) { |a, e| a << e.mapping_pragma.value }; end }
         /
-        ''
+        s
           { def value; []; end }
       end
 

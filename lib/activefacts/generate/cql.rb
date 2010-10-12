@@ -106,9 +106,15 @@ module ActiveFacts
           ].compact
         parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : ""
 
-        puts "#{o.name} is written as #{(o.supertype || o).name}#{ parameters }#{
+        puts "#{o.name
+          } #{
+            (o.is_independent ? '[independent] ' : '')
+          }is written as #{
+            (o.supertype || o).name
+          }#{
+            parameters
+          }#{
             o.value_constraint && " "+o.value_constraint.describe
-          }#{o.is_independent ? ' [independent]' : ''
           };"
       end
 
@@ -116,13 +122,13 @@ module ActiveFacts
         reading << " [#{(ring.ring_type.scan(/[A-Z][a-z]*/)*", ").downcase}]"
       end
 
-      def mapping_pragma(entity_type)
+      def mapping_pragma(entity_type, ignore_independence = false)
         ti = entity_type.all_type_inheritance_as_subtype
         assimilation = ti.map{|t| t.assimilation }.compact[0]
-        return "" unless entity_type.is_independent || assimilation
+        return "" unless (entity_type.is_independent && !ignore_independence) || assimilation
         " [" +
           [
-            entity_type.is_independent ? "independent" : nil,
+            entity_type.is_independent && !ignore_independence ? "independent" : nil,
             assimilation || nil
           ].compact*", " +
         "]"
@@ -231,7 +237,8 @@ module ActiveFacts
         if nonstandard_readings.size == 0 and c = value_role.role_value_constraint
           constraint_text = " "+c.describe
         end
-        return " identified by its #{value_residual}#{constraint_text}#{mapping_pragma(entity_type)}" +
+        (entity_type.is_independent ? ' independent' : '') +
+          " identified by its #{value_residual}#{constraint_text}#{mapping_pragma(entity_type, true)}" +
           (fact_readings.size > 0 ? " where\n\t" : "") +
           fact_readings*",\n\t"
       end
@@ -263,8 +270,9 @@ module ActiveFacts
                 fact_readings_with_constraints(verbaliser, f)
             }.flatten*",\n\t"
 
-        " identified by #{ irn*" and " }" +
-          mapping_pragma(entity_type) +
+        (entity_type.is_independent ? ' independent' : '') +
+          " identified by #{ irn*" and " }" +
+          mapping_pragma(entity_type, true) +
           " where\n\t"+identifying_fact_text
       end
 
@@ -277,13 +285,15 @@ module ActiveFacts
       end
 
       def subtype_dump(o, supertypes, pi)
-        print "#{o.name} is a kind of #{ o.supertypes.map(&:name)*", " }"
+        print "#{o.name} is a kind of #{
+            o.is_independent ? 'independent ' : ''
+          }#{ o.supertypes.map(&:name)*", " }"
         if pi
           puts identified_by(o, pi)+';'
           return
         end
 
-        print mapping_pragma(o)
+        print mapping_pragma(o, true)
 
         if o.fact_type
           verbaliser = ActiveFacts::Metamodel::Verbaliser.new
@@ -306,7 +316,13 @@ module ActiveFacts
         if (o = fact_type.entity_type)
           print "#{o.name} is"
           supertypes = o.supertypes
-          print " a kind of #{ supertypes.map(&:name)*", " }" unless supertypes.empty?
+          if supertypes.empty?
+            print ' independent' if o.is_independent
+          else
+            print " a kind of#{
+                o.is_independent ? ' independent' : ''
+              } #{ supertypes.map(&:name)*', ' }"
+          end
 
           # Alternate identification of objectified fact type?
           primary_supertype = supertypes[0]

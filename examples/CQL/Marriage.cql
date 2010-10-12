@@ -8,7 +8,7 @@ Name is written as String;
 /*
  * Entity Types
  */
-Person is identified by given-Name and family-Name [independent] where
+Person is independent identified by given-Name and family-Name where
 	Person has one given-Name,
 	Person has one family-Name;
 

@@ -20,33 +20,33 @@ module ActiveFacts
       end
 
       rule non_term_def
-        entity_prefix
-        / written_as                        # Value type
-        / is s mapping_pragmas where        # Objectified type
+        mapping_pragmas entity_prefix
+        / mapping_pragmas written_as			      # Value type
+        / mapping_pragmas is s (independent s)? where         # Objectified type
         / non_role_word
 	/ identified_by			    # as in: "a kind of X identified by..."
 	/ unit
       end
 
       rule entity_prefix
-        is s identified_by
+        is s (independent s )? identified_by
 	/
-	subtype_prefix term_definition_name
-	&{|e| input.context.object_type(e[1].value, "subtype"); true }
+	subtype_prefix (independent s )? term_definition_name
+	&{|e| input.context.object_type(e[2].value, "subtype"); true }
       end
 
       rule prescan
         s (
-          term_definition_name s entity_prefix
+          term_definition_name mapping_pragmas entity_prefix
 		&{|e| input.context.object_type(e[0].value, "entity type"); true }
           /
-          t1:term_definition_name written_as t2:term_definition_name
+          t1:term_definition_name mapping_pragmas written_as t2:term_definition_name
                 &{|e| input.context.object_type(e[0].value, "value type")
-		  input.context.object_type(e[2].value, "value type")
+		  input.context.object_type(e[3].value, "value type")
 		  true
 		}
           /
-          term_definition_name s is s mapping_pragmas where
+          term_definition_name s mapping_pragmas is s (independent s )? where
                 &{|e| input.context.object_type(e[0].value, "objectified_fact_type"); true }
         )?
         prescan_rest

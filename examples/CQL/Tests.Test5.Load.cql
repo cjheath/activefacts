@@ -17,7 +17,7 @@ Event Date is identified by ymd where
 	Event Date has one ymd,
 	ymd is of at most one Event Date;
 
-Party is identified by its Id [independent];
+Party is independent identified by its Id;
 
 Party Moniker is where
 	Party is called one Party Name;

@@ -51,8 +51,8 @@
       <DependentUpon>BPMN.orm</DependentUpon>
     </Compile>
     <Compile Include="CompanyDirectorEmployee._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="Death._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -221,9 +221,21 @@
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>BPMN._ORMCustomToolReport.cs</LastGenOutput>
     </None>
+    <None Include="CompanyDirectorEmployee.DCIL.xml">
+      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
+    <None Include="CompanyDirectorEmployee.DDIL.xml">
+      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
     <None Include="CompanyDirectorEmployee.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CompanyDirectorEmployee._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="CompanyDirectorEmployee.SQLServer.sql">
+      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
     </None>
     <None Include="Diplomacy.orm">
       <Generator>ORMCustomTool</Generator>
@@ -352,23 +364,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('CompanyDirectorEmployee.orm')">
-    <None Include="CompanyDirectorEmployee.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="CompanyDirectorEmployee.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="CompanyDirectorEmployee.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('MultiInheritance.orm')">
     <None Include="MultiInheritance.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -384,23 +379,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>MultiInheritance.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="Exists('Blog.orm')">
-    <None Include="Blog.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Blog.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Blog.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Blog.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Blog.SQLStandard.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Blog.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('Address.orm')">
@@ -810,6 +788,23 @@
     <None Include="Supervision.SQLStandard.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>Supervision.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Blog.orm')">
+    <None Include="Blog.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Blog.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Blog.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>

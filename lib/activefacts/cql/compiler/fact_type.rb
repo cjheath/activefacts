@@ -5,6 +5,7 @@ module ActiveFacts
       class FactType < Concept
         attr_reader :fact_type
         attr_writer :name
+        attr_writer :pragmas
 
         def initialize name, readings, conditions = nil, returning = nil
           super name
@@ -73,7 +74,14 @@ module ActiveFacts
             if @fact_type.entity_type and @name != @fact_type.entity_type.name
               raise "Cannot objectify fact type as #{@name} and as #{@fact_type.entity_type.name}"
             end
-            @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type).create_implicit_fact_types
+            e = @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type)
+            e.create_implicit_fact_types
+            if @pragmas
+              e.is_independent = true if @pragmas.delete('independent')
+            end
+            if @pragmas && @pragmas.size > 0
+              $stderr.puts "Mapping pragmas #{@pragmas.inspect} are ignored for objectified fact type #{@name}"
+            end
           end
 
           # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
@@ -233,7 +241,9 @@ module ActiveFacts
               " where "+@conditions.map{|c| c.to_s}*', '
             else
               ''
-            end
+            end +
+            (@pragmas && @pragmas.size > 0 ? ", pragmas [#{@pragmas*','}]" : '')
+
           # REVISIT: @returning = returning
         end
       end

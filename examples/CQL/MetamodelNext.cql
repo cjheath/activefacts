@@ -241,7 +241,7 @@ Fact Type Shape has at most one Rotation Setting;
 
 ImplicitBooleanValueType is a kind of Value Type;
 
-Join Role is where
+Join Role is independent where
 	Join Node includes Role,
 	Role connects to Join Node;
 

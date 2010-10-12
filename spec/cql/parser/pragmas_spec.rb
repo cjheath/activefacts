@@ -11,6 +11,7 @@ require File.dirname(__FILE__) + '/../../helpers/test_parser'
 
 describe "Entity Types" do
   IndependentObjectTypes = [
+    # Value types
     [ "a is written as b [independent];",
       ['ValueType: a is written as b, pragmas [independent];'],
     ],
@@ -18,6 +19,7 @@ describe "Entity Types" do
       ['ValueType: a is written as b, pragmas [independent];'],
     ],
 
+    # Entity types
     [ "a is identified by its id [independent];",
       ['EntityType: a identified by its id, pragmas [independent];']
     ],
@@ -30,7 +32,11 @@ describe "Entity Types" do
     [ "a is identified by b [independent] where a has one b;",
       ['EntityType: a [{b}] where [{a} "has" {[1..1] b}], pragmas [independent];']
     ],
+    [ "a is independent identified by b where a has one b;",
+      ['EntityType: a [{b}] where [{a} "has" {[1..1] b}], pragmas [independent];']
+    ],
 
+    # Subtypes
     [ "Employee [independent] is a kind of Person;",
       ['EntityType: Employee < Person nil, pragmas [independent];']
     ],
@@ -42,6 +48,17 @@ describe "Entity Types" do
     ],
     [ "Employee is a kind of Person identified by its id [independent];",
       ["EntityType: Employee < Person identified by its id, pragmas [independent];"]
+    ],
+
+    # Fact Types
+    [ "Director is where c relates to b;",
+      ["FactType: Director [{c} \"relates to\" {b}]"]
+    ],
+    [ "Director [independent] is where c relates to b;",
+      ["FactType: Director [{c} \"relates to\" {b}], pragmas [independent]"]
+    ],
+    [ "Director is independent where c relates to b;",
+      ["FactType: Director [{c} \"relates to\" {b}], pragmas [independent]"]
     ],
   ]
 

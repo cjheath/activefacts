@@ -70,7 +70,7 @@ Cover Type is identified by its Code;
 Cover Type has one Cover Type Name,
 	Cover Type Name is of at most one Cover Type;
 
-Demerit Kind is identified by its Name [independent];
+Demerit Kind is independent identified by its Name;
 
 Incident is identified by Claim where
 	Claim concerns at most one Incident,
@@ -125,7 +125,7 @@ Prod Description is of at most one Product,
 
 Registration is identified by its Nr;
 
-State is identified by its Code [independent];
+State is independent identified by its Code;
 State Name is of at most one State,
 	State has at most one State Name;
 

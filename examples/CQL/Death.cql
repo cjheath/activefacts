@@ -9,7 +9,7 @@ Person Name is written as String(40);
 /*
  * Entity Types
  */
-Person is identified by its Name [independent];
+Person is independent identified by its Name;
 
 Death is where
 	Person is dead;

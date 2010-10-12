@@ -14,10 +14,10 @@ Venue Id is written as Auto Counter;
  */
 Event is identified by its Id;
 
-Venue is identified by its Id [independent];
+Venue is independent identified by its Id;
 Event is held at one Venue;
 
-Seat is identified by Venue and Reserve and Row and Number [independent] where
+Seat is independent identified by Venue and Reserve and Row and Number where
 	Seat is at one Venue,
 	Seat is in one Reserve,
 	Seat is in one Row,
