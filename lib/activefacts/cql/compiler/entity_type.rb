@@ -424,14 +424,14 @@ module ActiveFacts
         end
 
         def to_s
-          "#{super} #{
+          "EntityType: #{super} #{
             @supertypes.size > 0 ? "< #{@supertypes*','} " : ''
           }#{
             @identification.is_a?(ReferenceMode) ? @identification.to_s : @identification.inspect
           }#{
             @readings.size > 0 ? " where #{@readings.inspect}" : ''
           }#{
-            @pragmas.size > 0 ? " pragmas #{@pragmas*','}" : ''
+            @pragmas.size > 0 ? ", pragmas [#{@pragmas*','}]" : ''
           };"
         end
       end

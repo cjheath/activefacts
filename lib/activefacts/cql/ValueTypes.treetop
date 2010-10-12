@@ -9,13 +9,14 @@ module ActiveFacts
     grammar ValueTypes
       rule value_type
         s term_definition_name
+	m1:mapping_pragmas
 	# REVISIT: ORM2 would allow (subtype_prefix term)?
         written_as
         base:(term/id) s
         value_type_parameters
         u:units?
         r:(value_constraint enforcement)?
-        mapping_pragmas
+        m2:mapping_pragmas
         s ';' s
         {
 	  def ast
@@ -26,7 +27,8 @@ module ActiveFacts
 	      value_constraint = Compiler::ValueConstraint.new(r.value_constraint.ranges, r.value_constraint.units, r.enforcement.ast)
 	    end
 	    units = u.empty? ? [] : u.value
-	    Compiler::ValueType.new name, base.value, params, units, value_constraint, mapping_pragmas.value
+	    pragmas = m1.value+m2.value
+	    Compiler::ValueType.new name, base.value, params, units, value_constraint, pragmas
 	  end
         }
       end

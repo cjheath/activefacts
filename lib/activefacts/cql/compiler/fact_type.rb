@@ -228,7 +228,7 @@ module ActiveFacts
           if @conditions.size > 0
             true
           end
-          "#{super} #{@readings.inspect}" +
+          "FactType: #{(s = super and !s.empty?) ? "#{s} " : '' }#{@readings.inspect}" +
             if @conditions && !@conditions.empty?
               " where "+@conditions.map{|c| c.to_s}*', '
             else

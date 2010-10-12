@@ -9,12 +9,16 @@ module ActiveFacts
     grammar FactTypes
       rule named_fact_type
         s term_definition_name
-        s is s mapping_pragmas where    # REVISIT: Need a place to put mapping pragmas like [independent]
+        s is s mapping_pragmas where
         anonymous_fact_type
         {
 	  def ast
 	    ft = anonymous_fact_type.ast
 	    ft.name = term_definition_name.value
+	    pragmas = mapping_pragmas.value
+	    if pragmas.size > 0
+	      $stderr.puts "Mapping pragmas #{pragmas.inspect} are ignored for objectified fact type #{ft.name}"
+	    end
 	    ft
 	  end
         }

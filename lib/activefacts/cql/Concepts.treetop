@@ -16,47 +16,52 @@ module ActiveFacts
 
       rule entity_type
         s term_definition_name
+	m1:mapping_pragmas
         sup:(basetype / subtype)
 	  &{|s|
 	    # There's an implicit type when we use an identification mode, register it:
-	    mode = s[2].identification_mode
+	    mode = s[3].identification_mode
 	    if mode
 	      input.context.object_type(s[1].value+mode, "identification mode type")
 	      input.context.object_type(s[1].value+' '+mode, "identification mode type")
 	    end
 	    true
 	  }
-        mapping_pragmas
+        m2:mapping_pragmas
         ec:entity_conditions?
         ';'
         {
 	  def ast
 	    name = term_definition_name.value
 	    readings = ec.empty? ? [] : ec.ast
-	    Compiler::EntityType.new name, sup.supers, sup.ast, mapping_pragmas.value, readings
+	    pragmas = m1.value+m2.value
+	    pragmas << 'independent' if sup.independent
+	    Compiler::EntityType.new name, sup.supers, sup.ast, pragmas, readings
 	  end
         }
       end
 
       rule basetype
         is s
-        # independency?
+	i:( independent s )?
         identification
         {
 	  def ast; identification.ast; end
 	  def supers; []; end
           def identification_mode; identification.mode; end
+	  def independent; !i.empty?; end
         }
       end
 
       rule subtype
         subtype_prefix
-        # independency?
+	i:( independent s )?
         supertype_list ident:identification?
         {
 	  def ast; ident.empty? ? nil : ident.ast; end
           def supers; supertype_list.value; end
           def identification_mode; ident.empty? ? nil : ident.mode; end
+	  def independent; !i.empty?; end
         }
       end
 

@@ -122,8 +122,7 @@ module ActiveFacts
         end
 
         def to_s
-          super +
-            " is written as #{
+          "ValueType: #{super} is written as #{
               @base_type_name
             }#{
               @parameters.size > 0 ? "(#{ @parameters.map{|p|p.to_s}*', ' })" : ''
@@ -132,7 +131,7 @@ module ActiveFacts
             }#{
               @value_constraint ? " "+@value_constraint.to_s : ''
             }#{
-              @pragmas.size > 0 ? " pragmas [#{@pragmas*','}]" : ''
+              @pragmas.size > 0 ? ", pragmas [#{@pragmas*','}]" : ''
             };"
         end
       end
