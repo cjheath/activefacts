@@ -2,6 +2,26 @@
 # ActiveFacts tests: Parse all CQL files and check the generated DataMapper models
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
+# From IRC, on how to extract the SQL that DM creates for a set of models:
+#
+# I can tell you that ::DataObjects::Connection#log gets you the SQL
+# after its run (not exactly what you asked for, but a place to start
+# looking).
+# 
+# your choices are intercepting
+# ::DataMapper::Adapters::DataObjectsAdapter#{select,execute} for
+# direct SQL calls, or at a lower level,
+# ::DataObjects::Connection#create_command for all SQL.
+# 
+# one trick I've been using is to selectively intercept the latter
+# and not let it run (no-op it but log/inspect it), which can obviously
+# screw up anything else back up the call stack but at least gives
+# you the opportunity to catch it if you want.
+# 
+# #create_command returns Command, which is subsequently called with
+# #execute_reader(bind_values) or #execute_non_query(bind_values),
+# so if the final query is what you're after, then you'll have to
+# hook those both instead.
 
 require 'spec/spec_helper'
 require 'stringio'

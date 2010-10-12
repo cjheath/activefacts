@@ -1,4 +1,5 @@
 require 'dm-core'
+require 'dm-constraints'
 
 class Company
   include DataMapper::Resource

@@ -88,7 +88,9 @@ module ActiveFacts
             end
           is_model = models.inject({}) { |h, m| h[m] = true; h }
 
-          puts "require 'dm-core'\n\n"
+          puts "require 'dm-core'"
+          puts "require 'dm-constraints'"
+          puts "\n"
 
           # Dump tables until all done, subtypes before supertypes:
           until models.empty?
@@ -183,11 +185,13 @@ module ActiveFacts
             # REVISIT: Need to use ActiveSupport to pluralise these names, or disable inflexion somehow.
             o.references_to.each do |ref|
               next unless is_model[ref.from]
+              constraint = ''
               association_type =
                 case ref.role_type
                 when :one_one
                   "has 1,"
                 when :many_one, :one_many
+                  constraint = ', :constraint => :destroy'    # REVISIT: Check mandatory, and use nullify?
                   "has n,"
                 else
                   next

@@ -1,4 +1,5 @@
 require 'dm-core'
+require 'dm-constraints'
 
 class SchoolActivity
   include DataMapper::Resource
