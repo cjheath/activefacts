@@ -349,6 +349,8 @@ module ActiveFacts
               @nested_types <<
                 @by_id[id] =
                 nested_type = @constellation.EntityType(@vocabulary, name)
+              independent = x['IsIndependent']
+              entity_type.is_independent = true if independent && independent == 'true'
               nested_type.fact_type = fact_type
             end
           }
