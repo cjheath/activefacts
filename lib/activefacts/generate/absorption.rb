@@ -14,7 +14,7 @@ module ActiveFacts
     #   afgen --absorption[=options] <file>.cql"
     # Options are comma or space separated:
     # * no_columns Don't emit the columns
-    # * all Show Concepts that are not tables as well
+    # * all Show ObjectTypes that are not tables as well
     # * paths Show the references paths through which each column was defined
     # * no_identifier Don't show the identified_by columns for an EntityType
 
@@ -34,21 +34,21 @@ module ActiveFacts
         multi_absorption_vts = 0
         multi_absorption_ets = 0
         @vocabulary.tables
-        @vocabulary.all_concept.sort_by{|c| c.name}.each do |o|
+        @vocabulary.all_object_type.sort_by{|c| c.name}.each do |o|
           next if !o.is_table
           show(o)
         end
       end
 
-      def show concept        #:nodoc:
-        indices = concept.indices
+      def show object_type        #:nodoc:
+        indices = object_type.indices
         pk = indices.select(&:is_primary)[0]
         indices = indices.clone
         indices.delete pk
-        puts "#{concept.name}: #{
-#            "[#{concept.indices.size} indices] "
+        puts "#{object_type.name}: #{
+#            "[#{object_type.indices.size} indices] "
 #          } #{
-            concept.columns.sort_by do |column|
+            object_type.columns.sort_by do |column|
               column.name(nil)
             end.map do |column|
               index_nrs =

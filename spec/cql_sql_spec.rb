@@ -58,8 +58,8 @@ describe "CQL Loader with SQL output" do
         }
       else
         # Discard index names:
-        sql_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX CanonicalName ON ')
-        expected_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX CanonicalName ON ')
+        sql_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX <Name is hidden> ON ')
+        expected_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX <Name is hidden> ON ')
         sql_text.should_not differ_from(expected_text)
         File.delete(actual_file)  # It succeeded, we don't need the file.
       end

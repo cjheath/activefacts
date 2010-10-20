@@ -18,7 +18,7 @@ module ActiveFacts
         end
       end
 
-      class EntityType < Concept
+      class EntityType < ObjectType
         def initialize name, supertypes, identification, pragmas, readings
           super name
           @supertypes = supertypes
@@ -158,7 +158,7 @@ module ActiveFacts
 
             fact_type = create_identifying_fact_type(context, readings)
             fact_types << fact_type if fact_type
-            objectify_existing_fact_type(fact_type) unless fact_type.all_role.detect{|r| r.concept == @entity_type}
+            objectify_existing_fact_type(fact_type) unless fact_type.all_role.detect{|r| r.object_type == @entity_type}
           end
           fact_types
         end
@@ -232,8 +232,8 @@ module ActiveFacts
             inheritance_fact.assimilation = assimilations[0]
 
             # Create a reading:
-            sub_role = @constellation.Role(inheritance_fact, 0, :concept => @entity_type)
-            super_role = @constellation.Role(inheritance_fact, 1, :concept => supertype)
+            sub_role = @constellation.Role(inheritance_fact, 0, :object_type => @entity_type)
+            super_role = @constellation.Role(inheritance_fact, 1, :object_type => supertype)
 
             rs = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs, 0, :role => sub_role)
@@ -247,7 +247,7 @@ module ActiveFacts
             @constellation.RoleRef(rs2, 0, :role => super_role)
             @constellation.RoleRef(rs2, 1, :role => sub_role)
             # Decide in which order to include is a/is an. Provide both, but in order.
-            n = 'aeiouh'.include?(sub_role.concept.name.downcase[0]) ? 1 : 0
+            n = 'aeiouh'.include?(sub_role.object_type.name.downcase[0]) ? 1 : 0
             @constellation.Reading(inheritance_fact, 2+n, :role_sequence => rs2, :text => "{0} is a {1}")
             @constellation.Reading(inheritance_fact, 3-n, :role_sequence => rs2, :text => "{0} is an {1}")
 
@@ -284,8 +284,8 @@ module ActiveFacts
           vt = nil
           debug :entity, "Preparing value type #{vt_name} for reference mode" do
             # Find or Create an appropriate ValueType called '#{vt_name}', of the supertype '#{mode}'
-            unless vt = @constellation.Concept[[@vocabulary.identifying_role_values, vt_name]] or
-                   vt = @constellation.Concept[[@vocabulary.identifying_role_values, vt_name = "#{name} #{mode}"]]
+            unless vt = @constellation.ObjectType[[@vocabulary.identifying_role_values, vt_name]] or
+                   vt = @constellation.ObjectType[[@vocabulary.identifying_role_values, vt_name = "#{name} #{mode}"]]
               base_vt = @constellation.ValueType(@vocabulary, mode)
               vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
               if parameters
@@ -312,16 +312,16 @@ module ActiveFacts
           # Find an existing fact type, if any:
           entity_role = identifying_role = nil
           fact_type = fact_types.detect do |ft|
-            identifying_role = ft.all_role.detect{|r| r.concept == identifying_type } and
-            entity_role = ft.all_role.detect{|r| r.concept == @entity_type }
+            identifying_role = ft.all_role.detect{|r| r.object_type == identifying_type } and
+            entity_role = ft.all_role.detect{|r| r.object_type == @entity_type }
           end
 
           # Create an identifying fact type if needed:
           unless fact_type
             fact_type = @constellation.FactType(:new)
             fact_types << fact_type
-            entity_role = @constellation.Role(fact_type, 0, :concept => @entity_type)
-            identifying_role = @constellation.Role(fact_type, 1, :concept => identifying_type)
+            entity_role = @constellation.Role(fact_type, 0, :object_type => @entity_type)
+            identifying_role = @constellation.Role(fact_type, 1, :object_type => identifying_type)
           end
           @identification[0].role = identifying_role
 
@@ -348,7 +348,7 @@ module ActiveFacts
           end
           if rs01.all_reading.empty?
             @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs01, :text => "{0} has {1}")
-            debug :mode, "Creating new forward reading '#{entity_role.concept.name} has #{identifying_type.name}'"
+            debug :mode, "Creating new forward reading '#{entity_role.object_type.name} has #{identifying_type.name}'"
           else
             debug :mode, "Using existing forward reading"
           end
@@ -362,7 +362,7 @@ module ActiveFacts
           end
           if rs10.all_reading.empty?
             @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs10, :text => "{0} is of {1}")
-            debug :mode, "Creating new reverse reading '#{identifying_type.name} is of #{entity_role.concept.name}'"
+            debug :mode, "Creating new reverse reading '#{identifying_type.name} is of #{entity_role.object_type.name}'"
           else
             debug :mode, "Using existing reverse reading"
           end

@@ -65,7 +65,7 @@ describe "A Constellation instance" do
 #    @constellation.query.should == Mod
 #  end
 
-  it "should support methods to construct instances of any concept" do
+  it "should support methods to construct instances of any object_type" do
     name = foo = acme = fred_fly = nil
     lambda {
         name = @constellation.Name("foo")

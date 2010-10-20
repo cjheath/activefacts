@@ -44,10 +44,10 @@ describe "Entity Type class definitions" do
     vocabulary.should == Mod
   end
 
-  it "should return a vocabulary that knows about this concept" do
+  it "should return a vocabulary that knows about this object_type" do
     vocabulary = Mod::Person.vocabulary
-    vocabulary.respond_to?(:concept).should be_true
-    vocabulary.concept.has_key?("Person").should be_true
+    vocabulary.respond_to?(:object_type).should be_true
+    vocabulary.object_type.has_key?("Person").should be_true
   end
 
   it "should respond to roles()" do
@@ -88,7 +88,7 @@ describe "Entity Type class definitions" do
     Mod::Person.identifying_role_names.should == [:name]
   end
 
-  it "should prevent a role name from matching a concept that exists unless that concept is the counterpart" do
+  it "should prevent a role name from matching a object_type that exists unless that object_type is the counterpart" do
     lambda {
         module Mod
           class LegalEntity

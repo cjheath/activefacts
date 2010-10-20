@@ -16,20 +16,6 @@ class AllowedRange
   property :value_range_maximum_bound_is_inclusive, Boolean, :key => true	# Allowed Range is where Value Constraint allows Value Range and maybe Value Range has maximum-Bound and Bound is inclusive
 end
 
-class Concept
-  include DataMapper::Resource
-
-  property :name, String, :length => 64, :key => true	# Concept is called Name
-  property :vocabulary_name, String, :length => 64, :key => true	# Concept belongs to Vocabulary and Vocabulary is called Name
-  property :pronoun, String, :length => 20	# maybe Concept uses Pronoun
-  property :is_independent, Boolean, :required => true	# Concept is independent
-  has n, :context_note, 'ContextNote', :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Concept has Context Note
-  has n, :instance, :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Instance is of Concept
-  has n, :join_node, 'JoinNode', :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Join Node is for Concept
-  has n, :role, :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Concept plays Role
-  has n, :object_type_shape, 'ObjectTypeShape', :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type Shape is for Concept
-end
-
 class Constraint
   include DataMapper::Resource
 
@@ -69,9 +55,9 @@ class ContextNote
   property :fact_type_id, Integer	# maybe Fact Type has Context Note and Fact Type has Fact Type Id
   belongs_to :fact_type, 'FactType'	# Fact Type has Context Note
   property :agreement_date, DateTime	# maybe Context Note was added by Agreement and maybe Agreement was on Date
-  property :concept_vocabulary_name, String, :length => 64	# maybe Concept has Context Note and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :concept_name, String, :length => 64	# maybe Concept has Context Note and Concept is called Name
-  belongs_to :concept, :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Concept has Context Note
+  property :object_type_vocabulary_name, String, :length => 64	# maybe Object Type has Context Note and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :object_type_name, String, :length => 64	# maybe Object Type has Context Note and Object Type is called Name
+  belongs_to :object_type, 'ObjectType', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type has Context Note
   has n, :context_according_to, 'ContextAccordingTo'	# Context Note is according to Agent
   has n, :model_note_shape, 'ModelNoteShape'	# Model Note Shape is for Context Note
 end
@@ -84,12 +70,6 @@ class Derivation
   property :base_unit_id, Integer, :key => true	# Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id
   belongs_to :base_unit, 'Unit', :child_key => [:base_unit_id], :parent_key => [:unit_id]	# Base_Unit is involved in Derivation
   property :exponent, Integer	# maybe Derivation has Exponent
-end
-
-class EntityType < Concept
-  has 1, :fact_type, 'FactType', :child_key => [:entity_type_name, :entity_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type nests Fact Type
-  has n, :type_inheritance_as_subtype, 'TypeInheritance', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
-  has n, :type_inheritance_as_supertype, 'TypeInheritance', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
 end
 
 class Fact
@@ -108,8 +88,8 @@ class FactType
   include DataMapper::Resource
 
   property :fact_type_id, Serial	# Fact Type has Fact Type Id
-  property :entity_type_vocabulary_name, String, :length => 64	# maybe Entity Type nests Fact Type and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :entity_type_name, String, :length => 64	# maybe Entity Type nests Fact Type and Concept is called Name
+  property :entity_type_vocabulary_name, String, :length => 64	# maybe Entity Type nests Fact Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :entity_type_name, String, :length => 64	# maybe Entity Type nests Fact Type and Object Type is called Name
   has 1, :entity_type, 'EntityType', :parent_key => [:entity_type_name, :entity_type_vocabulary_name], :child_key => [:name, :vocabulary_name]	# Entity Type nests Fact Type
   has n, :context_note, 'ContextNote'	# Fact Type has Context Note
   has n, :fact	# Fact is of Fact Type
@@ -133,9 +113,9 @@ class Instance
   property :value_literal, String	# maybe Instance has Value and Value is represented by Literal
   property :value_is_a_string, Boolean	# maybe Instance has Value and Value is a string
   property :value_unit_id, Integer	# maybe Instance has Value and maybe Value is in Unit and Unit has Unit Id
-  property :concept_vocabulary_name, String, :length => 64, :required => true	# Instance is of Concept and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :concept_name, String, :length => 64, :required => true	# Instance is of Concept and Concept is called Name
-  belongs_to :concept, :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Instance is of Concept
+  property :object_type_vocabulary_name, String, :length => 64, :required => true	# Instance is of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :object_type_name, String, :length => 64, :required => true	# Instance is of Object Type and Object Type is called Name
+  belongs_to :object_type, 'ObjectType', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Instance is of Object Type
   property :population_vocabulary_name, String, :length => 64	# Population includes Instance and maybe Vocabulary includes Population and Vocabulary is called Name
   property :population_name, String, :length => 64, :required => true	# Population includes Instance and Population has Name
   has n, :role_value, 'RoleValue'	# Instance plays Role Value
@@ -150,9 +130,9 @@ class JoinNode
   property :value_literal, String	# maybe Join Node has Value and Value is represented by Literal
   property :value_is_a_string, Boolean	# maybe Join Node has Value and Value is a string
   property :value_unit_id, Integer	# maybe Join Node has Value and maybe Value is in Unit and Unit has Unit Id
-  property :concept_vocabulary_name, String, :length => 64, :required => true	# Join Node is for Concept and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :concept_name, String, :length => 64, :required => true	# Join Node is for Concept and Concept is called Name
-  belongs_to :concept, :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Join Node is for Concept
+  property :object_type_vocabulary_name, String, :length => 64, :required => true	# Join Node is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :object_type_name, String, :length => 64, :required => true	# Join Node is for Object Type and Object Type is called Name
+  belongs_to :object_type, 'ObjectType', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Join Node is for Object Type
   has n, :join_role, 'JoinRole', :child_key => [:join_node_join_id, :join_node_ordinal], :parent_key => [:join_id, :ordinal]	# Join Node includes Role
 end
 
@@ -174,9 +154,11 @@ class JoinRole
   property :join_step_output_join_role_fact_type_id, Integer	# maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :join_step_output_join_role_ordinal, Integer	# maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role
   belongs_to :join_step, 'JoinStep', :child_key => [:join_step_input_join_role_fact_type_id, :join_step_input_join_role_join_node_join_id, :join_step_input_join_role_join_node_ordinal, :join_step_input_join_role_ordinal, :join_step_output_join_role_fact_type_id, :join_step_output_join_role_join_node_join_id, :join_step_output_join_role_join_node_ordinal, :join_step_output_join_role_ordinal], :parent_key => [:input_join_role_fact_type_id, :input_join_role_join_node_join_id, :input_join_role_join_node_ordinal, :input_join_role_ordinal, :output_join_role_fact_type_id, :output_join_role_join_node_join_id, :output_join_role_join_node_ordinal, :output_join_role_ordinal]	# Join_Step is involved in Join Role
+  property :role_ref_role_sequence_id, Integer	# maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id
+  property :role_ref_ordinal, Integer	# maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role
+  has 1, :role_ref, 'RoleRef', :parent_key => [:role_ref_ordinal, :role_ref_role_sequence_id], :child_key => [:ordinal, :role_sequence_id]	# Role_Ref is involved in Join Role
   has n, :join_step_as_input_join_role, 'JoinStep', :child_key => [:input_join_role_join_node_join_id, :input_join_role_join_node_ordinal, :input_join_role_fact_type_id, :input_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join_Step_as_input_join_role is involved in Join Role
   has n, :join_step_as_output_join_role, 'JoinStep', :child_key => [:output_join_role_join_node_join_id, :output_join_role_join_node_ordinal, :output_join_role_fact_type_id, :output_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join_Step_as_output_join_role is involved in Join Role
-  has 1, :role_ref, 'RoleRef', :child_key => [:join_role_join_node_join_id, :join_role_join_node_ordinal, :join_role_fact_type_id, :join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Role_Ref is involved in Join Role
 end
 
 class JoinStep
@@ -199,6 +181,26 @@ class JoinStep
   has n, :incidental_join_role, 'JoinRole', :child_key => [:join_step_input_join_role_fact_type_id, :join_step_input_join_role_join_node_join_id, :join_step_input_join_role_join_node_ordinal, :join_step_input_join_role_ordinal, :join_step_output_join_role_fact_type_id, :join_step_output_join_role_join_node_join_id, :join_step_output_join_role_join_node_ordinal, :join_step_output_join_role_ordinal], :parent_key => [:input_join_role_fact_type_id, :input_join_role_join_node_join_id, :input_join_role_join_node_ordinal, :input_join_role_ordinal, :output_join_role_fact_type_id, :output_join_role_join_node_join_id, :output_join_role_join_node_ordinal, :output_join_role_ordinal]	# Join Step involves incidental-Join Role
 end
 
+class ObjectType
+  include DataMapper::Resource
+
+  property :name, String, :length => 64, :key => true	# Object Type is called Name
+  property :vocabulary_name, String, :length => 64, :key => true	# Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :pronoun, String, :length => 20	# maybe Object Type uses Pronoun
+  property :is_independent, Boolean, :required => true	# Object Type is independent
+  has n, :context_note, 'ContextNote', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type has Context Note
+  has n, :instance, :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Instance is of Object Type
+  has n, :join_node, 'JoinNode', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Join Node is for Object Type
+  has n, :role, :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type plays Role
+  has n, :object_type_shape, 'ObjectTypeShape', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type Shape is for Object Type
+end
+
+class EntityType < ObjectType
+  has 1, :fact_type, 'FactType', :child_key => [:entity_type_name, :entity_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type nests Fact Type
+  has n, :type_inheritance_as_subtype, 'TypeInheritance', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
+  has n, :type_inheritance_as_supertype, 'TypeInheritance', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
+end
+
 class ParamValue
   include DataMapper::Resource
 
@@ -206,10 +208,10 @@ class ParamValue
   property :value_is_a_string, Boolean, :key => true	# Param Value is where Value for Parameter applies to Value Type and Value is a string
   property :value_unit_id, Integer, :key => true	# Param Value is where Value for Parameter applies to Value Type and maybe Value is in Unit and Unit has Unit Id
   property :parameter_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type
-  property :parameter_value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :parameter_value_type_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Concept is called Name
-  property :value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :value_type_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Concept is called Name
+  property :parameter_value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :parameter_value_type_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type is called Name
+  property :value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :value_type_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Object Type is called Name
   belongs_to :value_type, 'ValueType', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value_Type is involved in Param Value
 end
 
@@ -252,9 +254,9 @@ class Role
   property :implicit_fact_type_id, Integer	# maybe Implicit Fact Type is implied by Role (as Implying Role) and Fact Type has Fact Type Id
   has 1, :implicit_fact_type, 'ImplicitFactType', :parent_key => [:implicit_fact_type_id], :child_key => [:fact_type_id]	# Implicit_Fact_Type is involved in Role
   property :role_name, String, :length => 64	# maybe Role has role-Name
-  property :concept_vocabulary_name, String, :length => 64, :required => true	# Concept plays Role and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :concept_name, String, :length => 64, :required => true	# Concept plays Role and Concept is called Name
-  belongs_to :concept, :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Concept is involved in Role
+  property :object_type_vocabulary_name, String, :length => 64, :required => true	# Object Type plays Role and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :object_type_name, String, :length => 64, :required => true	# Object Type plays Role and Object Type is called Name
+  belongs_to :object_type, 'ObjectType', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object_Type is involved in Role
   has n, :ring_constraint_as_other_role, 'RingConstraint', :child_key => [:other_role_fact_type_id, :other_role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Ring_Constraint_as_other_role is involved in Role
   has n, :ring_constraint, 'RingConstraint', :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Ring_Constraint is involved in Role
   has n, :role_value, 'RoleValue', :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Role_Value is involved in Role
@@ -286,13 +288,9 @@ class RoleRef
   property :role_fact_type_id, Integer, :key => true	# Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :role_ordinal, Integer, :key => true	# Role Ref is where Role Sequence in Ordinal position includes Role and Role is where Fact Type has Ordinal role
   belongs_to :role, :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Role is involved in Role Ref
-  property :join_role_join_node_join_id, Integer	# maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id
-  property :join_role_join_node_ordinal, Integer	# maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join Node has Ordinal position
-  property :join_role_fact_type_id, Integer	# maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
-  property :join_role_ordinal, Integer	# maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role
-  has 1, :join_role, 'JoinRole', :parent_key => [:join_role_join_node_join_id, :join_role_join_node_ordinal, :join_role_fact_type_id, :join_role_ordinal], :child_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join_Role is involved in Role Ref
   property :leading_adjective, String, :length => 64	# maybe Role Ref has leading-Adjective
   property :trailing_adjective, String, :length => 64	# maybe Role Ref has trailing-Adjective
+  has 1, :join_role, 'JoinRole', :child_key => [:role_ref_ordinal, :role_ref_role_sequence_id], :parent_key => [:ordinal, :role_sequence_id]	# Join_Role is involved in Role Ref
 end
 
 class RoleSequence
@@ -380,9 +378,9 @@ class ModelNoteShape < Shape
 end
 
 class ObjectTypeShape < Shape
-  property :concept_vocabulary_name, String, :length => 64, :required => true	# Object Type Shape is for Concept and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :concept_name, String, :length => 64, :required => true	# Object Type Shape is for Concept and Concept is called Name
-  belongs_to :concept, :child_key => [:concept_name, :concept_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type Shape is for Concept
+  property :object_type_vocabulary_name, String, :length => 64, :required => true	# Object Type Shape is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :object_type_name, String, :length => 64, :required => true	# Object Type Shape is for Object Type and Object Type is called Name
+  belongs_to :object_type, 'ObjectType', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type Shape is for Object Type
   property :has_expanded_reference_mode, Boolean, :required => true	# Object Type Shape has expanded reference mode
   has n, :value_constraint_shape, 'ValueConstraintShape', :child_key => [:object_type_shape_id], :parent_key => [:shape_id]	# Value Constraint Shape is for Object Type Shape
 end
@@ -406,11 +404,11 @@ class SubsetConstraint < SetConstraint
 end
 
 class TypeInheritance < FactType
-  property :subtype_vocabulary_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :subtype_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept is called Name
+  property :subtype_vocabulary_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :subtype_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is called Name
   belongs_to :subtype, 'EntityType', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Subtype is involved in Type Inheritance
-  property :supertype_vocabulary_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :supertype_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept is called Name
+  property :supertype_vocabulary_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :supertype_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is called Name
   belongs_to :supertype, 'EntityType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Supertype is involved in Type Inheritance
   property :assimilation, String	# maybe Assimilation applies to Type Inheritance
   property :provides_identification, Boolean, :required => true	# Type Inheritance provides identification
@@ -450,15 +448,15 @@ class ValueConstraintShape < ConstraintShape
   belongs_to :object_type_shape, 'ObjectTypeShape', :child_key => [:object_type_shape_id], :parent_key => [:shape_id]	# Value Constraint Shape is for Object Type Shape
 end
 
-class ValueType < Concept
+class ValueType < ObjectType
   property :length, Integer	# maybe Value Type has Length
   property :scale, Integer	# maybe Value Type has Scale
   property :unit_id, Integer	# maybe Value Type is of Unit and Unit has Unit Id
   belongs_to :unit	# Value Type is of Unit
   property :value_constraint_id, Integer	# maybe Value Type has Value Constraint and Constraint has Constraint Id
   has 1, :value_constraint, 'ValueConstraint', :parent_key => [:value_constraint_id], :child_key => [:constraint_id]	# Value Type has Value Constraint
-  property :supertype_vocabulary_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name
-  property :supertype_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Concept is called Name
+  property :supertype_vocabulary_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :supertype_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type is called Name
   belongs_to :supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)
   property :is_auto_assigned, Boolean, :required => true	# Value Type is auto-assigned
   has n, :value_type_as_supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)

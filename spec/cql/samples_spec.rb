@@ -118,29 +118,29 @@ describe "Sample data" do
       # REVISIT: Include the instance_names of all role players
     end
 
-    if i.concept.is_a?(ActiveFacts::Metamodel::ValueType)
-      return "#{i.concept.name} #{i.value}"
+    if i.object_type.is_a?(ActiveFacts::Metamodel::ValueType)
+      return "#{i.object_type.name} #{i.value}"
     end
 
-    if i.concept.fact_type      # An instance of an objectified fact type
-      return "#{i.concept.name} where #{instance_name(i.fact)}"
+    if i.object_type.fact_type      # An instance of an objectified fact type
+      return "#{i.object_type.name} where #{instance_name(i.fact)}"
     end
 
     # It's an entity that's not an objectified fact type
     # REVISIT: If it has a simple identifier, there's no need to fully verbalise the identifying facts
-    pi = i.concept.preferred_identifier
+    pi = i.object_type.preferred_identifier
     identifying_role_refs = pi.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}
-    return "#{i.concept.name}" +
+    return "#{i.object_type.name}" +
       " is identified by " +
       identifying_role_refs.map do |rr|
         [ (l = rr.leading_adjective) ? l+"-" : nil,
-          rr.role.role_name || rr.role.concept.name,
+          rr.role.role_name || rr.role.object_type.name,
           (t = rr.trailing_adjective) ? l+"-" : nil
         ].compact*""
       end * " and " +
       " where " +
       identifying_role_refs.map do |rr|  # Go through the identifying roles and emit the facts that define them
-        instance_role = i.concept.all_role.detect{|r| r.fact_type == rr.role.fact_type}
+        instance_role = i.object_type.all_role.detect{|r| r.fact_type == rr.role.fact_type}
         identifying_fact = i.all_role_value.detect{|rv| rv.fact.fact_type == rr.role.fact_type}.fact
         #counterpart_role = (rr.role.fact_type.all_role.to_a-[instance_role])[0]
         #identifying_instance = counterpart_role.all_role_value.detect{|rv| rv.fact == identifying_fact}.instance

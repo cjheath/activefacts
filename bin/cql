@@ -30,14 +30,14 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     if name.empty?
       @vocabulary.constellation.Instance.values
     else
-      if !@vocabulary.constellation.Concept[[[@vocabulary.name], name]]
+      if !@vocabulary.constellation.ObjectType[[[@vocabulary.name], name]]
 	puts "Object type '#{name}' does not exist in vocabulary '#{@vocabulary.name}'"
 	[]
       else
-	@vocabulary.constellation.Instance.values.select{|i| i.concept.supertypes_transitive.detect{|k| k.name == name}}
+	@vocabulary.constellation.Instance.values.select{|i| i.object_type.supertypes_transitive.detect{|k| k.name == name}}
       end
     end.select do |instance|
-      instance.concept.vocabulary == @vocabulary
+      instance.object_type.vocabulary == @vocabulary
     end.map do |instance|
       instance.verbalise
     end.sort.each do |verbalisation|
@@ -52,30 +52,30 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
   end
 
   def list_object_types
-    concepts_by_vocabulary = {}
-    @constellation.Concept.keys.
+    object_types_by_vocabulary = {}
+    @constellation.ObjectType.keys.
       each do |v,t|
-	(concepts_by_vocabulary[v[0]] ||= []) << t
+	(object_types_by_vocabulary[v[0]] ||= []) << t
       end
-    concepts_by_vocabulary.keys.sort.each do |v|
-      puts "#{v}:\n\t" + concepts_by_vocabulary[v].sort*"\n\t"
+    object_types_by_vocabulary.keys.sort.each do |v|
+      puts "#{v}:\n\t" + object_types_by_vocabulary[v].sort*"\n\t"
     end
   end
 
   def list_connotations word
-    concept = @constellation.Concept[[@vocabulary.identifying_role_values, word]]
-    unless concept
+    object_type = @constellation.ObjectType[[@vocabulary.identifying_role_values, word]]
+    unless object_type
       puts "Object type '#{word}' is unknown in #{@vocabulary.name}"
       return
     end
     puts "Fact types in which '#{word}' plays a part:"
-    if concept.is_a?(ActiveFacts::Metamodel::ValueType)
-      puts "\t#{concept.name} is written as #{concept.supertype.name};" if concept.supertype
-      concept.all_value_type_as_supertype.each do |st|
-	puts "#{st.name} is written as #{concept.name};"
+    if object_type.is_a?(ActiveFacts::Metamodel::ValueType)
+      puts "\t#{object_type.name} is written as #{object_type.supertype.name};" if object_type.supertype
+      object_type.all_value_type_as_supertype.each do |st|
+	puts "#{st.name} is written as #{object_type.name};"
       end
     end
-    concept.all_role.map{|role| role.fact_type}.uniq.each do |fact_type|
+    object_type.all_role.map{|role| role.fact_type}.uniq.each do |fact_type|
       puts "\t#{fact_type.default_reading}"
     end
   end

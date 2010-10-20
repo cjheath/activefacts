@@ -1,6 +1,6 @@
 #
 #       ActiveFacts Runtime API
-#       Concept (a mixin module for the class Class)
+#       ObjectType (a mixin module for the class Class)
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
@@ -9,14 +9,14 @@ module ActiveFacts
   module API
     module Vocabulary; end
 
-    # Concept contains methods that are added as class methods to all Value and Entity classes.
-    module Concept
-      # What vocabulary (Ruby module) does this concept belong to?
+    # ObjectType contains methods that are added as class methods to all Value and Entity classes.
+    module ObjectType
+      # What vocabulary (Ruby module) does this object_type belong to?
       def vocabulary
-        modspace        # The module that contains this concept.
+        modspace        # The module that contains this object_type.
       end
 
-      # Each Concept maintains a list of the Roles it plays:
+      # Each ObjectType maintains a list of the Roles it plays:
       def roles(name = nil)
         unless instance_variable_defined? "@roles"
           @roles = RoleCollection.new     # Initialize and extend without warnings.
@@ -37,28 +37,28 @@ module ActiveFacts
           end
           raise "Role #{basename}.#{name} is not defined" unless role
           # Bind the role if possible, but don't require it:
-          role.resolve_counterpart(vocabulary) rescue nil unless role.counterpart_concept.is_a?(Class)
+          role.resolve_counterpart(vocabulary) rescue nil unless role.counterpart_object_type.is_a?(Class)
           role
         else
           nil
         end
       end
 
-      # Define a unary fact type attached to this concept; in essence, a boolean attribute.
+      # Define a unary fact type attached to this object_type; in essence, a boolean attribute.
       #
       # Example: maybe :is_ceo
       def maybe(role_name)
         realise_role(roles[role_name] = Role.new(self, TrueClass, nil, role_name))
       end
 
-      # Define a binary fact type relating this concept to another,
-      # with a uniqueness constraint only on this concept's role.
-      # This method creates two accessor methods, one in this concept and one in the other concept.
+      # Define a binary fact type relating this object_type to another,
+      # with a uniqueness constraint only on this object_type's role.
+      # This method creates two accessor methods, one in this object_type and one in the other object_type.
       # * role_name is a Symbol for the name of the role (this end of the relationship)
       # Options contain optional keys:
       # * :class - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined.
       # * :mandatory - if this role may not be NULL in a valid fact population, say :mandatory => true. Mandatory constraints are only enforced during validation (e.g. before saving).
-      # * :counterpart - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>\_as_<role_name>
+      # * :counterpart - use if the role at the other end should have a name other than the default :all_<object_type> or :all_<object_type>\_as_<role_name>
       # * :reading - for verbalisation. Not used yet.
       # * :restrict - a list of values or ranges which this role may take. Not used yet.
       def has_one(role_name, options = {})
@@ -66,14 +66,14 @@ module ActiveFacts
         define_binary_fact_type(false, role_name, related, mandatory, related_role_name)
       end
 
-      # Define a binary fact type joining this concept to another,
+      # Define a binary fact type joining this object_type to another,
       # with uniqueness constraints in both directions, i.e. a one-to-one relationship
-      # This method creates two accessor methods, one in this concept and one in the other concept.
+      # This method creates two accessor methods, one in this object_type and one in the other object_type.
       # * role_name is a Symbol for the name of the role (this end of the relationship)
       # Options contain optional keys:
       # * :class - A class name, Symbol or String naming a class, required if it doesn't match the role_name. Use a symbol or string if the class isn't defined yet, and the methods will be created later, when the class is first defined.
       # * :mandatory - if this role may not be NULL in a valid fact population, say :mandatory => true. Mandatory constraints are only enforced during validation (e.g. before saving).
-      # * :counterpart - use if the role at the other end should have a name other than the default :all_<concept> or :all_<concept>\_as_<role_name>
+      # * :counterpart - use if the role at the other end should have a name other than the default :all_<object_type> or :all_<object_type>\_as_<role_name>
       # * :reading - for verbalisation. Not used yet.
       # * :restrict - a list of values or ranges which this role may take. Not used yet.
       def one_to_one(role_name, options = {})
@@ -83,35 +83,35 @@ module ActiveFacts
       end
 
       # Access supertypes or add new supertypes; multiple inheritance.
-      # With parameters (Class objects), it adds new supertypes to this class. Instances of this class will then have role methods for any new superclasses (transitively). Superclasses must be Ruby classes which are existing Concepts.
-      # Without parameters, it returns the array of Concept supertypes (one by Ruby inheritance, any others as defined using this method)
-      def supertypes(*concepts)
+      # With parameters (Class objects), it adds new supertypes to this class. Instances of this class will then have role methods for any new superclasses (transitively). Superclasses must be Ruby classes which are existing ObjectTypes.
+      # Without parameters, it returns the array of ObjectType supertypes (one by Ruby inheritance, any others as defined using this method)
+      def supertypes(*object_types)
         class_eval do
           @supertypes ||= []
           all_supertypes = supertypes_transitive
-          concepts.each do |concept|
-            next if all_supertypes.include? concept
-            case concept
+          object_types.each do |object_type|
+            next if all_supertypes.include? object_type
+            case object_type
             when Class
-              @supertypes << concept
+              @supertypes << object_type
             when Symbol
               # No late binding here:
-              @supertypes << (concept = vocabulary.const_get(concept.to_s.camelcase))
+              @supertypes << (object_type = vocabulary.const_get(object_type.to_s.camelcase))
             else
-              raise "Illegal supertype #{concept.inspect} for #{self.class.basename}"
+              raise "Illegal supertype #{object_type.inspect} for #{self.class.basename}"
             end
 
             # Realise the roles (create accessors) of this supertype.
             # REVISIT: The existing accessors at the other end will need to allow this class as role counterpart
             # REVISIT: Need to check all superclass roles recursively, unless we hit a common supertype
-            #puts "Realising concept #{concept.name} in #{basename}"
-            realise_supertypes(concept, all_supertypes)
+            #puts "Realising object_type #{object_type.name} in #{basename}"
+            realise_supertypes(object_type, all_supertypes)
           end
           [(superclass.vocabulary && superclass rescue nil), *@supertypes].compact
         end
       end
 
-      # Return the array of all Concept supertypes, transitively.
+      # Return the array of all ObjectType supertypes, transitively.
       def supertypes_transitive
         class_eval do
           supertypes = []
@@ -131,7 +131,7 @@ module ActiveFacts
 
       # Every new role added or inherited comes through here:
       def realise_role(role) #:nodoc:
-        #puts "Realising role #{role.counterpart_concept.basename rescue role.counterpart_concept}.#{role.name} in #{basename}"
+        #puts "Realising role #{role.counterpart_object_type.basename rescue role.counterpart_object_type}.#{role.name} in #{basename}"
 
         if (!role.counterpart)
           # Unary role
@@ -151,23 +151,23 @@ module ActiveFacts
 
       private
 
-      def realise_supertypes(concept, all_supertypes = nil)
+      def realise_supertypes(object_type, all_supertypes = nil)
         all_supertypes ||= supertypes_transitive
-        s = concept.supertypes
-        #puts "realising #{concept.basename} supertypes #{s.inspect} of #{basename}"
+        s = object_type.supertypes
+        #puts "realising #{object_type.basename} supertypes #{s.inspect} of #{basename}"
         s.each {|t|
             next if all_supertypes.include? t
             realise_supertypes(t, all_supertypes)
             t.subtypes << self
             all_supertypes << t
           }
-        #puts "Realising roles of #{concept.basename} in #{basename}"
-        realise_roles(concept)
+        #puts "Realising roles of #{object_type.basename} in #{basename}"
+        realise_roles(object_type)
       end
 
-      # Realise all the roles of a concept on this concept, used when a supertype is added:
-      def realise_roles(concept)
-        concept.roles.each do |role_name, role|
+      # Realise all the roles of a object_type on this object_type, used when a supertype is added:
+      def realise_roles(object_type)
+        object_type.roles.each do |role_name, role|
           realise_role(role)
         end
       end
@@ -180,14 +180,14 @@ module ActiveFacts
         roles[role_name] = role = Role.new(self, related, nil, role_name, mandatory)
 
         # There may be a forward reference here where role_name is a Symbol,
-        # and the block runs later when that Symbol is bound to the concept.
+        # and the block runs later when that Symbol is bound to the object_type.
         when_bound(related, self, role_name, related_role_name) do |target, definer, role_name, related_role_name|
           if (one_to_one)
             target.roles[related_role_name] = role.counterpart = Role.new(target, definer, role, related_role_name, false)
           else
             target.roles[related_role_name] = role.counterpart = Role.new(target, definer, role, related_role_name, false, false)
           end
-          role.counterpart_concept = target
+          role.counterpart_object_type = target
           #puts "Realising role pair #{definer.basename}.#{role_name} <-> #{target.basename}.#{related_role_name}"
           realise_role(role)
           target.realise_role(role.counterpart)
@@ -219,7 +219,7 @@ module ActiveFacts
 
       # REVISIT: Add __add_to(constellation) and __remove(constellation) here?
       def define_single_role_accessor(role, one_to_one)
-        # puts "Defining #{basename}.#{role.name} to #{role.counterpart_concept.basename} (#{one_to_one ? "assigning" : "populating"} #{role.counterpart.name})"
+        # puts "Defining #{basename}.#{role.name} to #{role.counterpart_object_type.basename} (#{one_to_one ? "assigning" : "populating"} #{role.counterpart.name})"
         define_single_role_getter(role)
 
         if (one_to_one)
@@ -249,8 +249,8 @@ module ActiveFacts
           define_method "#{role.name}=" do |value|
             role_var = "@#{role.name}"
 
-            # If role.counterpart_concept isn't bound to a class yet, bind it.
-            role.resolve_counterpart(self.class.vocabulary) unless role.counterpart_concept.is_a?(Class)
+            # If role.counterpart_object_type isn't bound to a class yet, bind it.
+            role.resolve_counterpart(self.class.vocabulary) unless role.counterpart_object_type.is_a?(Class)
 
             # Get old value, and jump out early if it's unchanged:
             old = instance_variable_get(role_var) rescue nil
@@ -318,12 +318,12 @@ module ActiveFacts
       #   Role Name
       # else:
       #   Leading Adjective
-      #   Role counterpart_concept name (not role name)
+      #   Role counterpart_object_type name (not role name)
       #   Trailing Adjective
-      # "_as_<other_role_name>" if other_role_name != this role counterpart_concept's name, and not other_player_this_player
+      # "_as_<other_role_name>" if other_role_name != this role counterpart_object_type's name, and not other_player_this_player
       def extract_binary_params(one_to_one, role_name, options)
         # Options:
-        #   other counterpart_concept (Symbol or Class)
+        #   other counterpart_object_type (Symbol or Class)
         #   mandatory (:mandatory)
         #   other end role name if any (Symbol),
         related = nil
@@ -351,7 +351,7 @@ module ActiveFacts
         end
 
         # resolve the Symbol to a Class now if possible:
-        resolved = vocabulary.concept(related) rescue nil
+        resolved = vocabulary.object_type(related) rescue nil
         #puts "#{related} resolves to #{resolved}"
         related = resolved if resolved
         # puts "related = #{related.inspect}"
@@ -369,8 +369,8 @@ module ActiveFacts
 
         # Avoid a confusing mismatch:
         # Note that if you have a role "supervisor" and a sub-class "Supervisor", this'll bitch.
-        if (Class === related && (indicated = vocabulary.concept(role_name)) && indicated != related)
-          raise "Role name #{role_name} indicates a different counterpart concept #{indicated} than specified"
+        if (Class === related && (indicated = vocabulary.object_type(role_name)) && indicated != related)
+          raise "Role name #{role_name} indicates a different counterpart object_type #{indicated} than specified"
         end
 
         # This code probably isn't as quick or simple as it could be, but it does work right,
@@ -393,16 +393,16 @@ module ActiveFacts
         ]
       end
 
-      def when_bound(concept, *args, &block)
-        case concept
+      def when_bound(object_type, *args, &block)
+        case object_type
         when Class
-          block.call(concept, *args)    # Execute block in the context of the concept
+          block.call(object_type, *args)    # Execute block in the context of the object_type
         when Symbol
-          vocabulary.__delay(concept.to_s.camelcase, args, &block)
+          vocabulary.__delay(object_type.to_s.camelcase, args, &block)
         when String     # Arrange for this to happen later
-          vocabulary.__delay(concept, args, &block)
+          vocabulary.__delay(object_type, args, &block)
         else
-          raise "Delayed binding not possible for #{concept.class.name} #{concept.inspect}"
+          raise "Delayed binding not possible for #{object_type.class.name} #{object_type.inspect}"
         end
       end
     end

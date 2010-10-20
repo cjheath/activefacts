@@ -29,8 +29,8 @@ module ActiveFacts
               :discussion => @discussion
             )
           case target
-          when ActiveFacts::Metamodel::Concept
-            context_note.concept = target
+          when ActiveFacts::Metamodel::ObjectType
+            context_note.object_type = target
           when ActiveFacts::Metamodel::Constraint
             context_note.constraint = target
           when ActiveFacts::Metamodel::FactType
@@ -286,7 +286,7 @@ module ActiveFacts
             all_bindings_in_readings(readings_list).
               each do |binding|
                 debug :join, "Creating join node #{join.all_join_node.size} for #{binding.inspect}"
-                binding.join_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => binding.player)
+                binding.join_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => binding.player)
               end
             join
           end
@@ -320,7 +320,7 @@ module ActiveFacts
 
                 debug :join, "Creating Join Node #{role_ref.inspect} (counts #{refs_count}/#{objectification_ref_count}) and objectification Join Step for #{role_ref.inspect}" do
 
-                  raise "Internal error: Trying to add role of #{role.concept.name} to join node for #{binding.join_node.concept.name}" unless binding.join_node.concept == role.concept
+                  raise "Internal error: Trying to add role of #{role.object_type.name} to join node for #{binding.join_node.object_type.name}" unless binding.join_node.object_type == role.object_type
                   join_role = @constellation.JoinRole(binding.join_node, role)
 
                   if (refs_count <= 1)   # Our work here is done if there are no other refs
@@ -338,12 +338,12 @@ module ActiveFacts
                     # We need to create a JoinNode for this object, even though it has no RoleRefs
                     join = binding.join_node.join
                     debug :join, "Creating JN#{join.all_join_node.size} for #{reading.fact_type.entity_type.name} in objectification"
-                    objectification_node = @constellation.JoinNode(join, join.all_join_node.size, :concept => reading.fact_type.entity_type)
+                    objectification_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => reading.fact_type.entity_type)
                   end
-                  raise "Internal error: Trying to add role of #{role.implicit_fact_type.all_role.single.concept.name} to join node for #{objectification_node.concept.name}" unless objectification_node.concept == role.implicit_fact_type.all_role.single.concept
+                  raise "Internal error: Trying to add role of #{role.implicit_fact_type.all_role.single.object_type.name} to join node for #{objectification_node.object_type.name}" unless objectification_node.object_type == role.implicit_fact_type.all_role.single.object_type
 
                   irole = role.implicit_fact_type.all_role.single
-                  raise "Internal error: Trying to add role of #{irole.concept.name} to join node for #{objectification_node.concept.name}" unless objectification_node.concept == irole.concept
+                  raise "Internal error: Trying to add role of #{irole.object_type.name} to join node for #{objectification_node.object_type.name}" unless objectification_node.object_type == irole.object_type
                   objectification_role = @constellation.JoinRole(objectification_node, role.implicit_fact_type.all_role.single)
                   objectification_step = @constellation.JoinStep(objectification_role, join_role, :fact_type => role.implicit_fact_type)
                   debug :join, "New #{objectification_step.describe}"
@@ -356,11 +356,11 @@ module ActiveFacts
                 debug :join, "Creating Role Ref for #{role_ref.inspect}" do
                     # REVISIT: If there's an implicit subtyping join here, create it; then always raise the error here.
                     # I don't want to do this for now because the verbaliser will always verbalise all join steps.
-                  if binding.join_node.concept != role.concept and
-                    0 == (binding.join_node.concept.supertypes_transitive & role.concept.supertypes_transitive).size
-                    raise "Internal error: Trying to add role of #{role.concept.name} to join node for #{binding.join_node.concept.name} in '#{reading.fact_type.default_reading}'"
+                  if binding.join_node.object_type != role.object_type and
+                    0 == (binding.join_node.object_type.supertypes_transitive & role.object_type.supertypes_transitive).size
+                    raise "Internal error: Trying to add role of #{role.object_type.name} to join node for #{binding.join_node.object_type.name} in '#{reading.fact_type.default_reading}'"
                   end
-                  raise "Internal error: Trying to add role of #{role.concept.name} to join node for #{binding.join_node.concept.name}" unless binding.join_node.concept == role.concept
+                  raise "Internal error: Trying to add role of #{role.object_type.name} to join node for #{binding.join_node.object_type.name}" unless binding.join_node.object_type == role.object_type
                   join_role = @constellation.JoinRole(binding.join_node, role)
                   join_roles << join_role
                 end
@@ -378,8 +378,8 @@ module ActiveFacts
                 end
               end
               if (@common_bindings.include?(binding))
-                debug :join, "#{binding.inspect} is a constrained binding, add the Role Ref for #{role.concept.name}"
-                raise "Internal error: Trying to add role of #{role.concept.name} to join node for #{binding.join_node.concept.name}" unless binding.join_node.concept == role.concept
+                debug :join, "#{binding.inspect} is a constrained binding, add the Role Ref for #{role.object_type.name}"
+                raise "Internal error: Trying to add role of #{role.object_type.name} to join node for #{binding.join_node.object_type.name}" unless binding.join_node.object_type == role.object_type
                 @constellation.RoleRef(constrained_rs, constrained_rs.all_role_ref.size, :role => role, :join_role => join_role)
               end
             end
@@ -573,7 +573,7 @@ module ActiveFacts
           role_refs = @role_sequence.all_role_ref.to_a
           supertypes_by_position = role_refs.
             map do |role_ref|
-              role_ref.role.concept.supertypes_transitive
+              role_ref.role.object_type.supertypes_transitive
             end
           role_pairs = []
           supertypes_by_position.each_with_index do |sts, i|

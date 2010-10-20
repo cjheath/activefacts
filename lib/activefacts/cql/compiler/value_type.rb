@@ -82,7 +82,7 @@ module ActiveFacts
         end
       end
 
-      class ValueType < Concept
+      class ValueType < ObjectType
         def initialize name, base, parameters, unit, value_constraint, pragmas
           super name
           @base_type_name = base

@@ -14,7 +14,7 @@ module ActiveFacts
 
       def preferred_reading
         p = all_reading_by_ordinal[0]
-        raise "No reading for (#{all_role.map{|r| r.concept.name}*", "})" unless p
+        raise "No reading for (#{all_role.map{|r| r.object_type.name}*", "})" unless p
         p
       end
 
@@ -44,8 +44,8 @@ module ActiveFacts
         # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
         # We only do it when the unary fact type is not objectified
         implicit_fact_type = @constellation.ImplicitFactType(:new, :implying_role => role)
-        entity_type = @entity_type || @constellation.ImplicitBooleanValueType(role.concept.vocabulary, "_ImplicitBooleanValueType")
-        phantom_role = @constellation.Role(implicit_fact_type, 0, :concept => entity_type)
+        entity_type = @entity_type || @constellation.ImplicitBooleanValueType(role.object_type.vocabulary, "_ImplicitBooleanValueType")
+        phantom_role = @constellation.Role(implicit_fact_type, 0, :object_type => entity_type)
       end
 
       def reading_preferably_starting_with_role role
@@ -57,7 +57,7 @@ module ActiveFacts
 
     class Role
       def describe(highlight = nil)
-        concept.name + (self == highlight ? "*" : "")
+        object_type.name + (self == highlight ? "*" : "")
       end
 
       # Is there are internal uniqueness constraint on this role only?
@@ -100,12 +100,12 @@ module ActiveFacts
         name_array =
           if role.fact_type.all_role.size == 1
             if role.fact_type.is_a?(ImplicitFactType)
-              "#{role.concept.name} phantom for #{role.fact_type.role.concept.name}"
+              "#{role.object_type.name} phantom for #{role.fact_type.role.object_type.name}"
             else
               role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.split(/\s/)
             end
           else
-            role.role_name || [leading_adjective, role.concept.name, trailing_adjective].compact.map{|w| w.split(/\s/)}.flatten
+            role.role_name || [leading_adjective, role.object_type.name, trailing_adjective].compact.map{|w| w.split(/\s/)}.flatten
           end
         return joiner ? Array(name_array)*joiner : Array(name_array)
       end
@@ -118,7 +118,7 @@ module ActiveFacts
         else
           # Where an adjective has multiple words, the hyphen is inserted outside the outermost space, leaving the space
           (leading_adjective ? leading_adjective.strip.sub(/ |$/, '-\0').sub(/[^-]$/,'\0 ') : '') +
-            role.concept.name+
+            role.object_type.name+
             (trailing_adjective ? ' '+trailing_adjective.strip.sub(/.* |^/, '\0-').sub(/^[^-]/,' \0') : '')
         end
       end
@@ -152,6 +152,7 @@ module ActiveFacts
 
     class EntityType
       def preferred_identifier
+        #return @preferred_identifier if @preferred_identifier
         if fact_type
 
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles
@@ -170,10 +171,10 @@ module ActiveFacts
                             if (of = rsr.role.fact_type) != fact_type
                               case of.all_role.size
                               when 1    # A unary FT must be played by the objectification of this fact type
-                                next rsr.role.concept != fact_type.entity_type
+                                next rsr.role.object_type != fact_type.entity_type
                               when 2    # A binary FT must have the objectification of this FT as the other player
                                 other_role = (of.all_role-[rsr.role])[0]
-                                next other_role.concept != fact_type.entity_type
+                                next other_role.object_type != fact_type.entity_type
                               else
                                 next true # A role in a ternary (or higher) cannot be usd in our identifier
                               end
@@ -193,7 +194,7 @@ module ActiveFacts
             debug :pi, "Got PI #{pi.name||pi.object_id} for nested #{name}" if pi
             debug :pi, "Looking for PI on entity that nests this fact" unless pi
             raise "Oops, pi for nested fact is #{pi.class}" unless !pi || pi.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
-            return pi if pi
+            return @preferred_identifier = pi if pi
           end
         end
 
@@ -215,8 +216,8 @@ module ActiveFacts
                   # Note this works with unary fact types:
                   pi_role = ftroles[ftroles[0] != role ? 0 : -1]
 
-                  next if ftroles.size == 2 && pi_role.concept == self
-                  debug :pi, "  Considering #{pi_role.concept.name} as a PI role"
+                  next if ftroles.size == 2 && pi_role.object_type == self
+                  debug :pi, "  Considering #{pi_role.object_type.name} as a PI role"
 
                   # If this is an identifying role, the PI is a PC whose role_sequence spans the role.
                   # Walk through all role_sequences that span this role, and test each:
@@ -234,13 +235,13 @@ module ActiveFacts
                           debug :pi, "      Role Sequence touches #{fact_type.describe(pi_role)}"
 
                           fact_type_roles = fact_type.all_role
-                          debug :pi, "      residual is #{fact_type_roles.map{|r| r.concept.name}.inspect} minus #{rsr.role.concept.name}"
+                          debug :pi, "      residual is #{fact_type_roles.map{|r| r.object_type.name}.inspect} minus #{rsr.role.object_type.name}"
                           residual_roles = fact_type_roles-[rsr.role]
                           residual_roles.detect{|rfr|
-                              debug :pi, "        Checking residual role #{rfr.concept.object_id}=>#{rfr.concept.name}"
+                              debug :pi, "        Checking residual role #{rfr.object_type.object_id}=>#{rfr.object_type.name}"
 # This next line looks right, but breaks things. Find out what and why:
 #                              !rfr.unique or
-                                !all_supertypes.include?(rfr.concept)
+                                !all_supertypes.include?(rfr.object_type)
                             }
                         }
                         debug :pi, "      Discounting this role_sequence because it includes alien roles"
@@ -288,7 +289,7 @@ module ActiveFacts
             end
           end
           raise "No PI found for #{name}" unless pi
-          pi
+          @preferred_identifier = pi
         end
       end
 
@@ -340,7 +341,7 @@ module ActiveFacts
         fact_type.all_role.each do |role|
           next if role.implicit_fact_type     # Already exists
           implicit_fact_type = @constellation.ImplicitFactType(:new, :implying_role => role)
-          phantom_role = @constellation.Role(implicit_fact_type, 0, :concept => self)
+          phantom_role = @constellation.Role(implicit_fact_type, 0, :object_type => self)
           # We could create a copy of the visible external role here, but there's no need yet...
           # Nor is there a need for a presence constraint, readings, etc.
         end
@@ -370,7 +371,7 @@ module ActiveFacts
 
             expanded.gsub!(/\{#{i}\}/) {
                 role_ref = role_refs[i]
-                player = role_ref.role.concept
+                player = role_ref.role.object_type
                 role_name = role.role_name
                 role_name = nil if role_name == ""
                 if role_name && define_role_names == false
@@ -505,11 +506,11 @@ module ActiveFacts
       end
 
       def supertype_role
-        (roles = all_role.to_a)[0].concept == supertype ? roles[0] : roles[1]
+        (roles = all_role.to_a)[0].object_type == supertype ? roles[0] : roles[1]
       end
 
       def subtype_role
-        (roles = all_role.to_a)[0].concept == subtype ? roles[0] : roles[1]
+        (roles = all_role.to_a)[0].object_type == subtype ? roles[0] : roles[1]
       end
     end
 
@@ -544,7 +545,7 @@ module ActiveFacts
 
     class JoinNode
       def describe
-        concept.name +
+        object_type.name +
           (subscript ? "(#{subscript})" : '') +
           " JN#{ordinal}" +
 #          (all_join_role.detect{|jr| jr.role_ref} ? " (projected)" : "") +
@@ -563,7 +564,7 @@ module ActiveFacts
 
     class JoinRole
       def describe
-        "#{role.concept.name} JN#{join_node.ordinal}" +
+        "#{role.object_type.name} JN#{join_node.ordinal}" +
           (role_ref ? " (projected)" : "")
       end
 
@@ -608,9 +609,9 @@ module ActiveFacts
         join_nodes = all_join_node.sort_by{|jn| jn.ordinal}
         join_nodes.each_with_index do |join_node, i|
           raise "Join node #{i} should have ordinal #{join_node.ordinal}" unless join_node.ordinal == i
-          raise "Join Node #{i} has missing concept" unless join_node.concept
+          raise "Join Node #{i} has missing object_type" unless join_node.object_type
           join_node.all_join_role do |join_role|
-            raise "Join Node for #{concept.name} includes role played by #{join_role.concept.name}" unless join_role.concept == concept
+            raise "Join Node for #{object_type.name} includes role played by #{join_role.object_type.name}" unless join_role.object_type == object_type
           end
           join_steps += join_node.all_join_step
         end
@@ -636,7 +637,7 @@ module ActiveFacts
         # There are two cases, where role is in a unary fact type, and where the fact type is objectified
         # If a unary fact type is objectified, only the ImplicitFactType for the objectification is asserted
         if objectification = implying_role.fact_type.entity_type
-          "#{objectification.name} involves #{implying_role.concept.name}"
+          "#{objectification.name} involves #{implying_role.object_type.name}"
         else
           implying_role.fact_type.default_reading+" Boolean"  # Must be a unary FT
         end
@@ -664,7 +665,7 @@ module ActiveFacts
             def leading_adjective; nil; end
             def trailing_adjective; nil; end
             def describe
-              @role.concept.name
+              @role.object_type.name
             end
           end
 
@@ -707,16 +708,16 @@ module ActiveFacts
         options != :counterpart && roles.map{|role| role.fact_type}.uniq.size == 1
       proximate_sups, counterpart_sups, obj_sups, counterpart_roles, objectification_roles =
         *roles.inject(nil) do |d_c_o, role|
-          concept = role.concept
+          object_type = role.object_type
           fact_type = role.fact_type
 
-          proximate_role_supertypes = concept.supertypes_transitive
+          proximate_role_supertypes = object_type.supertypes_transitive
 
           # A role in an objectified fact type may indicate either the objectification or the counterpart player.
           # This could be ambiguous. Figure out both and prefer the counterpart over the objectification.
           counterpart_role_supertypes =
             if fact_type.all_role.size > 2
-              possible_roles = fact_type.all_role.select{|r| d_c_o && d_c_o[1].include?(r.concept) }
+              possible_roles = fact_type.all_role.select{|r| d_c_o && d_c_o[1].include?(r.object_type) }
               if possible_roles.size == 1 # Only one candidate matches the types of the possible join nodes
                 counterpart_role = possible_roles[0]
                 d_c_o[1]  # No change
@@ -727,23 +728,23 @@ module ActiveFacts
                 if d_c_o
                   st = nil
                   counterpart_role =
-                    fact_type.all_role.detect{|r| ((st = r.concept.supertypes_transitive) & d_c_o[1]).size > 0}
+                    fact_type.all_role.detect{|r| ((st = r.object_type.supertypes_transitive) & d_c_o[1]).size > 0}
                   st
                 else
                   counterpart_role = nil  # This can't work, we don't have any basis for a decision (must be objectification)
                   []
                 end
-                #fact_type.all_role.map{|r| r.concept.supertypes_transitive}.flatten.uniq
+                #fact_type.all_role.map{|r| r.object_type.supertypes_transitive}.flatten.uniq
               end
             else
               # Get the supertypes of the counterpart role (care with unaries):
               ftr = role.fact_type.all_role.to_a
-              (counterpart_role = ftr[0] == role ? ftr[-1] : ftr[0]).concept.supertypes_transitive
+              (counterpart_role = ftr[0] == role ? ftr[-1] : ftr[0]).object_type.supertypes_transitive
             end
 
           if fact_type.entity_type
             objectification_role_supertypes =
-              fact_type.entity_type.supertypes_transitive+concept.supertypes_transitive
+              fact_type.entity_type.supertypes_transitive+object_type.supertypes_transitive
             objectification_role = role.implicit_fact_type.all_role.single # Find the phantom role here
           else
             objectification_role_supertypes = counterpart_role_supertypes
@@ -768,7 +769,7 @@ module ActiveFacts
       # if we can use an objectification join to an object type that is:
       if counterpart_sups.size > 0 && obj_sups.size > 0 && counterpart_sups[0] != obj_sups[0]
         debug :join, "ambiguous join, could be over #{counterpart_sups[0].name} or #{obj_sups[0].name}"
-        if !roles.detect{|r| r.concept == counterpart_sups[0]} and roles.detect{|r| r.concept == obj_sups[0]}
+        if !roles.detect{|r| r.object_type == counterpart_sups[0]} and roles.detect{|r| r.object_type == obj_sups[0]}
           debug :join, "discounting #{counterpart_sups[0].name} in favour of direct objectification"
           counterpart_sups = []
         end
@@ -793,14 +794,14 @@ module ActiveFacts
           if rv.instance.value
             v = rv.instance.verbalise
           else
-            if (c = rv.instance.concept).is_a?(EntityType)
+            if (c = rv.instance.object_type).is_a?(EntityType)
               if !c.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type == fact_type}
                 v = rv.instance.verbalise
               end
             end
           end
           next nil unless v
-          v.to_s.sub(/(#{rv.instance.concept.name}|\S*)\s/,'')
+          v.to_s.sub(/(#{rv.instance.object_type.name}|\S*)\s/,'')
         end
         reading.expand([], false, instance_verbalisations)
       end
@@ -808,15 +809,15 @@ module ActiveFacts
 
     class Instance
       def verbalise(context = nil)
-        return "#{concept.name} #{value}" if concept.is_a?(ValueType)
+        return "#{object_type.name} #{value}" if object_type.is_a?(ValueType)
 
-        return "#{concept.name} where #{fact.verbalise(context)}" if concept.fact_type
+        return "#{object_type.name} where #{fact.verbalise(context)}" if object_type.fact_type
 
         # It's an entity that's not an objectified fact type
         # REVISIT: If it has a simple identifier, there's no need to fully verbalise the identifying facts
-        pi = concept.preferred_identifier
+        pi = object_type.preferred_identifier
         identifying_role_refs = pi.role_sequence.all_role_ref_in_order
-        "#{concept.name}" +
+        "#{object_type.name}" +
           " is identified by " +      # REVISIT: Where the single fact type is TypeInheritance, we can shrink this
           if identifying_role_refs.size == 1 &&
             (role = identifying_role_refs[0].role) &&
@@ -829,13 +830,13 @@ module ActiveFacts
             identifying_role_refs.map do |rr|
               rr = rr.preferred_role_ref
               [ (l = rr.leading_adjective) ? l+"-" : nil,
-                rr.role.role_name || rr.role.concept.name,
+                rr.role.role_name || rr.role.object_type.name,
                 (t = rr.trailing_adjective) ? l+"-" : nil
               ].compact*""
             end * " and " +
             " where " +
             identifying_role_refs.map do |rr|  # Go through the identifying roles and emit the facts that define them
-              instance_role = concept.all_role.detect{|r| r.fact_type == rr.role.fact_type}
+              instance_role = object_type.all_role.detect{|r| r.fact_type == rr.role.fact_type}
               identifying_fact = all_role_value.detect{|rv| rv.fact.fact_type == rr.role.fact_type}.fact
               #counterpart_role = (rr.role.fact_type.all_role.to_a-[instance_role])[0]
               #identifying_instance = counterpart_role.all_role_value.detect{|rv| rv.fact == identifying_fact}.instance

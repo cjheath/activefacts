@@ -80,9 +80,9 @@ module ActiveFacts
           # Calculate the relational absorption:
           tables = @vocabulary.tables
 
-          # Figure out which Concept will be models (tables and their subtypes)
+          # Figure out which ObjectType will be models (tables and their subtypes)
           models =
-            @vocabulary.all_concept.sort_by{|o| o.name}.select do |o|
+            @vocabulary.all_object_type.sort_by{|o| o.name}.select do |o|
               next false if o.name =~ /_?ImplicitBooleanValueType/
               o.is_table || (o.absorbed_via && o.absorbed_via.role_type == :supertype)
             end

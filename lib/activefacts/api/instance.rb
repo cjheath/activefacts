@@ -1,6 +1,6 @@
 #
 #       ActiveFacts Runtime API
-#       Instance (mixin module for instances of a Concept - a class with Concept mixed in)
+#       Instance (mixin module for instances of a ObjectType - a class with ObjectType mixed in)
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
@@ -8,7 +8,7 @@
 #
 module ActiveFacts
   module API
-    # Every Instance of a Concept (A Value type or an Entity type) includes the methods of this module:
+    # Every Instance of a ObjectType (A Value type or an Entity type) includes the methods of this module:
     module Instance
       # What constellation does this Instance belong to (if any):
       attr_accessor :constellation
@@ -48,7 +48,7 @@ module ActiveFacts
       end
 
       module ClassMethods #:nodoc:
-        include Concept
+        include ObjectType
         # Add Instance class methods here
       end
 

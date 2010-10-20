@@ -11,7 +11,7 @@ module ActiveFacts
       include Language        # One of the language modules provides this module
       include Expressions
       include Terms
-      include Concepts
+      include ObjectTypes
       include ValueTypes
       include FactTypes
       include Context
@@ -47,7 +47,7 @@ module ActiveFacts
         / prescan           # Always fails, but its side-effects are needed in the following
         / constraint
         / unit_definition   # REVISIT: Move this above the prescan?
-        / concept
+        / object_type
 	/ s ';' s { def ast; nil; end }
       end
 

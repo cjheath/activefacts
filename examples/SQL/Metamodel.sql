@@ -21,42 +21,6 @@ CREATE TABLE AllowedRange (
 )
 GO
 
-CREATE TABLE Concept (
-	-- Concept is independent,
-	IsIndependent                           bit NOT NULL,
-	-- Concept is called Name,
-	Name                                    varchar(64) NOT NULL,
-	-- maybe Concept uses Pronoun,
-	Pronoun                                 varchar(20) NULL CHECK(Pronoun = 'feminine' OR Pronoun = 'masculine' OR Pronoun = 'neuter' OR Pronoun = 'personal'),
-	-- maybe Value Type is a kind of Concept and Value Type is auto-assigned,
-	ValueTypeIsAutoAssigned                 bit NULL,
-	-- maybe Value Type is a kind of Concept and maybe Value Type has Length,
-	ValueTypeLength                         int NULL,
-	-- maybe Value Type is a kind of Concept and maybe Value Type has Scale,
-	ValueTypeScale                          int NULL,
-	-- maybe Value Type is a kind of Concept and maybe Value Type is subtype of super-Value Type (as Supertype) and Concept is called Name,
-	ValueTypeSupertypeName                  varchar(64) NULL,
-	-- maybe Value Type is a kind of Concept and maybe Value Type is subtype of super-Value Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name,
-	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
-	-- maybe Value Type is a kind of Concept and maybe Value Type is of Unit and Unit has Unit Id,
-	ValueTypeUnitId                         int NULL,
-	-- maybe Value Type is a kind of Concept and maybe Value Type has Value Constraint and Constraint has Constraint Id,
-	ValueTypeValueConstraintId              int NULL,
-	-- Concept belongs to Vocabulary and Vocabulary is called Name,
-	VocabularyName                          varchar(64) NOT NULL,
-	PRIMARY KEY(VocabularyName, Name),
-	FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES Concept (Name, VocabularyName)
-)
-GO
-
-CREATE VIEW dbo.ValueTypeInConcept_ValueTypeValueConstraintId (ValueTypeValueConstraintId) WITH SCHEMABINDING AS
-	SELECT ValueTypeValueConstraintId FROM dbo.Concept
-	WHERE	ValueTypeValueConstraintId IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInConceptByValueTypeValueConstraintId ON dbo.ValueTypeInConcept_ValueTypeValueConstraintId(ValueTypeValueConstraintId)
-GO
-
 CREATE TABLE [Constraint] (
 	-- Constraint has Constraint Id,
 	ConstraintId                            int IDENTITY NOT NULL,
@@ -108,7 +72,7 @@ CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceI
 	  AND	SubsetConstraintSupersetRoleSequenceId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
+CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
 GO
 
 CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal (ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
@@ -117,7 +81,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueCo
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeIdValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeId, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -152,10 +116,6 @@ GO
 CREATE TABLE ContextNote (
 	-- maybe Context Note was added by Agreement and maybe Agreement was on Date,
 	AgreementDate                           datetime NULL,
-	-- maybe Concept has Context Note and Concept is called Name,
-	ConceptName                             varchar(64) NULL,
-	-- maybe Concept has Context Note and Concept belongs to Vocabulary and Vocabulary is called Name,
-	ConceptVocabularyName                   varchar(64) NULL,
 	-- maybe Constraint has Context Note and Constraint has Constraint Id,
 	ConstraintId                            int NULL,
 	-- Context Note has Context Note Id,
@@ -166,8 +126,11 @@ CREATE TABLE ContextNote (
 	Discussion                              varchar NOT NULL,
 	-- maybe Fact Type has Context Note and Fact Type has Fact Type Id,
 	FactTypeId                              int NULL,
+	-- maybe Object Type has Context Note and Object Type is called Name,
+	ObjectTypeName                          varchar(64) NULL,
+	-- maybe Object Type has Context Note and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ObjectTypeVocabularyName                varchar(64) NULL,
 	PRIMARY KEY(ContextNoteId),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
 	FOREIGN KEY (ConstraintId) REFERENCES [Constraint] (ConstraintId)
 )
 GO
@@ -197,9 +160,9 @@ CREATE TABLE Fact (
 GO
 
 CREATE TABLE FactType (
-	-- maybe Entity Type nests Fact Type and Concept is called Name,
+	-- maybe Entity Type nests Fact Type and Object Type is called Name,
 	EntityTypeName                          varchar(64) NULL,
-	-- maybe Entity Type nests Fact Type and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Entity Type nests Fact Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	EntityTypeVocabularyName                varchar(64) NULL,
 	-- Fact Type has Fact Type Id,
 	FactTypeId                              int IDENTITY NOT NULL,
@@ -207,18 +170,15 @@ CREATE TABLE FactType (
 	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
 	TypeInheritanceProvidesIdentification   bit NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is called Name,
 	TypeInheritanceSubtypeName              varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSubtypeVocabularyName    varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is called Name,
 	TypeInheritanceSupertypeName            varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSupertypeVocabularyName  varchar(64) NULL,
-	PRIMARY KEY(FactTypeId),
-	FOREIGN KEY (EntityTypeName, EntityTypeVocabularyName) REFERENCES Concept (Name, VocabularyName),
-	FOREIGN KEY (TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) REFERENCES Concept (Name, VocabularyName),
-	FOREIGN KEY (TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName) REFERENCES Concept (Name, VocabularyName)
+	PRIMARY KEY(FactTypeId)
 )
 GO
 
@@ -228,7 +188,7 @@ CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocab
 	  AND	EntityTypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeVocabularyNameEntityTypeName ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
+CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
@@ -238,7 +198,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_TypeInheritanceInFactTypeByTypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdent ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
+CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
@@ -249,18 +209,18 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX TypeInheritanceUQ ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
 GO
 
 CREATE TABLE Instance (
-	-- Instance is of Concept and Concept is called Name,
-	ConceptName                             varchar(64) NOT NULL,
-	-- Instance is of Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	ConceptVocabularyName                   varchar(64) NOT NULL,
 	-- maybe Instance objectifies Fact and Fact has Fact Id,
 	FactId                                  int NULL,
 	-- Instance has Instance Id,
 	InstanceId                              int IDENTITY NOT NULL,
+	-- Instance is of Object Type and Object Type is called Name,
+	ObjectTypeName                          varchar(64) NOT NULL,
+	-- Instance is of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Population includes Instance and Population has Name,
 	PopulationName                          varchar(64) NOT NULL,
 	-- Population includes Instance and maybe Vocabulary includes Population and Vocabulary is called Name,
@@ -272,7 +232,6 @@ CREATE TABLE Instance (
 	-- maybe Instance has Value and maybe Value is in Unit and Unit has Unit Id,
 	ValueUnitId                             int NULL,
 	PRIMARY KEY(InstanceId),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
 	FOREIGN KEY (FactId) REFERENCES Fact (FactId)
 )
 GO
@@ -286,12 +245,12 @@ CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactId ON dbo.Instance_FactId(FactId)
 GO
 
 CREATE TABLE JoinNode (
-	-- Join Node is for Concept and Concept is called Name,
-	ConceptName                             varchar(64) NOT NULL,
-	-- Join Node is for Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	ConceptVocabularyName                   varchar(64) NOT NULL,
 	-- Join includes Join Node and Join has Join Id,
 	JoinId                                  int NOT NULL,
+	-- Join Node is for Object Type and Object Type is called Name,
+	ObjectTypeName                          varchar(64) NOT NULL,
+	-- Join Node is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Join Node has Ordinal position,
 	Ordinal                                 shortint NOT NULL,
 	-- maybe Join Node has Subscript,
@@ -302,8 +261,7 @@ CREATE TABLE JoinNode (
 	ValueLiteral                            varchar NULL,
 	-- maybe Join Node has Value and maybe Value is in Unit and Unit has Unit Id,
 	ValueUnitId                             int NULL,
-	PRIMARY KEY(JoinId, Ordinal),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName)
+	PRIMARY KEY(JoinId, Ordinal)
 )
 GO
 
@@ -332,9 +290,22 @@ CREATE TABLE JoinRole (
 	RoleFactTypeId                          int NOT NULL,
 	-- Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role,
 	RoleOrdinal                             shortint NOT NULL,
+	-- maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role,
+	RoleRefOrdinal                          shortint NULL,
+	-- maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
+	RoleRefRoleSequenceId                   int NULL,
 	PRIMARY KEY(JoinNodeJoinId, JoinNodeOrdinal, RoleFactTypeId, RoleOrdinal),
 	FOREIGN KEY (JoinNodeJoinId, JoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal)
 )
+GO
+
+CREATE VIEW dbo.JoinRole_RoleRefRoleSequenceIdRoleRefOrdinal (RoleRefRoleSequenceId, RoleRefOrdinal) WITH SCHEMABINDING AS
+	SELECT RoleRefRoleSequenceId, RoleRefOrdinal FROM dbo.JoinRole
+	WHERE	RoleRefRoleSequenceId IS NOT NULL
+	  AND	RoleRefOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_JoinRoleByRoleRefRoleSequenceIdRoleRefOrdinal ON dbo.JoinRole_RoleRefRoleSequenceIdRoleRefOrdinal(RoleRefRoleSequenceId, RoleRefOrdinal)
 GO
 
 CREATE TABLE JoinStep (
@@ -367,25 +338,62 @@ CREATE TABLE JoinStep (
 )
 GO
 
+CREATE TABLE ObjectType (
+	-- Object Type is independent,
+	IsIndependent                           bit NOT NULL,
+	-- Object Type is called Name,
+	Name                                    varchar(64) NOT NULL,
+	-- maybe Object Type uses Pronoun,
+	Pronoun                                 varchar(20) NULL CHECK(Pronoun = 'feminine' OR Pronoun = 'masculine' OR Pronoun = 'neuter' OR Pronoun = 'personal'),
+	-- maybe Value Type is a kind of Object Type and Value Type is auto-assigned,
+	ValueTypeIsAutoAssigned                 bit NULL,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type has Length,
+	ValueTypeLength                         int NULL,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type has Scale,
+	ValueTypeScale                          int NULL,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type is called Name,
+	ValueTypeSupertypeName                  varchar(64) NULL,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type is of Unit and Unit has Unit Id,
+	ValueTypeUnitId                         int NULL,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type has Value Constraint and Constraint has Constraint Id,
+	ValueTypeValueConstraintId              int NULL,
+	-- Object Type belongs to Vocabulary and Vocabulary is called Name,
+	VocabularyName                          varchar(64) NOT NULL,
+	PRIMARY KEY(VocabularyName, Name),
+	FOREIGN KEY (ValueTypeValueConstraintId) REFERENCES [Constraint] (ConstraintId),
+	FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+)
+GO
+
+CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeValueConstraintId (ValueTypeValueConstraintId) WITH SCHEMABINDING AS
+	SELECT ValueTypeValueConstraintId FROM dbo.ObjectType
+	WHERE	ValueTypeValueConstraintId IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraintId ON dbo.ValueTypeInObjectType_ValueTypeValueConstraintId(ValueTypeValueConstraintId)
+GO
+
 CREATE TABLE ParamValue (
 	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type,
 	ParameterName                           varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Concept is called Name,
+	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type is called Name,
 	ParameterValueTypeName                  varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	ParameterValueTypeVocabularyName        varchar(64) NOT NULL,
 	-- Param Value is where Value for Parameter applies to Value Type and Value is a string,
 	ValueIsAString                          bit NOT NULL,
 	-- Param Value is where Value for Parameter applies to Value Type and Value is represented by Literal,
 	ValueLiteral                            varchar NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Concept is called Name,
+	-- Param Value is where Value for Parameter applies to Value Type and Object Type is called Name,
 	ValueTypeName                           varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Concept belongs to Vocabulary and Vocabulary is called Name,
+	-- Param Value is where Value for Parameter applies to Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	ValueTypeVocabularyName                 varchar(64) NOT NULL,
 	-- Param Value is where Value for Parameter applies to Value Type and maybe Value is in Unit and Unit has Unit Id,
 	ValueUnitId                             int NULL,
 	UNIQUE(ValueLiteral, ValueIsAString, ValueUnitId, ParameterName, ParameterValueTypeVocabularyName, ParameterValueTypeName),
-	FOREIGN KEY (ValueTypeName, ValueTypeVocabularyName) REFERENCES Concept (Name, VocabularyName)
+	FOREIGN KEY (ValueTypeName, ValueTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
 )
 GO
 
@@ -404,22 +412,22 @@ CREATE TABLE Reading (
 GO
 
 CREATE TABLE Role (
-	-- Concept plays Role and Concept is called Name,
-	ConceptName                             varchar(64) NOT NULL,
-	-- Concept plays Role and Concept belongs to Vocabulary and Vocabulary is called Name,
-	ConceptVocabularyName                   varchar(64) NOT NULL,
 	-- Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
 	-- maybe Implicit Fact Type is implied by Role (as Implying Role) and Fact Type has Fact Type Id,
 	ImplicitFactTypeId                      int NULL,
+	-- Object Type plays Role and Object Type is called Name,
+	ObjectTypeName                          varchar(64) NOT NULL,
+	-- Object Type plays Role and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Role is where Fact Type has Ordinal role,
 	Ordinal                                 shortint NOT NULL,
 	-- maybe Role has role-Name,
 	RoleName                                varchar(64) NULL,
 	PRIMARY KEY(FactTypeId, Ordinal),
-	FOREIGN KEY (ConceptName, ConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
 	FOREIGN KEY (ImplicitFactTypeId) REFERENCES FactType (FactTypeId),
-	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
+	FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId),
+	FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
 )
 GO
 
@@ -446,14 +454,6 @@ CREATE TABLE RoleDisplay (
 GO
 
 CREATE TABLE RoleRef (
-	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
-	JoinRoleFactTypeId                      int NULL,
-	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
-	JoinRoleJoinNodeJoinId                  int NULL,
-	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join Node has Ordinal position,
-	JoinRoleJoinNodeOrdinal                 shortint NULL,
-	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role,
-	JoinRoleOrdinal                         shortint NULL,
 	-- maybe Role Ref has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role,
@@ -468,20 +468,8 @@ CREATE TABLE RoleRef (
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceId, Ordinal),
 	UNIQUE(RoleFactTypeId, RoleOrdinal, RoleSequenceId),
-	FOREIGN KEY (JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleFactTypeId, JoinRoleOrdinal) REFERENCES JoinRole (JoinNodeJoinId, JoinNodeOrdinal, RoleFactTypeId, RoleOrdinal),
 	FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 )
-GO
-
-CREATE VIEW dbo.RoleRef_JoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleFactTypeIdJoinRoleOrdinal (JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleFactTypeId, JoinRoleOrdinal) WITH SCHEMABINDING AS
-	SELECT JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleFactTypeId, JoinRoleOrdinal FROM dbo.RoleRef
-	WHERE	JoinRoleJoinNodeJoinId IS NOT NULL
-	  AND	JoinRoleJoinNodeOrdinal IS NOT NULL
-	  AND	JoinRoleFactTypeId IS NOT NULL
-	  AND	JoinRoleOrdinal IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByJoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleFactTypeIdJoinRoleOrdinal ON dbo.RoleRef_JoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleFactTypeIdJoinRoleOrdinal(JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleFactTypeId, JoinRoleOrdinal)
 GO
 
 CREATE TABLE RoleSequence (
@@ -552,12 +540,12 @@ CREATE TABLE Shape (
 	IsExpanded                              bit NOT NULL,
 	-- maybe Model Note Shape is a kind of Shape and Model Note Shape is for Context Note and Context Note has Context Note Id,
 	ModelNoteShapeContextNoteId             int NULL,
-	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Concept and Concept is called Name,
-	ObjectTypeShapeConceptName              varchar(64) NULL,
-	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Concept and Concept belongs to Vocabulary and Vocabulary is called Name,
-	ObjectTypeShapeConceptVocabularyName    varchar(64) NULL,
 	-- maybe Object Type Shape is a kind of Shape and Object Type Shape has expanded reference mode,
 	ObjectTypeShapeHasExpandedReferenceMode bit NULL,
+	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Object Type and Object Type is called Name,
+	ObjectTypeShapeObjectTypeName           varchar(64) NULL,
+	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ObjectTypeShapeObjectTypeVocabularyName varchar(64) NULL,
 	-- maybe Shape is at Position and Position is at X,
 	PositionX                               int NULL,
 	-- maybe Shape is at Position and Position is at Y,
@@ -577,11 +565,11 @@ CREATE TABLE Shape (
 	-- maybe Constraint Shape is a kind of Shape and maybe Value Constraint Shape is a kind of Constraint Shape and maybe Role Display has Value Constraint Shape and Role Display is where Fact Type Shape displays Role in Ordinal position,
 	ValueConstraintShapeRoleDisplayOrdinal  shortint NULL,
 	PRIMARY KEY(ShapeId),
-	FOREIGN KEY (ObjectTypeShapeConceptName, ObjectTypeShapeConceptVocabularyName) REFERENCES Concept (Name, VocabularyName),
 	FOREIGN KEY (ConstraintShapeConstraintId) REFERENCES [Constraint] (ConstraintId),
 	FOREIGN KEY (ModelNoteShapeContextNoteId) REFERENCES ContextNote (ContextNoteId),
 	FOREIGN KEY (RingConstraintShapeFactTypeId) REFERENCES FactType (FactTypeId),
 	FOREIGN KEY (FactTypeShapeFactTypeId) REFERENCES FactType (FactTypeId),
+	FOREIGN KEY (ObjectTypeShapeObjectTypeName, ObjectTypeShapeObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName),
 	FOREIGN KEY (FactTypeShapeReadingFactTypeId, FactTypeShapeReadingOrdinal) REFERENCES Reading (FactTypeId, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeRoleDisplayFactTypeShapeId, ValueConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
 	FOREIGN KEY (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeId, Ordinal),
@@ -605,7 +593,7 @@ CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeSha
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAObjectifiedFactTypeNameShape ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
@@ -613,7 +601,7 @@ CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEM
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAReadingShape ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
@@ -664,14 +652,6 @@ ALTER TABLE AllowedRange
 	ADD FOREIGN KEY (ValueConstraintId) REFERENCES [Constraint] (ConstraintId)
 GO
 
-ALTER TABLE Concept
-	ADD FOREIGN KEY (ValueTypeValueConstraintId) REFERENCES [Constraint] (ConstraintId)
-GO
-
-ALTER TABLE Concept
-	ADD FOREIGN KEY (ValueTypeUnitId) REFERENCES Unit (UnitId)
-GO
-
 ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (RingConstraintOtherRoleFactTypeId, RingConstraintOtherRoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
 GO
@@ -708,6 +688,10 @@ ALTER TABLE ContextNote
 	ADD FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 GO
 
+ALTER TABLE ContextNote
+	ADD FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+GO
+
 ALTER TABLE Derivation
 	ADD FOREIGN KEY (BaseUnitId) REFERENCES Unit (UnitId)
 GO
@@ -720,12 +704,40 @@ ALTER TABLE Fact
 	ADD FOREIGN KEY (FactTypeId) REFERENCES FactType (FactTypeId)
 GO
 
+ALTER TABLE FactType
+	ADD FOREIGN KEY (EntityTypeName, EntityTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+GO
+
+ALTER TABLE FactType
+	ADD FOREIGN KEY (TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+GO
+
+ALTER TABLE FactType
+	ADD FOREIGN KEY (TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+GO
+
+ALTER TABLE Instance
+	ADD FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+GO
+
+ALTER TABLE JoinNode
+	ADD FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+GO
+
 ALTER TABLE JoinRole
 	ADD FOREIGN KEY (JoinStepInputJoinRoleFactTypeId, JoinStepInputJoinRoleJoinNodeJoinId, JoinStepInputJoinRoleJoinNodeOrdinal, JoinStepInputJoinRoleOrdinal, JoinStepOutputJoinRoleFactTypeId, JoinStepOutputJoinRoleJoinNodeJoinId, JoinStepOutputJoinRoleJoinNodeOrdinal, JoinStepOutputJoinRoleOrdinal) REFERENCES JoinStep (InputJoinRoleFactTypeId, InputJoinRoleJoinNodeJoinId, InputJoinRoleJoinNodeOrdinal, InputJoinRoleOrdinal, OutputJoinRoleFactTypeId, OutputJoinRoleJoinNodeJoinId, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleOrdinal)
 GO
 
 ALTER TABLE JoinRole
 	ADD FOREIGN KEY (RoleFactTypeId, RoleOrdinal) REFERENCES Role (FactTypeId, Ordinal)
+GO
+
+ALTER TABLE JoinRole
+	ADD FOREIGN KEY (RoleRefOrdinal, RoleRefRoleSequenceId) REFERENCES RoleRef (Ordinal, RoleSequenceId)
+GO
+
+ALTER TABLE ObjectType
+	ADD FOREIGN KEY (ValueTypeUnitId) REFERENCES Unit (UnitId)
 GO
 
 ALTER TABLE Reading

@@ -2,7 +2,7 @@ module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
 
-      class FactType < Concept
+      class FactType < ObjectType
         attr_reader :fact_type
         attr_writer :name
         attr_writer :pragmas

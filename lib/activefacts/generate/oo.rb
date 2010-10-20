@@ -52,10 +52,10 @@ module ActiveFacts
 
         # Find any uniqueness constraint over this role:
         fact_constraints = @presence_constraints_by_fact[fact_type]
-        #debug "Considering #{fact_constraints.size} fact constraints over fact role #{role.concept.name}"
+        #debug "Considering #{fact_constraints.size} fact constraints over fact role #{role.object_type.name}"
         ucs = fact_constraints.select{|c| c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) && c.max_frequency == 1 }
         # Emit "has_one/one_to_one..." only for functional roles here:
-        #debug "Considering #{ucs.size} unique constraints over role #{role.concept.name}"
+        #debug "Considering #{ucs.size} unique constraints over role #{role.object_type.name}"
         unless ucs.find {|c|
               c.role_sequence.all_role_ref.map(&:role) == [role]
           }
@@ -67,21 +67,21 @@ module ActiveFacts
           # other_role is a phantom played by the entity type that objectifies this fact type.
           # REVISIT: No rolename can be provided for the phantom role, so _as_XYZ doesn't occur
           other_player = fact_type.entity_type
-          return unless @concepts_dumped[other_player]
+          return unless @object_types_dumped[other_player]
 
           other_role_name = other_player.name.gsub(/ /,'_').snakecase
-          other_role_method = role.concept.name.gsub(/ /,'_').snakecase
+          other_role_method = role.object_type.name.gsub(/ /,'_').snakecase
           one_to_one = true
         else
 
           other_role = fact_type.all_role.select{|r| r != role}[0]
           other_role_name = preferred_role_name(other_role)
-          other_player = other_role.concept
+          other_player = other_role.object_type
 
           # It's a one_to_one if there's a uniqueness constraint on the other role:
           one_to_one = ucs.find {|c| c.role_sequence.all_role_ref.map(&:role) == [other_role] }
           if one_to_one &&
-              !@concepts_dumped[other_role.concept]
+              !@object_types_dumped[other_role.object_type]
             #debug "Will dump 1:1 later for #{role} in #{fact_type}"
             return
           end
@@ -91,13 +91,13 @@ module ActiveFacts
           other_role_method = one_to_one ? role_method : "all_"+role_method
           # puts "---"+role.role_name if role.role_name
           if other_role_name != other_player.name.gsub(/ /,'_').snakecase and
-            role_method == role.concept.name.gsub(/ /,'_').snakecase
+            role_method == role.object_type.name.gsub(/ /,'_').snakecase
             other_role_method += "_as_#{other_role_name}"
           end
         end
 
         role_name = role_method
-        role_name = nil if role_name == role.concept.name.gsub(/ /,'_').snakecase
+        role_name = nil if role_name == role.object_type.name.gsub(/ /,'_').snakecase
 
         binary_dump(role, other_role_name, other_player, role.is_mandatory, one_to_one, nil, role_name, other_role_method)
       end
@@ -106,7 +106,7 @@ module ActiveFacts
         return "" if role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
 
         if is_for && role.fact_type.entity_type == is_for && role.fact_type.all_role.size == 1
-          return role.concept.name.gsub(/[- ]/,'_').snakecase
+          return role.object_type.name.gsub(/[- ]/,'_').snakecase
         end
 
         # debug "Looking for preferred_role_name of #{describe_fact_type(role.fact_type, role)}"
@@ -121,7 +121,7 @@ module ActiveFacts
             reading.text.gsub(/ *\{0\} */,'').gsub(/[- ]/,'_').downcase
         end
 
-        # debug "\tleading_adjective=#{(p=preferred_role_ref).leading_adjective}, role_name=#{role.role_name}, role player=#{role.concept.name}, trailing_adjective=#{p.trailing_adjective}"
+        # debug "\tleading_adjective=#{(p=preferred_role_ref).leading_adjective}, role_name=#{role.role_name}, role player=#{role.object_type.name}, trailing_adjective=#{p.trailing_adjective}"
         role_words = []
         role_name = role.role_name
         role_name = nil if role_name == ""
@@ -130,7 +130,7 @@ module ActiveFacts
         la = preferred_role_ref.leading_adjective
         role_words << la.gsub(/ /,'_') if la && la != "" and !role.role_name
 
-        role_words << (role_name || role.concept.name.gsub(/ /,'_'))
+        role_words << (role_name || role.object_type.name.gsub(/ /,'_'))
         # REVISIT: Same when trailing_adjective is a suffix of the role_name
         ta = preferred_role_ref.trailing_adjective
         role_words << ta.gsub(/ /,'_') if ta && ta != "" and !role_name
@@ -157,12 +157,12 @@ module ActiveFacts
                 pc.max_frequency == 1
               }
             }
-            as = role_name != role.concept.name.gsub(/ /,'_').snakecase ? "_as_#{role_name}" : ""
+            as = role_name != role.object_type.name.gsub(/ /,'_').snakecase ? "_as_#{role_name}" : ""
             raise "Fact #{fact_type.describe} type is not objectified" unless fact_type.entity_type
             other_role_method = (one_to_one ? "" : "all_") + 
               fact_type.entity_type.name.gsub(/ /,'_').snakecase +
               as
-            binary_dump(role, role_name, role.concept, true, one_to_one, nil, nil, other_role_method)
+            binary_dump(role, role_name, role.object_type, true, one_to_one, nil, nil, other_role_method)
           }
       end
 

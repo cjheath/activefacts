@@ -219,7 +219,7 @@ CREATE TABLE JoinNode (
 	-- Join Node has Ordinal position,
 	Ordinal                                 shortint NOT NULL,
 	-- maybe Join Node has Subscript,
-	Subscript                               varchar NULL,
+	Subscript                               shortint NULL,
 	-- maybe Join Node has Value and Value is a string,
 	ValueIsAString                          bit NULL,
 	-- maybe Join Node has Value and Value is represented by Literal,
@@ -228,6 +228,31 @@ CREATE TABLE JoinNode (
 	ValueUnitId                             int NULL,
 	PRIMARY KEY(JoinId, Ordinal)
 )
+GO
+
+CREATE TABLE JoinRole (
+	-- Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	JoinNodeJoinId                          int NOT NULL,
+	-- Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	JoinNodeOrdinal                         shortint NOT NULL,
+	-- Join Role is where Join Node includes Role and Role is a kind of Concept and Concept has GUID,
+	RoleGUID                                varchar NOT NULL,
+	-- maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role,
+	RoleRefOrdinal                          shortint NULL,
+	-- maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
+	RoleRefRoleSequenceId                   int NULL,
+	PRIMARY KEY(JoinNodeJoinId, JoinNodeOrdinal, RoleGUID),
+	FOREIGN KEY (JoinNodeJoinId, JoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal)
+)
+GO
+
+CREATE VIEW dbo.JoinRole_RoleRefRoleSequenceIdRoleRefOrdinal (RoleRefRoleSequenceId, RoleRefOrdinal) WITH SCHEMABINDING AS
+	SELECT RoleRefRoleSequenceId, RoleRefOrdinal FROM dbo.JoinRole
+	WHERE	RoleRefRoleSequenceId IS NOT NULL
+	  AND	RoleRefOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_JoinRoleByRoleRefRoleSequenceIdRoleRefOrdinal ON dbo.JoinRole_RoleRefRoleSequenceIdRoleRefOrdinal(RoleRefRoleSequenceId, RoleRefOrdinal)
 GO
 
 CREATE TABLE JoinStep (
@@ -250,7 +275,9 @@ CREATE TABLE JoinStep (
 	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
 	OutputJoinRoleJoinNodeOrdinal           shortint NOT NULL,
 	PRIMARY KEY(InputJoinRoleJoinNodeJoinId, InputJoinRoleJoinNodeOrdinal, InputJoinRoleGUID, OutputJoinRoleJoinNodeJoinId, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleGUID),
-	FOREIGN KEY (FactTypeGUID) REFERENCES FactType (ConceptGUID)
+	FOREIGN KEY (FactTypeGUID) REFERENCES FactType (ConceptGUID),
+	FOREIGN KEY (InputJoinRoleJoinNodeJoinId, InputJoinRoleJoinNodeOrdinal, InputJoinRoleGUID) REFERENCES JoinRole (JoinNodeJoinId, JoinNodeOrdinal, RoleGUID),
+	FOREIGN KEY (OutputJoinRoleJoinNodeJoinId, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleGUID) REFERENCES JoinRole (JoinNodeJoinId, JoinNodeOrdinal, RoleGUID)
 )
 GO
 
@@ -357,12 +384,6 @@ CREATE TABLE RoleDisplay (
 GO
 
 CREATE TABLE RoleRef (
-	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Role is a kind of Concept and Concept has GUID,
-	JoinRoleGUID                            varchar NULL,
-	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
-	JoinRoleJoinNodeJoinId                  int NULL,
-	-- maybe Join Role projects Role Ref and Join Role is where Join Node includes Role and Join Node has Ordinal position,
-	JoinRoleJoinNodeOrdinal                 shortint NULL,
 	-- maybe Role Ref has leading-Adjective,
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role,
@@ -381,16 +402,6 @@ CREATE TABLE RoleRef (
 	UNIQUE(RoleGUID, RoleSequenceId),
 	FOREIGN KEY (RoleGUID) REFERENCES Role (ConceptGUID)
 )
-GO
-
-CREATE VIEW dbo.RoleRef_JoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleGUID (JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleGUID) WITH SCHEMABINDING AS
-	SELECT JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleGUID FROM dbo.RoleRef
-	WHERE	JoinRoleJoinNodeJoinId IS NOT NULL
-	  AND	JoinRoleJoinNodeOrdinal IS NOT NULL
-	  AND	JoinRoleGUID IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByJoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleGUID ON dbo.RoleRef_JoinRoleJoinNodeJoinIdJoinRoleJoinNodeOrdinalJoinRoleGUID(JoinRoleJoinNodeJoinId, JoinRoleJoinNodeOrdinal, JoinRoleGUID)
 GO
 
 CREATE TABLE RoleSequence (
@@ -646,6 +657,14 @@ GO
 
 ALTER TABLE JoinNode
 	ADD FOREIGN KEY (ObjectTypeGUID) REFERENCES ObjectType (ConceptGUID)
+GO
+
+ALTER TABLE JoinRole
+	ADD FOREIGN KEY (RoleGUID) REFERENCES Role (ConceptGUID)
+GO
+
+ALTER TABLE JoinRole
+	ADD FOREIGN KEY (RoleRefOrdinal, RoleRefRoleSequenceId) REFERENCES RoleRef (Ordinal, RoleSequenceId)
 GO
 
 ALTER TABLE ObjectType

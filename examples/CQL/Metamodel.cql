@@ -186,20 +186,6 @@ Bound is identified by Value and Bound is inclusive where
 	Value is of at least one Bound,
 	Bound is inclusive;
 
-Concept is identified by Vocabulary and Name where
-	Concept belongs to one Vocabulary,
-	Vocabulary contains Concept,
-	Concept is called one Name;
-Concept has Context Note,
-	Context Note applies to at most one Concept;
-Concept uses at most one Pronoun;
-Concept plays Role,
-	Role is played by one Concept;
-Concept is independent;
-Instance is of one Concept;
-Join Node is for one Concept,
-	Concept is referenced in Join Node;
-
 Constraint Shape is a kind of Shape;
 Constraint Shape is for one Constraint;
 
@@ -224,10 +210,6 @@ Diagram is identified by Vocabulary and Name where
 Shape is in one Diagram,
 	Diagram includes Shape;
 
-Entity Type is a kind of Concept;
-Entity Type nests at most one Fact Type,
-	Fact Type is nested as at most one Entity Type;
-
 Fact Type Shape is a kind of Shape;
 Fact Type Shape has at most one Display Role Names Setting;
 Fact Type Shape is for one Fact Type,
@@ -250,9 +232,23 @@ Join Step is outer;
 Model Note Shape is a kind of Shape;
 Model Note Shape is for one Context Note;
 
+Object Type is identified by Vocabulary and Name where
+	Object Type belongs to one Vocabulary,
+	Vocabulary contains Object Type,
+	Object Type is called one Name;
+Instance is of one Object Type;
+Join Node is for one Object Type,
+	Object Type is referenced in Join Node;
+Object Type has Context Note,
+	Context Note applies to at most one Object Type;
+Object Type uses at most one Pronoun;
+Object Type plays Role,
+	Role is played by one Object Type;
+Object Type is independent;
+
 Object Type Shape is a kind of Shape;
-Object Type Shape is for one Concept,
-	Concept has Object Type Shape;
+Object Type Shape is for one Object Type,
+	Object Type has Object Type Shape;
 Object Type Shape has expanded reference mode;
 
 Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shape where
@@ -310,13 +306,6 @@ Set Equality Constraint is a kind of Set Comparison Constraint;
 Set Exclusion Constraint is a kind of Set Comparison Constraint;
 Set Exclusion Constraint is mandatory;
 
-Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
-	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic],
-	Supertype is supertype of Subtype;
-Assimilation applies to Type Inheritance,
-	Type Inheritance uses at most one Assimilation;
-Type Inheritance provides identification;
-
 Value Constraint Shape is a kind of Constraint Shape;
 Role Display has at most one Value Constraint Shape,
 	Value Constraint Shape is for at most one Role Display;
@@ -327,7 +316,7 @@ Value Range is identified by minimum-Bound and maximum-Bound where
 	Value Range has at most one minimum-Bound,
 	Value Range has at most one maximum-Bound;
 
-Value Type is a kind of Concept;
+Value Type is a kind of Object Type;
 Value Type has at most one Length,
 	Length is of Value Type;
 Value Type has at most one Scale,
@@ -342,11 +331,22 @@ Value Type is auto-assigned;
 Allowed Range is where
 	Value Constraint allows at least one Value Range;
 
+Entity Type is a kind of Object Type;
+Entity Type nests at most one Fact Type,
+	Fact Type is nested as at most one Entity Type;
+
 ImplicitBooleanValueType is a kind of Value Type;
 
 Parameter is where
 	Name is a parameter of Value Type,
 	Value Type has parameter called Name;
+
+Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
+	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic],
+	Supertype is supertype of Subtype;
+Assimilation applies to Type Inheritance,
+	Type Inheritance uses at most one Assimilation;
+Type Inheritance provides identification;
 
 Param Value is where
 	Value for Parameter applies to one Value Type;
@@ -354,15 +354,15 @@ Param Value is where
 /*
  * Constraints:
  */
-either Concept is an Entity Type or Concept is a Value Type but not both;
 for each Constraint exactly one of these holds:
 	Constraint is a Presence Constraint,
 	Constraint is a Set Constraint,
 	Constraint is a Ring Constraint;
 for each Context Note exactly one of these holds:
-	Context Note applies to Concept,
+	Context Note applies to Object Type,
 	Context Note applies to Fact Type,
 	Context Note applies to Constraint;
+either Object Type is an Entity Type or Object Type is a Value Type but not both;
 either Set Comparison Constraint is a Set Exclusion Constraint or Set Comparison Constraint is a Set Equality Constraint but not both;
 either Set Constraint is a Set Comparison Constraint or Set Constraint is a Subset Constraint but not both;
 either Unit uses coefficient from Ephemera URL or Unit has Coefficient but not both;
@@ -372,12 +372,12 @@ either Value Constraint constrains Value Type or Value Constraint applies to Rol
 for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
-Join Node is for Concept that plays Role
+Join Node is for Object Type that plays Role
 	if and only if
 	Join Node includes Role;
-Role Value is of Instance that is of Concept
+Role Value is of Instance that is of Object Type
 	if and only if
-	Role Value is of Role that is played by Concept;
+	Role Value is of Role that is played by Object Type;
 Role Value fulfils Fact that is of Fact Type
 	if and only if
 	Role Value is of Role (where Fact Type has Ordinal role);

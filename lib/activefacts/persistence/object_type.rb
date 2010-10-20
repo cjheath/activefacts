@@ -2,7 +2,7 @@ require 'activefacts/support'
 
 module ActiveFacts
   module API
-    module Concept
+    module ObjectType
       def table
         @is_table = true
       end
@@ -29,7 +29,7 @@ module ActiveFacts
             end.inject([]) do |columns, role|
               rn = role.name.to_s.split(/_/)
               debug :persistence, "Role #{rn*'.'}" do
-                columns += role.counterpart_concept.__absorb([rn], role.counterpart)
+                columns += role.counterpart_object_type.__absorb([rn], role.counterpart)
               end
             end +
             # And finally all absorbed subtypes:
@@ -65,11 +65,11 @@ module ActiveFacts
             if (role = fully_absorbed) && role != except_role
               # If this non-table is fully absorbed into another table (not our caller!)
               # (another table plays its single identifying role), then absorb that role only.
-              # counterpart_concept = role.counterpart_concept
+              # counterpart_object_type = role.counterpart_object_type
               # This omission matches the one in columns.rb, see EntityType#reference_columns
               # new_prefix = prefix + [role.name.to_s.split(/_/)]
               debug :persistence, "Reference to #{role.name} (absorbed elsewhere)" do
-                role.counterpart_concept.__absorb(prefix, role.counterpart)
+                role.counterpart_object_type.__absorb(prefix, role.counterpart)
               end
             else
               # Not a table -> all roles are absorbed
@@ -125,7 +125,7 @@ module ActiveFacts
           debug :persistence, "truncating transitive identifying role #{n.inspect}"
           owner.size.times { n.shift }
           new_prefix = prefix + [n]
-        elsif (c = role.counterpart_concept).is_entity_type and
+        elsif (c = role.counterpart_object_type).is_entity_type and
             (irn = c.identifying_role_names).size == 1 and
             #irn[0].to_s.split(/_/)[0] == role.owner.basename.downcase
             irn[0] == role.counterpart.name
@@ -139,7 +139,7 @@ module ActiveFacts
         #debug :persistence, "new_prefix is #{new_prefix*"."}"
 
         debug :persistence, "Absorbing role #{role.name} as #{new_prefix[prefix.size..-1]*"."}" do
-          role.counterpart_concept.__absorb(new_prefix, role.counterpart)
+          role.counterpart_object_type.__absorb(new_prefix, role.counterpart)
         end
       end
 
@@ -159,7 +159,7 @@ module ActiveFacts
         def fully_absorbed
           return false unless (ir = identifying_role_names) && ir.size == 1
           role = roles(ir[0])
-          return role if ((cp = role.counterpart_concept).is_table ||
+          return role if ((cp = role.counterpart_object_type).is_table ||
               (cp.is_entity_type && cp.fully_absorbed))
           return superclass if superclass.is_entity_type  # Absorbed subtype
           nil
@@ -168,10 +168,10 @@ module ActiveFacts
     end
 
     # A one-to-one can be absorbed into either table. We decide which by comparing
-    # the names, just as happens in Concept.populate_reference (see reference.rb)
+    # the names, just as happens in ObjectType.populate_reference (see reference.rb)
     class Role
       def counterpart_unary_has_precedence
-        counterpart_concept.is_table_subtype and
+        counterpart_object_type.is_table_subtype and
           counterpart.unique and
           owner.name.downcase < counterpart.owner.name.downcase
       end

@@ -4,7 +4,7 @@
 #
 require 'activefacts/api'
 
-describe "An instance of every type of Concept" do
+describe "An instance of every type of ObjectType" do
   before :each do
     Object.send :remove_const, :Mod if Object.const_defined?("Mod")
     module Mod
@@ -231,8 +231,8 @@ describe "An instance of every type of Concept" do
       entity_type.identifying_role_names.each do |ir|
           role = entity_type.roles(ir)
           role.should_not be_nil
-          counterpart_concept = role.counterpart_concept
-          verbalisation.should =~ %r{\b#{counterpart_concept.basename}\b}
+          counterpart_object_type = role.counterpart_object_type
+          verbalisation.should =~ %r{\b#{counterpart_object_type.basename}\b}
         end
     end
   end
@@ -255,8 +255,8 @@ describe "An instance of every type of Concept" do
       entity.class.identifying_role_names.each do |ir|
           role = entity.class.roles(ir)
           role.should_not be_nil
-          counterpart_concept = role.counterpart_concept
-          verbalisation.should =~ %r{\b#{counterpart_concept.basename}\b}
+          counterpart_object_type = role.counterpart_object_type
+          verbalisation.should =~ %r{\b#{counterpart_object_type.basename}\b}
         end
     end
   end
@@ -284,20 +284,20 @@ describe "An instance of every type of Concept" do
     end
   end
 
-  it "should return the Concept in response to .class()" do
-    @value_types.zip(@value_instances).each do |concept, instance|
-      instance.class.should == concept
+  it "should return the ObjectType in response to .class()" do
+    @value_types.zip(@value_instances).each do |object_type, instance|
+      instance.class.should == object_type
     end
-    @entity_types.zip(@entities).each do |concept, instance|
-      instance.class.should == concept
+    @entity_types.zip(@entities).each do |object_type, instance|
+      instance.class.should == object_type
       end
-    @entities_by_entity_types.zip(@entities_by_entity).each do |concept, instance|
-      instance.class.should == concept
+    @entities_by_entity_types.zip(@entities_by_entity).each do |object_type, instance|
+      instance.class.should == object_type
     end
   end
 
   it "should return the module in response to .vocabulary()" do
-    (@value_types+@entity_types).zip((@value_instances+@entities+@entities_by_entity)).each do |concept, instance|
+    (@value_types+@entity_types).zip((@value_instances+@entities+@entities_by_entity)).each do |object_type, instance|
       instance.class.vocabulary.should == Mod
     end
   end
@@ -317,8 +317,8 @@ describe "An instance of every type of Concept" do
         # Verify that the identifying role has a equivalent value (except AutoCounter):
         role_name = entity_type.identifying_role_names[0]
         role = entity_type.roles(role_name)
-        counterpart_concept = role.counterpart_concept
-        player_superclasses = [ counterpart_concept.superclass, counterpart_concept.superclass.superclass ]
+        counterpart_object_type = role.counterpart_object_type
+        player_superclasses = [ counterpart_object_type.superclass, counterpart_object_type.superclass.superclass ]
         e.send(role_name).should == klass.new(*value) unless player_superclasses.include?(AutoCounter)
       end
     end

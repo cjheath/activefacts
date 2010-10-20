@@ -12,4 +12,4 @@ require 'activefacts/persistence/foreignkey'
 require 'activefacts/persistence/index'
 
 # These extend the API classes with relational awareness:
-require 'activefacts/persistence/concept'
+require 'activefacts/persistence/object_type'

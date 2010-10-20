@@ -3,15 +3,15 @@ module ActiveFacts
     class Compiler < ActiveFacts::CQL::Parser
 
       # In a declaration, a Binding has one or more RoleRef's.
-      # A Binding is for a single Concept, normally related to just one Role,
-      # and the references (RoleRefs) to it will normally be the concept name
+      # A Binding is for a single ObjectType, normally related to just one Role,
+      # and the references (RoleRefs) to it will normally be the object_type name
       # with the same adjectives (modulo loose binding),
       # or a role name or subscript reference.
       #
       # In some situations a Binding will have some RoleRefs with the same adjectives,
       # and one or more RoleRefs with no adjectives - this is called "loose binding".
       class Binding
-        attr_reader :player             # The Concept (object type)
+        attr_reader :player             # The ObjectType (object type)
         attr_reader :refs               # an array of the RoleRefs
         attr_reader :role_name
         attr_accessor :rebound_to       # Loose binding may set this to another binding
@@ -50,10 +50,10 @@ module ActiveFacts
           @player_by_role_name = {}
         end
 
-        # Look up this concept by its name
-        def concept(name)
+        # Look up this object_type by its name
+        def object_type(name)
           constellation = @vocabulary.constellation
-          player = constellation.Concept[[@vocabulary_identifier, name]]
+          player = constellation.ObjectType[[@vocabulary_identifier, name]]
 
           # Bind to an existing role which has a role name (that's why we bind those first)
           player ||= @player_by_role_name[name]
@@ -102,7 +102,7 @@ module ActiveFacts
         end
       end
 
-      class Concept < Definition
+      class ObjectType < Definition
         attr_reader :name
 
         def initialize name

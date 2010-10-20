@@ -149,7 +149,7 @@ module ActiveFacts
           # Don't use Class name if implied by rolename
           role_reference = nil
         else
-          role_reference = ":class => "+concept_reference(role_player)
+          role_reference = ":class => "+object_type_reference(role_player)
         end
         other_role_name = ":counterpart => :"+other_role_name.gsub(/ /,'_') if other_role_name
 
@@ -167,11 +167,11 @@ module ActiveFacts
         #puts "    \# REVISIT: #{other_role_name} has values restricted to #{role.role_value_constraint}\n" if role.role_value_constraint
       end
 
-      def concept_reference concept
-        if !@concepts_dumped[concept]
-          '"'+concept.name.gsub(/ /,'')+'"'
+      def object_type_reference object_type
+        if !@object_types_dumped[object_type]
+          '"'+object_type.name.gsub(/ /,'')+'"'
         else
-          role_reference = concept.name.gsub(/ /,'')
+          role_reference = object_type.name.gsub(/ /,'')
         end
       end
 

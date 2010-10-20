@@ -4,12 +4,12 @@
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
-# Each Reference from a Concept creates one or more Columns.
+# Each Reference from a ObjectType creates one or more Columns.
 # A reference to a simple valuetype creates a single column, as
 # does a reference to a table entity identified by a single value.
 #
-# When referring to a concept that doesn't have its own table,
-# all references from that concept are absorbed into this one.
+# When referring to a object_type that doesn't have its own table,
+# all references from that object_type are absorbed into this one.
 #
 # When multiple values identify an entity that does have its own
 # table, a reference to that entity creates multiple columns,
@@ -103,8 +103,8 @@ module ActiveFacts
               names.shift
             end
 
-            # If the reference is to the single identifying role of the concept making the reference,
-            # strip the concept name from the start of the reference role
+            # If the reference is to the single identifying role of the object_type making the reference,
+            # strip the object_type name from the start of the reference role
             if a.size > 0 and
                 (et = ref.from).is_a?(ActiveFacts::Metamodel::EntityType) and
                 # This instead of the next 2 would apply to all identifying roles, but breaks some examples:
@@ -213,10 +213,10 @@ module ActiveFacts
   end
 
   module Metamodel    #:nodoc:
-    # The Concept class is defined in the metamodel; full documentation is not generated.
+    # The ObjectType class is defined in the metamodel; full documentation is not generated.
     # This section shows the features relevant to relational Persistence.
-    class Concept
-      # The array of columns for this Concept's table
+    class ObjectType
+      # The array of columns for this ObjectType's table
       def columns
         @columns
       end
@@ -229,7 +229,7 @@ module ActiveFacts
 
     # The ValueType class is defined in the metamodel; full documentation is not generated.
     # This section shows the features relevant to relational Persistence.
-    class ValueType < Concept
+    class ValueType < ObjectType
       # The identifier_columns for a ValueType can only ever be the self-value role that was injected
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
@@ -278,7 +278,7 @@ module ActiveFacts
 
     # The EntityType class is defined in the metamodel; full documentation is not generated.
     # This section shows the features relevant to relational Persistence.
-    class EntityType < Concept
+    class EntityType < ObjectType
       # The identifier_columns for an EntityType are the columns that result from the identifying roles
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
@@ -307,7 +307,7 @@ module ActiveFacts
             (all_type_inheritance_as_subtype.size == 0 ||
               all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification })
             rc = absorbed_via.from.reference_columns(excluded_supertypes)
-            # The absorbed_via reference gets skipped here, ans also in concept.rb
+            # The absorbed_via reference gets skipped here, ans also in object_type.rb
             debug :columns, "Skipping #{absorbed_via}"
             #rc.each{|col| col.prepend(absorbed_via)}
             return rc
@@ -367,8 +367,8 @@ module ActiveFacts
       # Make schema transformations like adding ValueType self-value columns (and later, Rails-friendly ID fields).
       # Override this method to change the transformations
       def finish_schema
-        all_concept.each do |concept|
-          concept.self_value_reference if concept.is_a?(ActiveFacts::Metamodel::ValueType) && concept.is_table
+        all_object_type.each do |object_type|
+          object_type.self_value_reference if object_type.is_a?(ActiveFacts::Metamodel::ValueType) && object_type.is_table
         end
       end
 
@@ -377,18 +377,18 @@ module ActiveFacts
         finish_schema
 
         debug :columns, "Populating all columns" do
-          all_concept.each do |concept|
-            next if !concept.is_table
-            debug :columns, "Populating columns for table #{concept.name}" do
-              concept.populate_columns
+          all_object_type.each do |object_type|
+            next if !object_type.is_table
+            debug :columns, "Populating columns for table #{object_type.name}" do
+              object_type.populate_columns
             end
           end
         end
         debug :columns, "Finished columns" do
-          all_concept.each do |concept|
-            next if !concept.is_table
-            debug :columns, "Finished columns for table #{concept.name}" do
-              concept.columns.each do |column|
+          all_object_type.each do |object_type|
+            next if !object_type.is_table
+            debug :columns, "Finished columns for table #{object_type.name}" do
+              object_type.columns.each do |column|
                 debug :columns, "#{column}"
               end
             end

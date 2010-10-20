@@ -1,7 +1,7 @@
 #
 #       ActiveFacts Relational mapping and persistence.
-#       An Index on a Concept is used to represent a unique constraint across roles absorbed
-#       into that concept's table.
+#       An Index on a ObjectType is used to represent a unique constraint across roles absorbed
+#       into that object_type's table.
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
@@ -16,7 +16,7 @@ module ActiveFacts
       def on; @on; end
 
       # If a non-mandatory reference was absorbed, only the non-nil instances are unique.
-      # Return the Concept that was absorbed, which might differ from this Index's table.
+      # Return the ObjectType that was absorbed, which might differ from this Index's table.
       def over; @over; end
 
       # Return the array of columns in this index
@@ -78,7 +78,7 @@ module ActiveFacts
   end
 
   module Metamodel    #:nodoc:
-    class Concept
+    class ObjectType
       # An array of each Index for this table
       def indices; @indices; end
 
@@ -181,23 +181,23 @@ module ActiveFacts
 
     class Vocabulary
       def populate_all_indices  #:nodoc:
-        debug :index, "Populating all concept indices" do
-          all_concept.each do |concept|
-            concept.clear_indices
+        debug :index, "Populating all object_type indices" do
+          all_object_type.each do |object_type|
+            object_type.clear_indices
           end
-          all_concept.each do |concept|
-            next unless concept.is_table
-            debug :index, "Populating indices for #{concept.name}" do
-              concept.populate_indices
+          all_object_type.each do |object_type|
+            next unless object_type.is_table
+            debug :index, "Populating indices for #{object_type.name}" do
+              object_type.populate_indices
             end
           end
         end
-        debug :index, "Finished concept indices" do
-          all_concept.each do |concept|
-            next unless concept.is_table
-            next unless concept.indices.size > 0
-            debug :index, "#{concept.name}:" do
-              concept.indices.each do |index|
+        debug :index, "Finished object_type indices" do
+          all_object_type.each do |object_type|
+            next unless object_type.is_table
+            next unless object_type.indices.size > 0
+            debug :index, "#{object_type.name}:" do
+              object_type.indices.each do |index|
                 debug :index, index
               end
             end

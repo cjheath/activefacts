@@ -6,7 +6,7 @@
 #
 module ActiveFacts
   module API
-    # An Entity type is any Concept that isn't a value type.
+    # An Entity type is any ObjectType that isn't a value type.
     # All Entity types must have an identifier made up of one or more roles.
     module Entity
       include Instance
@@ -141,15 +141,15 @@ module ActiveFacts
 
           role_args = ir.map{|role_sym| roles(role_sym)}.zip(args)
           role_args.map do |role, arg|
-            #puts "Getting identifying_role_value for #{role.counterpart_concept.basename} using #{arg.inspect}"
+            #puts "Getting identifying_role_value for #{role.counterpart_object_type.basename} using #{arg.inspect}"
             next nil unless arg
             next !!arg unless role.counterpart  # Unary
             arg = arg.__getobj__ if RoleProxy === arg
-            if arg.is_a?(role.counterpart_concept)              # REVISIT: or a secondary supertype
+            if arg.is_a?(role.counterpart_object_type)              # REVISIT: or a secondary supertype
               # Note that with a secondary supertype, it must still return the values of these identifying_role_names
               next arg.identifying_role_values
             end
-            role.counterpart_concept.identifying_role_values(*arg)
+            role.counterpart_object_type.identifying_role_values(*arg)
           end
         end
 
@@ -175,12 +175,12 @@ module ActiveFacts
                 value = role_key = nil          # No value
               elsif !role.counterpart
                 value = role_key = !!arg        # Unary
-              elsif arg.is_a?(role.counterpart_concept)      # REVISIT: or a secondary supertype
+              elsif arg.is_a?(role.counterpart_object_type)      # REVISIT: or a secondary supertype
                 arg = arg.__getobj__ if RoleProxy === arg
                 raise "Connecting values across constellations" unless arg.constellation == constellation
                 value, role_key = arg, arg.identifying_role_values
               else
-                value, role_key = role.counterpart_concept.assert_instance(constellation, Array(arg))
+                value, role_key = role.counterpart_object_type.assert_instance(constellation, Array(arg))
               end
               key << role_key
               value
@@ -216,7 +216,7 @@ module ActiveFacts
           return instance, key
         end
 
-        # A concept that isn't a ValueType must have an identification scheme,
+        # A object_type that isn't a ValueType must have an identification scheme,
         # which is a list of roles it plays. The identification scheme may be
         # inherited from a superclass.
         def initialise_entity_type(*args) #:nodoc:
@@ -231,10 +231,10 @@ module ActiveFacts
           other.identified_by *identifying_role_names
           subtypes << other unless subtypes.include? other
           #puts "#{self.name} inherited by #{other.name}"
-          vocabulary.__add_concept(other)
+          vocabulary.__add_object_type(other)
         end
 
-        # verbalise this concept
+        # verbalise this object_type
         def verbalise
           "#{basename} is identified by #{identifying_role_names.map{|role_sym| role_sym.to_s.camelcase}*" and "};"
         end
@@ -246,10 +246,10 @@ module ActiveFacts
         # Register ourselves with the parent module, which has become a Vocabulary:
         vocabulary = other.modspace
         # puts "Entity.included(#{other.inspect})"
-        unless vocabulary.respond_to? :concept  # Extend module with Vocabulary if necessary
+        unless vocabulary.respond_to? :object_type  # Extend module with Vocabulary if necessary
           vocabulary.send :extend, Vocabulary
         end
-        vocabulary.__add_concept(other)
+        vocabulary.__add_object_type(other)
       end
     end
   end

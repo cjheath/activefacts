@@ -11,8 +11,8 @@ require 'activefacts/input/cql'
 
 describe "CQL Symbol table" do
 
-  # A Form here is a form of reference to a concept, being a name and optional adjectives, possibly designated by a role name:
-  # Struct.new("Form", :concept, :name, :leading_adjective, :trailing_adjective, :role_name)
+  # A Form here is a form of reference to a object_type, being a name and optional adjectives, possibly designated by a role name:
+  # Struct.new("Form", :object_type, :name, :leading_adjective, :trailing_adjective, :role_name)
   # def initialize(constellation, vocabulary)
   # def bind(words, leading_adjective = nil, trailing_adjective = nil, role_name = nil, allowed_forward = false, leading_speculative = false, trailing_speculative = false)
 
@@ -106,7 +106,7 @@ describe "CQL Symbol table" do
 
         player, bound = @symbols.bind(*args)
         player.should_not be_nil
-        player.should == bound.concept
+        player.should == bound.object_type
         [bound.name, bound.leading_adjective, bound.trailing_adjective, bound.role_name].should == result
       else
         lambda {player, bound = @symbols.bind(*args)}.should raise_error
@@ -115,17 +115,17 @@ describe "CQL Symbol table" do
   end
 
   it "should disallow binding to a role name where a leading adjective is provided" do
-    concept, = @symbols.bind("Name", nil, nil, "GivenName", true)
+    object_type, = @symbols.bind("Name", nil, nil, "GivenName", true)
     lambda{player, bound = @symbols.bind("GivenName", "SomeAdj")}.should raise_error
   end
 
   it "should disallow binding to a role name where a trailing adjective is provided" do
-    concept, = @symbols.bind("Name", nil, nil, "GivenName", true)
+    object_type, = @symbols.bind("Name", nil, nil, "GivenName", true)
     lambda{player, bound = @symbols.bind("GivenName", nil, "SomeAdj")}.should raise_error
   end
 
   it "should disallow binding to a role name and defining a new role name" do
-    concept, = @symbols.bind("Name", nil, nil, "GivenName", true)
+    object_type, = @symbols.bind("Name", nil, nil, "GivenName", true)
     lambda{player, bound = @symbols.bind("GivenName", nil, nil, "SomeName")}.should raise_error
   end
 
@@ -137,50 +137,50 @@ describe "CQL Symbol table" do
   ]
 
   it "should allow adding a role name to an adjectival form without one" do
-    concept, = @symbols.bind("Name", "Given", nil, nil, true)
+    object_type, = @symbols.bind("Name", "Given", nil, nil, true)
     player, bound = @symbols.bind("Name", nil, nil, "GivenName")
-    player.should == concept
+    player.should == object_type
   end
 
   it "should create new binding with a role name rather than binding to existing simple player without adjectives" do
-    concept, bare = @symbols.bind("Name", nil, nil, nil, true)
+    object_type, bare = @symbols.bind("Name", nil, nil, nil, true)
     player, bound = @symbols.bind("Name", nil, nil, "SomeAdj")
     bare.should_not == bound
   end
 
-  it "should disallow adding a role name which is the name of an existing concept" do
-    concept, = @symbols.bind("Name", "Given", nil, nil, true)
+  it "should disallow adding a role name which is the name of an existing object_type" do
+    object_type, = @symbols.bind("Name", "Given", nil, nil, true)
     lambda{player, bound = @symbols.bind("Name", "Given", nil, "Date")}.should raise_error
   end
 
   it "should disallow adding a role name to a role player that already has one" do
-    concept, first = @symbols.bind("Name", "Given", nil, "GivenName", true)
+    object_type, first = @symbols.bind("Name", "Given", nil, "GivenName", true)
     player, bound = @symbols.bind("Name", "Given", nil, "FirstName")
     first.should_not == bound
   end
 
   it "should bind to an existing player without adjectives" do
-    concept, = @symbols.bind("Name", nil, nil, nil, true)
+    object_type, = @symbols.bind("Name", nil, nil, nil, true)
     player, bound = @symbols.bind("Name")
-    player.should == concept
+    player.should == object_type
   end
 
   it "should bind to an existing player using a leading adjective" do
-    concept, = @symbols.bind("Name", nil, nil, nil, true)
+    object_type, = @symbols.bind("Name", nil, nil, nil, true)
     player, bound = @symbols.bind("Name", "Given")
-    player.should == concept
+    player.should == object_type
   end
 
   it "should bind to an existing player using a trailing adjective" do
-    concept, = @symbols.bind("Name", nil, nil, nil, true)
+    object_type, = @symbols.bind("Name", nil, nil, nil, true)
     player, bound = @symbols.bind("Name", nil, "Donné")
-    player.should == concept
+    player.should == object_type
   end
 
   it "should bind to an existing player only using the defined leading adjective" do
-    concept, = @symbols.bind("Name", "Given", nil, nil, true)
+    object_type, = @symbols.bind("Name", "Given", nil, nil, true)
     player, bound = @symbols.bind("Name", "Given")
-    player.should == concept
+    player.should == object_type
     forms = [bound]
 
     player, alt = @symbols.bind("Name")
@@ -196,9 +196,9 @@ describe "CQL Symbol table" do
   end
 
   it "should bind to an existing player only using a defined trailing adjective" do
-    concept, = @symbols.bind("Name", nil, "Donné", nil, true)
+    object_type, = @symbols.bind("Name", nil, "Donné", nil, true)
     player, bound = @symbols.bind("Name", nil, "Donné")
-    player.should == concept
+    player.should == object_type
     forms = [bound]
 
     player, alt = @symbols.bind("Name")
@@ -214,9 +214,9 @@ describe "CQL Symbol table" do
   end
 
   it "should bind to an existing player only using defined leading and trailing adjective" do
-    concept, = @symbols.bind("Name", "Given", "Donné", nil, true)
+    object_type, = @symbols.bind("Name", "Given", "Donné", nil, true)
     player, bound = @symbols.bind("Name", "Given", "Donné")
-    player.should == concept
+    player.should == object_type
     forms = [bound]
 
     player, alt = @symbols.bind("Name")
@@ -232,9 +232,9 @@ describe "CQL Symbol table" do
   end
 
   it "should bind to an existing player using a speculative leading adjective" do
-    concept, = @symbols.bind("Name", "Given", nil, nil, true)
+    object_type, = @symbols.bind("Name", "Given", nil, nil, true)
     player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true, true)
-    player.should == concept
+    player.should == object_type
     bound.leading_adjective.should == "Given"
     bound.trailing_adjective.should be_nil
     l.should be_empty
@@ -242,17 +242,17 @@ describe "CQL Symbol table" do
   end
 
   it "should bind to an existing player using a speculative trailing adjective" do
-    concept, = @symbols.bind("Name", nil, "Donné", nil, true)
+    object_type, = @symbols.bind("Name", nil, "Donné", nil, true)
     player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true, true)
-    player.should == concept
+    player.should == object_type
     l.should == "Given"
     t.should be_empty
   end
 
   it "should bind to an existing player using a speculative leading and trailing adjective" do
-    concept, = @symbols.bind("Name", "Given", "Donné", nil, true)
+    object_type, = @symbols.bind("Name", "Given", "Donné", nil, true)
     player, bound = @symbols.bind("Name", l = "Given", t = "Donné", nil, nil, true, true)
-    player.should == concept
+    player.should == object_type
     l.should be_empty
     t.should be_empty
   end

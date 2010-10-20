@@ -168,12 +168,12 @@ module ::Metamodel
 
   class ContextNote
     identified_by :context_note_id
-    has_one :concept                            # See Concept.all_context_note
     has_one :constraint                         # See Constraint.all_context_note
     one_to_one :context_note_id, :mandatory => true  # See ContextNoteId.context_note
     has_one :context_note_kind, :mandatory => true  # See ContextNoteKind.all_context_note
     has_one :discussion, :mandatory => true     # See Discussion.all_context_note
     has_one :fact_type                          # See FactType.all_context_note
+    has_one :object_type                        # See ObjectType.all_context_note
   end
 
   class Enforcement
@@ -200,9 +200,9 @@ module ::Metamodel
 
   class Instance
     identified_by :instance_id
-    has_one :concept, :mandatory => true        # See Concept.all_instance
     one_to_one :fact                            # See Fact.instance
     one_to_one :instance_id, :mandatory => true  # See InstanceId.instance
+    has_one :object_type, :mandatory => true    # See ObjectType.all_instance
     has_one :population, :mandatory => true     # See Population.all_instance
     has_one :value                              # See Value.all_instance
   end
@@ -214,8 +214,8 @@ module ::Metamodel
 
   class JoinNode
     identified_by :join, :ordinal
-    has_one :concept, :mandatory => true        # See Concept.all_join_node
     has_one :join, :mandatory => true           # See Join.all_join_node
+    has_one :object_type, :mandatory => true    # See ObjectType.all_join_node
     has_one :ordinal, :mandatory => true        # See Ordinal.all_join_node
     has_one :subscript                          # See Subscript.all_join_node
     has_one :value                              # See Value.all_join_node
@@ -253,8 +253,8 @@ module ::Metamodel
     identified_by :fact_type, :ordinal
     has_one :fact_type, :mandatory => true      # See FactType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
-    has_one :concept, :mandatory => true        # See Concept.all_role
     one_to_one :implicit_fact_type, :counterpart => :implying_role  # See ImplicitFactType.implying_role
+    has_one :object_type, :mandatory => true    # See ObjectType.all_role
     has_one :role_name, :class => Name          # See Name.all_role_as_role_name
   end
 
@@ -328,14 +328,6 @@ module ::Metamodel
     has_one :value, :mandatory => true          # See Value.all_bound
   end
 
-  class Concept
-    identified_by :vocabulary, :name
-    maybe :is_independent
-    has_one :name, :mandatory => true           # See Name.all_concept
-    has_one :pronoun                            # See Pronoun.all_concept
-    has_one :vocabulary, :mandatory => true     # See Vocabulary.all_concept
-  end
-
   class ConstraintShape < Shape
     has_one :constraint, :mandatory => true     # See Constraint.all_constraint_shape
   end
@@ -366,10 +358,6 @@ module ::Metamodel
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_diagram
   end
 
-  class EntityType < Concept
-    one_to_one :fact_type                       # See FactType.entity_type
-  end
-
   class FactTypeShape < Shape
     has_one :display_role_names_setting         # See DisplayRoleNamesSetting.all_fact_type_shape
     has_one :fact_type, :mandatory => true      # See FactType.all_fact_type_shape
@@ -396,9 +384,17 @@ module ::Metamodel
     has_one :context_note, :mandatory => true   # See ContextNote.all_model_note_shape
   end
 
+  class ObjectType
+    identified_by :vocabulary, :name
+    maybe :is_independent
+    has_one :name, :mandatory => true           # See Name.all_object_type
+    has_one :pronoun                            # See Pronoun.all_object_type
+    has_one :vocabulary, :mandatory => true     # See Vocabulary.all_object_type
+  end
+
   class ObjectTypeShape < Shape
-    has_one :concept, :mandatory => true        # See Concept.all_object_type_shape
     maybe :has_expanded_reference_mode
+    has_one :object_type, :mandatory => true    # See ObjectType.all_object_type_shape
   end
 
   class ObjectifiedFactTypeNameShape < Shape
@@ -460,14 +456,6 @@ module ::Metamodel
     maybe :is_mandatory
   end
 
-  class TypeInheritance < FactType
-    identified_by :subtype, :supertype
-    has_one :subtype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_subtype
-    has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
-    has_one :assimilation                       # See Assimilation.all_type_inheritance
-    maybe :provides_identification
-  end
-
   class ValueConstraintShape < ConstraintShape
     has_one :object_type_shape                  # See ObjectTypeShape.all_value_constraint_shape
     one_to_one :role_display                    # See RoleDisplay.value_constraint_shape
@@ -479,7 +467,7 @@ module ::Metamodel
     has_one :minimum_bound, :class => Bound     # See Bound.all_value_range_as_minimum_bound
   end
 
-  class ValueType < Concept
+  class ValueType < ObjectType
     maybe :is_auto_assigned
     has_one :length                             # See Length.all_value_type
     has_one :scale                              # See Scale.all_value_type
@@ -494,6 +482,10 @@ module ::Metamodel
     has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
   end
 
+  class EntityType < ObjectType
+    one_to_one :fact_type                       # See FactType.entity_type
+  end
+
   class ImplicitBooleanValueType < ValueType
   end
 
@@ -501,6 +493,14 @@ module ::Metamodel
     identified_by :name, :value_type
     has_one :name, :mandatory => true           # See Name.all_parameter
     has_one :value_type, :mandatory => true     # See ValueType.all_parameter
+  end
+
+  class TypeInheritance < FactType
+    identified_by :subtype, :supertype
+    has_one :subtype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_subtype
+    has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
+    has_one :assimilation                       # See Assimilation.all_type_inheritance
+    maybe :provides_identification
   end
 
   class ParamValue

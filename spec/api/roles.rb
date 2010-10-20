@@ -1,5 +1,5 @@
 #
-# ActiveFacts tests: Roles of concept classes in the Runtime API
+# ActiveFacts tests: Roles of object_type classes in the Runtime API
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/api'
@@ -29,10 +29,10 @@ describe "Roles" do
         has_one :related_to, :class => LegalEntity
       end
     end
-    # print "concept: "; p Mod.concept
+    # print "object_type: "; p Mod.object_type
   end
 
-  it "should associate a role name with a matching existing concept" do
+  it "should associate a role name with a matching existing object_type" do
     module Mod
       class Existing1 < String
         value_type
@@ -41,10 +41,10 @@ describe "Roles" do
     end
     role = Mod::Existing1.roles(:name)
     role.should_not be_nil
-    role.counterpart_concept.should == Mod::Name
+    role.counterpart_object_type.should == Mod::Name
   end
 
-  it "should inject the respective role name into the matching concept" do
+  it "should inject the respective role name into the matching object_type" do
     module Mod
       class Existing1 < String
         value_type
@@ -55,7 +55,7 @@ describe "Roles" do
     Mod::LegalEntity.roles(:all_contract_as_first).should_not be_nil
   end
 
-  it "should associate a role name with a matching concept after it's created" do
+  it "should associate a role name with a matching object_type after it's created" do
     module Mod
       class Existing2 < String
         value_type
@@ -65,7 +65,7 @@ describe "Roles" do
     # print "Mod::Existing2.roles = "; p Mod::Existing2.roles
     r = Mod::Existing2.roles(:given_name)
     r.should_not be_nil
-    Symbol.should === r.counterpart_concept
+    Symbol.should === r.counterpart_object_type
     module Mod
       class GivenName < String
         value_type
@@ -74,7 +74,7 @@ describe "Roles" do
     # puts "Should resolve now:"
     r = Mod::Existing2.roles(:given_name)
     r.should_not be_nil
-    r.counterpart_concept.should == Mod::GivenName
+    r.counterpart_object_type.should == Mod::GivenName
   end
 
   it "should handle subtyping a value type" do
@@ -86,11 +86,11 @@ describe "Roles" do
     end
     r = Mod::FamilyName.roles(:patriarch)
     r.should_not be_nil
-    r.counterpart_concept.should == Mod::Person
-    r.counterpart_concept.roles(:family_name_as_patriarch).counterpart_concept.should == Mod::FamilyName
+    r.counterpart_object_type.should == Mod::Person
+    r.counterpart_object_type.roles(:family_name_as_patriarch).counterpart_object_type.should == Mod::FamilyName
   end
 
-  it "should instantiate the matching concept on assignment" do
+  it "should instantiate the matching object_type on assignment" do
     c = ActiveFacts::API::Constellation.new(Mod)
     bloggs = c.LegalEntity("Bloggs")
     acme = c.LegalEntity("Acme, Inc")
@@ -100,7 +100,7 @@ describe "Roles" do
     contract.second.should == acme
     end
 
-  it "should append the counterpart into the respective role array in the matching concept" do
+  it "should append the counterpart into the respective role array in the matching object_type" do
     foo = Mod::Name.new("Foo")
     le = Mod::LegalEntity.new(foo)
     le.respond_to?(:name).should be_true

@@ -6,8 +6,8 @@
 #
 # The text generated here is pre-formatted, and it spans haing the following styles:
 # keyword: ORM2 standard colour is #00C (blue)
-# concept: ORM2 standard concept is #808 (purple)
-# copula: ORM2 standard concept is #060 (green)
+# object_type: ORM2 standard object_type is #808 (purple)
+# copula: ORM2 standard object_type is #060 (green)
 #
 require 'activefacts/vocabulary'
 require 'activefacts/api'
@@ -35,8 +35,8 @@ module ActiveFacts
           "<span class='keyword'>#{str}</span>"
         end
 
-        def concept(str)
-          "<span class='concept'>#{str}</span>"
+        def object_type(str)
+          "<span class='object_type'>#{str}</span>"
         end
 
         def copula(str)
@@ -48,7 +48,7 @@ module ActiveFacts
             <link rel="stylesheet" href="css/orm2.css" type="text/css"/>
             </head>
             <pre class="copula">}
-          puts "#{keyword "vocabulary"} #{concept(vocabulary.name)};\n\n"
+          puts "#{keyword "vocabulary"} #{object_type(vocabulary.name)};\n\n"
         end
 
         def vocabulary_end
@@ -72,7 +72,7 @@ module ActiveFacts
             ].compact
           parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : "()"
 
-          puts "#{concept o.name} #{keyword "is written as"} #{concept o.supertype.name + parameters }#{
+          puts "#{object_type o.name} #{keyword "is written as"} #{object_type o.supertype.name + parameters }#{
               if (o.value_constraint)
                 keyword("restricted to")+
                 o.value_constraint.all_allowed_range.map{|ar|
@@ -104,7 +104,7 @@ module ActiveFacts
 
               role_name = role.role_name
               role_name = nil if role_name == ""
-              # debug "concept.name=#{preferred_role_ref.role.concept.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
+              # debug "object_type.name=#{preferred_role_ref.role.object_type.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
 
               if (role.fact_type.all_role.size == 1)
                 # REVISIT: Guard against unary reading containing the illegal words "and" and "where".
@@ -113,7 +113,7 @@ module ActiveFacts
                 role_name
               else
                 role_words << preferred_role_ref.leading_adjective if preferred_role_ref.leading_adjective != ""
-                role_words << preferred_role_ref.role.concept.name
+                role_words << preferred_role_ref.role.object_type.name
                 role_words << preferred_role_ref.trailing_adjective if preferred_role_ref.trailing_adjective != ""
                 role_words.compact*"-"
               end
@@ -126,10 +126,10 @@ module ActiveFacts
           ft = identifying_facts[0]
           fact_constraints = nil
           if identifying_facts.size == 1 and
-            entity_role = ft.all_role[n = (ft.all_role[0].concept == entity_type ? 0 : 1)] and
+            entity_role = ft.all_role[n = (ft.all_role[0].object_type == entity_type ? 0 : 1)] and
             value_role = ft.all_role[1-n] and
-            value_name = value_role.concept.name and
-            residual = value_name.gsub(%r{#{entity_role.concept.name}},'') and
+            value_name = value_role.object_type.name and
+            residual = value_name.gsub(%r{#{entity_role.object_type.name}},'') and
             residual != '' and
             residual != value_name
 
@@ -180,7 +180,7 @@ module ActiveFacts
                 expanded_reading(reading, fact_constraints, true)
               end*",\n\t"
               return keyword(" identified by its ") +
-                concept(residual) +
+                object_type(residual) +
                 (fact_text != "" ? keyword(" where\n\t") + fact_text : "")
             end
           end
@@ -192,7 +192,7 @@ module ActiveFacts
               }.flatten*",\n\t"
 
           keyword(" identified by ") +
-            identifying_role_names.map{|n| concept n} * keyword(" and ") +
+            identifying_role_names.map{|n| object_type n} * keyword(" and ") +
             keyword(" where\n\t") +
             @identifying_fact_text
         end
@@ -207,7 +207,7 @@ module ActiveFacts
         end
 
         def subtype_dump(o, supertypes, pi)
-          print "#{concept o.name} #{keyword "is a kind of"} #{ o.supertypes.map(&:name).map{|n| concept n}*keyword(", ") }"
+          print "#{object_type o.name} #{keyword "is a kind of"} #{ o.supertypes.map(&:name).map{|n| object_type n}*keyword(", ") }"
           if pi
             print identified_by(o, pi)
           end
@@ -223,7 +223,7 @@ module ActiveFacts
         end
 
         def non_subtype_dump(o, pi)
-          print "#{concept(o.name)} #{keyword "is"}" +
+          print "#{object_type(o.name)} #{keyword "is"}" +
             identified_by(o, pi)
           print(keyword(" where\n\t") + fact_readings(o.fact_type)) if o.fact_type
           puts ";\n"
@@ -233,9 +233,9 @@ module ActiveFacts
 
           @identifying_fact_text = nil
           if (o = fact_type.entity_type)
-            print "#{concept o.name} #{keyword "is"}"
+            print "#{object_type o.name} #{keyword "is"}"
             if !o.all_type_inheritance_as_subtype.empty?
-              print(keyword(" a kind of ") + o.supertypes.map(&:name).map{|n| concept n}*", ")
+              print(keyword(" a kind of ") + o.supertypes.map(&:name).map{|n| object_type n}*", ")
             end
 
             # Alternate identification of objectified fact type?
@@ -266,12 +266,12 @@ module ActiveFacts
 
           # REVISIT: If only one role is covered and it's mandatory >=1 constraint, use SOME/THAT form:
           # each Bug SOME Tester logged THAT Bug;
-          players = c.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}.uniq
+          players = c.role_sequence.all_role_ref.map{|rr| rr.role.object_type.name}.uniq
 
           fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
           puts \
             "#{keyword "each #{players.size > 1 ? "combination " : ""}"}"+
-            "#{players.map{|n| concept n}*", "} "+
+            "#{players.map{|n| object_type n}*", "} "+
             "#{keyword "occurs #{c.frequency} time in"}\n\t"+
             "#{fact_types.map{|ft| ft.default_reading([], nil)}*",\n\t"}" +
               ";"
@@ -292,9 +292,9 @@ module ActiveFacts
           players_differ = []   # Record which players are also played by subclasses
           players = (0...player_count).map do |pi|
             # Find the common supertype of the players of the pi'th role in each sequence
-            concepts = scrs.map{|r| r.role_sequence.all_role_ref[pi].role.concept }
-            player, players_differ[pi] = common_supertype(concepts)
-            raise "Role sequences of #{c.class.basename} must have concepts matching #{c.name} in position #{pi}" unless player
+            object_types = scrs.map{|r| r.role_sequence.all_role_ref[pi].role.object_type }
+            player, players_differ[pi] = common_supertype(object_types)
+            raise "Role sequences of #{c.class.basename} must have object_types matching #{c.name} in position #{pi}" unless player
             player
           end
           #puts "#{c.class.basename} has players #{players.map{|p| p.name}*", "}"
@@ -311,7 +311,7 @@ module ActiveFacts
           end
 
           mode = c.is_mandatory ? "exactly one" : "at most one"
-          puts "#{keyword "for each"} #{players.map{|p| concept p.name}*", "} #{keyword(mode + " of these holds")}:\n\t" +
+          puts "#{keyword "for each"} #{players.map{|p| object_type p.name}*", "} #{keyword(mode + " of these holds")}:\n\t" +
             (scrs.map do |scr|
               constrained_roles = scr.role_sequence.all_role_ref.map{|rr| rr.role }
               fact_types = constrained_roles.map{|r| r.fact_type }.uniq
@@ -319,7 +319,7 @@ module ActiveFacts
               fact_types.map do |fact_type|
                 # REVISIT: future: Use "THAT" and "SOME" only when:
                 # - the role player occurs twice in the reading, or
-                # - is a subclass of the constrained concept, or
+                # - is a subclass of the constrained object_type, or
                 reading = fact_type.preferred_reading
                 expand_constrained(reading, constrained_roles, players, players_differ)
               end * keyword(" and ")
@@ -334,24 +334,24 @@ module ActiveFacts
           frequency_constraints = reading.role_sequence.all_role_ref.map {|role_ref|
               i = constrained_roles.index(role_ref.role)
               if !i
-                v = [ "some", role_ref.role.concept.name]
+                v = [ "some", role_ref.role.object_type.name]
               elsif players_differ[i]
                 v = [ "that", players[i].name ]   # Make sure to use the superclass name
               else
-                if reading.fact_type.all_role.select{|r| r.concept == role_ref.role.concept }.size > 1
-                  v = [ "that", role_ref.role.concept.name ]
+                if reading.fact_type.all_role.select{|r| r.object_type == role_ref.role.object_type }.size > 1
+                  v = [ "that", role_ref.role.object_type.name ]
                 else
-                  v = [ "some", role_ref.role.concept.name ]
+                  v = [ "some", role_ref.role.object_type.name ]
                 end
               end
 
               v[0] = keyword(v[0])
-              v[1] = concept(v[1])
+              v[1] = object_type(v[1])
               v
             }
           frequency_constraints = [] unless frequency_constraints.detect{|fc| fc[0] =~ /some/ }
 
-          #$stderr.puts "fact_type roles (#{fact_type.all_role.map{|r| r.concept.name}*","}) default_reading '#{fact_type.preferred_reading.text}' roles (#{fact_type.preferred_reading.role_sequence.all_role_ref.map{|rr| rr.role.concept.name}*","}) #{frequency_constraints.inspect}"
+          #$stderr.puts "fact_type roles (#{fact_type.all_role.map{|r| r.object_type.name}*","}) default_reading '#{fact_type.preferred_reading.text}' roles (#{fact_type.preferred_reading.role_sequence.all_role_ref.map{|rr| rr.role.object_type.name}*","}) #{frequency_constraints.inspect}"
 
           # REVISIT: Make sure that we refer to the constrained players by their common supertype
 
@@ -363,8 +363,8 @@ module ActiveFacts
           subset_roles = c.subset_role_sequence.all_role_ref.map{|rr| rr.role}
           superset_roles = c.superset_role_sequence.all_role_ref.map{|rr| rr.role}
 
-          subset_players = subset_roles.map(&:concept)
-          superset_players = superset_roles.map(&:concept)
+          subset_players = subset_roles.map(&:object_type)
+          superset_players = superset_roles.map(&:object_type)
 
           subset_fact_types = c.subset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }.uniq
           superset_fact_types = c.superset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }.uniq
@@ -380,7 +380,7 @@ module ActiveFacts
             # It would help, but not entirely fix it, to use SOME/THAT to identify the constrained roles.
             # See ServiceDirector's DataStore<->Client fact types for example
             # Use SOME on the subset, THAT on the superset.
-            raise "Critical ambiguity, #{r.concept.name} occurs both constrained and unconstrained in #{c.name}"
+            raise "Critical ambiguity, #{r.object_type.name} occurs both constrained and unconstrained in #{c.name}"
           end
 
           puts \

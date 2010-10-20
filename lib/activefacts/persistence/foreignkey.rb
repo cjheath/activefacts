@@ -1,16 +1,16 @@
 #
 #       ActiveFacts Relational mapping and persistence.
-#       A ForeignKey exists for every Reference from a Concept to another Concept that's a table.
+#       A ForeignKey exists for every Reference from a ObjectType to another ObjectType that's a table.
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
   module Persistence
     class ForeignKey
-      # What table (Concept) is the FK from?
+      # What table (ObjectType) is the FK from?
       def from; @from; end
 
-      # What table (Concept) is the FK to?
+      # What table (ObjectType) is the FK to?
       def to; @to; end
 
       # What reference created the FK?
@@ -30,7 +30,7 @@ module ActiveFacts
   end
 
   module Metamodel    #:nodoc:
-    class Concept
+    class ObjectType
       # When an EntityType is fully absorbed, its foreign keys are too.
       # Return an Array of Reference paths for such absorbed FKs
       def all_absorbed_foreign_key_reference_path

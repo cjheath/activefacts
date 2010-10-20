@@ -7,8 +7,8 @@
 
 module ActiveFacts
   module API      #:nodoc:
-    # A Constellation is a population of instances of the Concept classes of a Vocabulary.
-    # Every concept class is either a Value type or an Entity type.
+    # A Constellation is a population of instances of the ObjectType classes of a Vocabulary.
+    # Every object_type class is either a Value type or an Entity type.
     #
     # Value types are uniquely identified by their value, and a constellation will only
     # ever have a single instance of a given value of that class.
@@ -41,7 +41,7 @@ module ActiveFacts
       def initialize(vocabulary)
         @vocabulary = vocabulary
         @instances = Hash.new do |h,k|
-          raise "A constellation over #{@vocabulary.name} can only index instances of concepts in that vocabulary, not #{k.inspect}" unless k.is_a?(Class) and k.modspace == vocabulary
+          raise "A constellation over #{@vocabulary.name} can only index instances of object_types in that vocabulary, not #{k.inspect}" unless k.is_a?(Class) and k.modspace == vocabulary
           h[k] = InstanceIndex.new
         end
       end
@@ -67,17 +67,17 @@ module ActiveFacts
       # non-identifying role values as well
       def verbalise
         "Constellation over #{vocabulary.name}:\n" +
-        vocabulary.concept.keys.sort.map{|concept|
-            klass = vocabulary.const_get(concept)
+        vocabulary.object_type.keys.sort.map{|object_type|
+            klass = vocabulary.const_get(object_type)
 
             # REVISIT: It would be better not to rely on the role name pattern here:
             single_roles, multiple_roles = klass.roles.keys.sort_by(&:to_s).partition{|r| r.to_s !~ /\Aall_/ }
             single_roles -= klass.identifying_role_names if (klass.is_entity_type)
             # REVISIT: Need to include superclass roles also.
 
-            instances = send(concept.to_sym)
+            instances = send(object_type.to_sym)
             next nil unless instances.size > 0
-            "\tEvery #{concept}:\n" +
+            "\tEvery #{object_type}:\n" +
               instances.map{|key, instance|
                   s = "\t\t" + instance.verbalise
                   if (single_roles.size > 0)
@@ -108,15 +108,15 @@ module ActiveFacts
         # If mandatory on the counterpart side, this may/must propagate the delete (without mutual recursion!)
       end
 
-      # With parameters, assert an instance of the concept whose name is the missing method, identified by the values passed as *args*.
-      # With no parameters, return the collection of all instances of that concept.
+      # With parameters, assert an instance of the object_type whose name is the missing method, identified by the values passed as *args*.
+      # With no parameters, return the collection of all instances of that object_type.
       def method_missing(m, *args)
         if klass = @vocabulary.const_get(m)
           if args.size == 0
             # Return the collection of all instances of this class in the constellation:
             @instances[klass]
           else
-            # Assert a new ground fact (concept instance) of the specified class, identified by args:
+            # Assert a new ground fact (object_type instance) of the specified class, identified by args:
             # REVISIT: create a constructor method here instead?
             instance, key = klass.assert_instance(self, args)
             instance

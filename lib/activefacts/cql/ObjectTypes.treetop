@@ -1,13 +1,13 @@
 #
 #       ActiveFacts CQL Parser.
-#       Parse rules relating to Concept definitions.
+#       Parse rules relating to ObjectType definitions.
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
   module CQL
-    grammar Concepts
-      rule concept
+    grammar ObjectTypes
+      rule object_type
         value_type
         / entity_type
         / named_fact_type

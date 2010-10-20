@@ -14,7 +14,7 @@ describe "Fact Type Role Matching" do
     Boy is written as String;
     Girl is written as String;
   }
-  BaseConcepts = 3  # String, Boy, Girl
+  BaseObjectTypes = 3  # String, Boy, Girl
 
   def self.SingleFact &b
     lambda {|c|
@@ -29,7 +29,7 @@ describe "Fact Type Role Matching" do
   def self.FactHavingPlayers(*a, &b)
     lambda {|c|
       @fact_type = c.FactType.detect do |key, ft|
-        ft.all_role.map{|r| r.concept.name}.sort == a.sort
+        ft.all_role.map{|r| r.object_type.name}.sort == a.sort
       end
       b.call(@fact_type) if b
       @fact_type
@@ -74,34 +74,34 @@ describe "Fact Type Role Matching" do
     }
   end
 
-  def self.ConceptCount n
+  def self.ObjectTypeCount n
     lambda {|c|
       @constellation = c
-      c.Concept.values.size.should == n
+      c.ObjectType.values.size.should == n
     }
   end
 
-  def self.Concept name, &b
+  def self.ObjectType name, &b
     lambda {|c|
-      @concept = c.Concept[[["Tests"], name]]
-      @concept.should_not == nil
-      b.call(@concept) if b
-      @concept
+      @object_type = c.ObjectType[[["Tests"], name]]
+      @object_type.should_not == nil
+      b.call(@object_type) if b
+      @object_type
     }
   end
 
   def self.WrittenAs name
     lambda {|c|
-      @base_type = c.Concept[[["Tests"], name]]
+      @base_type = c.ObjectType[[["Tests"], name]]
       @base_type.class.should == ActiveFacts::Metamodel::ValueType
-      @concept.class.should == ActiveFacts::Metamodel::ValueType
-      @concept.supertype.should == @base_type
+      @object_type.class.should == ActiveFacts::Metamodel::ValueType
+      @object_type.supertype.should == @base_type
     }
   end
 
   def self.PreferredIdentifier num_roles
     lambda {|c|
-      @preferred_identifier = @concept.preferred_identifier
+      @preferred_identifier = @object_type.preferred_identifier
       @preferred_identifier.should_not == nil
       @preferred_identifier.role_sequence.all_role_ref.size.should == num_roles
       #@preferred_identifier.min_frequency.should == 1
@@ -112,7 +112,7 @@ describe "Fact Type Role Matching" do
 
   def self.PreferredIdentifierRolePlayedBy name, num = 0
     lambda {|c|
-      @preferred_identifier.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[num].role.concept.name.should == name
+      @preferred_identifier.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[num].role.object_type.name.should == name
     }
   end
 
@@ -362,13 +362,13 @@ describe "Fact Type Role Matching" do
         Readings(fact_type).size.should == 1
         PresenceConstraints(fact_type).size.should == 2
       end,
-      Concept('Thong') do |concept|
-        concept.class.should == ActiveFacts::Metamodel::ValueType
+      ObjectType('Thong') do |object_type|
+        object_type.class.should == ActiveFacts::Metamodel::ValueType
         # REVISIT: Figure out how WrittenAs can access the constellation.
         WrittenAs('String')
       end,
-      ConceptCount(2+BaseConcepts),
-      Concept('Thing'),
+      ObjectTypeCount(2+BaseObjectTypes),
+      ObjectType('Thing'),
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Thong'),
     ],
@@ -379,8 +379,8 @@ describe "Fact Type Role Matching" do
         Readings(fact_type).size.should == 2
         PresenceConstraints(fact_type).size.should == 2
       end,
-      ConceptCount(3+BaseConcepts),
-      Concept('Thing'),
+      ObjectTypeCount(3+BaseObjectTypes),
+      ObjectType('Thing'),
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Thing Id'),
     ],
@@ -392,8 +392,8 @@ describe "Fact Type Role Matching" do
         Readings(fact_type).size.should == 2
         PresenceConstraints(fact_type).size.should == 2
       end,
-      ConceptCount(3+BaseConcepts),
-      Concept('Thing'),
+      ObjectTypeCount(3+BaseObjectTypes),
+      ObjectType('Thing'),
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Thing Id'),
     ],
@@ -405,8 +405,8 @@ describe "Fact Type Role Matching" do
         Readings(fact_type).size.should == 2
         PresenceConstraints(fact_type).size.should == 2
       end,
-      ConceptCount(2+BaseConcepts),
-      Concept('Thing'),
+      ObjectTypeCount(2+BaseObjectTypes),
+      ObjectType('Thing'),
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Thing Id'),
     ],
@@ -419,8 +419,8 @@ describe "Fact Type Role Matching" do
         Readings(fact_type).size.should == 2
         PresenceConstraints(fact_type).size.should == 2
       end,
-      ConceptCount(3+BaseConcepts),
-      Concept('Thing'),
+      ObjectTypeCount(3+BaseObjectTypes),
+      ObjectType('Thing'),
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Thing Id'),
     ],
@@ -432,8 +432,8 @@ describe "Fact Type Role Matching" do
         Readings(fact_type).size.should == 2
         PresenceConstraints(fact_type).size.should == 2
       end,
-      ConceptCount(2+BaseConcepts),
-      Concept('Thing'),
+      ObjectTypeCount(2+BaseObjectTypes),
+      ObjectType('Thing'),
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Thong'),
     ],
@@ -444,16 +444,16 @@ describe "Fact Type Role Matching" do
         Readings(fact_type).size.should == 1
         PresenceConstraints(fact_type).size.should == 1
       end,
-      ConceptCount(1+BaseConcepts),
-      Concept('Relationship'),
+      ObjectTypeCount(1+BaseObjectTypes),
+      ObjectType('Relationship'),
         PreferredIdentifier(2),
 #          PreferredIdentifierRolePlayedBy('Thong'),
     ],
 
     [   # Objectified fact type with external identification
       %q{Relationship is identified by its Id where Boy relates to Girl;},
-      ConceptCount(3+BaseConcepts),
-      Concept('Relationship'),
+      ObjectTypeCount(3+BaseObjectTypes),
+      ObjectType('Relationship'),
         PreferredIdentifier(1),   # 1 role in PI
           PreferredIdentifierRolePlayedBy('Relationship Id'),
       FactHavingPlayers('Relationship', 'Relationship Id') do |fact_type|
@@ -463,14 +463,14 @@ describe "Fact Type Role Matching" do
         fact_type.all_reading.detect{|r| r.text == '{0} is of {1}'}.should_not == nil
       end,
       FactHavingPlayers('Boy', 'Girl') do |fact_type|
-        fact_type.entity_type.should == @concept
+        fact_type.entity_type.should == @object_type
       end,
     ],
 
     [   # Objectified fact type with external identification and explicit reading
       %q{Relationship is identified by its Id where Boy relates to Girl, Relationship is known by Relationship Id;},
-      ConceptCount(3+BaseConcepts),
-      Concept('Relationship'),
+      ObjectTypeCount(3+BaseObjectTypes),
+      ObjectType('Relationship'),
         PreferredIdentifier(1),
           PreferredIdentifierRolePlayedBy('Relationship Id'),
       FactHavingPlayers('Relationship', 'Relationship Id') do |fact_type|
@@ -480,7 +480,7 @@ describe "Fact Type Role Matching" do
         fact_type.all_reading.detect{|r| r.text == '{0} is of {1}'}.should_not == nil
       end,
       FactHavingPlayers('Boy', 'Girl') do |fact_type|
-        fact_type.entity_type.should == @concept
+        fact_type.entity_type.should == @object_type
       end,
     ],
 

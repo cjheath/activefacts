@@ -22,8 +22,8 @@ module ActiveFacts
           @phrases.select{|r| r.is_a?(RoleRef)}
         end
 
-        # A reading that contains only the name of a Concept and no literal or reading text
-        # refers only to the existence of that Concept (as opposed to an instance of the concept).
+        # A reading that contains only the name of a ObjectType and no literal or reading text
+        # refers only to the existence of that ObjectType (as opposed to an instance of the object_type).
         def is_existential_type
           @phrases.size == 1 and
             @phrases[0].is_a?(RoleRef) and
@@ -154,7 +154,7 @@ module ActiveFacts
                   next if all_roles.size != players.size      # Wrong number of players
                   next if role.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
 
-                  all_players = all_roles.map{|r| r.concept}  # All the players of this candidate fact type
+                  all_players = all_roles.map{|r| r.object_type}  # All the players of this candidate fact type
 
                   next if player_related_types[1..-1].        # We know the first player is compatible, check the rest
                     detect do |player_types|                  # Make sure that there remains a compatible player
@@ -280,7 +280,7 @@ module ActiveFacts
                 end
               end
 
-              player = role_ref.role.concept
+              player = role_ref.role.object_type
               return nil unless next_player_phrase  # reading has more players than we do.
 
               # The next player must match:
@@ -379,7 +379,7 @@ module ActiveFacts
 
               if ti = ti_joins[0]
                 # The Type Inheritance join must continue in the same direction as this reading.
-                allowed = fact_type.supertype == ti.role_ref.role.concept ?
+                allowed = fact_type.supertype == ti.role_ref.role.object_type ?
                     fact_type.subtype.supertypes_transitive :
                     fact_type.supertype.subtypes_transitive
                 if !allowed.include?(ti.common_supertype)
@@ -404,7 +404,7 @@ module ActiveFacts
             side_effects.apply_all do |se|
 
               # We re-use the role_ref if possible (no extra adjectives were used, no rolename or join, etc).
-              debug :matching, "side-effect means binding #{se.phrase.inspect} matches role ref #{se.role_ref.role.concept.name}"
+              debug :matching, "side-effect means binding #{se.phrase.inspect} matches role ref #{se.role_ref.role.object_type.name}"
               se.phrase.role_ref = se.role_ref
 
               changed = false
@@ -462,7 +462,7 @@ module ActiveFacts
           debug :matching, "Making new fact type for #{@phrases.inspect}" do
             @phrases.each do |phrase|
               next unless phrase.is_a?(RoleRef)
-              phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :concept => phrase.player)
+              phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :object_type => phrase.player)
               phrase.role.role_name = phrase.role_name if phrase.role_name && phrase.role_name.is_a?(String)
             end
           end
@@ -511,8 +511,8 @@ module ActiveFacts
             end
             if existing = @fact_type.all_reading.detect{|r|
                 r.text == reading_words*' ' and
-                  r.role_sequence.all_role_ref_in_order.map{|rr| rr.role.concept} ==
-                    role_sequence.all_role_ref_in_order.map{|rr| rr.role.concept}
+                  r.role_sequence.all_role_ref_in_order.map{|rr| rr.role.object_type} ==
+                    role_sequence.all_role_ref_in_order.map{|rr| rr.role.object_type}
               }
               raise "Reading '#{existing.expand}' already exists, so why are we creating a duplicate?"
             end
@@ -717,8 +717,8 @@ module ActiveFacts
         end
 
         def identify_player context
-          @player = context.concept @term
-          raise "Concept #{@term} unrecognised" unless @player
+          @player = context.object_type @term
+          raise "ObjectType #{@term} unrecognised" unless @player
           context.player_by_role_name[@role_name] = player if @role_name
           @player
         end
@@ -813,7 +813,7 @@ module ActiveFacts
           fact_type = @role_ref.role.fact_type
           constellation = vocabulary.constellation
 
-          debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role_ref.role.concept.name} in #{fact_type.describe}" do
+          debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role_ref.role.object_type.name} in #{fact_type.describe}" do
             # Preserve the role order of the reading, excluding this role:
             constrained_roles = (@reading.role_refs-[self]).map{|rr| rr.role_ref.role}
             if constrained_roles.empty?

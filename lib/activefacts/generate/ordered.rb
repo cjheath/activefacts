@@ -32,7 +32,7 @@ module ActiveFacts
         vocabulary_start(@vocabulary)
 
         build_indices
-        @concepts_dumped = {}
+        @object_types_dumped = {}
         @fact_types_dumped = {}
         units_dump()
         value_types_dump()
@@ -88,14 +88,14 @@ module ActiveFacts
       def value_types_dump
         done_banner = false
         @value_type_dumped = {}
-        @vocabulary.all_concept.sort_by{|o| o.name.gsub(/ /,'')}.each{|o|
+        @vocabulary.all_object_type.sort_by{|o| o.name.gsub(/ /,'')}.each{|o|
             next unless o.is_a?(ActiveFacts::Metamodel::ValueType)
 
             value_type_banner unless done_banner
             done_banner = true
 
             value_type_chain_dump(o)
-            @concepts_dumped[o] = true
+            @object_types_dumped[o] = true
           }
         value_type_end if done_banner
       end
@@ -116,7 +116,7 @@ module ActiveFacts
         @precursors, @followers = *build_entity_dependencies
 
         done_banner = false
-        sorted = @vocabulary.all_concept.select{|o|
+        sorted = @vocabulary.all_object_type.select{|o|
           o.is_a?(ActiveFacts::Metamodel::EntityType) # and !o.fact_type
         }.sort_by{|o| o.name.gsub(/ /,'')}
         panic = nil
@@ -124,7 +124,7 @@ module ActiveFacts
           count_this_pass = 0
           skipped_this_pass = 0
           sorted.each{|o|
-              next if @concepts_dumped[o]    # Already done
+              next if @object_types_dumped[o]    # Already done
 
               # Can we do this yet?
               if (o != panic and                  # We don't *have* to do it (panic mode)
@@ -160,7 +160,7 @@ module ActiveFacts
               if panic        # We were already panicing... what to do now?
                 # This won't happen again unless the above code is changed to decide it can't dump "panic".
                 raise "Unresolvable cycle of forward references: " +
-                  (bad = sorted.select{|o| EntityType === o && !@concepts_dumped[o]}).map{|o| o.name }.inspect +
+                  (bad = sorted.select{|o| EntityType === o && !@object_types_dumped[o]}).map{|o| o.name }.inspect +
                   ":\n\t" + bad.map{|o|
                     o.name +
                     ": " +
@@ -170,10 +170,10 @@ module ActiveFacts
                 # Find the object that has the most followers and no fwd-ref'd supertypes:
                 # This selection might be better if we allow PI roles to be fwd-ref'd...
                 panic = sorted.
-                  select{|o| !@concepts_dumped[o] }.
+                  select{|o| !@object_types_dumped[o] }.
                   sort_by{|o|
                       f = @followers[o] || []; 
-                      o.supertypes.detect{|s| !@concepts_dumped[s] } ? 0 : -f.size
+                      o.supertypes.detect{|s| !@object_types_dumped[s] } ? 0 : -f.size
                     }[0]
                 # debug "Panic mode, selected #{panic.name} next"
               end
@@ -185,7 +185,7 @@ module ActiveFacts
       end
 
       def entity_type_dump(o)
-        @concepts_dumped[o] = true
+        @object_types_dumped[o] = true
         pi = o.preferred_identifier
 
         supers = o.supertypes
@@ -221,20 +221,20 @@ module ActiveFacts
 
       def describe_roles(roles, highlight = nil)
         "("+
-        roles.map{|role| role.concept.name + (role == highlight ? "*" : "")}*", "+
+        roles.map{|role| role.object_type.name + (role == highlight ? "*" : "")}*", "+
         ")"
       end
 
       def describe_role_sequence(role_sequence)
         "("+
-        role_sequence.all_role_ref.map{|role_ref| role_ref.role.concept.name }*", "+
+        role_sequence.all_role_ref.map{|role_ref| role_ref.role.object_type.name }*", "+
         ")"
       end
 
       # This returns an array of two hash tables each keyed by an EntityType.
       # The values of each hash entry are the precursors and followers (respectively) of that entity.
       def build_entity_dependencies
-        @vocabulary.all_concept.inject([{},{}]) { |a, o|
+        @vocabulary.all_object_type.inject([{},{}]) { |a, o|
             if o.is_a?(ActiveFacts::Metamodel::EntityType)
               precursor = a[0]
               follower = a[1]
@@ -243,7 +243,7 @@ module ActiveFacts
               if pi
                 pi.role_sequence.all_role_ref.each{|rr|
                     role = rr.role
-                    player = role.concept
+                    player = role.object_type
                     # REVISIT: If we decide to emit value types on demand, need to remove this:
                     next unless player.is_a?(ActiveFacts::Metamodel::EntityType)
                     # player is a precursor of o
@@ -253,9 +253,9 @@ module ActiveFacts
               end
               if o.fact_type
                 o.fact_type.all_role.each do |role|
-                  next unless role.concept.is_a?(ActiveFacts::Metamodel::EntityType)
-                  (precursor[o] ||= []) << role.concept
-                  (follower[role.concept] ||= []) << o
+                  next unless role.object_type.is_a?(ActiveFacts::Metamodel::EntityType)
+                  (precursor[o] ||= []) << role.object_type
+                  (follower[role.object_type] ||= []) << o
                 end
               end
 
@@ -288,7 +288,7 @@ module ActiveFacts
               # The fact type hasn't already been dumped but all its role players have
               !@fact_types_dumped[fact_type] &&
                 !fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType) &&
-                !fact_type.all_role.detect{|r| !@concepts_dumped[r.concept] } &&
+                !fact_type.all_role.detect{|r| !@object_types_dumped[r.object_type] } &&
                 !fact_type.entity_type
 #                !(fact_type.entity_type && (p = @precursors[fact_type.entity_type]) && p.size > 0)
             }.sort_by{|fact_type|
@@ -307,7 +307,7 @@ module ActiveFacts
         # These will come up as un-handled constraints:
         pcs = @presence_constraints_by_fact[f]
         return true if f.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-        return false if f.entity_type && !@concepts_dumped[f.entity_type]
+        return false if f.entity_type && !@object_types_dumped[f.entity_type]
         pcs && pcs.size > 0 && !pcs.detect{|c| !@constraints_used[c] }
       end
 
@@ -341,7 +341,7 @@ module ActiveFacts
         # REVISIT: Go through the residual constraints and re-process appropriate readings to show them
 
         @fact_types_dumped[fact_type] = true
-        @concepts_dumped[fact_type.entity_type] = true if fact_type.entity_type
+        @object_types_dumped[fact_type.entity_type] = true if fact_type.entity_type
       end
 
       # Dump fact types.
@@ -360,7 +360,7 @@ module ActiveFacts
                 !fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType) and
                 !@fact_types_dumped[fact_type] and
                 !skip_fact_type(fact_type) and
-                !fact_type.all_role.detect{|r| r.concept.is_a?(ActiveFacts::Metamodel::EntityType) }
+                !fact_type.all_role.detect{|r| r.object_type.is_a?(ActiveFacts::Metamodel::EntityType) }
             }.sort_by{|fact_id|
                 fact_type = fact_collection[fact_id]
                 fact_type_key(fact_type)
@@ -380,7 +380,7 @@ module ActiveFacts
             fact_type_key(fact_type)
           }.each{|fact_type|
             next if @fact_types_dumped[fact_type]
-            # debug "Not dumped #{fact_type.verbalise}(#{fact_type.all_role.map{|r| r.concept.name}*", "})"
+            # debug "Not dumped #{fact_type.verbalise}(#{fact_type.all_role.map{|r| r.object_type.name}*", "})"
             fact_type_banner unless done_banner
             done_banner = true
             fact_type_dump_with_dependents(fact_type)
@@ -412,17 +412,17 @@ module ActiveFacts
             pr.role_sequence.
               all_role_ref.
               sort_by{|role_ref| role_ref.ordinal}.
-              map{|role_ref| [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-" } +
+              map{|role_ref| [ role_ref.leading_adjective, role_ref.role.object_type.name, role_ref.trailing_adjective ].compact*"-" } +
               [pr.text]
           else
-            fact_type.all_role.map{|role| role.concept.name }
+            fact_type.all_role.map{|role| role.object_type.name }
           end
 
         (fact_type.entity_type ? [fact_type.entity_type.name] : [""]) + role_names
       end
 
       def role_ref_key(role_ref)
-        [ role_ref.leading_adjective, role_ref.role.concept.name, role_ref.trailing_adjective ].compact*"-" +
+        [ role_ref.leading_adjective, role_ref.role.object_type.name, role_ref.trailing_adjective ].compact*"-" +
         " in " +
         role_ref.role.fact_type.preferred_reading.expand
       end
@@ -432,8 +432,8 @@ module ActiveFacts
         when ActiveFacts::Metamodel::RingConstraint
           [ 1,
             c.ring_type,
-            c.role.concept.name,
-            c.other_role.concept.name,
+            c.role.object_type.name,
+            c.other_role.object_type.name,
             c.name||""
           ]
         when ActiveFacts::Metamodel::SetExclusionConstraint
@@ -499,7 +499,7 @@ module ActiveFacts
 
           # Skip presence constraints on value types:
           # next if ActiveFacts::PresenceConstraint === c &&
-          #     ActiveFacts::ValueType === c.concept
+          #     ActiveFacts::ValueType === c.object_type
           constraint_dump(c)
         end
         constraint_end if heading

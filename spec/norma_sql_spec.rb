@@ -45,8 +45,8 @@ describe "NORMA Loader with SQL output" do
       pending("expected output file #{expected_file} not found") unless File.exists? expected_file
 
       expected_text = File.open(expected_file) {|f| f.read }
-      sql_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX CanonicalName ON ')
-      expected_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX CanonicalName ON ')
+      sql_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX <Name is hidden> ON ')
+      expected_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX <Name is hidden> ON ')
       sql_text.should_not differ_from(expected_text)
       File.delete(actual_file)  # It succeeded, we don't need the file.
     end

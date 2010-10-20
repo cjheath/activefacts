@@ -84,8 +84,8 @@ module ActiveFacts
           !o.all_role.
             detect do |role|
               (other_roles = role.fact_type.all_role.to_a-[role]).size != 1 ||      # Not a role in a binary FT
-              !(concept = other_roles[0].concept).is_a?(ActiveFacts::Metamodel::EntityType) ||  # Counterpart is not an ET
-              (pi = concept.preferred_identifier).role_sequence.all_role_ref.size != 1 ||   # Entity PI has > 1 roles
+              !(object_type = other_roles[0].object_type).is_a?(ActiveFacts::Metamodel::EntityType) ||  # Counterpart is not an ET
+              (pi = object_type.preferred_identifier).role_sequence.all_role_ref.size != 1 ||   # Entity PI has > 1 roles
               pi.role_sequence.all_role_ref.single.role != role                     # This isn't the identifying role
             end
           puts "About to skip #{o.name}"
@@ -140,12 +140,12 @@ module ActiveFacts
         fact_type = external_identifying_facts[0]
         ftr = fact_type && fact_type.all_role.sort_by{|role| role.ordinal}
         if external_identifying_facts.size == 1 and
-            entity_role = ftr[n = (ftr[0].concept == entity_type ? 0 : 1)] and
+            entity_role = ftr[n = (ftr[0].object_type == entity_type ? 0 : 1)] and
             value_role = ftr[1-n] and
-            value_player = value_role.concept and
+            value_player = value_role.object_type and
             value_player.is_a?(ActiveFacts::Metamodel::ValueType) and
             value_name = value_player.name and
-            value_residual = value_name.sub(%r{^#{entity_role.concept.name} ?},'') and
+            value_residual = value_name.sub(%r{^#{entity_role.object_type.name} ?},'') and
             value_residual != '' and
             value_residual != value_name
           [fact_type, entity_role, value_role, value_residual]
@@ -195,7 +195,7 @@ module ActiveFacts
         # We can't subscript reference modes.
         # If an objectified fact type has a role played by its identifying player, go long-hand.
         return nil if entity_type.fact_type and
-          entity_type.fact_type.all_role.detect{|role| role.concept == value_role.concept }
+          entity_type.fact_type.all_role.detect{|role| role.object_type == value_role.object_type }
 
         @fact_types_dumped[fact_type] = true  # We've covered this fact type
 
@@ -218,7 +218,7 @@ module ActiveFacts
 
         # The verbaliser needs to have a Player for the roles of entity_type, so it doesn't get subscripted.
         entity_roles =
-          nonstandard_readings.map{|r| r.role_sequence.all_role_ref.detect{|rr| rr.role.concept == entity_type}}.compact
+          nonstandard_readings.map{|r| r.role_sequence.all_role_ref.detect{|rr| rr.role.object_type == entity_type}}.compact
         verbaliser.role_refs_have_same_player entity_roles
 
         verbaliser.alternate_readings nonstandard_readings
@@ -254,7 +254,7 @@ module ActiveFacts
         # Announce all the identifying fact roles to the verbaliser so it can decide on any necessary subscripting.
         # The verbaliser needs to have a Player for the roles of entity_type, so it doesn't get subscripted.
         entity_roles =
-          identifying_facts.map{|ft| ft.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role.concept == entity_type}}.compact
+          identifying_facts.map{|ft| ft.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role.object_type == entity_type}}.compact
         verbaliser.role_refs_have_same_player entity_roles
         identifying_facts.each do |fact_type|
           # The RoleRefs for corresponding roles across all readings are for the same player.
@@ -360,9 +360,9 @@ module ActiveFacts
 
       # Of the players of a set of roles, return the one that's a subclass of (or same as) all others, else nil
       def roleplayer_subclass(roles)
-        roles[1..-1].inject(roles[0].concept){|subclass, role|
-          next nil unless subclass and EntityType === role.concept
-          role.concept.supertypes_transitive.include?(subclass) ? role.concept : nil
+        roles[1..-1].inject(roles[0].object_type){|subclass, role|
+          next nil unless subclass and EntityType === role.object_type
+          role.object_type.supertypes_transitive.include?(subclass) ? role.object_type : nil
         }
       end
 
@@ -453,7 +453,7 @@ module ActiveFacts
         end
 
         # A constrained role may involve a subtyping join. We substitute the name of the supertype for all occurrences.
-        players = transposed_role_refs.map{|role_refs| common_supertype(role_refs.map{|rr| rr.role.concept})}
+        players = transposed_role_refs.map{|role_refs| common_supertype(role_refs.map{|rr| rr.role.object_type})}
         raise "Constraint must cover matching roles" if players.compact.size < players.size
 
         readings_expanded = scrs.
@@ -525,11 +525,11 @@ module ActiveFacts
           end
       end
 
-      # Find the common supertype of these concepts.
-      def common_supertype(concepts)
-        common = concepts[0].supertypes_transitive
-        concepts[1..-1].each do |concept|
-          common &= concept.supertypes_transitive
+      # Find the common supertype of these object_types.
+      def common_supertype(object_types)
+        common = object_types[0].supertypes_transitive
+        object_types[1..-1].each do |object_type|
+          common &= object_type.supertypes_transitive
         end
         common[0]
       end
@@ -597,7 +597,7 @@ module ActiveFacts
         # Make sure that we refer to the constrained players by their common supertype (as passed in)
         frequency_constraints = reading.role_sequence.all_role_ref.
           map do |role_ref|
-            player = role_ref.role.concept
+            player = role_ref.role.object_type
             i = constrained_roles.index(role_ref.role)
             player = players[i] if i
             [ nil, player.name ]

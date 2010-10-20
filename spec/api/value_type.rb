@@ -60,11 +60,11 @@ describe "Value Type class definitions" do
       }
   end
 
-  it "should return a vocabulary that knows about this concept" do
+  it "should return a vocabulary that knows about this object_type" do
     @classes.each { |klass|
         vocabulary = klass.vocabulary
-        vocabulary.respond_to?(:concept).should be_true
-        vocabulary.concept.has_key?(klass.basename).should be_true
+        vocabulary.respond_to?(:object_type).should be_true
+        vocabulary.object_type.has_key?(klass.basename).should be_true
       }
   end
 
