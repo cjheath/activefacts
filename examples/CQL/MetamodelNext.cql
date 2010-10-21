@@ -32,7 +32,7 @@ Role Sequence Id is written as Auto Counter;
 Rotation Setting is written as String restricted to {'left', 'right'};
 Scale is written as Unsigned Integer(32);
 Shape Id is written as Auto Counter;
-Subscript is written as String;
+Subscript is written as Unsigned Integer(16);
 Text is written as String(256);
 Unit Id is written as Auto Counter;
 X is written as Signed Integer(32);
