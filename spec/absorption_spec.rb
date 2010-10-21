@@ -9,7 +9,7 @@ require 'activefacts/input/cql'
 require 'activefacts/persistence'
 
 describe "Absorption" do
-  Prologue = %Q{
+  AT_Prologue = %Q{
     vocabulary Test;
     DateTime is written as DateAndTime();
     Month is written as VariableLengthText(3);
@@ -17,29 +17,29 @@ describe "Absorption" do
     PartyID is written as AutoCounter();
     ClaimID is written as AutoCounter();
   }
-  Claim = %Q{
+  AT_Claim = %Q{
     Claim is identified by ClaimID where
       Claim has exactly one ClaimID,
       ClaimID is of at most one Claim;
   }
-  Incident = %Q{
+  AT_Incident = %Q{
     Incident is identified by Claim where
       Claim concerns at most one Incident,
       Incident is of exactly one Claim;
   }
-  Party = %Q{
+  AT_Party = %Q{
     Party is identified by PartyID where
       Party has exactly one PartyID,
       PartyID is of at most one Party;
   }
-  Person = %Q{
+  AT_Person = %Q{
     Person is a kind of Party;
   }
 
   Tests = [
     { :should => "inject a value column into the table for an independent ValueType",
       :cql => %Q{
-        #{Prologue}
+        #{AT_Prologue}
         Month is in exactly one Season;
       },
       :tables => { "Month" => [["Month", "Value"], ["Season"]] }
@@ -47,7 +47,7 @@ describe "Absorption" do
 
     { :should => "absorb a one-to-one along the identification path",
       :cql => %Q{
-        #{Prologue} #{Claim} #{Incident}
+        #{AT_Prologue} #{AT_Claim} #{AT_Incident}
         Incident relates to loss on exactly one DateTime;
       },
       :tables => { "Claim" => [%w{Claim ID}, %w{Incident Date Time}]}
@@ -55,7 +55,7 @@ describe "Absorption" do
 
     { :should => "absorb an objectified binary with single-role UC",
       :cql => %Q{
-        #{Prologue} #{Claim} #{Party} #{Person}
+        #{AT_Prologue} #{AT_Claim} #{AT_Party} #{AT_Person}
         Lodgement is where
           Claim was lodged by at most one Person;
         Lodgement was made at at most one DateTime;
