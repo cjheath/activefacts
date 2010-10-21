@@ -1,10 +1,15 @@
-%w[rubygems hoe rake rake/clean fileutils newgem rubigen spec spec/rake/spectask].each { |f| require f }
+%w[rubygems hoe rake rake/clean fileutils newgem rubigen].each { |f| require f }
+
+require 'rspec'
+require 'rspec/core/rake_task'
+
+gem "rspec", :require => "spec/rake/spectask"
 
 # Use mislav-hanna to the API format documentation, if it's installed:
 begin
   require 'hanna/rdoctask'
   HANNA = true
-rescue
+rescue Exception => e
   HANNA = false
 end
 
@@ -56,9 +61,9 @@ Dir['tasks/**/*.rake'].each { |t| load t }
 # TODO - want other tests/tasks run by default? Add them to the list
 # task :default => [:spec, :features]
 
-Spec::Rake::SpecTask.new(:spec) do |t|
+RSpec::Core::RakeTask.new do |t|
     t.ruby_opts = ['-I', "lib"]
-    t.spec_files = FileList['spec/**/*_spec.rb']
+    # t.pattern = FileList['spec/**/*_spec.rb']
     # t.rcov = true
     # t.rcov_opts = ['--exclude', 'spec,/usr/lib/ruby' ]
 end

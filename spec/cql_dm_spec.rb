@@ -23,7 +23,7 @@
 # so if the final query is what you're after, then you'll have to
 # hook those both instead.
 
-require 'spec/spec_helper'
+require 'spec_helper'
 require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/support'

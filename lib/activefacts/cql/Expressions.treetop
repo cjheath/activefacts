@@ -12,7 +12,7 @@ module ActiveFacts
 	comparator s e2:expression
         {
 	  def ast
-	    [Compiler::Comparison.new comparator.text_value, e1.ast, e2.ast]
+	    [Compiler::Comparison.new(comparator.text_value, e1.ast, e2.ast)]
 	  end
         }
       end

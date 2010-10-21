@@ -4,10 +4,9 @@
 #
 
 require 'activefacts/cql'
-require 'spec/helpers/test_parser'
 require 'activefacts/support'
 require 'activefacts/api/support'
-require File.dirname(__FILE__) + '/../../helpers/test_parser'
+require 'helpers/test_parser'
 
 describe "Value Types" do
   ValueTypes = [

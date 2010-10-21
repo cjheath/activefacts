@@ -2,7 +2,6 @@
 # ActiveFacts tests: Constellation instances in the Runtime API
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
-require "ruby-debug"
 
 require 'activefacts/api'
 

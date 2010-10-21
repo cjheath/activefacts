@@ -45,9 +45,10 @@ module ActiveFacts
         __getobj__.to_s
       end
 
-      def object_id                     #:nodoc:
-        __getobj__.object_id
-      end
+      # This is strongly deprecated, and omitting it doesn't seem to hurt:
+      #def object_id                     #:nodoc:
+      #  __getobj__.object_id
+      #end
 
       # REVISIT: Should Proxies hash and eql? the same as their wards?
       def hash                          #:nodoc:

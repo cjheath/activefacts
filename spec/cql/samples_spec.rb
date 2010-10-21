@@ -223,7 +223,7 @@ describe "Sample data" do
       end.should raise_error
 
       if missing
-        missing.each do |m|
+        Array(missing).each do |m|
           @exception.message.should =~ (m.is_a?(Regexp) ? m : Regexp.new(Regexp.escape(m)))
         end
       else

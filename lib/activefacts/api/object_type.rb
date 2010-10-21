@@ -209,7 +209,8 @@ module ActiveFacts
 
       def define_single_role_getter(role)
         class_eval do
-          define_method role.name do
+          define_method role.name do |*a|
+            raise "Parameters passed to #{self.class.name}\##{role.name}" if a.size > 0
             i = instance_variable_get("@#{role.name}") rescue nil
             i ? RoleProxy.new(role, i) : i
             i

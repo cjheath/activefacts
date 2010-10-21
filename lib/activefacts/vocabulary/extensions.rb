@@ -40,7 +40,7 @@ module ActiveFacts
       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
       def create_implicit_fact_type_for_unary
         role = all_role.single
-        next if role.implicit_fact_type     # Already exists
+        return if role.implicit_fact_type     # Already exists
         # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
         # We only do it when the unary fact type is not objectified
         implicit_fact_type = @constellation.ImplicitFactType(:new, :implying_role => role)

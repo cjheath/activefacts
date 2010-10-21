@@ -1,35 +1,40 @@
-require 'pathname'
+module RSpec
+  module Matchers
+    class ArrayMatcher < Matcher
+      def initialize expected
+        super(:be_different_array_from, expected) do |*_expected|
+          match_for_should do |actual|
+            perform_match(actual, _expected[0])
+            @extra + @missing != []
+          end
 
-module ArrayMatcher
-  class BeDifferentArray
-    def initialize(expected)
-      @expected = expected
+          match_for_should_not do |actual|
+            perform_match(actual, _expected[0])
+            @extra + @missing == []
+          end
+
+          def perform_match(actual, expected)
+            @extra = actual - expected
+            @missing = expected - actual
+          end
+
+          def failure_message_for_should
+            "expected a difference in the two lists, but got none"
+          end
+
+          failure_message_for_should_not do |actual|
+            "expected no difference, but result #{
+              [ (@missing.empty? ? nil : 'lacks '+@missing.sort.inspect),
+                (@extra.empty? ? nil : 'has extra '+@extra.sort.inspect)
+              ].compact * ' and '
+            }"
+          end
+        end
+      end
     end
 
-    def matches?(actual)
-      @extra = actual - @expected
-      @missing = @expected - actual
-      @extra + @missing != []   # Because the predicate is "be_different_array_from", the sense is inverted
-    end
-
-    def failure_message
-      "expected a difference in the two lists, but got none"
-    end
-
-    def negative_failure_message
-      "expected no difference, but result #{
-        [ (@missing.empty? ? nil : 'lacks '+@missing.sort.inspect),
-          (@extra.empty? ? nil : 'has extra '+@extra.sort.inspect)
-        ].compact * ' and '
-      }"
+    def be_different_array_from(expected)
+      ArrayMatcher.new(expected)
     end
   end
-
-  def be_different_array_from(expected)
-    BeDifferentArray.new(expected)
-  end
-end
-
-Spec::Runner.configure do |config|
-  config.include(ArrayMatcher)
 end
