@@ -35,6 +35,7 @@ Scale is written as Unsigned Integer(32);
 Shape Id is written as Auto Counter;
 Subscript is written as Unsigned Integer(16);
 Text is written as String(256);
+Transaction Timing is written as String restricted to {'assert', 'commit'};
 Unit Id is written as Auto Counter;
 X is written as Signed Integer(32);
 Y is written as Signed Integer(32);
@@ -115,7 +116,7 @@ Role is where
 Implicit Fact Type is implied by one Role (as Implying Role),
 	Implying Role implies at most one Implicit Fact Type;
 Ring Constraint has at most one other-Role;
-Ring Constraint has other-Role,
+Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
@@ -225,7 +226,8 @@ Join Step is identified by input-Join Role and output-Join Role where
 	Join Step has one output-Join Role;
 Join Step traverses one Fact Type,
 	Fact Type directs Join Step;
-Join Step involves incidental-Join Role;
+Join Step involves incidental-Join Role,
+	Join Role is incidentally involved in at most one Join Step;
 is anti Join Step;
 Join Step is outer;
 
@@ -324,9 +326,9 @@ Value Type has at most one Scale,
 Value Type is of at most one Unit;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
+Value Type has at most one auto- assigned Transaction Timing;
 Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
 	Supertype is supertype of Value Type;
-Value Type is auto-assigned;
 
 Allowed Range is where
 	Value Constraint allows at least one Value Range;
@@ -335,11 +337,11 @@ Entity Type is a kind of Object Type;
 Entity Type nests at most one Fact Type,
 	Fact Type is nested as at most one Entity Type;
 
-ImplicitBooleanValueType is a kind of Value Type;
+Implicit Boolean Value Type is a kind of Value Type;
 
 Parameter is where
-	Name is a parameter of Value Type,
-	Value Type has parameter called Name;
+	Value Type has parameter called Name,
+	Name is a parameter of Value Type;
 
 Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
 	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic],
@@ -349,7 +351,8 @@ Assimilation applies to Type Inheritance,
 Type Inheritance provides identification;
 
 Param Value is where
-	Value for Parameter applies to one Value Type;
+	Value Type defines Parameter as having one Value,
+	Value for Parameter applies to Value Type;
 
 /*
  * Constraints:
@@ -363,6 +366,12 @@ for each Context Note exactly one of these holds:
 	Context Note applies to Fact Type,
 	Context Note applies to Constraint;
 either Object Type is an Entity Type or Object Type is a Value Type but not both;
+for each Role Sequence exactly one of these holds:
+	Role Sequence is for Reading,
+	Presence Constraint covers Role Sequence,
+	Subset Constraint(1) covers subset-Role Sequence,
+	Subset Constraint(2) covers superset-Role Sequence,
+	Role Sequence is Ordinal in Set Comparison Constraint;
 either Set Comparison Constraint is a Set Exclusion Constraint or Set Comparison Constraint is a Set Equality Constraint but not both;
 either Set Constraint is a Set Comparison Constraint or Set Constraint is a Subset Constraint but not both;
 either Unit uses coefficient from Ephemera URL or Unit has Coefficient but not both;
@@ -372,6 +381,12 @@ either Value Constraint constrains Value Type or Value Constraint applies to Rol
 for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
+for each Join Role at most one of these holds:
+	Join Step(1) has input-Join Role,
+	Join Role is incidentally involved in Join Step;
+for each Join Role at most one of these holds:
+	Join Step(1) has output-Join Role,
+	Join Role is incidentally involved in Join Step;
 Join Node is for Object Type that plays Role
 	if and only if
 	Join Node includes Role;
@@ -392,8 +407,6 @@ each combination Diagram, Position occurs at most one time in
 each combination Entity Type, Type Inheritance occurs at most one time in
 	Entity Type is subtype of super Entity Type,
 	Type Inheritance provides identification;
-each Join Role occurs at most one time in
-	Join Step involves incidental Join Role;
 each Presence Constraint occurs at least one time in
 	Presence Constraint has min Frequency,
 	Presence Constraint has max Frequency,

@@ -136,6 +136,11 @@ module ActiveFacts
       value_type :length => 256
     end
 
+    class TransactionTiming < String
+      value_type 
+      restrict 'assert', 'commit'
+    end
+
     class UnitId < AutoCounter
       value_type 
     end
@@ -469,7 +474,7 @@ module ActiveFacts
     end
 
     class ValueType < ObjectType
-      maybe :is_auto_assigned
+      has_one :auto_assigned_transaction_timing, :class => TransactionTiming  # See TransactionTiming.all_value_type_as_auto_assigned_transaction_timing
       has_one :length                             # See Length.all_value_type
       has_one :scale                              # See Scale.all_value_type
       has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
@@ -491,7 +496,7 @@ module ActiveFacts
     end
 
     class Parameter
-      identified_by :name, :value_type
+      identified_by :value_type, :name
       has_one :name, :mandatory => true           # See Name.all_parameter
       has_one :value_type, :mandatory => true     # See ValueType.all_parameter
     end
@@ -505,7 +510,7 @@ module ActiveFacts
     end
 
     class ParamValue
-      identified_by :value, :parameter
+      identified_by :value_type, :parameter
       has_one :parameter, :mandatory => true      # See Parameter.all_param_value
       has_one :value, :mandatory => true          # See Value.all_param_value
       has_one :value_type, :mandatory => true     # See ValueType.all_param_value

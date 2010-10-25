@@ -814,7 +814,7 @@ module ActiveFacts
               end
             end_point = common_supertypes[0]
 
-            raise "constrained roles of #{constraint_type} constraint #{name} are incompatible (#{names*', '})" if common_supertypes.size == 0
+            raise "constrained roles of #{constraint_type} constraint #{name} are incompatible (#{players.map(&:name)*', '})" if common_supertypes.size == 0
             end_joins[i] = true
           end
           end_points[i] = end_point

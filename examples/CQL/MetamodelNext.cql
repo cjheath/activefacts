@@ -34,6 +34,7 @@ Scale is written as Unsigned Integer(32);
 Shape Id is written as Auto Counter;
 Subscript is written as Unsigned Integer(16);
 Text is written as String(256);
+Transaction Timing is written as String restricted to {'assert', 'commit'};
 Unit Id is written as Auto Counter;
 X is written as Signed Integer(32);
 Y is written as Signed Integer(32);
@@ -120,12 +121,12 @@ Ring Constraint is of one Ring Type;
 
 Role is a kind of Concept [partitioned] where
 	Fact Type has at least one Ordinal role;
-Implicit Fact Type is implied by one Role,
-	Role implies at most one Implicit Fact Type;
+Implicit Fact Type is implied by one Role (as Implying Role),
+	Implying Role implies at most one Implicit Fact Type;
 Object Type plays Role,
 	Role is played by one Object Type;
 Ring Constraint has at most one other-Role;
-Ring Constraint has other-Role,
+Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
@@ -184,6 +185,7 @@ Value Type has at most one Scale,
 Value Type is of at most one Unit;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
+Value Type has at most one auto- assigned Transaction Timing;
 Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
 	Supertype is supertype of Value Type;
 
@@ -239,10 +241,10 @@ Fact Type Shape is for one Fact Type,
 	Fact Type has Fact Type Shape;
 Fact Type Shape has at most one Rotation Setting;
 
-ImplicitBooleanValueType is a kind of Value Type;
+Implicit Boolean Value Type is a kind of Value Type;
 
 Join Role is independent where
-	Join Node includes Role,
+	Join Node includes at least one Role,
 	Role connects to Join Node;
 
 Join Step is identified by input-Join Role and output-Join Role where
@@ -250,6 +252,8 @@ Join Step is identified by input-Join Role and output-Join Role where
 	Join Step has one output-Join Role;
 Join Step traverses one Fact Type,
 	Fact Type directs Join Step;
+Join Step involves incidental-Join Role,
+	Join Role is incidentally involved in at most one Join Step;
 is anti Join Step;
 Join Step is outer;
 
@@ -266,8 +270,8 @@ Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shap
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
 
 Parameter is where
-	Name is a parameter of Value Type,
-	Value Type has parameter called Name;
+	Value Type has parameter called Name,
+	Name is a parameter of Value Type;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -352,7 +356,8 @@ Allowed Range is where
 	Value Constraint allows at least one Value Range;
 
 Param Value is where
-	Value for Parameter applies to one Value Type;
+	Value Type defines Parameter as having one Value,
+	Value for Parameter applies to Value Type;
 
 /*
  * Constraints:
@@ -382,6 +387,12 @@ either Value Constraint constrains Value Type or Value Constraint applies to Rol
 for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
+for each Join Role at most one of these holds:
+	Join Step(1) has input-Join Role,
+	Join Role is incidentally involved in Join Step;
+for each Join Role at most one of these holds:
+	Join Step(1) has output-Join Role,
+	Join Role is incidentally involved in Join Step;
 for each Term at most one of these holds:
 	Term designates Object Type,
 	Term is name of Role Ref;
