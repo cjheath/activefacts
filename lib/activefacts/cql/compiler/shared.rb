@@ -67,13 +67,17 @@ module ActiveFacts
       end
 
       class Definition
-        attr_accessor :constellation, :vocabulary, :source
+        attr_accessor :constellation, :vocabulary, :tree
         def compile
           raise "#{self.class} should implement the compile method"
         end
 
         def to_s
           @vocabulary ? "#{vocabulary.to_s}::" : ''
+        end
+
+        def source
+          @tree.text_value
         end
       end
 

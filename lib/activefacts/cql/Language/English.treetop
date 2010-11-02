@@ -87,7 +87,10 @@ module ActiveFacts
 
       rule agents
         s h:agent s t:(',' s !context_type agent s)*
-        { def value; [h.text_value] + t.elements.map{|e| e.agent.text_value }; end }
+        {
+	  def value; [h.text_value] + t.elements.map{|e| e.agent.text_value }; end
+	  def node_type; :linking; end
+	}
       end
 
       rule agent

@@ -36,7 +36,12 @@ module ActiveFacts
       end
 
       rule discussion
-        '(' discussion ')' / (!( [()] / ',' as_agreed_by) .)*
+        (
+	  '(' discussion ')' / (!( [()] / ',' as_agreed_by) .)*
+	)
+	{
+	  def node_type; :linking; end
+	}
       end
     end
   end

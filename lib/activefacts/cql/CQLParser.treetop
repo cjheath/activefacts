@@ -52,16 +52,21 @@ module ActiveFacts
       end
 
       rule vocabulary_definition
-        s vocabulary S id s ';'
+        s vocabulary S vocabulary_name s ';'
         {
 	  def ast
-	    Compiler::Vocabulary.new(id.value)
+	    Compiler::Vocabulary.new(vocabulary_name.value)
 	  end
         }
       end
 
+      rule vocabulary_name
+	id
+	{ def node_type; :vocabulary; end }
+      end
+
       rule import_definition
-        s import S id alias_list ';'
+        s import S vocabulary_name alias_list ';'
         {
 	  def ast
 	    Compiler::Import.new(id.value, alias_list.value)
@@ -71,12 +76,17 @@ module ActiveFacts
 
       # REVISIT: Need a way to define equivalent readings for fact types here (and in the metamodel)
       rule alias_list
-        ( s ',' s alias S aliased_from:id S as S alias_to:id s )*
+        ( s ',' s alias S aliased_from:alias_term S as S alias_to:alias_term s )*
         {
           def value
             elements.inject({}){|h, e| h[e.aliased_from.value] = e.alias_to; h }
           end
         }
+      end
+
+      rule alias_term
+	id
+	{ def node_type; :term; end }
       end
 
       rule constraint

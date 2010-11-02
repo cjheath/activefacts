@@ -18,6 +18,12 @@ require 'activefacts/cql/FactTypes'
 require 'activefacts/cql/Context'
 require 'activefacts/cql/CQLParser'
 
+class Treetop::Runtime::SyntaxNode
+  def node_type
+    terminal? ? :keyword : :composite
+  end
+end
+
 module ActiveFacts
   module CQL
     module Terms

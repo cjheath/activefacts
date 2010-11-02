@@ -132,8 +132,15 @@ module ActiveFacts
         }
       end
 
+      rule unary_text
+	(s !non_role_word !term id)*
+	{
+	  def node_type; :linking; end
+	}
+      end
+
       rule term_or_unary
-	pre_text:(s !non_role_word !term id)* s term post_text:(s !non_role_word !term id)* s ss:subscript?
+	pre_text:unary_text s term post_text:unary_text s ss:subscript?
 	  {
 	    def ast
 	      t = term.ast

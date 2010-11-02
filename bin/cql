@@ -22,6 +22,7 @@ require 'activefacts/cql/compiler'
 class InteractiveCQL < ActiveFacts::CQL::Compiler
   def initialize *a
     @show_tree = false  # Show the raw Treetop parse tree
+    @show_highlight = false  # Show the highlighted CQL text from the parse tree
     super *a
     self.root = :definition
   end
@@ -95,6 +96,9 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     when "/tree"
       @show_tree = !@show_tree
       puts "Will #{@show_tree ? "" : "not "}show the parse tree"
+    when "/highlight"
+      @show_highlight = !@show_highlight
+      puts "Will #{@show_highlight ? "" : "not "}show the highlighted parse"
     when "/root"
       self.root = words[0] && words[0].to_sym || :definition
       puts "Looking for a #{self.root}"
@@ -145,8 +149,30 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
   def compile_definition ast
     # Accumulate the results:
     p ast if @show_tree
+    puts highlight_tree(ast.tree) if @show_highlight
     @results += Array(result = super)
     result
+  end
+
+  # Return an HTML representation of the source text with classed spans surrounding types of text
+  def highlight_tree(ast, prev = nil)
+    if ast.node_type == :composite
+      wrap = prev != :keyword
+      (wrap ? "<span class='keyword'>" : '') +
+	(ast.elements.map do |e|
+	  highlight_tree(e, :keyword)
+	end * '').
+	  gsub(%r{(<span class='([a-z]*)'>[^<]*)</span><span class='\2'>},'\1') +
+	(wrap ? "</span>" : '')
+    else
+      t = ast.text_value.gsub('<', '&lt;').gsub('>', '&gt;')
+      if t == ''
+	t
+      else
+	n = ast.node_type
+	n == prev ? t : "<span class='#{n}'>#{ast.text_value}</span>"
+      end
+    end
   end
 
   def help words = []

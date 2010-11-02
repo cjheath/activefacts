@@ -12,7 +12,7 @@ module ActiveFacts
 	m1:mapping_pragmas
 	# REVISIT: ORM2 would allow (subtype_prefix term)?
         written_as
-        base:(term/id) s
+        base:(term/implicit_value_type_name) s
         value_type_parameters
         u:units?
         r:(value_constraint enforcement)?
@@ -31,6 +31,13 @@ module ActiveFacts
 	    Compiler::ValueType.new name, base.value, params, units, value_constraint, pragmas
 	  end
         }
+      end
+
+      rule implicit_value_type_name
+	id
+	{
+	  def node_type; :term; end
+	}
       end
 
       rule value_type_parameters
@@ -53,9 +60,9 @@ module ActiveFacts
         u:(
           coeff:unit_coefficient? base:units? s o:unit_offset?
           converts s a:(approximately s)? to s
-          singular:id s plural:('/' s p:id s)?
+          singular:unit_name s plural:('/' s p:unit_name s)?
         /
-          singular:id s plural:('/' s p:id s)?
+          singular:unit_name s plural:('/' s p:unit_name s)?
           converts s a:(approximately s)? to s
           coeff:unit_coefficient? base:units? s o:unit_offset?
         )
@@ -79,6 +86,14 @@ module ActiveFacts
 	  end
         }
       end
+
+      rule unit_name
+	id
+	{
+	  def node_type; :unit; end
+	}
+      end
+
 
       rule unit_coefficient
         numerator:number denominator:(s '/' s number)? s
@@ -118,7 +133,7 @@ module ActiveFacts
       end
 
       rule maybe_unit
-        unit_name:id pow:('^' '-'? [0-9])?
+        unit_name pow:('^' '-'? [0-9])?
         { def value
             [unit_name.text_value, pow.text_value.empty? ? 1 : Integer(pow.text_value[1..-1])]
           end

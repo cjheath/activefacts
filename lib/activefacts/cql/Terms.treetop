@@ -16,6 +16,10 @@ module ActiveFacts
               id.value
             ]){|a, e| a << e.id.value}*' '
           end
+
+	  def node_type
+	    :term
+	  end
         }
       end
 
@@ -122,6 +126,7 @@ module ActiveFacts
 	  def value		# Sometimes we just want the full term name
             x.context[:term]
           end
+	  def node_type; :term; end
         }
 	/
 	s head:id '-' s term	&{|s| s[4].ast.leading_adjective == nil }
@@ -131,6 +136,7 @@ module ActiveFacts
 	    ast.leading_adjective = head.text_value
 	    ast
 	  end
+	  def node_type; :term; end
 	}
       end
 

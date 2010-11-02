@@ -9,7 +9,10 @@ module ActiveFacts
     grammar LexicalRules
 
       rule range
-        numeric_range / string_range
+        (numeric_range / string_range)
+	{
+	  def node_type; :literal; end
+	}
       end
 
       rule numeric_range
@@ -57,6 +60,9 @@ module ActiveFacts
       rule url
 	# url_scheme ':' (user ( ':' !(port '/') password )? '@' )? hostname ( ':' port )? '/' path query? fragment?
 	( !(white / ';') .)+
+	{
+	  def node_type; :literal; end
+	}
       end
 
       rule literal
@@ -68,6 +74,7 @@ module ActiveFacts
           def value
             elements[0].value
           end
+	  def node_type; :literal; end
         }
       end
 
@@ -100,6 +107,7 @@ module ActiveFacts
           def value
             eval(text_value)
           end
+	  def node_type; :literal; end
         }
       end
 
@@ -170,10 +178,16 @@ module ActiveFacts
 
       rule comment_to_eol
         '//' (!"\n" .)*
+	{
+	  def node_type; :comment; end
+	}
       end
 
       rule comment_c_style
         '/*' (!'*/' . )* '*/'
+	{
+	  def node_type; :comment; end
+	}
       end
 
     end

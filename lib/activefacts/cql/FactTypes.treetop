@@ -141,6 +141,7 @@ module ActiveFacts
 	      def ast
 		[id.value, *tail.elements.map{|e| e.id.value}]*"-"
 	      end
+	      def node_type; :linking; end
 	    }
 	  /       # A normal non-term
 	  !non_role_word id s
@@ -148,6 +149,7 @@ module ActiveFacts
 	      def ast
 		id.value
 	      end
+	      def node_type; :linking; end
 	    }
 	)+
         {

@@ -43,7 +43,7 @@ module ActiveFacts
               ast = node.ast
               next unless ast
               debug :ast, ast.inspect
-              ast.source = node.body
+              ast.tree = node
               ast.constellation = @constellation
               ast.vocabulary = @vocabulary
               value = compile_definition ast
