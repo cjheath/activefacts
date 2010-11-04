@@ -10,13 +10,13 @@ LanguageName is written as String;
 /*
  * Entity Types
  */
-Country is identified by its Name;
+Country is independent identified by its Name;
 
 Diplomat is identified by its Name;
 Diplomat represents one Country (as Represented Country);
 Diplomat serves in one Country (as Served Country);
 
-Language is identified by its Name;
+Language is independent identified by its Name;
 
 LanguageUse is where
 	Language is spoken in Country,
