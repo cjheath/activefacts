@@ -81,7 +81,7 @@ module ActiveFacts
 
       rule identification
         # REVISIT: Consider distinguishing "-Id" from just "Id", and not prepending the entity type name if no "-"
-        identified_by its s i:(term/id) value_type_parameters
+        identified_by its s i:(term/implicit_value_type_name) value_type_parameters
 	r:(value_constraint enforcement)?          # Reference Mode; value_constraint may be needed for the ValueType
           {
 	    def ast
