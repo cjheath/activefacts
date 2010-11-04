@@ -235,6 +235,18 @@ CREATE TABLE JoinRole (
 	JoinNodeJoinId                          int NOT NULL,
 	-- Join Role is where Join Node includes Role and Join Node has Ordinal position,
 	JoinNodeOrdinal                         shortint NOT NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Role is a kind of Concept and Concept has GUID,
+	JoinStepInputJoinRoleGUID               varchar NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	JoinStepInputJoinRoleJoinNodeJoinId     int NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	JoinStepInputJoinRoleJoinNodeOrdinal    shortint NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is a kind of Concept and Concept has GUID,
+	JoinStepOutputJoinRoleGUID              varchar NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join has Join Id,
+	JoinStepOutputJoinRoleJoinNodeJoinId    int NULL,
+	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
+	JoinStepOutputJoinRoleJoinNodeOrdinal   shortint NULL,
 	-- Join Role is where Join Node includes Role and Role is a kind of Concept and Concept has GUID,
 	RoleGUID                                varchar NOT NULL,
 	-- maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role,
@@ -288,6 +300,8 @@ CREATE TABLE ObjectType (
 	IsIndependent                           bit NOT NULL,
 	-- maybe Object Type uses Pronoun,
 	Pronoun                                 varchar(20) NULL CHECK(Pronoun = 'feminine' OR Pronoun = 'masculine' OR Pronoun = 'neuter' OR Pronoun = 'personal'),
+	-- maybe Value Type is a kind of Object Type and maybe Value Type has auto- assigned Transaction Timing,
+	ValueTypeAutoAssignedTransactionTiming  varchar NULL CHECK(ValueTypeAutoAssignedTransactionTiming = 'assert' OR ValueTypeAutoAssignedTransactionTiming = 'commit'),
 	-- maybe Value Type is a kind of Object Type and maybe Value Type has Length,
 	ValueTypeLength                         int NULL,
 	-- maybe Value Type is a kind of Object Type and maybe Value Type has Scale,
@@ -313,19 +327,19 @@ CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraint
 GO
 
 CREATE TABLE ParamValue (
-	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type,
+	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name,
 	ParameterName                           varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type is a kind of Concept and Concept has GUID,
+	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type is a kind of Concept and Concept has GUID,
 	ParameterValueTypeGUID                  varchar NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Value is a string,
+	-- Param Value is where Value Type defines Parameter as having Value and Value is a string,
 	ValueIsAString                          bit NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Value is represented by Literal,
+	-- Param Value is where Value Type defines Parameter as having Value and Value is represented by Literal,
 	ValueLiteral                            varchar NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Object Type is a kind of Concept and Concept has GUID,
+	-- Param Value is where Value Type defines Parameter as having Value and Object Type is a kind of Concept and Concept has GUID,
 	ValueTypeGUID                           varchar NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and maybe Value is in Unit and Unit has Unit Id,
+	-- Param Value is where Value Type defines Parameter as having Value and maybe Value is in Unit and Unit has Unit Id,
 	ValueUnitId                             int NULL,
-	UNIQUE(ValueLiteral, ValueIsAString, ValueUnitId, ParameterName, ParameterValueTypeGUID),
+	PRIMARY KEY(ValueTypeGUID, ParameterValueTypeGUID, ParameterName),
 	FOREIGN KEY (ValueTypeGUID) REFERENCES ObjectType (ConceptGUID)
 )
 GO
@@ -349,7 +363,7 @@ CREATE TABLE Role (
 	ConceptGUID                             varchar NOT NULL,
 	-- Role is where Fact Type has Ordinal role and Fact Type is a kind of Concept and Concept has GUID,
 	FactTypeGUID                            varchar NOT NULL,
-	-- maybe Implicit Fact Type is implied by Role and Fact Type is a kind of Concept and Concept has GUID,
+	-- maybe Implicit Fact Type is implied by Role (as Implying Role) and Fact Type is a kind of Concept and Concept has GUID,
 	ImplicitFactTypeGUID                    varchar NULL,
 	-- Object Type plays Role and Object Type is a kind of Concept and Concept has GUID,
 	ObjectTypeGUID                          varchar NOT NULL,
@@ -657,6 +671,10 @@ GO
 
 ALTER TABLE JoinNode
 	ADD FOREIGN KEY (ObjectTypeGUID) REFERENCES ObjectType (ConceptGUID)
+GO
+
+ALTER TABLE JoinRole
+	ADD FOREIGN KEY (JoinStepInputJoinRoleGUID, JoinStepInputJoinRoleJoinNodeJoinId, JoinStepInputJoinRoleJoinNodeOrdinal, JoinStepOutputJoinRoleGUID, JoinStepOutputJoinRoleJoinNodeJoinId, JoinStepOutputJoinRoleJoinNodeOrdinal) REFERENCES JoinStep (InputJoinRoleGUID, InputJoinRoleJoinNodeJoinId, InputJoinRoleJoinNodeOrdinal, OutputJoinRoleGUID, OutputJoinRoleJoinNodeJoinId, OutputJoinRoleJoinNodeOrdinal)
 GO
 
 ALTER TABLE JoinRole

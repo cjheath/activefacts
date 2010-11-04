@@ -123,12 +123,17 @@ module ::Metamodel
     value_type 
   end
 
-  class Subscript < String
-    value_type 
+  class Subscript < UnsignedInteger
+    value_type :length => 16
   end
 
   class Text < String
     value_type :length => 256
+  end
+
+  class TransactionTiming < String
+    value_type 
+    restrict 'assert', 'commit'
   end
 
   class UnitId < AutoCounter
@@ -252,7 +257,7 @@ module ::Metamodel
   class Role < Concept
     has_one :fact_type, :mandatory => true      # See FactType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
-    one_to_one :implicit_fact_type              # See ImplicitFactType.role
+    one_to_one :implicit_fact_type, :counterpart => :implying_role  # See ImplicitFactType.implying_role
     has_one :object_type, :mandatory => true    # See ObjectType.all_role
   end
 
@@ -310,6 +315,7 @@ module ::Metamodel
   end
 
   class ValueType < ObjectType
+    has_one :auto_assigned_transaction_timing, :class => TransactionTiming  # See TransactionTiming.all_value_type_as_auto_assigned_transaction_timing
     has_one :length                             # See Length.all_value_type
     has_one :scale                              # See Scale.all_value_type
     has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
@@ -381,6 +387,7 @@ module ::Metamodel
     identified_by :join_node, :role
     has_one :join_node, :mandatory => true      # See JoinNode.all_join_role
     has_one :role, :mandatory => true           # See Role.all_join_role
+    has_one :join_step, :counterpart => :incidental_join_role  # See JoinStep.all_incidental_join_role
   end
 
   class JoinStep
@@ -407,7 +414,7 @@ module ::Metamodel
   end
 
   class Parameter
-    identified_by :name, :value_type
+    identified_by :value_type, :name
     has_one :name, :mandatory => true           # See Name.all_parameter
     has_one :value_type, :mandatory => true     # See ValueType.all_parameter
   end
@@ -502,7 +509,7 @@ module ::Metamodel
   end
 
   class ParamValue
-    identified_by :value, :parameter
+    identified_by :value_type, :parameter
     has_one :parameter, :mandatory => true      # See Parameter.all_param_value
     has_one :value, :mandatory => true          # See Value.all_param_value
     has_one :value_type, :mandatory => true     # See ValueType.all_param_value

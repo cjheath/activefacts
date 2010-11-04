@@ -345,8 +345,8 @@ CREATE TABLE ObjectType (
 	Name                                    varchar(64) NOT NULL,
 	-- maybe Object Type uses Pronoun,
 	Pronoun                                 varchar(20) NULL CHECK(Pronoun = 'feminine' OR Pronoun = 'masculine' OR Pronoun = 'neuter' OR Pronoun = 'personal'),
-	-- maybe Value Type is a kind of Object Type and Value Type is auto-assigned,
-	ValueTypeIsAutoAssigned                 bit NULL,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type has auto- assigned Transaction Timing,
+	ValueTypeAutoAssignedTransactionTiming  varchar NULL CHECK(ValueTypeAutoAssignedTransactionTiming = 'assert' OR ValueTypeAutoAssignedTransactionTiming = 'commit'),
 	-- maybe Value Type is a kind of Object Type and maybe Value Type has Length,
 	ValueTypeLength                         int NULL,
 	-- maybe Value Type is a kind of Object Type and maybe Value Type has Scale,
@@ -376,23 +376,23 @@ CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraint
 GO
 
 CREATE TABLE ParamValue (
-	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type,
+	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name,
 	ParameterName                           varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type is called Name,
+	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type is called Name,
 	ParameterValueTypeName                  varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	ParameterValueTypeVocabularyName        varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Value is a string,
+	-- Param Value is where Value Type defines Parameter as having Value and Value is a string,
 	ValueIsAString                          bit NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Value is represented by Literal,
+	-- Param Value is where Value Type defines Parameter as having Value and Value is represented by Literal,
 	ValueLiteral                            varchar NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Object Type is called Name,
+	-- Param Value is where Value Type defines Parameter as having Value and Object Type is called Name,
 	ValueTypeName                           varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	-- Param Value is where Value Type defines Parameter as having Value and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	ValueTypeVocabularyName                 varchar(64) NOT NULL,
-	-- Param Value is where Value for Parameter applies to Value Type and maybe Value is in Unit and Unit has Unit Id,
+	-- Param Value is where Value Type defines Parameter as having Value and maybe Value is in Unit and Unit has Unit Id,
 	ValueUnitId                             int NULL,
-	UNIQUE(ValueLiteral, ValueIsAString, ValueUnitId, ParameterName, ParameterValueTypeVocabularyName, ParameterValueTypeName),
+	PRIMARY KEY(ValueTypeVocabularyName, ValueTypeName, ParameterValueTypeVocabularyName, ParameterValueTypeName, ParameterName),
 	FOREIGN KEY (ValueTypeName, ValueTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
 )
 GO

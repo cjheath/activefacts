@@ -204,15 +204,15 @@ end
 class ParamValue
   include DataMapper::Resource
 
-  property :value_literal, String, :key => true	# Param Value is where Value for Parameter applies to Value Type and Value is represented by Literal
-  property :value_is_a_string, Boolean, :key => true	# Param Value is where Value for Parameter applies to Value Type and Value is a string
-  property :value_unit_id, Integer, :key => true	# Param Value is where Value for Parameter applies to Value Type and maybe Value is in Unit and Unit has Unit Id
-  property :parameter_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type
-  property :parameter_value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name
-  property :parameter_value_type_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Parameter is where Name is a parameter of Value Type and Object Type is called Name
-  property :value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name
-  property :value_type_name, String, :length => 64, :key => true	# Param Value is where Value for Parameter applies to Value Type and Object Type is called Name
+  property :value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :value_type_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Object Type is called Name
   belongs_to :value_type, 'ValueType', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value_Type is involved in Param Value
+  property :parameter_value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :parameter_value_type_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type is called Name
+  property :parameter_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name
+  property :value_literal, String, :key => true	# Param Value is where Value Type defines Parameter as having Value and Value is represented by Literal
+  property :value_is_a_string, Boolean, :key => true	# Param Value is where Value Type defines Parameter as having Value and Value is a string
+  property :value_unit_id, Integer, :key => true	# Param Value is where Value Type defines Parameter as having Value and maybe Value is in Unit and Unit has Unit Id
 end
 
 class PresenceConstraint < Constraint
@@ -455,11 +455,14 @@ class ValueType < ObjectType
   belongs_to :unit	# Value Type is of Unit
   property :value_constraint_id, Integer	# maybe Value Type has Value Constraint and Constraint has Constraint Id
   has 1, :value_constraint, 'ValueConstraint', :parent_key => [:value_constraint_id], :child_key => [:constraint_id]	# Value Type has Value Constraint
+  property :auto_assigned_transaction_timing, String	# maybe Value Type has auto- assigned Transaction Timing
   property :supertype_vocabulary_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name
   property :supertype_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type is called Name
   belongs_to :supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)
-  property :is_auto_assigned, Boolean, :required => true	# Value Type is auto-assigned
   has n, :value_type_as_supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)
-  has n, :param_value, 'ParamValue', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value for Parameter applies to Value Type
+  has n, :param_value, 'ParamValue', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type defines Parameter as having Value
+end
+
+class ImplicitBooleanValueType < ValueType
 end
 
