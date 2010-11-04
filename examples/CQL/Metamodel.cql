@@ -344,7 +344,7 @@ Parameter is where
 	Name is a parameter of Value Type;
 
 Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
-	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic],
+	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
 	Supertype is supertype of Subtype;
 Assimilation applies to Type Inheritance,
 	Type Inheritance uses at most one Assimilation;
