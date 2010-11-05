@@ -2,20 +2,32 @@ module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
 
-      class FactType < ObjectType
-        attr_reader :fact_type
-        attr_writer :name
-        attr_writer :pragmas
-
-        def initialize name, readings, conditions = nil, returning = nil
+      class Query < ObjectType
+        def initialize name, conditions = nil, returning = nil
           super name
-          @readings = readings
           @conditions = conditions
           @returning = returning
         end
 
         def compile
-          raise "Queries not yet handled: #{@source}" unless @conditions.empty? and !@returning
+          unless @conditions.empty? and !@returning
+            raise "Queries are not yet handled: #{@source}"
+          end
+        end
+      end
+
+      class FactType < ActiveFacts::CQL::Compiler::Query
+        attr_reader :fact_type
+        attr_writer :name
+        attr_writer :pragmas
+
+        def initialize name, readings, conditions = nil, returning = nil
+          super name, conditions, returning
+          @readings = readings
+        end
+
+        def compile
+          super
 
           #
           # Process:
@@ -252,6 +264,10 @@ module ActiveFacts
         attr_accessor :op, :e1, :e2
         def initialize op, e1, e2
           @op, @e1, @e2 = op, e1, e2
+        end
+
+        def to_str
+          to_s
         end
 
         def to_s

@@ -7,6 +7,15 @@
 module ActiveFacts
   module CQL
     grammar FactTypes
+      rule query
+	s conditions r:returning_clause? '?'
+	{
+	  def ast
+	    Compiler::FactType.new nil, [], conditions.ast, (r.empty? ? nil : r)
+	  end
+	}
+      end
+
       rule named_fact_type
         s term_definition_name
         mapping_pragmas is s i:(independent s)? where
@@ -24,15 +33,13 @@ module ActiveFacts
       end
 
       rule anonymous_fact_type
-        fact_clause
-          ftail:( (',' / and ) s fact_clause s )*
+        fact_clauses
           ctail:( (':' / where) s c:conditions s)?
           returning_clause?
         s ';'
         {
 	  def ast
-            readings = fact_clause.ast
-            ftail.elements.each{|e| readings += e.fact_clause.ast }
+            readings = fact_clauses.ast
             conditions = !ctail.empty? ? ctail.c.ast : []
 	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
 	    if (conditions.empty? && readings.detect{|r| r.includes_literals})
@@ -65,11 +72,12 @@ module ActiveFacts
       end
 
       rule returning_clause
-        returning return (',' return)*
+        returning s return (s ',' s return)*
       end
 
       rule return
-        by order 'REVISIT: return'
+        by s order? s reading_word+ /
+	reading_word+
       end
 
       rule conditions
@@ -133,24 +141,9 @@ module ActiveFacts
       rule reading
         (
 	  contracted_reading
+	  / comparison
 	  /
-	  role    # A role reference containing a term, perhaps with attached paraphernalia
-	  /       # A hyphenated non-term. Important: no embedded spaces
-	  id tail:('-' !term id)+ s
-	    {
-	      def ast
-		[id.value, *tail.elements.map{|e| e.id.value}]*"-"
-	      end
-	      def node_type; :linking; end
-	    }
-	  /       # A normal non-term
-	  !non_role_word id s
-	    {
-	      def ast
-		id.value
-	      end
-	      def node_type; :linking; end
-	    }
+	  reading_word
 	)+
         {
 	  def ast
@@ -164,7 +157,7 @@ module ActiveFacts
 	      asts.push(contracted_role)  # And replace it by the role removed from the contraction
 	    end
 	    reading = Compiler::Reading.new(asts)
-	    reading.qualifiers += qualifiers
+	    reading.qualifiers += qualifiers if qualifiers
 	    [reading] + contraction
 	  end
         }
@@ -172,7 +165,7 @@ module ActiveFacts
 
       # REVISIT: and later, similarly for contracted conditions (including comparisons)
       rule contracted_reading
-	role p:post_qualifiers? that s q:qualifier? s reading s
+	role p:post_qualifiers? (that/who) s q:qualifier? s reading s
 	{
 	  def ast
 	    # reading.ast will return an array of Readings, but the first reading is special. We must:
@@ -189,6 +182,26 @@ module ActiveFacts
 	    [role.ast, p.empty? ? [] : p.list] + readings
 	  end
 	}
+      end
+
+      rule reading_word
+	role    # A role reference containing a term, perhaps with attached paraphernalia
+	/       # A hyphenated non-term. Important: no embedded spaces
+	id tail:('-' !term id)+ s
+	  {
+	    def ast
+	      [id.value, *tail.elements.map{|e| e.id.value}]*"-"
+	    end
+	    def node_type; :linking; end
+	  }
+	/       # A normal non-term
+	!non_role_word id s
+	  {
+	    def ast
+	      id.value
+	    end
+	    def node_type; :linking; end
+	  }
       end
 
       # This is the rule that causes most back-tracking. I think you can see why.
