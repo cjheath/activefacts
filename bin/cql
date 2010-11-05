@@ -85,7 +85,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     # meta-commands start with /
     words = line.split
     case cmd = words.shift
-    when /(\w*)\?/
+    when /^(\w*)\?$/
       list_instances $1
     when "/trace"
       if words.empty?
@@ -403,23 +403,30 @@ end
 compiler = InteractiveCQL.new
 statement = nil
 ARGV.each do |arg|
-  compiler.load_file(arg)
+  if arg =~ /^--(.*)/
+    compiler.metacommand('/'+$1)
+  else
+    compiler.load_file(arg)
+  end
 end
 puts "Enter / for help on special commands"
 
 while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
   statement = statement ? statement + "\n"+line : line
-  if statement =~ /\s*(.*?)\s*\?\s*$/
+  case
+  when statement =~ /^\s*(\w*?)\s*\?\s*$/
+    # Temporary query substitute:
     compiler.list_instances $1
     statement = nil
-  elsif line =~ %r{\A/}
+  when line =~ %r{\A/}
     compiler.metacommand(line)
     statement = nil
-  elsif compiler.root != :definition or
-      line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /[;?]/
+  when compiler.root != :definition || line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /[;?]/
     # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
     compiler.process(statement)
     statement = nil
+  else
+    puts "What you talkin' 'bout Willis?"
   end
 end
 puts
