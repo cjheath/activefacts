@@ -77,7 +77,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
       end
     end
     object_type.all_role.map{|role| role.fact_type}.uniq.each do |fact_type|
-      puts "\t#{fact_type.default_reading}"
+      puts "\t" + fact_type.all_reading.map{|r| r.expand}*', '
     end
   end
 
