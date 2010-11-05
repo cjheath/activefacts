@@ -102,6 +102,10 @@ module ActiveFacts
 	id
       end
 
+      rule order
+	'ascending' / 'descending'
+      end
+
       rule acyclic 'acyclic' !alphanumeric end
       rule antisymmetric 'antisymmetric' !alphanumeric end
       rule asymmetric 'asymmetric' !alphanumeric end
@@ -162,6 +166,7 @@ module ActiveFacts
       rule true 'true' !alphanumeric end 
       rule vocabulary 'vocabulary' !alphanumeric end 
       rule where 'where' !alphanumeric end 
+      rule who 'who' !alphanumeric end 
 
     end
   end
