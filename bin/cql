@@ -425,8 +425,6 @@ while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
     # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
     compiler.process(statement)
     statement = nil
-  else
-    puts "What you talkin' 'bout Willis?"
   end
 end
 puts

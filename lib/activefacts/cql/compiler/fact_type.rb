@@ -10,8 +10,20 @@ module ActiveFacts
         end
 
         def compile
+          @context ||= CompilationContext.new(@vocabulary)
+
           unless @conditions.empty? and !@returning
-            raise "Queries are not yet handled: #{@source}"
+            @conditions.each{ |condition| condition.identify_players_with_role_name(@context) }
+            @conditions.each{ |condition| condition.identify_other_players(@context) }
+            @conditions.each{ |condition| condition.bind_roles @context }  # Create the Compiler::Bindings
+
+            @conditions.each do |condition|
+              fact_type = condition.match_existing_fact_type @context
+              raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
+            end
+            @join = build_join_nodes(@conditions)
+            @roles_by_binding = build_all_join_steps(@conditions)
+            @join.validate
           end
         end
       end
@@ -27,7 +39,6 @@ module ActiveFacts
         end
 
         def compile
-          super
 
           #
           # Process:
@@ -43,10 +54,12 @@ module ActiveFacts
           # * Objectify the fact type if @name
           #
 
-          @context = CompilationContext.new(@vocabulary)
+          @context ||= CompilationContext.new(@vocabulary)
           @readings.each{ |reading| reading.identify_players_with_role_name(@context) }
           @readings.each{ |reading| reading.identify_other_players(@context) }
           @readings.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
+
+          super
 
           verify_matching_roles   # All readings of a fact type must have the same roles
 
@@ -62,6 +75,7 @@ module ActiveFacts
             first_reading = @readings[0]
             @fact_type = first_reading.make_fact_type(@vocabulary)
             first_reading.make_reading(@vocabulary, @fact_type)
+            project_reading_roles(first_reading) unless @conditions.empty?
             first_reading.make_embedded_constraints vocabulary
             @fact_type.create_implicit_fact_type_for_unary if @fact_type.all_role.size == 1 && !@name
             @existing_readings = [first_reading]
@@ -73,6 +87,7 @@ module ActiveFacts
           new_readings = @readings - @existing_readings
           new_readings.each do |reading|
             reading.make_reading(@vocabulary, @fact_type)
+            project_reading_roles(reading) unless @conditions.empty?
             reading.make_embedded_constraints vocabulary
           end
 
@@ -97,7 +112,7 @@ module ActiveFacts
           end
 
           # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
-          make_default_identifier_for_fact_type
+          make_default_identifier_for_fact_type if @conditions.empty?
 
           @readings.each do |reading|
             next unless reading.context_note
@@ -105,6 +120,16 @@ module ActiveFacts
           end
 
           @fact_type
+        end
+
+        def project_reading_roles(reading)
+          # Attach the reading's role references to the projected roles of the join
+          reading.role_refs.each_with_index do |rr, i|
+            role, join_role = @roles_by_binding[rr.binding]
+            raise "#{rr} must be a role projected from the conditions" unless role
+            raise "#{rr} has already-projected join role!" if join_role.role_ref
+            rr.role_ref.join_role = join_role
+          end
         end
 
         def check_compatibility_of_matched_readings

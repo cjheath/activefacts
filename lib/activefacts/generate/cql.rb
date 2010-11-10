@@ -339,7 +339,15 @@ module ActiveFacts
         verbaliser.alternate_readings fact_type.all_reading
         verbaliser.create_subscripts(true)
 
-        puts(fact_readings_with_constraints(verbaliser, fact_type)*",\n\t"+";")
+        print(fact_readings_with_constraints(verbaliser, fact_type)*",\n\t")
+        pr = fact_type.preferred_reading
+        if (pr.role_sequence.all_role_ref.to_a[0].join_role)
+          verbaliser = ActiveFacts::Metamodel::Verbaliser.new
+          verbaliser.prepare_role_sequence pr.role_sequence
+          verbaliser.create_subscripts
+          print ":\n\t"+verbaliser.verbalise_over_role_sequence(pr.role_sequence)
+        end
+        puts(';')
       end
 
       def fact_type_banner
