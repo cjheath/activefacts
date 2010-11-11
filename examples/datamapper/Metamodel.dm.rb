@@ -127,6 +127,7 @@ class JoinNode
   property :ordinal, Integer, :key => true	# Join Node has Ordinal position
   property :join_id, Integer, :key => true	# Join includes Join Node and Join has Join Id
   property :subscript, Integer	# maybe Join Node has Subscript
+  property :role_name, String, :length => 64	# maybe Join Node has role-Name
   property :value_literal, String	# maybe Join Node has Value and Value is represented by Literal
   property :value_is_a_string, Boolean	# maybe Join Node has Value and Value is a string
   property :value_unit_id, Integer	# maybe Join Node has Value and maybe Value is in Unit and Unit has Unit Id

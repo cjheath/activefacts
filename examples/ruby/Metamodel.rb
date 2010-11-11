@@ -222,6 +222,7 @@ module ::Metamodel
     has_one :join, :mandatory => true           # See Join.all_join_node
     has_one :object_type, :mandatory => true    # See ObjectType.all_join_node
     has_one :ordinal, :mandatory => true        # See Ordinal.all_join_node
+    has_one :role_name, :class => Name          # See Name.all_join_node_as_role_name
     has_one :subscript                          # See Subscript.all_join_node
     has_one :value                              # See Value.all_join_node
   end

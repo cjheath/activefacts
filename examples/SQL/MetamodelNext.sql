@@ -28,8 +28,8 @@ CREATE TABLE [Constraint] (
 	EnforcementAgentName                    varchar NULL,
 	-- maybe Constraint requires Enforcement and Enforcement has Enforcement Code,
 	EnforcementCode                         varchar(16) NULL,
-	-- maybe Name is of Constraint,
-	Name                                    varchar(64) NULL,
+	-- maybe Name is of Constraint and Name has value,
+	NameValue                               varchar(64) NULL,
 	-- maybe Presence Constraint is a kind of Constraint and Presence Constraint is mandatory,
 	PresenceConstraintIsMandatory           bit NULL,
 	-- maybe Presence Constraint is a kind of Constraint and Presence Constraint is preferred identifier,
@@ -54,8 +54,8 @@ CREATE TABLE [Constraint] (
 	SubsetConstraintSupersetRoleSequenceId  int NULL,
 	-- maybe Value Constraint is a kind of Constraint and maybe Role has role-Value Constraint and Role is a kind of Concept and Concept has GUID,
 	ValueConstraintRoleGUID                 varchar NULL,
-	-- maybe Vocabulary contains Constraint and Vocabulary is called Name,
-	VocabularyName                          varchar(64) NULL,
+	-- maybe Vocabulary contains Constraint and Vocabulary is called Name and Name has value,
+	VocabularyNameValue                     varchar(64) NULL,
 	PRIMARY KEY(ConceptGUID)
 )
 GO
@@ -66,7 +66,7 @@ CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceI
 	  AND	SubsetConstraintSupersetRoleSequenceId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
+CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId(SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId)
 GO
 
 CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID (ValueConstraintRoleGUID) WITH SCHEMABINDING AS
@@ -74,16 +74,16 @@ CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID (ValueConstr
 	WHERE	ValueConstraintRoleGUID IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID(ValueConstraintRoleGUID)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleGUID ON dbo.ValueConstraintInConstraint_ValueConstraintRoleGUID(ValueConstraintRoleGUID)
 GO
 
-CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
-	SELECT VocabularyName, Name FROM dbo.[Constraint]
-	WHERE	VocabularyName IS NOT NULL
-	  AND	Name IS NOT NULL
+CREATE VIEW dbo.Constraint_VocabularyNameValueNameValue (VocabularyNameValue, NameValue) WITH SCHEMABINDING AS
+	SELECT VocabularyNameValue, NameValue FROM dbo.[Constraint]
+	WHERE	VocabularyNameValue IS NOT NULL
+	  AND	NameValue IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameName ON dbo.Constraint_VocabularyNameName(VocabularyName, Name)
+CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameValueNameValue ON dbo.Constraint_VocabularyNameValueNameValue(VocabularyNameValue, NameValue)
 GO
 
 CREATE TABLE ContextAccordingTo (
@@ -137,10 +137,10 @@ CREATE TABLE Fact (
 	FactId                                  int IDENTITY NOT NULL,
 	-- Fact is of Fact Type and Fact Type is a kind of Concept and Concept has GUID,
 	FactTypeGUID                            varchar NOT NULL,
-	-- Population includes Fact and Population has Name,
-	PopulationName                          varchar(64) NOT NULL,
-	-- Population includes Fact and maybe Vocabulary includes Population and Vocabulary is called Name,
-	PopulationVocabularyName                varchar(64) NULL,
+	-- Population includes Fact and Population has Name and Name has value,
+	PopulationNameValue                     varchar(64) NOT NULL,
+	-- Population includes Fact and maybe Vocabulary includes Population and Vocabulary is called Name and Name has value,
+	PopulationVocabularyNameValue           varchar(64) NULL,
 	PRIMARY KEY(FactId)
 )
 GO
@@ -167,7 +167,7 @@ CREATE VIEW dbo.FactType_EntityTypeGUID (EntityTypeGUID) WITH SCHEMABINDING AS
 	WHERE	EntityTypeGUID IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeGUID(EntityTypeGUID)
+CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeGUID ON dbo.FactType_EntityTypeGUID(EntityTypeGUID)
 GO
 
 CREATE VIEW dbo.FactType_TypeInheritanceSubtypeGUIDTypeInheritanceSupertypeGUIDTypeInheritanceAssimilationTypeInheritanceProvidesIdentif (TypeInheritanceSubtypeGUID, TypeInheritanceSupertypeGUID, TypeInheritanceAssimilation, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
@@ -188,10 +188,10 @@ CREATE TABLE Instance (
 	InstanceId                              int IDENTITY NOT NULL,
 	-- Instance is of Object Type and Object Type is a kind of Concept and Concept has GUID,
 	ObjectTypeGUID                          varchar NOT NULL,
-	-- Population includes Instance and Population has Name,
-	PopulationName                          varchar(64) NOT NULL,
-	-- Population includes Instance and maybe Vocabulary includes Population and Vocabulary is called Name,
-	PopulationVocabularyName                varchar(64) NULL,
+	-- Population includes Instance and Population has Name and Name has value,
+	PopulationNameValue                     varchar(64) NOT NULL,
+	-- Population includes Instance and maybe Vocabulary includes Population and Vocabulary is called Name and Name has value,
+	PopulationVocabularyNameValue           varchar(64) NULL,
 	-- maybe Instance has Value and Value is a string,
 	ValueIsAString                          bit NULL,
 	-- maybe Instance has Value and Value is represented by Literal,
@@ -293,6 +293,18 @@ CREATE TABLE JoinStep (
 )
 GO
 
+CREATE TABLE Name (
+	-- maybe Join Node has role-Name and Join includes Join Node and Join has Join Id,
+	JoinNodeJoinId                          int NULL,
+	-- maybe Join Node has role-Name and Join Node has Ordinal position,
+	JoinNodeOrdinal                         shortint NULL,
+	-- Name has value,
+	NameValue                               varchar(64) NOT NULL,
+	PRIMARY KEY(NameValue),
+	FOREIGN KEY (JoinNodeJoinId, JoinNodeOrdinal) REFERENCES JoinNode (JoinId, Ordinal)
+)
+GO
+
 CREATE TABLE ObjectType (
 	-- Object Type is a kind of Concept and Concept has GUID,
 	ConceptGUID                             varchar NOT NULL,
@@ -327,8 +339,8 @@ CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraint
 GO
 
 CREATE TABLE ParamValue (
-	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name,
-	ParameterName                           varchar(64) NOT NULL,
+	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Name has value,
+	ParameterNameValue                      varchar(64) NOT NULL,
 	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type is a kind of Concept and Concept has GUID,
 	ParameterValueTypeGUID                  varchar NOT NULL,
 	-- Param Value is where Value Type defines Parameter as having Value and Value is a string,
@@ -339,7 +351,7 @@ CREATE TABLE ParamValue (
 	ValueTypeGUID                           varchar NOT NULL,
 	-- Param Value is where Value Type defines Parameter as having Value and maybe Value is in Unit and Unit has Unit Id,
 	ValueUnitId                             int NULL,
-	PRIMARY KEY(ValueTypeGUID, ParameterValueTypeGUID, ParameterName),
+	PRIMARY KEY(ValueTypeGUID, ParameterValueTypeGUID, ParameterNameValue),
 	FOREIGN KEY (ValueTypeGUID) REFERENCES ObjectType (ConceptGUID)
 )
 GO
@@ -404,10 +416,10 @@ CREATE TABLE RoleRef (
 	Ordinal                                 shortint NOT NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role is a kind of Concept and Concept has GUID,
 	RoleGUID                                varchar NOT NULL,
-	-- maybe Term (as Role Name) is name of Role Ref and Term is where Vocabulary contains Name,
-	RoleName                                varchar(64) NULL,
-	-- maybe Term (as Role Name) is name of Role Ref and Term is where Vocabulary contains Name and Vocabulary is called Name,
-	RoleNameVocabularyName                  varchar(64) NULL,
+	-- maybe Term (as Role Name) is name of Role Ref and Term is where Vocabulary contains Name and Name has value,
+	RoleNameValue                           varchar(64) NULL,
+	-- maybe Term (as Role Name) is name of Role Ref and Term is where Vocabulary contains Name and Vocabulary is called Name and Name has value,
+	RoleNameVocabularyNameValue             varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Role Sequence Id,
 	RoleSequenceId                          int NOT NULL,
 	-- maybe Role Ref has trailing-Adjective,
@@ -432,10 +444,10 @@ CREATE TABLE RoleValue (
 	FactId                                  int NOT NULL,
 	-- Instance plays Role Value and Instance has Instance Id,
 	InstanceId                              int NOT NULL,
-	-- Population includes Role Value and Population has Name,
-	PopulationName                          varchar(64) NOT NULL,
-	-- Population includes Role Value and maybe Vocabulary includes Population and Vocabulary is called Name,
-	PopulationVocabularyName                varchar(64) NULL,
+	-- Population includes Role Value and Population has Name and Name has value,
+	PopulationNameValue                     varchar(64) NOT NULL,
+	-- Population includes Role Value and maybe Vocabulary includes Population and Vocabulary is called Name and Name has value,
+	PopulationVocabularyNameValue           varchar(64) NULL,
 	-- Role Value is of Role and Role is a kind of Concept and Concept has GUID,
 	RoleGUID                                varchar NOT NULL,
 	PRIMARY KEY(InstanceId, FactId),
@@ -462,10 +474,10 @@ GO
 CREATE TABLE Shape (
 	-- maybe Constraint Shape is a kind of Shape and Constraint Shape is for Constraint and Constraint is a kind of Concept and Concept has GUID,
 	ConstraintShapeConstraintGUID           varchar NULL,
-	-- Shape is in Diagram and Diagram is called Name,
-	DiagramName                             varchar(64) NOT NULL,
-	-- Shape is in Diagram and Diagram is for Vocabulary and Vocabulary is called Name,
-	DiagramVocabularyName                   varchar(64) NOT NULL,
+	-- Shape is in Diagram and Diagram is called Name and Name has value,
+	DiagramNameValue                        varchar(64) NOT NULL,
+	-- Shape is in Diagram and Diagram is for Vocabulary and Vocabulary is called Name and Name has value,
+	DiagramVocabularyNameValue              varchar(64) NOT NULL,
 	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Display Role Names Setting,
 	FactTypeShapeDisplayRoleNamesSetting    varchar NULL CHECK(FactTypeShapeDisplayRoleNamesSetting = 'false' OR FactTypeShapeDisplayRoleNamesSetting = 'true'),
 	-- maybe Fact Type Shape is a kind of Shape and Fact Type Shape is for Fact Type and Fact Type is a kind of Concept and Concept has GUID,
@@ -521,13 +533,13 @@ CREATE TABLE Shape (
 )
 GO
 
-CREATE VIEW dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY (DiagramVocabularyName, DiagramName, PositionX, PositionY) WITH SCHEMABINDING AS
-	SELECT DiagramVocabularyName, DiagramName, PositionX, PositionY FROM dbo.Shape
+CREATE VIEW dbo.Shape_DiagramVocabularyNameValueDiagramNameValuePositionXPositionY (DiagramVocabularyNameValue, DiagramNameValue, PositionX, PositionY) WITH SCHEMABINDING AS
+	SELECT DiagramVocabularyNameValue, DiagramNameValue, PositionX, PositionY FROM dbo.Shape
 	WHERE	PositionX IS NOT NULL
 	  AND	PositionY IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameDiagramNamePositionXPositionY ON dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY(DiagramVocabularyName, DiagramName, PositionX, PositionY)
+CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameValueDiagramNameValuePositionXPositionY ON dbo.Shape_DiagramVocabularyNameValueDiagramNameValuePositionXPositionY(DiagramVocabularyNameValue, DiagramNameValue, PositionX, PositionY)
 GO
 
 CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
@@ -535,7 +547,7 @@ CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId (FactTypeSha
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeId ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAObjectifiedFactTypeNameShape ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEMABINDING AS
@@ -543,7 +555,7 @@ CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeId (FactTypeShapeId) WITH SCHEM
 	WHERE	FactTypeShapeId IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeId ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
+CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAReadingShape ON dbo.ReadingShapeInShape_FactTypeShapeId(FactTypeShapeId)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeIdRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeId, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
@@ -565,15 +577,16 @@ CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintShapeInShapeByValueConstraintSha
 GO
 
 CREATE TABLE Term (
-	-- Term is where Vocabulary contains Name,
-	Name                                    varchar(64) NOT NULL,
+	-- Term is where Vocabulary contains Name and Name has value,
+	NameValue                               varchar(64) NOT NULL,
 	-- maybe Term designates Object Type and Object Type is a kind of Concept and Concept has GUID,
 	ObjectTypeGUID                          varchar NULL,
 	-- maybe Term is secondary for Object Type (as Secondary) and Object Type is a kind of Concept and Concept has GUID,
 	SecondaryGUID                           varchar NULL,
-	-- Term is where Vocabulary contains Name and Vocabulary is called Name,
-	VocabularyName                          varchar(64) NOT NULL,
-	PRIMARY KEY(VocabularyName, Name),
+	-- Term is where Vocabulary contains Name and Vocabulary is called Name and Name has value,
+	VocabularyNameValue                     varchar(64) NOT NULL,
+	PRIMARY KEY(VocabularyNameValue, NameValue),
+	FOREIGN KEY (NameValue) REFERENCES Name (NameValue),
 	FOREIGN KEY (ObjectTypeGUID) REFERENCES ObjectType (ConceptGUID),
 	FOREIGN KEY (SecondaryGUID) REFERENCES ObjectType (ConceptGUID)
 )
@@ -598,23 +611,29 @@ CREATE TABLE Unit (
 	EphemeraURL                             varchar NULL,
 	-- Unit is fundamental,
 	IsFundamental                           bit NOT NULL,
-	-- Name is of Unit,
-	Name                                    varchar(64) NOT NULL,
+	-- Name is of Unit and Name has value,
+	NameValue                               varchar(64) NOT NULL,
 	-- maybe Unit has Offset,
 	Offset                                  decimal NULL,
-	-- maybe Unit has plural-Name,
-	PluralName                              varchar(64) NULL,
+	-- maybe Unit has plural-Name and Name has value,
+	PluralNameValue                         varchar(64) NULL,
 	-- Unit has Unit Id,
 	UnitId                                  int IDENTITY NOT NULL,
-	-- Vocabulary includes Unit and Vocabulary is called Name,
-	VocabularyName                          varchar(64) NOT NULL,
+	-- Vocabulary includes Unit and Vocabulary is called Name and Name has value,
+	VocabularyNameValue                     varchar(64) NOT NULL,
 	PRIMARY KEY(UnitId),
-	UNIQUE(VocabularyName, Name)
+	UNIQUE(VocabularyNameValue, NameValue),
+	FOREIGN KEY (PluralNameValue) REFERENCES Name (NameValue),
+	FOREIGN KEY (NameValue) REFERENCES Name (NameValue)
 )
 GO
 
 ALTER TABLE AllowedRange
 	ADD FOREIGN KEY (ValueConstraintGUID) REFERENCES [Constraint] (ConceptGUID)
+GO
+
+ALTER TABLE [Constraint]
+	ADD FOREIGN KEY (NameValue) REFERENCES Name (NameValue)
 GO
 
 ALTER TABLE [Constraint]
@@ -702,6 +721,6 @@ ALTER TABLE RoleRef
 GO
 
 ALTER TABLE RoleRef
-	ADD FOREIGN KEY (RoleName, RoleNameVocabularyName) REFERENCES Term (Name, VocabularyName)
+	ADD FOREIGN KEY (RoleNameValue, RoleNameVocabularyNameValue) REFERENCES Term (NameValue, VocabularyNameValue)
 GO
 

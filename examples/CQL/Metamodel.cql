@@ -90,6 +90,8 @@ Join Node is identified by Join and Ordinal where
 	Join Node has one Ordinal position;
 Join Node has at most one Subscript,
 	Subscript is of Join Node;
+Join Node has at most one role-Name,
+	Name is of Join Node;
 
 Position is identified by X and Y where
 	Position is at one X,

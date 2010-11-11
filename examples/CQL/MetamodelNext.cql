@@ -91,6 +91,8 @@ Join Node is identified by Join and Ordinal where
 	Join Node has one Ordinal position;
 Join Node has at most one Subscript,
 	Subscript is of Join Node;
+Join Node has role-Name,
+	Name is of at most one Join Node;
 
 Object Type is a kind of Concept [partitioned];
 Instance is of one Object Type;

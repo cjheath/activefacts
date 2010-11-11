@@ -83,6 +83,7 @@ module ::Metamodel
 
   class Name < String
     value_type :length => 64
+    has_one :join_node, :counterpart => :role_name  # See JoinNode.all_role_name
   end
 
   class Numerator < Decimal
