@@ -337,14 +337,15 @@ module ActiveFacts
         # There can be no roles of the objectified fact type in the readings, so no need to tell the Verbaliser anything special
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
         verbaliser.alternate_readings fact_type.all_reading
+        pr = fact_type.preferred_reading
+        if (pr.role_sequence.all_role_ref.to_a[0].join_role)
+          verbaliser.prepare_role_sequence pr.role_sequence
+          verbaliser.create_subscripts
+        end
         verbaliser.create_subscripts(true)
 
         print(fact_readings_with_constraints(verbaliser, fact_type)*",\n\t")
-        pr = fact_type.preferred_reading
         if (pr.role_sequence.all_role_ref.to_a[0].join_role)
-          verbaliser = ActiveFacts::Metamodel::Verbaliser.new
-          verbaliser.prepare_role_sequence pr.role_sequence
-          verbaliser.create_subscripts
           print ":\n\t"+verbaliser.verbalise_over_role_sequence(pr.role_sequence)
         end
         puts(';')
