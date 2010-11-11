@@ -20,7 +20,7 @@ Language is independent identified by its Name;
 
 LanguageUse is where
 	Language is spoken in Country,
-	Country uses at least one Language;
+	Country uses Language;
 
 Ambassador is a kind of Diplomat;
 
