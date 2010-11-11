@@ -18,12 +18,16 @@ module ActiveFacts
             @conditions.each{ |condition| condition.bind_roles @context }  # Create the Compiler::Bindings
 
             @conditions.each do |condition|
+              next if condition.phrases.size == 1 && condition.role_refs.size == 1
               fact_type = condition.match_existing_fact_type @context
               raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
             end
             @join = build_join_nodes(@conditions)
             @roles_by_binding = build_all_join_steps(@conditions)
             @join.validate
+            @join
+          else
+            nil
           end
         end
       end
@@ -59,7 +63,8 @@ module ActiveFacts
           @readings.each{ |reading| reading.identify_other_players(@context) }
           @readings.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
 
-          super
+          join = super
+          return join if @readings.empty?  # It's a query
 
           verify_matching_roles   # All readings of a fact type must have the same roles
 
