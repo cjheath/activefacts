@@ -117,7 +117,8 @@ module ActiveFacts
               rr.leading_adjective,
               include_rolenames ? rr.role.role_name : nil,
               rr.trailing_adjective
-            ].compact}.uniq.sort
+            ].compact}.uniq.sort +
+              [@join_nodes_by_join.values.map{|jn| jn.role_name}.compact[0]].compact
           adjuncts.flatten*"_"
         end
 
@@ -259,14 +260,26 @@ module ActiveFacts
           map{|p| [p, p.object_type] }.
           each do |player, object_type|
             next if player.subscript  # Done previously
-            dups = @players.select{|p| p.object_type == object_type && p.role_adjuncts(include_rolenames) == player.role_adjuncts(include_rolenames) }
+            dups = @players.select do |p|
+              p.object_type == object_type &&
+                p.role_adjuncts(include_rolenames) == player.role_adjuncts(include_rolenames)
+              end
             if dups.size == 1
               debug :subscript, "No subscript needed for #{object_type.name}"
               next
             end
             debug :subscript, "Applying subscripts to #{dups.size} occurrences of #{object_type.name}" do
-              dups.each_with_index do |player, index|
-                player.subscript = index+1
+              s = 0
+              dups.each do |player|
+                jrname = player.join_roles.map{|jr| jr.role_ref && jr.role_ref.role.role_name}.compact[0]
+                rname = (rr = player.role_refs[0]) && rr.role.role_name
+                if jrname and !rname
+                  # puts "Oops: rolename #{rname.inspect} != #{jrname.inspect}" if jrname != rname
+                  player.join_nodes_by_join.values.each{|jn| jn.role_name = jrname }
+               else
+                  player.subscript = s+1
+                  s += 1
+                end
               end
             end
           end
@@ -422,37 +435,27 @@ module ActiveFacts
           text.gsub(/\{(\d)\}/) do
             role_ref = rrs[$1.to_i]
             # REVISIT: We may need to use the step's role_refs to expand the role players here, not the reading's one (extra adjectives?)
-            # REVISIT: There's no way to get literals to be emitted here (value join step?)
+            # REVISIT: There's no way to get literals to be emitted here (value join step or query result?)
 
             player = player_by_role[role_ref.role]
 
-=begin
-            rr = role_refs.detect{|rr| rr.role == role_ref.role} || role_ref
-
-            player = @player_by_role_ref[rr] and subscript = player.subscript
-            if !subscript and
-              pp = @players.select{|p|p.object_type == rr.role.object_type} and
-              pp.detect{|p|p.subscript}
-              # raise "Internal error: Subscripted players (of the same object_type #{pp[0].object_type.name}) when this player isn't subscripted"
-            end
-=end
-
-            subscripted_player(role_ref, player && player.subscript) +
+            join_role_name = player && player.join_nodes_by_join.values.map{|jn| jn.role_name}.compact[0]
+            subscripted_player(role_ref, player && player.subscript, join_role_name) +
               objectification_verbalisation(role_ref.role.object_type)
           end
         end
       end
 
-      def subscripted_player role_ref, subscript = nil
-        if subscript
-          debug :subscript, "Need to apply subscript #{subscript} to #{role_ref.role.object_type.name}"
-        end
+      def subscripted_player role_ref, subscript = nil, join_role_name = nil
+        debug :subscript, "Need to apply subscript #{subscript} to #{role_ref.role.object_type.name}" if subscript
         object_type = role_ref.role.object_type
-        [
-          role_ref.leading_adjective,
-          object_type.name,
-          role_ref.trailing_adjective
-        ].compact*' ' +
+        (join_role_name ||
+          [
+            role_ref.leading_adjective,
+            object_type.name,
+            role_ref.trailing_adjective
+          ].compact*' '
+        ) +
           (subscript ? "(#{subscript})" : '')
       end
 

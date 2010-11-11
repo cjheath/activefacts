@@ -340,7 +340,6 @@ module ActiveFacts
         pr = fact_type.preferred_reading
         if (pr.role_sequence.all_role_ref.to_a[0].join_role)
           verbaliser.prepare_role_sequence pr.role_sequence
-          verbaliser.create_subscripts
         end
         verbaliser.create_subscripts(true)
 
