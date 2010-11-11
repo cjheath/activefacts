@@ -28,17 +28,8 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
   end
 
   def list_instances name
-    if name.empty?
-      @vocabulary.constellation.Instance.values
-    else
-      if !@vocabulary.constellation.ObjectType[[[@vocabulary.name], name]]
-	puts "Object type '#{name}' does not exist in vocabulary '#{@vocabulary.name}'"
-	[]
-      else
-	@vocabulary.constellation.Instance.values.select{|i| i.object_type.supertypes_transitive.detect{|k| k.name == name}}
-      end
-    end.select do |instance|
-      instance.object_type.vocabulary == @vocabulary
+    if (name.is_a?(ActiveFacts::Metamodel::ObjectType))
+      name.all_instance
     end.map do |instance|
       instance.verbalise
     end.sort.each do |verbalisation|
@@ -85,8 +76,6 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     # meta-commands start with /
     words = line.split
     case cmd = words.shift
-    when /^(\w*)\?$/
-      list_instances $1
     when "/trace"
       if words.empty?
 	puts debug_keys*", "
@@ -135,11 +124,24 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     end
   end
 
+  def process_query(join)
+    if join.all_join_node.size == 1 and join.all_join_step.size == 0
+      list_instances(join.all_join_node.single.object_type)
+    else
+      # REVISIT: Identify all the unbound Join Nodes, and do a nested-loops iteration checking all Steps
+      puts "Can't yet process complex queries (involving #{join.all_join_node.map{|jn|jn.object_type.name}*', '})"
+    end
+  end
+
   def process(statement)
     begin
       @results = []
       compile(statement)
-      puts(@results.map{|r| "\t"+r.inspect}*"\n")
+      if @results.size == 1 && @results[0].is_a?(ActiveFacts::Metamodel::Join)
+	process_query(@results[0])
+      else
+	puts(@results.map{|r| "\t"+r.inspect}*"\n")
+      end
     rescue => e
       puts e
       puts "\t"+e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
@@ -150,7 +152,8 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     # Accumulate the results:
     p ast if @show_tree
     puts highlight_tree(ast.tree) if @show_highlight
-    @results += Array(result = super)
+    result = super
+    @results += Array(result)
     result
   end
 
@@ -414,10 +417,6 @@ puts "Enter / for help on special commands"
 while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
   statement = statement ? statement + "\n"+line : line
   case
-  when statement =~ /^\s*(\w*?)\s*\?\s*$/
-    # Temporary query substitute:
-    compiler.list_instances $1
-    statement = nil
   when line =~ %r{\A/}
     compiler.metacommand(line)
     statement = nil
