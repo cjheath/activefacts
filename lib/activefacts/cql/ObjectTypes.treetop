@@ -28,7 +28,7 @@ module ActiveFacts
 	    true
 	  }
         m2:mapping_pragmas
-        ec:entity_conditions?
+        ec:entity_clauses?
         ';'
         {
 	  def ast
@@ -177,16 +177,12 @@ module ActiveFacts
           { def value; text_value; end }
       end
 
-      rule entity_conditions
-        (':' / where) s c:conditions?
+      rule entity_clauses
+        (':' / where) s clauses
         {
 	  def ast
-            c.empty? ? [] : c.ast
+            clauses.ast
 	  end
-
-          def conditions
-            c.empty? ? [] : c.condition_list
-          end
         }
       end
 

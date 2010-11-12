@@ -8,10 +8,10 @@ module ActiveFacts
   module CQL
     grammar FactTypes
       rule query
-	s conditions r:returning_clause? '?'
+	s clauses r:returning_clause? '?'
 	{
 	  def ast
-	    Compiler::FactType.new nil, [], conditions.ast, (r.empty? ? nil : r)
+	    Compiler::FactType.new nil, [], clauses.ast, (r.empty? ? nil : r)
 	  end
 	}
       end
@@ -33,13 +33,13 @@ module ActiveFacts
       end
 
       rule anonymous_fact_type
-        fact_clauses
-          ctail:( (':' / where) s c:conditions s)?
+        clauses
+          ctail:( (':' / where) s c:clauses s)?
           returning_clause?
         s ';'
         {
 	  def ast
-            readings = fact_clauses.ast
+            readings = clauses.ast
             conditions = !ctail.empty? ? ctail.c.ast : []
 	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
 	    if (conditions.empty? && readings.detect{|r| r.includes_literals})
@@ -59,13 +59,15 @@ module ActiveFacts
         }
       end
 
-      rule fact_clauses
-        fact_clause
-          ftail:( (',' / and ) s fact_clause s )*
+      # REVISIT: Need to add alternates (A and B or C and D)
+
+      rule clauses
+        clause
+          ftail:( (',' / and ) s clause s )*
 	{
 	  def ast
-            readings = fact_clause.ast
-            ftail.elements.each{|e| readings += e.fact_clause.ast }
+            readings = clause.ast
+            ftail.elements.each{|e| readings += e.clause.ast }
 	    readings
 	  end
 	}
@@ -80,34 +82,7 @@ module ActiveFacts
 	reading_word+
       end
 
-      rule conditions
-        head:condition s tail:( (',' s / and S) next:condition s )*
-        {
-	  def ast
-	    conditions = head.ast
-	    tail.elements.each{|i| conditions += i.next.ast}
-	    conditions
-	  end
-        }
-      end
-
-      rule condition
-        head:clause s # tail:(or S alternate:clause s )*
-        {
-	  def ast
-	    head.ast
-            # Compiler::Alternates.new(head.ast, *tail.elements.map{|i| i.alternate.ast})
-	    # REVISIT: alternate conditions are not yet implemented
-	  end
-        }
-      end
-
       rule clause
-        # REVISIT: No context for comparisons, yet
-        comparison / fact_clause
-      end
-
-      rule fact_clause
         s q:qualifier? s reading s p:post_qualifiers? s c:context_note?
         {
 	  def ast
@@ -139,32 +114,37 @@ module ActiveFacts
       end
 
       rule reading
+	comparison
+	/
         (
-	  contracted_reading
-	  / comparison
+	  contraction	  # A contraction will terminate this repetition by eating to the end
 	  /
 	  reading_word
 	)+
         {
 	  def ast
 	    asts = elements.map{ |r| r.ast }
-	    contraction = []
+	    contracted_clauses = []
 	    qualifiers = []
-	    if asts[-1].is_a?(Array)	    # A contracted_reading (Array of [role, qualifiers, *readings])
-	      contraction = asts.pop	    # Pull off the contraction
-	      contracted_role = contraction.shift
-	      qualifiers = contraction.shift
-	      asts.push(contracted_role)  # And replace it by the role removed from the contraction
+	    if asts[-1].is_a?(Array)	    # A contraction (Array of [role, qualifiers, *clauses])
+	      contracted_clauses = asts.pop	    # Pull off the contracted_clauses
+	      contracted_role = contracted_clauses.shift
+	      qualifiers = contracted_clauses.shift
+	      asts.push(contracted_role)  # And replace it by the role removed from the contracted_clauses
 	    end
 	    reading = Compiler::Reading.new(asts)
 	    reading.qualifiers += qualifiers if qualifiers
-	    [reading] + contraction
+	    [reading] + contracted_clauses
 	  end
         }
       end
 
-      # REVISIT: and later, similarly for contracted conditions (including comparisons)
-      rule contracted_reading
+      rule contraction
+	reading_contraction /
+	condition_contraction
+      end
+
+      rule reading_contraction
 	role p:post_qualifiers? (that/who) s q:qualifier? s reading s
 	{
 	  def ast
@@ -175,11 +155,26 @@ module ActiveFacts
 	    readings[0].phrases.unshift(role.ast)
 	    readings[0].qualifiers << q.text_value unless q.empty?  # Add maybe/definitely
 
-	    # A contracted_reading returns an array containing:
+	    # A contraction returns an array containing:
 	    # * a role AST
 	    # * a qualifiers array
 	    # * an array of Readings
 	    [role.ast, p.empty? ? [] : p.list] + readings
+	  end
+	}
+      end
+
+      rule condition_contraction
+	role p:post_qualifiers? q:qualifier?
+	comparator 
+	s e2:expression
+	!reading_word	  # The reading must not continue here!
+	{
+	  def ast
+	    [ role.ast,
+	      p.empty? ? [] : p.list,
+	      Compiler::Comparison.new(comparator.text_value, role.ast, e2.ast)
+	    ]
 	  end
 	}
       end
@@ -205,8 +200,6 @@ module ActiveFacts
       end
 
       # This is the rule that causes most back-tracking. I think you can see why.
-      # When we have an expression, we will come down here perhaps multiple times,
-      # but find no way out as soon as we hit the trailing non_role.
       rule role
         q:(quantifier enforcement)?
         player:term
@@ -218,7 +211,6 @@ module ActiveFacts
 	  value_constraint enforcement
 	)?
 	oj:objectification_join?
-        !non_role     # If we integrate fact_clauses with comparisons, this can go.
         {
 	  def ast
 	    if !q.empty? && q.quantifier.value
@@ -242,7 +234,7 @@ module ActiveFacts
       end
 
       rule objectification_join
-        '(' s where s facts:fact_clauses s ')' s
+        '(' s where s facts:clauses s ')' s
 	{
 	  def ast
 	    facts.ast
@@ -258,13 +250,6 @@ module ActiveFacts
       rule subscript
         '(' s i:([1-9] [0-9]*) s ')' s 
         { def value; i.text_value.to_i; end }
-      end
-
-      rule non_role
-        # Any of these is illegal in or following a reading (they indicate a comparison is coming). Later, this will change:
-        comparator
-        / add_op
-        / mul_op
       end
 
     end

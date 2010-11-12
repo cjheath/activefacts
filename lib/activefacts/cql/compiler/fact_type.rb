@@ -296,16 +296,8 @@ module ActiveFacts
           @op, @e1, @e2 = op, e1, e2
         end
 
-        def to_str
-          to_s
-        end
-
         def to_s
-          "(#{e1.to_s}) #{op} (#{e2.to_s})"
-        end
-
-        def inspect
-          super
+          "(#{op} #{e1.to_s} #{e2.to_s})"
         end
       end
 
@@ -316,7 +308,7 @@ module ActiveFacts
         end
 
         def to_s
-          @terms.map{|term| "(#{term.to_s})" } * " + "
+          '(+ ' + @terms.map{|term| "#{term.to_s}" } * ' ' + ')'
         end
       end
 
@@ -327,7 +319,7 @@ module ActiveFacts
         end
 
         def to_s
-          @factors.map{|factor| "(#{factor.to_s})" } * " + "
+          '(* ' + @factors.map{|factor| "#{factor.to_s}" } * ' ' + ')'
         end
       end
 
@@ -338,7 +330,7 @@ module ActiveFacts
         end
 
         def to_s
-          "1/(#{factor.to_s})"
+          "(/ #{factor.to_s})"
         end
       end
 
@@ -349,7 +341,7 @@ module ActiveFacts
         end
 
         def to_s
-          "-(#{term.to_s})"
+          "(- #{term.to_s})"
         end
       end
 
@@ -360,7 +352,7 @@ module ActiveFacts
         end
 
         def to_s
-          @variable.to_s+@calls.map{|call| '.'+call.to_s}*''
+          @variable.to_s + @calls.map{|call| '.'+call.to_s} * ''
         end
       end
 
@@ -383,7 +375,7 @@ module ActiveFacts
         end
 
         def to_s
-          unit ? "#{@literal.to_s} in #{unit.to_s}" : @literal.to_s
+          unit ? "(#{@literal.to_s} in #{unit.to_s})" : @literal.to_s
         end
       end
 
