@@ -50,12 +50,12 @@ examples/local.css
 index.html
 lib/activefacts.rb
 lib/activefacts/api.rb
-lib/activefacts/api/object_type.rb
 lib/activefacts/api/constellation.rb
 lib/activefacts/api/entity.rb
 lib/activefacts/api/instance.rb
 lib/activefacts/api/instance_index.rb
 lib/activefacts/api/numeric.rb
+lib/activefacts/api/object_type.rb
 lib/activefacts/api/role.rb
 lib/activefacts/api/role_proxy.rb
 lib/activefacts/api/role_values.rb
@@ -65,12 +65,12 @@ lib/activefacts/api/value.rb
 lib/activefacts/api/vocabulary.rb
 lib/activefacts/cql.rb
 lib/activefacts/cql/CQLParser.treetop
-lib/activefacts/cql/ObjectTypes.treetop
 lib/activefacts/cql/Context.treetop
 lib/activefacts/cql/Expressions.treetop
 lib/activefacts/cql/FactTypes.treetop
 lib/activefacts/cql/Language/English.treetop
 lib/activefacts/cql/LexicalRules.treetop
+lib/activefacts/cql/ObjectTypes.treetop
 lib/activefacts/cql/Rakefile
 lib/activefacts/cql/Terms.treetop
 lib/activefacts/cql/ValueTypes.treetop
@@ -97,9 +97,9 @@ lib/activefacts/input/cql.rb
 lib/activefacts/input/orm.rb
 lib/activefacts/persistence.rb
 lib/activefacts/persistence/columns.rb
-lib/activefacts/persistence/object_type.rb
 lib/activefacts/persistence/foreignkey.rb
 lib/activefacts/persistence/index.rb
+lib/activefacts/persistence/object_type.rb
 lib/activefacts/persistence/reference.rb
 lib/activefacts/persistence/tables.rb
 lib/activefacts/support.rb
@@ -123,6 +123,7 @@ spec/cql/matching_spec.rb
 spec/cql/parser/bad_literals_spec.rb
 spec/cql/parser/constraints_spec.rb
 spec/cql/parser/entity_types_spec.rb
+spec/cql/parser/expressions_spec.rb
 spec/cql/parser/fact_types_spec.rb
 spec/cql/parser/literals_spec.rb
 spec/cql/parser/pragmas_spec.rb
@@ -139,6 +140,7 @@ spec/helpers/array_matcher.rb
 spec/helpers/ctrl_c_support.rb
 spec/helpers/diff_matcher.rb
 spec/helpers/file_matcher.rb
+spec/helpers/parse_to_ast_matcher.rb
 spec/helpers/string_matcher.rb
 spec/helpers/test_parser.rb
 spec/norma_cql_spec.rb
