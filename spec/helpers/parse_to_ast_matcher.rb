@@ -17,7 +17,7 @@ RSpec::Matchers.define :parse_to_ast do |*expected_asts|
     return false unless @result
 
     # Otherwise compare the canonical form of the AST
-    @canonical_form = @result.map{|d| d.ast.to_s}.map{|e| e.gsub(/\s+/,' ')}
+    @canonical_form = @result.map{|d| d.ast.to_s.gsub(/\s+/,' ')}
 
     # If we weren't given an AST, this test is pending. Show what result we obtained:
     throw :pending_declared_in_example, actual.inspect+' should parse to ['+@canonical_form*', '+']' if expected_asts.empty?
@@ -36,13 +36,25 @@ end
 
 RSpec::Matchers.define :fail_to_parse do |*error_regexp|
   match do |actual|
-    parser = TestParser.new
-    result = parser.parse_all(actual, :definition)
-    result.should be_nil
-    if error_regexp = error_regexp[0]
-      parser.failure_reason.should =~ error_regexp
+    @parser = TestParser.new
+    @actual = actual
+    @result = @parser.parse_all(actual, :definition)
+    @result.should be_nil
+    if @re = error_regexp[0]
+      @parser.failure_reason.should =~ @re
     else
-      throw :pending_declared_in_example, actual.inspect+' fails, please add message pattern to match '+parser.failure_reason.inspect
+      throw :pending_declared_in_example, actual.inspect+' fails, please add message pattern to match '+@parser.failure_reason.inspect
+    end
+  end
+
+  failure_message_for_should do
+    if @result
+      @canonical_form = @result.map{|d| d.ast.to_s.gsub(/\s+/,' ')}
+      "Expected not to succeed in parsing #{actual.inspect}\nbut got #{@canonical_form.inspect}"
+    else
+      "Failed as expected in parsing #{actual.inspect}\n" +
+        "but not for the right reason: #{@re.inspect}\n"+
+        "got #{@parser.failure_reason.inspect}"
     end
   end
 end

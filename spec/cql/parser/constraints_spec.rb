@@ -6,34 +6,14 @@
 require 'activefacts/cql'
 require 'activefacts/support'
 require 'activefacts/api/support'
+require 'spec_helper'
 require 'helpers/test_parser'
 
-describe "Constraint" do
-  Constraints = [
-    [ "each combination FamilyName, GivenName occurs at most one time in Competitor has FamilyName, Competitor has GivenName;",
-      ["PresenceConstraint over [[{Competitor} \"has\" {FamilyName}], [{Competitor} \"has\" {GivenName}]] -1 over ({FamilyName}, {GivenName})"]
-    ],
-  ]
-
-  before :each do
-    @parser = TestParser.new
-  end
-
-  Constraints.each do |c|
-    source, ast, definition = *c
-    it "should parse #{source.inspect}" do
-      result = @parser.parse_all(source, :definition)
-
-      puts @parser.failure_reason unless result
-      result.should_not be_nil
-
-      canonical_form = result.map{|d| d.ast.to_s}
-      if ast
-        canonical_form.should == ast
-      else
-        puts "#{source.inspect} should compile to"
-        puts "\t#{canonical_form}"
-      end
-    end
+describe "ASTs from Derived Fact Types with expressions" do
+  it "should parse a simple comparison clause" do
+    %q{
+      each combination FamilyName, GivenName occurs at most one time in Competitor has FamilyName, Competitor has GivenName;
+    }.should parse_to_ast \
+      "PresenceConstraint over [[{Competitor} \"has\" {FamilyName}], [{Competitor} \"has\" {GivenName}]] -1 over ({FamilyName}, {GivenName})"
   end
 end
