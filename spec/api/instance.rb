@@ -10,7 +10,7 @@ describe "An instance of every type of ObjectType" do
     module Mod
       # These are the base value types we're going to test:
       @base_types = [
-          Int, Real, AutoCounter, String, Date, DateTime
+          Int, Real, AutoCounter, String, Date, DateTime, Decimal
         ]
 
       # Construct the names of the roles they play:
