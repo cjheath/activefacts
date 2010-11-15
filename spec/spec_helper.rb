@@ -9,6 +9,7 @@ require 'helpers/diff_matcher'
 require 'helpers/array_matcher'
 require 'helpers/file_matcher'
 require 'helpers/string_matcher'
+require 'helpers/parse_to_ast_matcher'
 
 class String
   def strip_comments()

@@ -284,7 +284,7 @@ module ActiveFacts
             else
               ''
             end +
-            (@pragmas && @pragmas.size > 0 ? ", pragmas [#{@pragmas*','}]" : '')
+            (@pragmas && @pragmas.size > 0 ? ", pragmas [#{@pragmas.sort*','}]" : '')
 
           # REVISIT: @returning = returning
         end

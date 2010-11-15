@@ -40,7 +40,7 @@ module ActiveFacts
 
         def to_s
           "#{
-            @qualifiers && @qualifiers.size > 0 ? @qualifiers.inspect+' ' : nil
+            @qualifiers && @qualifiers.size > 0 ? @qualifiers.sort.inspect+' ' : nil
           }#{
             quotes = false
             @phrases.inject(""){|s, p|
