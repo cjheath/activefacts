@@ -8,8 +8,14 @@ module ActiveFacts
   module CQL
     grammar Expressions
       rule comparison
-        e1:expression s
-	comparator s e2:expression
+        e1:expression s comparator s reading_contraction
+	{
+	  def ast
+	    role, qualifiers, *readings = *reading_contraction.ast
+	    [Compiler::Comparison.new(comparator.text_value, e1.ast, role)] + readings
+	  end
+	}
+        / e1:expression s comparator s e2:expression
         {
 	  def ast
 	    [Compiler::Comparison.new(comparator.text_value, e1.ast, e2.ast)]

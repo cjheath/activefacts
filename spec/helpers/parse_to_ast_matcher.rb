@@ -11,7 +11,15 @@ RSpec::Matchers.define :parse_to_ast do |*expected_asts|
     @result = @parser.parse_all(actual, :definition)
 
     # If the expected_asts is "false", treat this test as pending:
-    throw :pending_declared_in_example, "Should parse #{actual.strip.inspect}" if expected_asts == [false]
+    if expected_asts == [false]
+      if @result
+        # Unfortunately there's no way to say why the failure was expected here
+        # RSpec stores it in example.metadata[:execution_result][:pending_message]
+        raise RSpec::Core::PendingExampleFixedError.new
+      else
+        throw :pending_declared_in_example, "Should parse #{actual.strip.inspect}"
+      end
+    end
 
     # If we failed to parse, fail and say why:
     return false unless @result
