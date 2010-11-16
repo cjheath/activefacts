@@ -291,13 +291,13 @@ module ActiveFacts
       end
 
       class Comparison
-        attr_accessor :op, :e1, :e2
-        def initialize op, e1, e2
-          @op, @e1, @e2 = op, e1, e2
+        attr_accessor :op, :e1, :e2, :qualifiers
+        def initialize op, e1, e2, qualifiers = []
+          @op, @e1, @e2, @qualifiers = op, e1, e2, qualifiers
         end
 
         def to_s
-          "(#{op} #{e1.to_s} #{e2.to_s})"
+        "(#{op} #{e1.to_s} #{e2.to_s}#{@qualifiers.empty? ? '' : ', ['+@qualifiers*', '+']'})"
         end
       end
 

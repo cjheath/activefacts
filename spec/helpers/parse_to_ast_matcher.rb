@@ -22,7 +22,7 @@ RSpec::Matchers.define :parse_to_ast do |*expected_asts|
     end
 
     # If we failed to parse, fail and say why:
-    return false unless @result
+    next false unless @result
 
     # Otherwise compare the canonical form of the AST
     @canonical_form = @result.map{|d| d.ast.to_s.gsub(/\s+/,' ')}

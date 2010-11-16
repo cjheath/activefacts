@@ -58,11 +58,11 @@ module ActiveFacts
 
       rule unit_definition
         u:(
-          coeff:unit_coefficient? base:units? s o:unit_offset?
+          s coeff:unit_coefficient? base:units? s o:unit_offset?
           converts s a:(approximately s)? to s
           singular:unit_name s plural:('/' s p:unit_name s)?
         /
-          singular:unit_name s plural:('/' s p:unit_name s)?
+          s singular:unit_name s plural:('/' s p:unit_name s)?
           converts s a:(approximately s)? to s
           coeff:unit_coefficient? base:units? s o:unit_offset?
         )

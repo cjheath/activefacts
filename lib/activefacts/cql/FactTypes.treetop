@@ -149,7 +149,7 @@ module ActiveFacts
 	{
 	  def ast
 	    # reading.ast will return an array of Readings, but the first reading is special. We must:
-	    # * prepend a new role
+	    # * prepend a new role (we get the Role to build *two* ast nodes)
 	    # * attach the qualifiers
 	    readings = reading.ast
 	    readings[0].phrases.unshift(role.ast)
@@ -165,18 +165,38 @@ module ActiveFacts
       end
 
       rule condition_contraction
-	role p:post_qualifiers? q:qualifier?
-	comparator 
-	s e2:expression
-	!reading_word	  # The reading must not continue here!
+	role p:post_qualifiers? q:qualifier? s comparator s e2:expression
+	  !reading_word	  # The reading must not continue here!
 	{
 	  def ast
-	    [ role.ast,
-	      p.empty? ? [] : p.list,
-	      Compiler::Comparison.new(comparator.text_value, role.ast, e2.ast)
-	    ]
+	    c = Compiler::Comparison.new(comparator.text_value, role.ast, e2.ast, q.empty? ? [] : [q.text_value])
+	    [ role.ast, p.empty? ? [] : p.list, c ]
 	  end
 	}
+      end
+
+      rule comparison
+	e1:expression s q:qualifier? s comparator s contraction p:post_qualifiers?
+	{
+	  def ast
+	    role, qualifiers, *readings = *contraction.ast
+	    readings[0].qualifiers += p.list unless p.empty?	# apply post_qualifiers to the contracted reading
+	    c = Compiler::Comparison.new(comparator.text_value, e1.ast, role)
+	    c.qualifiers << q.text_value unless q.empty?
+	    [c] + readings
+	  end
+	}
+        /
+	q:qualifier? e1:expression s comparator s e2:expression # comparisons have no post-qualifiers: p:post_qualifiers?
+        {
+	  def ast
+	    [Compiler::Comparison.new(comparator.text_value, e1.ast, e2.ast, q.empty? ? [] : [q.text_value])]
+	  end
+        }
+      end
+
+      rule comparator
+        '<=' / '<' / '=' / '>=' / '>'
       end
 
       rule reading_word
