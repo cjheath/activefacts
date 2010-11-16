@@ -44,6 +44,16 @@ describe "ASTs from Derived Fact Types with expressions" do
         (>= (* 3 30) {Age}), {Age} "is of" {Person}}
   end
 
+  it "should parse a comparison expression with a contracted comparison" do
+    %q{
+      Director is old: Person directs company, Person is of Age, 20 <= Age < 60;
+    }.should parse_to_ast \
+      %q{FactType: [{Director} "is old"] where {Person} "directs company",
+        {Person} "is of" {Age},
+        (<= 20 {Age}),
+        (< {Age} 60)}
+  end
+
   it "should fail to parse a contracted comparison that doesn't follow a role" do
     %q{
       Director is old: Person directs company, Person is of Age considerable > 3*20;
