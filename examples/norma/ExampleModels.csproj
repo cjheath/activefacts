@@ -114,10 +114,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Orienteering.orm</DependentUpon>
     </Compile>
-    <Compile Include="OrienteeringER._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>OrienteeringER.orm</DependentUpon>
-    </Compile>
     <Compile Include="NonRoleId._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>NonRoleId.orm</DependentUpon>
@@ -196,10 +192,6 @@
     <None Include="Orienteering.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Orienteering._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
-    <None Include="OrienteeringER.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>OrienteeringER._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Address.orm">
       <Generator>ORMCustomTool</Generator>
@@ -413,23 +405,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Orienteering.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="Exists('OrienteeringER.orm')">
-    <None Include="OrienteeringER.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>OrienteeringER.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="OrienteeringER.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>OrienteeringER.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="OrienteeringER.MySQL.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>OrienteeringER.orm</DependentUpon>
-      <ORMGenerator>DDILtoMySQL</ORMGenerator>
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('SchoolActivities.orm')">
@@ -806,6 +781,23 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Blog.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Diplomacy.orm')">
+    <None Include="Diplomacy.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Diplomacy.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Diplomacy.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Diplomacy.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Diplomacy.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Diplomacy.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
