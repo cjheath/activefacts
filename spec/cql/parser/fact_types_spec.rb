@@ -24,6 +24,7 @@ describe "Fact Types" do
     [ "A is interesting : b- C has F -g;",
       ["FactType: [{A} \"is interesting\"] where {b- C} \"has\" {F -g}"]
     ]
+    # REVISIT: Test all quantifiers
   ]
 
   before :each do

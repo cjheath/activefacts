@@ -121,14 +121,13 @@ describe "ASTs from Derived Fact Types with expressions" do
 
   it "should parse a fact type containing a function call" do
     %q{
-      AnnualIncome is where Person has total- Income in Year: Person has total- Income.sum(),
-      Income was earned in current- Time.Year() (as Year);
+      AnnualIncome is where
+        Person has total- Income in Year where
+          Person has total- Income.sum(),
+          Income was earned in current- Time.Year() (as Year);
     }.should parse_to_ast \
       %q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}] where {Person} "has" {total- Income},
         {Income} "was earned in" {current- Time (as Year)}}
   end
-
-  # REVISIT: Test all quantifiers
-  # REVISIT: Test all post-qualifiers
 
 end
