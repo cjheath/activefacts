@@ -88,6 +88,9 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     when "/highlight"
       @show_highlight = !@show_highlight
       puts "Will #{@show_highlight ? "" : "not "}show the highlighted parse"
+    when "/timings"
+      $show_timings = !$show_timings
+      puts "Will #{$show_timings ? "" : "not "}show command timings"
     when "/root"
       self.root = words[0] && words[0].to_sym || :definition
       puts "Looking for a #{self.root}"
@@ -186,9 +189,11 @@ Meta-commands are:
   /help\t\t\tThis help message
   /help topic\t\thelp on a specific topic
   /help topics\t\tList the available help topics
+  /highlight\t\t\tRe-display the parsed CQL with HTML highlighting markup
   /list\t\t\tList all object type names (terms)
   /load file.cql\tLoad a CQL file
   /root rule\t\tParse just a fragment of a CQL statement, matching syntax rule only
+  /timings\t\t\tDisplay the elapsed time to execute each command
   /tree\t\t\tDisplay the abstract syntax tree from each statement parsed
   /trace key\t\tToggle debug tracing key, or list available keys
 }
@@ -416,6 +421,7 @@ puts "Enter / for help on special commands"
 
 while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
   statement = statement ? statement + "\n"+line : line
+  start = Time.now
   case
   when line =~ %r{\A/}
     compiler.metacommand(line)
@@ -424,6 +430,9 @@ while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
     # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
     compiler.process(statement)
     statement = nil
+  end
+  if $show_timings && statement == nil
+    puts "Done in #{((Time.now.to_f-start.to_f)*1000000).to_i} usec"
   end
 end
 puts
