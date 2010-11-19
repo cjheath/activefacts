@@ -121,6 +121,7 @@ module ActiveFacts
 	    Compiler::PresenceConstraint.new context_note, enforcement.ast, readings_list.ast, role_list.ast, quantifier.ast
 	  end
 	}
+	# REVISIT: Each Term1 in the population of <reading> occurs there at least 2 times"
       end
 
       # set (exclusion, mandatory exclusion, complex equality) constraint
@@ -152,8 +153,13 @@ module ActiveFacts
       end
 
       rule subset_constraint
-        s readings s only s if s r2:readings s
-        c:context_note? enforcement ';'
+        (
+	  s readings s only s if s r2:readings s
+	  c:context_note? enforcement ';'
+	/
+	  s if s readings s then s r2:readings s
+	  c:context_note? enforcement ';'
+	)
         {
 	  def ast
 	    context_note = c.empty? ? nil : c.ast

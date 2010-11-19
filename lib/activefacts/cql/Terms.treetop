@@ -157,15 +157,16 @@ module ActiveFacts
       rule non_role_word
         # These words are illegal in (but maybe ok following) a reading where a role word is expected:
         and
-        / where
+        / but
         / if
+        / 'occurs' s quantifier s 'time' 
         / only
         / or
         / quantifier
-	/ returning
+        / returning
+        / then
         / value_constraint
-        / but
-	/ 'occurs' s quantifier s 'time' 
+        / where
       end
 
     end

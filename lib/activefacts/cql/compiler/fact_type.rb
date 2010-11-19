@@ -13,17 +13,22 @@ module ActiveFacts
           @context ||= CompilationContext.new(@vocabulary)
 
           unless @conditions.empty? and !@returning
-            @conditions.each{ |condition| condition.identify_players_with_role_name(@context) }
-            @conditions.each{ |condition| condition.identify_other_players(@context) }
-            @conditions.each{ |condition| condition.bind_roles @context }  # Create the Compiler::Bindings
+            @conditions.each{ |alternate| alternate.each {|condition| condition.identify_players_with_role_name(@context) }}
+            @conditions.each{ |alternate| alternate.each {|condition| condition.identify_other_players(@context) }}
+            @conditions.each{ |alternate| alternate.each {|condition| condition.bind_roles @context }}  # Create the Compiler::Bindings
 
-            @conditions.each do |condition|
-              next if condition.phrases.size == 1 && condition.role_refs.size == 1
-              fact_type = condition.match_existing_fact_type @context
-              raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
+            @conditions.each do |alternate|
+              alternate.each do |condition|
+                next if condition.phrases.size == 1 && condition.role_refs.size == 1
+                fact_type = condition.match_existing_fact_type @context
+                raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
+              end
             end
-            @join = build_join_nodes(@conditions)
-            @roles_by_binding = build_all_join_steps(@conditions)
+            @join = build_join_nodes(@conditions.flatten)
+            @conditions.each do |alternate|
+              @roles_by_binding = build_all_join_steps(alternate)
+              # REVISIT: hook up the alternate join steps here.
+            end
             @join.validate
             @join
           else
@@ -217,7 +222,7 @@ module ActiveFacts
               hash
             end
 
-          if readings_by_role_refs.size != 1
+          if readings_by_role_refs.size != 1 and @conditions.empty?
             # Attempt loose binding here; it might merge some Compiler::RoleRefs to share the same Bindings
             variants = readings_by_role_refs.keys
             (readings_by_role_refs.size-1).downto(1) do |m|   # Start with the last one
@@ -280,7 +285,7 @@ module ActiveFacts
           end
           "FactType: #{(s = super and !s.empty?) ? "#{s} " : '' }#{@readings.inspect}" +
             if @conditions && !@conditions.empty?
-              " where "+@conditions.map{|c| c.to_s}*', '
+              " where "+@conditions.map{|a| a.map{|c| c.to_s}*' and '} * ' or '
             else
               ''
             end +

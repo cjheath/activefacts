@@ -156,7 +156,10 @@ module ActiveFacts
 	    u.empty? ? nil : u.value
 	  end
         }
+	# REVISIT: "where the possible value/s of that <Term> is/are value (, ...)"
       end
+
+      # REVISIT: Value constraint for ValueType or EntityType&Refmode: "the possible values of <TYPE> are value (, ...)"
 
       rule range_list
         '{' s
