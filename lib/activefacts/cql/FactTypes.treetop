@@ -136,7 +136,6 @@ module ActiveFacts
 	      contracted_role = contracted_clauses.shift
 	      qualifiers = contracted_clauses.shift
 	      asts.push(contracted_role)  # And replace it by the role removed from the contracted_clauses
-	      # contracted_clauses[0].conjunction = 'and'     # AND is implicit for a contraction
 	    end
 	    reading = Compiler::Reading.new(asts, qualifiers)
 	    [reading] + contracted_clauses
@@ -150,13 +149,14 @@ module ActiveFacts
       end
 
       rule reading_contraction
-	role p:post_qualifiers? (that/who) s q:qualifier? s reading s
+	role p:post_qualifiers? conjunction:(that/who) s q:qualifier? s reading s
 	{
 	  def ast
 	    # reading.ast will return an array of Readings, but the first reading is special. We must:
 	    # * prepend a new role (we get the Role to build *two* ast nodes)
 	    # * attach the qualifiers
 	    readings = reading.ast
+	    readings[0].conjunction = conjunction.text_value
 	    readings[0].phrases.unshift(role.ast)
 	    readings[0].qualifiers << q.text_value unless q.empty?  # Add maybe/definitely
 
@@ -175,6 +175,7 @@ module ActiveFacts
 	{
 	  def ast
 	    c = Compiler::Comparison.new(comparator.text_value, role.ast, e2.ast, q.empty? ? [] : [q.text_value])
+	    c.conjunction = comparator.text_value
 	    [ role.ast, p.empty? ? [] : p.list, c ]
 	  end
 	}
