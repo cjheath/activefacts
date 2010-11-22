@@ -8,10 +8,10 @@ module ActiveFacts
   module CQL
     grammar FactTypes
       rule query
-	s alternates r:returning_clause? '?'
+	s clauses r:returning_clause? '?'
 	{
 	  def ast
-	    Compiler::FactType.new nil, [], alternates.ast, (r.empty? ? nil : r)
+	    Compiler::FactType.new nil, [], clauses.ast, (r.empty? ? nil : r)
 	  end
 	}
       end
@@ -34,7 +34,7 @@ module ActiveFacts
 
       rule anonymous_fact_type
         clauses
-          ctail:( (':' / where) s a:alternates s)?
+          ctail:( (':' / where) s a:clauses s)?
           returning_clause?
         s ';'
         {
@@ -59,22 +59,17 @@ module ActiveFacts
         }
       end
 
-      rule alternates
-	clauses tail:( or s clauses )*
-	{
-	  def ast
-	    [clauses.ast, *tail.elements.map{|e| e.clauses.ast}]
-	  end
-	}
-      end
-
       rule clauses
         clause
-          ftail:( (',' / and ) s clause s )*
+          ftail:( conjunction:(',' / and / or ) s clause s )*
 	{
 	  def ast
             readings = clause.ast
-            ftail.elements.each{|e| readings += e.clause.ast }
+            ftail.elements.each{|e|
+	      conjunction = e.conjunction.text_value
+	      # conjunction = 'and' if conjunction == ','   # ',' means AND, but disallows left-contractions
+	      readings += e.clause.ast(conjunction)
+	    }
 	    readings
 	  end
 	}
@@ -92,8 +87,11 @@ module ActiveFacts
       rule clause
         s q:qualifier? s reading s p:post_qualifiers? s c:context_note?
         {
-	  def ast
+	  def ast(conjunction = nil)
 	    r = reading.ast	# An array of readings
+	    r[0].conjunction = conjunction
+	    # pre-qualifiers apply to the first reading, post_qualifiers and context_note to the last
+	    # REVISIT: This may be incorrect where the last is an objectification join
 	    r[0].qualifiers << q.text_value unless q.empty?
 	    r[-1].qualifiers += p.list unless p.empty?
 	    r[-1].context_note = c.ast unless c.empty?
@@ -138,9 +136,9 @@ module ActiveFacts
 	      contracted_role = contracted_clauses.shift
 	      qualifiers = contracted_clauses.shift
 	      asts.push(contracted_role)  # And replace it by the role removed from the contracted_clauses
+	      # contracted_clauses[0].conjunction = 'and'     # AND is implicit for a contraction
 	    end
-	    reading = Compiler::Reading.new(asts)
-	    reading.qualifiers += qualifiers if qualifiers
+	    reading = Compiler::Reading.new(asts, qualifiers)
 	    [reading] + contracted_clauses
 	  end
         }
@@ -188,6 +186,7 @@ module ActiveFacts
 	  def ast
 	    role, qualifiers, *readings = *contraction.ast
 	    readings[0].qualifiers += p.list unless p.empty?	# apply post_qualifiers to the contracted reading
+	    # readings[0].conjunction = 'and' # AND is implicit for a contraction
 	    c = Compiler::Comparison.new(comparator.text_value, e1.ast, role)
 	    c.qualifiers << q.text_value unless q.empty?
 	    [c] + readings

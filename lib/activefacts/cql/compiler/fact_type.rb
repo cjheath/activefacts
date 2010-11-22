@@ -13,22 +13,17 @@ module ActiveFacts
           @context ||= CompilationContext.new(@vocabulary)
 
           unless @conditions.empty? and !@returning
-            @conditions.each{ |alternate| alternate.each {|condition| condition.identify_players_with_role_name(@context) }}
-            @conditions.each{ |alternate| alternate.each {|condition| condition.identify_other_players(@context) }}
-            @conditions.each{ |alternate| alternate.each {|condition| condition.bind_roles @context }}  # Create the Compiler::Bindings
+            @conditions.each{ |condition| condition.identify_players_with_role_name(@context) }
+            @conditions.each{ |condition| condition.identify_other_players(@context) }
+            @conditions.each{ |condition| condition.bind_roles @context }  # Create the Compiler::Bindings
 
-            @conditions.each do |alternate|
-              alternate.each do |condition|
-                next if condition.phrases.size == 1 && condition.role_refs.size == 1
-                fact_type = condition.match_existing_fact_type @context
-                raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
-              end
+            @conditions.each do |condition|
+              next if condition.phrases.size == 1 && condition.role_refs.size == 1
+              fact_type = condition.match_existing_fact_type @context
+              raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
             end
             @join = build_join_nodes(@conditions.flatten)
-            @conditions.each do |alternate|
-              @roles_by_binding = build_all_join_steps(alternate)
-              # REVISIT: hook up the alternate join steps here.
-            end
+            @roles_by_binding = build_all_join_steps(conditions)
             @join.validate
             @join
           else
@@ -285,7 +280,7 @@ module ActiveFacts
           end
           "FactType: #{(s = super and !s.empty?) ? "#{s} " : '' }#{@readings.inspect}" +
             if @conditions && !@conditions.empty?
-              " where "+@conditions.map{|a| a.map{|c| c.to_s}*' and '} * ' or '
+              " where "+@conditions.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' '
             else
               ''
             end +
@@ -296,7 +291,7 @@ module ActiveFacts
       end
 
       class Comparison
-        attr_accessor :op, :e1, :e2, :qualifiers
+        attr_accessor :op, :e1, :e2, :qualifiers, :conjunction
         def initialize op, e1, e2, qualifiers = []
           @op, @e1, @e2, @qualifiers = op, e1, e2, qualifiers
         end

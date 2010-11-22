@@ -6,6 +6,7 @@
 require 'activefacts/cql'
 require 'activefacts/support'
 require 'activefacts/api/support'
+require 'spec_helper'
 require 'helpers/test_parser'
 
 describe "Fact Types" do
@@ -19,7 +20,7 @@ describe "Fact Types" do
     # REVISIT: Test all quantifiers
     # REVISIT: Test all post-qualifiers
     [ "AnnualIncome is where Person has total- Income in Year: Person has total- Income.sum(), Income was earned in current- Time.Year() (as Year);",
-      ["FactType: AnnualIncome [{Person} \"has\" {total- Income} \"in\" {Year}] where {Person} \"has\" {total- Income}, {Income} \"was earned in\" {current- Time (as Year)}"]
+      ["FactType: AnnualIncome [{Person} \"has\" {total- Income} \"in\" {Year}] where {Person} \"has\" {total- Income} , {Income} \"was earned in\" {current- Time (as Year)}"]
     ],
     [ "A is interesting : b- C has F -g;",
       ["FactType: [{A} \"is interesting\"] where {b- C} \"has\" {F -g}"]
@@ -34,18 +35,7 @@ describe "Fact Types" do
   FactTypes.each do |c|
     source, ast, definition = *c
     it "should parse #{source.inspect}" do
-      result = @parser.parse_all(source, :definition)
-
-      puts @parser.failure_reason unless result
-
-      #result = [result[-1]]
-      canonical_form = result.map{|d| d.ast.to_s}
-      if ast
-        canonical_form.should == ast
-      else
-        puts "#{source.inspect} should compile to"
-        puts "\t#{canonical_form}"
-      end
+      source.should parse_to_ast *ast
     end
   end
 end

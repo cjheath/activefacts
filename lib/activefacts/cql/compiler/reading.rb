@@ -5,6 +5,7 @@ module ActiveFacts
       class Reading
         attr_reader :phrases
         attr_accessor :qualifiers, :context_note
+        attr_accessor :conjunction      # one of {nil, 'and', ',', 'or'} LATER: 'where' for objectification joins
         attr_reader :fact_type, :reading, :role_sequence    # These are the Metamodel objects
         attr_reader :side_effects
         attr_writer :fact_type          # Assigned for a bare (existential) objectification fact

@@ -14,8 +14,8 @@ describe "ASTs from Derived Fact Types with expressions" do
     %q{
       Director is old: Person directs Company, Person is of Age, Age > 60;
     }.should parse_to_ast \
-      %q{FactType: [{Director} "is old"] where {Person} "directs" {Company} and
-        {Person} "is of" {Age} and
+      %q{FactType: [{Director} "is old"] where {Person} "directs" {Company} ,
+        {Person} "is of" {Age} ,
         (> {Age} 60)}
   end
 
@@ -31,8 +31,8 @@ describe "ASTs from Derived Fact Types with expressions" do
     %q{
       Director is old: Person directs company, Person is of Age > 20+2*20;
     }.should parse_to_ast \
-      %q{FactType: [{Director} "is old"] where {Person} "directs company" and
-        {Person} "is of" {Age} and
+      %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
+        {Person} "is of" {Age}
         (> {Age} (+ 20 (* 2 20)))}
   end
 
@@ -49,7 +49,7 @@ describe "ASTs from Derived Fact Types with expressions" do
       Person(1) provides lineage of Person(2): maybe Person(2) is child of Person(1) [transitive] who is male;
     }.should parse_to_ast \
       %q{FactType: [{Person(1)} "provides lineage of" {Person(2)}] where
-        ["maybe", "transitive"] {Person(2)} "is child of" {Person(1)} and
+        ["maybe", "transitive"] {Person(2)} "is child of" {Person(1)} 
         {Person(1)} "is male"}
   end
 
@@ -61,8 +61,8 @@ describe "ASTs from Derived Fact Types with expressions" do
             definitely >= 21;
     }.should parse_to_ast \
       %q{FactType: [{Person(1)} "is ancestor of adult" {Person(2)}] where
-        ["maybe", "transitive"] {Person(1)} "is parent of" {Person(2)} and
-        ["maybe", "static"] {Person(2)} "is of" {Age} and
+        ["maybe", "transitive"] {Person(1)} "is parent of" {Person(2)}
+        ["maybe", "static"] {Person(2)} "is of" {Age}
         (>= {Age} 21, [definitely])}
   end
 
@@ -70,17 +70,17 @@ describe "ASTs from Derived Fact Types with expressions" do
     %q{
       Director is old: Person directs company, 3*30 >= Age that is of Person;
     }.should parse_to_ast \
-      %q{FactType: [{Director} "is old"] where {Person} "directs company" and
-        (>= (* 3 30) {Age}) and {Age} "is of" {Person}}
+      %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
+        (>= (* 3 30) {Age}) {Age} "is of" {Person}}
   end
 
   it "should parse a comparison expression with a contracted comparison" do
     %q{
       Director is old: Person directs company, Person is of Age, maybe 20 <= Age definitely < 60;
     }.should parse_to_ast \
-      %q{FactType: [{Director} "is old"] where {Person} "directs company" and
-        {Person} "is of" {Age} and
-        (<= 20 {Age}, [maybe]) and
+      %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
+        {Person} "is of" {Age} ,
+        (<= 20 {Age}, [maybe]) 
         (< {Age} 60, [definitely])}
   end
 
@@ -93,15 +93,15 @@ describe "ASTs from Derived Fact Types with expressions" do
   it "should parse pre and post-qualifiers and leading and trailing adjectives with contracted comparisons" do
     %q{
       A is a farce: maybe A has completely- B [transitive, acyclic] < 5, B -c = 2;
-    }.should parse_to_ast %q{FactType: [{A} "is a farce"] where ["acyclic", "maybe", "transitive"] {A} "has" {completely- B} and (< {completely- B} 5) and (= {B -c} 2)}
+    }.should parse_to_ast %q{FactType: [{A} "is a farce"] where ["acyclic", "maybe", "transitive"] {A} "has" {completely- B} (< {completely- B} 5) , (= {B -c} 2)}
   end
 
   it "should parse multiple leading and trailing adjectives with contracted comparisons" do
     %q{
       A is a farce: maybe A has completely- green B [transitive, acyclic] < 9, B c -d = 2;
     }.should parse_to_ast \
-      %q{FactType: [{A} "is a farce"] where ["acyclic", "maybe", "transitive"] {A} "has" {completely- green B} and
-      (< {completely- green B} 9) and (= {B c -d} 2)}
+      %q{FactType: [{A} "is a farce"] where ["acyclic", "maybe", "transitive"] {A} "has" {completely- green B} 
+      (< {completely- green B} 9) , (= {B c -d} 2)}
   end
 
   it "should parse a comparison clause containing units" do
@@ -115,8 +115,8 @@ describe "ASTs from Derived Fact Types with expressions" do
     }.should parse_to_ast \
       %q{Unit(foot/feet) is 254/1+0 mm^1},
       %q{ValueType: Width is written as Integer in [["mm", 1]];},
-      %q{FactType: [{Window} "requires toughening"] where {Window} "has" {Width} and
-        {Window} "has" {Height} and (>= (* {Width} {Height}) (10 in feet^2))}
+      %q{FactType: [{Window} "requires toughening"] where {Window} "has" {Width} ,
+        {Window} "has" {Height} , (>= (* {Width} {Height}) (10 in feet^2))}
   end
 
   it "should parse a fact type containing a function call" do
@@ -126,7 +126,7 @@ describe "ASTs from Derived Fact Types with expressions" do
           Person has total- Income.sum(),
           Income was earned in current- Time.Year() (as Year);
     }.should parse_to_ast \
-      %q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}] where {Person} "has" {total- Income} and
+      %q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}] where {Person} "has" {total- Income} ,
         {Income} "was earned in" {current- Time (as Year)}}
   end
 
