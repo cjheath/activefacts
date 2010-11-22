@@ -10,7 +10,7 @@ RSpec::Matchers.define :parse_to_ast do |*expected_asts|
     if s.is_a?(Array)
       s.map{|e| canonicalise(e)}
     else
-      s.to_s.gsub(/\s+/,' ')
+      s.to_s.gsub(/\s+/,' ').strip
     end
   end
 

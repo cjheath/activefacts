@@ -46,7 +46,9 @@ module ActiveFacts
             quotes = false
             @phrases.inject(""){|s, p|
               if RoleRef === p
-                s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s + ' '
+                s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s +
+                  ((oj = p.objectification_join) ?  ' ('+ oj.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' ' + ')' : '') +
+                ' '
               else
                 s + (quotes ? '' : (quotes = true; '"')) + p + ' '
               end
@@ -109,6 +111,7 @@ module ActiveFacts
         #
         # As this match may not necessarily be used (depending on the side effects),
         # no change is made to this Reading object - those will be done later.
+        #
         def match_existing_fact_type context
           raise "Internal error, reading already matched, should not match again" if @fact_type
           rrs = role_refs

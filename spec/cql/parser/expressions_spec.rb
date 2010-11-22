@@ -136,4 +136,17 @@ describe "ASTs from Derived Fact Types with expressions" do
         {Income} "was earned in" {current- Time (as Year)}}
   end
 
+  it "should parse a fact type containing objectification joins and contractions" do
+    %q{
+      Driving was negligent where
+        Driving (where maybe Driver drove in Incident [acyclic] that definitely is of Claim [intransitive]) followed Intoxication [static];
+    }.should parse_to_ast \
+      %q{
+        FactType: [{Driving} "was negligent"] where ["static"] {Driving}
+        (where ["acyclic", "maybe"] {Driver} "drove in" {Incident}
+          that ["definitely", "intransitive"] {Incident} "is of" {Claim})
+        "followed" {Intoxication}}
+      }
+  end
+
 end

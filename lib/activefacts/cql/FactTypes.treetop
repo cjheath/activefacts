@@ -254,7 +254,13 @@ module ActiveFacts
 	      raise "It is not permitted to provide both a literal value and a value constraint" if value_constraint and literal
 	    end
 
-	    objectification_join = oj.empty? ? nil : oj.ast
+	    objectification_join = if oj.empty?
+		nil
+	      else
+		ast = oj.ast
+		ast[0].conjunction = 'where'
+		ast
+	      end
 	    player.ast(quantifier, function_call, role_name, value_constraint, literal, objectification_join)
 	  end
         }
