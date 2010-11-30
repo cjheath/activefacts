@@ -114,118 +114,152 @@ module ActiveFacts
         #
         def match_existing_fact_type context
           raise "Internal error, reading already matched, should not match again" if @fact_type
-          rrs = role_refs
-          players = rrs.map{|rr| rr.player}
-          raise "Must identify players before matching fact types" if players.include? nil
-          raise "A fact type must involve at least one object type, but there are none in '#{inspect}'" if players.size == 0
+          # If we fail to match, try to a left contraction (or save this for a subsequent left contraction):
+          left_contract_this_onto = context.left_contractable_reading
+          new_conjunction = (conjunction == nil || conjunction == ',')
+          changed_conjunction = (lcc = context.left_contraction_conjunction) && lcc != conjunction
+          if context.left_contraction_allowed && (new_conjunction || changed_conjunction)
+            # Conjunctions are that/who, where, comparison-operator, ','
+            debug :matching, "A left contraction will be against #{self.inspect}, conjunction is #{conjunction.inspect}"
+            context.left_contractable_reading = self
+            left_contract_this_onto = nil # Can't left-contract this reading
+          end
+          context.left_contraction_conjunction = new_conjunction ? nil : @conjunction
 
-          player_names = players.map{|p| p.name}
+          contracted_role = nil
 
-          debug :matching, "Looking for existing #{players.size}-ary fact types matching '#{inspect}'" do
-            debug :matching, "Players are '#{player_names.inspect}'"
+          rrs = []+role_refs
+          begin
+            players = rrs.map{|rr| rr.player}
+            raise "Must identify players before matching fact types" if players.include? nil
+            raise "A fact type must involve at least one object type, but there are none in '#{inspect}'" if players.size == 0 && !left_contract_this_onto
 
-            # Match existing fact types in objectification joins first:
-            rrs.each do |role_ref|
-              next unless joins = role_ref.objectification_join and !joins.empty?
-              role_ref.objectification_join.each do |oj|
-                ft = oj.match_existing_fact_type(context)
-                raise "Unrecognised fact type #{oj.display}" unless ft
-                if (ft && ft.entity_type == role_ref.player)
-                  role_ref.objectification_of = ft
-                  oj.objectified_as = role_ref
-                end
-              end
-              raise "#{role_ref.inspect} contains objectification joins that do not objectify it" unless role_ref.objectification_of
-            end
+            player_names = players.map{|p| p.name}
 
-            # For each role player, find the compatible types (the set of all subtypes and supertypes).
-            # For a player that's an objectification, we don't allow implicit supertype joins
-            player_related_types =
-              rrs.map do |role_ref|
-                player = role_ref.player
-                ((role_ref.objectification_of ? [] : player.supertypes_transitive) +
-                  player.subtypes_transitive).uniq
-              end
+            debug :matching, "Looking for existing #{players.size}-ary fact types matching '#{contracted_role && contracted_role.inspect+' '}#{inspect}'" do
+              debug :matching, "Players are '#{player_names.inspect}'"
 
-            debug :matching, "Players must match '#{player_related_types.map{|pa| pa.map{|p|p.name}}.inspect}'"
-
-            # The candidate fact types have the right number of role players of related types.
-            # If any role is played by a supertype or subtype of the required type, there's an implicit subtyping join
-            candidate_fact_types =
-              player_related_types[0].map do |related_type|
-                related_type.all_role.select do |role|
-                  all_roles = role.fact_type.all_role
-                  next if all_roles.size != players.size      # Wrong number of players
-                  next if role.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
-
-                  all_players = all_roles.map{|r| r.object_type}  # All the players of this candidate fact type
-
-                  next if player_related_types[1..-1].        # We know the first player is compatible, check the rest
-                    detect do |player_types|                  # Make sure that there remains a compatible player
-                      # player_types is an array of the types compatible with the Nth player
-                      compatible_player = nil
-                      all_players.each_with_index do |p, i|
-                        if player_types.include?(p)
-                          compatible_player = p
-                          all_players.delete_at(i)
-                          break
-                        end
-                      end
-                      !compatible_player
+              # Match existing fact types in objectification joins first (not for contractions):
+              if !contracted_role
+                rrs.each do |role_ref|
+                  next unless joins = role_ref.objectification_join and !joins.empty?
+                  role_ref.objectification_join.each do |oj|
+                    ft = oj.match_existing_fact_type(context)
+                    raise "Unrecognised fact type #{oj.display}" unless ft
+                    if (ft && ft.entity_type == role_ref.player)
+                      role_ref.objectification_of = ft
+                      oj.objectified_as = role_ref
                     end
-
-                  true
-                end.
-                  map{ |role| role.fact_type}
-              end.flatten.uniq
-
-            # If there is more than one possible exact match (same adjectives) with different subyping, the implicit join is ambiguous and is not allowed
-
-            debug :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching '#{inspect}'" do
-              matches = {}
-              candidate_fact_types.map do |fact_type|
-                fact_type.all_reading.map do |reading|
-                  next unless side_effects = reading_matches(fact_type, reading)
-                  matches[reading] = side_effects if side_effects
+                  end
+                  raise "#{role_ref.inspect} contains objectification joins that do not objectify it" unless role_ref.objectification_of
                 end
               end
 
-              # REVISIT: Side effects that leave extra adjectives should only be allowed if the
-              # same extra adjectives exist in some other reading in the same declaration.
-              # The extra adjectives are then necessary to associate the two role players
-              # when consumed adjectives were required to bind to the underlying fact types.
-              # This requires the final decision on fact type matching to be postponed until
-              # the whole declaration has been processed and the extra adjectives can be matched.
-
-              best_matches = matches.keys.sort_by{|match|
-                # Between equivalents, prefer the one without a join on the first role
-                (m = matches[match]).cost*2 + ((!(e = m.role_side_effects[0]) || e.cost) == 0 ? 0 : 1)
-              }
-              debug :matching_fails, "Found #{matches.size} valid matches#{matches.size > 0 ? ', best is '+best_matches[0].expand : ''}"
-
-              if matches.size > 1
-                first = matches[best_matches[0]]
-                cost = first.cost
-                equal_best = matches.select{|k,m| m.cost == cost}
-
-                if equal_best.size > 1 and equal_best.detect{|k,m| !m.fact_type.is_a?(Metamodel::TypeInheritance)}
-                  # Complain if there's more than one equivalent cost match (unless all are TypeInheritance):
-                  raise "#{@phrases.inspect} could match any of the following:\n\t"+
-                    best_matches.map { |reading| reading.expand + " with " + matches[reading].describe } * "\n\t"
+              # For each role player, find the compatible types (the set of all subtypes and supertypes).
+              # For a player that's an objectification, we don't allow implicit supertype joins
+              player_related_types =
+                rrs.zip(players).map do |role_ref, player|
+                  # REVISIT: @context.implicit_subtype_joins_allowed ? ... : [player]
+                  ((role_ref && role_ref.objectification_of ? [] : player.supertypes_transitive) +
+                    player.subtypes_transitive).uniq
                 end
-              end
 
-              if matches.size >= 1
-                @reading = best_matches[0]
-                @side_effects = matches[@reading]
-                @fact_type = @side_effects.fact_type
-                debug :matching, "Matched '#{@fact_type.default_reading}'"
-                apply_side_effects(context, @side_effects)
-                return @fact_type
-              end
+              debug :matching, "Players must match '#{player_related_types.map{|pa| pa.map{|p|p.name}}.inspect}'"
 
+              # The candidate fact types have the right number of role players of related types.
+              # If any role is played by a supertype or subtype of the required type, there's an implicit subtyping join
+              candidate_fact_types =
+                player_related_types[0].map do |related_type|
+                  related_type.all_role.select do |role|
+                    all_roles = role.fact_type.all_role
+                    next if all_roles.size != players.size      # Wrong number of players
+                    next if role.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+
+                    all_players = all_roles.map{|r| r.object_type}  # All the players of this candidate fact type
+
+                    next if player_related_types[1..-1].        # We know the first player is compatible, check the rest
+                      detect do |player_types|                  # Make sure that there remains a compatible player
+                        # player_types is an array of the types compatible with the Nth player
+                        compatible_player = nil
+                        all_players.each_with_index do |p, i|
+                          if player_types.include?(p)
+                            compatible_player = p
+                            all_players.delete_at(i)
+                            break
+                          end
+                        end
+                        !compatible_player
+                      end
+
+                    true
+                  end.
+                    map{ |role| role.fact_type}
+                end.flatten.uniq
+
+              # If there is more than one possible exact match (same adjectives) with different subyping, the implicit join is ambiguous and is not allowed
+
+              debug :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching '#{contracted_role && contracted_role.inspect+' '}{inspect}'" do
+                matches = {}
+                candidate_fact_types.map do |fact_type|
+                  fact_type.all_reading.map do |reading|
+                    next unless side_effects = reading_matches(fact_type, reading, contracted_role)
+                    matches[reading] = side_effects if side_effects
+                  end
+                end
+
+                # REVISIT: Side effects that leave extra adjectives should only be allowed if the
+                # same extra adjectives exist in some other reading in the same declaration.
+                # The extra adjectives are then necessary to associate the two role players
+                # when consumed adjectives were required to bind to the underlying fact types.
+                # This requires the final decision on fact type matching to be postponed until
+                # the whole declaration has been processed and the extra adjectives can be matched.
+
+                best_matches = matches.keys.sort_by{|match|
+                  # Between equivalents, prefer the one without a join on the first role
+                  (m = matches[match]).cost*2 + ((!(e = m.role_side_effects[0]) || e.cost) == 0 ? 0 : 1)
+                }
+                debug :matching_fails, "Found #{matches.size} valid matches#{matches.size > 0 ? ', best is '+best_matches[0].expand : ''}"
+
+                if matches.size > 1
+                  first = matches[best_matches[0]]
+                  cost = first.cost
+                  equal_best = matches.select{|k,m| m.cost == cost}
+
+                  if equal_best.size > 1 and equal_best.detect{|k,m| !m.fact_type.is_a?(Metamodel::TypeInheritance)}
+                    # Complain if there's more than one equivalent cost match (unless all are TypeInheritance):
+                    raise "#{@phrases.inspect} could match any of the following:\n\t"+
+                      best_matches.map { |reading| reading.expand + " with " + matches[reading].describe } * "\n\t"
+                  end
+                end
+
+                if matches.size >= 1
+                  @reading = best_matches[0]
+                  @side_effects = matches[@reading]
+                  @fact_type = @side_effects.fact_type
+                  debug :matching, "Matched '#{@fact_type.default_reading}'"
+                  @phrases.unshift(contracted_role) if contracted_role
+                  apply_side_effects(context, @side_effects)
+                  return @fact_type
+                end
+
+              end
+              debug :matching, "No fact type matched, candidates were '#{candidate_fact_types.map{|ft| ft.default_reading}*"', '"}'"
             end
-            debug :matching, "No fact type matched, candidates were '#{candidate_fact_types.map{|ft| ft.default_reading}*"', '"}'"
+            if left_contract_this_onto && !contracted_role
+              contracted_from = left_contract_this_onto.role_refs[0]
+              contraction_player = contracted_from.player
+              contracted_role = RoleRef.new(contraction_player.name)
+              contracted_role.player = contracted_from.player
+              contracted_role.role_name = contracted_from.role_name
+              contracted_role.bind(context)
+              rrs.unshift contracted_role
+
+              debug :matching, "Failed to match #{inspect}. Trying again using left contraction onto #{contraction_player.name}"
+              redo
+            end
+          end until true  # Once through, unless we hit a redo
+          if contracted_role
+            contracted_role.unbind context
           end
           @fact_type = nil
         end
@@ -248,20 +282,19 @@ module ActiveFacts
         #       trailing adjectives, both marked and unmarked, are absorbed too.
         #     a word that matches the reading's
         #
-        def reading_matches(fact_type, reading)
+        def reading_matches(fact_type, reading, contracted_role = nil)
           side_effects = []    # An array of items for each role, describing any side-effects of the match.
           intervening_words = nil
           residual_adjectives = false
-          debug :matching_fails, "Does '#{@phrases.inspect}' match '#{reading.expand}'" do
+          phrases = [contracted_role].compact+@phrases
+          debug :matching_fails, "Does '#{phrases.inspect}' match '#{reading.expand}'" do
             phrase_num = 0
             reading_parts = reading.text.split(/\s+/)
-            # Check that the number of roles matches (skipped, the caller should have done it):
-            # return nil unless reading_parts.select{|p| p =~ /\{(\d+)\}/}.size == role_refs.size
             reading_parts.each do |element|
               if element !~ /\{(\d+)\}/
                 # Just a word; it must match
-                unless @phrases[phrase_num] == element
-                  debug :matching_fails, "Mismatched ordinary word #{@phrases[phrase_num].inspect} (wanted #{element})"
+                unless phrases[phrase_num] == element
+                  debug :matching_fails, "Mismatched ordinary word #{phrases[phrase_num].inspect} (wanted #{element})"
                   return nil
                 end
                 phrase_num += 1
@@ -270,10 +303,12 @@ module ActiveFacts
                 role_ref = reading.role_sequence.all_role_ref.sort_by{|rr| rr.ordinal}[$1.to_i]
               end
 
+              player = role_ref.role.object_type
+
               # Figure out what's next in this phrase (the next player and the words leading up to it)
               next_player_phrase = nil
               intervening_words = []
-              while (phrase = @phrases[phrase_num])
+              while (phrase = phrases[phrase_num])
                 phrase_num += 1
                 if phrase.is_a?(RoleRef)
                   next_player_phrase = phrase
@@ -283,21 +318,24 @@ module ActiveFacts
                   intervening_words << phrase
                 end
               end
-
-              player = role_ref.role.object_type
               return nil unless next_player_phrase  # reading has more players than we do.
+              next_player = next_player_phrase.player
 
               # The next player must match:
               common_supertype = nil
-              if next_player_phrase.player != player
+              if next_player != player
                 # This relies on the supertypes being in breadth-first order:
-                common_supertype = (next_player_phrase.player.supertypes_transitive & player.supertypes_transitive)[0]
+                common_supertype = (next_player.supertypes_transitive & player.supertypes_transitive)[0]
                 if !common_supertype
-                  debug :matching_fails, "Reading discounted because next player #{player.name} doesn't match #{next_player_phrase.player.name}"
+                  debug :matching_fails, "Reading discounted because next player #{player.name} doesn't match #{next_player.name}"
                   return nil
                 end
 
                 debug :matching_fails, "Subtype join is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
+              else
+                if !next_player_phrase
+                  next    # Contraction succeeded so far
+                end
               end
 
               # It's the right player. Do the adjectives match? This must include the intervening_words, if any.
@@ -331,12 +369,14 @@ module ActiveFacts
                 phrase_ta = (next_player_phrase.trailing_adjective||'').split(/\s+/)
                 i = 0   # Pad the phrases up to the size of the trailing_adjectives
                 while phrase_ta.size < ta.size
-                  break unless (word = @phrases[phrase_num+i]).is_a?(String)
+                  break unless (word = phrases[phrase_num+i]).is_a?(String)
                   phrase_ta << word
                   i += 1
                 end
+                # ta is the adjectives in the fact type being matched
+                # phrase_ta is the explicit adjectives augmented with implicit ones to the same size
                 return nil if ta != phrase_ta[0,ta.size]
-                role_has_residual_adjectives = true if phrase_ta.size > ta.size || i < ta.size
+                role_has_residual_adjectives = true if phrase_ta.size > ta.size
                 absorbed_followers = i
                 phrase_num += i # Skip following words that were consumed as trailing adjectives
               elsif next_player_phrase.trailing_adjective
@@ -359,17 +399,18 @@ module ActiveFacts
 
               residual_adjectives ||= role_has_residual_adjectives
               if residual_adjectives && next_player_phrase.binding.refs.size == 1
+                # This makes matching order-dependent, because there may be no "other purpose"
+                # until another reading has been matched and the roles rebound.
                 debug :matching_fails, "Residual adjectives have no other purpose, so this match fails"
                 return nil
               end
 
               # The phrases matched this reading's next role_ref, save data to apply the side-effects:
-              debug :matching_fails, "Saving side effects for #{next_player_phrase.term}, absorbs #{absorbed_precursors}/#{absorbed_followers}#{common_supertype ? ', join over supertype '+ common_supertype.name : ''}" if absorbed_precursors+absorbed_followers+(common_supertype ? 1 : 0) > 0
               side_effects << ReadingMatchSideEffect.new(next_player_phrase, role_ref, next_player_phrase_num, absorbed_precursors, absorbed_followers, common_supertype, role_has_residual_adjectives)
             end
 
-            if phrase_num != @phrases.size || !intervening_words.empty?
-              debug :matching_fails, "Extra words #{(intervening_words + @phrases[phrase_num..-1]).inspect}"
+            if phrase_num != phrases.size || !intervening_words.empty?
+              debug :matching_fails, "Extra words #{(intervening_words + phrases[phrase_num..-1]).inspect}"
               return nil
             end
 
@@ -422,15 +463,15 @@ module ActiveFacts
                 # These adjective(s) matched either an adjective here, or a follower word, or both.
                 if a = se.phrase.trailing_adjective
                   if a.size >= rra.size
-                    a.slice!(0, rra.size+1) # Remove the matched adjectives and the space (if any)
-                    se.phrase.wipe_trailing_adjective if a.empty?
+                    a = a[rra.size+1..-1]
+                    se.phrase.trailing_adjective = a == '' ? nil : a
                     changed = true
                   end
                 elsif se.absorbed_followers > 0
-                  se.phrase.wipe_trailing_adjective
+                  # The following statement is incorrect. The absorbed adjective is what caused the match.
                   # This phrase is absorbing non-hyphenated adjective(s), which changes its binding
-                  se.phrase.trailing_adjective = @phrases.slice!(se.num+1, se.absorbed_followers)*' '
-                  se.phrase.rebind context
+                  # se.phrase.trailing_adjective =
+                  @phrases.slice!(se.num+1, se.absorbed_followers)*' '
                   changed = true
                 end
               end
@@ -441,18 +482,20 @@ module ActiveFacts
                 # These adjective(s) matched either an adjective here, or a precursor word, or both.
                 if a = se.phrase.leading_adjective
                   if a.size >= rra.size
-                    a.slice!(-rra.size, 1000) # Remove the matched adjectives and the space
-                    a.chop!
-                    se.phrase.wipe_leading_adjective if a.empty?
+                    a = a[0...-rra.size]
+                    se.phrase.leading_adjective = a == '' ? nil : a
                     changed = true
                   end
                 elsif se.absorbed_precursors > 0
-                  se.phrase.wipe_leading_adjective
+                  # The following statement is incorrect. The absorbed adjective is what caused the match.
                   # This phrase is absorbing non-hyphenated adjective(s), which changes its binding
-                  se.phrase.leading_adjective = @phrases.slice!(se.num-se.absorbed_precursors, se.absorbed_precursors)*' '
-                  se.phrase.rebind context
+                  #se.phrase.leading_adjective =
+                  @phrases.slice!(se.num-se.absorbed_precursors, se.absorbed_precursors)*' '
                   changed = true
                 end
+              end
+              if changed
+                se.phrase.rebind context
               end
 
             end
@@ -624,10 +667,15 @@ module ActiveFacts
           @absorbed_followers = absorbed_followers
           @common_supertype = common_supertype
           @residual_adjectives = residual_adjectives
+          debug :matching_fails, "Saving side effects for #{@phrase.term}, absorbs #{@absorbed_precursors}/#{@absorbed_followers}#{@common_supertype ? ', join over supertype '+ @common_supertype.name : ''}" if @absorbed_precursors+@absorbed_followers+(@common_supertype ? 1 : 0) > 0
         end
 
         def cost
           absorbed_precursors + absorbed_followers + (common_supertype ? 1 : 0)
+        end
+
+        def to_s
+          "#{@phrase.inspect} absorbs #{@absorbed_precursors||0}/#{@absorbed_followers||0} at #{@num}#{@common_supertype && ' super '+@common_supertype.name}#{@residual_adjectives ? ' with residual adjectives' : ''}"
         end
       end
 
@@ -641,6 +689,13 @@ module ActiveFacts
           @reading = reading
           @residual_adjectives = residual_adjectives
           @role_side_effects = role_side_effects
+        end
+
+        def to_s
+          'side-effects are [' +
+            @role_side_effects.map{|r| r.to_s}*', ' +
+            ']' +
+            "#{@residual_adjectives ? ' with residual adjectives' : ''}"
         end
 
         def apply_all &b
@@ -668,8 +723,9 @@ module ActiveFacts
       end
 
       class RoleRef
-        attr_reader :term, :leading_adjective, :trailing_adjective, :quantifier, :function_call, :role_name, :value_constraint, :literal, :objectification_join
-        attr_reader :player
+        attr_reader :term, :trailing_adjective, :quantifier, :function_call, :role_name, :value_constraint, :literal, :objectification_join
+        attr_accessor :leading_adjective, :trailing_adjective
+        attr_accessor :player
         attr_accessor :binding
         attr_accessor :reading    # The reading that this RoleRef is part of
         attr_accessor :role       # This refers to the ActiveFacts::Metamodel::Role

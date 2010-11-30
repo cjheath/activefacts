@@ -39,6 +39,9 @@ module ActiveFacts
 
       class CompilationContext
         attr_accessor :allowed_forward_terms
+        attr_accessor :left_contraction_allowed
+        attr_accessor :left_contractable_reading
+        attr_accessor :left_contraction_conjunction
         attr_reader :bindings             # The Bindings in this declaration
         attr_reader :player_by_role_name
 
@@ -48,6 +51,7 @@ module ActiveFacts
           @allowed_forward_terms = []
           @bindings = {}
           @player_by_role_name = {}
+          @left_contraction_allowed = false
         end
 
         # Look up this object_type by its name

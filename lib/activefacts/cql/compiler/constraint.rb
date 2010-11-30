@@ -69,11 +69,13 @@ module ActiveFacts
 
         def bind_readings
           @context = CompilationContext.new(@vocabulary)
+          @context.left_contraction_allowed = true
 
           @readings_lists.map do |readings_list|
             readings_list.each{ |reading| reading.identify_players_with_role_name(@context) }
             readings_list.each{ |reading| reading.identify_other_players(@context) }
             readings_list.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
+            @context.left_contractable_reading = nil # Don't contract outside this set of readings
             readings_list.each do |reading| 
               fact_type = reading.match_existing_fact_type @context
               raise "Unrecognised fact type #{reading.inspect} in #{self.class}" unless fact_type

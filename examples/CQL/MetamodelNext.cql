@@ -421,12 +421,12 @@ either Agreement was reached by Agent or Agreement was on Date;
 each combination Diagram, Position occurs at most one time in
 	Shape is in Diagram,
 	Shape is at Position;
-each combination Entity Type, Type Inheritance occurs at most one time in
-	Entity Type is subtype of super Entity Type,
+each combination Entity Type(1), Type Inheritance occurs at most one time in
+	Entity Type(1) is subtype of super Entity Type(2),
 	Type Inheritance provides identification;
 each Presence Constraint occurs at least one time in
-	Presence Constraint has min Frequency,
-	Presence Constraint has max Frequency,
+	Presence Constraint has min Frequency(2),
+	Presence Constraint has max Frequency(1),
 	Presence Constraint is mandatory;
 each Role Ref occurs at most one time in
 	Join Role projects Role Ref;
@@ -435,10 +435,10 @@ each Role Sequence occurs at least one time in
 each Set Comparison Constraint occurs at least 2 times in
 	Set Comparison Constraint has in Ordinal position Role Sequence;
 each Term occurs at least one time in
-	Term designates Object Type,
-	Term is secondary for Object Type,
+	Term designates Object Type(1),
+	Term is secondary for Object Type(2),
 	Term is name of Role Ref;
-either Value Range has minimum Bound or Value Range has maximum Bound;
+either Value Range has minimum Bound(2) or Value Range has maximum Bound(1);
 each combination Vocabulary, Name occurs at most one time in
 	Constraint belongs to Vocabulary,
 	Constraint is called Name;

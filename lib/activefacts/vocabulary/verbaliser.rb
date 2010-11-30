@@ -111,14 +111,18 @@ module ActiveFacts
         # What words are used (across all roles) for disambiguating the references to this player?
         # If more than one set of adjectives was used, this player must have been subject to loose binding.
         # This method is used to decide when subscripts aren't needed.
-        def role_adjuncts include_rolenames
-          adjuncts = @role_refs.map{|rr|
-            [
-              rr.leading_adjective,
-              include_rolenames ? rr.role.role_name : nil,
-              rr.trailing_adjective
-            ].compact}.uniq.sort +
-              [@join_nodes_by_join.values.map{|jn| jn.role_name}.compact[0]].compact
+        def role_adjuncts matching
+          if matching == :loose
+            adjuncts = []
+          else
+            adjuncts = @role_refs.map{|rr|
+              [
+                rr.leading_adjective,
+                matching == :rolenames ? rr.role.role_name : nil,
+                rr.trailing_adjective
+              ].compact}.uniq.sort
+          end
+          adjuncts += [@join_nodes_by_join.values.map{|jn| jn.role_name}.compact[0]].compact
           adjuncts.flatten*"_"
         end
 
@@ -129,13 +133,19 @@ module ActiveFacts
 
       # Find or create a Player to which we can add this role_ref
       def player(ref)
-        if ref.is_a?(ActiveFacts::Metamodel::JoinRole)
-          @player_by_join_role[ref] or
-            @players.push(p = Player.new(ref.role.object_type)) && p
+        existing_player = if ref.is_a?(ActiveFacts::Metamodel::JoinRole)
+            @player_by_join_role[ref]
+          else
+            @player_by_role_ref[ref] or ref.join_role && @player_by_join_role[ref.join_role]
+          end
+        if existing_player
+          debug :player, "Using existing player for #{ref.role.object_type.name} #{ref.respond_to?(:role_sequence) && ref.role_sequence.all_reading.size > 0 ? ' in reading' : ''}in '#{ref.role.fact_type.default_reading}'"
+          return existing_player
         else
-          @player_by_role_ref[ref] or
-            ref.join_role && @player_by_join_role[ref.join_role] or
-            @players.push(p = Player.new(ref.role.object_type)) && p
+          debug :player, "Adding new player for #{ref.role.object_type.name} #{ref.respond_to?(:role_sequence) && ref.role_sequence.all_reading.size > 0 ? ' in reading' : ''}in '#{ref.role.fact_type.default_reading}'"
+          p = Player.new(ref.role.object_type)
+          @players.push(p)
+          p
         end
       end
 
@@ -253,7 +263,7 @@ module ActiveFacts
       # role names, those are considered. We should instead consider only the role names that are defined
       # within the constraint, not in the underlying fact types. For now, this parameter is passed as true
       # from all the object type verbalisations, and not from constraints.
-      def create_subscripts(include_rolenames = false)
+      def create_subscripts(matching = :normal)
         # Create subscripts, where necessary
         @players.each { |p| p.subscript = nil } # Wipe subscripts
         @players.
@@ -262,7 +272,7 @@ module ActiveFacts
             next if player.subscript  # Done previously
             dups = @players.select do |p|
               p.object_type == object_type &&
-                p.role_adjuncts(include_rolenames) == player.role_adjuncts(include_rolenames)
+                p.role_adjuncts(matching) == player.role_adjuncts(matching)
               end
             if dups.size == 1
               debug :subscript, "No subscript needed for #{object_type.name}"
@@ -270,7 +280,9 @@ module ActiveFacts
             end
             debug :subscript, "Applying subscripts to #{dups.size} occurrences of #{object_type.name}" do
               s = 0
-              dups.each do |player|
+              dups.
+                sort_by{|p| p.role_adjuncts(:role_name)}.
+                each do |player|
                 jrname = player.join_roles.map{|jr| jr.role_ref && jr.role_ref.role.role_name}.compact[0]
                 rname = (rr = player.role_refs[0]) && rr.role.role_name
                 if jrname and !rname
@@ -307,9 +319,11 @@ module ActiveFacts
       # Fix the CQL compiler to create proper joins for these presence constraints instead.
       def roles_have_same_player roles
         role_refs = roles.map do |role|
-          pr = role.fact_type.preferred_reading
-          pr.role_sequence.all_role_ref.detect{|rr| rr.role == role}
-        end
+          role.fact_type.all_reading.map{|reading|
+            reading.role_sequence.all_role_ref.detect{|rr| rr.role == role}
+          } +
+          role.all_role_ref.select{|rr| rr.role_sequence.all_reading.size == 0 }
+        end.flatten.uniq
         role_refs_have_same_player(role_refs)
       end
 
@@ -417,9 +431,7 @@ module ActiveFacts
           end
           player_by_role = {}
           @player_by_role_ref.keys.each{|rr| player_by_role[rr.role] = @player_by_role_ref[rr] if rr.role.fact_type == fact_type }
-          #role_refs = @player_by_role_ref.keys.select{|rr| rr.role.fact_type == fact_type}
           expand_reading_text(nil, reading.text, reading.role_sequence, player_by_role)
-          #reading.expand(name_substitutions)
         end
         joiner ? readings*joiner : readings
       end
@@ -447,6 +459,8 @@ module ActiveFacts
       end
 
       def subscripted_player role_ref, subscript = nil, join_role_name = nil
+        prr = @player_by_role_ref[role_ref]
+        subscript ||= prr.subscript if prr
         debug :subscript, "Need to apply subscript #{subscript} to #{role_ref.role.object_type.name}" if subscript
         object_type = role_ref.role.object_type
         (join_role_name ||

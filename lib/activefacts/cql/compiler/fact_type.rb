@@ -3,37 +3,49 @@ module ActiveFacts
     class Compiler < ActiveFacts::CQL::Parser
 
       class Query < ObjectType
+        attr_reader :context    # Exposed for testing purposes
         def initialize name, conditions = nil, returning = nil
           super name
           @conditions = conditions
           @returning = returning
         end
 
+        def prepare_roles readings = nil
+          readings = (readings || []) + @conditions
+          @context ||= CompilationContext.new(@vocabulary)
+          readings.each{ |reading| reading.identify_players_with_role_name(@context) }
+          readings.each{ |reading| reading.identify_other_players(@context) }
+          # REVISIT: identify and bind players in @returning clauses also.
+          readings.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
+        end
+
         def compile
           @context ||= CompilationContext.new(@vocabulary)
+          @context.left_contraction_allowed = true
 
+          # Match roles with players, and match readings with existing fact types
+          prepare_roles
+          @conditions.each do |condition|
+            next if condition.phrases.size == 1 && condition.role_refs.size == 1
+            fact_type = condition.match_existing_fact_type @context
+            raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
+          end
+
+          # Build the join:
           unless @conditions.empty? and !@returning
-            @conditions.each{ |condition| condition.identify_players_with_role_name(@context) }
-            @conditions.each{ |condition| condition.identify_other_players(@context) }
-            @conditions.each{ |condition| condition.bind_roles @context }  # Create the Compiler::Bindings
-
-            @conditions.each do |condition|
-              next if condition.phrases.size == 1 && condition.role_refs.size == 1
-              fact_type = condition.match_existing_fact_type @context
-              raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
-            end
             @join = build_join_nodes(@conditions.flatten)
-            @roles_by_binding = build_all_join_steps(conditions)
+            @roles_by_binding = build_all_join_steps(@conditions)
             @join.validate
             @join
-          else
-            nil
           end
+          @context.left_contraction_allowed = false
+          @join
         end
       end
 
       class FactType < ActiveFacts::CQL::Compiler::Query
         attr_reader :fact_type
+        attr_reader :readings
         attr_writer :name
         attr_writer :pragmas
 
@@ -43,10 +55,8 @@ module ActiveFacts
         end
 
         def compile
-
-          #
           # Process:
-          # * Identify all role players
+          # * Identify all role players (must be done with readings and conditions BEFORE matching readings)
           # * Match up the players in all @readings
           #   - Be aware of multiple roles with the same player, and bind tight/loose using subscripts/role_names/adjectives
           #   - Reject the fact type unless all @readings match
@@ -58,15 +68,10 @@ module ActiveFacts
           # * Objectify the fact type if @name
           #
 
-          @context ||= CompilationContext.new(@vocabulary)
-          @readings.each{ |reading| reading.identify_players_with_role_name(@context) }
-          @readings.each{ |reading| reading.identify_other_players(@context) }
-          @readings.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
+          prepare_roles @readings
 
           join = super
           return join if @readings.empty?  # It's a query
-
-          verify_matching_roles   # All readings of a fact type must have the same roles
 
           # Ignore any useless readings:
           @readings.reject!{|reading| reading.is_existential_type }
@@ -74,6 +79,8 @@ module ActiveFacts
 
           # See if any existing fact type is being invoked (presumably to objectify or extend it)
           @fact_type = check_compatibility_of_matched_readings
+
+          verify_matching_roles   # All readings of a fact type must have the same roles
 
           if !@fact_type
             # Make a new fact type:
@@ -142,7 +149,9 @@ module ActiveFacts
             select{ |reading| reading.match_existing_fact_type @context }.
             sort_by{ |reading| reading.side_effects.cost }
           fact_types = @existing_readings.map{ |reading| reading.fact_type }.uniq.compact
-          return nil if fact_types.empty? || @existing_readings[0].side_effects.cost != 0
+          return nil if fact_types.empty?
+          # If there's only a single reading, the match must be exact:
+          return nil if @readings.size == 1 && @existing_readings[0].side_effects.cost != 0
           if (fact_types.size > 1)
             # There must be only one fact type with exact matches:
             if @existing_readings[0].side_effects.cost != 0 or

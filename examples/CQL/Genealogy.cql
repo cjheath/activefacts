@@ -87,8 +87,8 @@ Participation is where
  * Constraints:
  */
 each Event Date occurs at least one time in
-	Event Date wasnt before min Year,
-	Event Date wasnt after max Year,
+	Event Date wasnt before min Year(2),
+	Event Date wasnt after max Year(1),
 	Event Date occurred in Month,
 	Event Date occurred on Day;
 each Event occurs at least one time in

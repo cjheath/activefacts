@@ -145,7 +145,7 @@ describe "ASTs from Derived Fact Types with expressions" do
         FactType: [{Driving} "was negligent"] where ["static"] {Driving}
         (where ["acyclic", "maybe"] {Driver} "drove in" {Incident}
           that ["definitely", "intransitive"] {Incident} "is of" {Claim})
-        "followed" {Intoxication}}
+        "followed" {Intoxication}
       }
   end
 

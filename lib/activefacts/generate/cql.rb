@@ -226,7 +226,7 @@ module ActiveFacts
           verbaliser.alternate_readings entity_type.fact_type.all_reading
         end
 
-        verbaliser.create_subscripts(true)      # Ok, the Verbaliser is ready to fly
+        verbaliser.create_subscripts(:rolenames)      # Ok, the Verbaliser is ready to fly
 
         fact_readings =
           nonstandard_readings.map { |reading| expanded_reading(verbaliser, reading, fact_constraints, true) }
@@ -261,7 +261,7 @@ module ActiveFacts
           verbaliser.alternate_readings fact_type.all_reading
           @fact_types_dumped[fact_type] = true unless fact_type.entity_type # Must dump objectification still!
         end
-        verbaliser.create_subscripts(true)
+        verbaliser.create_subscripts(:rolenames)
 
         irn = verbaliser.identifying_role_names identifying_role_refs
 
@@ -300,7 +300,7 @@ module ActiveFacts
           # Announce all the objectified fact roles to the verbaliser so it can decide on any necessary subscripting.
           # The RoleRefs for corresponding roles across all readings are for the same player.
           verbaliser.alternate_readings o.fact_type.all_reading
-          verbaliser.create_subscripts(true)
+          verbaliser.create_subscripts(:rolenames)
 
           print " where\n\t" + fact_readings_with_constraints(verbaliser, o.fact_type)*",\n\t"
         end
@@ -341,7 +341,7 @@ module ActiveFacts
         if (pr.role_sequence.all_role_ref.to_a[0].join_role)
           verbaliser.prepare_role_sequence pr.role_sequence
         end
-        verbaliser.create_subscripts(true)
+        verbaliser.create_subscripts(:rolenames)
 
         print(fact_readings_with_constraints(verbaliser, fact_type)*",\n\t")
         if (pr.role_sequence.all_role_ref.to_a[0].join_role)
@@ -390,6 +390,8 @@ module ActiveFacts
         end
 
         verbaliser.prepare_role_sequence(c.role_sequence, join_over)
+        # REVISIT: Need to discount role_adjuncts in here, since this constraint uses loose binding:
+        verbaliser.create_subscripts :loose
 
         expanded_readings = verbaliser.verbalise_over_role_sequence(c.role_sequence, nil, role_proximity)
         if c.min_frequency == 1 && c.max_frequency == nil and c.role_sequence.all_role_ref.size == 2
@@ -428,7 +430,7 @@ module ActiveFacts
             end
           end
         end
-        verbaliser.create_subscripts
+        verbaliser.create_subscripts :normal
 
         if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.join_role}}
           # This set constraint has an explicit join. Verbalise it.
@@ -445,6 +447,8 @@ module ActiveFacts
             puts "either " + readings_list.join(" or ") + " but not both;"
             return
           end
+
+          # Loose binding will apply only to the constrained roles, not to all roles. Not handled here.
           mode = c.is_mandatory ? "exactly one" : "at most one"
           puts "for each #{players.map{|p| p.name}*", "} #{mode} of these holds:\n\t" +
             readings_list.join(",\n\t") +
@@ -504,7 +508,7 @@ module ActiveFacts
         transposed_role_refs.each { |role_refs| verbaliser.role_refs_are_subtype_joined role_refs }
         verbaliser.prepare_role_sequence c.subset_role_sequence
         verbaliser.prepare_role_sequence c.superset_role_sequence
-        verbaliser.create_subscripts
+        verbaliser.create_subscripts :normal
 
         puts \
           verbaliser.verbalise_over_role_sequence(c.subset_role_sequence) +
