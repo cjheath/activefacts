@@ -281,7 +281,11 @@ module ActiveFacts
             debug :subscript, "Applying subscripts to #{dups.size} occurrences of #{object_type.name}" do
               s = 0
               dups.
-                sort_by{|p| p.role_adjuncts(:role_name)}.
+                sort_by{|p|   # Guarantee stable numbering
+                  p.role_adjuncts(:role_name) + ' ' +
+                    # Tie-breaker:
+                    p.role_refs.map{|rr| rr.role.fact_type.preferred_reading.text}.sort.to_s
+                }.
                 each do |player|
                 jrname = player.join_roles.map{|jr| jr.role_ref && jr.role_ref.role.role_name}.compact[0]
                 rname = (rr = player.role_refs[0]) && rr.role.role_name
