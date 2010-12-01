@@ -19,6 +19,19 @@ describe "ASTs from Derived Fact Types with expressions" do
         (> {Age} 60)}
   end
 
+  it "should parse a comparison clause with subscripts" do
+    %q{
+      Director is old: Person directs Company, Person has Salary(2), Person is of Age(1), Age(1) > Salary(2);
+    }.should parse_to_ast \
+      %q{
+        FactType: [{Director} "is old"]
+        where {Person} "directs" {Company} ,
+        {Person} "has" {Salary(2)} ,
+        {Person} "is of" {Age(1)} ,
+        (> {Age(1)} {Salary(2)})
+      }
+  end
+
   it "should parse simple comparison clause having an unmarked adjective" do
     %q{
       Person is independent: Person has taxable- Income and taxable Income >= 20000 dollars or Person has sugar-Daddy;
@@ -132,8 +145,9 @@ describe "ASTs from Derived Fact Types with expressions" do
           Person has total- Income.sum(),
           Income was earned in current- Time.Year() (as Year);
     }.should parse_to_ast \
-      %q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}] where {Person} "has" {total- Income} ,
-        {Income} "was earned in" {current- Time (as Year)}}
+      %q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}]
+        where {Person} "has" {total- Income}.sum() ,
+        {Income} "was earned in" {current- Time (as Year)}.Year()}
   end
 
   it "should parse a fact type containing objectification joins and contractions" do

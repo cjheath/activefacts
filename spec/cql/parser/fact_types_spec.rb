@@ -20,7 +20,7 @@ describe "Fact Types" do
     # REVISIT: Test all quantifiers
     # REVISIT: Test all post-qualifiers
     [ "AnnualIncome is where Person has total- Income in Year: Person has total- Income.sum(), Income was earned in current- Time.Year() (as Year);",
-      ["FactType: AnnualIncome [{Person} \"has\" {total- Income} \"in\" {Year}] where {Person} \"has\" {total- Income} , {Income} \"was earned in\" {current- Time (as Year)}"]
+      [%q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}] where {Person} "has" {total- Income}.sum() , {Income} "was earned in" {current- Time (as Year)}.Year()}]
     ],
     [ "A is interesting : b- C has F -g;",
       ["FactType: [{A} \"is interesting\"] where {b- C} \"has\" {F -g}"]

@@ -49,8 +49,12 @@ module ActiveFacts
                 s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s +
                   ((oj = p.objectification_join) ?  ' ('+ oj.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' ' + ')' : '') +
                 ' '
+              elsif FunctionCallChain === p
+                s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s
+              elsif String === p
+                s + (quotes ? '' : (quotes = true; '"')) + p.to_s + ' '
               else
-                s + (quotes ? '' : (quotes = true; '"')) + p + ' '
+                raise "Unexpected phrase type in reading: #{p.to_s}"
               end
             }.sub(/ $/,'') + (quotes ? '"' : '')
           }#{

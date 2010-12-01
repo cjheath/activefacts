@@ -208,11 +208,11 @@ Data Store Service has one Subscription;
  */
 either Company is client or Company is vendor but not both;
 for each Credential exactly one of these holds:
-	Data Store(1) requires Credential,
+	Data Store(2) requires Credential,
 	Data Store Service requires Credential,
 	Vendor requires Credential,
 	Data Store File Host System has Internal-Credential,
-	Data Store(2) has Internal-Credential;
+	Data Store(1) has Internal-Credential;
 for each Network exactly one of these holds:
 	Network is used by Host System,
 	Company has Origin-Network,

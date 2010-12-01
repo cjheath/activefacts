@@ -356,7 +356,8 @@ module ActiveFacts
 
       class FunctionCallChain
         attr_accessor :variable, :calls
-        def initialize calls
+        def initialize var, *calls
+          @variable = var
           @calls = calls
         end
 
@@ -373,7 +374,7 @@ module ActiveFacts
         end
 
         def to_s
-          "#{@name}(@params.map{|param| param.to_s}*', '})"
+          "#{@name}(#{@params.map{|param| param.to_s}*', '})"
         end
       end
 

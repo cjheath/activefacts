@@ -229,9 +229,7 @@ module ActiveFacts
       # This is the rule that causes most back-tracking. I think you can see why.
       rule role
         q:(quantifier enforcement)?
-        player:term
-        func:function_call? s
-        role_id:(role_name / subscript )?
+        player:derived_variable
         lr:(
 	  literal u:unit?
 	  /
@@ -243,8 +241,6 @@ module ActiveFacts
 	    if !q.empty? && q.quantifier.value
 	      quantifier = Compiler::Quantifier.new(q.quantifier.value[0], q.quantifier.value[1], q.enforcement.ast)
 	    end
-	    role_name = role_id.empty? ? nil : role_id.value
-	    function_call = nil
 	    if !lr.empty?
 	      if lr.respond_to?(:literal)
 		literal = lr.literal.value
@@ -261,7 +257,7 @@ module ActiveFacts
 		ast[0].conjunction = 'where'
 		ast
 	      end
-	    player.ast(quantifier, function_call, role_name, value_constraint, literal, objectification_join)
+	    player.ast(quantifier, value_constraint, literal, objectification_join)
 	  end
         }
       end
