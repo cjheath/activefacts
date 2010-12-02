@@ -689,6 +689,10 @@ module ActiveFacts
         end
 
         def ordinal; 0; end
+
+        def expand
+          @fact_type.default_reading
+        end
       end
 
       def all_reading
