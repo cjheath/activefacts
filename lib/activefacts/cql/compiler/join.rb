@@ -33,7 +33,8 @@ module ActiveFacts
             objectification_step = nil
             reading.role_refs.each do |role_ref|
               # These role_refs are the Compiler::RoleRefs. These have associated Metamodel::RoleRefs,
-              # but we need to create JoinRoles for those roles.  # REVISIT: JoinRoles may need to save residual_adjectives
+              # but we need to create JoinRoles for those roles.
+              # REVISIT: JoinRoles may need to save residual_adjectives
               binding = role_ref.binding
               role = role_ref.role || role_ref.role_ref.role
               join_role = nil
