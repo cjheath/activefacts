@@ -410,30 +410,35 @@ end
 
 compiler = InteractiveCQL.new
 statement = nil
+loaded_files = false
 ARGV.each do |arg|
   if arg =~ /^--(.*)/
     compiler.metacommand('/'+$1)
   else
+    loaded_files = false or break if arg == '-'
     compiler.load_file(arg)
+    loaded_files = true
   end
 end
-puts "Enter / for help on special commands"
 
-while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
-  statement = statement ? statement + "\n"+line : line
-  start = Time.now
-  case
-  when line =~ %r{\A/}
-    compiler.metacommand(line)
-    statement = nil
-  when compiler.root != :definition || line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /[;?]/
-    # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
-    compiler.process(statement)
-    statement = nil
+if !loaded_files
+  puts "Enter / for help on special commands"
+
+  while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
+    statement = statement ? statement + "\n"+line : line
+    start = Time.now
+    case
+    when line =~ %r{\A/}
+      compiler.metacommand(line)
+      statement = nil
+    when compiler.root != :definition || line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /[;?]/
+      # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
+      compiler.process(statement)
+      statement = nil
+    end
+    if $show_timings && statement == nil
+      puts "Done in #{((Time.now.to_f-start.to_f)*1000000).to_i} usec"
+    end
   end
-  if $show_timings && statement == nil
-    puts "Done in #{((Time.now.to_f-start.to_f)*1000000).to_i} usec"
-  end
+  puts
 end
-puts
-
