@@ -12,6 +12,7 @@ module ActiveFacts
           @population = @constellation.Population(@vocabulary, @population_name)
 
           @context = CompilationContext.new(@vocabulary)
+          @context.left_contraction_allowed = true
           @readings.each{ |reading| reading.identify_players_with_role_name(@context) }
           @readings.each{ |reading| reading.identify_other_players(@context) }
           @readings.each{ |reading| reading.bind_roles @context }
