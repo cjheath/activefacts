@@ -150,6 +150,20 @@ describe "ASTs from Derived Fact Types with expressions" do
         {Income} "was earned in" {current- Time (as Year)}.Year()}
   end
 
+  it "should parse a fact type containing a function call with subscripts" do
+    %q{
+      AnnualIncome is where
+        Person has total- Income in Year where
+          Person has total- Income.sum(),
+          Income was earned in current- Time.Year()(1);
+    }.should parse_to_ast \
+      %q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}]
+        where {Person} "has" {total- Income}.sum() ,
+        {Income} "was earned in" {current- Time(1)}.Year()}
+  end
+
+  it "should parse a fact type containing an expression with subscripts"
+
   it "should parse a fact type containing objectification joins and contractions" do
     %q{
       Driving was negligent where
