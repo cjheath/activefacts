@@ -193,7 +193,7 @@ module ActiveFacts
 
       # The reading for the fact type underlying this Reference
       def reading
-        is_self_value ? "#{from.name} has value" : @fact_type.default_reading([], true) # Include role name defn's
+        is_self_value ? "#{from.name} has value" : @fact_type.default_reading
       end
 
       def inspect #:nodoc:
@@ -257,7 +257,11 @@ module ActiveFacts
 
       def populate_references           #:nodoc:
         all_role.each do |role|
-          populate_reference role unless role.fact_type.is_a?(ImplicitFactType)
+          # It's possible that this role is in an implicit or derived fact type. Skip it if so.
+          next if role.fact_type.is_a?(ImplicitFactType) or
+            role.fact_type.preferred_reading.role_sequence.all_role_ref.to_a[0].join_role
+          
+          populate_reference role
         end
       end
 
