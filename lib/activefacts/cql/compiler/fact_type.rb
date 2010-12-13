@@ -2,7 +2,7 @@ module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
 
-      class Query < ObjectType
+      class Query < ObjectType  # A fact type which is objectified (whether derived or not) is also an ObjectType
         attr_reader :context    # Exposed for testing purposes
         def initialize name, conditions = nil, returning = nil
           super name
@@ -11,8 +11,8 @@ module ActiveFacts
         end
 
         def prepare_roles readings = nil
-          readings = (readings || []) + @conditions
           @context ||= CompilationContext.new(@vocabulary)
+          readings = (readings || []) + @conditions
           readings.each{ |reading| reading.identify_players_with_role_name(@context) }
           readings.each{ |reading| reading.identify_other_players(@context) }
           # REVISIT: identify and bind players in @returning clauses also.
@@ -20,16 +20,11 @@ module ActiveFacts
         end
 
         def compile
-          @context ||= CompilationContext.new(@vocabulary)
-          @context.left_contraction_allowed = true
-
           # Match roles with players, and match readings with existing fact types
-          prepare_roles
-          @conditions.each do |condition|
-            next if condition.phrases.size == 1 && condition.role_refs.size == 1
-            fact_type = condition.match_existing_fact_type @context
-            raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
-          end
+          prepare_roles unless @context
+
+          @context.left_contraction_allowed = true
+          match_condition_fact_types
 
           # Build the join:
           unless @conditions.empty? and !@returning
@@ -40,6 +35,15 @@ module ActiveFacts
           end
           @context.left_contraction_allowed = false
           @join
+        end
+
+        def match_condition_fact_types
+          @conditions.each do |condition|
+            next if condition.is_naked_object_type
+            # REVISIT: Many conditions will imply a number of differnt join steps, which need to be handled (similar to objectification joins).
+            fact_type = condition.match_existing_fact_type @context
+            raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
+          end
         end
       end
 
@@ -70,8 +74,8 @@ module ActiveFacts
 
           prepare_roles @readings
 
-          join = super
-          return join if @readings.empty?  # It's a query
+          # REVISIT: Compiling the conditions here make it impossible to define a self-referential (transitive) query.
+          return super if @readings.empty?  # It's a query
 
           # Ignore any useless readings:
           @readings.reject!{|reading| reading.is_existential_type }
@@ -87,7 +91,6 @@ module ActiveFacts
             first_reading = @readings[0]
             @fact_type = first_reading.make_fact_type(@vocabulary)
             first_reading.make_reading(@vocabulary, @fact_type)
-            project_reading_roles(first_reading) unless @conditions.empty?
             first_reading.make_embedded_constraints vocabulary
             @fact_type.create_implicit_fact_type_for_unary if @fact_type.all_role.size == 1 && !@name
             @existing_readings = [first_reading]
@@ -99,7 +102,6 @@ module ActiveFacts
           new_readings = @readings - @existing_readings
           new_readings.each do |reading|
             reading.make_reading(@vocabulary, @fact_type)
-            project_reading_roles(reading) unless @conditions.empty?
             reading.make_embedded_constraints vocabulary
           end
 
@@ -123,12 +125,20 @@ module ActiveFacts
             end
           end
 
-          # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
-          make_default_identifier_for_fact_type if @conditions.empty?
-
           @readings.each do |reading|
             next unless reading.context_note
             reading.context_note.compile(@constellation, @fact_type)
+          end
+
+          # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
+          make_default_identifier_for_fact_type if @conditions.empty?
+
+          # Compile the conditions:
+          super
+          unless @conditions.empty?
+            @readings.each do |reading|
+              project_reading_roles(reading)
+            end
           end
 
           @fact_type
@@ -145,6 +155,7 @@ module ActiveFacts
         end
 
         def check_compatibility_of_matched_readings
+          # REVISIT: If we have conditions, we must match all given readings exactly (no side-effects)
           @existing_readings = @readings.
             select{ |reading| reading.match_existing_fact_type @context }.
             sort_by{ |reading| reading.side_effects.cost }
@@ -299,21 +310,130 @@ module ActiveFacts
         end
       end
 
-      class Comparison
-        attr_accessor :op, :e1, :e2, :qualifiers, :conjunction
-        def initialize op, e1, e2, qualifiers = []
-          @op, @e1, @e2, @qualifiers = op, e1, e2, qualifiers
+      # An OperatorReading invokes a binary fact type with a unary operator,
+      # or a ternary fact type with a binary operator, of the forms:
+      # Result = <op> Value1
+      # Result = Value1 <op> Value2
+      # where the value type of Result is determined from the arguments
+      #
+      # Each Value may be a Literal, a RoleRef, or another OperatorReading,
+      # so we need to recurse down the tree to build the join.
+      class OperatorReading
+        attr_reader :fact_type
+
+        def identify_players_with_role_name context
+          @context ||= context
+          all_operands.each { |o|
+            o.identify_player(context) if o.is_a?(RoleRef) && o.role_name
+          }
         end
 
-        def to_s
-        "(#{op} #{e1.to_s} #{e2.to_s}#{@qualifiers.empty? ? '' : ', ['+@qualifiers*', '+']'})"
+        def identify_other_players context
+          all_operands.each { |o|
+            o.identify_player(context) if o.is_a?(RoleRef) && !o.role_name
+          }
+        end
+
+        def bind_roles context
+          @context ||= context
+          all_operands.each do |o|
+            o.bind context if o.is_a?(RoleRef)
+          end
+        end
+
+        def is_naked_object_type
+          false
+        end
+
+        def operator
+          raise "REVISIT: Implement operator access in the operator subclass #{self.class.name}"
+        end
+
+        def operands
+          raise "REVISIT: Implement operand enumeration in the operator subclass #{self.class.name}"
+        end
+
+        # Return a RoleRef that refers to the result role of the operator fact type
+        # It must not be called until the players are all identified and bound.
+        def result
+          raise "REVISIT: Implement result production in the operator subclasses"
+        end
+
+        def role_refs
+          operands @context
+        end
+
+        def match_existing_fact_type context
+          opnds = operands(context)
+          reading_words = (opnds.size > 1 ? [opnds[0]] : []) + [operator, opnds[-1]]
+          reading_ast = Reading.new(reading_words)
+
+          # REVISIT: All operands must be value-types or simply-identified Entity Types.
+
+          # REVISIT: We should auto-create joins from Entity Types to an identifying ValueType
+          # REVISIT: We should traverse up the supertype of ValueTypes to find a DataType
+          @fact_type = reading_ast.match_existing_fact_type(context, :exact_type => true)
+          return @fact_type if @fact_type
+
+          @fact_type = reading_ast.make_fact_type context.vocabulary
+          reading_ast.make_reading context.vocabulary, @fact_type
+          @fact_type
         end
       end
 
-      class Sum
+      class Comparison < OperatorReading
+        attr_accessor :operator, :e1, :e2, :qualifiers, :conjunction
+        def initialize operator, e1, e2, qualifiers = []
+          @operator, @e1, @e2, @qualifiers = operator, e1, e2, qualifiers
+        end
+
+        def leaf_operand
+          nil
+        end
+
+        def operands(context)
+          [@e1, @e2].map{|t| t.result(context)}
+        end
+
+        def all_operands
+          Array(e1.leaf_operand || e1.all_operands) +
+            Array(e2.leaf_operand || e2.all_operands)
+        end
+
+        def result o
+          @result ||= RoleRef.new('Boolean')
+        end
+
+        def to_s
+        "(#{operator} #{e1.to_s} #{e2.to_s}#{@qualifiers.empty? ? '' : ', ['+@qualifiers*', '+']'})"
+        end
+      end
+
+      class Sum < OperatorReading
         attr_accessor :terms
         def initialize *terms
           @terms = terms
+        end
+
+        def operator
+          '+'
+        end
+
+        def operands(context)
+          terms.map{|t| t.result(context)}
+        end
+
+        def all_operands
+          @terms.map{|t| Array(t.leaf_operand || t.all_operands) }.flatten
+        end
+
+        def role_refs
+          @terms
+        end
+
+        def result(context)
+          # REVISIT: A sum has the type of its first operand. Do we want that?
+          @result ||= RoleRef.new(@terms[0].result(context).player.name)
         end
 
         def to_s
@@ -321,10 +441,31 @@ module ActiveFacts
         end
       end
 
-      class Product
+      class Product < OperatorReading
         attr_accessor :factors
         def initialize *factors
           @factors = factors
+        end
+
+        def operator
+          '*'
+        end
+
+        def operands(context)
+          @factors.map{|t| t.result(context)}
+        end
+
+        def all_operands
+          @factors.map{|f| Array(f.leaf_operand || f.all_operands) }.flatten
+        end
+
+        def role_refs
+          @factors
+        end
+
+        def result(context)
+          # REVISIT: A product has the type of its first operand. Do we want that?
+          @result ||= RoleRef.new(@factors[0].result(context).player.name)
         end
 
         def to_s
@@ -332,10 +473,26 @@ module ActiveFacts
         end
       end
 
-      class DivideBy
-        attr_accessor :factor
-        def initialize factor
-          @factor = factor
+      class Reciprocal < OperatorReading
+        attr_accessor :divisor
+        def initialize divisor
+          @divisor = divisor
+        end
+
+        def operator
+          '1/'
+        end
+
+        def operands(context)
+          [@divisor.result(context)]
+        end
+
+        def all_operands
+          Array(@divisor.leaf_operand || @divisor.all_operands)
+        end
+
+        def result(context)
+          @result ||= RoleRef.new(divisor.result(context).player.name)
         end
 
         def to_s
@@ -349,6 +506,22 @@ module ActiveFacts
           @term = term
         end
 
+        def operator
+          '0-'
+        end
+
+        def operands(context)
+          [@term.result(context)]
+        end
+
+        def all_operands
+          Array(@term.leaf_operand || @term.all_operands)
+        end
+
+        def result(context)
+          @result ||= RoleRef.new(term.result(context).player.name)
+        end
+
         def to_s
           "(- #{term.to_s})"
         end
@@ -359,6 +532,20 @@ module ActiveFacts
         def initialize var, *calls
           @variable = var
           @calls = calls
+        end
+
+        def operands(context)
+          [@variable.result(context)]
+        end
+
+        def result
+          # REVISIT: We need to know the result type for each function
+          # Here, assume Integer (works for count at least!)
+          @result ||= RoleRef.new('Integer')
+        end
+
+        def all_operands
+          Array(@variable.leaf_operand || @variable.all_operands)
         end
 
         def to_s
@@ -387,6 +574,32 @@ module ActiveFacts
         def to_s
           unit ? "(#{@literal.to_s} in #{unit.to_s})" : @literal.to_s
         end
+
+        def leaf_operand
+          self
+        end
+
+        def kind
+          case @literal
+          when String; 'String'
+          when Float; 'Real'
+          when Numeric; 'Integer'
+          when TrueClass, FalseClass; 'Boolean'
+          end
+        end
+
+        def result(context)
+          return @result if @result
+          vt_name = kind
+          (v = context.vocabulary).constellation.ValueType(v, vt_name)
+          @result = RoleRef.new(
+            vt_name, nil, nil, nil, nil, nil, nil, @literal
+          )
+          @result.identify_player context
+          @result.bind context
+          @result
+        end
+
       end
 
     end

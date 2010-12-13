@@ -49,7 +49,12 @@ module CompileHelpers
 
   def compile string
     lambda {
-      @compiler.compile string
+      begin
+        @compiler.compile string
+      rescue Exception => e
+        puts e.message+": \n\t"+e.backtrace.reject{|l| l =~ /\brspec\b/}*"\n\t"
+        raise
+      end
     }.should_not raise_error
   end
 end

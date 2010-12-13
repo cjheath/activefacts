@@ -38,6 +38,7 @@ module ActiveFacts
       end
 
       class CompilationContext
+        attr_accessor :vocabulary
         attr_accessor :allowed_forward_terms
         attr_accessor :left_contraction_allowed
         attr_accessor :left_contractable_reading

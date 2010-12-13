@@ -19,7 +19,7 @@ module ActiveFacts
           roles_by_binding = {}
           debug :join, "Building join steps" do
             readings_list.each do |reading|
-              next if reading.phrases.size == 1 && reading.role_refs.size == 1
+              next if reading.is_naked_object_type
               build_join_steps(reading, roles_by_binding)
             end
           end
@@ -36,7 +36,7 @@ module ActiveFacts
               # but we need to create JoinRoles for those roles.
               # REVISIT: JoinRoles may need to save residual_adjectives
               binding = role_ref.binding
-              role = role_ref.role || role_ref.role_ref.role
+              role = (role_ref && role_ref.role) || role_ref.role_ref.role
               join_role = nil
 
               if (reading.fact_type.entity_type)

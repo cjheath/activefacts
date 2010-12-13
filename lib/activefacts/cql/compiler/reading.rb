@@ -116,7 +116,7 @@ module ActiveFacts
         # As this match may not necessarily be used (depending on the side effects),
         # no change is made to this Reading object - those will be done later.
         #
-        def match_existing_fact_type context
+        def match_existing_fact_type context, options = {}
           raise "Internal error, reading already matched, should not match again" if @fact_type
           # If we fail to match, try to a left contraction (or save this for a subsequent left contraction):
           left_contract_this_onto = context.left_contractable_reading
@@ -163,8 +163,8 @@ module ActiveFacts
               # For a player that's an objectification, we don't allow implicit supertype joins
               player_related_types =
                 rrs.zip(players).map do |role_ref, player|
-                  # REVISIT: @context.implicit_subtype_joins_allowed ? ... : [player]
-                  ((role_ref && role_ref.objectification_of ? [] : player.supertypes_transitive) +
+                  disallow_subtyping = role_ref && role_ref.objectification_of || options[:exact_type]
+                  ((disallow_subtyping ? [] : player.supertypes_transitive) +
                     player.subtypes_transitive).uniq
                 end
 
@@ -438,8 +438,8 @@ module ActiveFacts
               end
             end
 
-            debug :matching, "Matched reading '#{reading.expand}' with #{side_effects.map{|se| se.absorbed_precursors+se.absorbed_followers + (se.common_supertype ? 1 : 0)
-            }.inspect} side effects#{residual_adjectives ? ' and residual adjectives' : ''}"
+            debug :matching, "Matched reading '#{reading.expand}' (with #{side_effects.map{|se| se.absorbed_precursors+se.absorbed_followers + (se.common_supertype ? 1 : 0)
+            }.inspect} side effects)#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
           # There will be one side_effects for each role player
           ReadingMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects)
@@ -654,6 +654,10 @@ module ActiveFacts
             # REVISIT: Check maybe and other qualifiers:
             debug :constraint, "Need to make constraints for #{@qualifiers*', '}" if @qualifiers.size > 0
           end
+        end
+
+        def is_naked_object_type
+          @phrases.size == 1 && role_refs.size == 1
         end
 
       end
@@ -909,6 +913,14 @@ module ActiveFacts
             constraint
           end
 
+        end
+
+        def leaf_operand
+          self
+        end
+
+        def result(context = nil)
+          self
         end
       end
 

@@ -35,7 +35,7 @@ module ActiveFacts
 	    if tail.elements.empty?
 	      f0.ast
 	    else
-	      Compiler::Product.new(f0.ast, *tail.elements.map{|e| e.op.text_value != '*' ? Compiler::DivideBy.new(e.op.text_value, e.f1.ast) : e.f1.ast})
+	      Compiler::Product.new(f0.ast, *tail.elements.map{|e| e.op.text_value != '*' ? Compiler::Reciprocal.new(e.op.text_value, e.f1.ast) : e.f1.ast})
 	    end
 	  end
         }
