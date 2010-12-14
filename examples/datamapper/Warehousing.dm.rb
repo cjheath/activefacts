@@ -132,10 +132,10 @@ class TransferRequest
   property :product_id, Integer, :required => true	# Transfer Request is for Product and Product has Product ID
   belongs_to :product	# Transfer Request is for Product
   property :quantity, Integer, :required => true	# Transfer Request is for Quantity
-  property :from_warehouse_id, Integer, :required => true	# Transfer Request is from Warehouse (as From Warehouse) and Warehouse has Warehouse ID
-  belongs_to :from_warehouse, 'Warehouse', :child_key => [:from_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is from Warehouse (as From Warehouse)
-  property :to_warehouse_id, Integer, :required => true	# Transfer Request is to Warehouse (as To Warehouse) and Warehouse has Warehouse ID
-  belongs_to :to_warehouse, 'Warehouse', :child_key => [:to_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is to Warehouse (as To Warehouse)
+  property :from_warehouse_id, Integer, :required => true	# Transfer Request is from Warehouse and Warehouse has Warehouse ID
+  belongs_to :from_warehouse, 'Warehouse', :child_key => [:from_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is from Warehouse
+  property :to_warehouse_id, Integer, :required => true	# Transfer Request is to Warehouse and Warehouse has Warehouse ID
+  belongs_to :to_warehouse, 'Warehouse', :child_key => [:to_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is to Warehouse
   has n, :dispatch_item, 'DispatchItem'	# Dispatch Item is for Transfer Request
   has n, :received_item, 'ReceivedItem'	# Received Item is for Transfer Request
 end
@@ -147,7 +147,7 @@ class Warehouse
   has n, :bin	# Warehouse contains Bin
   has n, :purchase_order, 'PurchaseOrder'	# Purchase Order is to Warehouse
   has n, :sales_order, 'SalesOrder'	# Sales Order is from Warehouse
-  has n, :transfer_request_as_from_warehouse, 'TransferRequest', :child_key => [:from_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is from Warehouse (as From Warehouse)
-  has n, :transfer_request_as_to_warehouse, 'TransferRequest', :child_key => [:to_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is to Warehouse (as To Warehouse)
+  has n, :transfer_request_as_from_warehouse, 'TransferRequest', :child_key => [:from_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is from Warehouse
+  has n, :transfer_request_as_to_warehouse, 'TransferRequest', :child_key => [:to_warehouse_id], :parent_key => [:warehouse_id]	# Transfer Request is to Warehouse
 end
 

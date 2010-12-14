@@ -4,12 +4,12 @@ require 'dm-constraints'
 class Attendance
   include DataMapper::Resource
 
-  property :attendee_given_name, String, :length => 48, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Person has given-Name
-  property :attendee_family_name, String, :length => 48, :key => true	# Attendance is where Person (as Attendee) attended Meeting and maybe family-Name is of Person
+  property :attendee_given_name, String, :length => 48, :key => true	# Attendance is where Person attended Meeting and Person has given-Name
+  property :attendee_family_name, String, :length => 48, :key => true	# Attendance is where Person attended Meeting and maybe family-Name is of Person
   belongs_to :attendee, 'Person', :child_key => [:attendee_family_name, :attendee_given_name], :parent_key => [:family_name, :given_name]	# Attendee is involved in Attendance
-  property :meeting_date, DateTime, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Meeting is held on Date
-  property :meeting_is_board_meeting, Boolean, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Meeting is board meeting
-  property :meeting_company_name, String, :length => 48, :key => true	# Attendance is where Person (as Attendee) attended Meeting and Company held Meeting and Company is called Company Name
+  property :meeting_date, DateTime, :key => true	# Attendance is where Person attended Meeting and Meeting is held on Date
+  property :meeting_is_board_meeting, Boolean, :key => true	# Attendance is where Person attended Meeting and Meeting is board meeting
+  property :meeting_company_name, String, :length => 48, :key => true	# Attendance is where Person attended Meeting and Company held Meeting and Company is called Company Name
   belongs_to :meeting, :child_key => [:meeting_company_name, :meeting_date, :meeting_is_board_meeting], :parent_key => [:company_name, :date, :is_board_meeting]	# Meeting is involved in Attendance
 end
 
@@ -19,17 +19,17 @@ class Company
   property :company_name, String, :length => 48, :key => true	# Company is called Company Name
   property :is_listed, Boolean, :required => true	# Company is listed
   has n, :meeting	# Company held Meeting
-  has n, :directorship	# Person (as Director) directs Company
+  has n, :directorship	# Person directs Company
   has n, :employee	# Employee works at Company
 end
 
 class Directorship
   include DataMapper::Resource
 
-  property :director_given_name, String, :length => 48, :key => true	# Directorship is where Person (as Director) directs Company and Person has given-Name
-  property :director_family_name, String, :length => 48, :key => true	# Directorship is where Person (as Director) directs Company and maybe family-Name is of Person
+  property :director_given_name, String, :length => 48, :key => true	# Directorship is where Person directs Company and Person has given-Name
+  property :director_family_name, String, :length => 48, :key => true	# Directorship is where Person directs Company and maybe family-Name is of Person
   belongs_to :director, 'Person', :child_key => [:director_family_name, :director_given_name], :parent_key => [:family_name, :given_name]	# Director is involved in Directorship
-  property :company_name, String, :length => 48, :key => true	# Directorship is where Person (as Director) directs Company and Company is called Company Name
+  property :company_name, String, :length => 48, :key => true	# Directorship is where Person directs Company and Company is called Company Name
   belongs_to :company	# Company is involved in Directorship
   property :appointment_date, DateTime, :required => true	# Directorship began on appointment-Date
 end
@@ -41,7 +41,7 @@ class Meeting
   belongs_to :company	# Company held Meeting
   property :date, DateTime, :key => true	# Meeting is held on Date
   property :is_board_meeting, Boolean, :key => true	# Meeting is board meeting
-  has n, :attendance, :child_key => [:meeting_company_name, :meeting_date, :meeting_is_board_meeting], :parent_key => [:company_name, :date, :is_board_meeting]	# Person (as Attendee) attended Meeting
+  has n, :attendance, :child_key => [:meeting_company_name, :meeting_date, :meeting_is_board_meeting], :parent_key => [:company_name, :date, :is_board_meeting]	# Person attended Meeting
 end
 
 class Person
@@ -50,8 +50,8 @@ class Person
   property :family_name, String, :length => 48, :key => true	# maybe family-Name is of Person
   property :given_name, String, :length => 48, :key => true	# Person has given-Name
   property :birth_date, DateTime	# maybe Person was born on birth-Date
-  has n, :attendance_as_attendee, 'Attendance', :child_key => [:attendee_family_name, :attendee_given_name], :parent_key => [:family_name, :given_name]	# Person (as Attendee) attended Meeting
-  has n, :directorship_as_director, 'Directorship', :child_key => [:director_family_name, :director_given_name], :parent_key => [:family_name, :given_name]	# Person (as Director) directs Company
+  has n, :attendance_as_attendee, 'Attendance', :child_key => [:attendee_family_name, :attendee_given_name], :parent_key => [:family_name, :given_name]	# Person attended Meeting
+  has n, :directorship_as_director, 'Directorship', :child_key => [:director_family_name, :director_given_name], :parent_key => [:family_name, :given_name]	# Person directs Company
 end
 
 class Employee < Person

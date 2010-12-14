@@ -136,9 +136,9 @@ CREATE TABLE ContextNote (
 GO
 
 CREATE TABLE Derivation (
-	-- Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id,
+	-- Derivation is where Unit is derived from base-Unit and Unit has Unit Id,
 	BaseUnitId                              int NOT NULL,
-	-- Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id,
+	-- Derivation is where Unit is derived from base-Unit and Unit has Unit Id,
 	DerivedUnitId                           int NOT NULL,
 	-- maybe Derivation has Exponent,
 	Exponent                                shortint NULL,
@@ -170,13 +170,13 @@ CREATE TABLE FactType (
 	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
 	TypeInheritanceProvidesIdentification   bit NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type is called Name,
 	TypeInheritanceSubtypeName              varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSubtypeVocabularyName    varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type is called Name,
 	TypeInheritanceSupertypeName            varchar(64) NULL,
-	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSupertypeVocabularyName  varchar(64) NULL,
 	PRIMARY KEY(FactTypeId)
 )
@@ -353,9 +353,9 @@ CREATE TABLE ObjectType (
 	ValueTypeLength                         int NULL,
 	-- maybe Value Type is a kind of Object Type and maybe Value Type has Scale,
 	ValueTypeScale                          int NULL,
-	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type is called Name,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type and Object Type is called Name,
 	ValueTypeSupertypeName                  varchar(64) NULL,
-	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
 	-- maybe Value Type is a kind of Object Type and maybe Value Type is of Unit and Unit has Unit Id,
 	ValueTypeUnitId                         int NULL,
@@ -416,7 +416,7 @@ GO
 CREATE TABLE Role (
 	-- Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id,
 	FactTypeId                              int NOT NULL,
-	-- maybe Implicit Fact Type is implied by Role (as Implying Role) and Fact Type has Fact Type Id,
+	-- maybe Implicit Fact Type is implied by Role and Fact Type has Fact Type Id,
 	ImplicitFactTypeId                      int NULL,
 	-- Object Type plays Role and Object Type is called Name,
 	ObjectTypeName                          varchar(64) NOT NULL,

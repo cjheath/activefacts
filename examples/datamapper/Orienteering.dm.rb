@@ -7,7 +7,7 @@ class Club
   property :club_code, String, :length => 6, :key => true	# Club has Club Code
   property :club_name, String, :length => 32, :required => true	# Club Name is name of Club
   has n, :event	# Club runs Event
-  has n, :map_as_owner, 'Map', :child_key => [:owner_code], :parent_key => [:club_code]	# Club (as Owner) owns Map
+  has n, :map_as_owner, 'Map', :child_key => [:owner_code], :parent_key => [:club_code]	# Club owns Map
   has n, :person	# Person is member of Club
 end
 
@@ -67,8 +67,8 @@ class Map
   include DataMapper::Resource
 
   property :map_id, Serial	# Map has Map ID
-  property :owner_code, String, :length => 6, :required => true	# Club (as Owner) owns Map and Club has Club Code
-  belongs_to :owner, 'Club', :child_key => [:owner_code], :parent_key => [:club_code]	# Club (as Owner) owns Map
+  property :owner_code, String, :length => 6, :required => true	# Club owns Map and Club has Club Code
+  belongs_to :owner, 'Club', :child_key => [:owner_code], :parent_key => [:club_code]	# Club owns Map
   property :accessibility, String, :length => 1	# maybe Map has Accessibility
   property :map_name, String, :length => 80, :required => true	# Map has Map Name
   has n, :event	# Map is map for Event
@@ -110,7 +110,7 @@ class Series
   include DataMapper::Resource
 
   property :series_id, Serial	# Series has Series ID
-  property :name, String, :length => 40, :required => true	# Series has Series Name (as Name)
+  property :name, String, :length => 40, :required => true	# Series has Series Name
   has n, :event	# Event is in Series
 end
 

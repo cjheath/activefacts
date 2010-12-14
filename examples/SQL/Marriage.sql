@@ -1,11 +1,11 @@
 CREATE TABLE Marriage (
-	-- Marriage is by husband-Person (as Husband) and Person has family-Name,
+	-- Marriage is by husband-Person and Person has family-Name,
 	HusbandFamilyName                       varchar NOT NULL,
-	-- Marriage is by husband-Person (as Husband) and Person has given-Name,
+	-- Marriage is by husband-Person and Person has given-Name,
 	HusbandGivenName                        varchar NOT NULL,
-	-- Marriage is of wife-Person (as Wife) and Person has family-Name,
+	-- Marriage is of wife-Person and Person has family-Name,
 	WifeFamilyName                          varchar NOT NULL,
-	-- Marriage is of wife-Person (as Wife) and Person has given-Name,
+	-- Marriage is of wife-Person and Person has given-Name,
 	WifeGivenName                           varchar NOT NULL,
 	PRIMARY KEY(HusbandGivenName, HusbandFamilyName, WifeGivenName, WifeFamilyName)
 )

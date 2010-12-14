@@ -8,9 +8,9 @@ GO
 CREATE TABLE Diplomat (
 	-- Diplomat has DiplomatName,
 	DiplomatName                            varchar NOT NULL,
-	-- Diplomat represents Country (as Represented Country) and Country has CountryName,
+	-- Diplomat represents Country and Country has CountryName,
 	RepresentedCountryName                  varchar NOT NULL,
-	-- Diplomat serves in Country (as Served Country) and Country has CountryName,
+	-- Diplomat serves in Country and Country has CountryName,
 	ServedCountryName                       varchar NOT NULL,
 	PRIMARY KEY(DiplomatName),
 	FOREIGN KEY (RepresentedCountryName) REFERENCES Country (CountryName),
@@ -47,11 +47,11 @@ CREATE TABLE LanguageUse (
 GO
 
 CREATE TABLE Representation (
-	-- Representation is where Ambassador is from Country (as Represented Country) to Country and Diplomat has DiplomatName,
+	-- Representation is where Ambassador is from Country to Country and Diplomat has DiplomatName,
 	AmbassadorName                          varchar NOT NULL,
-	-- Representation is where Ambassador is from Country (as Represented Country) to Country and Country has CountryName,
+	-- Representation is where Ambassador is from Country to Country and Country has CountryName,
 	CountryName                             varchar NOT NULL,
-	-- Representation is where Ambassador is from Country (as Represented Country) to Country and Country has CountryName,
+	-- Representation is where Ambassador is from Country to Country and Country has CountryName,
 	RepresentedCountryName                  varchar NOT NULL,
 	PRIMARY KEY(RepresentedCountryName, CountryName),
 	FOREIGN KEY (CountryName) REFERENCES Country (CountryName),
