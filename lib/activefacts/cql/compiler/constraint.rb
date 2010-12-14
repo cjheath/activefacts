@@ -440,7 +440,7 @@ module ActiveFacts
           # Process the ring constraints:
           return if @rings.empty?
 
-          role_refs = @role_sequence.all_role_ref.to_a
+          role_refs = @role_sequence.all_role_ref_in_order.to_a
           supertypes_by_position = role_refs.
             map do |role_ref|
               role_ref.role.object_type.supertypes_transitive
