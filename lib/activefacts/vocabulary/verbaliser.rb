@@ -693,9 +693,9 @@ module ActiveFacts
 
               if next_step.is_unary_step
                 # Objectified unaries get emitted as unaries, not as objectifications:
-                # REVISIT: There must be a simpler way of finding the preferred reading here:
-                rr = next_step.input_join_node.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ImplicitFactType) }
-                next_reading = rr.role.fact_type.implying_role.fact_type.preferred_reading
+                role = next_step.input_join_role.role
+                role = role.fact_type.implying_role if role.fact_type.is_a?(ImplicitFactType)
+                next_reading = role.fact_type.preferred_reading
                 readings += " and " unless readings.empty?
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
                 step_completed(next_step)
