@@ -127,9 +127,9 @@ Implicit Fact Type is implied by one Role (as Implying Role),
 	Implying Role implies at most one Implicit Fact Type;
 Object Type plays Role,
 	Role is played by one Object Type;
-Ring Constraint has at most one other-Role;
 Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
+Role is of Ring Constraint;  // Avoid ambiguity; this is a new fact type
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 

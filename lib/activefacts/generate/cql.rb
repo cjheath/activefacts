@@ -311,6 +311,13 @@ module ActiveFacts
         puts "#{o.name} is" + identified_by(o, pi) + ';'
       end
 
+      def naiive_expand(reading)
+        role_refs = reading.role_sequence.all_role_ref_in_order
+        reading.text.gsub(/\{(\d+)\}/) do
+          role_refs[$1.to_i].role.object_type.name
+        end
+      end
+
       def fact_type_dump(fact_type, name)
 
         if (o = fact_type.entity_type)
@@ -332,6 +339,22 @@ module ActiveFacts
             return
           end
           print " where\n\t"
+        end
+
+        # Check whether this fact type has readings which could be confused for a previously-dumped one:
+        reading_texts = fact_type.all_reading.map{|r| naiive_expand(r)}
+        if reading_texts.size > 1
+          ambiguity =
+            fact_type.all_role.to_a[0].object_type.all_role.map{|r| r.fact_type}.
+              select{|f| f != fact_type && @fact_types_dumped.include?(f) }.
+              detect do |dft|
+                ambiguous_readings =
+                  reading_texts & dft.all_reading.map{|r| naiive_expand(r)}
+                ambiguous_readings.size > 0
+              end
+          if ambiguity
+            puts fact_type.default_reading([], true)+';  // Avoid ambiguity; this is a new fact type'
+          end
         end
 
         # There can be no roles of the objectified fact type in the readings, so no need to tell the Verbaliser anything special

@@ -112,6 +112,7 @@ Provider Type is identified by its Id;
 Recurring Schedule is identified by its Id;
 Monitor has All- Exclusion Recurring Schedule,
 	All- Exclusion Recurring Schedule applies to at most one Monitor;
+Monitor (as IntegratingMonitor) has Integration- Exclusion Recurring Schedule;  // Avoid ambiguity; this is a new fact type
 Monitor (as IntegratingMonitor) has Integration- Exclusion Recurring Schedule,
 	Integration- Exclusion Recurring Schedule applies to at most one IntegratingMonitor;
 Recurring Schedule has one Duration;
@@ -146,6 +147,7 @@ Switch is one Revision-Version;
 Switch has one monitoring-Port;
 Switch (as Private Interface Switch) is on private-Network,
 	private-Network connects to at most one Private Interface Switch;
+Switch (as Public Interface Switch) is on public-Network;  // Avoid ambiguity; this is a new fact type
 Switch (as Public Interface Switch) is on at least one public-Network,
 	Network connects to at most one Public Interface Switch;
 Switch is backup messages;

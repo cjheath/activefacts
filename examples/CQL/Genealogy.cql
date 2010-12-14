@@ -55,6 +55,7 @@ Occupation is of Person,
 Person is of at most one Gender;
 Person is called at most one family-Name,
 	family-Name is of Person;
+given-Name is name of Person;  // Avoid ambiguity; this is a new fact type
 given-Name is name of Person,
 	Person is called at most one given-Name;
 preferred-Picture is of Person,
