@@ -65,9 +65,9 @@ end
 class Derivation
   include DataMapper::Resource
 
-  property :derived_unit_id, Integer, :key => true	# Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id
+  property :derived_unit_id, Integer, :key => true	# Derivation is where Unit is derived from base-Unit and Unit has Unit Id
   belongs_to :derived_unit, 'Unit', :child_key => [:derived_unit_id], :parent_key => [:unit_id]	# Derived_Unit is involved in Derivation
-  property :base_unit_id, Integer, :key => true	# Derivation is where Unit (as Derived Unit) is derived from base-Unit (as Base Unit) and Unit has Unit Id
+  property :base_unit_id, Integer, :key => true	# Derivation is where Unit is derived from base-Unit and Unit has Unit Id
   belongs_to :base_unit, 'Unit', :child_key => [:base_unit_id], :parent_key => [:unit_id]	# Base_Unit is involved in Derivation
   property :exponent, Integer	# maybe Derivation has Exponent
 end
@@ -101,7 +101,7 @@ class FactType
 end
 
 class ImplicitFactType < FactType
-  has 1, :implying_role, 'Role', :child_key => [:implicit_fact_type_id], :parent_key => [:fact_type_id]	# Implicit Fact Type is implied by Role (as Implying Role)
+  has 1, :implying_role, 'Role', :child_key => [:implicit_fact_type_id], :parent_key => [:fact_type_id]	# Implicit Fact Type is implied by Role
 end
 
 class Instance
@@ -198,8 +198,8 @@ end
 
 class EntityType < ObjectType
   has 1, :fact_type, 'FactType', :child_key => [:entity_type_name, :entity_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type nests Fact Type
-  has n, :type_inheritance_as_subtype, 'TypeInheritance', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
-  has n, :type_inheritance_as_supertype, 'TypeInheritance', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype)
+  has n, :type_inheritance_as_subtype, 'TypeInheritance', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type is subtype of super-Entity Type
+  has n, :type_inheritance_as_supertype, 'TypeInheritance', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type is subtype of super-Entity Type
 end
 
 class ParamValue
@@ -252,7 +252,7 @@ class Role
   property :fact_type_id, Integer, :key => true	# Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   belongs_to :fact_type, 'FactType'	# Fact_Type is involved in Role
   property :ordinal, Integer, :key => true	# Role is where Fact Type has Ordinal role
-  property :implicit_fact_type_id, Integer	# maybe Implicit Fact Type is implied by Role (as Implying Role) and Fact Type has Fact Type Id
+  property :implicit_fact_type_id, Integer	# maybe Implicit Fact Type is implied by Role and Fact Type has Fact Type Id
   has 1, :implicit_fact_type, 'ImplicitFactType', :parent_key => [:implicit_fact_type_id], :child_key => [:fact_type_id]	# Implicit_Fact_Type is involved in Role
   property :role_name, String, :length => 64	# maybe Role has role-Name
   property :object_type_vocabulary_name, String, :length => 64, :required => true	# Object Type plays Role and Object Type belongs to Vocabulary and Vocabulary is called Name
@@ -405,11 +405,11 @@ class SubsetConstraint < SetConstraint
 end
 
 class TypeInheritance < FactType
-  property :subtype_vocabulary_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name
-  property :subtype_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is called Name
+  property :subtype_vocabulary_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :subtype_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type is called Name
   belongs_to :subtype, 'EntityType', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Subtype is involved in Type Inheritance
-  property :supertype_vocabulary_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name
-  property :supertype_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) and Object Type is called Name
+  property :supertype_vocabulary_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :supertype_name, String, :length => 64, :key => true	# Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type is called Name
   belongs_to :supertype, 'EntityType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Supertype is involved in Type Inheritance
   property :assimilation, String	# maybe Assimilation applies to Type Inheritance
   property :provides_identification, Boolean, :required => true	# Type Inheritance provides identification
@@ -428,8 +428,8 @@ class Unit
   property :plural_name, String, :length => 64	# maybe Unit has plural-Name
   property :is_fundamental, Boolean, :required => true	# Unit is fundamental
   property :vocabulary_name, String, :length => 64, :required => true	# Vocabulary includes Unit and Vocabulary is called Name
-  has n, :derivation_as_derived_unit, 'Derivation', :child_key => [:derived_unit_id], :parent_key => [:unit_id]	# Unit (as Derived Unit) is derived from base-Unit (as Base Unit)
-  has n, :derivation_as_base_unit, 'Derivation', :child_key => [:base_unit_id], :parent_key => [:unit_id]	# Unit (as Derived Unit) is derived from base-Unit (as Base Unit)
+  has n, :derivation_as_derived_unit, 'Derivation', :child_key => [:derived_unit_id], :parent_key => [:unit_id]	# Unit is derived from base-Unit
+  has n, :derivation_as_base_unit, 'Derivation', :child_key => [:base_unit_id], :parent_key => [:unit_id]	# Unit is derived from base-Unit
   has n, :value_type, 'ValueType'	# Value Type is of Unit
 end
 
@@ -457,10 +457,10 @@ class ValueType < ObjectType
   property :value_constraint_id, Integer	# maybe Value Type has Value Constraint and Constraint has Constraint Id
   has 1, :value_constraint, 'ValueConstraint', :parent_key => [:value_constraint_id], :child_key => [:constraint_id]	# Value Type has Value Constraint
   property :auto_assigned_transaction_timing, String	# maybe Value Type has auto- assigned Transaction Timing
-  property :supertype_vocabulary_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type belongs to Vocabulary and Vocabulary is called Name
-  property :supertype_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type (as Supertype) and Object Type is called Name
-  belongs_to :supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)
-  has n, :value_type_as_supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type (as Supertype)
+  property :supertype_vocabulary_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :supertype_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type and Object Type is called Name
+  belongs_to :supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type
+  has n, :value_type_as_supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type
   has n, :param_value, 'ParamValue', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type defines Parameter as having Value
 end
 

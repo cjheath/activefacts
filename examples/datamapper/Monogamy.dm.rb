@@ -9,11 +9,11 @@ class Person
 end
 
 class Boy < Person
-  has 1, :girlfriend_as_boyfriend, 'Girl', :child_key => [:boyfriend_id], :parent_key => [:person_id]	# Girl (as Girlfriend) is going out with Boy (as Boyfriend)
+  has 1, :girlfriend_as_boyfriend, 'Girl', :child_key => [:boyfriend_id], :parent_key => [:person_id]	# Girl is going out with Boy
 end
 
 class Girl < Person
-  property :boyfriend_id, Integer	# maybe Girl (as Girlfriend) is going out with Boy (as Boyfriend) and Person has Person ID
-  has 1, :boyfriend, 'Boy', :parent_key => [:boyfriend_id], :child_key => [:person_id]	# Girl (as Girlfriend) is going out with Boy (as Boyfriend)
+  property :boyfriend_id, Integer	# maybe Girl is going out with Boy and Person has Person ID
+  has 1, :boyfriend, 'Boy', :parent_key => [:boyfriend_id], :child_key => [:person_id]	# Girl is going out with Boy
 end
 

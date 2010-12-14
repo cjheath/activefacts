@@ -1,13 +1,13 @@
 CREATE TABLE Attendance (
-	-- Attendance is where Person (as Attendee) attended Meeting and maybe family-Name is of Person,
+	-- Attendance is where Person attended Meeting and maybe family-Name is of Person,
 	AttendeeFamilyName                      varchar(48) NULL,
-	-- Attendance is where Person (as Attendee) attended Meeting and Person has given-Name,
+	-- Attendance is where Person attended Meeting and Person has given-Name,
 	AttendeeGivenName                       varchar(48) NOT NULL,
-	-- Attendance is where Person (as Attendee) attended Meeting and Company held Meeting and Company is called Company Name,
+	-- Attendance is where Person attended Meeting and Company held Meeting and Company is called Company Name,
 	MeetingCompanyName                      varchar(48) NOT NULL,
-	-- Attendance is where Person (as Attendee) attended Meeting and Meeting is held on Date,
+	-- Attendance is where Person attended Meeting and Meeting is held on Date,
 	MeetingDate                             datetime NOT NULL,
-	-- Attendance is where Person (as Attendee) attended Meeting and Meeting is board meeting,
+	-- Attendance is where Person attended Meeting and Meeting is board meeting,
 	MeetingIsBoardMeeting                   bit NOT NULL,
 	UNIQUE(AttendeeGivenName, AttendeeFamilyName, MeetingDate, MeetingIsBoardMeeting, MeetingCompanyName)
 )
@@ -25,11 +25,11 @@ GO
 CREATE TABLE Directorship (
 	-- Directorship began on appointment-Date,
 	AppointmentDate                         datetime NOT NULL,
-	-- Directorship is where Person (as Director) directs Company and Company is called Company Name,
+	-- Directorship is where Person directs Company and Company is called Company Name,
 	CompanyName                             varchar(48) NOT NULL,
-	-- Directorship is where Person (as Director) directs Company and maybe family-Name is of Person,
+	-- Directorship is where Person directs Company and maybe family-Name is of Person,
 	DirectorFamilyName                      varchar(48) NULL,
-	-- Directorship is where Person (as Director) directs Company and Person has given-Name,
+	-- Directorship is where Person directs Company and Person has given-Name,
 	DirectorGivenName                       varchar(48) NOT NULL,
 	UNIQUE(DirectorGivenName, DirectorFamilyName, CompanyName),
 	FOREIGN KEY (CompanyName) REFERENCES Company (CompanyName)
