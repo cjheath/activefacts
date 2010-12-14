@@ -133,23 +133,27 @@ module ActiveFacts
 
           ir = identifying_role_names
           args, arg_hash = ActiveFacts::extract_hash_args(ir, args)
-          if args.size < ir.size
-            raise "#{basename} requires all identifying values, you're missing #{ir[args.size..-1].map(&:to_sym)*', '}"
-          elsif args.size > ir.size
-            raise "#{basename} requires all identifying values, you have #{args.size-ir.size} extras #{args[ir.size..-1].map(&:inspect)*', '}"
+
+          if args.size > ir.size
+            raise "You've provided too many values for the identifier of #{basename}, which expects (#{ir*', '})"
           end
 
           role_args = ir.map{|role_sym| roles(role_sym)}.zip(args)
           role_args.map do |role, arg|
             #puts "Getting identifying_role_value for #{role.counterpart_object_type.basename} using #{arg.inspect}"
-            next nil unless arg
             next !!arg unless role.counterpart  # Unary
             arg = arg.__getobj__ if RoleProxy === arg
             if arg.is_a?(role.counterpart_object_type)              # REVISIT: or a secondary supertype
               # Note that with a secondary supertype, it must still return the values of these identifying_role_names
               next arg.identifying_role_values
             end
-            role.counterpart_object_type.identifying_role_values(*arg)
+            if arg == nil # But not false
+              if role.mandatory
+                raise "You must provide a #{role.counterpart_object_type.name} to identify a #{basename}"
+              end
+            else
+              role.counterpart_object_type.identifying_role_values(*arg)
+            end
           end
         end
 
