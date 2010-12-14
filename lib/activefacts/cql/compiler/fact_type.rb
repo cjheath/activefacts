@@ -108,6 +108,8 @@ module ActiveFacts
           # If a reading matched but the match left extra adjectives, we need to make a new RoleSequence for them:
           @existing_readings.each do |reading|
             reading.adjust_for_match
+            # Add any new constraints that we found in the match (presence, ring, etc)
+            reading.make_embedded_constraints(vocabulary)
           end
 
           # Objectify the fact type if necessary:
