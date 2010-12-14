@@ -202,7 +202,7 @@ module ActiveFacts
 
               # If there is more than one possible exact match (same adjectives) with different subyping, the implicit join is ambiguous and is not allowed
 
-              debug :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching '#{contracted_role && contracted_role.inspect+' '}{inspect}'" do
+              debug :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching '#{contracted_role && contracted_role.inspect+' '}#{inspect}'" do
                 matches = {}
                 candidate_fact_types.map do |fact_type|
                   fact_type.all_reading.map do |reading|
@@ -565,7 +565,8 @@ module ActiveFacts
                   r.role_sequence.all_role_ref_in_order.map{|rr| rr.role.object_type} ==
                     role_sequence.all_role_ref_in_order.map{|rr| rr.role.object_type}
               }
-              raise "Reading '#{existing.expand}' already exists, so why are we creating a duplicate?"
+              existing
+              #raise "Reading '#{existing.expand}' already exists, so why are we creating a duplicate?"
             end
             constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ")
           end
@@ -585,9 +586,9 @@ module ActiveFacts
             if phrase.is_a?(RoleRef)
               role_phrases << phrase
               reading_words << "{#{phrase.role_ref.ordinal}}"
-              if phrase.role_name # ||
-#                  phrase.leading_adjective ||
-#                  phrase.trailing_adjective
+              if phrase.role_name != phrase.role_ref.role.role_name ||
+                  phrase.leading_adjective ||
+                  phrase.trailing_adjective
                 debug :matching, "phrase in matched reading has residual adjectives or role name, so needs a new role_sequence" if @fact_type.all_reading.size > 0
                 new_role_sequence_needed = true
               end
@@ -630,10 +631,16 @@ module ActiveFacts
               debug :matching, "Using existing role sequence for new reading '#{reading_text}'"
             end
           end
-          if @fact_type.all_reading.detect{|r| r.text == reading_text}
-            raise "Reading '#{@reading.expand}' already exists, so why are we creating a duplicate (with #{extra_adjectives.inspect})?"
+          if @fact_type.all_reading.
+            detect do |r|
+              r.text == reading_text and
+              r.role_sequence.all_role_ref_in_order.map{|rr| rr.role.object_type} ==
+                @role_sequence.all_role_ref_in_order.map{|rr| rr.role.object_type}
+            end
+            # raise "Reading '#{@reading.expand}' already exists, so why are we creating a duplicate (with #{extra_adjectives.inspect})?"
+          else
+            constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_text)
           end
-          constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_text)
           @role_sequence
         end
 
@@ -645,11 +652,17 @@ module ActiveFacts
           end
 
           if @qualifiers && @qualifiers.size > 0
-
-            rc = RingConstraint.new(@role_sequence, @qualifiers)
-            rc.vocabulary = vocabulary
-            rc.constellation = vocabulary.constellation
-            rc.compile
+            # We shouldn't make a new ring constraint if there's already one over this ring.
+            existing_rcs = 
+              @role_sequence.all_role_ref.map{|rr| rr.role.all_ring_constraint.to_a }.flatten.uniq
+            unless existing_rcs[0]
+              rc = RingConstraint.new(@role_sequence, @qualifiers)
+              rc.vocabulary = vocabulary
+              rc.constellation = vocabulary.constellation
+              rc.compile
+            else
+              # Ignore the fact that the ring might be of a different type.
+            end
 
             # REVISIT: Check maybe and other qualifiers:
             debug :constraint, "Need to make constraints for #{@qualifiers*', '}" if @qualifiers.size > 0
@@ -893,6 +906,8 @@ module ActiveFacts
               debug :constraint, "Setting max frequency to #{@quantifier.max} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
               raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != @quantifier.max
               constraint.max_frequency = @quantifier.max
+              raise "Conflicting minimum frequency for constraint" if constraint.min_frequency && constraint.min_frequency != @quantifier.min
+              constraint.min_frequency = @quantifier.min
             else
               role_sequence = constellation.RoleSequence(:new)
               constrained_roles.each_with_index do |constrained_role, i|
