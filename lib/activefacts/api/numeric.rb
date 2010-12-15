@@ -118,8 +118,6 @@ end
 # The assigned value will be filled out everywhere it needs to be, upon save.
 class AutoCounter
   def initialize(i = :new)
-    debugger unless i == :new or i.is_a?(Integer)
-    i.is_a?(Integer)
     raise "AutoCounter #{self.class} may not be #{i.inspect}" unless i == :new or i.is_a?(Integer)
     # puts "new AutoCounter #{self.class} from\n\t#{caller.select{|s| s !~ %r{rspec}}*"\n\t"}"
     @value = i == :new ? nil : i
