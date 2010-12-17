@@ -7,7 +7,7 @@
 #
 #module ActiveFacts
   $debug_indent = nil
-  $debug_nested = false
+  $debug_nested = false   # Set when a block enables all enclosed debugging
   $debug_keys = nil
   $debug_available = {}
 
@@ -46,40 +46,58 @@
   end
 
   def debug_selected(args)
-    # Figure out whether this trace is enabled and nests:
-    control = (!args.empty? && Symbol === args[0]) ? args.shift : :all
-    key = control.to_s.sub(/_\Z/, '').to_sym
-    $debug_available[key] ||= key
-    enabled = $debug_nested || $debug_keys[key] || $debug_keys[:all]
-    nesting = control.to_s =~ /_\Z/
-    old_nested = $debug_nested
-    $debug_nested = nesting
-    [(enabled ? 1 : 0), $debug_keys[:all] ? " %-15s"%control : nil, old_nested]
+    # Figure out whether this trace is enabled (itself or by :all), if it nests, and if we should print the key:
+    key =
+      if Symbol === args[0]
+        control = args.shift
+        if (s = control.to_s) =~ /_\Z/
+          nested = true
+          s.sub(/_\Z/, '').to_sym     # Avoid creating new strings willy-nilly
+        else
+          control
+        end
+      else
+        :all
+      end
+
+    $debug_available[key] ||= key   # Remember that this debug was requested, for help
+    enabled = $debug_nested ||      # This debug is enabled because it's in a nested block
+              $debug_keys[key] ||   # This debug is enabled in its own right
+              $debug_keys[:all]     # This debug is enabled because all are
+    $debug_nested = nested
+    [
+      (enabled ? 1 : 0),
+      $debug_keys[:all] ? " %-15s"%control : nil
+    ]
   end
 
-  def debug(*args, &block)
+  def debug_show(*args)
     debug_initialize unless $debug_indent
 
-    enabled, show_key, old_nested = debug_selected(args)
+    enabled, key_to_show = debug_selected(args)
 
     # Emit the message if enabled or a parent is:
     if args.size > 0 && enabled == 1
-      puts "\##{show_key} "+"  "*$debug_indent + args.join(' ')
+      puts "\##{key_to_show} " +
+        '  '*$debug_indent +
+        args.
+#          A laudable aim, certainly, but in practise the Procs leak and slow things down:
+#          map{|a| a.respond_to?(:call) ? a.call : a}.
+          join(' ')
     end
-
-    if block
-      begin
-        $debug_indent += enabled
-        return yield       # Return the value of the block
-      ensure
-        $debug_indent -= enabled
-        $debug_nesting = old_nested
-      end
-    else
-      r = enabled == 1     # If no block, return whether enabled
-    end
-    r
+    $debug_indent += enabled
+    enabled
   end
+
+  def debug(*args, &block)
+    begin
+      old_indent, old_nested, enabled  = $debug_indent, $debug_nested, debug_show(*args)
+      return (block || proc { enabled == 1 }).call
+    ensure
+      $debug_indent, $debug_nested = old_indent, old_nested
+    end
+  end
+
 #end
 
 # Return all duplicate objects in the array (using hash-equality)
