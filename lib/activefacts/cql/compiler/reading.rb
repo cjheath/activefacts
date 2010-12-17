@@ -438,8 +438,11 @@ module ActiveFacts
               end
             end
 
-            debug :matching, "Matched reading '#{reading.expand}' (with #{side_effects.map{|se| se.absorbed_precursors+se.absorbed_followers + (se.common_supertype ? 1 : 0)
-            }.inspect} side effects)#{residual_adjectives ? ' and residual adjectives' : ''}"
+            debug :matching, "Matched reading '#{reading.expand}' (with #{
+                  side_effects.map{|se|
+                    se.absorbed_precursors+se.absorbed_followers + (se.common_supertype ? 1 : 0)
+                  }.inspect
+                } side effects)#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
           # There will be one side_effects for each role player
           ReadingMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects)
