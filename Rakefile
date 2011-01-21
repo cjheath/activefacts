@@ -5,14 +5,6 @@ require 'rspec/core/rake_task'
 
 gem "rspec", :require => "spec/rake/spectask"
 
-# Use mislav-hanna to the API format documentation, if it's installed:
-begin
-  require 'hanna/rdoctask'
-  HANNA = true
-rescue Exception => e
-  HANNA = false
-end
-
 require File.dirname(__FILE__) + '/lib/activefacts'
 
 # Generate all the Rake tasks
@@ -43,7 +35,6 @@ and object models in SQL, Ruby and other languages.
   # Magic Hoe hook to prevent the generation of diagrams:
   ENV['NODOT'] = 'yes'
   p.spec_extras[:rdoc_options] = ['-S'] +
-    (HANNA ? %w{ -S -T hanna} : []) +
     %w{
       -A has_one -A one_to_one -A maybe
       -x lib/activefacts/cql/.*.rb

@@ -42,9 +42,7 @@ module ActiveFacts
       end
 
       rule basetype
-        is s
-	i:( independent s )?
-        identification
+	basetype_expression
         {
 	  def ast; identification.ast; end
 	  def supers; []; end
@@ -54,20 +52,13 @@ module ActiveFacts
       end
 
       rule subtype
-        subtype_prefix
-	i:( independent s )?
-        supertype_list ident:identification?
+	subtype_expression
         {
 	  def ast; ident.empty? ? nil : ident.ast; end
           def supers; supertype_list.value; end
           def identification_mode; ident.empty? ? nil : ident.mode; end
 	  def independent; !i.empty?; end
         }
-      end
-
-      # REVISIT: This doesn't work, and I don't know why.
-      rule independency
-         ('independent' S / 'separate' S / 'partitioned' S)
       end
 
       rule supertype_list

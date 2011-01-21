@@ -29,10 +29,15 @@ module ActiveFacts
       end
 
       rule context_type
-        because         { def value; 'because'; end } /
+        because s       { def value; 'because'; end } /
         as_opposed_to   { def value; 'as_opposed_to'; end } /
         so_that         { def value; 'so_that'; end } /
         to_avoid        { def value; 'to_avoid'; end }
+      end
+
+      # An enforcement action, like SMS, email, log, alarm, etc.
+      rule action
+	id
       end
 
       rule discussion

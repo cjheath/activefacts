@@ -53,6 +53,9 @@ module ActiveFacts
 
       class Constraint < Definition
         def initialize context_note, enforcement, readings_lists = []
+          if context_note.is_a?(Treetop::Runtime::SyntaxNode)
+            context_note = context_note.empty? ? nil : context_note.ast
+          end
           @context_note = context_note
           @enforcement = enforcement
           @readings_lists = readings_lists

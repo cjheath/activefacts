@@ -101,8 +101,11 @@ Person is a kind of Party;
 Person has at most one Occupation;
 Person has one Title;
 Person has at most one birth-Date;
-Person has one family-Name;
-Person has one given-Name;
+Person has one family-Name,
+	family-Name is of Person;
+Person has given-Name;  // Avoid ambiguity; this is a new fact type
+Person has one given-Name,
+	given-Name is of Person;
 
 Phone is identified by its Nr;
 

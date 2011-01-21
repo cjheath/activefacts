@@ -8,18 +8,120 @@ module ActiveFacts
   module CQL
     grammar Language
 
-      rule subtype_prefix
-        'is' s 'a' s ('kind'/'subtype') s 'of' S
-      end
-
+      # >>>>>>>>>>>>>>>>>>>> Object Types <<<<<<<<<<<<<<<<<<<<
+      # The pattern to introduce a Value Type
       rule written_as
         s 'is' s 'written' S as s
       end
 
+      # The pattern to introduce an Entity Type
       rule identified_by
         identified s by s
       end
 
+      rule basetype_expression
+        is s i:( independent s )? identification
+      end
+
+      # The pattern to introduce an Entity Subtype
+      rule subtype_prefix
+        'is' s 'a' s ('kind'/'subtype') s 'of' S
+      end
+
+      rule subtype_expression
+        subtype_prefix i:( independent s )? supertype_list ident:identification?
+      end
+
+      # The pattern to introduce an objectified fact type with implicit identification
+      rule is_where
+	is s i:(independent s)? where
+	{ def independent; !i.empty?; end }
+      end
+
+      # >>>>>>>>>>>>>>>>>>>> Constraints <<<<<<<<<<<<<<<<<<<<
+      # External presence constraint syntax:
+      rule each_occurs_in_readings
+        s 'each' s ('combination' S)? role_list s occurs s quantifier s 'time' 's'? s enforcement 'in' s
+	  readings_list s c:context_note? ';'
+	{
+	  def role_list_ast
+	    role_list.ast
+	  end
+	  def quantifier_ast
+	    quantifier.ast
+	  end
+	  def readings_ast
+	    readings_list.ast
+	  end
+	}
+      end
+
+      # Alternate external presence constraint syntax:
+      rule either_or
+      s either? s r1:readings s or s r2:readings c:context_note? enforcement ';'
+      {
+	  def role_list_ast
+	    nil
+	  end
+	  def quantifier_ast
+	    Compiler::Quantifier.new(1, nil)
+	  end
+	  def readings_ast
+	    [r1.ast, r2.ast]
+	  end
+	}
+      end
+
+      # Exclusion (at most one) and mandatory exclusion (exactly one) constraint syntax:
+      rule for_each_how_many
+        s 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s enforcement ':' s
+	  readings_list s c:context_note? ';'
+	{
+	  def role_list_ast
+	    role_list.ast
+	  end
+	  def quantifier_ast
+	    quantifier.ast
+	  end
+	  def readings_ast
+	    readings_list.ast
+	  end
+	}
+      end
+
+      # Alternate mandatory exclusion constraint syntax:
+      rule either_or_not_both
+        s either? s r1:readings s or s r2:readings but s not s both s c:context_note? enforcement ';'
+	{
+	  def role_list_ast
+	    nil
+	  end
+	  def quantifier_ast
+	    Compiler::Quantifier.new(1, 1)
+	  end
+	  def readings_ast
+	    [r1.ast, r2.ast]
+	  end
+	}
+      end
+
+      # Subset constraint using "A only if B" syntax
+      rule a_only_if_b
+	s readings s only s if s r2:readings s c:context_note? enforcement ';'
+      end
+
+      # Subset constraint using "if A then B" syntax
+      rule if_b_then_a
+	s if s readings s then s r2:readings s c:context_note? enforcement ';'
+      end
+
+      # Equality constraint syntax:
+      rule if_and_only_if
+        s readings s tail:( if s and s only s if s readings s)+
+	  c:context_note? enforcement ';'
+      end
+
+      # >>>>>>>>>>>>>>>>>>>> Quantifiers <<<<<<<<<<<<<<<<<<<<
       rule quantifier
 	(
 	  each s                    { def value; [1, nil]; end }
@@ -55,26 +157,7 @@ module ActiveFacts
         / number s                { def value; number.value; end }
       end
 
-      rule according_to
-        'according' S to
-      end
-
-      rule because
-        'because' S
-      end
-
-      rule as_opposed_to
-        as S 'opposed' S to
-      end
-
-      rule so_that
-        'so' S that
-      end
-
-      rule to_avoid
-        to s 'avoid' !alphanumeric
-      end
-
+      # >>>>>>>>>>>>>>>>>>>> Context Notes <<<<<<<<<<<<<<<<<<<<
       rule as_agreed_by
         s as s 'agreed' s d:('on' S date)? by s agents
         { def value; [ d.empty? ? nil : d.date.value, agents.value ]; end }
@@ -97,31 +180,31 @@ module ActiveFacts
         id (s id)*
       end
 
-      # An enforcement action, like SMS, email, log, alarm, etc.
-      rule action
-	id
-      end
+      # >>>>>>>>>>>>>>>>>>>> Simple vocabulary <<<<<<<<<<<<<<<<<<<<
+      rule radix_point '.' end
 
-      rule order
-	'ascending' / 'descending'
-      end
-
+      rule ascending 'ascending' !alphanumeric end
+      rule according_to 'according' S to end 
       rule acyclic 'acyclic' !alphanumeric end
-      rule antisymmetric 'antisymmetric' !alphanumeric end
-      rule asymmetric 'asymmetric' !alphanumeric end
       rule alias 'alias' !alphanumeric end 
       rule all 'all' !alphanumeric end
       rule and 'and' !alphanumeric end
+      rule antisymmetric 'antisymmetric' !alphanumeric end
       rule approximately 'approximately' !alphanumeric end
       rule as 'as' !alphanumeric end
+      rule as_opposed_to as s 'opposed' S to end 
+      rule asymmetric 'asymmetric' !alphanumeric end
       rule at 'at' !alphanumeric end
+      rule because 'because' !alphanumeric end
       rule both 'both' !alphanumeric end 
       rule but 'but' !alphanumeric end 
       rule by 'by' !alphanumeric end 
       rule converts 'converts' !alphanumeric end 
       rule definitely 'definitely' !alphanumeric end
+      rule descending 'descending' !alphanumeric end
       rule each 'each' !alphanumeric end 
       rule either 'either' !alphanumeric end 
+      rule either_all_or_none either s all s or s ( none / no ) end
       rule entity 'entity' !alphanumeric end 
       rule ephemera 'ephemera' !alphanumeric end 
       rule exactly 'exactly' !alphanumeric end
@@ -129,10 +212,10 @@ module ActiveFacts
       rule feminine 'feminine' !alphanumeric end 
       rule from  'from' !alphanumeric end
       rule identified ('known'/'identified') !alphanumeric end 
-      rule independent 'independent' !alphanumeric end 
       rule if 'if' !alphanumeric end
       rule import 'import' !alphanumeric end
       rule includes 'includes' !alphanumeric end
+      rule independent 'independent' !alphanumeric end 
       rule intransitive 'intransitive' !alphanumeric end
       rule irreflexive 'irreflexive' !alphanumeric end
       rule is 'is' !alphanumeric end 
@@ -145,23 +228,25 @@ module ActiveFacts
       rule no 'no' !alphanumeric end
       rule none 'none' !alphanumeric end
       rule not 'not' !alphanumeric end
-      rule either_all_or_none either s all s or s ( none / no ) end
+      rule occurs 'occurs' !alphanumeric end
       rule one 'one' !alphanumeric end
       rule only 'only' !alphanumeric end
       rule or 'or' !alphanumeric end 
       rule otherwise 'otherwise' !alphanumeric end 
       rule partitioned 'partitioned' !alphanumeric end 
       rule personal 'personal' !alphanumeric end 
-      rule restricted 'restricted' !alphanumeric end
       rule reflexive 'reflexive' !alphanumeric end
+      rule restricted 'restricted' !alphanumeric end
       rule returning 'returning' !alphanumeric end
       rule separate 'separate' !alphanumeric end 
+      rule so_that 'so' S that end
       rule some 'some' !alphanumeric end
       rule static 'static' !alphanumeric end
       rule symmetric 'symmetric' !alphanumeric end
       rule that 'that' !alphanumeric end
       rule then 'then' !alphanumeric end
       rule to 'to' !alphanumeric end
+      rule to_avoid to s 'avoid' !alphanumeric end
       rule transient 'transient' !alphanumeric end
       rule transitive 'transitive' !alphanumeric end
       rule true 'true' !alphanumeric end 

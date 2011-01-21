@@ -26,9 +26,9 @@ module ActiveFacts
       rule non_term_def
         mapping_pragmas entity_prefix
         / mapping_pragmas written_as			      # Value type
-        / mapping_pragmas is s (independent s)? where         # Objectified type
+        / mapping_pragmas is_where			      # Objectified type
         / non_role_word
-	/ identified_by			    # as in: "a kind of X identified by..."
+	/ identified_by					      # as in: "a kind of X identified by..."
 	/ unit
       end
 
@@ -159,7 +159,7 @@ module ActiveFacts
         and
         / but
         / if
-        / 'occurs' s quantifier s 'time' 
+        / occurs
         / only
         / or
         / quantifier

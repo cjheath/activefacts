@@ -44,5 +44,3 @@ Diplomat is an Ambassador that is from Country(1) to Country(2)
 	only if Diplomat serves in Country(2);
 Diplomat serves in Country
 	only if Diplomat speaks Language that is spoken in Country;
-each Ambassador occurs at least one time in
-	Ambassador is from Country(1) to Country(2);

@@ -11,6 +11,7 @@ require 'helpers/test_parser'
 
 describe "ASTs from Derived Fact Types with expressions" do
   it "should parse a simple comparison clause" do
+    # Director is old: Company is directed by Person who is of Age > 60;
     %q{
       Director is old: Person directs Company, Person is of Age, Age > 60;
     }.should parse_to_ast \
@@ -47,6 +48,15 @@ describe "ASTs from Derived Fact Types with expressions" do
       %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
         {Person} "is of" {Age}
         > (> {Age} (+ 20 (* 2 20)))}
+  end
+
+  it "should parse a right-contracted comparison clause after a right-contracted clause" do
+    %q{
+      Director is old: Company is directed by Person who is of Age > 60;
+    }.should parse_to_ast \
+      %q{FactType: [{Director} "is old"] where {Company} "is directed by" {Person} who
+        {Person} "is of" {Age} >
+        (> {Age} 60)}
   end
 
   it "should parse a simple reading with qualifiers" do
@@ -97,6 +107,10 @@ describe "ASTs from Derived Fact Types with expressions" do
         (<= 20 {Age}, [maybe]) 
         < (< {Age} 60, [definitely])}
   end
+
+  it "should parse a comparison expression with right-contracted then left-contracted comparisons"
+    # Director is probably adult: Person directs company, Person is of Age maybe >= 21 and definitely < 60;
+  # end
 
   it "should fail to parse a contracted comparison that doesn't follow a role" do
     %q{

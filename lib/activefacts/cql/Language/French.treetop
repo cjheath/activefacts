@@ -1,5 +1,6 @@
 #
 # vi:encoding=utf-8
+#
 #       ActiveFacts CQL Parser.
 #       Parse rules the English syntax of CQL.
 #
@@ -9,67 +10,141 @@ module ActiveFacts
   module CQL
     grammar Language
 
+      # >>>>>>>>>>>>>>>>>>>> Object Types <<<<<<<<<<<<<<<<<<<<
+      # The pattern to introduce a Value Type
+      rule written_as
+        s est s 'écrit' S 'en' s
+      end
+
+      # The pattern to introduce an Entity Type
+      rule identified_by
+	'identifié' s 'par' s
+      end
+
+      rule basetype_expression
+        is s i:( independent s )? identification
+      end
+
+      # The pattern to introduce an Entity Subtype
       rule subtype_prefix
         est s un s ('type'/'genre') s 'de' S
       end
 
-      rule un
-        'un' 'e'?
+      rule subtype_expression
+        subtype_prefix i:( independent s )? supertype_list ident:identification?
       end
 
-      rule written_as
-        s est s 'ecrit' S 'en' s    # REVISIT: "e"crit has acute
+      # The pattern to introduce an objectified fact type with implicit identification
+      rule is_where
+	est s i:(independent s)? where
+	{ def independent; !i.empty?; end }
       end
 
-      rule identified_by
-        #identified s by s
-	'identifie' s 'par' s	# REVISIT: e acute
+      # >>>>>>>>>>>>>>>>>>>> Constraints <<<<<<<<<<<<<<<<<<<<
+      # External presence constraint syntax:
+      rule each_occurs_in_readings
+	s chaque s ('combinaison' S)? role_list s 'existe' S quantifier 'fois' S
+	  'parmis' S 'ce' S 'qui' S 'suit' s ':' s
+	  readings_list s c:context_note? ';'
+	{
+	  def role_list_ast
+	    role_list.ast
+	  end
+	  def quantifier_ast
+	    quantifier.ast
+	  end
+	  def readings_ast
+	    readings_list.ast
+	  end
+	}
       end
 
-# Company has at most one postal-Address;
-# CompanyContact is where Company has contact-Person;
-# CompanyContact is the situation where Company has contact-Person;
-# for each Company at least one of the following holds:
-#     that Company has some contact-Person,
-#     that Company has some mailing-Address and that mailing-Address includes PostCode;
-#
-# Entreprise is a synonym for English:Company;
-# Entreprise est un synonyme pour English:Company;
-# Personne is a synonym for English:Person;
-#
-# Entreprise a au plus une Adresse Postale;
-# EntrepriseContact est quand un(e) Entreprise a Personnes comme -contact;
-# pour chaque Entreprise au moins un des suivants s'applique:
-#     que cette Entreprise a certaines Personnes comme -contact,
-#     que cette Entreprise a certaines Adresses Postales et que ces Adresses Postales ont un Code Postale;
-#
-# ---------------------------------------------------
-# each A occurs at least one time in:
-# chaque A existe (at least one) fois parmis ce qui suit:
-#
-# each combination A, B occurs at least one time in:
-# chaque combinaison A, B existe (at least one) fois parmis ce qui suit:
-#
+      rule either_or
+      s 'soit' S r1:readings s 'ou' S r2:readings
+	s c:context_note? enforcement ';'
+      {
+	  def role_list_ast
+	    nil
+	  end
+	  def quantifier_ast
+	    Compiler::Quantifier.new(1, nil)
+	  end
+	  def readings_ast
+	    [r1.ast, r2.ast]
+	  end
+	}
+      end
 
+      # Used for exclusion (at most one) and mandatory exclusion (exactly one)
+      rule for_each_how_many
+	'pour' S 'chaque' S role_list s
+	  quantifier s 'des' S 'suivants' S 's\'applique' s ':' s
+	  readings_list s c:context_note? ';'
+	{
+	  def role_list_ast
+	    role_list.ast
+	  end
+	  def quantifier_ast
+	    quantifier.ast
+	  end
+	  def readings_ast
+	    readings_list.ast
+	  end
+	}
+      end
+
+      rule either_or_not_both
+	s 'soit' S r1:readings s 'ou' S r2:readings 'mais' S 'pas' S 'les' S 'deux'
+	  s c:context_note? enforcement ';'
+	{
+	  def role_list_ast
+	    nil
+	  end
+	  def quantifier_ast
+	    Compiler::Quantifier.new(1, 1)
+	  end
+	  def readings_ast
+	    [r1.ast, r2.ast]
+	  end
+	}
+      end
+
+      rule a_only_if_b
+	s readings s 'que' S 'si' S r2:readings s c:context_note? enforcement ';'
+      end
+
+      rule if_b_then_a
+	s 'si' S readings s 'puis' S r2:readings s c:context_note? enforcement ';'
+      end
+
+      rule if_and_only_if
+        s readings s tail:( 'si' S 'et' S ('seulement'/'uniquement'/'que') S 'si' S readings s)+
+	  c:context_note? enforcement ';'
+      end
+
+      # >>>>>>>>>>>>>>>>>>>> Quantifiers <<<<<<<<<<<<<<<<<<<<
       rule quantifier
 	(
-	  # REVISIT: each s                   { def value; [1, nil]; end } /
-	  ('a' s 'certaines' / un s 'certain' 'e'? ) s    { def value; nil; end }
-	  / 'que' s ('ce'/'cette'/'ces') s	    { def value; nil; end } # ce is masculine, ces is plural
-
-	  / un s                    { def value; [1, 1]; end }
-	  / 'pas' s 'de' s          { def value; [0, 0]; end }	# REVISIT: Example: "Personne n'a pas de Casier-judiciaire"
-	  / exactement s quantity   { def value; q = quantity.value; [q, q]; end }
-	  / au moins quantity most:( et au plus q:quantity )?
-				    { def value;
-					[ quantity.value,
-					  most.empty? ? nil : most.q.value
-					]
-				      end
-				    }
-	  / au plus quantity	  { def value; [ nil, quantity.value ]; end }
-	  / entre s numeric_range s  { def value; numeric_range.value; end }
-	  / soit tous soit aucun    { def value; [ -1, 1 ]; end }
+	  ( chaque s					# "each"
+	    { def value; [1, nil]; end }
+	  / 'a' S 'certaines' / un s 'certain' 'e'? ) s	# "some"
+	    { def value; nil; end }
+	  / 'que' s ce s				# "that"
+	    { def value; nil; end }
+	  / un s					# "one"; masculine or feminine
+	    { def value; [1, 1]; end }
+	  / 'pas' s 'de' s				# REVISIT: Example: "Personne n'a pas de Casier-judiciaire"
+	    { def value; [0, 0]; end }
+	  / exactement s quantity
+	    { def value; q = quantity.value; [q, q]; end }
+	  / au moins quantity most:( et au plus q:quantity )? # At least (or at most)
+	    { def value; [ quantity.value, most.empty? ? nil : most.q.value ]; end }
+	  / au plus quantity				# At most
+	    { def value; [ nil, quantity.value ]; end }
+	  / entre s numeric_range s			# within numeric_range
+	    { def value; numeric_range.value; end }
+	  / soit tous soit aucun			# either all or none
+	    { def value; [ -1, 1 ]; end }
 	)
 	{
 	  def ast
@@ -84,30 +159,9 @@ module ActiveFacts
         / number s                { def value; number.value; end }
       end
 
-      rule according_to
-	'selon'
-      end
-
-      rule because
-	# REVSIT: or 'car'?
-	'parce' s 'que'
-      end
-
-      rule as_opposed_to
-	'au' s 'lieu' s 'de'
-      end
-
-      rule so_that
-	'pour' s 'que'
-      end
-
-      rule to_avoid
-	'pour' s 'empecher' s 'de' s
-	/ 'pour' s 'ne' s 'pas' s
-      end
-
+      # >>>>>>>>>>>>>>>>>>>> Context Notes <<<<<<<<<<<<<<<<<<<<
       rule as_agreed_by
-	s 'comme' s 'convenu' s d:('le' s date)? 'par' s agents
+	s 'comme' S 'convenu' S d:('le' s date s)? 'par' S agents
         { def value; [ d.empty? ? nil : d.date.value, agents.value ]; end }
       end
 
@@ -128,45 +182,49 @@ module ActiveFacts
         id (s id)*
       end
 
-      # An enforcement action, like SMS, email, log, alarm, etc.
-      rule action
-	id
-      end
+      # >>>>>>>>>>>>>>>>>>>> Simple vocabulary <<<<<<<<<<<<<<<<<<<<
+      rule radix_point ',' end
 
+      rule according_to 'selon' !alphanumeric end 
       rule acyclic 'acyclique' !alphanumeric end
       rule alias 'alias' !alphanumeric end 
       rule all 'tous' !alphanumeric end
       rule and 'et' !alphanumeric end
-      rule approximately 'environ' !alphanumeric end	      # REVISIT: google translate
+      rule approximately 'environ' !alphanumeric end		# REVISIT: google translate
       rule as 'comme' !alphanumeric end
+      rule as_opposed_to 'au' S 'lieu' S 'de' !alphanumeric end
       rule at 'a' !alphanumeric end
+      rule because ('parce' s 'que' / 'car') !alphanumeric end
       rule both 'les deux' !alphanumeric end 
       rule but 'mais' !alphanumeric end 
       rule by 'par' !alphanumeric end 
+      # ce is masculine, cette feminine, ces is plural
+      rule ce ('ce'/'cette'/'ces') !alphanumeric end
+      rule chaque 'chaque' !alphanumeric end
       rule converts 'convertit' !alphanumeric end 
       rule definitely 'définitivement' !alphanumeric end
-      rule each 'chaque' !alphanumeric end 
       rule either 'soit' !alphanumeric end 
       rule entity 'entité' !alphanumeric end 
       rule ephemera 'éphémère' !alphanumeric end 
+      rule est 'est' !alphanumeric end 
+      rule is est end	# Called from ObjectTypes.treetop
       rule exactement 'exactement' !alphanumeric end
       rule false 'faux' !alphanumeric end 
       rule feminine 'féminin' !alphanumeric end 
-      rule from  'à partir de' !alphanumeric end	      # REVISIT: google translate
+      rule from 'à partir de' !alphanumeric end			# REVISIT: google translate
       rule identified ('connus'/'identifiés') !alphanumeric end 
-      rule independent 'indépendants' !alphanumeric end	      # REVISIT: google translate; need trailing s?
       rule if 'si' !alphanumeric end
-      rule import 'import' !alphanumeric end		      # REVISIT: 
+      rule import 'import' !alphanumeric end			# REVISIT: translation?
       rule includes 'comprend' !alphanumeric end
+      rule independent 'indépendant' !alphanumeric end
       rule intransitive 'intransitif' !alphanumeric end
-      rule est 'est' !alphanumeric end 
       rule its 'ses' !alphanumeric end
       rule masculine 'masculin' !alphanumeric end 
       rule matches 'matches' !alphanumeric end
-      rule maybe 'peut-e^tre' !alphanumeric end
+      rule maybe 'peut-être' !alphanumeric end
       rule none 'aucun' !alphanumeric end
-      rule not 'not' !alphanumeric end			      # REVISIT: Used in constraints
-      rule only 'only' !alphanumeric end		      # REVISIT: Used in constraints
+      rule not 'not' !alphanumeric end				# REVISIT: Used in constraints
+      rule only 'only' !alphanumeric end			# REVISIT: Used in constraints
       rule or 'ou' !alphanumeric end 
       rule otherwise 'sinon' !alphanumeric end
       rule partitioned 'partitionné' !alphanumeric end 
@@ -174,14 +232,18 @@ module ActiveFacts
       rule restricted 'limité' s 'a' !alphanumeric end
       rule returning 'retour' !alphanumeric end
       rule separate 'distincte' !alphanumeric end 
+      rule so_that 'pour' s 'que' !alphanumeric end
       rule some 'quelques' !alphanumeric end
       rule static 'statique' !alphanumeric end
       rule symmetric 'symétrique' !alphanumeric end
       rule that 'que' !alphanumeric end
       rule to 'à' !alphanumeric end
+      rule to_avoid ('pour' s 'empecher' s 'de' / 'pour' s 'ne' s 'pas') !alphanumeric end
       rule transient 'transitoires' !alphanumeric end
       rule transitive 'transitif' !alphanumeric end
       rule true 'vrai' !alphanumeric end 
+      # un is masculine, une is feminine
+      rule un 'un' 'e'? !alphanumeric end
       rule vocabulary 'vocabulaire' !alphanumeric end 
       rule where 'où' !alphanumeric end 
 

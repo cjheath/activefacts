@@ -18,14 +18,14 @@ module ActiveFacts
 
       rule named_fact_type
         s term_definition_name
-        mapping_pragmas is s i:(independent s)? where
+        mapping_pragmas is_where
         anonymous_fact_type
         {
 	  def ast
 	    ft = anonymous_fact_type.ast
 	    ft.name = term_definition_name.value
 	    pragmas = mapping_pragmas.value
-	    pragmas << 'independent' unless i.empty?
+	    pragmas << 'independent' if is_where.independent
 	    ft.pragmas = pragmas
 	    ft
 	  end
@@ -80,7 +80,7 @@ module ActiveFacts
       end
 
       rule return
-        by s order? s reading_word+ /
+        by s (ascending/descending)? s reading_word+ /
 	reading_word+
       end
 

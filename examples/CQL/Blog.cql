@@ -31,7 +31,8 @@ Content provides text of Comment,
 	Comment consists of one text-Content;
 
 Post is identified by its Id;
-Post was written by one Author;
+Post was written by one Author,
+	Author wrote Post;
 
 Topic is identified by its Id;
 Post belongs to one Topic,
