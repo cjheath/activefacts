@@ -531,7 +531,7 @@
 			</orm:SubtypeFact>
 			<orm:Fact id="_5D9C9C52-D13D-4806-851D-DE6B42590C5D" _Name="Representation">
 				<orm:FactRoles>
-					<orm:Role id="_7605F9A0-F2C0-4A9A-9EF4-4BBE08FBA355" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_7605F9A0-F2C0-4A9A-9EF4-4BBE08FBA355" _IsMandatory="true" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_0E0B637E-182A-45CD-B73E-C02D1EC9B971" />
 					</orm:Role>
 					<orm:Role id="_89507856-42BF-4065-9DC1-9ED1054A0F23" _IsMandatory="false" _Multiplicity="Unspecified" Name="Represented Country">
@@ -577,6 +577,7 @@
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_503E3F70-A8F6-4C10-ACD2-98C52DEA2CB9" />
+					<orm:MandatoryConstraint ref="_1AC806FD-0750-4F1B-B637-4327F5D24855" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_D60AF1F5-F0FB-41BB-9621-5760ABB6004A" _Name="DiplomatRepresentsCountry">
@@ -614,7 +615,7 @@
 					<orm:RoleProxy id="_2C6A284F-2CBC-470D-9490-D77E795B3B63">
 						<orm:Role ref="_7605F9A0-F2C0-4A9A-9EF4-4BBE08FBA355" />
 					</orm:RoleProxy>
-					<orm:Role id="_A3CFC489-6A01-43E5-82C5-FD595A21A8C2" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+					<orm:Role id="_A3CFC489-6A01-43E5-82C5-FD595A21A8C2" _IsMandatory="true" _Multiplicity="OneToMany" Name="">
 						<orm:RolePlayer ref="_DFDEEBB0-0735-4AE4-B616-E7C7FBE330E0" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -943,6 +944,11 @@
 					<orm:Role id="_DFBDC094-2D79-455F-8D1E-F083371861C2" ref="_2A155BF9-8598-4298-92B7-3029D0198CF8" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_1AC806FD-0750-4F1B-B637-4327F5D24855" Name="SimpleMandatoryConstraint9" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_116509B5-3E3E-4DC8-87DE-B82CA149BC4E" ref="_7605F9A0-F2C0-4A9A-9EF4-4BBE08FBA355" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
 			<orm:SubsetConstraint id="_E304CE71-9284-4D5E-8F2E-F08D1EE96896" Name="SubsetConstraint1">
 				<orm:RoleSequences>
 					<orm:RoleSequence id="_203591D6-946D-4E39-88B4-F112CB561B4C">
@@ -1224,7 +1230,7 @@
 	<ormtooial:Bridge>
 		<ormtooial:AbstractionModelIsForORMModel id="_54EF6B25-5664-45BF-897E-B85B1CC9AF3B" AbstractionModel="_79B3F29E-1B57-4950-A68B-3E022D8078A4" ORMModel="_9D9C3D9F-4D54-448F-AFF4-5A1721166668" />
 		<ormtooial:FactTypeMapsTowardsRole id="_42B12A22-CD84-4011-B5CB-829EB929DF56" FactType="_FED14D35-DC88-471F-B170-9713B4F5354A" TowardsRole="_92669058-FFC7-43E2-B4E8-C32A058BF654" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_B82F65BF-F9E6-442C-BF2B-2B55FED574EB" FactType="_EB3723E9-FFF5-46C4-8F7D-3221AE4873B0" TowardsRole="_A3CFC489-6A01-43E5-82C5-FD595A21A8C2" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_B82F65BF-F9E6-442C-BF2B-2B55FED574EB" FactType="_EB3723E9-FFF5-46C4-8F7D-3221AE4873B0" TowardsRole="_A3CFC489-6A01-43E5-82C5-FD595A21A8C2" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_6175815E-876E-4351-A49D-581BDE779B0F" FactType="_3031D4C9-96B8-44D6-966F-AEFA90259798" TowardsRole="_09A47183-97C9-4C5D-A491-B77B115B9A57" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_0B8553AA-0433-47EF-98F0-A864BE533894" FactType="_C7B8B797-E36A-4B6A-A90A-FDEF5DAE9353" TowardsRole="_28798ECE-ADA3-4A1E-A93B-F7F23B859794" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_F5E44682-20CC-437F-AD00-8A397F0DA988" FactType="_49EAFC70-2318-4C6D-BECF-CAF89DAA3EDC" TowardsRole="_79892BE2-8D79-4FAC-A6DC-E93261EE936B" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
