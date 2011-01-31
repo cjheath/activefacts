@@ -525,7 +525,7 @@ module ActiveFacts
             next ''
           end
         end
-        $stderr.puts "Elided illegal characters '#{elided}' from reading" unless elided.empty?
+        $stderr.puts "Elided illegal characters '#{elided}' from reading #{text.inspect}" unless elided.empty?
         text
       end
 
@@ -802,7 +802,10 @@ module ActiveFacts
         end_joins = []    # An array of booleans indicating whether any role_sequence requires a subtyping join
         role_sequences[0].all_role_ref.size.times do |i|
           role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
-          next if (fact_types = role_refs.map{|rr| rr.role.fact_type}).uniq.size == 1
+          if (fact_types = role_refs.map{|rr| rr.role.fact_type}).uniq.size == 1
+            raise "In #{constraint_type} #{name}, there is a faulty join"
+            next
+          end
           if (players = role_refs.map{|rr| rr.role.object_type}).uniq.size == 1
             end_point = players[0]
             end_joins[i] = false
@@ -875,6 +878,7 @@ module ActiveFacts
 
               # Create a join node for the actual end-point (supertype of the constrained roles)
               end_point = end_points[i]
+              raise "In #{constraint_type} #{name}, there is a faulty join" unless end_point
               debug :join, "Join Node #{join.all_join_node.size} is for #{end_point.name}"
               end_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => end_point)
 
