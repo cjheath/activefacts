@@ -59,11 +59,11 @@ module ActiveFacts
       rule unit_definition
         u:(
           s coeff:unit_coefficient? base:units? s o:unit_offset?
-          converts s a:(approximately s)? to s
+	  conversion
           singular:unit_name s plural:('/' s p:unit_name s)?
         /
           s singular:unit_name s plural:('/' s p:unit_name s)?
-          converts s a:(approximately s)? to s
+	  conversion
           coeff:unit_coefficient? base:units? s o:unit_offset?
         )
         q:(approximately '' / ephemera s url )? s
@@ -80,7 +80,7 @@ module ActiveFacts
 	    end
             offset = u.o.text_value.empty? ? 0 : u.o.value
 	    bases = u.base.empty? ? [] : u.base.value
-	    approximately = q.respond_to? :approximately
+	    approximately = q.respond_to?(:approximately) || u.conversion.approximate?
 	    ephemera = q.respond_to?(:ephemera) ? q.url.text_value : nil
 	    Compiler::Unit.new singular, plural, numerator, denominator, offset, bases, approximately, ephemera
 	  end
@@ -125,7 +125,7 @@ module ActiveFacts
       end
 
       rule non_unit
-        restricted / converts / approximately / ephemera
+        restricted / conversion / approximately / ephemera
       end
 
       rule unit

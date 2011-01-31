@@ -40,10 +40,20 @@ module ActiveFacts
 	{ def independent; !i.empty?; end }
       end
 
+      # Units conversion keyword
+      rule conversion
+	converts s a:(approximately s)? to s
+	{
+	  def approximate?
+	    !a.empty?
+	  end
+	}
+      end
+
       # >>>>>>>>>>>>>>>>>>>> Constraints <<<<<<<<<<<<<<<<<<<<
       # External presence constraint syntax:
       rule each_occurs_in_readings
-	s chaque s ('combinaison' S)? role_list s 'existe' S quantifier 'fois' S
+	s chaque s ('combinaison' S)? role_list s existe s quantifier 'fois' S
 	  'parmis' S 'ce' S 'qui' S 'suit' s ':' s
 	  readings_list s c:context_note? ';'
 	{
@@ -122,6 +132,12 @@ module ActiveFacts
 	  c:context_note? enforcement ';'
       end
 
+      # During the prescan we need to know where terms in a role list finish.
+      # This rule matches any non-term expressions that may follow a role list.
+      rule role_list_constraint_followers
+	existe
+      end
+
       # >>>>>>>>>>>>>>>>>>>> Quantifiers <<<<<<<<<<<<<<<<<<<<
       rule quantifier
 	(
@@ -182,70 +198,80 @@ module ActiveFacts
         id (s id)*
       end
 
-      # >>>>>>>>>>>>>>>>>>>> Simple vocabulary <<<<<<<<<<<<<<<<<<<<
-      rule radix_point ',' end
+      # >>>>>>>>>>>>>>>>>>>> Internal vocabulary <<<<<<<<<<<<<<<<<<<<
+      rule all 'tous' !alphanumeric end
+      rule at 'a' !alphanumeric end
+      rule both 'les deux' !alphanumeric end 
+      rule ce ('ce'/'cette'/'ces') !alphanumeric end	# ce is masculine, cette feminine, ces is plural
+      rule chaque 'chaque' !alphanumeric end
+      rule converts 'convertit' !alphanumeric end 
+      rule descending 'descendant' !alphanumeric end
+      rule either 'soit' !alphanumeric end 
+      rule entity 'entité' !alphanumeric end 
+      rule est 'est' !alphanumeric end 
+      rule exactement 'exactement' !alphanumeric end
+      rule existe 'existe' !alphanumeric end
+      rule from 'à partir de' !alphanumeric end		# REVISIT: google translate
+      rule includes 'comprend' !alphanumeric end
+      rule matches 'matches' !alphanumeric end
+      rule moins 'moins' !alphanumeric end
+      rule none 'aucun' !alphanumeric end
+      rule not 'not' !alphanumeric end			# REVISIT: Used in constraints
+      rule plus 'plus' !alphanumeric end
+      rule some 'quelques' !alphanumeric end
+      rule un 'un' 'e'? !alphanumeric end	# un is masculine, une is feminine
 
+      # >>>>>>>>>>>>>>>>>>>> External vocabulary <<<<<<<<<<<<<<<<<<<<
       rule according_to 'selon' !alphanumeric end 
       rule acyclic 'acyclique' !alphanumeric end
       rule alias 'alias' !alphanumeric end 
-      rule all 'tous' !alphanumeric end
       rule and 'et' !alphanumeric end
+      rule antisymmetric 'antisymmetric' !alphanumeric end
       rule approximately 'environ' !alphanumeric end		# REVISIT: google translate
       rule as 'comme' !alphanumeric end
       rule as_opposed_to 'au' S 'lieu' S 'de' !alphanumeric end
-      rule at 'a' !alphanumeric end
+      rule asymmetric 'asymétrique' !alphanumeric end
       rule because ('parce' s 'que' / 'car') !alphanumeric end
-      rule both 'les deux' !alphanumeric end 
       rule but 'mais' !alphanumeric end 
       rule by 'par' !alphanumeric end 
-      # ce is masculine, cette feminine, ces is plural
-      rule ce ('ce'/'cette'/'ces') !alphanumeric end
-      rule chaque 'chaque' !alphanumeric end
-      rule converts 'convertit' !alphanumeric end 
       rule definitely 'définitivement' !alphanumeric end
-      rule either 'soit' !alphanumeric end 
-      rule entity 'entité' !alphanumeric end 
       rule ephemera 'éphémère' !alphanumeric end 
-      rule est 'est' !alphanumeric end 
-      rule is est end	# Called from ObjectTypes.treetop
-      rule exactement 'exactement' !alphanumeric end
       rule false 'faux' !alphanumeric end 
       rule feminine 'féminin' !alphanumeric end 
-      rule from 'à partir de' !alphanumeric end			# REVISIT: google translate
       rule identified ('connus'/'identifiés') !alphanumeric end 
       rule if 'si' !alphanumeric end
       rule import 'import' !alphanumeric end			# REVISIT: translation?
-      rule includes 'comprend' !alphanumeric end
       rule independent 'indépendant' !alphanumeric end
       rule intransitive 'intransitif' !alphanumeric end
+      rule irreflexive 'irréflexive' !alphanumeric end
+      rule is est end			# Called from ObjectTypes.treetop in "is identified by"
       rule its 'ses' !alphanumeric end
       rule masculine 'masculin' !alphanumeric end 
-      rule matches 'matches' !alphanumeric end
       rule maybe 'peut-être' !alphanumeric end
-      rule none 'aucun' !alphanumeric end
-      rule not 'not' !alphanumeric end				# REVISIT: Used in constraints
       rule only 'only' !alphanumeric end			# REVISIT: Used in constraints
       rule or 'ou' !alphanumeric end 
+      rule ordering_prefix by s (ascending/descending)? s end
       rule otherwise 'sinon' !alphanumeric end
       rule partitioned 'partitionné' !alphanumeric end 
       rule personal 'personelle' !alphanumeric end 
+      rule radix_point ',' end
+      rule reflexive 'réflexive' !alphanumeric end
       rule restricted 'limité' s 'a' !alphanumeric end
       rule returning 'retour' !alphanumeric end
       rule separate 'distincte' !alphanumeric end 
       rule so_that 'pour' s 'que' !alphanumeric end
-      rule some 'quelques' !alphanumeric end
       rule static 'statique' !alphanumeric end
       rule symmetric 'symétrique' !alphanumeric end
       rule that 'que' !alphanumeric end
+      rule then 'puis' !alphanumeric end
       rule to 'à' !alphanumeric end
       rule to_avoid ('pour' s 'empecher' s 'de' / 'pour' s 'ne' s 'pas') !alphanumeric end
       rule transient 'transitoires' !alphanumeric end
       rule transitive 'transitif' !alphanumeric end
       rule true 'vrai' !alphanumeric end 
-      # un is masculine, une is feminine
-      rule un 'un' 'e'? !alphanumeric end
       rule vocabulary 'vocabulaire' !alphanumeric end 
       rule where 'où' !alphanumeric end 
+      rule who 'qui' !alphanumeric end 
 
     end
   end

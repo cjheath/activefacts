@@ -80,8 +80,7 @@ module ActiveFacts
       end
 
       rule return
-        by s (ascending/descending)? s reading_word+ /
-	reading_word+
+	ordering_prefix? reading_word+
       end
 
       rule clause

@@ -38,6 +38,16 @@ module ActiveFacts
 	{ def independent; !i.empty?; end }
       end
 
+      # Units conversion keyword
+      rule conversion
+	converts s a:(approximately s)? to s
+	{
+	  def approximate?
+	    !a.empty?
+	  end
+	}
+      end
+
       # >>>>>>>>>>>>>>>>>>>> Constraints <<<<<<<<<<<<<<<<<<<<
       # External presence constraint syntax:
       rule each_occurs_in_readings
@@ -121,6 +131,12 @@ module ActiveFacts
 	  c:context_note? enforcement ';'
       end
 
+      # During the prescan we need to know where terms in a role list finish.
+      # This rule matches any non-term expressions that may follow a role list.
+      rule role_list_constraint_followers
+	occurs
+      end
+
       # >>>>>>>>>>>>>>>>>>>> Quantifiers <<<<<<<<<<<<<<<<<<<<
       rule quantifier
 	(
@@ -142,7 +158,7 @@ module ActiveFacts
 				    }
 	  / at s most s quantity    { def value; [ nil, quantity.value ]; end }
 	  / from s numeric_range s  { def value; numeric_range.value; end }
-	  / either_all_or_none s    { def value; [ -1, 1 ]; end }
+	# / either_all_or_none s    { def value; [ -1, 1 ]; end }
 	)
 	{
 	  def ast
@@ -151,6 +167,8 @@ module ActiveFacts
 	  end
 	}
       end
+
+      # rule either_all_or_none either s all s or s ( none / no ) end
 
       rule quantity
         one s                     { def value; 1; end }
@@ -180,67 +198,68 @@ module ActiveFacts
         id (s id)*
       end
 
-      # >>>>>>>>>>>>>>>>>>>> Simple vocabulary <<<<<<<<<<<<<<<<<<<<
-      rule radix_point '.' end
-
-      rule ascending 'ascending' !alphanumeric end
-      rule according_to 'according' S to end 
-      rule acyclic 'acyclic' !alphanumeric end
-      rule alias 'alias' !alphanumeric end 
+      # >>>>>>>>>>>>>>>>>>>> Internal vocabulary <<<<<<<<<<<<<<<<<<<<
       rule all 'all' !alphanumeric end
-      rule and 'and' !alphanumeric end
-      rule antisymmetric 'antisymmetric' !alphanumeric end
-      rule approximately 'approximately' !alphanumeric end
-      rule as 'as' !alphanumeric end
-      rule as_opposed_to as s 'opposed' S to end 
-      rule asymmetric 'asymmetric' !alphanumeric end
+      rule ascending 'ascending' !alphanumeric end
       rule at 'at' !alphanumeric end
-      rule because 'because' !alphanumeric end
       rule both 'both' !alphanumeric end 
-      rule but 'but' !alphanumeric end 
-      rule by 'by' !alphanumeric end 
       rule converts 'converts' !alphanumeric end 
-      rule definitely 'definitely' !alphanumeric end
       rule descending 'descending' !alphanumeric end
       rule each 'each' !alphanumeric end 
       rule either 'either' !alphanumeric end 
-      rule either_all_or_none either s all s or s ( none / no ) end
       rule entity 'entity' !alphanumeric end 
-      rule ephemera 'ephemera' !alphanumeric end 
       rule exactly 'exactly' !alphanumeric end
-      rule false 'false' !alphanumeric end 
-      rule feminine 'feminine' !alphanumeric end 
       rule from  'from' !alphanumeric end
-      rule identified ('known'/'identified') !alphanumeric end 
-      rule if 'if' !alphanumeric end
-      rule import 'import' !alphanumeric end
       rule includes 'includes' !alphanumeric end
-      rule independent 'independent' !alphanumeric end 
-      rule intransitive 'intransitive' !alphanumeric end
-      rule irreflexive 'irreflexive' !alphanumeric end
-      rule is 'is' !alphanumeric end 
-      rule its 'its' !alphanumeric end
       rule least 'least' !alphanumeric end
-      rule masculine 'masculine' !alphanumeric end 
       rule matches 'matches' !alphanumeric end
-      rule maybe 'maybe' !alphanumeric end
       rule most 'most' !alphanumeric end
       rule no 'no' !alphanumeric end
       rule none 'none' !alphanumeric end
       rule not 'not' !alphanumeric end
       rule occurs 'occurs' !alphanumeric end
       rule one 'one' !alphanumeric end
+      rule some 'some' !alphanumeric end
+
+      # >>>>>>>>>>>>>>>>>>>> External vocabulary <<<<<<<<<<<<<<<<<<<<
+      rule according_to 'according' S to end
+      rule acyclic 'acyclic' !alphanumeric end
+      rule alias 'alias' !alphanumeric end 
+      rule and 'and' !alphanumeric end
+      rule antisymmetric 'antisymmetric' !alphanumeric end
+      rule approximately 'approximately' !alphanumeric end
+      rule as 'as' !alphanumeric end
+      rule as_opposed_to as s 'opposed' S to end 
+      rule asymmetric 'asymmetric' !alphanumeric end
+      rule because 'because' !alphanumeric end
+      rule but 'but' !alphanumeric end 
+      rule by 'by' !alphanumeric end			      # fix? Used in 'returning' for ordering
+      rule definitely 'definitely' !alphanumeric end
+      rule ephemera 'ephemera' !alphanumeric end 
+      rule false 'false' !alphanumeric end 
+      rule feminine 'feminine' !alphanumeric end 
+      rule identified ('known'/'identified') !alphanumeric end 
+      rule if 'if' !alphanumeric end
+      rule import 'import' !alphanumeric end
+      rule independent 'independent' !alphanumeric end 
+      rule intransitive 'intransitive' !alphanumeric end
+      rule irreflexive 'irreflexive' !alphanumeric end
+      rule is 'is' !alphanumeric end 
+      rule its 'its' !alphanumeric end
+      rule masculine 'masculine' !alphanumeric end 
+      rule maybe 'maybe' !alphanumeric end
       rule only 'only' !alphanumeric end
       rule or 'or' !alphanumeric end 
+      rule ordering_prefix by s (ascending/descending)? s end
       rule otherwise 'otherwise' !alphanumeric end 
       rule partitioned 'partitioned' !alphanumeric end 
       rule personal 'personal' !alphanumeric end 
+      rule radix_point '.' end
       rule reflexive 'reflexive' !alphanumeric end
       rule restricted 'restricted' !alphanumeric end
       rule returning 'returning' !alphanumeric end
       rule separate 'separate' !alphanumeric end 
       rule so_that 'so' S that end
-      rule some 'some' !alphanumeric end
       rule static 'static' !alphanumeric end
       rule symmetric 'symmetric' !alphanumeric end
       rule that 'that' !alphanumeric end
