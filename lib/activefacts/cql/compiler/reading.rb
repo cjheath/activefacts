@@ -82,6 +82,10 @@ module ActiveFacts
           role_refs.detect{|role_ref| role_ref.literal || (ja = role_ref.objectification_join and ja.detect{|jr| jr.includes_literals })}
         end
 
+        def is_equality_comparison
+          false
+        end
+
         def bind_roles context
           role_names = role_refs.map{ |role_ref| role_ref.role_name }.compact
 
@@ -798,6 +802,10 @@ module ActiveFacts
             2*((@leading_adjective||'') <=> (other.leading_adjective||'')) +
             1*((@trailing_adjective||'') <=> (other.trailing_adjective||''))
           ) <=> 0
+        end
+
+        def includes_literals
+          @objectification_join && @objectification_join.detect{|oj| oj.includes_literals}
         end
 
         def identify_player context

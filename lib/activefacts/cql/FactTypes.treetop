@@ -42,7 +42,10 @@ module ActiveFacts
             readings = clauses.ast
             conditions = !ctail.empty? ? ctail.a.ast : []
 	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
-	    if (conditions.empty? && readings.detect{|r| r.includes_literals})
+	    value_derivation = readings.detect{|r| r.is_equality_comparison}
+	    if !value_derivation and
+		conditions.empty? and
+		readings.detect{|r| r.includes_literals}
 	      raise "Fact instances may not contain conditions" unless conditions.empty? && !returning
 	      Compiler::Fact.new readings
 	    elsif (readings.size == 1 &&

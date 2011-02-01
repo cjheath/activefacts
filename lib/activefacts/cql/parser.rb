@@ -68,7 +68,7 @@ module ActiveFacts
         end
 
         def new_trailing_adjective_term(adj, term)
-          index_name(@role_names, n = "#{term} #{adj}", term) && debug(:context, "new role '#{term} -#{adj}'")
+          index_name(@role_names, "#{term} #{adj}", term) && debug(:context, "new role '#{term} -#{adj}'")
           true
         end
 

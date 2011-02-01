@@ -36,22 +36,21 @@ module ActiveFacts
         is s (independent s )? identified_by
 	/
 	subtype_prefix (independent s )? term_definition_name
-	&{|e| input.context.object_type(e[2].value, "subtype"); true }
+	&{|e| input.context.object_type(e[2].value, "subtype") }
       end
 
       rule prescan
         s (
           term_definition_name mapping_pragmas entity_prefix
-		&{|e| input.context.object_type(e[0].value, "entity type"); true }
+		&{|e| input.context.object_type(e[0].value, "entity type") }
           /
           t1:term_definition_name mapping_pragmas written_as t2:term_definition_name
                 &{|e| input.context.object_type(e[0].value, "value type")
 		  input.context.object_type(e[3].value, "value type")
-		  true
 		}
           /
           term_definition_name s mapping_pragmas is s (independent s )? where
-                &{|e| input.context.object_type(e[0].value, "objectified_fact_type"); true }
+                &{|e| input.context.object_type(e[0].value, "objectified_fact_type") }
         )?
         prescan_rest
         &{|s|
@@ -72,8 +71,8 @@ module ActiveFacts
           context_note                      # Context notes have different lexical conventions
           / '(' as S term_definition_name s ')' s    # Prescan for a Role Name
             &{|s| input.context.role_name(s[3].value) }
-                                            # Adjective definitions
-          / new_adjective_term
+	  / new_derived_value
+          / new_adjective_term		    # Adjective definitions
           / global_term                     # If we see A B - C D, don't recognise B as a new adjective for C D.
           / id
           / range                           # Covers all numbers and strings
@@ -81,6 +80,29 @@ module ActiveFacts
           / S                               # White space and comments, must precede / and *
           / [-+{}\[\].,:^/%*()]             # All other punctuation and operators
         )* [?;] s
+      end
+
+      rule derived_value_continuation
+        s '-' tail:(s !global_term !(that/who) id)*
+	{
+	  def value
+	    tail.elements.map{|e| e.id.text_value}
+	  end
+	}
+      end
+
+      rule new_derived_value
+        !global_term id derived_value_continuation? s '='
+	  &{|s|
+	    name = [s[1].text_value] + (s[2].empty? ? [] : s[2].value)
+	    input.context.object_type(name*' ', "derived value type")
+	  }
+	/
+	'=' s !global_term id derived_value_continuation? s (that/who)
+	  &{|s|
+	    name = [s[3].text_value] + (s[4].empty? ? [] : s[4].value)
+	    input.context.object_type(name*' ', "derived value type")
+	  }
       end
 
       rule new_adjective_term

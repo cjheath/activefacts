@@ -347,11 +347,25 @@ module ActiveFacts
           false
         end
 
+        def includes_literals
+          operand_asts.detect{|o|
+            o.includes_literals
+          }
+        end
+
+        def is_equality_comparison
+          false
+        end
+
         def operator
           raise "REVISIT: Implement operator access in the operator subclass #{self.class.name}"
         end
 
-        def operands
+        def operand_asts
+          raise "REVISIT: Implement operand AST enumeration in the operator subclass #{self.class.name}"
+        end
+
+        def operands context = nil
           raise "REVISIT: Implement operand enumeration in the operator subclass #{self.class.name}"
         end
 
@@ -383,7 +397,7 @@ module ActiveFacts
         end
       end
 
-      class Comparison < OperatorReading
+        class Comparison < OperatorReading
         attr_accessor :operator, :e1, :e2, :qualifiers, :conjunction
         def initialize operator, e1, e2, qualifiers = []
           @operator, @e1, @e2, @qualifiers = operator, e1, e2, qualifiers
@@ -393,8 +407,12 @@ module ActiveFacts
           nil
         end
 
+        def operand_asts
+          [@e1, @e2]
+        end
+
         def operands(context)
-          [@e1, @e2].map{|t| t.result(context)}
+          operand_asts.map{|t| t.result(context)}
         end
 
         def all_operands
@@ -404,6 +422,10 @@ module ActiveFacts
 
         def result o
           @result ||= RoleRef.new('Boolean')
+        end
+
+        def is_equality_comparison
+          @operator == '='
         end
 
         def to_s
@@ -419,6 +441,10 @@ module ActiveFacts
 
         def operator
           '+'
+        end
+
+        def operand_asts
+          terms
         end
 
         def operands(context)
@@ -453,6 +479,10 @@ module ActiveFacts
           '*'
         end
 
+        def operand_asts
+          @factors
+        end
+
         def operands(context)
           @factors.map{|t| t.result(context)}
         end
@@ -485,6 +515,10 @@ module ActiveFacts
           '1/'
         end
 
+        def operand_asts
+          [@divisor]
+        end
+
         def operands(context)
           [@divisor.result(context)]
         end
@@ -512,6 +546,10 @@ module ActiveFacts
           '0-'
         end
 
+        def operand_asts
+          [@term]
+        end
+
         def operands(context)
           [@term.result(context)]
         end
@@ -534,6 +572,10 @@ module ActiveFacts
         def initialize var, *calls
           @variable = var
           @calls = calls
+        end
+
+        def operand_asts
+          [@variable]
         end
 
         def operands(context)
@@ -588,6 +630,10 @@ module ActiveFacts
           when Numeric; 'Integer'
           when TrueClass, FalseClass; 'Boolean'
           end
+        end
+
+        def includes_literals
+          true
         end
 
         def result(context)
