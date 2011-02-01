@@ -111,7 +111,25 @@ module ActiveFacts
           vt.length = length if length
           vt.scale = scale if scale
 
-          raise "REVISIT: ValueType units are recognised but not yet compiled" unless @unit.empty?
+          unless @unit.empty?
+            unit_name, exponent = *@unit[0]
+            unit = @constellation.Unit.detect{|k,v| v.name == unit_name }
+            raise "Unit #{unit_name} for value type #{@name} is not defined" unless unit
+            if exponent != 1
+              base_unit = unit
+              unit_name = base_unit.name+"^#{exponent}"
+              unless unit = @constellation.Unit.detect{|k,v| v.name == unit_name } 
+                # Define a derived unit (these are skipped on output)
+                unit = @constellation.Unit(:new,
+                      :vocabulary => @vocabulary,
+                      :name => unit_name,
+                      :is_fundamental => false
+                    )
+                @constellation.Derivation(unit, base_unit).exponent = exponent
+              end
+            end
+            vt.unit = unit
+          end
 
           if @value_constraint
             @value_constraint.constellation = @constellation

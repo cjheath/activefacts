@@ -67,22 +67,33 @@ module ActiveFacts
         done_banner = false
         units = @vocabulary.all_unit.to_a.sort_by{|u| u.name.gsub(/ /,'')}
         while units.size > 0
-          if !done_banner
-            done_banner = true
-            units_banner
-          end
           i = 0
           while i < units.size
             unit = units[i]
             i += 1
+
             # Skip this one if the precursors haven't yet been dumped:
             next if unit.all_derivation_as_derived_unit.detect{|d| units.include?(d.base_unit) }
 
-            unit_dump(unit)
+            # Even if we skip, we're done with this unit
             units.delete(unit)
             i -= 1
+
+            # Skip value-type derived units
+            next if unit.name =~ /\^/
+
+            # Don't dump fundamental units which have normal derived units, they are implied:
+            next if unit.is_fundamental &&
+              unit.all_derivation_as_base_unit.detect{|d| d.derived_unit.name !~ /\^/}
+
+            if !done_banner
+              done_banner = true
+              units_banner
+            end
+            unit_dump(unit)
           end
         end
+        units_end if done_banner
       end
 
       def value_types_dump
@@ -524,6 +535,9 @@ module ActiveFacts
       end
 
       def units_banner
+      end
+
+      def units_end
       end
 
       def unit_dump unit

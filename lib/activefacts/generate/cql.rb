@@ -57,6 +57,10 @@ module ActiveFacts
         puts ";"
       end
 
+      def units_end
+        puts "\n"
+      end
+
       def value_type_banner
         puts "/*\n * Value Types\n */"
       end
@@ -113,6 +117,8 @@ module ActiveFacts
             (o.supertype || o).name
           }#{
             parameters
+          }#{
+            o.unit && " "+o.unit.name
           }#{
             o.value_constraint && " "+o.value_constraint.describe
           };"
