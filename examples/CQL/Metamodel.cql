@@ -339,11 +339,15 @@ Entity Type is a kind of Object Type;
 Entity Type nests at most one Fact Type,
 	Fact Type is nested as at most one Entity Type;
 
-Implicit Boolean Value Type is a kind of Value Type;
+Facet is where
+	Value Type has facet called Name,
+	Name is a facet of Value Type;
 
-Parameter is where
-	Value Type has parameter called Name,
-	Name is a parameter of Value Type;
+Facet Value is where
+	Value Type defines Facet as having one Value,
+	Value for Facet applies to Value Type;
+
+Implicit Boolean Value Type is a kind of Value Type;
 
 Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
 	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
@@ -351,10 +355,6 @@ Type Inheritance is a kind of Fact Type identified by Subtype and Supertype wher
 Assimilation applies to Type Inheritance,
 	Type Inheritance uses at most one Assimilation;
 Type Inheritance provides identification;
-
-Param Value is where
-	Value Type defines Parameter as having one Value,
-	Value for Parameter applies to Value Type;
 
 /*
  * Constraints:

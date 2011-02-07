@@ -237,6 +237,14 @@ Entity Type is a kind of Object Type;
 Entity Type nests at most one Fact Type,
 	Fact Type is nested as at most one Entity Type;
 
+Facet is where
+	Value Type has facet called Name,
+	Name is a facet of Value Type;
+
+Facet Value is where
+	Value Type defines Facet as having one Value,
+	Value for Facet applies to Value Type;
+
 Fact Type Shape is a kind of Shape;
 Fact Type Shape has at most one Display Role Names Setting;
 Fact Type Shape is for one Fact Type,
@@ -270,10 +278,6 @@ Object Type Shape has expanded reference mode;
 Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shape where
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
-
-Parameter is where
-	Value Type has parameter called Name,
-	Name is a parameter of Value Type;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -356,10 +360,6 @@ Value Range is identified by minimum-Bound and maximum-Bound where
 
 Allowed Range is where
 	Value Constraint allows at least one Value Range;
-
-Param Value is where
-	Value Type defines Parameter as having one Value,
-	Value for Parameter applies to Value Type;
 
 /*
  * Constraints:

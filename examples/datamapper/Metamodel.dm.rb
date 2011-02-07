@@ -72,6 +72,20 @@ class Derivation
   property :exponent, Integer	# maybe Derivation has Exponent
 end
 
+class FacetValue
+  include DataMapper::Resource
+
+  property :value_type_vocabulary_name, String, :length => 64, :key => true	# Facet Value is where Value Type defines Facet as having Value and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :value_type_name, String, :length => 64, :key => true	# Facet Value is where Value Type defines Facet as having Value and Object Type is called Name
+  belongs_to :value_type, 'ValueType', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value_Type is involved in Facet Value
+  property :facet_value_type_vocabulary_name, String, :length => 64, :key => true	# Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name and Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :facet_value_type_name, String, :length => 64, :key => true	# Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name and Object Type is called Name
+  property :facet_name, String, :length => 64, :key => true	# Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name
+  property :value_literal, String, :key => true	# Facet Value is where Value Type defines Facet as having Value and Value is represented by Literal
+  property :value_is_a_string, Boolean, :key => true	# Facet Value is where Value Type defines Facet as having Value and Value is a string
+  property :value_unit_id, Integer, :key => true	# Facet Value is where Value Type defines Facet as having Value and maybe Value is in Unit and Unit has Unit Id
+end
+
 class Fact
   include DataMapper::Resource
 
@@ -200,20 +214,6 @@ class EntityType < ObjectType
   has 1, :fact_type, 'FactType', :child_key => [:entity_type_name, :entity_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type nests Fact Type
   has n, :type_inheritance_as_subtype, 'TypeInheritance', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type is subtype of super-Entity Type
   has n, :type_inheritance_as_supertype, 'TypeInheritance', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type is subtype of super-Entity Type
-end
-
-class ParamValue
-  include DataMapper::Resource
-
-  property :value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Object Type belongs to Vocabulary and Vocabulary is called Name
-  property :value_type_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Object Type is called Name
-  belongs_to :value_type, 'ValueType', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value_Type is involved in Param Value
-  property :parameter_value_type_vocabulary_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type belongs to Vocabulary and Vocabulary is called Name
-  property :parameter_value_type_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type is called Name
-  property :parameter_name, String, :length => 64, :key => true	# Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name
-  property :value_literal, String, :key => true	# Param Value is where Value Type defines Parameter as having Value and Value is represented by Literal
-  property :value_is_a_string, Boolean, :key => true	# Param Value is where Value Type defines Parameter as having Value and Value is a string
-  property :value_unit_id, Integer, :key => true	# Param Value is where Value Type defines Parameter as having Value and maybe Value is in Unit and Unit has Unit Id
 end
 
 class PresenceConstraint < Constraint
@@ -461,7 +461,7 @@ class ValueType < ObjectType
   property :supertype_name, String, :length => 64	# maybe Value Type is subtype of super-Value Type and Object Type is called Name
   belongs_to :supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type
   has n, :value_type_as_supertype, 'ValueType', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type is subtype of super-Value Type
-  has n, :param_value, 'ParamValue', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type defines Parameter as having Value
+  has n, :facet_value, 'FacetValue', :child_key => [:value_type_name, :value_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Value Type defines Facet as having Value
 end
 
 class ImplicitBooleanValueType < ValueType

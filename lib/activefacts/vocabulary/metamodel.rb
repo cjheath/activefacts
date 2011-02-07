@@ -496,10 +496,10 @@ module ActiveFacts
     class ImplicitBooleanValueType < ValueType
     end
 
-    class Parameter
+    class Facet
       identified_by :value_type, :name
-      has_one :name, :mandatory => true           # See Name.all_parameter
-      has_one :value_type, :mandatory => true     # See ValueType.all_parameter
+      has_one :name, :mandatory => true           # See Name.all_facet
+      has_one :value_type, :mandatory => true     # See ValueType.all_facet
     end
 
     class TypeInheritance < FactType
@@ -510,11 +510,11 @@ module ActiveFacts
       maybe :provides_identification
     end
 
-    class ParamValue
-      identified_by :value_type, :parameter
-      has_one :parameter, :mandatory => true      # See Parameter.all_param_value
-      has_one :value, :mandatory => true          # See Value.all_param_value
-      has_one :value_type, :mandatory => true     # See ValueType.all_param_value
+    class FacetValue
+      identified_by :value_type, :facet
+      has_one :facet, :mandatory => true          # See Facet.all_facet_value
+      has_one :value, :mandatory => true          # See Value.all_facet_value
+      has_one :value_type, :mandatory => true     # See ValueType.all_facet_value
     end
 
   end

@@ -583,7 +583,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_86C45C61-6574-43B6-821E-4BB13609D826" ref="_162CB3D7-2701-4F32-953F-779E90286FCB" Scale="0" Length="0" />
 			</orm:ValueType>
-			<orm:ObjectifiedType id="_CAE62D05-2002-4FDE-9820-5EF7C0BD4D71" Name="Parameter" _ReferenceMode="">
+			<orm:ObjectifiedType id="_CAE62D05-2002-4FDE-9820-5EF7C0BD4D71" Name="Facet" _ReferenceMode="">
 				<orm:PlayedRoles>
 					<orm:Role ref="_A912672B-D0E2-431E-A9A2-6F8BEDB6C9A6" />
 					<orm:Role ref="_52834D2A-A3D7-4DD3-A32C-A8DB76AB461C" />
@@ -592,7 +592,7 @@
 				<orm:PreferredIdentifier ref="_F74D3B07-6E60-4E1B-8387-6FC8DF7C7B20" />
 				<orm:NestedPredicate id="_E1B6043B-B687-4D13-9AED-31CC0D8538CD" ref="_933020A8-A839-4508-ADDF-3879ECC5BBB8" />
 			</orm:ObjectifiedType>
-			<orm:ObjectifiedType id="_8E3D95E3-911E-45EB-9A94-4729494D7E11" Name="Param Value" _ReferenceMode="">
+			<orm:ObjectifiedType id="_8E3D95E3-911E-45EB-9A94-4729494D7E11" Name="Facet Value" _ReferenceMode="">
 				<orm:PlayedRoles>
 					<orm:Role ref="_3356076B-EE54-459E-B866-BDF0003D39FF" />
 					<orm:Role ref="_C1F4B676-F2B5-4CCB-A50E-93E4D9F1B1DB" />
@@ -4291,7 +4291,7 @@
 					<orm:MandatoryConstraint ref="_34053A78-3CD8-4631-999F-FD13E2ADE9E5" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_933020A8-A839-4508-ADDF-3879ECC5BBB8" _Name="Parameter">
+			<orm:Fact id="_933020A8-A839-4508-ADDF-3879ECC5BBB8" _Name="Facet">
 				<orm:FactRoles>
 					<orm:Role id="_4616EA42-7509-4673-B18A-C8E18806A430" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_25D2C6A4-DE21-447E-BB72-3EF90026E125" />
@@ -4304,9 +4304,9 @@
 					<orm:ReadingOrder id="_D7E1C094-6E42-43BF-AA8D-DF3EB9CE7F7E">
 						<orm:Readings>
 							<orm:Reading id="_FEB8D0D5-80EB-44D5-A76F-964BEC4CB64E">
-								<orm:Data>{0} has parameter called {1}</orm:Data>
+								<orm:Data>{0} has facet called {1}</orm:Data>
 								<orm:ExpandedData>
-									<orm:RoleText RoleIndex="0" FollowingText=" has parameter called " />
+									<orm:RoleText RoleIndex="0" FollowingText=" has facet called " />
 								</orm:ExpandedData>
 							</orm:Reading>
 						</orm:Readings>
@@ -4318,9 +4318,9 @@
 					<orm:ReadingOrder id="_B145057E-1FE7-4C17-880E-2A6E73168787">
 						<orm:Readings>
 							<orm:Reading id="_46328F9A-C574-4CD0-8B9F-C12083396501">
-								<orm:Data>{0} is a parameter of {1}</orm:Data>
+								<orm:Data>{0} is a facet of {1}</orm:Data>
 								<orm:ExpandedData>
-									<orm:RoleText RoleIndex="0" FollowingText=" is a parameter of " />
+									<orm:RoleText RoleIndex="0" FollowingText=" is a facet of " />
 								</orm:ExpandedData>
 							</orm:Reading>
 						</orm:Readings>
@@ -4334,7 +4334,7 @@
 					<orm:UniquenessConstraint ref="_F74D3B07-6E60-4E1B-8387-6FC8DF7C7B20" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:ImpliedFact id="_6D1691ED-1E24-457B-BF37-26872820F7C2" _Name="NameIsInvolvedInParameter">
+			<orm:ImpliedFact id="_6D1691ED-1E24-457B-BF37-26872820F7C2" _Name="NameIsInvolvedInFacet">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_C4CDAD53-B217-48DC-A7FF-221B7B0F9811">
 						<orm:Role ref="_4616EA42-7509-4673-B18A-C8E18806A430" />
@@ -4379,7 +4379,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_E1B6043B-B687-4D13-9AED-31CC0D8538CD" />
 			</orm:ImpliedFact>
-			<orm:ImpliedFact id="_4B0172F2-64EC-46CE-879E-8DB790AF9795" _Name="ValueTypeIsInvolvedInParameter">
+			<orm:ImpliedFact id="_4B0172F2-64EC-46CE-879E-8DB790AF9795" _Name="ValueTypeIsInvolvedInFacet">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_CA00888A-68CC-44E3-8075-991782F3D40B">
 						<orm:Role ref="_DD73FEA9-FC7D-4161-863B-B7EFF3D05ED4" />
@@ -4424,7 +4424,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_E1B6043B-B687-4D13-9AED-31CC0D8538CD" />
 			</orm:ImpliedFact>
-			<orm:Fact id="_EC7C53A9-87A2-42B1-AD9F-745FB8BB6A79" _Name="Param Value">
+			<orm:Fact id="_EC7C53A9-87A2-42B1-AD9F-745FB8BB6A79" _Name="Facet Value">
 				<orm:FactRoles>
 					<orm:Role id="_6198E80B-F2A6-491D-8D78-30A37F655117" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_37D88A60-D029-4760-929B-038077D1A708" />
@@ -4474,7 +4474,7 @@
 					<orm:UniquenessConstraint ref="_F72767D2-BF56-41A3-8C36-DA582ED7C630" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:ImpliedFact id="_F4EC9E0C-1807-4B8A-8D77-8B239A565AA4" _Name="ValueIsInvolvedInParamValue">
+			<orm:ImpliedFact id="_F4EC9E0C-1807-4B8A-8D77-8B239A565AA4" _Name="ValueIsInvolvedInFacetValue">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_22925929-51C2-423C-9A08-ECA60C2BED88">
 						<orm:Role ref="_6198E80B-F2A6-491D-8D78-30A37F655117" />
@@ -4519,7 +4519,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_589E6566-BC4B-428A-B245-CED07567DB43" />
 			</orm:ImpliedFact>
-			<orm:ImpliedFact id="_1EC66EAE-EB4B-4BA5-9BE4-BF1FD3CF22ED" _Name="ParameterIsInvolvedInParamValue">
+			<orm:ImpliedFact id="_1EC66EAE-EB4B-4BA5-9BE4-BF1FD3CF22ED" _Name="FacetIsInvolvedInFacetValue">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_8FD2B4EA-C502-4543-8B5E-9915B1836D30">
 						<orm:Role ref="_6DF66AA1-A510-43E9-A7A5-646210011D81" />
@@ -4564,7 +4564,7 @@
 				</orm:InternalConstraints>
 				<orm:ImpliedByObjectification ref="_589E6566-BC4B-428A-B245-CED07567DB43" />
 			</orm:ImpliedFact>
-			<orm:ImpliedFact id="_E9CEBC9D-3F79-4575-8B1E-B02092CF87AF" _Name="ValueTypeIsInvolvedInParamValue">
+			<orm:ImpliedFact id="_E9CEBC9D-3F79-4575-8B1E-B02092CF87AF" _Name="ValueTypeIsInvolvedInFacetValue">
 				<orm:FactRoles>
 					<orm:RoleProxy id="_A1B9220E-34F9-4A65-A98C-381968FD4923">
 						<orm:Role ref="_F1961E8E-F5F3-44B4-846A-E3DD61FF8B34" />
@@ -12296,10 +12296,10 @@ which can be assigned without reference to the existing population.</orm:Text>
 			</ormDiagram:ExternalConstraintShape>
 			<ormDiagram:FactTypeShape id="_0E6A6C7F-55A0-4E25-8893-07F0BD84BED2" IsExpanded="true" AbsoluteBounds="1.304910218715241, 2.1280576515197751, 0.51388888899236917, 0.30588888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ObjectifiedFactTypeNameShape id="_02E6D719-9DCE-45B2-BD08-882949AA4B7D" IsExpanded="true" AbsoluteBounds="1.304910218715241, 1.9338031116127965, 0.56831640005111694, 0.12950302660465241">
+					<ormDiagram:ObjectifiedFactTypeNameShape id="_02E6D719-9DCE-45B2-BD08-882949AA4B7D" IsExpanded="true" AbsoluteBounds="1.304910218715241, 1.9338031116127965, 0.34999364614486694, 0.12950302660465241">
 						<ormDiagram:Subject ref="_CAE62D05-2002-4FDE-9820-5EF7C0BD4D71" />
 					</ormDiagram:ObjectifiedFactTypeNameShape>
-					<ormDiagram:ReadingShape id="_ED3A28CE-2ABA-4557-95AB-CCF5DDEEB629" IsExpanded="true" AbsoluteBounds="0.51487056418158428, 2.511513253057025, 1.8128842115402222, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_ED3A28CE-2ABA-4557-95AB-CCF5DDEEB629" IsExpanded="true" AbsoluteBounds="0.51487056418158428, 2.511513253057025, 1.3353180885314941, 0.12950302660465241">
 						<ormDiagram:Subject ref="_B145057E-1FE7-4C17-880E-2A6E73168787" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -12356,7 +12356,7 @@ which can be assigned without reference to the existing population.</orm:Text>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_EAF19D48-B420-4660-8542-216C292B358B" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ModelNoteShape id="_D445F4EB-7EBB-4FA1-8BF9-853CBCC8F06E" IsExpanded="true" AbsoluteBounds="4.322916666666667, 3.3854167461395264, 4.1578333333333326, 0.262">
+			<ormDiagram:ModelNoteShape id="_D445F4EB-7EBB-4FA1-8BF9-853CBCC8F06E" IsExpanded="true" AbsoluteBounds="3.1816122951790007, 3.376358774937243, 4.1578333333333326, 0.262">
 				<ormDiagram:Subject ref="_80FF37EB-5520-49D2-A762-1CCD471A7E83" />
 			</ormDiagram:ModelNoteShape>
 		</ormDiagram:Shapes>
@@ -12720,7 +12720,7 @@ which can be assigned without reference to the existing population.</orm:Text>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_EB5F96EA-81E6-43C1-A05F-55AAD2C25ADD" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FrequencyConstraintShape id="_3A022B7D-7BBA-4CD5-8044-82F9C5EC6CDF" IsExpanded="true" AbsoluteBounds="1.3268870752336333, 3.4281679035154466, 0.22471562027931213, 0.22471562027931213">
+			<ormDiagram:FrequencyConstraintShape id="_3A022B7D-7BBA-4CD5-8044-82F9C5EC6CDF" IsExpanded="true" AbsoluteBounds="1.3268870752336333, 3.4281679035154466, 0.25681781768798828, 0.25681781768798828">
 				<ormDiagram:Subject ref="_A425FEC6-2BE4-4E12-8396-9732F30E0ACC" />
 			</ormDiagram:FrequencyConstraintShape>
 			<ormDiagram:ObjectTypeShape id="_CD99F631-703C-416C-A48D-4E9EFCD35400" IsExpanded="true" AbsoluteBounds="0.5, 0.5, 0.71314411878585815, 0.35900605320930479">
@@ -13942,7 +13942,7 @@ which can be assigned without reference to the existing population.</orm:Text>
 					<oial:associationChild ref="_0B6AD039-B3B8-4283-A521-B5AA977328DE" />
 				</oial:association>
 			</oial:conceptType>
-			<oial:conceptType id="_11905D5B-B870-4343-833D-C9ECA6EB17B7" name="Param Value">
+			<oial:conceptType id="_11905D5B-B870-4343-833D-C9ECA6EB17B7" name="Facet Value">
 				<oial:children>
 					<oial:informationType id="_5421D22F-7D2E-4CB5-BE62-E2F02488A782" ref="_6828ABC1-0BED-4B03-BD27-0EF6BE072B4B" isMandatory="true" name="Literal" />
 					<oial:informationType id="_B2D4D396-D308-4F72-BF75-A623894FBF23" ref="_F5924A75-D56B-47B0-8626-5B5A0384F66E" name="Value is a string" />
@@ -14255,6 +14255,7 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<ormtooial:FactTypeMapsTowardsRole id="_E253D354-14B8-4CB2-86AC-47F07FDC9AF3" FactType="_6A3D76AC-8D0F-4903-A3D5-6567C6EB7688" TowardsRole="_3AB29DEA-5A90-48E7-81D5-790A20EB8D0E" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_56D2A573-1A48-4E85-9A7E-2C5B747E11B8" FactType="_1CD5A1AD-86FA-4F3E-B844-9470069B1A65" TowardsRole="_FFFC9F15-57A2-4D92-A127-E712BED2962D" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_C36BB3FC-5B87-4D54-893A-BEBC3A371DC2" FactType="_59EB24F5-4621-438D-824F-43AB5A607276" TowardsRole="_C0A15F55-9362-4966-975C-FAB73D717C22" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_13E10FAE-0186-4A24-BB13-B66834BC3909" FactType="_1EC66EAE-EB4B-4BA5-9BE4-BF1FD3CF22ED" TowardsRole="_C1F4B676-F2B5-4CCB-A50E-93E4D9F1B1DB" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_4BE0ED59-7546-4FC4-816E-12BC8836F5E0" FactType="_B3C8BEC6-25E0-418B-B6F5-7A48A1D2110A" TowardsRole="_1DE853B2-C760-4D16-B976-F1F5F6BD24E0" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_61C1E4CC-C5DE-4417-B5BB-FFDD1CF8A0FD" FactType="_9B6843A4-7CA2-4AD2-915D-CEB87E8D4A29" TowardsRole="_83AED31D-1E20-4B6B-B78F-5E48247A1626" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_ABE33DED-E1E8-45B7-9BF2-45792780C6E2" FactType="_D4E273FB-4E84-4655-A1B3-1129FACBCAB1" TowardsRole="_F4F26773-5B3B-44F4-8B9C-9713B240FA9E" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
@@ -14308,7 +14309,6 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<ormtooial:FactTypeMapsTowardsRole id="_9BFF5972-A0F8-4A13-899A-3AE360CEBD98" FactType="_35609A41-B8D0-4780-9678-FD43A03B77E0" TowardsRole="_6765133F-29AF-4FBD-9AF0-AE94AC9A9FA9" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_DAE2CAD0-2144-47D0-8D1D-804D32DA1444" FactType="_4B05A24B-B2CA-4C40-968B-9B6259AC3777" TowardsRole="_1C327A51-3E51-4CCC-9DBC-62FE51AE3B77" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_067A7072-609F-4F72-9997-654E68E36C80" FactType="_127B3009-4130-4EF2-80D6-0569D6749015" TowardsRole="_124B5674-E7A0-4DC8-8900-3EE7CAC12E6B" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_13E10FAE-0186-4A24-BB13-B66834BC3909" FactType="_1EC66EAE-EB4B-4BA5-9BE4-BF1FD3CF22ED" TowardsRole="_C1F4B676-F2B5-4CCB-A50E-93E4D9F1B1DB" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_7534C817-4428-4E79-8CFF-4225E2FAF5AD" FactType="_3A0AE024-7DBE-4EB4-BD0C-6CDA3848D9AA" TowardsRole="_0DB3659A-BD1A-4036-89FC-52F4450DF5EC" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_371D7CC0-4760-4407-9DD2-53F8AD3271BE" FactType="_36680BA6-C124-4246-B7E5-3EA443305093" TowardsRole="_7B2C170A-80C2-42EF-9EB3-0B739196896A" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_30DE6181-17EB-4203-9EAD-2EC4067F1A68" FactType="_B79064DA-4A9C-4F12-A67A-0ECE6D2F7B49" TowardsRole="_53094136-E1CD-4836-A7DE-CE8E7975BAF4" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
@@ -14389,8 +14389,8 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<ormtooial:FactTypeMapsTowardsRole id="_15560BDE-C7DA-452C-8E35-405883748B6D" FactType="_0A506B6B-2647-44EE-B360-D91D80D21791" TowardsRole="_97DB02F9-9DAA-4024-A63E-C7AFA5B407A5" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_E502D1C1-B552-48B0-9AED-D72C3B690A54" FactType="_FF51D727-F6D2-46A3-9ACB-7AC325159E79" TowardsRole="_3C99A43F-6AC5-46DC-9502-C7113FFEDC46" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_AE21080A-84A5-4AE5-A930-DC1746C86798" FactType="_8098D220-75C4-43A6-8D50-385C815F21CF" TowardsRole="_A270F04F-186F-41B7-BAF7-77E0C8679A5A" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="NotMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_8555A48A-864C-45BF-9C7B-99A379BAC7F0" FactType="_E9CEBC9D-3F79-4575-8B1E-B02092CF87AF" TowardsRole="_C3DE0462-FEF1-4AD4-9C07-00295130D14C" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_82117BC6-28E5-43D0-A728-E1A50183C2C8" FactType="_4B0172F2-64EC-46CE-879E-8DB790AF9795" TowardsRole="_52834D2A-A3D7-4DD3-A32C-A8DB76AB461C" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_8555A48A-864C-45BF-9C7B-99A379BAC7F0" FactType="_E9CEBC9D-3F79-4575-8B1E-B02092CF87AF" TowardsRole="_C3DE0462-FEF1-4AD4-9C07-00295130D14C" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_A23AF8FC-7F6C-44CF-B3C4-FA0732B6E74B" FactType="_7DA0B7FC-E9EE-4DD6-B9B3-8ECF35F2C84F" TowardsRole="_8FC3928E-1C51-4F4E-BF15-BF6461AB0C2D" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_DAAADD7E-BF45-4F3F-AEEE-41B5C6BD09F7" FactType="_EE302B14-1697-497C-99B0-E6B4AA283D22" TowardsRole="_B53452F3-E13D-4FAA-9D2F-0C0F9711FD3C" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_BFB8EFF9-2C9F-4631-B87F-2C2DB2FA5B23" FactType="_8386ADAB-B2E4-49B0-A4D8-396D5206D775" TowardsRole="_697BDDD6-2FCC-44BC-BD6A-24497D831F93" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="NotMandatory" />
@@ -14409,6 +14409,7 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<ormtooial:ConceptTypeIsForObjectType id="_500E43E1-ED81-4708-AF28-3E497CA877C4" ConceptType="_037D96F9-3C43-419D-8593-E28DC57E7488" ObjectType="_CBDF39A5-A6E1-4A82-A999-FB803B10A4F2" />
 		<ormtooial:ConceptTypeIsForObjectType id="_29B4EB98-6AFD-43F6-8D2B-D00C2EA4C038" ConceptType="_35E74114-919B-4A0D-A61D-8935B9A47A42" ObjectType="_F90B7812-7C00-41CB-B977-F0E441B180E2" />
 		<ormtooial:ConceptTypeIsForObjectType id="_CD1B714C-817A-4B1A-9069-3A1F0FCFCA91" ConceptType="_643F8D72-2B05-486A-9F86-A6D701D4E953" ObjectType="_78C968EF-F5B0-47EA-A9E7-323E10709133" />
+		<ormtooial:ConceptTypeIsForObjectType id="_0436ABB2-33D5-481F-8D26-92EE5097FBC8" ConceptType="_11905D5B-B870-4343-833D-C9ECA6EB17B7" ObjectType="_8E3D95E3-911E-45EB-9A94-4729494D7E11" />
 		<ormtooial:ConceptTypeIsForObjectType id="_D8484541-D110-41C7-B959-4579BE9A36FC" ConceptType="_7CDD44F4-FCCE-4863-B681-7E574F400952" ObjectType="_A9A1823F-75D6-4197-8CF3-17D2701EDF65" />
 		<ormtooial:ConceptTypeIsForObjectType id="_512CC55E-D6DB-4479-AC1D-1AB4B96731F2" ConceptType="_D9FEBA30-7C6E-4B1F-A3DF-6D1EC4C1A3F5" ObjectType="_4A49FC50-0CE4-49E8-8376-5B8590845541" />
 		<ormtooial:ConceptTypeIsForObjectType id="_6D644C6B-29B7-4637-998C-89F1C3E283F7" ConceptType="_43C2FDDA-751A-404F-934D-3FA05C292749" ObjectType="_EA186836-DE57-45BF-9FF0-45F3AF6FAA15" />
@@ -14423,7 +14424,6 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<ormtooial:ConceptTypeIsForObjectType id="_173BF1AC-7BD4-43E7-9D6C-B844F0207F10" ConceptType="_75C6457D-5A75-4DA4-B8A5-E110AE282585" ObjectType="_6E038746-2591-4605-A6FE-AE888E8B2EB1" />
 		<ormtooial:ConceptTypeIsForObjectType id="_52BC6161-027E-4192-8677-D996E4E7F647" ConceptType="_A32360B7-E39D-439E-8914-7285ABDEDCBF" ObjectType="_FD428A86-1B95-4DE8-9CC0-154B8070174C" />
 		<ormtooial:ConceptTypeIsForObjectType id="_545C07D4-9EBE-4A97-AB67-C71999D605E0" ConceptType="_8DDBE2B1-79E2-4D97-A658-B0B6C720843E" ObjectType="_13BAAE6A-03EA-4BC4-BBF1-23C639A4479D" />
-		<ormtooial:ConceptTypeIsForObjectType id="_0436ABB2-33D5-481F-8D26-92EE5097FBC8" ConceptType="_11905D5B-B870-4343-833D-C9ECA6EB17B7" ObjectType="_8E3D95E3-911E-45EB-9A94-4729494D7E11" />
 		<ormtooial:ConceptTypeIsForObjectType id="_E2618469-01AE-4854-9B07-06570803960C" ConceptType="_537D3F27-339F-4081-B99A-1D8F29558D80" ObjectType="_22D5E427-6719-4B7B-A8ED-53FED9CA226C" />
 		<ormtooial:ConceptTypeIsForObjectType id="_1798053B-CACA-4720-949F-D32D2D6F4721" ConceptType="_13486B79-B354-4ED3-9CE4-13666C1BC16F" ObjectType="_2818E457-D35A-4C7E-9CC6-8A7D5C512A5B" />
 		<ormtooial:ConceptTypeIsForObjectType id="_F8B731D1-285A-46BC-8F84-694CD3CFF4E1" ConceptType="_903CEE59-E912-42B9-961F-DB9804BAE00B" ObjectType="_DDD75FC5-1F10-4E80-9C56-A882C7FF6F51" />
@@ -15489,7 +15489,7 @@ which can be assigned without reference to the existing population.</orm:Text>
 							</rcd:ReferenceConstraint>
 						</rcd:Constraints>
 					</rcd:Table>
-					<rcd:Table id="_3674EBDD-D01F-47B5-BC81-4EBD18F1BE02" Name="ParamValue">
+					<rcd:Table id="_3674EBDD-D01F-47B5-BC81-4EBD18F1BE02" Name="FacetValue">
 						<rcd:Columns>
 							<rcd:Column id="_5ECDC60B-FBBF-4603-8377-EA94BFC2EE72" Name="literal" />
 							<rcd:Column id="_B8584142-EE81-41C2-B2DF-BAAF0AA27EED" Name="isAString" IsNullable="true" />
@@ -15499,35 +15499,35 @@ which can be assigned without reference to the existing population.</orm:Text>
 							<rcd:Column id="_8CAA4E11-7D26-4170-8CF9-26A7F80AC994" Name="valueType2" />
 						</rcd:Columns>
 						<rcd:Constraints>
-							<rcd:UniquenessConstraint id="_933969E1-D58E-4111-8D90-CBA47DB987A0" Name="ParamValue_PK" IsPrimary="true">
+							<rcd:UniquenessConstraint id="_933969E1-D58E-4111-8D90-CBA47DB987A0" Name="FacetValue_PK" IsPrimary="true">
 								<rcd:Columns>
 									<rcd:Column ref="_8CAA4E11-7D26-4170-8CF9-26A7F80AC994" />
 									<rcd:Column ref="_08865E9D-7875-433B-8F35-D2A50F3D1618" />
 									<rcd:Column ref="_5C90A391-0299-4E81-8515-8E341DFB2BDF" />
 								</rcd:Columns>
 							</rcd:UniquenessConstraint>
-							<rcd:ReferenceConstraint id="_66FFAA0D-76D1-4F21-9DCB-BFDE5C8A53AC" Name="ParamValue_FK1">
+							<rcd:ReferenceConstraint id="_66FFAA0D-76D1-4F21-9DCB-BFDE5C8A53AC" Name="FacetValue_FK1">
 								<rcd:TargetTable ref="_18013572-5754-46E1-A88F-B06D6EB3B43D" />
 								<rcd:TargetUniquenessConstraint ref="_B30734C1-CD97-4C08-9723-475CFE79BFC1" />
 								<rcd:ColumnReferences>
 									<rcd:ColumnReference TargetColumn="_2AB1800D-AD25-4EAE-A7E6-2566F4617030" SourceColumn="_153C643F-C26C-4E4F-AE42-822DE135E89D" />
 								</rcd:ColumnReferences>
 							</rcd:ReferenceConstraint>
-							<rcd:ReferenceConstraint id="_FB8C62C0-E9FB-44DD-9C95-96E080C3BFCA" Name="ParamValue_FK2">
+							<rcd:ReferenceConstraint id="_FB8C62C0-E9FB-44DD-9C95-96E080C3BFCA" Name="FacetValue_FK2">
 								<rcd:TargetTable ref="_F4F20304-132D-42E7-8A28-468AA2D1B4B8" />
 								<rcd:TargetUniquenessConstraint ref="_4B31985B-5B89-4674-BC7B-E82618F297C6" />
 								<rcd:ColumnReferences>
 									<rcd:ColumnReference TargetColumn="_9503FDD0-F05B-4E32-B90E-E07D3659DA14" SourceColumn="_08865E9D-7875-433B-8F35-D2A50F3D1618" />
 								</rcd:ColumnReferences>
 							</rcd:ReferenceConstraint>
-							<rcd:ReferenceConstraint id="_1E0DA1AC-87BE-47FE-BEEB-B3025804510F" Name="ParamValue_FK3">
+							<rcd:ReferenceConstraint id="_1E0DA1AC-87BE-47FE-BEEB-B3025804510F" Name="FacetValue_FK3">
 								<rcd:TargetTable ref="_1E51B799-BDDA-4AC7-9219-42F1561A8583" />
 								<rcd:TargetUniquenessConstraint ref="_AA5408A0-26A4-4B4D-93AD-42B336B27DB6" />
 								<rcd:ColumnReferences>
 									<rcd:ColumnReference TargetColumn="_52828904-9568-47CD-891D-B0EA7F50C084" SourceColumn="_5C90A391-0299-4E81-8515-8E341DFB2BDF" />
 								</rcd:ColumnReferences>
 							</rcd:ReferenceConstraint>
-							<rcd:ReferenceConstraint id="_94FB272E-2C38-49CF-B6BC-C10DB16F5B3C" Name="ParamValue_FK4">
+							<rcd:ReferenceConstraint id="_94FB272E-2C38-49CF-B6BC-C10DB16F5B3C" Name="FacetValue_FK4">
 								<rcd:TargetTable ref="_F4F20304-132D-42E7-8A28-468AA2D1B4B8" />
 								<rcd:TargetUniquenessConstraint ref="_4B31985B-5B89-4674-BC7B-E82618F297C6" />
 								<rcd:ColumnReferences>
@@ -16404,6 +16404,7 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<oialtocdb:TableIsPrimarilyForConceptType id="_92EAEE05-BF41-4208-8208-BF4827FE9E22" Table="_D3DF695B-14F1-41D9-9D51-E5008A4860F2" ConceptType="_B1FC918C-FC7D-43A1-9866-02D78D06382E" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_CF54FBEE-B078-4295-A5EF-3FFCE0BFD080" Table="_314BD666-1CD2-4399-8B53-9FADF99684DB" ConceptType="_037D96F9-3C43-419D-8593-E28DC57E7488" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_BFE88429-B339-49C8-B594-2AD950EC3DDB" Table="_63BAC02E-A1EE-461D-BC97-C0798684D3BF" ConceptType="_35E74114-919B-4A0D-A61D-8935B9A47A42" />
+		<oialtocdb:TableIsPrimarilyForConceptType id="_47EF535F-EE5D-40E7-92FC-D17520CAE6FE" Table="_3674EBDD-D01F-47B5-BC81-4EBD18F1BE02" ConceptType="_11905D5B-B870-4343-833D-C9ECA6EB17B7" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_D2C3833F-ED11-45FC-9C1C-6A4FDB20811E" Table="_41D75AE0-C7AE-4308-B432-CFD0D08E386D" ConceptType="_7CDD44F4-FCCE-4863-B681-7E574F400952" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_63A599A5-966F-482E-A9EF-375CBF934D01" Table="_0B5BA6AD-4F96-432F-9DF0-E2F7A3E8EF56" ConceptType="_D9FEBA30-7C6E-4B1F-A3DF-6D1EC4C1A3F5" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_D582B4BE-312C-417B-9547-7EA296DAC0CB" Table="_16D73024-AFB7-40D7-AC78-D5F6E94D916C" ConceptType="_BDB64513-2799-407F-9299-58646CC88B47" />
@@ -16412,7 +16413,6 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<oialtocdb:TableIsPrimarilyForConceptType id="_768B7153-2F04-440B-8711-033D1A398F8C" Table="_71E3C0AA-6E5C-4C63-9709-BD0E90A59B42" ConceptType="_0A366491-9E36-401E-AB2D-34FBCEB847C5" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_603F4FFB-49D5-4085-AB3E-F5EF2BF0E2D0" Table="_1E51B799-BDDA-4AC7-9219-42F1561A8583" ConceptType="_E62FAE74-C1CB-4C56-A80A-E28F8CD0FED4" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_A6D5B67C-E199-4189-84AE-D1161E02CBBA" Table="_F4F20304-132D-42E7-8A28-468AA2D1B4B8" ConceptType="_75C6457D-5A75-4DA4-B8A5-E110AE282585" />
-		<oialtocdb:TableIsPrimarilyForConceptType id="_47EF535F-EE5D-40E7-92FC-D17520CAE6FE" Table="_3674EBDD-D01F-47B5-BC81-4EBD18F1BE02" ConceptType="_11905D5B-B870-4343-833D-C9ECA6EB17B7" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_7CF2D7FE-4B54-4630-8ACD-95B4E275AFCD" Table="_A8D3F33E-CF62-4303-88E0-4499F576B1F8" ConceptType="_13486B79-B354-4ED3-9CE4-13666C1BC16F" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_369DF3E6-85DA-46D3-9ABB-97C7C02724CD" Table="_20494543-1602-4F78-8B48-FFC852ACB87F" ConceptType="_C22C0FDE-A560-4A33-A436-21592C3D8572" />
 		<oialtocdb:TableIsPrimarilyForConceptType id="_7B7E76E9-E60A-41A1-A7F4-1521B7C4053C" Table="_B1EE6F8C-BAD2-40BF-808E-127EB5DBC232" ConceptType="_32A8BD5D-D8D1-4048-A554-85DFBA1C1D0F" />
@@ -16458,6 +16458,7 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_2E243A82-6105-4109-AF57-4804AE5C2822" UniquenessConstraint="_29839013-9BDF-492D-BABE-EE8C6334CD4F" Uniqueness="_9DCEA3D0-57B9-40A0-9748-97F7812FE101" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_2DD686B2-8C62-434C-AD45-0708F7C5850E" UniquenessConstraint="_97424588-DBEA-4248-8A1E-768683838FAA" Uniqueness="_8B37903A-9C56-42BE-8EC0-34FCDE7572F3" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_04C36FC5-C3A5-4467-B0EC-93A859FACF6D" UniquenessConstraint="_31B66659-C37E-4774-B2C3-E32F346E6EE1" Uniqueness="_C6FD69E3-D84F-43A7-902F-BD2DE6EFAF4E" />
+		<oialtocdb:UniquenessConstraintIsForUniqueness id="_4BF0F386-8569-4883-9E5D-7DC6D8C3BF77" UniquenessConstraint="_933969E1-D58E-4111-8D90-CBA47DB987A0" Uniqueness="_DD06C846-B716-4B7F-8FA1-D82C526F518D" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_BA2197DC-6EF5-4A58-9F19-A0CA676FA293" UniquenessConstraint="_417B4B1A-638D-4C89-B16E-750BD18AAC21" Uniqueness="_CC65967D-3DB5-4577-980F-C6E6DE0FF607" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_441DEC48-36F9-4610-BDA5-B974CF5A8F7C" UniquenessConstraint="_07BFEC61-A773-4B47-B939-4CBCAEE4B841" Uniqueness="_62FE5064-A0F2-4572-9EE6-2999DD533614" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_E43F6625-DC21-466E-8963-39DB9D1B410A" UniquenessConstraint="_ECE92AE1-87B1-46E1-B1B0-2BD4041F64DA" Uniqueness="_B475DC03-FF3B-4DC6-A42D-E86BFA11AB1F" />
@@ -16473,7 +16474,6 @@ which can be assigned without reference to the existing population.</orm:Text>
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_56F3CAFC-2F7E-4BF5-8BE3-A7FF81131341" UniquenessConstraint="_3A575B9F-3D1C-454D-A469-6B10F8236CB7" Uniqueness="_AEDE18BB-E812-48B5-B13D-44DD174063F5" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_4B79D37B-FD16-43AD-8B43-D5BE2150080C" UniquenessConstraint="_97E603AB-C3DD-4790-ADD8-9D08844D5525" Uniqueness="_7B56DF14-E933-4D05-8B0D-A29F397B3FF2" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_79947AC2-A808-4B5A-8FD9-9033C4E11025" UniquenessConstraint="_7BA25228-85ED-419B-8943-067B41E9EBD4" Uniqueness="_EFB72616-1EAC-4795-AC4C-84F6F8B4E86B" />
-		<oialtocdb:UniquenessConstraintIsForUniqueness id="_4BF0F386-8569-4883-9E5D-7DC6D8C3BF77" UniquenessConstraint="_933969E1-D58E-4111-8D90-CBA47DB987A0" Uniqueness="_DD06C846-B716-4B7F-8FA1-D82C526F518D" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_06B3CA7E-C327-4BC7-8C6E-9FB7CF867BB3" UniquenessConstraint="_8F5098F5-A5BE-4CB2-B96C-218B9D1A4D33" Uniqueness="_0BB3B5FA-77EE-4EF7-8A8C-894B2304027B" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_746BF9AD-6631-40D5-9E8E-B7C347941BA6" UniquenessConstraint="_AF0388C1-43D0-4ABE-B131-75A9A07030CF" Uniqueness="_65283771-8B75-46F5-9AC0-99A61D4FB029" />
 		<oialtocdb:UniquenessConstraintIsForUniqueness id="_062D574A-6970-4E8C-BC75-A21DE52940A3" UniquenessConstraint="_9900DF8E-B22D-4F77-A210-BDBA196F71DF" Uniqueness="_840587E1-2A64-48BE-A9E2-B408BD77714B" />
@@ -16497,30 +16497,30 @@ which can be assigned without reference to the existing population.</orm:Text>
 	<rvw:RelationalDiagram id="_2147F7EA-1DF7-401C-B126-8F861F465B86" DisplayDataTypes="true" SubjectRef="_55535DC4-5CB7-4408-9C29-81EFF32EFD73">
 		<rvw:TableShape ObjectTypeRef="_8BF3A2B6-A870-4E20-BB48-08A3D4469B80" Location="0.875, 3.5" />
 		<rvw:TableShape ObjectTypeRef="_25D2C6A4-DE21-447E-BB72-3EF90026E125" Location="8.375, 12.5" />
+		<rvw:TableShape ObjectTypeRef="_E71D6353-4B33-4F59-98CF-B894CF3CD1C9" Location="7.625, 1.5" />
 		<rvw:TableShape ObjectTypeRef="_6E038746-2591-4605-A6FE-AE888E8B2EB1" Location="10.25, 2.75" />
-		<rvw:TableShape ObjectTypeRef="_4A49FC50-0CE4-49E8-8376-5B8590845541" Location="7.375, 6.625" />
+		<rvw:TableShape ObjectTypeRef="_C47366A0-D711-47AD-8879-CA66E37AF1F7" Location="16.375, 3.5" />
+		<rvw:TableShape ObjectTypeRef="_A9B3F0E7-AF5E-44B3-87E5-C3D7E69F1CA6" Location="9.375, 9.25" />
 		<rvw:TableShape ObjectTypeRef="_9053778F-2A1B-481E-A3B1-2DAF2137C5AA" Location="16.375, 1" />
+		<rvw:TableShape ObjectTypeRef="_4A49FC50-0CE4-49E8-8376-5B8590845541" Location="7.375, 6.625" />
+		<rvw:TableShape ObjectTypeRef="_ABCDC9B2-822F-4E84-83D4-3732C029BB1B" Location="7.5, 4.375" />
 		<rvw:TableShape ObjectTypeRef="_CBDF39A5-A6E1-4A82-A999-FB803B10A4F2" Location="13.625, 0.5" />
 		<rvw:TableShape ObjectTypeRef="_2818E457-D35A-4C7E-9CC6-8A7D5C512A5B" Location="10.375, 6.5" />
-		<rvw:TableShape ObjectTypeRef="_A9B3F0E7-AF5E-44B3-87E5-C3D7E69F1CA6" Location="9.375, 9.25" />
-		<rvw:TableShape ObjectTypeRef="_F90B7812-7C00-41CB-B977-F0E441B180E2" Location="5.75, 11.875" />
 		<rvw:TableShape ObjectTypeRef="_84690A49-46D5-4540-BF16-B339506CB019" Location="4.75, 8.875" />
+		<rvw:TableShape ObjectTypeRef="_F90B7812-7C00-41CB-B977-F0E441B180E2" Location="5.75, 11.875" />
 		<rvw:TableShape ObjectTypeRef="_77C3A3CC-6BE7-433E-9B09-62C2E3D59FCF" Location="4.75, 10.5" />
 		<rvw:TableShape ObjectTypeRef="_02D00FA5-AD8B-40F5-853C-A2964F60A371" Location="4.75, 6.375" />
 		<rvw:TableShape ObjectTypeRef="_42337AE1-FE39-486F-809A-C3B87EA67CE4" Location="0.875, 9" />
 		<rvw:TableShape ObjectTypeRef="_A9A1823F-75D6-4197-8CF3-17D2701EDF65" Location="3.125, 12.5" />
 		<rvw:TableShape ObjectTypeRef="_F1D9A466-25A4-4495-891E-EAADBA0200CD" Location="0.875, 12.375" />
-		<rvw:TableShape ObjectTypeRef="_ABCDC9B2-822F-4E84-83D4-3732C029BB1B" Location="7.5, 4.375" />
 		<rvw:TableShape ObjectTypeRef="_E0F3790A-07C7-464C-8B6B-4C8A849AE2BE" Location="8.625, 0.75" />
 		<rvw:TableShape ObjectTypeRef="_8E3D95E3-911E-45EB-9A94-4729494D7E11" Location="10.875, 12.5" />
 		<rvw:TableShape ObjectTypeRef="_CA2E108F-EDE8-4593-9940-EC6259B47231" Location="0.875, 5.5" />
 		<rvw:TableShape ObjectTypeRef="_D57FFA2C-8115-4435-84C1-4E91779A69B4" Location="0.875, 7.25" />
 		<rvw:TableShape ObjectTypeRef="_1B374ED0-4ACA-4994-849D-46B67C21BB67" Location="0.875, 2" />
-		<rvw:TableShape ObjectTypeRef="_C47366A0-D711-47AD-8879-CA66E37AF1F7" Location="16.375, 3.5" />
 		<rvw:TableShape ObjectTypeRef="_6431AF29-CFBE-4B5F-B2A9-BF9FE46E8BAF" Location="14.75, 9.25" />
 		<rvw:TableShape ObjectTypeRef="_24B44CB6-5830-4A0B-B001-B6F1ED70E000" Location="16.375, 7.625" />
 		<rvw:TableShape ObjectTypeRef="_1B120837-C768-4382-A3D6-47FB06F48D0B" Location="4.25, 3.375" />
-		<rvw:TableShape ObjectTypeRef="_E71D6353-4B33-4F59-98CF-B894CF3CD1C9" Location="7.625, 1.5" />
 		<rvw:TableShape ObjectTypeRef="_373A2849-3351-480C-B6B9-CD5907A550DA" Location="4.625, 1.5" />
 	</rvw:RelationalDiagram>
 </ormRoot:ORM2>

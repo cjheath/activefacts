@@ -60,6 +60,14 @@ CREATE TABLE [Constraint] (
 )
 GO
 
+CREATE VIEW dbo.RingConstraintInConstraint_RingConstraintRoleGUID (RingConstraintRoleGUID) WITH SCHEMABINDING AS
+	SELECT RingConstraintRoleGUID FROM dbo.[Constraint]
+	WHERE	RingConstraintRoleGUID IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX PK_RingConstraintInConstraint ON dbo.RingConstraintInConstraint_RingConstraintRoleGUID(RingConstraintRoleGUID)
+GO
+
 CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId (SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId) WITH SCHEMABINDING AS
 	SELECT SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId FROM dbo.[Constraint]
 	WHERE	SubsetConstraintSubsetRoleSequenceId IS NOT NULL
@@ -129,6 +137,23 @@ CREATE TABLE Derivation (
 	-- maybe Derivation has Exponent,
 	Exponent                                shortint NULL,
 	PRIMARY KEY(DerivedUnitId, BaseUnitId)
+)
+GO
+
+CREATE TABLE FacetValue (
+	-- Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name and Name has value,
+	FacetNameValue                          varchar(64) NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name and Object Type is a kind of Concept and Concept has GUID,
+	FacetValueTypeGUID                      varchar NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Value is a string,
+	ValueIsAString                          bit NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Value is represented by Literal,
+	ValueLiteral                            varchar NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Object Type is a kind of Concept and Concept has GUID,
+	ValueTypeGUID                           varchar NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and maybe Value is in Unit and Unit has Unit Id,
+	ValueUnitId                             int NULL,
+	PRIMARY KEY(ValueTypeGUID, FacetValueTypeGUID, FacetNameValue)
 )
 GO
 
@@ -336,24 +361,6 @@ CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeValueConstraintGUID (ValueTypeVal
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraintGUID ON dbo.ValueTypeInObjectType_ValueTypeValueConstraintGUID(ValueTypeValueConstraintGUID)
-GO
-
-CREATE TABLE ParamValue (
-	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Name has value,
-	ParameterNameValue                      varchar(64) NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type is a kind of Concept and Concept has GUID,
-	ParameterValueTypeGUID                  varchar NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Value is a string,
-	ValueIsAString                          bit NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Value is represented by Literal,
-	ValueLiteral                            varchar NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Object Type is a kind of Concept and Concept has GUID,
-	ValueTypeGUID                           varchar NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and maybe Value is in Unit and Unit has Unit Id,
-	ValueUnitId                             int NULL,
-	PRIMARY KEY(ValueTypeGUID, ParameterValueTypeGUID, ParameterNameValue),
-	FOREIGN KEY (ValueTypeGUID) REFERENCES ObjectType (ConceptGUID)
-)
 GO
 
 CREATE TABLE Reading (
@@ -674,6 +681,10 @@ GO
 
 ALTER TABLE Derivation
 	ADD FOREIGN KEY (DerivedUnitId) REFERENCES Unit (UnitId)
+GO
+
+ALTER TABLE FacetValue
+	ADD FOREIGN KEY (ValueTypeGUID) REFERENCES ObjectType (ConceptGUID)
 GO
 
 ALTER TABLE Fact

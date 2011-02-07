@@ -66,6 +66,15 @@ CREATE TABLE [Constraint] (
 )
 GO
 
+CREATE VIEW dbo.RingConstraintInConstraint_RingConstraintRoleFactTypeIdRingConstraintRoleOrdinal (RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal FROM dbo.[Constraint]
+	WHERE	RingConstraintRoleFactTypeId IS NOT NULL
+	  AND	RingConstraintRoleOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX PK_RingConstraintInConstraint ON dbo.RingConstraintInConstraint_RingConstraintRoleFactTypeIdRingConstraintRoleOrdinal(RingConstraintRoleFactTypeId, RingConstraintRoleOrdinal)
+GO
+
 CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceIdSubsetConstraintSupersetRoleSequenceId (SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId) WITH SCHEMABINDING AS
 	SELECT SubsetConstraintSubsetRoleSequenceId, SubsetConstraintSupersetRoleSequenceId FROM dbo.[Constraint]
 	WHERE	SubsetConstraintSubsetRoleSequenceId IS NOT NULL
@@ -143,6 +152,27 @@ CREATE TABLE Derivation (
 	-- maybe Derivation has Exponent,
 	Exponent                                shortint NULL,
 	PRIMARY KEY(DerivedUnitId, BaseUnitId)
+)
+GO
+
+CREATE TABLE FacetValue (
+	-- Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name,
+	FacetName                               varchar(64) NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name and Object Type is called Name,
+	FacetValueTypeName                      varchar(64) NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	FacetValueTypeVocabularyName            varchar(64) NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Value is a string,
+	ValueIsAString                          bit NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Value is represented by Literal,
+	ValueLiteral                            varchar NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Object Type is called Name,
+	ValueTypeName                           varchar(64) NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ValueTypeVocabularyName                 varchar(64) NOT NULL,
+	-- Facet Value is where Value Type defines Facet as having Value and maybe Value is in Unit and Unit has Unit Id,
+	ValueUnitId                             int NULL,
+	PRIMARY KEY(ValueTypeVocabularyName, ValueTypeName, FacetValueTypeVocabularyName, FacetValueTypeName, FacetName)
 )
 GO
 
@@ -375,28 +405,6 @@ CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeValueConstraintId (ValueTypeValue
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraintId ON dbo.ValueTypeInObjectType_ValueTypeValueConstraintId(ValueTypeValueConstraintId)
-GO
-
-CREATE TABLE ParamValue (
-	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name,
-	ParameterName                           varchar(64) NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type is called Name,
-	ParameterValueTypeName                  varchar(64) NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Parameter is where Value Type has parameter called Name and Object Type belongs to Vocabulary and Vocabulary is called Name,
-	ParameterValueTypeVocabularyName        varchar(64) NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Value is a string,
-	ValueIsAString                          bit NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Value is represented by Literal,
-	ValueLiteral                            varchar NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Object Type is called Name,
-	ValueTypeName                           varchar(64) NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and Object Type belongs to Vocabulary and Vocabulary is called Name,
-	ValueTypeVocabularyName                 varchar(64) NOT NULL,
-	-- Param Value is where Value Type defines Parameter as having Value and maybe Value is in Unit and Unit has Unit Id,
-	ValueUnitId                             int NULL,
-	PRIMARY KEY(ValueTypeVocabularyName, ValueTypeName, ParameterValueTypeVocabularyName, ParameterValueTypeName, ParameterName),
-	FOREIGN KEY (ValueTypeName, ValueTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
-)
 GO
 
 CREATE TABLE Reading (
@@ -700,6 +708,10 @@ GO
 
 ALTER TABLE Derivation
 	ADD FOREIGN KEY (DerivedUnitId) REFERENCES Unit (UnitId)
+GO
+
+ALTER TABLE FacetValue
+	ADD FOREIGN KEY (ValueTypeName, ValueTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
 GO
 
 ALTER TABLE Fact

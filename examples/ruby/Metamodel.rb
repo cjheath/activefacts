@@ -492,13 +492,20 @@ module ::Metamodel
     one_to_one :fact_type                       # See FactType.entity_type
   end
 
-  class ImplicitBooleanValueType < ValueType
+  class Facet
+    identified_by :value_type, :name
+    has_one :name, :mandatory => true           # See Name.all_facet
+    has_one :value_type, :mandatory => true     # See ValueType.all_facet
   end
 
-  class Parameter
-    identified_by :value_type, :name
-    has_one :name, :mandatory => true           # See Name.all_parameter
-    has_one :value_type, :mandatory => true     # See ValueType.all_parameter
+  class FacetValue
+    identified_by :value_type, :facet
+    has_one :facet, :mandatory => true          # See Facet.all_facet_value
+    has_one :value, :mandatory => true          # See Value.all_facet_value
+    has_one :value_type, :mandatory => true     # See ValueType.all_facet_value
+  end
+
+  class ImplicitBooleanValueType < ValueType
   end
 
   class TypeInheritance < FactType
@@ -507,13 +514,6 @@ module ::Metamodel
     has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
     has_one :assimilation                       # See Assimilation.all_type_inheritance
     maybe :provides_identification
-  end
-
-  class ParamValue
-    identified_by :value_type, :parameter
-    has_one :parameter, :mandatory => true      # See Parameter.all_param_value
-    has_one :value, :mandatory => true          # See Value.all_param_value
-    has_one :value_type, :mandatory => true     # See ValueType.all_param_value
   end
 
 end

@@ -375,6 +375,19 @@ module ::Metamodel
     one_to_one :fact_type                       # See FactType.entity_type
   end
 
+  class Facet
+    identified_by :value_type, :name
+    has_one :name, :mandatory => true           # See Name.all_facet
+    has_one :value_type, :mandatory => true     # See ValueType.all_facet
+  end
+
+  class FacetValue
+    identified_by :value_type, :facet
+    has_one :facet, :mandatory => true          # See Facet.all_facet_value
+    has_one :value, :mandatory => true          # See Value.all_facet_value
+    has_one :value_type, :mandatory => true     # See ValueType.all_facet_value
+  end
+
   class FactTypeShape < Shape
     has_one :display_role_names_setting         # See DisplayRoleNamesSetting.all_fact_type_shape
     has_one :fact_type, :mandatory => true      # See FactType.all_fact_type_shape
@@ -412,12 +425,6 @@ module ::Metamodel
   class ObjectifiedFactTypeNameShape < Shape
     identified_by :fact_type_shape
     one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.objectified_fact_type_name_shape
-  end
-
-  class Parameter
-    identified_by :value_type, :name
-    has_one :name, :mandatory => true           # See Name.all_parameter
-    has_one :value_type, :mandatory => true     # See ValueType.all_parameter
   end
 
   class Population
@@ -507,13 +514,6 @@ module ::Metamodel
     identified_by :value_constraint, :value_range
     has_one :value_constraint, :mandatory => true  # See ValueConstraint.all_allowed_range
     has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
-  end
-
-  class ParamValue
-    identified_by :value_type, :parameter
-    has_one :parameter, :mandatory => true      # See Parameter.all_param_value
-    has_one :value, :mandatory => true          # See Value.all_param_value
-    has_one :value_type, :mandatory => true     # See ValueType.all_param_value
   end
 
 end
