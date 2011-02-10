@@ -87,8 +87,8 @@ module ActiveFacts
           @identification.map do |id|
             if id.is_a?(VarRef)
               id.identify_player(context)
-              binding = id.bind(context)
-              roles = binding.refs.map{|r| r.role}.compact.uniq
+              variable = id.bind(context)
+              roles = variable.refs.map{|r| r.role}.compact.uniq
               raise "Looking for an occurrence of identifying role #{id.inspect}, but found #{roles.size == 0 ? "none" : roles.size}" if roles.size != 1
               roles[0]
             else
@@ -152,7 +152,7 @@ module ActiveFacts
             (hash[players_key] ||= []) << clause
             hash
           end.each do |players_key, clauses|
-            clauses.each{ |clause| clause.bind_roles context }  # Create the Compiler::Bindings
+            clauses.each{ |clause| clause.bind_roles context }  # Create the Variables
 
             # REVISIT: Loose binding goes here; it might merge some Compiler#Roles
 

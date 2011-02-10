@@ -77,7 +77,7 @@ module ActiveFacts
           @clauses_lists.map do |clauses_list|
             clauses_list.each{ |clause| clause.identify_players_with_role_name(@context) }
             clauses_list.each{ |clause| clause.identify_other_players(@context) }
-            clauses_list.each{ |clause| clause.bind_roles @context }  # Create the Compiler::Bindings
+            clauses_list.each{ |clause| clause.bind_roles @context }  # Create the Variables
             @context.left_contractable_clause = nil # Don't contract outside this set of clauses
             clauses_list.each do |clause| 
               fact_type = clause.match_existing_fact_type @context
@@ -89,10 +89,10 @@ module ActiveFacts
 
           # Ok, we have bound all players by subscript/role_name, by adjectives, and by loose binding,
           # and matched all the fact types that matter. Now assemble a join (with all join steps) for
-          # each join list, and build an array of the bindings that are involved in the join steps.
-          @bindings_by_list =
+          # each join list, and build an array of the variables that are involved in the join steps.
+          @variables_by_list =
             @clauses_lists.map do |clauses_list|
-              all_bindings_in_clauses(clauses_list)
+              all_variables_in_clauses(clauses_list)
             end
 
           warn_ignored_joins
@@ -114,21 +114,21 @@ module ActiveFacts
             @clauses_lists.each do |clauses_list|
               clauses_list.each do |clause|
                 clause.var_refs.each_with_index do |var_ref, i|
-                  next if var_ref.binding.refs.size > 1
+                  next if var_ref.variable.refs.size > 1
 #                  if clause.side_effects && !clause.side_effects.role_side_effects[i].residual_adjectives
 #                    debug :binding, "Discounting #{var_ref.inspect} as needing loose binding because it has no residual_adjectives"
 #                    next
 #                  end
                   # This var_ref didn't match any other var_ref. Have a scout around for a suitable partner
-                  candidates = @context.bindings.
-                    select do |key, binding|
-                      binding.player == var_ref.binding.player and
-                        binding != var_ref.binding and
-                        binding.role_name == var_ref.binding.role_name and  # Both will be nil if they match
-                        # REVISIT: Don't bind to a binding with a role occurrence in the same clause
-                        !binding.refs.detect{|rr|
-                          x = rr.clause == clause
-                          # puts "Discounting binding #{binding.inspect} as a match for #{var_ref.inspect} because it's already bound to a player in #{var_ref.clause.inspect}" if x
+                  candidates = @context.variables.
+                    select do |key, variable|
+                      variable.player == var_ref.variable.player and
+                        variable != var_ref.variable and
+                        variable.role_name == var_ref.variable.role_name and  # Both will be nil if they match
+                        # REVISIT: Don't bind to a variable with a role occurrence in the same clause
+                        !variable.refs.detect{|vr|
+                          x = vr.clause == clause
+                          # puts "Discounting variable #{variable.inspect} as a match for #{var_ref.inspect} because it's already bound to a player in #{var_ref.clause.inspect}" if x
                           x
                         }
                     end.map{|k,b| b}
@@ -147,18 +147,18 @@ module ActiveFacts
             @roles.each do |var_ref|
               var_ref.identify_player @context
               var_ref.bind @context
-              if var_ref.binding.refs.size < @clauses_lists.size+1
-                debug :binding, "Insufficient bindings for #{var_ref.inspect} (#{var_ref.binding.refs.size}, expected #{@clauses_lists.size+1}), attempting loose binding" do
+              if var_ref.variable.refs.size < @clauses_lists.size+1
+                debug :binding, "Insufficient bindings for #{var_ref.inspect} (#{var_ref.variable.refs.size}, expected #{@clauses_lists.size+1}), attempting loose binding" do
                   @clauses_lists.each do |clauses_list|
                     candidates = []
                     next if clauses_list.
                       detect do |clause|
                         debug :binding, "Checking #{clause.inspect}"
                         clause.var_refs.
-                          detect do |rr|
-                            already_bound = rr.binding == var_ref.binding
-                            if !already_bound && rr.player == var_ref.player
-                              candidates << rr
+                          detect do |vr|
+                            already_bound = vr.variable == var_ref.variable
+                            if !already_bound && vr.player == var_ref.player
+                              candidates << vr
                             end
                             already_bound
                           end
@@ -176,10 +176,10 @@ module ActiveFacts
           end
         end
 
-        def common_bindings
-          @common_bindings ||= @bindings_by_list[1..-1].inject(@bindings_by_list[0]) { |r, b| r & b }
-          raise "#{self.class} must cover some of the same roles, see #{@bindings_by_list.inspect}" unless @common_bindings.size > 0
-          @common_bindings
+        def common_variables
+          @common_variables ||= @variables_by_list[1..-1].inject(@variables_by_list[0]) { |r, b| r & b }
+          raise "#{self.class} must cover some of the same roles, see #{@variables_by_list.inspect}" unless @common_variables.size > 0
+          @common_variables
         end
 
         def to_s
@@ -197,7 +197,7 @@ module ActiveFacts
         def compile
           @clauses = @clauses_lists.map do |clauses_list|
             raise "REVISIT: Join presence constraints not supported yet" if clauses_list.size > 1 or
-              clauses_list.detect{|clause| clause.var_refs.detect{|rr| rr.objectification_join } }
+              clauses_list.detect{|clause| clause.var_refs.detect{|vr| vr.objectification_join } }
             clauses_list[0]
           end
 
@@ -206,15 +206,15 @@ module ActiveFacts
           if @var_refs.size > 0
             bind_roles
           else
-            cb = common_bindings
+            cb = common_variables
             raise "Either/or must have only one duplicated role, not #{cb.inspect}" unless cb.size == 1
             @var_refs = cb[0].refs.reverse # REVISIT: Should have order these by clause, not like this
           end
 
           role_sequence = @constellation.RoleSequence(:new)
           @var_refs.each do |var_ref|
-            raise "The constrained role #{var_ref.inspect} was not found in the invoked fact types" if var_ref.binding.refs.size == 1
-            (var_ref.binding.refs-[var_ref]).each do |ref|
+            raise "The constrained role #{var_ref.inspect} was not found in the invoked fact types" if var_ref.variable.refs.size == 1
+            (var_ref.variable.refs-[var_ref]).each do |ref|
               role = (ref.role_ref && ref.role_ref.role) || ref.role
               raise "FactType role not found for #{ref.inspect}" unless role
               @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role)
@@ -245,11 +245,11 @@ module ActiveFacts
           @var_refs.each do |var_ref|
             var_ref.identify_player @context
             var_ref.bind @context
-            if var_ref.binding.refs.size == 1
+            if var_ref.variable.refs.size == 1
               # Apply loose binding over the constrained roles
               candidates =
                 @clauses.map do |clause|
-                  clause.var_refs.select{ |rr| rr.player == var_ref.player }
+                  clause.var_refs.select{ |vr| vr.player == var_ref.player }
                 end.flatten
               if candidates.size == 1
                 debug :binding, "Rebinding #{var_ref.inspect} to #{candidates[0].inspect} in presence constraint"
@@ -260,7 +260,7 @@ module ActiveFacts
         end
 
         def to_s
-          "#{super} #{@quantifier.min}-#{@quantifier.max} over (#{@var_refs.map{|rr| rr.inspect}*', '})"
+          "#{super} #{@quantifier.min}-#{@quantifier.max} over (#{@var_refs.map{|vr| vr.inspect}*', '})"
         end
       end
 
@@ -273,29 +273,29 @@ module ActiveFacts
           # No warnings needed here any more
         end
 
-        def role_sequences_for_common_bindings ignore_trailing_joins = false
+        def role_sequences_for_common_variables ignore_trailing_joins = false
           @clauses_lists.
-              zip(@bindings_by_list).
-              map do |clauses_list, bindings|
+              zip(@variables_by_list).
+              map do |clauses_list, variables|
             # Does this clauses_list involve a join?
             if clauses_list.size > 1 or
               clauses_list.detect{|clause| clause.var_refs.detect{|var_ref| var_ref.objectification_join } }
 
               debug :join, "Building join for #{clauses_list.inspect}" do
-                debug :join, "Constrained bindings are #{@common_bindings.inspect}"
-                # Every Binding in these clauses becomes a Join Node,
+                debug :join, "Constrained variables are #{@common_variables.inspect}"
+                # Every Variable in these clauses becomes a Join Node,
                 # and every clause becomes a JoinStep (and a RoleSequence).
-                # The returned RoleSequences contains the RoleRefs for the common_bindings.
+                # The returned RoleSequences contains the RoleRefs for the common_variables.
 
-                # Create a join with a join node for every binding and all join steps:
+                # Create a join with a join node for every variable and all join steps:
                 join = build_join_nodes(clauses_list)
-                roles_by_binding = build_all_join_steps(clauses_list)
+                roles_by_variable = build_all_join_steps(clauses_list)
                 join.validate
 
                 # Create the projected RoleSequence for the constraint:
                 role_sequence = @constellation.RoleSequence(:new)
-                @common_bindings.each do |binding|
-                  role, join_role = *roles_by_binding[binding]
+                @common_variables.each do |variable|
+                  role, join_role = *roles_by_variable[variable]
                   @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role, :join_role => join_role)
                 end
 
@@ -304,16 +304,16 @@ module ActiveFacts
             else
               # There's no join in this clauses_list, just create a role_sequence
               role_sequence = @constellation.RoleSequence(:new)
-              join_bindings = bindings-@common_bindings
-              unless join_bindings.empty? or ignore_trailing_joins && join_bindings.size <= 1
-                debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_bindings.inspect} to #{join_bindings.inspect} in #{clauses_list.inspect}"
+              join_variables = variables-@common_variables
+              unless join_variables.empty? or ignore_trailing_joins && join_variables.size <= 1
+                debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_variables.inspect} to #{join_variables.inspect} in #{clauses_list.inspect}"
               end
-              @common_bindings.each do |binding|
+              @common_variables.each do |variable|
                 roles = clauses_list.
                   map do |clause|
-                    clause.var_refs.detect{|rr| rr.binding == binding }
+                    clause.var_refs.detect{|vr| vr.variable == variable }
                   end.
-                  compact.  # A join clause will probably not have the common binding
+                  compact.  # A join clause will probably not have the common variable
                   map do |var_ref|
                     var_ref.role_ref && var_ref.role_ref.role or var_ref.role
                   end.
@@ -336,10 +336,10 @@ module ActiveFacts
 
         def compile
           bind_clauses
-          common_bindings
+          common_variables
 
           role_sequences =
-            role_sequences_for_common_bindings
+            role_sequences_for_common_variables
 
           @constraint =
             @constellation.SubsetConstraint(
@@ -372,10 +372,10 @@ module ActiveFacts
 
         def compile
           bind_clauses
-          common_bindings
+          common_variables
 
           role_sequences =
-            role_sequences_for_common_bindings
+            role_sequences_for_common_variables
 
           @constraint = @constellation.SetExclusionConstraint(
             :new,
@@ -407,10 +407,10 @@ module ActiveFacts
 
         def compile
           bind_clauses
-          common_bindings
+          common_variables
 
           role_sequences =
-            role_sequences_for_common_bindings
+            role_sequences_for_common_variables
 
           @constraint = @constellation.SetEqualityConstraint(
             :new,

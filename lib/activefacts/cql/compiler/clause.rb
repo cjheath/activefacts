@@ -406,7 +406,7 @@ module ActiveFacts
 =end
 
               residual_adjectives ||= role_has_residual_adjectives
-              if residual_adjectives && next_player_phrase.binding.refs.size == 1
+              if residual_adjectives && next_player_phrase.variable.refs.size == 1
                 # This makes matching order-dependent, because there may be no "other purpose"
                 # until another reading has been matched and the roles rebound.
                 debug :matching_fails, "Residual adjectives have no other purpose, so this match fails"
@@ -460,7 +460,7 @@ module ActiveFacts
             side_effects.apply_all do |se|
 
               # We re-use the role_ref if possible (no extra adjectives were used, no rolename or join, etc).
-              debug :matching, "side-effect means binding #{se.phrase.inspect} matches role ref #{se.role_ref.role.object_type.name}"
+              debug :matching, "side-effect means variable #{se.phrase.inspect} matches role ref #{se.role_ref.role.object_type.name}"
               se.phrase.role_ref = se.role_ref
 
               changed = false
@@ -480,7 +480,7 @@ module ActiveFacts
                   end
                 elsif se.absorbed_followers > 0
                   # The following statement is incorrect. The absorbed adjective is what caused the match.
-                  # This phrase is absorbing non-hyphenated adjective(s), which changes its binding
+                  # This phrase is absorbing non-hyphenated adjective(s), which changes its variable
                   # se.phrase.trailing_adjective =
                   @phrases.slice!(se.num+1, se.absorbed_followers)*' '
                   changed = true
@@ -499,7 +499,7 @@ module ActiveFacts
                   end
                 elsif se.absorbed_precursors > 0
                   # The following statement is incorrect. The absorbed adjective is what caused the match.
-                  # This phrase is absorbing non-hyphenated adjective(s), which changes its binding
+                  # This phrase is absorbing non-hyphenated adjective(s), which changes its variable
                   #se.phrase.leading_adjective =
                   @phrases.slice!(se.num-se.absorbed_precursors, se.absorbed_precursors)*' '
                   changed = true
@@ -537,10 +537,10 @@ module ActiveFacts
             reading_words.map! do |phrase|
               if phrase.is_a?(VarRef)
                 # phrase.role will be set if this reading was used to make_fact_type.
-                # Otherwise we have to find the existing role via the Binding. This is pretty ugly.
+                # Otherwise we have to find the existing role via the Variable. This is pretty ugly.
                 unless phrase.role
-                  # Find another binding for this phrase which already has a role_ref to the same fact type:
-                  ref = phrase.binding.refs.detect{|ref| ref.role_ref && ref.role_ref.role.fact_type == fact_type}
+                  # Find another variable for this phrase which already has a role_ref to the same fact type:
+                  ref = phrase.variable.refs.detect{|ref| ref.role_ref && ref.role_ref.role.fact_type == fact_type}
                   role_ref = ref.role_ref
                   phrase.role = role_ref.role
                 end
@@ -754,7 +754,7 @@ module ActiveFacts
         attr_reader :term, :trailing_adjective, :quantifier, :function_call, :role_name, :value_constraint, :literal, :objectification_join
         attr_accessor :leading_adjective, :trailing_adjective
         attr_accessor :player
-        attr_accessor :binding
+        attr_accessor :variable
         attr_accessor :clause    # The clause that this VarRef is part of
         attr_accessor :role       # This refers to the ActiveFacts::Metamodel::Role
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
@@ -846,19 +846,19 @@ module ActiveFacts
               role_name = @term
             end
           end
-          @binding = (context.bindings[key] ||= Binding.new(@player, role_name))
-          @binding.refs << self
-          @binding
+          @variable = (context.variables[key] ||= Variable.new(@player, role_name))
+          @variable.refs << self
+          @variable
         end
 
         def unbind context
           # The key has changed.
-          @binding.refs.delete(self)
-          if @binding.refs.empty?
-            # Remove the binding from the context if this was the last reference
-            context.bindings.delete_if {|k,v| v == @binding }
+          @variable.refs.delete(self)
+          if @variable.refs.empty?
+            # Remove the variable from the context if this was the last reference
+            context.variables.delete_if {|k,v| v == @variable }
           end
-          @binding = nil
+          @variable = nil
         end
 
         def rebind(context)
@@ -869,15 +869,15 @@ module ActiveFacts
         def rebind_to(context, other_var_ref)
           debug :binding, "Rebinding #{inspect} to #{other_var_ref.inspect}"
 
-          old_binding = binding   # Remember to move all refs across
+          old_variable = variable   # Remember to move all refs across
           unbind(context)
 
-          new_binding = other_var_ref.binding
-          [self, *old_binding.refs].each do |ref|
-            ref.binding = new_binding
-            new_binding.refs << ref
+          new_variable = other_var_ref.variable
+          [self, *old_variable.refs].each do |ref|
+            ref.variable = new_variable
+            new_variable.refs << ref
           end
-          old_binding.rebound_to = new_binding
+          old_variable.rebound_to = new_variable
         end
 
         # These are called when we successfully match a fact type reading that has relevant adjectives:

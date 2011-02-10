@@ -18,7 +18,7 @@ module ActiveFacts
           clauses.each{ |clause| clause.identify_players_with_role_name(@context) }
           clauses.each{ |clause| clause.identify_other_players(@context) }
           # REVISIT: identify and bind players in @returning clauses also.
-          clauses.each{ |clause| clause.bind_roles @context }  # Create the Compiler::Bindings
+          clauses.each{ |clause| clause.bind_roles @context }  # Create the Variables
         end
 
         def compile
@@ -31,7 +31,7 @@ module ActiveFacts
           # Build the join:
           unless @conditions.empty? and !@returning
             @join = build_join_nodes(@conditions.flatten)
-            @roles_by_binding = build_all_join_steps(@conditions)
+            @roles_by_variable = build_all_join_steps(@conditions)
             @join.validate
             @join
           end
@@ -151,7 +151,7 @@ module ActiveFacts
         def project_clause_roles(clause)
           # Attach the clause's role references to the projected roles of the join
           clause.var_refs.each_with_index do |var_ref, i|
-            role, join_role = @roles_by_binding[var_ref.binding]
+            role, join_role = @roles_by_variable[var_ref.variable]
             raise "#{var_ref} must be a role projected from the conditions" unless role
             raise "#{var_ref} has already-projected join role!" if join_role.role_ref
             var_ref.role_ref.join_role = join_role
@@ -242,7 +242,7 @@ module ActiveFacts
             end
 
           if clauses_by_var_refs.size != 1 and @conditions.empty?
-            # Attempt loose binding here; it might merge some Compiler::VarRefs to share the same Bindings
+            # Attempt loose binding here; it might merge some Compiler::VarRefs to share the same Variables
             variants = clauses_by_var_refs.keys
             (clauses_by_var_refs.size-1).downto(1) do |m|   # Start with the last one
               0.upto(m-1) do |l|                              # Try to rebind onto any lower one
