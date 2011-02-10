@@ -27,7 +27,7 @@ module ActiveFacts
         mapping_pragmas entity_prefix
         / mapping_pragmas written_as			      # Value type
         / mapping_pragmas is_where			      # Objectified type
-        / non_role_word
+        / non_phrase
 	/ identified_by					      # as in: "a kind of X identified by..."
 	/ unit
       end
@@ -142,7 +142,7 @@ module ActiveFacts
 	    gt = x.context[:global_term]
 	    leading_adjective = t[0...-gt.size-1] if t.size > gt.size and t[-gt.size..-1] == gt
 	    trailing_adjective = t[gt.size+1..-1] if t.size > gt.size and t[0...gt.size] == gt
-	    Compiler::RoleRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, value_constraint, literal, objectification_join)
+	    Compiler::VarRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, value_constraint, literal, objectification_join)
 	  end
 
 	  def value		# Sometimes we just want the full term name
@@ -176,8 +176,8 @@ module ActiveFacts
         }
       end
 
-      rule non_role_word
-        # These words are illegal in (but maybe ok following) a clause where a clause_word is expected:
+      rule non_phrase
+        # These words are illegal in (but maybe ok following) a clause where a phrase is expected:
         and
         / but
         / if

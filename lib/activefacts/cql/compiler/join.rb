@@ -29,31 +29,31 @@ module ActiveFacts
         def build_join_steps clause, roles_by_binding = {}, objectification_node = nil
           join_roles = []
           incidental_roles = []
-          debug :join, "Creating join Role Sequence for #{clause.inspect} with #{clause.role_refs.size} role refs" do
+          debug :join, "Creating join Role Sequence for #{clause.inspect} with #{clause.var_refs.size} role refs" do
             objectification_step = nil
-            clause.role_refs.each do |role_ref|
-              # These role_refs are the Compiler::RoleRefs. These have associated Metamodel::RoleRefs,
+            clause.var_refs.each do |var_ref|
+              # These var_refs are the Compiler::VarRefs, which have associated Metamodel::RoleRefs,
               # but we need to create JoinRoles for those roles.
               # REVISIT: JoinRoles may need to save residual_adjectives
-              binding = role_ref.binding
-              role = (role_ref && role_ref.role) || role_ref.role_ref.role
+              binding = var_ref.binding
+              role = (var_ref && var_ref.role) || var_ref.role_ref.role
               join_role = nil
 
               if (clause.fact_type.entity_type)
                 # This clause is of an objectified fact type.
                 # We need a join step from this role to the phantom role, but not
-                # for a role that has only one role_ref (this one) in their binding.
+                # for a role that has only one var_ref (this one) in their binding.
                 # Create the JoinNode and JoinRole in any case though.
                 refs_count = binding.refs.size
                 objectification_ref_count = 0
-                if role_ref.objectification_join
-                  role_ref.objectification_join.each do |r|
-                    objectification_ref_count += r.role_refs.select{|rr| rr.binding.refs.size > 1}.size
+                if var_ref.objectification_join
+                  var_ref.objectification_join.each do |ojc|
+                    objectification_ref_count += ojc.var_refs.select{|var_ref| var_ref.binding.refs.size > 1}.size
                   end
                 end
                 refs_count += objectification_ref_count
 
-                debug :join, "Creating Join Node #{role_ref.inspect} (counts #{refs_count}/#{objectification_ref_count}) and objectification Join Step for #{role_ref.inspect}" do
+                debug :join, "Creating Join Node #{var_ref.inspect} (counts #{refs_count}/#{objectification_ref_count}) and objectification Join Step for #{var_ref.inspect}" do
 
                   raise "Internal error: Trying to add role of #{role.object_type.name} to join node for #{binding.join_node.object_type.name}" unless binding.join_node.object_type == role.object_type
                   join_role = @constellation.JoinRole(binding.join_node, role)
@@ -70,7 +70,7 @@ module ActiveFacts
                   join_roles << join_role
                   unless objectification_node
                     # This is an implicit objectification, just the FT clause, not ET(where ...clause...)
-                    # We need to create a JoinNode for this object, even though it has no RoleRefs
+                    # We need to create a JoinNode for this object, even though it has no VarRefs
                     join = binding.join_node.join
                     debug :join, "Creating JN#{join.all_join_node.size} for #{clause.fact_type.entity_type.name} in objectification"
                     objectification_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => clause.fact_type.entity_type)
@@ -88,7 +88,7 @@ module ActiveFacts
                   join_roles = []
                 end
               else
-                debug :join, "Creating Role Ref for #{role_ref.inspect}" do
+                debug :join, "Creating VarRef for #{var_ref.inspect}" do
                     # REVISIT: If there's an implicit subtyping join here, create it; then always raise the error here.
                     # I don't want to do this for now because the verbaliser will always verbalise all join steps.
                   if binding.join_node.object_type != role.object_type and
@@ -101,13 +101,13 @@ module ActiveFacts
                 end
               end
 
-              if role_ref.objectification_join
+              if var_ref.objectification_join
                 # We are looking at a role whose player is an objectification of a fact type,
                 # which will have ImplicitFactTypes for each role.
                 # Each of these ImplicitFactTypes has a single phantom role played by the objectifying entity type
                 # One of these phantom roles is likely to be the subject of an objectification join step.
-                role_ref.objectification_join.each do |r|
-                  debug :join, "Building objectification join for #{role_ref.objectification_join.inspect}" do
+                var_ref.objectification_join.each do |r|
+                  debug :join, "Building objectification join for #{var_ref.objectification_join.inspect}" do
                     build_join_steps r, roles_by_binding, binding.join_node
                   end
                 end
@@ -136,8 +136,8 @@ module ActiveFacts
         # Return the unique array of all bindings in these clauses, including in objectification joins
         def all_bindings_in_clauses clauses
           clauses.map do |clause|
-            clause.role_refs.map do |rr|
-              [rr.binding] + (rr.objectification_join ? all_bindings_in_clauses(rr.objectification_join) : [])
+            clause.var_refs.map do |var_ref|
+              [var_ref.binding] + (var_ref.objectification_join ? all_bindings_in_clauses(var_ref.objectification_join) : [])
             end
           end.
             flatten.

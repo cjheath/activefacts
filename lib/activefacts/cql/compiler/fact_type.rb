@@ -150,11 +150,11 @@ module ActiveFacts
 
         def project_clause_roles(clause)
           # Attach the clause's role references to the projected roles of the join
-          clause.role_refs.each_with_index do |rr, i|
-            role, join_role = @roles_by_binding[rr.binding]
-            raise "#{rr} must be a role projected from the conditions" unless role
-            raise "#{rr} has already-projected join role!" if join_role.role_ref
-            rr.role_ref.join_role = join_role
+          clause.var_refs.each_with_index do |var_ref, i|
+            role, join_role = @roles_by_binding[var_ref.binding]
+            raise "#{var_ref} must be a role projected from the conditions" unless role
+            raise "#{var_ref} has already-projected join role!" if join_role.role_ref
+            var_ref.role_ref.join_role = join_role
           end
         end
 
@@ -200,8 +200,8 @@ module ActiveFacts
 
           # If there's an existing presence constraint that can be converted into a PC, do that:
           @clauses.each do |clause|
-            rr = clause.role_refs[-1] or next
-            epc = rr.embedded_presence_constraint or next
+            var_ref = clause.var_refs[-1] or next
+            epc = var_ref.embedded_presence_constraint or next
             epc.max_frequency == 1 or next
             next if epc.enforcement
             epc.is_preferred_identifier = true
@@ -228,12 +228,12 @@ module ActiveFacts
         end
 
         def verify_matching_roles
-          role_refs_by_clause_and_key = {}
-          clauses_by_role_refs =
+          var_refs_by_clause_and_key = {}
+          clauses_by_var_refs =
             @clauses.inject({}) do |hash, clause|
-              keys = clause.role_refs.map do |rr|
-                key = rr.key.compact
-                role_refs_by_clause_and_key[[clause, key]] = rr
+              keys = clause.var_refs.map do |var_ref|
+                key = var_ref.key.compact
+                var_refs_by_clause_and_key[[clause, key]] = var_ref
                 key
               end.sort_by{|a| a.map{|k|k.to_s}}
               raise "Fact types may not have duplicate roles" if keys.uniq.size < keys.size
@@ -241,14 +241,14 @@ module ActiveFacts
               hash
             end
 
-          if clauses_by_role_refs.size != 1 and @conditions.empty?
-            # Attempt loose binding here; it might merge some Compiler::RoleRefs to share the same Bindings
-            variants = clauses_by_role_refs.keys
-            (clauses_by_role_refs.size-1).downto(1) do |m|   # Start with the last one
+          if clauses_by_var_refs.size != 1 and @conditions.empty?
+            # Attempt loose binding here; it might merge some Compiler::VarRefs to share the same Bindings
+            variants = clauses_by_var_refs.keys
+            (clauses_by_var_refs.size-1).downto(1) do |m|   # Start with the last one
               0.upto(m-1) do |l|                              # Try to rebind onto any lower one
                 common = variants[m]&variants[l]
-                clauses_l = clauses_by_role_refs[variants[l]]
-                clauses_m = clauses_by_role_refs[variants[m]]
+                clauses_l = clauses_by_var_refs[variants[l]]
+                clauses_m = clauses_by_var_refs[variants[m]]
                 l_keys = variants[l]-common
                 m_keys = variants[m]-common
                 debug :binding, "Try to collapse variant #{m} onto #{l}; diffs are #{l_keys.inspect} -> #{m_keys.inspect}"
@@ -258,16 +258,16 @@ module ActiveFacts
                   candidates = []
                   (0...m_keys.size).each do |j|
                     m_key = m_keys[j]
-                    l_role_ref = role_refs_by_clause_and_key[[clauses_l[0], l_key]]
-                    m_role_ref = role_refs_by_clause_and_key[[clauses_m[0], m_key]]
-                    debug :binding, "Can we match #{l_role_ref.inspect} (#{i}) with #{m_role_ref.inspect} (#{j})?"
-                    next if m_role_ref.player != l_role_ref.player
-                    if has_more_adjectives(m_role_ref, l_role_ref)
-                      debug :binding, "can rebind #{m_role_ref.inspect} to #{l_role_ref.inspect}"
-                      candidates << [m_role_ref, l_role_ref]
-                    elsif has_more_adjectives(l_role_ref, m_role_ref)
-                      debug :binding, "can rebind #{l_role_ref.inspect} to #{m_role_ref.inspect}"
-                      candidates << [l_role_ref, m_role_ref]
+                    l_var_ref = var_refs_by_clause_and_key[[clauses_l[0], l_key]]
+                    m_var_ref = var_refs_by_clause_and_key[[clauses_m[0], m_key]]
+                    debug :binding, "Can we match #{l_var_ref.inspect} (#{i}) with #{m_var_ref.inspect} (#{j})?"
+                    next if m_var_ref.player != l_var_ref.player
+                    if has_more_adjectives(m_var_ref, l_var_ref)
+                      debug :binding, "can rebind #{m_var_ref.inspect} to #{l_var_ref.inspect}"
+                      candidates << [m_var_ref, l_var_ref]
+                    elsif has_more_adjectives(l_var_ref, m_var_ref)
+                      debug :binding, "can rebind #{l_var_ref.inspect} to #{m_var_ref.inspect}"
+                      candidates << [l_var_ref, m_var_ref]
                     end
                   end
 
@@ -286,7 +286,7 @@ module ActiveFacts
                 else
                   # No point continuing, we failed on this one.
                   raise "All readings in a fact type definition must have matching role players, compare (#{
-                      clauses_by_role_refs.keys.map do |keys|
+                      clauses_by_var_refs.keys.map do |keys|
                         keys.map{|key| key*'-' }*", "
                       end*") with ("
                     })"
@@ -320,7 +320,7 @@ module ActiveFacts
       # Result = Value1 <op> Value2
       # where the value type of Result is determined from the arguments
       #
-      # Each Value may be a Literal, a RoleRef, or another Operation,
+      # Each Value may be a Literal, a VarRef, or another Operation,
       # so we need to recurse down the tree to build the join.
       class Operation
         attr_reader :fact_type
@@ -328,20 +328,20 @@ module ActiveFacts
         def identify_players_with_role_name context
           @context ||= context
           all_operands.each { |o|
-            o.identify_player(context) if o.is_a?(RoleRef) && o.role_name
+            o.identify_player(context) if o.is_a?(VarRef) && o.role_name
           }
         end
 
         def identify_other_players context
           all_operands.each { |o|
-            o.identify_player(context) if o.is_a?(RoleRef) && !o.role_name
+            o.identify_player(context) if o.is_a?(VarRef) && !o.role_name
           }
         end
 
         def bind_roles context
           @context ||= context
           all_operands.each do |o|
-            o.bind context if o.is_a?(RoleRef)
+            o.bind context if o.is_a?(VarRef)
           end
         end
 
@@ -371,13 +371,13 @@ module ActiveFacts
           raise "REVISIT: Implement operand enumeration in the operator subclass #{self.class.name}"
         end
 
-        # Return a RoleRef that refers to the result role of the operator fact type
+        # Return a VarRef that refers to the result role of the operator fact type
         # It must not be called until the players are all identified and bound.
         def result
           raise "REVISIT: Implement result production in the operator subclasses"
         end
 
-        def role_refs
+        def var_refs
           operands @context
         end
 
@@ -424,7 +424,7 @@ module ActiveFacts
         end
 
         def result o
-          @result ||= RoleRef.new('Boolean')
+          @result ||= VarRef.new('Boolean')
         end
 
         def is_equality_comparison
@@ -458,13 +458,13 @@ module ActiveFacts
           @terms.map{|t| Array(t.leaf_operand || t.all_operands) }.flatten
         end
 
-        def role_refs
+        def var_refs
           @terms
         end
 
         def result(context)
           # REVISIT: A sum has the type of its first operand. Do we want that?
-          @result ||= RoleRef.new(@terms[0].result(context).player.name)
+          @result ||= VarRef.new(@terms[0].result(context).player.name)
         end
 
         def to_s
@@ -494,13 +494,13 @@ module ActiveFacts
           @factors.map{|f| Array(f.leaf_operand || f.all_operands) }.flatten
         end
 
-        def role_refs
+        def var_refs
           @factors
         end
 
         def result(context)
           # REVISIT: A product has the type of its first operand. Do we want that?
-          @result ||= RoleRef.new(@factors[0].result(context).player.name)
+          @result ||= VarRef.new(@factors[0].result(context).player.name)
         end
 
         def to_s
@@ -531,7 +531,7 @@ module ActiveFacts
         end
 
         def result(context)
-          @result ||= RoleRef.new(divisor.result(context).player.name)
+          @result ||= VarRef.new(divisor.result(context).player.name)
         end
 
         def to_s
@@ -562,7 +562,7 @@ module ActiveFacts
         end
 
         def result(context)
-          @result ||= RoleRef.new(term.result(context).player.name)
+          @result ||= VarRef.new(term.result(context).player.name)
         end
 
         def to_s
@@ -588,7 +588,7 @@ module ActiveFacts
         def result
           # REVISIT: We need to know the result type for each function
           # Here, assume Integer (works for count at least!)
-          @result ||= RoleRef.new('Integer')
+          @result ||= VarRef.new('Integer')
         end
 
         def all_operands
@@ -643,7 +643,7 @@ module ActiveFacts
           return @result if @result
           vt_name = kind
           (v = context.vocabulary).constellation.ValueType(v, vt_name)
-          @result = RoleRef.new(
+          @result = VarRef.new(
             vt_name, nil, nil, nil, nil, nil, nil, @literal
           )
           @result.identify_player context

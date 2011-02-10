@@ -10,24 +10,24 @@ module ActiveFacts
         attr_reader :side_effects
         attr_writer :fact_type          # Assigned for a bare (existential) objectification fact
         attr_accessor :fact             # When binding fact instances the fact goes here
-        attr_accessor :objectified_as   # The Reading::RoleRef which objectified this fact type
+        attr_accessor :objectified_as   # The VarRef which objectified this fact type
 
-        def initialize role_refs_and_words, qualifiers = [], context_note = nil
-          @phrases = role_refs_and_words
-          role_refs.each { |role_ref| role_ref.clause = self }
+        def initialize phrases, qualifiers = [], context_note = nil
+          @phrases = phrases
+          var_refs.each { |var_ref| var_ref.clause = self }
           @qualifiers = qualifiers
           @context_note = context_note
         end
 
-        def role_refs
-          @phrases.select{|r| r.is_a?(RoleRef)}
+        def var_refs
+          @phrases.select{|r| r.is_a?(VarRef)}
         end
 
         # A clause that contains only the name of a ObjectType and no literal or reading text
         # refers only to the existence of that ObjectType (as opposed to an instance of the object_type).
         def is_existential_type
           @phrases.size == 1 and
-            @phrases[0].is_a?(RoleRef) and
+            @phrases[0].is_a?(VarRef) and
             !@phrases[0].literal
         end
 
@@ -45,7 +45,7 @@ module ActiveFacts
           }#{
             quotes = false
             @phrases.inject(""){|s, p|
-              if RoleRef === p
+              if VarRef === p
                 s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s +
                   ((oj = p.objectification_join) ?  ' ('+ oj.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' ' + ')' : '') +
                 ' '
@@ -63,23 +63,23 @@ module ActiveFacts
         end
 
         def identify_players_with_role_name context
-          role_refs.each do |role_ref|
-            role_ref.identify_player(context) if role_ref.role_name
+          var_refs.each do |var_ref|
+            var_ref.identify_player(context) if var_ref.role_name
             # Include players in an objectification join, if any
-            role_ref.objectification_join.each{|clause| clause.identify_players_with_role_name(context)} if role_ref.objectification_join
+            var_ref.objectification_join.each{|clause| clause.identify_players_with_role_name(context)} if var_ref.objectification_join
           end
         end
 
         def identify_other_players context
-          role_refs.each do |role_ref|
-            role_ref.identify_player(context) unless role_ref.player
+          var_refs.each do |var_ref|
+            var_ref.identify_player(context) unless var_ref.player
             # Include players in an objectification join, if any
-            role_ref.objectification_join.each{|clause| clause.identify_other_players(context)} if role_ref.objectification_join
+            var_ref.objectification_join.each{|clause| clause.identify_other_players(context)} if var_ref.objectification_join
           end
         end
 
         def includes_literals
-          role_refs.detect{|role_ref| role_ref.literal || (ja = role_ref.objectification_join and ja.detect{|jr| jr.includes_literals })}
+          var_refs.detect{|var_ref| var_ref.literal || (ja = var_ref.objectification_join and ja.detect{|jr| jr.includes_literals })}
         end
 
         def is_equality_comparison
@@ -87,7 +87,7 @@ module ActiveFacts
         end
 
         def bind_roles context
-          role_names = role_refs.map{ |role_ref| role_ref.role_name }.compact
+          role_names = var_refs.map{ |var_ref| var_ref.role_name }.compact
 
           # Check uniqueness of role names and subscripts within this clause:
           role_names.each do |rn|
@@ -95,17 +95,17 @@ module ActiveFacts
             raise "Duplicate role #{rn.is_a?(Integer) ? "subscript" : "name"} '#{rn}' in clause"
           end
 
-          role_refs.each do |role_ref|
-            role_ref.bind context
+          var_refs.each do |var_ref|
+            var_ref.bind context
             # Include players in an objectification join, if any
-            role_ref.objectification_join.each{|clause| clause.bind_roles(context)} if role_ref.objectification_join
+            var_ref.objectification_join.each{|clause| clause.bind_roles(context)} if var_ref.objectification_join
           end
         end
 
         def phrases_match(phrases)
           @phrases.zip(phrases).each do |mine, theirs|
-            return false if mine.is_a?(RoleRef) != theirs.is_a?(RoleRef)
-            if mine.is_a?(RoleRef)
+            return false if mine.is_a?(VarRef) != theirs.is_a?(VarRef)
+            if mine.is_a?(VarRef)
               return false unless mine.key == theirs.key
             else
               return false unless mine == theirs
@@ -136,7 +136,7 @@ module ActiveFacts
 
           contracted_role = nil
 
-          rrs = []+role_refs
+          rrs = []+var_refs
           begin
             players = rrs.map{|rr| rr.player}
             raise "Must identify players before matching fact types" if players.include? nil
@@ -149,25 +149,25 @@ module ActiveFacts
 
               # Match existing fact types in objectification joins first (not for contractions):
               if !contracted_role
-                rrs.each do |role_ref|
-                  next unless joins = role_ref.objectification_join and !joins.empty?
-                  role_ref.objectification_join.each do |oj|
+                rrs.each do |var_ref|
+                  next unless joins = var_ref.objectification_join and !joins.empty?
+                  var_ref.objectification_join.each do |oj|
                     ft = oj.match_existing_fact_type(context)
                     raise "Unrecognised fact type #{oj.display}" unless ft
-                    if (ft && ft.entity_type == role_ref.player)
-                      role_ref.objectification_of = ft
-                      oj.objectified_as = role_ref
+                    if (ft && ft.entity_type == var_ref.player)
+                      var_ref.objectification_of = ft
+                      oj.objectified_as = var_ref
                     end
                   end
-                  raise "#{role_ref.inspect} contains objectification joins that do not objectify it" unless role_ref.objectification_of
+                  raise "#{var_ref.inspect} contains objectification joins that do not objectify it" unless var_ref.objectification_of
                 end
               end
 
               # For each role player, find the compatible types (the set of all subtypes and supertypes).
               # For a player that's an objectification, we don't allow implicit supertype joins
               player_related_types =
-                rrs.zip(players).map do |role_ref, player|
-                  disallow_subtyping = role_ref && role_ref.objectification_of || options[:exact_type]
+                rrs.zip(players).map do |var_ref, player|
+                  disallow_subtyping = var_ref && var_ref.objectification_of || options[:exact_type]
                   ((disallow_subtyping ? [] : player.supertypes_transitive) +
                     player.subtypes_transitive).uniq
                 end
@@ -254,9 +254,9 @@ module ActiveFacts
               debug :matching, "No fact type matched, candidates were '#{candidate_fact_types.map{|ft| ft.default_reading}*"', '"}'"
             end
             if left_contract_this_onto && !contracted_role
-              contracted_from = left_contract_this_onto.role_refs[0]
+              contracted_from = left_contract_this_onto.var_refs[0]
               contraction_player = contracted_from.player
-              contracted_role = RoleRef.new(contraction_player.name)
+              contracted_role = VarRef.new(contraction_player.name)
               contracted_role.player = contracted_from.player
               contracted_role.role_name = contracted_from.role_name
               contracted_role.bind(context)
@@ -277,7 +277,7 @@ module ActiveFacts
         # Find whether the phrases of this clause match the fact type reading,
         # which may require absorbing unmarked adjectives.
         #
-        # If it does match, make the required changes and set @role_ref to the matching role.
+        # If it does match, make the required changes and set @var_ref to the matching role ref.
         # Adjectives that were used to match are removed (and leaving any additional adjectives intact).
         #
         # Approach:
@@ -318,7 +318,7 @@ module ActiveFacts
               intervening_words = []
               while (phrase = phrases[phrase_num])
                 phrase_num += 1
-                if phrase.is_a?(RoleRef)
+                if phrase.is_a?(VarRef)
                   next_player_phrase = phrase
                   next_player_phrase_num = phrase_num-1
                   break
@@ -519,7 +519,7 @@ module ActiveFacts
           fact_type = vocabulary.constellation.FactType(:new)
           debug :matching, "Making new fact type for #{@phrases.inspect}" do
             @phrases.each do |phrase|
-              next unless phrase.is_a?(RoleRef)
+              next unless phrase.is_a?(VarRef)
               phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :object_type => phrase.player)
               phrase.role.role_name = phrase.role_name if phrase.role_name && phrase.role_name.is_a?(String)
             end
@@ -535,7 +535,7 @@ module ActiveFacts
           index = 0
           debug :matching, "Making new reading for #{@phrases.inspect}" do
             reading_words.map! do |phrase|
-              if phrase.is_a?(RoleRef)
+              if phrase.is_a?(VarRef)
                 # phrase.role will be set if this reading was used to make_fact_type.
                 # Otherwise we have to find the existing role via the Binding. This is pretty ugly.
                 unless phrase.role
@@ -590,7 +590,7 @@ module ActiveFacts
           reading_words = []
           new_role_sequence_needed = false
           @phrases.each do |phrase|
-            if phrase.is_a?(RoleRef)
+            if phrase.is_a?(VarRef)
               role_phrases << phrase
               reading_words << "{#{phrase.role_ref.ordinal}}"
               if phrase.role_name != phrase.role_ref.role.role_name ||
@@ -652,10 +652,10 @@ module ActiveFacts
         end
 
         def make_embedded_constraints vocabulary
-          role_refs.each do |role_ref|
-            next unless role_ref.quantifier
-            # puts "Quantifier #{role_ref.inspect} not implemented as a presence constraint"
-            role_ref.make_embedded_presence_constraint vocabulary
+          var_refs.each do |var_ref|
+            next unless var_ref.quantifier
+            # puts "Quantifier #{var_ref.inspect} not implemented as a presence constraint"
+            var_ref.make_embedded_presence_constraint vocabulary
           end
 
           if @qualifiers && @qualifiers.size > 0
@@ -677,7 +677,7 @@ module ActiveFacts
         end
 
         def is_naked_object_type
-          @phrases.size == 1 && role_refs.size == 1
+          @phrases.size == 1 && var_refs.size == 1
         end
 
       end
@@ -710,7 +710,7 @@ module ActiveFacts
       class ClauseMatchSideEffects
         attr_reader :residual_adjectives
         attr_reader :fact_type
-        attr_reader :role_side_effects    # One array of values per RoleRef matched, in order
+        attr_reader :role_side_effects    # One array of values per VarRef matched, in order
 
         def initialize fact_type, clause, residual_adjectives, role_side_effects
           @fact_type = fact_type
@@ -750,12 +750,12 @@ module ActiveFacts
         end
       end
 
-      class RoleRef
+      class VarRef
         attr_reader :term, :trailing_adjective, :quantifier, :function_call, :role_name, :value_constraint, :literal, :objectification_join
         attr_accessor :leading_adjective, :trailing_adjective
         attr_accessor :player
         attr_accessor :binding
-        attr_accessor :clause    # The clause that this RoleRef is part of
+        attr_accessor :clause    # The clause that this VarRef is part of
         attr_accessor :role       # This refers to the ActiveFacts::Metamodel::Role
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
         attr_accessor :objectification_of # If objectification_join is set, this is the fact type it objectifies
@@ -866,13 +866,13 @@ module ActiveFacts
           bind context
         end
 
-        def rebind_to(context, other_role_ref)
-          debug :binding, "Rebinding #{inspect} to #{other_role_ref.inspect}"
+        def rebind_to(context, other_var_ref)
+          debug :binding, "Rebinding #{inspect} to #{other_var_ref.inspect}"
 
           old_binding = binding   # Remember to move all refs across
           unbind(context)
 
-          new_binding = other_role_ref.binding
+          new_binding = other_var_ref.binding
           [self, *old_binding.refs].each do |ref|
             ref.binding = new_binding
             new_binding.refs << ref
@@ -907,7 +907,7 @@ module ActiveFacts
 
           debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role_ref.role.object_type.name} in #{fact_type.describe}" do
             # Preserve the role order of the clause, excluding this role:
-            constrained_roles = (@clause.role_refs-[self]).map{|rr| rr.role_ref.role}
+            constrained_roles = (@clause.var_refs-[self]).map{|rr| rr.role_ref.role}
             if constrained_roles.empty?
               debug :constraint, "Quantifier over unary role has no effect"
               return

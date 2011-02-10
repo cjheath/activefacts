@@ -51,7 +51,7 @@ module ActiveFacts
 	    elsif (clauses_ast.size == 1 &&
 	      clauses_ast[0].phrases.size == 1 &&
 	      (popname = clauses_ast[0].phrases[0]) &&
-	      !popname.is_a?(Compiler::RoleRef) &&
+	      !popname.is_a?(Compiler::VarRef) &&
 	      conditions.detect{|r| r.includes_literals}
 	    )
 	      Compiler::Fact.new conditions, popname
@@ -83,7 +83,7 @@ module ActiveFacts
       end
 
       rule return
-	ordering_prefix? clause_word+
+	ordering_prefix? phrase+
       end
 
       rule qualified_clauses
@@ -146,7 +146,7 @@ module ActiveFacts
         (
 	  contraction	  # A contraction will terminate this repetition by eating to the end
 	  /
-	  clause_word
+	  phrase
 	)+
         {
 	  def ast
@@ -193,7 +193,7 @@ module ActiveFacts
 
       rule condition_contraction
 	role p:post_qualifiers? q:qualifier? s comparator s e2:expression
-	  !clause_word	  # The contracted_clauses must not continue here!
+	  !phrase	  # The contracted_clauses must not continue here!
 	{
 	  def ast
 	    c = Compiler::Comparison.new(comparator.text_value, role.ast, e2.ast, q.empty? ? [] : [q.text_value])
@@ -228,7 +228,7 @@ module ActiveFacts
         '<=' / '<>' / '<' / '=' / '>=' / '>' / '!='
       end
 
-      rule clause_word
+      rule phrase
 	role    # A role reference containing a term, perhaps with attached paraphernalia
 	/       # A hyphenated non-term. Important: no embedded spaces
 	id tail:('-' !term id)+ s
@@ -239,7 +239,7 @@ module ActiveFacts
 	    def node_type; :linking; end
 	  }
 	/       # A normal non-term
-	!non_role_word id s
+	!non_phrase id s
 	  {
 	    def ast
 	      id.value

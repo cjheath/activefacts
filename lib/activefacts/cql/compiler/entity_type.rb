@@ -45,7 +45,7 @@ module ActiveFacts
           # Create the fact types that define the identifying roles:
           fact_types = create_identifying_fact_types context
 
-          # At this point, @identification is an array of RoleRefs and/or Clauses (for unary fact types)
+          # At this point, @identification is an array of VarRefs and/or Clauses (for unary fact types)
           # Have to do this after creating the necessary fact types
           complete_reference_mode_fact_type fact_types
 
@@ -68,7 +68,7 @@ module ActiveFacts
             if @identification.is_a? ReferenceMode
               make_entity_type_refmode_valuetypes(name, @identification.name, @identification.parameters)
               vt_name = @reference_mode_value_type.name
-              @identification = [Compiler::RoleRef.new(vt_name, nil, nil, nil, nil, nil, @identification.value_constraint, nil)]
+              @identification = [Compiler::VarRef.new(vt_name, nil, nil, nil, nil, nil, @identification.value_constraint, nil)]
             else
               context.allowed_forward_terms = legal_forward_references(@identification)
             end
@@ -78,14 +78,14 @@ module ActiveFacts
         # Names used in the identifying roles list may be forward referenced:
         def legal_forward_references(identification_roles)
           identification_roles.map do |phrase|
-            phrase.is_a?(RoleRef) ? phrase.term : nil
+            phrase.is_a?(VarRef) ? phrase.term : nil
           end.compact.uniq
         end
 
         def bind_identifying_roles context
           return unless @identification
           @identification.map do |id|
-            if id.is_a?(RoleRef)
+            if id.is_a?(VarRef)
               id.identify_player(context)
               binding = id.bind(context)
               roles = binding.refs.map{|r| r.role}.compact.uniq
@@ -148,7 +148,7 @@ module ActiveFacts
           @clauses.each{ |clause| clause.identify_players_with_role_name(context) }
           @clauses.each{ |clause| clause.identify_other_players(context) }
           @clauses.inject({}) do |hash, clause|
-            players_key = clause.role_refs.map{|rr| rr.key.compact}.sort
+            players_key = clause.var_refs.map{|rr| rr.key.compact}.sort
             (hash[players_key] ||= []) << clause
             hash
           end.each do |players_key, clauses|
@@ -173,7 +173,7 @@ module ActiveFacts
           any_matched = existing_clauses.size > 0
 
           operation = any_matched ? 'Objectifying' : 'Creating'
-          player_names = clauses[0].role_refs.map{|rr| rr.key.compact*'-'}
+          player_names = clauses[0].var_refs.map{|rr| rr.key.compact*'-'}
           debug :matching, "#{operation} fact type for #{clauses.size} clauses over (#{player_names*', '})" do
             if any_matched  # There's an existing fact type we must be objectifying
               fact_type = objectify_existing_fact_type(existing_clauses[0].fact_type)

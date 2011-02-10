@@ -2,17 +2,17 @@ module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
 
-      # In a declaration, a Binding has one or more RoleRef's.
+      # In a declaration, a Binding has one or more VarRef's.
       # A Binding is for a single ObjectType, normally related to just one Role,
-      # and the references (RoleRefs) to it will normally be the object_type name
+      # and the references (VarRefs) to it will normally be the object_type name
       # with the same adjectives (modulo loose binding),
       # or a role name or subscript reference.
       #
-      # In some situations a Binding will have some RoleRefs with the same adjectives,
-      # and one or more RoleRefs with no adjectives - this is called "loose binding".
+      # In some situations a Binding will have some VarRefs with the same adjectives,
+      # and one or more VarRefs with no adjectives - this is called "loose binding".
       class Binding
         attr_reader :player             # The ObjectType (object type)
-        attr_reader :refs               # an array of the RoleRefs
+        attr_reader :refs               # an array of the VarRefs
         attr_reader :role_name
         attr_accessor :rebound_to       # Loose binding may set this to another binding
         attr_accessor :join_node

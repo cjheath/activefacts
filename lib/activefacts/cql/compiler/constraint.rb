@@ -101,7 +101,7 @@ module ActiveFacts
         def warn_ignored_joins
           # Warn about ignored joins
           @clauses_lists.each do |clauses_list|
-            fact_types = clauses_list.map{|join| join.role_refs[0].role_ref.role.fact_type}.uniq
+            fact_types = clauses_list.map{|join| join.var_refs[0].role_ref.role.fact_type}.uniq
             if fact_types.size > 1
               puts "------->>>> Join ignored in #{self.class}: #{fact_types.map{|ft| ft.preferred_reading.expand}*' and '}"
             end
@@ -113,28 +113,28 @@ module ActiveFacts
           debug :binding, "Loose binding on #{self.class.name}" do
             @clauses_lists.each do |clauses_list|
               clauses_list.each do |clause|
-                clause.role_refs.each_with_index do |role_ref, i|
-                  next if role_ref.binding.refs.size > 1
+                clause.var_refs.each_with_index do |var_ref, i|
+                  next if var_ref.binding.refs.size > 1
 #                  if clause.side_effects && !clause.side_effects.role_side_effects[i].residual_adjectives
-#                    debug :binding, "Discounting #{role_ref.inspect} as needing loose binding because it has no residual_adjectives"
+#                    debug :binding, "Discounting #{var_ref.inspect} as needing loose binding because it has no residual_adjectives"
 #                    next
 #                  end
-                  # This role_ref didn't match any other role_ref. Have a scout around for a suitable partner
+                  # This var_ref didn't match any other var_ref. Have a scout around for a suitable partner
                   candidates = @context.bindings.
                     select do |key, binding|
-                      binding.player == role_ref.binding.player and
-                        binding != role_ref.binding and
-                        binding.role_name == role_ref.binding.role_name and  # Both will be nil if they match
+                      binding.player == var_ref.binding.player and
+                        binding != var_ref.binding and
+                        binding.role_name == var_ref.binding.role_name and  # Both will be nil if they match
                         # REVISIT: Don't bind to a binding with a role occurrence in the same clause
                         !binding.refs.detect{|rr|
                           x = rr.clause == clause
-                          # puts "Discounting binding #{binding.inspect} as a match for #{role_ref.inspect} because it's already bound to a player in #{role_ref.clause.inspect}" if x
+                          # puts "Discounting binding #{binding.inspect} as a match for #{var_ref.inspect} because it's already bound to a player in #{var_ref.clause.inspect}" if x
                           x
                         }
                     end.map{|k,b| b}
                   next if candidates.size != 1  # Fail
-                  debug :binding, "Loose binding #{role_ref.inspect} to #{candidates[0].inspect}"
-                  role_ref.rebind_to(@context, candidates[0].refs[0])
+                  debug :binding, "Loose binding #{var_ref.inspect} to #{candidates[0].inspect}"
+                  var_ref.rebind_to(@context, candidates[0].refs[0])
                 end
               end
             end
@@ -144,30 +144,30 @@ module ActiveFacts
         def loose_bind_roles
           # Apply loose binding over applicable @roles:
           debug :binding, "Check for loose bindings on #{@roles.size} roles in #{self.class.name}" do
-            @roles.each do |role_ref|
-              role_ref.identify_player @context
-              role_ref.bind @context
-              if role_ref.binding.refs.size < @clauses_lists.size+1
-                debug :binding, "Insufficient bindings for #{role_ref.inspect} (#{role_ref.binding.refs.size}, expected #{@clauses_lists.size+1}), attempting loose binding" do
+            @roles.each do |var_ref|
+              var_ref.identify_player @context
+              var_ref.bind @context
+              if var_ref.binding.refs.size < @clauses_lists.size+1
+                debug :binding, "Insufficient bindings for #{var_ref.inspect} (#{var_ref.binding.refs.size}, expected #{@clauses_lists.size+1}), attempting loose binding" do
                   @clauses_lists.each do |clauses_list|
                     candidates = []
                     next if clauses_list.
                       detect do |clause|
                         debug :binding, "Checking #{clause.inspect}"
-                        clause.role_refs.
+                        clause.var_refs.
                           detect do |rr|
-                            already_bound = rr.binding == role_ref.binding
-                            if !already_bound && rr.player == role_ref.player
+                            already_bound = rr.binding == var_ref.binding
+                            if !already_bound && rr.player == var_ref.player
                               candidates << rr
                             end
                             already_bound
                           end
                       end
-                    debug :binding, "Attempting loose binding for #{role_ref.inspect} in #{clauses_list.inspect}, from the following candidates: #{candidates.inspect}"
+                    debug :binding, "Attempting loose binding for #{var_ref.inspect} in #{clauses_list.inspect}, from the following candidates: #{candidates.inspect}"
 
                     if candidates.size == 1
-                      debug :binding, "Rebinding #{candidates[0].inspect} to #{role_ref.inspect}"
-                      candidates[0].rebind_to(@context, role_ref)
+                      debug :binding, "Rebinding #{candidates[0].inspect} to #{var_ref.inspect}"
+                      candidates[0].rebind_to(@context, var_ref)
                     end
                   end
                 end
@@ -188,33 +188,33 @@ module ActiveFacts
       end
 
       class PresenceConstraint < Constraint
-        def initialize context_note, enforcement, clauses_lists, role_refs, quantifier
+        def initialize context_note, enforcement, clauses_lists, var_refs, quantifier
           super context_note, enforcement, clauses_lists
-          @role_refs = role_refs || []
+          @var_refs = var_refs || []
           @quantifier = quantifier
         end
 
         def compile
           @clauses = @clauses_lists.map do |clauses_list|
             raise "REVISIT: Join presence constraints not supported yet" if clauses_list.size > 1 or
-              clauses_list.detect{|clause| clause.role_refs.detect{|rr| rr.objectification_join } }
+              clauses_list.detect{|clause| clause.var_refs.detect{|rr| rr.objectification_join } }
             clauses_list[0]
           end
 
           bind_clauses
 
-          if @role_refs.size > 0
+          if @var_refs.size > 0
             bind_roles
           else
             cb = common_bindings
             raise "Either/or must have only one duplicated role, not #{cb.inspect}" unless cb.size == 1
-            @role_refs = cb[0].refs.reverse # REVISIT: Should have order these by clause, not like this
+            @var_refs = cb[0].refs.reverse # REVISIT: Should have order these by clause, not like this
           end
 
           role_sequence = @constellation.RoleSequence(:new)
-          @role_refs.each do |role_ref|
-            raise "The constrained role #{role_ref.inspect} was not found in the invoked fact types" if role_ref.binding.refs.size == 1
-            (role_ref.binding.refs-[role_ref]).each do |ref|
+          @var_refs.each do |var_ref|
+            raise "The constrained role #{var_ref.inspect} was not found in the invoked fact types" if var_ref.binding.refs.size == 1
+            (var_ref.binding.refs-[var_ref]).each do |ref|
               role = (ref.role_ref && ref.role_ref.role) || ref.role
               raise "FactType role not found for #{ref.inspect}" unless role
               @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => role)
@@ -242,25 +242,25 @@ module ActiveFacts
         end
 
         def bind_roles
-          @role_refs.each do |role_ref|
-            role_ref.identify_player @context
-            role_ref.bind @context
-            if role_ref.binding.refs.size == 1
+          @var_refs.each do |var_ref|
+            var_ref.identify_player @context
+            var_ref.bind @context
+            if var_ref.binding.refs.size == 1
               # Apply loose binding over the constrained roles
               candidates =
                 @clauses.map do |clause|
-                  clause.role_refs.select{ |rr| rr.player == role_ref.player }
+                  clause.var_refs.select{ |rr| rr.player == var_ref.player }
                 end.flatten
               if candidates.size == 1
-                debug :binding, "Rebinding #{role_ref.inspect} to #{candidates[0].inspect} in presence constraint"
-                role_ref.rebind_to(@context, candidates[0])
+                debug :binding, "Rebinding #{var_ref.inspect} to #{candidates[0].inspect} in presence constraint"
+                var_ref.rebind_to(@context, candidates[0])
               end
             end
           end
         end
 
         def to_s
-          "#{super} #{@quantifier.min}-#{@quantifier.max} over (#{@role_refs.map{|rr| rr.inspect}*', '})"
+          "#{super} #{@quantifier.min}-#{@quantifier.max} over (#{@var_refs.map{|rr| rr.inspect}*', '})"
         end
       end
 
@@ -279,7 +279,7 @@ module ActiveFacts
               map do |clauses_list, bindings|
             # Does this clauses_list involve a join?
             if clauses_list.size > 1 or
-              clauses_list.detect{|clause| clause.role_refs.detect{|role_ref| role_ref.objectification_join } }
+              clauses_list.detect{|clause| clause.var_refs.detect{|var_ref| var_ref.objectification_join } }
 
               debug :join, "Building join for #{clauses_list.inspect}" do
                 debug :join, "Constrained bindings are #{@common_bindings.inspect}"
@@ -311,11 +311,11 @@ module ActiveFacts
               @common_bindings.each do |binding|
                 roles = clauses_list.
                   map do |clause|
-                    clause.role_refs.detect{|rr| rr.binding == binding }
+                    clause.var_refs.detect{|rr| rr.binding == binding }
                   end.
                   compact.  # A join clause will probably not have the common binding
-                  map do |role_ref|
-                    role_ref.role_ref && role_ref.role_ref.role or role_ref.role
+                  map do |var_ref|
+                    var_ref.role_ref && var_ref.role_ref.role or var_ref.role
                   end.
                   compact
                 # REVISIT: Should use clause side effects to preserve residual adjectives here.

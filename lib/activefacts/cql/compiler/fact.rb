@@ -20,7 +20,6 @@ module ActiveFacts
 
           # Figure out the simple existential facts and find fact types:
           @bound_facts = []
-          @ojr_by_role_ref = {}
           @unbound_clauses = all_clauses.
             map do |clause|
               bind_literal_or_fact_type clause
@@ -44,22 +43,22 @@ module ActiveFacts
 
           # Any clause that has one binding and no other word is
           # either a value instance or a simply-identified entity.
-          clause.role_refs.each do |role_ref|
-            next unless l = role_ref.literal    # No literal
-            next if role_ref.binding.instance   # Already bound
-            player = role_ref.binding.player
-            # raise "A literal may not be an objectification" if role_ref.role_ref.objectification_join
-            # raise "Not processing facts involving objectification joins yet" if role_ref.role_ref
+          clause.var_refs.each do |var_ref|
+            next unless l = var_ref.literal    # No literal
+            next if var_ref.binding.instance   # Already bound
+            player = var_ref.binding.player
+            # raise "A literal may not be an objectification" if var_ref.role_ref.objectification_join
+            # raise "Not processing facts involving objectification joins yet" if var_ref.role_ref
             debug :instance, "Making #{player.class.basename} #{player.name} using #{l.inspect}" do
-              role_ref.binding.instance = instance_identified_by_literal(player, l)
+              var_ref.binding.instance = instance_identified_by_literal(player, l)
             end
-            role_ref
+            var_ref
           end
 
-          if clause.phrases.size == 1 and (role_ref = clause.phrases[0]).is_a?(Compiler::RoleRef)
-            if role_ref.objectification_join
+          if clause.phrases.size == 1 and (var_ref = clause.phrases[0]).is_a?(Compiler::VarRef)
+            if var_ref.objectification_join
               # Assign the objectified fact type as this clause's fact type?
-              clause.fact_type = role_ref.player.fact_type
+              clause.fact_type = var_ref.player.fact_type
               clause
             else
               # This is an existential fact (like "Name 'foo'", or "Company 'Microsoft'")
@@ -79,16 +78,16 @@ module ActiveFacts
           return true if clause.fact
 
           # Find the roles of this clause that do not yet have an instance
-          bare_roles = clause.role_refs.
-            select do |role_ref|
-              next false if role_ref.binding.instance
-              next false if role_ref.literal and
-                role_ref.binding.instance = instance_identified_by_literal(role_ref.binding.player, role_ref.literal)
+          bare_roles = clause.var_refs.
+            select do |var_ref|
+              next false if var_ref.binding.instance
+              next false if var_ref.literal and
+                var_ref.binding.instance = instance_identified_by_literal(var_ref.binding.player, var_ref.literal)
               true
             end
 
           debug :instance, "Considering '#{clause.display}' with "+
-            (bare_roles.empty? ? "no bare roles" : "bare roles: #{bare_roles.map{|role_ref| role_ref.player.name}*", "}") do
+            (bare_roles.empty? ? "no bare roles" : "bare roles: #{bare_roles.map{|var_ref| var_ref.player.name}*", "}") do
 
             # If all the roles are in place, we can bind the rest of this clause:
             return true if bare_roles.size == 0 && bind_complete_fact(clause)
@@ -130,19 +129,19 @@ module ActiveFacts
         # Occasionally we need to search through all the clauses:
         def all_clauses
           @clauses.map do |clause|
-            [clause] + clause.role_refs.map{|rr| rr.objectification_join}
+            [clause] + clause.var_refs.map{|rr| rr.objectification_join}
           end.flatten.compact
         end
 
         def bind_complete_fact clause
           return true unless clause.fact_type  # An bare objectification
           debug :instance, "All bindings in '#{clause.display}' contain instances; create the fact type"
-          instances = clause.role_refs.map{|rr| rr.binding.instance}
+          instances = clause.var_refs.map{|rr| rr.binding.instance}
           debug :instance, "Instances are #{instances.map{|i| "#{i.object_type.name} #{i.value.inspect}"}*", "}"
 
           if e = clause.fact_type.entity_type and
-            clause.role_refs[0].binding.instance.object_type == e
-            fact = clause.role_refs[0].binding.instance.fact
+            clause.var_refs[0].binding.instance.object_type == e
+            fact = clause.var_refs[0].binding.instance.fact
           else
             # Check that this fact doesn't already exist
             fact = clause.fact_type.all_fact.detect do |f|
@@ -195,7 +194,7 @@ module ActiveFacts
         # to create the entity instance.
         def bind_entity_if_identifier_ready clause, entity_type, binding
           # Check this instance doesn't already exist already:
-          identifying_binding = (clause.role_refs.map{|rr| rr.binding}-[binding])[0]
+          identifying_binding = (clause.var_refs.map{|rr| rr.binding}-[binding])[0]
           return false unless identifying_binding # This happens when we have a bare objectification
           identifying_instance = identifying_binding.instance
           preferred_identifier = entity_type.preferred_identifier
@@ -206,7 +205,7 @@ module ActiveFacts
               rr.role.fact_type == clause.fact_type && rr.role.object_type == identifying_binding.player
             }
           unless identifying_role_ref
-            # This shold never happen; we already bound all role_refs
+            # This shold never happen; we already bound all var_refs
             debug :instance, "Failed to find a #{identifying_instance.object_type.name}"
             return false # We can't do this yet
           end
@@ -225,14 +224,14 @@ module ActiveFacts
           # Then we have to create an instance of each fact
           identifiers =
             pi_role_refs.map do |rr|
-              # Find a clause that provides the identifying_role_ref for this player:
+              # Find a clause that provides the identifying_var_ref for this player:
               identifying_clause = all_clauses.detect do |clause|
                 rr.role.fact_type == clause.fact_type &&
-                  clause.role_refs.detect{|r1| r1.binding == binding}
+                  clause.var_refs.detect{|r1| r1.binding == binding}
               end
               return false unless identifying_clause
-              identifying_role_ref = identifying_clause.role_refs.select{|role_ref| role_ref.binding != binding}[0]
-              identifying_binding = identifying_role_ref ? identifying_role_ref.binding : nil
+              identifying_var_ref = identifying_clause.var_refs.select{|var_ref| var_ref.binding != binding}[0]
+              identifying_binding = identifying_var_ref ? identifying_var_ref.binding : nil
               identifying_instance = identifying_binding.instance
 
               [rr, identifying_clause, identifying_binding, identifying_instance]
@@ -333,12 +332,12 @@ module ActiveFacts
             # Provide a readable description of the problem here, by showing each binding with no instance
             missing_bindings = @unbound_clauses.
               map do |clause|
-                clause.role_refs.
-                  select do |rr|
-                    !rr.binding.instance
+                clause.var_refs.
+                  select do |var_refs|
+                    !var_refs.binding.instance
                   end.
-                  map do |role_ref|
-                    role_ref.binding
+                  map do |var_ref|
+                    var_ref.binding
                   end
               end.
               flatten.

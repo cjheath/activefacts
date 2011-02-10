@@ -93,10 +93,10 @@ module ActiveFacts
 	  &{|s|
 	    role_list = s[-1]
 	    forwards = role_list.ast.
-	      map do |role_ref|
-		next nil if role_ref.is_a?(Compiler::Clause) # Can't forward-reference unaries
-		next nil if role_ref.leading_adjective or role_ref.trailing_adjective
-		role_ref.term
+	      map do |role|
+		next nil if role.is_a?(Compiler::Clause) # Can't forward-reference unaries
+		next nil if role.leading_adjective or role.trailing_adjective
+		role.term
 	      end.
 	      compact
 	    input.context.allowed_forward_terms(forwards)
@@ -124,7 +124,7 @@ module ActiveFacts
       end
 
       rule unary_text
-	(s !non_role_word !term id)*
+	(s !non_phrase !term id)*
 	{
 	  def node_type; :linking; end
 	}
@@ -146,11 +146,11 @@ module ActiveFacts
 	    end
 	  }
 	/
-	s !non_role_word id s &non_role_word s ss:subscript
+	s !non_phrase id s &non_phrase s ss:subscript
 	  { # A forward-referenced entity type
 	    # REVISIT: A change in this rule might allow forward-referencing a multi-word term
 	    def ast
-	      Compiler::RoleRef.new(id.text_value, nil, nil, nil, ss.empty? ? nil : ss.value)
+	      Compiler::VarRef.new(id.text_value, nil, nil, nil, ss.empty? ? nil : ss.value)
 	    end
 	  }
       end
