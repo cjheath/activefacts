@@ -33,10 +33,10 @@ module ActiveFacts
         {
 	  def ast
 	    name = term_definition_name.value
-	    readings = ec.empty? ? [] : ec.ast
+	    clauses_ast = ec.empty? ? [] : ec.ast
 	    pragmas = m1.value+m2.value
 	    pragmas << 'independent' if sup.independent
-	    Compiler::EntityType.new name, sup.supers, sup.ast, pragmas, readings
+	    Compiler::EntityType.new name, sup.supers, sup.ast, pragmas, clauses_ast
 	  end
         }
       end
@@ -169,10 +169,10 @@ module ActiveFacts
       end
 
       rule entity_clauses
-        (':' / where) s clauses
+        (':' / where) s joined_clauses
         {
 	  def ast
-            clauses.ast
+            joined_clauses.ast
 	  end
         }
       end

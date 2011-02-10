@@ -50,9 +50,9 @@ module ActiveFacts
 
       # >>>>>>>>>>>>>>>>>>>> Constraints <<<<<<<<<<<<<<<<<<<<
       # External presence constraint syntax:
-      rule each_occurs_in_readings
+      rule each_occurs_in_clauses
         s 'each' s ('combination' S)? role_list s occurs s quantifier s 'time' 's'? s enforcement 'in' s
-	  readings_list s c:context_note? ';'
+	  clauses_list s c:context_note? ';'
 	{
 	  def role_list_ast
 	    role_list.ast
@@ -60,15 +60,15 @@ module ActiveFacts
 	  def quantifier_ast
 	    quantifier.ast
 	  end
-	  def readings_ast
-	    readings_list.ast
+	  def clauses_ast
+	    clauses_list.ast
 	  end
 	}
       end
 
       # Alternate external presence constraint syntax:
       rule either_or
-      s either? s r1:readings s or s r2:readings c:context_note? enforcement ';'
+      s either? s r1:clauses s or s r2:clauses c:context_note? enforcement ';'
       {
 	  def role_list_ast
 	    nil
@@ -76,7 +76,7 @@ module ActiveFacts
 	  def quantifier_ast
 	    Compiler::Quantifier.new(1, nil)
 	  end
-	  def readings_ast
+	  def clauses_ast
 	    [r1.ast, r2.ast]
 	  end
 	}
@@ -85,7 +85,7 @@ module ActiveFacts
       # Exclusion (at most one) and mandatory exclusion (exactly one) constraint syntax:
       rule for_each_how_many
         s 'for' s 'each' s role_list s quantifier s 'of' s 'these' s 'holds' s enforcement ':' s
-	  readings_list s c:context_note? ';'
+	  clauses_list s c:context_note? ';'
 	{
 	  def role_list_ast
 	    role_list.ast
@@ -93,15 +93,15 @@ module ActiveFacts
 	  def quantifier_ast
 	    quantifier.ast
 	  end
-	  def readings_ast
-	    readings_list.ast
+	  def clauses_ast
+	    clauses_list.ast
 	  end
 	}
       end
 
       # Alternate mandatory exclusion constraint syntax:
       rule either_or_not_both
-        s either? s r1:readings s or s r2:readings but s not s both s c:context_note? enforcement ';'
+        s either? s r1:clauses s or s r2:clauses but s not s both s c:context_note? enforcement ';'
 	{
 	  def role_list_ast
 	    nil
@@ -109,7 +109,7 @@ module ActiveFacts
 	  def quantifier_ast
 	    Compiler::Quantifier.new(1, 1)
 	  end
-	  def readings_ast
+	  def clauses_ast
 	    [r1.ast, r2.ast]
 	  end
 	}
@@ -117,17 +117,17 @@ module ActiveFacts
 
       # Subset constraint using "A only if B" syntax
       rule a_only_if_b
-	s readings s only s if s r2:readings s c:context_note? enforcement ';'
+	s clauses s only s if s r2:clauses s c:context_note? enforcement ';'
       end
 
       # Subset constraint using "if A then B" syntax
       rule if_b_then_a
-	s if s readings s then s r2:readings s c:context_note? enforcement ';'
+	s if s clauses s then s r2:clauses s c:context_note? enforcement ';'
       end
 
       # Equality constraint syntax:
       rule if_and_only_if
-        s readings s tail:( if s and s only s if s readings s)+
+        s clauses s tail:( if s and s only s if s clauses s)+
 	  c:context_note? enforcement ';'
       end
 
