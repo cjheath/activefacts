@@ -129,14 +129,14 @@ module ActiveFacts
         # Occasionally we need to search through all the clauses:
         def all_clauses
           @clauses.map do |clause|
-            [clause] + clause.var_refs.map{|rr| rr.objectification_join}
+            [clause] + clause.var_refs.map{|vr| vr.objectification_join}
           end.flatten.compact
         end
 
         def bind_complete_fact clause
           return true unless clause.fact_type  # An bare objectification
           debug :instance, "All variables in '#{clause.display}' contain instances; create the fact type"
-          instances = clause.var_refs.map{|rr| rr.variable.instance}
+          instances = clause.var_refs.map{|vr| vr.variable.instance}
           debug :instance, "Instances are #{instances.map{|i| "#{i.object_type.name} #{i.value.inspect}"}*", "}"
 
           if e = clause.fact_type.entity_type and
@@ -194,7 +194,7 @@ module ActiveFacts
         # to create the entity instance.
         def bind_entity_if_identifier_ready clause, entity_type, variable
           # Check this instance doesn't already exist already:
-          identifying_variable = (clause.var_refs.map{|rr| rr.variable}-[variable])[0]
+          identifying_variable = (clause.var_refs.map{|vr| vr.variable}-[variable])[0]
           return false unless identifying_variable # This happens when we have a bare objectification
           identifying_instance = identifying_variable.instance
           preferred_identifier = entity_type.preferred_identifier
@@ -227,7 +227,7 @@ module ActiveFacts
               # Find a clause that provides the identifying_var_ref for this player:
               identifying_clause = all_clauses.detect do |clause|
                 rr.role.fact_type == clause.fact_type &&
-                  clause.var_refs.detect{|r1| r1.variable == variable}
+                  clause.var_refs.detect{|vr| vr.variable == variable}
               end
               return false unless identifying_clause
               identifying_var_ref = identifying_clause.var_refs.select{|var_ref| var_ref.variable != variable}[0]

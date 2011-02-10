@@ -136,9 +136,9 @@ module ActiveFacts
 
           contracted_role = nil
 
-          rrs = []+var_refs
+          vrs = []+var_refs
           begin
-            players = rrs.map{|rr| rr.player}
+            players = vrs.map{|vr| vr.player}
             raise "Must identify players before matching fact types" if players.include? nil
             raise "A fact type must involve at least one object type, but there are none in '#{inspect}'" if players.size == 0 && !left_contract_this_onto
 
@@ -149,7 +149,7 @@ module ActiveFacts
 
               # Match existing fact types in objectification joins first (not for contractions):
               if !contracted_role
-                rrs.each do |var_ref|
+                vrs.each do |var_ref|
                   next unless joins = var_ref.objectification_join and !joins.empty?
                   var_ref.objectification_join.each do |oj|
                     ft = oj.match_existing_fact_type(context)
@@ -166,7 +166,7 @@ module ActiveFacts
               # For each role player, find the compatible types (the set of all subtypes and supertypes).
               # For a player that's an objectification, we don't allow implicit supertype joins
               player_related_types =
-                rrs.zip(players).map do |var_ref, player|
+                vrs.zip(players).map do |var_ref, player|
                   disallow_subtyping = var_ref && var_ref.objectification_of || options[:exact_type]
                   ((disallow_subtyping ? [] : player.supertypes_transitive) +
                     player.subtypes_transitive).uniq
@@ -260,7 +260,7 @@ module ActiveFacts
               contracted_role.player = contracted_from.player
               contracted_role.role_name = contracted_from.role_name
               contracted_role.bind(context)
-              rrs.unshift contracted_role
+              vrs.unshift contracted_role
 
               debug :matching, "Failed to match #{inspect}. Trying again using left contraction onto #{contraction_player.name}"
               redo
@@ -424,7 +424,7 @@ module ActiveFacts
 
             if fact_type.is_a?(Metamodel::TypeInheritance)
               # There may be only one subtyping join on a TypeInheritance fact type.
-              ti_joins = side_effects.select{|se| se.common_supertype}
+              ti_joins = side_effects.select{|side_effect| side_effect.common_supertype}
               if ti_joins.size > 1   # Not allowed
                 debug :matching_fails, "Can't have more than one subtyping join on a TypeInheritance fact type"
                 return nil
@@ -443,8 +443,8 @@ module ActiveFacts
             end
 
             debug :matching, "Matched reading '#{reading.expand}' (with #{
-                  side_effects.map{|se|
-                    se.absorbed_precursors+se.absorbed_followers + (se.common_supertype ? 1 : 0)
+                  side_effects.map{|side_effect|
+                    side_effect.absorbed_precursors+side_effect.absorbed_followers + (side_effect.common_supertype ? 1 : 0)
                   }.inspect
                 } side effects)#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
@@ -457,56 +457,57 @@ module ActiveFacts
           # Enact the side-effects of this match (delete the consumed adjectives):
           # Since this deletes words from the phrases, we do it in reverse order.
           debug :matching, "Apply side-effects" do
-            side_effects.apply_all do |se|
+            side_effects.apply_all do |side_effect|
+              phrase = side_effect.phrase
 
               # We re-use the role_ref if possible (no extra adjectives were used, no rolename or join, etc).
-              debug :matching, "side-effect means variable #{se.phrase.inspect} matches role ref #{se.role_ref.role.object_type.name}"
-              se.phrase.role_ref = se.role_ref
+              debug :matching, "side-effect means variable #{phrase.inspect} matches role ref #{side_effect.role_ref.role.object_type.name}"
+              phrase.role_ref = side_effect.role_ref
 
               changed = false
 
               # Where this phrase has leading or trailing adjectives that are in excess of those of
               # the role_ref, those must be local, and we'll need to extract them.
 
-              if rra = se.role_ref.trailing_adjective
-                debug :matching, "Deleting matched trailing adjective '#{rra}'#{se.absorbed_followers>0 ? " in #{se.absorbed_followers} followers" : ""}"
+              if rra = side_effect.role_ref.trailing_adjective
+                debug :matching, "Deleting matched trailing adjective '#{rra}'#{side_effect.absorbed_followers>0 ? " in #{side_effect.absorbed_followers} followers" : ""}"
 
                 # These adjective(s) matched either an adjective here, or a follower word, or both.
-                if a = se.phrase.trailing_adjective
+                if a = phrase.trailing_adjective
                   if a.size >= rra.size
                     a = a[rra.size+1..-1]
-                    se.phrase.trailing_adjective = a == '' ? nil : a
+                    phrase.trailing_adjective = a == '' ? nil : a
                     changed = true
                   end
-                elsif se.absorbed_followers > 0
+                elsif side_effect.absorbed_followers > 0
                   # The following statement is incorrect. The absorbed adjective is what caused the match.
                   # This phrase is absorbing non-hyphenated adjective(s), which changes its variable
-                  # se.phrase.trailing_adjective =
-                  @phrases.slice!(se.num+1, se.absorbed_followers)*' '
+                  # phrase.trailing_adjective =
+                  @phrases.slice!(side_effect.num+1, side_effect.absorbed_followers)*' '
                   changed = true
                 end
               end
 
-              if rra = se.role_ref.leading_adjective
-                debug :matching, "Deleting matched leading adjective '#{rra}'#{se.absorbed_precursors>0 ? " in #{se.absorbed_precursors} precursors" : ""}}"
+              if rra = side_effect.role_ref.leading_adjective
+                debug :matching, "Deleting matched leading adjective '#{rra}'#{side_effect.absorbed_precursors>0 ? " in #{side_effect.absorbed_precursors} precursors" : ""}}"
 
                 # These adjective(s) matched either an adjective here, or a precursor word, or both.
-                if a = se.phrase.leading_adjective
+                if a = phrase.leading_adjective
                   if a.size >= rra.size
                     a = a[0...-rra.size]
-                    se.phrase.leading_adjective = a == '' ? nil : a
+                    phrase.leading_adjective = a == '' ? nil : a
                     changed = true
                   end
-                elsif se.absorbed_precursors > 0
+                elsif side_effect.absorbed_precursors > 0
                   # The following statement is incorrect. The absorbed adjective is what caused the match.
                   # This phrase is absorbing non-hyphenated adjective(s), which changes its variable
-                  #se.phrase.leading_adjective =
-                  @phrases.slice!(se.num-se.absorbed_precursors, se.absorbed_precursors)*' '
+                  #phrase.leading_adjective =
+                  @phrases.slice!(side_effect.num-side_effect.absorbed_precursors, side_effect.absorbed_precursors)*' '
                   changed = true
                 end
               end
               if changed
-                se.phrase.rebind context
+                phrase.rebind context
               end
 
             end
@@ -732,18 +733,18 @@ module ActiveFacts
 
         def cost
           c = 0
-          @role_side_effects.each do |se|
-            c += se.cost
+          @role_side_effects.each do |side_effect|
+            c += side_effect.cost
           end
           c + (@residual_adjectives ? 1 : 0)
         end
 
         def describe
           actual_effects =
-            @role_side_effects.map do |se|
-              ( [se.common_supertype ? "supertype join over #{se.common_supertype.name}" : nil] +
-                [se.absorbed_precursors > 0 ? "absorbs #{se.absorbed_precursors} preceding words" : nil] +
-                [se.absorbed_followers > 0 ? "absorbs #{se.absorbed_followers} following words" : nil]
+            @role_side_effects.map do |side_effect|
+              ( [side_effect.common_supertype ? "supertype join over #{side_effect.common_supertype.name}" : nil] +
+                [side_effect.absorbed_precursors > 0 ? "absorbs #{side_effect.absorbed_precursors} preceding words" : nil] +
+                [side_effect.absorbed_followers > 0 ? "absorbs #{side_effect.absorbed_followers} following words" : nil]
               )
             end.flatten.compact*','
           actual_effects.empty? ? "no side effects" : actual_effects
@@ -907,7 +908,7 @@ module ActiveFacts
 
           debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role_ref.role.object_type.name} in #{fact_type.describe}" do
             # Preserve the role order of the clause, excluding this role:
-            constrained_roles = (@clause.var_refs-[self]).map{|rr| rr.role_ref.role}
+            constrained_roles = (@clause.var_refs-[self]).map{|vr| vr.role_ref.role}
             if constrained_roles.empty?
               debug :constraint, "Quantifier over unary role has no effect"
               return

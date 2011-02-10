@@ -76,8 +76,8 @@ module ActiveFacts
         end
 
         # Names used in the identifying roles list may be forward referenced:
-        def legal_forward_references(identification_roles)
-          identification_roles.map do |phrase|
+        def legal_forward_references(identification_phrases)
+          identification_phrases.map do |phrase|
             phrase.is_a?(VarRef) ? phrase.term : nil
           end.compact.uniq
         end
@@ -148,7 +148,7 @@ module ActiveFacts
           @clauses.each{ |clause| clause.identify_players_with_role_name(context) }
           @clauses.each{ |clause| clause.identify_other_players(context) }
           @clauses.inject({}) do |hash, clause|
-            players_key = clause.var_refs.map{|rr| rr.key.compact}.sort
+            players_key = clause.var_refs.map{|vr| vr.key.compact}.sort
             (hash[players_key] ||= []) << clause
             hash
           end.each do |players_key, clauses|
@@ -173,7 +173,7 @@ module ActiveFacts
           any_matched = existing_clauses.size > 0
 
           operation = any_matched ? 'Objectifying' : 'Creating'
-          player_names = clauses[0].var_refs.map{|rr| rr.key.compact*'-'}
+          player_names = clauses[0].var_refs.map{|vr| vr.key.compact*'-'}
           debug :matching, "#{operation} fact type for #{clauses.size} clauses over (#{player_names*', '})" do
             if any_matched  # There's an existing fact type we must be objectifying
               fact_type = objectify_existing_fact_type(existing_clauses[0].fact_type)
