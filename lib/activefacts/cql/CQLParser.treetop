@@ -112,10 +112,10 @@ module ActiveFacts
 
       # presence constraint:
       rule presence_constraint
-	(each_occurs_in_readings / either_or)
+	(each_occurs_in_clauses / either_or)
         {
 	  def ast
-	    Compiler::PresenceConstraint.new c, enforcement.ast, readings_ast, role_list_ast, quantifier_ast
+	    Compiler::PresenceConstraint.new c, enforcement.ast, clauses_ast, role_list_ast, quantifier_ast
 	  end
 	}
       end
@@ -125,7 +125,7 @@ module ActiveFacts
 	(for_each_how_many / either_or_not_both)
           {
 	    def ast
-	      Compiler::SetExclusionConstraint.new c, enforcement.ast, readings_ast, role_list_ast, quantifier_ast
+	      Compiler::SetExclusionConstraint.new c, enforcement.ast, clauses_ast, role_list_ast, quantifier_ast
 	    end
 	  }
       end
@@ -134,7 +134,7 @@ module ActiveFacts
         (a_only_if_b / if_b_then_a)
         {
 	  def ast
-	    Compiler::SubsetConstraint.new c, enforcement.ast, [readings.ast, r2.ast]
+	    Compiler::SubsetConstraint.new c, enforcement.ast, [clauses.ast, r2.ast]
 	  end
 	}
       end
@@ -143,28 +143,8 @@ module ActiveFacts
 	if_and_only_if
         {
 	  def ast
-	    all_readings = [readings.ast, *tail.elements.map{|e| e.readings.ast }]
-	    Compiler::SetEqualityConstraint.new c, enforcement.ast, all_readings
-	  end
-	}
-      end
-
-      rule readings_list
-        readings tail:( ',' s readings )*
-        {
-	  def ast
-	    [readings.ast, *tail.elements.map{|e| e.readings.ast }]
-	  end
-	}
-      end
-
-      rule readings
-        reading s tail:( and s reading s )*
-        {
-	  def ast
-	    readings = reading.ast
-	    tail.elements.map{|e| readings += e.reading.ast }
-	    readings
+	    all_clauses = [clauses.ast, *tail.elements.map{|e| e.clauses.ast }]
+	    Compiler::SetEqualityConstraint.new c, enforcement.ast, all_clauses
 	  end
 	}
       end

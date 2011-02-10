@@ -2,19 +2,19 @@ module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
 
-      # In a declaration, a Binding has one or more RoleRef's.
-      # A Binding is for a single ObjectType, normally related to just one Role,
-      # and the references (RoleRefs) to it will normally be the object_type name
+      # In a declaration, a Variable has one or more VarRef's.
+      # A Variable is for a single ObjectType, normally related to just one Role,
+      # and the references (VarRefs) to it will normally be the object_type name
       # with the same adjectives (modulo loose binding),
       # or a role name or subscript reference.
       #
-      # In some situations a Binding will have some RoleRefs with the same adjectives,
-      # and one or more RoleRefs with no adjectives - this is called "loose binding".
-      class Binding
+      # In some situations a Variable will have some VarRefs with the same adjectives,
+      # and one or more VarRefs with no adjectives - this is called "loose binding".
+      class Variable
         attr_reader :player             # The ObjectType (object type)
-        attr_reader :refs               # an array of the RoleRefs
+        attr_reader :refs               # an array of the VarRefs
         attr_reader :role_name
-        attr_accessor :rebound_to       # Loose binding may set this to another binding
+        attr_accessor :rebound_to       # Loose binding may set this to another variable
         attr_accessor :join_node
         attr_accessor :instance         # When binding fact instances, the instance goes here
 
@@ -41,16 +41,16 @@ module ActiveFacts
         attr_accessor :vocabulary
         attr_accessor :allowed_forward_terms
         attr_accessor :left_contraction_allowed
-        attr_accessor :left_contractable_reading
+        attr_accessor :left_contractable_clause
         attr_accessor :left_contraction_conjunction
-        attr_reader :bindings             # The Bindings in this declaration
+        attr_reader :variables             # The Variables in this declaration
         attr_reader :player_by_role_name
 
         def initialize vocabulary
           @vocabulary = vocabulary
           @vocabulary_identifier = @vocabulary.identifying_role_values
           @allowed_forward_terms = []
-          @bindings = {}
+          @variables = {}
           @player_by_role_name = {}
           @left_contraction_allowed = false
         end
@@ -129,7 +129,7 @@ end
 
 require 'activefacts/cql/compiler/value_type'
 require 'activefacts/cql/compiler/entity_type'
-require 'activefacts/cql/compiler/reading'
+require 'activefacts/cql/compiler/clause'
 require 'activefacts/cql/compiler/fact_type'
 require 'activefacts/cql/compiler/fact'
 require 'activefacts/cql/compiler/constraint'

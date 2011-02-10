@@ -52,10 +52,10 @@ module ActiveFacts
 
       # >>>>>>>>>>>>>>>>>>>> Constraints <<<<<<<<<<<<<<<<<<<<
       # External presence constraint syntax:
-      rule each_occurs_in_readings
+      rule each_occurs_in_clauses
 	s chaque s ('combinaison' S)? role_list s existe s quantifier 'fois' S
 	  'parmis' S 'ce' S 'qui' S 'suit' s ':' s
-	  readings_list s c:context_note? ';'
+	  clauses_list s c:context_note? ';'
 	{
 	  def role_list_ast
 	    role_list.ast
@@ -63,14 +63,14 @@ module ActiveFacts
 	  def quantifier_ast
 	    quantifier.ast
 	  end
-	  def readings_ast
-	    readings_list.ast
+	  def clauses_ast
+	    clauses_list.ast
 	  end
 	}
       end
 
       rule either_or
-      s 'soit' S r1:readings s 'ou' S r2:readings
+      s 'soit' S r1:clauses s 'ou' S r2:clauses
 	s c:context_note? enforcement ';'
       {
 	  def role_list_ast
@@ -79,7 +79,7 @@ module ActiveFacts
 	  def quantifier_ast
 	    Compiler::Quantifier.new(1, nil)
 	  end
-	  def readings_ast
+	  def clauses_ast
 	    [r1.ast, r2.ast]
 	  end
 	}
@@ -89,7 +89,7 @@ module ActiveFacts
       rule for_each_how_many
 	'pour' S 'chaque' S role_list s
 	  quantifier s 'des' S 'suivants' S 's\'applique' s ':' s
-	  readings_list s c:context_note? ';'
+	  clauses_list s c:context_note? ';'
 	{
 	  def role_list_ast
 	    role_list.ast
@@ -97,14 +97,14 @@ module ActiveFacts
 	  def quantifier_ast
 	    quantifier.ast
 	  end
-	  def readings_ast
-	    readings_list.ast
+	  def clauses_ast
+	    clauses_list.ast
 	  end
 	}
       end
 
       rule either_or_not_both
-	s 'soit' S r1:readings s 'ou' S r2:readings 'mais' S 'pas' S 'les' S 'deux'
+	s 'soit' S r1:clauses s 'ou' S r2:clauses 'mais' S 'pas' S 'les' S 'deux'
 	  s c:context_note? enforcement ';'
 	{
 	  def role_list_ast
@@ -113,22 +113,22 @@ module ActiveFacts
 	  def quantifier_ast
 	    Compiler::Quantifier.new(1, 1)
 	  end
-	  def readings_ast
+	  def clauses_ast
 	    [r1.ast, r2.ast]
 	  end
 	}
       end
 
       rule a_only_if_b
-	s readings s 'que' S 'si' S r2:readings s c:context_note? enforcement ';'
+	s clauses s 'que' S 'si' S r2:clauses s c:context_note? enforcement ';'
       end
 
       rule if_b_then_a
-	s 'si' S readings s 'puis' S r2:readings s c:context_note? enforcement ';'
+	s 'si' S clauses s 'puis' S r2:clauses s c:context_note? enforcement ';'
       end
 
       rule if_and_only_if
-        s readings s tail:( 'si' S 'et' S ('seulement'/'uniquement'/'que') S 'si' S readings s)+
+        s clauses s tail:( 'si' S 'et' S ('seulement'/'uniquement'/'que') S 'si' S clauses s)+
 	  c:context_note? enforcement ';'
       end
 
