@@ -94,7 +94,7 @@ module ActiveFacts
 	    role_list = s[-1]
 	    forwards = role_list.ast.
 	      map do |role_ref|
-		next nil if role_ref.is_a?(Compiler::Reading) # Can't forward-reference unaries
+		next nil if role_ref.is_a?(Compiler::Clause) # Can't forward-reference unaries
 		next nil if role_ref.leading_adjective or role_ref.trailing_adjective
 		role_ref.term
 	      end.
@@ -141,7 +141,7 @@ module ActiveFacts
 	      else
 		pre_words = pre_text.elements.map{|w| w.id.text_value}
 		post_words = post_text.elements.map{|w| w.id.text_value}
-		Compiler::Reading.new(pre_words + [t] + post_words, [], nil)
+		Compiler::Clause.new(pre_words + [t] + post_words, [], nil)
 	      end
 	    end
 	  }

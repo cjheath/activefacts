@@ -40,10 +40,10 @@ module CompileHelpers
     }
   end
 
-  def match_readings_to_existing fact_type_ast, reading
-    fact_type_ast.prepare_roles(fact_type_ast.readings)
-    fact_type_ast.readings.map { |r|
-      r.reading_matches(reading.fact_type, reading)
+  def match_readings_to_existing fact_type_ast, clause
+    fact_type_ast.prepare_roles(fact_type_ast.clauses)
+    fact_type_ast.clauses.map { |r|
+      r.clause_matches(clause.fact_type, clause)
     }
   end
 

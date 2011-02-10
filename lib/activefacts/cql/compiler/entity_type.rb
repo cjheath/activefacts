@@ -19,12 +19,12 @@ module ActiveFacts
       end
 
       class EntityType < ObjectType
-        def initialize name, supertypes, identification, pragmas, readings
+        def initialize name, supertypes, identification, pragmas, clauses
           super name
           @supertypes = supertypes
           @identification = identification
           @pragmas = pragmas
-          @readings = readings || []
+          @clauses = clauses || []
         end
 
         def compile
@@ -45,7 +45,7 @@ module ActiveFacts
           # Create the fact types that define the identifying roles:
           fact_types = create_identifying_fact_types context
 
-          # At this point, @identification is an array of RoleRefs and/or Readings (for unary fact types)
+          # At this point, @identification is an array of RoleRefs and/or Clauses (for unary fact types)
           # Have to do this after creating the necessary fact types
           complete_reference_mode_fact_type fact_types
 
@@ -54,9 +54,9 @@ module ActiveFacts
 
           make_preferred_identifier_over_roles identifying_roles
 
-          @readings.each do |reading|
-            next unless reading.context_note
-            reading.context_note.compile(@constellation, @entity_type)
+          @clauses.each do |clause|
+            next unless clause.context_note
+            clause.context_note.compile(@constellation, @entity_type)
           end
 
           @entity_type
@@ -92,13 +92,13 @@ module ActiveFacts
               raise "Looking for an occurrence of identifying role #{id.inspect}, but found #{roles.size == 0 ? "none" : roles.size}" if roles.size != 1
               roles[0]
             else
-              # id is a reading of a unary fact type.
+              # id is a clause of a unary fact type.
               id.identify_other_players context
               id.bind_roles context
-              matching_reading =
-                @readings.detect { |reading| reading.phrases_match id.phrases }
-              raise "Unary identifying role '#{id.inspect}' is not found in the defined fact types" unless matching_reading
-              matching_reading.fact_type.all_role.single
+              matching_clause =
+                @clauses.detect { |clause| clause.phrases_match id.phrases }
+              raise "Unary identifying role '#{id.inspect}' is not found in the defined fact types" unless matching_clause
+              matching_clause.fact_type.all_role.single
             end
           end
         end
@@ -144,51 +144,51 @@ module ActiveFacts
 
         def create_identifying_fact_types context
           fact_types = []
-          # Categorise the readings into fact types according to the roles they play.
-          @readings.each{ |reading| reading.identify_players_with_role_name(context) }
-          @readings.each{ |reading| reading.identify_other_players(context) }
-          @readings.inject({}) do |hash, reading|
-            players_key = reading.role_refs.map{|rr| rr.key.compact}.sort
-            (hash[players_key] ||= []) << reading
+          # Categorise the clauses into fact types according to the roles they play.
+          @clauses.each{ |clause| clause.identify_players_with_role_name(context) }
+          @clauses.each{ |clause| clause.identify_other_players(context) }
+          @clauses.inject({}) do |hash, clause|
+            players_key = clause.role_refs.map{|rr| rr.key.compact}.sort
+            (hash[players_key] ||= []) << clause
             hash
-          end.each do |players_key, readings|
-            readings.each{ |reading| reading.bind_roles context }  # Create the Compiler::Bindings
+          end.each do |players_key, clauses|
+            clauses.each{ |clause| clause.bind_roles context }  # Create the Compiler::Bindings
 
             # REVISIT: Loose binding goes here; it might merge some Compiler#Roles
 
-            fact_type = create_identifying_fact_type(context, readings)
+            fact_type = create_identifying_fact_type(context, clauses)
             fact_types << fact_type if fact_type
             objectify_existing_fact_type(fact_type) unless fact_type.all_role.detect{|r| r.object_type == @entity_type}
           end
           fact_types
         end
 
-        def create_identifying_fact_type context, readings
+        def create_identifying_fact_type context, clauses
           # Remove uninteresting assertions:
-          readings.reject!{|reading| reading.is_existential_type }
-          return nil unless readings.size > 0    # Nothing interesting was said.
+          clauses.reject!{|clause| clause.is_existential_type }
+          return nil unless clauses.size > 0    # Nothing interesting was said.
 
           # See if any fact type already exists (this ET cannot be a player, but might objectify it)
-          existing_readings = readings.select{ |reading| reading.match_existing_fact_type context }
-          any_matched = existing_readings.size > 0
+          existing_clauses = clauses.select{ |clause| clause.match_existing_fact_type context }
+          any_matched = existing_clauses.size > 0
 
           operation = any_matched ? 'Objectifying' : 'Creating'
-          player_names = readings[0].role_refs.map{|rr| rr.key.compact*'-'}
-          debug :matching, "#{operation} fact type for #{readings.size} readings over (#{player_names*', '})" do
+          player_names = clauses[0].role_refs.map{|rr| rr.key.compact*'-'}
+          debug :matching, "#{operation} fact type for #{clauses.size} clauses over (#{player_names*', '})" do
             if any_matched  # There's an existing fact type we must be objectifying
-              fact_type = objectify_existing_fact_type(existing_readings[0].fact_type)
+              fact_type = objectify_existing_fact_type(existing_clauses[0].fact_type)
             end
 
             unless fact_type
-              fact_type = readings[0].make_fact_type(@vocabulary)
-              readings[0].make_reading(@vocabulary, fact_type)
-              readings[0].make_embedded_constraints vocabulary
-              existing_readings = [readings[0]]
+              fact_type = clauses[0].make_fact_type(@vocabulary)
+              clauses[0].make_reading(@vocabulary, fact_type)
+              clauses[0].make_embedded_constraints vocabulary
+              existing_clauses = [clauses[0]]
             end
 
-            (readings - existing_readings).each do |reading|
-              reading.make_reading(@vocabulary, fact_type)
-              reading.make_embedded_constraints vocabulary
+            (clauses - existing_clauses).each do |clause|
+              clause.make_reading(@vocabulary, fact_type)
+              clause.make_embedded_constraints vocabulary
             end
 
             fact_type
@@ -425,7 +425,7 @@ module ActiveFacts
           }#{
             @identification.is_a?(ReferenceMode) ? @identification.to_s : @identification.inspect
           }#{
-            @readings.size > 0 ? " where #{@readings.inspect}" : ''
+            @clauses.size > 0 ? " where #{@clauses.inspect}" : ''
           }#{
             @pragmas.size > 0 ? ", pragmas [#{@pragmas*','}]" : ''
           };"

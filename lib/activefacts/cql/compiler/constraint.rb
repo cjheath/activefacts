@@ -52,13 +52,13 @@ module ActiveFacts
       end
 
       class Constraint < Definition
-        def initialize context_note, enforcement, readings_lists = []
+        def initialize context_note, enforcement, clauses_lists = []
           if context_note.is_a?(Treetop::Runtime::SyntaxNode)
             context_note = context_note.empty? ? nil : context_note.ast
           end
           @context_note = context_note
           @enforcement = enforcement
-          @readings_lists = readings_lists
+          @clauses_lists = clauses_lists
         end
 
         def compile
@@ -70,18 +70,18 @@ module ActiveFacts
           # Override for constraint types that need loose binding (same role player matching with different adjectives)
         end
 
-        def bind_readings
+        def bind_clauses
           @context = CompilationContext.new(@vocabulary)
           @context.left_contraction_allowed = true
 
-          @readings_lists.map do |readings_list|
-            readings_list.each{ |reading| reading.identify_players_with_role_name(@context) }
-            readings_list.each{ |reading| reading.identify_other_players(@context) }
-            readings_list.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
-            @context.left_contractable_reading = nil # Don't contract outside this set of readings
-            readings_list.each do |reading| 
-              fact_type = reading.match_existing_fact_type @context
-              raise "Unrecognised fact type #{reading.inspect} in #{self.class}" unless fact_type
+          @clauses_lists.map do |clauses_list|
+            clauses_list.each{ |clause| clause.identify_players_with_role_name(@context) }
+            clauses_list.each{ |clause| clause.identify_other_players(@context) }
+            clauses_list.each{ |clause| clause.bind_roles @context }  # Create the Compiler::Bindings
+            @context.left_contractable_clause = nil # Don't contract outside this set of clauses
+            clauses_list.each do |clause| 
+              fact_type = clause.match_existing_fact_type @context
+              raise "Unrecognised fact type #{clause.inspect} in #{self.class}" unless fact_type
             end
           end
 
@@ -91,8 +91,8 @@ module ActiveFacts
           # and matched all the fact types that matter. Now assemble a join (with all join steps) for
           # each join list, and build an array of the bindings that are involved in the join steps.
           @bindings_by_list =
-            @readings_lists.map do |readings_list|
-              all_bindings_in_readings(readings_list)
+            @clauses_lists.map do |clauses_list|
+              all_bindings_in_clauses(clauses_list)
             end
 
           warn_ignored_joins
@@ -100,8 +100,8 @@ module ActiveFacts
 
         def warn_ignored_joins
           # Warn about ignored joins
-          @readings_lists.each do |readings_list|
-            fact_types = readings_list.map{|join| join.role_refs[0].role_ref.role.fact_type}.uniq
+          @clauses_lists.each do |clauses_list|
+            fact_types = clauses_list.map{|join| join.role_refs[0].role_ref.role.fact_type}.uniq
             if fact_types.size > 1
               puts "------->>>> Join ignored in #{self.class}: #{fact_types.map{|ft| ft.preferred_reading.expand}*' and '}"
             end
@@ -111,11 +111,11 @@ module ActiveFacts
         def loose_bind_wherever_possible
           # Apply loose binding over applicable roles:
           debug :binding, "Loose binding on #{self.class.name}" do
-            @readings_lists.each do |readings_list|
-              readings_list.each do |reading|
-                reading.role_refs.each_with_index do |role_ref, i|
+            @clauses_lists.each do |clauses_list|
+              clauses_list.each do |clause|
+                clause.role_refs.each_with_index do |role_ref, i|
                   next if role_ref.binding.refs.size > 1
-#                  if reading.side_effects && !reading.side_effects.role_side_effects[i].residual_adjectives
+#                  if clause.side_effects && !clause.side_effects.role_side_effects[i].residual_adjectives
 #                    debug :binding, "Discounting #{role_ref.inspect} as needing loose binding because it has no residual_adjectives"
 #                    next
 #                  end
@@ -125,10 +125,10 @@ module ActiveFacts
                       binding.player == role_ref.binding.player and
                         binding != role_ref.binding and
                         binding.role_name == role_ref.binding.role_name and  # Both will be nil if they match
-                        # REVISIT: Don't bind to a binding with a role occurrence in the same reading
+                        # REVISIT: Don't bind to a binding with a role occurrence in the same clause
                         !binding.refs.detect{|rr|
-                          x = rr.reading == reading
-                          # puts "Discounting binding #{binding.inspect} as a match for #{role_ref.inspect} because it's already bound to a player in #{role_ref.reading.inspect}" if x
+                          x = rr.clause == clause
+                          # puts "Discounting binding #{binding.inspect} as a match for #{role_ref.inspect} because it's already bound to a player in #{role_ref.clause.inspect}" if x
                           x
                         }
                     end.map{|k,b| b}
@@ -147,14 +147,14 @@ module ActiveFacts
             @roles.each do |role_ref|
               role_ref.identify_player @context
               role_ref.bind @context
-              if role_ref.binding.refs.size < @readings_lists.size+1
-                debug :binding, "Insufficient bindings for #{role_ref.inspect} (#{role_ref.binding.refs.size}, expected #{@readings_lists.size+1}), attempting loose binding" do
-                  @readings_lists.each do |readings_list|
+              if role_ref.binding.refs.size < @clauses_lists.size+1
+                debug :binding, "Insufficient bindings for #{role_ref.inspect} (#{role_ref.binding.refs.size}, expected #{@clauses_lists.size+1}), attempting loose binding" do
+                  @clauses_lists.each do |clauses_list|
                     candidates = []
-                    next if readings_list.
-                      detect do |reading|
-                        debug :binding, "Checking #{reading.inspect}"
-                        reading.role_refs.
+                    next if clauses_list.
+                      detect do |clause|
+                        debug :binding, "Checking #{clause.inspect}"
+                        clause.role_refs.
                           detect do |rr|
                             already_bound = rr.binding == role_ref.binding
                             if !already_bound && rr.player == role_ref.player
@@ -163,7 +163,7 @@ module ActiveFacts
                             already_bound
                           end
                       end
-                    debug :binding, "Attempting loose binding for #{role_ref.inspect} in #{readings_list.inspect}, from the following candidates: #{candidates.inspect}"
+                    debug :binding, "Attempting loose binding for #{role_ref.inspect} in #{clauses_list.inspect}, from the following candidates: #{candidates.inspect}"
 
                     if candidates.size == 1
                       debug :binding, "Rebinding #{candidates[0].inspect} to #{role_ref.inspect}"
@@ -183,32 +183,32 @@ module ActiveFacts
         end
 
         def to_s
-          "#{self.class.name.sub(/.*::/,'')}" + (@readings_lists.size > 0 ? " over #{@readings_lists.inspect}" : '')
+          "#{self.class.name.sub(/.*::/,'')}" + (@clauses_lists.size > 0 ? " over #{@clauses_lists.inspect}" : '')
         end
       end
 
       class PresenceConstraint < Constraint
-        def initialize context_note, enforcement, readings_lists, role_refs, quantifier
-          super context_note, enforcement, readings_lists
+        def initialize context_note, enforcement, clauses_lists, role_refs, quantifier
+          super context_note, enforcement, clauses_lists
           @role_refs = role_refs || []
           @quantifier = quantifier
         end
 
         def compile
-          @readings = @readings_lists.map do |readings_list|
-            raise "REVISIT: Join presence constraints not supported yet" if readings_list.size > 1 or
-              readings_list.detect{|reading| reading.role_refs.detect{|rr| rr.objectification_join } }
-            readings_list[0]
+          @clauses = @clauses_lists.map do |clauses_list|
+            raise "REVISIT: Join presence constraints not supported yet" if clauses_list.size > 1 or
+              clauses_list.detect{|clause| clause.role_refs.detect{|rr| rr.objectification_join } }
+            clauses_list[0]
           end
 
-          bind_readings
+          bind_clauses
 
           if @role_refs.size > 0
             bind_roles
           else
             cb = common_bindings
             raise "Either/or must have only one duplicated role, not #{cb.inspect}" unless cb.size == 1
-            @role_refs = cb[0].refs.reverse # REVISIT: Should have order these by reading, not like this
+            @role_refs = cb[0].refs.reverse # REVISIT: Should have order these by clause, not like this
           end
 
           role_sequence = @constellation.RoleSequence(:new)
@@ -236,7 +236,7 @@ module ActiveFacts
           super
         end
 
-        # In a PresenceConstraint, each role in "each XYZ" must occur in exactly one readings_list
+        # In a PresenceConstraint, each role in "each XYZ" must occur in exactly one clauses_list
         def loose_binding
           # loose_bind_wherever_possible
         end
@@ -248,8 +248,8 @@ module ActiveFacts
             if role_ref.binding.refs.size == 1
               # Apply loose binding over the constrained roles
               candidates =
-                @readings.map do |reading|
-                  reading.role_refs.select{ |rr| rr.player == role_ref.player }
+                @clauses.map do |clause|
+                  clause.role_refs.select{ |rr| rr.player == role_ref.player }
                 end.flatten
               if candidates.size == 1
                 debug :binding, "Rebinding #{role_ref.inspect} to #{candidates[0].inspect} in presence constraint"
@@ -265,8 +265,8 @@ module ActiveFacts
       end
 
       class SetConstraint < Constraint
-        def initialize context_note, enforcement, readings_lists
-          super context_note, enforcement, readings_lists
+        def initialize context_note, enforcement, clauses_lists
+          super context_note, enforcement, clauses_lists
         end
 
         def warn_ignored_joins
@@ -274,22 +274,22 @@ module ActiveFacts
         end
 
         def role_sequences_for_common_bindings ignore_trailing_joins = false
-          @readings_lists.
+          @clauses_lists.
               zip(@bindings_by_list).
-              map do |readings_list, bindings|
-            # Does this readings_list involve a join?
-            if readings_list.size > 1 or
-              readings_list.detect{|reading| reading.role_refs.detect{|role_ref| role_ref.objectification_join } }
+              map do |clauses_list, bindings|
+            # Does this clauses_list involve a join?
+            if clauses_list.size > 1 or
+              clauses_list.detect{|clause| clause.role_refs.detect{|role_ref| role_ref.objectification_join } }
 
-              debug :join, "Building join for #{readings_list.inspect}" do
+              debug :join, "Building join for #{clauses_list.inspect}" do
                 debug :join, "Constrained bindings are #{@common_bindings.inspect}"
-                # Every Binding in these readings becomes a Join Node,
-                # and every reading becomes a JoinStep (and a RoleSequence).
+                # Every Binding in these clauses becomes a Join Node,
+                # and every clause becomes a JoinStep (and a RoleSequence).
                 # The returned RoleSequences contains the RoleRefs for the common_bindings.
 
                 # Create a join with a join node for every binding and all join steps:
-                join = build_join_nodes(readings_list)
-                roles_by_binding = build_all_join_steps(readings_list)
+                join = build_join_nodes(clauses_list)
+                roles_by_binding = build_all_join_steps(clauses_list)
                 join.validate
 
                 # Create the projected RoleSequence for the constraint:
@@ -302,23 +302,23 @@ module ActiveFacts
                 role_sequence
               end
             else
-              # There's no join in this readings_list, just create a role_sequence
+              # There's no join in this clauses_list, just create a role_sequence
               role_sequence = @constellation.RoleSequence(:new)
               join_bindings = bindings-@common_bindings
               unless join_bindings.empty? or ignore_trailing_joins && join_bindings.size <= 1
-                debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_bindings.inspect} to #{join_bindings.inspect} in #{readings_list.inspect}"
+                debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_bindings.inspect} to #{join_bindings.inspect} in #{clauses_list.inspect}"
               end
               @common_bindings.each do |binding|
-                roles = readings_list.
-                  map do |reading|
-                    reading.role_refs.detect{|rr| rr.binding == binding }
+                roles = clauses_list.
+                  map do |clause|
+                    clause.role_refs.detect{|rr| rr.binding == binding }
                   end.
-                  compact.  # A join reading will probably not have the common binding
+                  compact.  # A join clause will probably not have the common binding
                   map do |role_ref|
                     role_ref.role_ref && role_ref.role_ref.role or role_ref.role
                   end.
                   compact
-                # REVISIT: Should use reading side effects to preserve residual adjectives here.
+                # REVISIT: Should use clause side effects to preserve residual adjectives here.
                 @constellation.RoleRef(role_sequence, role_sequence.all_role_ref.size, :role => roles[0])
               end
               role_sequence
@@ -328,14 +328,14 @@ module ActiveFacts
       end
 
       class SubsetConstraint < SetConstraint
-        def initialize context_note, enforcement, readings_lists
-          super context_note, enforcement, readings_lists
-          @subset_readings = @readings_lists[0]
-          @superset_readings = @readings_lists[1]
+        def initialize context_note, enforcement, clauses_lists
+          super context_note, enforcement, clauses_lists
+          @subset_clauses = @clauses_lists[0]
+          @superset_clauses = @clauses_lists[1]
         end
 
         def compile
-          bind_readings
+          bind_clauses
           common_bindings
 
           role_sequences =
@@ -358,20 +358,20 @@ module ActiveFacts
       end
 
       class SetComparisonConstraint < SetConstraint
-        def initialize context_note, enforcement, readings_lists
-          super context_note, enforcement, readings_lists
+        def initialize context_note, enforcement, clauses_lists
+          super context_note, enforcement, clauses_lists
         end
       end
 
       class SetExclusionConstraint < SetComparisonConstraint
-        def initialize context_note, enforcement, readings_lists, roles, quantifier
-          super context_note, enforcement, readings_lists
+        def initialize context_note, enforcement, clauses_lists, roles, quantifier
+          super context_note, enforcement, clauses_lists
           @roles = roles || []
           @quantifier = quantifier
         end
 
         def compile
-          bind_readings
+          bind_clauses
           common_bindings
 
           role_sequences =
@@ -389,7 +389,7 @@ module ActiveFacts
           super
         end
 
-        # In a SetExclusionConstraint, each role in "for each XYZ" must occur in each readings_list
+        # In a SetExclusionConstraint, each role in "for each XYZ" must occur in each clauses_list
         def loose_binding
           if @roles.size == 0
             loose_bind_wherever_possible
@@ -401,12 +401,12 @@ module ActiveFacts
       end
 
       class SetEqualityConstraint < SetComparisonConstraint
-        def initialize context_note, enforcement, readings_lists
-          super context_note, enforcement, readings_lists
+        def initialize context_note, enforcement, clauses_lists
+          super context_note, enforcement, clauses_lists
         end
 
         def compile
-          bind_readings
+          bind_clauses
           common_bindings
 
           role_sequences =
@@ -487,7 +487,7 @@ module ActiveFacts
         end
 
         def to_s
-          "#{super} #{@rings*','} over #{@readings_lists.inspect}"
+          "#{super} #{@rings*','} over #{@clauses_lists.inspect}"
         end
       end
 

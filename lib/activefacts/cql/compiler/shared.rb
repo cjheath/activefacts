@@ -41,7 +41,7 @@ module ActiveFacts
         attr_accessor :vocabulary
         attr_accessor :allowed_forward_terms
         attr_accessor :left_contraction_allowed
-        attr_accessor :left_contractable_reading
+        attr_accessor :left_contractable_clause
         attr_accessor :left_contraction_conjunction
         attr_reader :bindings             # The Bindings in this declaration
         attr_reader :player_by_role_name
@@ -129,7 +129,7 @@ end
 
 require 'activefacts/cql/compiler/value_type'
 require 'activefacts/cql/compiler/entity_type'
-require 'activefacts/cql/compiler/reading'
+require 'activefacts/cql/compiler/clause'
 require 'activefacts/cql/compiler/fact_type'
 require 'activefacts/cql/compiler/fact'
 require 'activefacts/cql/compiler/constraint'

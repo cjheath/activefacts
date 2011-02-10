@@ -4,23 +4,25 @@ module ActiveFacts
 
       class Query < ObjectType  # A fact type which is objectified (whether derived or not) is also an ObjectType
         attr_reader :context    # Exposed for testing purposes
+        attr_reader :conditions
+
         def initialize name, conditions = nil, returning = nil
           super name
           @conditions = conditions
           @returning = returning
         end
 
-        def prepare_roles readings = nil
+        def prepare_roles clauses = nil
           @context ||= CompilationContext.new(@vocabulary)
-          readings = (readings || []) + @conditions
-          readings.each{ |reading| reading.identify_players_with_role_name(@context) }
-          readings.each{ |reading| reading.identify_other_players(@context) }
+          clauses = (clauses || []) + @conditions
+          clauses.each{ |clause| clause.identify_players_with_role_name(@context) }
+          clauses.each{ |clause| clause.identify_other_players(@context) }
           # REVISIT: identify and bind players in @returning clauses also.
-          readings.each{ |reading| reading.bind_roles @context }  # Create the Compiler::Bindings
+          clauses.each{ |clause| clause.bind_roles @context }  # Create the Compiler::Bindings
         end
 
         def compile
-          # Match roles with players, and match readings with existing fact types
+          # Match roles with players, and match clauses with existing fact types
           prepare_roles unless @context
 
           @context.left_contraction_allowed = true
@@ -49,67 +51,67 @@ module ActiveFacts
 
       class FactType < ActiveFacts::CQL::Compiler::Query
         attr_reader :fact_type
-        attr_reader :readings
+        attr_reader :clauses
         attr_writer :name
         attr_writer :pragmas
 
-        def initialize name, readings, conditions = nil, returning = nil
+        def initialize name, clauses, conditions = nil, returning = nil
           super name, conditions, returning
-          @readings = readings
+          @clauses = clauses
         end
 
         def compile
           # Process:
-          # * Identify all role players (must be done with readings and conditions BEFORE matching readings)
-          # * Match up the players in all @readings
+          # * Identify all role players (must be done for both clauses and conditions BEFORE matching clauses)
+          # * Match up the players in all @clauses
           #   - Be aware of multiple roles with the same player, and bind tight/loose using subscripts/role_names/adjectives
-          #   - Reject the fact type unless all @readings match
-          # * Find any existing fact type that matches any reading, or make a new one
-          # * Add each reading that doesn't already exist in the fact type
+          #   - Reject the fact type unless all @clauses match
+          # * Find any existing fact type that matches any clause, or make a new one
+          # * Add each clause that doesn't already exist in the fact type
           # * Create any ring constraint(s)
           # * Create embedded presence constraints
           # * If fact type has no identifier, arrange to create the implicit one (before first use?)
           # * Objectify the fact type if @name
           #
 
-          prepare_roles @readings
+          prepare_roles @clauses
 
           # REVISIT: Compiling the conditions here make it impossible to define a self-referential (transitive) query.
-          return super if @readings.empty?  # It's a query
+          return super if @clauses.empty?  # It's a query
 
-          # Ignore any useless readings:
-          @readings.reject!{|reading| reading.is_existential_type }
-          return true unless @readings.size > 0   # Nothing interesting was said.
+          # Ignore any useless clauses:
+          @clauses.reject!{|clause| clause.is_existential_type }
+          return true unless @clauses.size > 0   # Nothing interesting was said.
 
           # See if any existing fact type is being invoked (presumably to objectify or extend it)
-          @fact_type = check_compatibility_of_matched_readings
+          @fact_type = check_compatibility_of_matched_clauses
 
-          verify_matching_roles   # All readings of a fact type must have the same roles
+          verify_matching_roles   # All clauses of a fact type must have the same roles
 
           if !@fact_type
             # Make a new fact type:
-            first_reading = @readings[0]
-            @fact_type = first_reading.make_fact_type(@vocabulary)
-            first_reading.make_reading(@vocabulary, @fact_type)
-            first_reading.make_embedded_constraints vocabulary
+            first_clause = @clauses[0]
+            @fact_type = first_clause.make_fact_type(@vocabulary)
+            first_clause.make_reading(@vocabulary, @fact_type)
+            first_clause.make_embedded_constraints vocabulary
             @fact_type.create_implicit_fact_type_for_unary if @fact_type.all_role.size == 1 && !@name
-            @existing_readings = [first_reading]
-          elsif (n = @readings.size - @existing_readings.size) > 0
+            @existing_clauses = [first_clause]
+          elsif (n = @clauses.size - @existing_clauses.size) > 0
             debug :binding, "Extending existing fact type with #{n} new readings"
           end
 
           # Now make any new readings:
-          new_readings = @readings - @existing_readings
-          new_readings.each do |reading|
-            reading.make_reading(@vocabulary, @fact_type)
-            reading.make_embedded_constraints vocabulary
+          new_clauses = @clauses - @existing_clauses
+          new_clauses.each do |clause|
+            clause.make_reading(@vocabulary, @fact_type)
+            clause.make_embedded_constraints vocabulary
           end
 
-          # If a reading matched but the match left extra adjectives, we need to make a new RoleSequence for them:
-          @existing_readings.each do |reading|
-            reading.adjust_for_match
+          # If a clause matched but the match left extra adjectives, we need to make a new RoleSequence for them:
+          @existing_clauses.each do |clause|
+            clause.adjust_for_match
             # Add any new constraints that we found in the match (presence, ring, etc)
-            reading.make_embedded_constraints(vocabulary)
+            clause.make_embedded_constraints(vocabulary)
           end
 
           # Objectify the fact type if necessary:
@@ -127,9 +129,9 @@ module ActiveFacts
             end
           end
 
-          @readings.each do |reading|
-            next unless reading.context_note
-            reading.context_note.compile(@constellation, @fact_type)
+          @clauses.each do |clause|
+            next unless clause.context_note
+            clause.context_note.compile(@constellation, @fact_type)
           end
 
           # REVISIT: This isn't the thing to do long term; it needs to be added later only if we find no other constraint
@@ -138,17 +140,17 @@ module ActiveFacts
           # Compile the conditions:
           super
           unless @conditions.empty?
-            @readings.each do |reading|
-              project_reading_roles(reading)
+            @clauses.each do |clause|
+              project_clause_roles(clause)
             end
           end
 
           @fact_type
         end
 
-        def project_reading_roles(reading)
-          # Attach the reading's role references to the projected roles of the join
-          reading.role_refs.each_with_index do |rr, i|
+        def project_clause_roles(clause)
+          # Attach the clause's role references to the projected roles of the join
+          clause.role_refs.each_with_index do |rr, i|
             role, join_role = @roles_by_binding[rr.binding]
             raise "#{rr} must be a role projected from the conditions" unless role
             raise "#{rr} has already-projected join role!" if join_role.role_ref
@@ -156,23 +158,23 @@ module ActiveFacts
           end
         end
 
-        def check_compatibility_of_matched_readings
-          # REVISIT: If we have conditions, we must match all given readings exactly (no side-effects)
-          @existing_readings = @readings.
-            select{ |reading| reading.match_existing_fact_type @context }.
-            sort_by{ |reading| reading.side_effects.cost }
-          fact_types = @existing_readings.map{ |reading| reading.fact_type }.uniq.compact
+        def check_compatibility_of_matched_clauses
+          # REVISIT: If we have conditions, we must match all given clauses exactly (no side-effects)
+          @existing_clauses = @clauses.
+            select{ |clause| clause.match_existing_fact_type @context }.
+            sort_by{ |clause| clause.side_effects.cost }
+          fact_types = @existing_clauses.map{ |clause| clause.fact_type }.uniq.compact
           return nil if fact_types.empty?
-          # If there's only a single reading, the match must be exact:
-          return nil if @readings.size == 1 && @existing_readings[0].side_effects.cost != 0
+          # If there's only a single clause, the match must be exact:
+          return nil if @clauses.size == 1 && @existing_clauses[0].side_effects.cost != 0
           if (fact_types.size > 1)
             # There must be only one fact type with exact matches:
-            if @existing_readings[0].side_effects.cost != 0 or
-              @existing_readings.detect{|r| r.fact_type != fact_types[0] && r.side_effects.cost == 0 }
+            if @existing_clauses[0].side_effects.cost != 0 or
+              @existing_clauses.detect{|r| r.fact_type != fact_types[0] && r.side_effects.cost == 0 }
               raise "Clauses match different existing fact types '#{fact_types.map{|ft| ft.preferred_reading.expand}*"', '"}'"
             end
-            # Try to make false-matched readings match the chosen one instead
-            @existing_readings.reject!{|r| r.fact_type != fact_types[0] }
+            # Try to make false-matched clauses match the chosen one instead
+            @existing_clauses.reject!{|r| r.fact_type != fact_types[0] }
           end
           fact_types[0]
         end
@@ -197,8 +199,8 @@ module ActiveFacts
               end
 
           # If there's an existing presence constraint that can be converted into a PC, do that:
-          @readings.each do |reading|
-            rr = reading.role_refs[-1] or next
+          @clauses.each do |clause|
+            rr = clause.role_refs[-1] or next
             epc = rr.embedded_presence_constraint or next
             epc.max_frequency == 1 or next
             next if epc.enforcement
@@ -226,27 +228,27 @@ module ActiveFacts
         end
 
         def verify_matching_roles
-          role_refs_by_reading_and_key = {}
-          readings_by_role_refs =
-            @readings.inject({}) do |hash, reading|
-              keys = reading.role_refs.map do |rr|
+          role_refs_by_clause_and_key = {}
+          clauses_by_role_refs =
+            @clauses.inject({}) do |hash, clause|
+              keys = clause.role_refs.map do |rr|
                 key = rr.key.compact
-                role_refs_by_reading_and_key[[reading, key]] = rr
+                role_refs_by_clause_and_key[[clause, key]] = rr
                 key
               end.sort_by{|a| a.map{|k|k.to_s}}
               raise "Fact types may not have duplicate roles" if keys.uniq.size < keys.size
-              (hash[keys] ||= []) << reading
+              (hash[keys] ||= []) << clause
               hash
             end
 
-          if readings_by_role_refs.size != 1 and @conditions.empty?
+          if clauses_by_role_refs.size != 1 and @conditions.empty?
             # Attempt loose binding here; it might merge some Compiler::RoleRefs to share the same Bindings
-            variants = readings_by_role_refs.keys
-            (readings_by_role_refs.size-1).downto(1) do |m|   # Start with the last one
+            variants = clauses_by_role_refs.keys
+            (clauses_by_role_refs.size-1).downto(1) do |m|   # Start with the last one
               0.upto(m-1) do |l|                              # Try to rebind onto any lower one
                 common = variants[m]&variants[l]
-                readings_l = readings_by_role_refs[variants[l]]
-                readings_m = readings_by_role_refs[variants[m]]
+                clauses_l = clauses_by_role_refs[variants[l]]
+                clauses_m = clauses_by_role_refs[variants[m]]
                 l_keys = variants[l]-common
                 m_keys = variants[m]-common
                 debug :binding, "Try to collapse variant #{m} onto #{l}; diffs are #{l_keys.inspect} -> #{m_keys.inspect}"
@@ -256,8 +258,8 @@ module ActiveFacts
                   candidates = []
                   (0...m_keys.size).each do |j|
                     m_key = m_keys[j]
-                    l_role_ref = role_refs_by_reading_and_key[[readings_l[0], l_key]]
-                    m_role_ref = role_refs_by_reading_and_key[[readings_m[0], m_key]]
+                    l_role_ref = role_refs_by_clause_and_key[[clauses_l[0], l_key]]
+                    m_role_ref = role_refs_by_clause_and_key[[clauses_m[0], m_key]]
                     debug :binding, "Can we match #{l_role_ref.inspect} (#{i}) with #{m_role_ref.inspect} (#{j})?"
                     next if m_role_ref.player != l_role_ref.player
                     if has_more_adjectives(m_role_ref, l_role_ref)
@@ -279,12 +281,12 @@ module ActiveFacts
                 end
                 if (rebindings == l_keys.size)
                   # Successfully rebound this fact type
-                  debug :binding, "Successfully rebound readings #{readings_l.map{|r|r.inspect}*'; '} on to #{readings_m.map{|r|r.inspect}*'; '}"
+                  debug :binding, "Successfully rebound clauses #{clauses_l.map{|r|r.inspect}*'; '} on to #{clauses_m.map{|r|r.inspect}*'; '}"
                   break
                 else
                   # No point continuing, we failed on this one.
                   raise "All readings in a fact type definition must have matching role players, compare (#{
-                      readings_by_role_refs.keys.map do |keys|
+                      clauses_by_role_refs.keys.map do |keys|
                         keys.map{|key| key*'-' }*", "
                       end*") with ("
                     })"
@@ -292,7 +294,7 @@ module ActiveFacts
 
               end
             end
-          # else all readings already matched
+          # else all clauses already matched
           end
         end
 
@@ -300,7 +302,7 @@ module ActiveFacts
           if @conditions.size > 0
             true
           end
-          "FactType: #{(s = super and !s.empty?) ? "#{s} " : '' }#{@readings.inspect}" +
+          "FactType: #{(s = super and !s.empty?) ? "#{s} " : '' }#{@clauses.inspect}" +
             if @conditions && !@conditions.empty?
               " where "+@conditions.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' '
             else
@@ -312,15 +314,15 @@ module ActiveFacts
         end
       end
 
-      # An OperatorReading invokes a binary fact type with a unary operator,
+      # An Operation invokes a binary fact type with a unary operator,
       # or a ternary fact type with a binary operator, of the forms:
       # Result = <op> Value1
       # Result = Value1 <op> Value2
       # where the value type of Result is determined from the arguments
       #
-      # Each Value may be a Literal, a RoleRef, or another OperatorReading,
+      # Each Value may be a Literal, a RoleRef, or another Operation,
       # so we need to recurse down the tree to build the join.
-      class OperatorReading
+      class Operation
         attr_reader :fact_type
 
         def identify_players_with_role_name context
@@ -381,23 +383,24 @@ module ActiveFacts
 
         def match_existing_fact_type context
           opnds = operands(context)
-          reading_words = (opnds.size > 1 ? [opnds[0]] : []) + [operator, opnds[-1]]
-          reading_ast = Reading.new(reading_words)
+          clause_ast = Clause.new(
+              (opnds.size > 1 ? [opnds[0]] : []) + [operator, opnds[-1]]
+            )
 
           # REVISIT: All operands must be value-types or simply-identified Entity Types.
 
           # REVISIT: We should auto-create joins from Entity Types to an identifying ValueType
           # REVISIT: We should traverse up the supertype of ValueTypes to find a DataType
-          @fact_type = reading_ast.match_existing_fact_type(context, :exact_type => true)
+          @fact_type = clause_ast.match_existing_fact_type(context, :exact_type => true)
           return @fact_type if @fact_type
 
-          @fact_type = reading_ast.make_fact_type context.vocabulary
-          reading_ast.make_reading context.vocabulary, @fact_type
+          @fact_type = clause_ast.make_fact_type context.vocabulary
+          clause_ast.make_reading context.vocabulary, @fact_type
           @fact_type
         end
       end
 
-        class Comparison < OperatorReading
+        class Comparison < Operation
         attr_accessor :operator, :e1, :e2, :qualifiers, :conjunction
         def initialize operator, e1, e2, qualifiers = []
           @operator, @e1, @e2, @qualifiers = operator, e1, e2, qualifiers
@@ -433,7 +436,7 @@ module ActiveFacts
         end
       end
 
-      class Sum < OperatorReading
+      class Sum < Operation
         attr_accessor :terms
         def initialize *terms
           @terms = terms
@@ -469,7 +472,7 @@ module ActiveFacts
         end
       end
 
-      class Product < OperatorReading
+      class Product < Operation
         attr_accessor :factors
         def initialize *factors
           @factors = factors
@@ -505,7 +508,7 @@ module ActiveFacts
         end
       end
 
-      class Reciprocal < OperatorReading
+      class Reciprocal < Operation
         attr_accessor :divisor
         def initialize divisor
           @divisor = divisor

@@ -159,7 +159,7 @@ module ActiveFacts
 	      qualifiers = contracted_clauses.shift
 	      asts.push(contracted_role)  # And replace it by the role removed from the contracted_clauses
 	    end
-	    clause_ast = Compiler::Reading.new(asts, qualifiers)
+	    clause_ast = Compiler::Clause.new(asts, qualifiers)
 	    [clause_ast] + contracted_clauses
 	  end
         }
@@ -174,7 +174,7 @@ module ActiveFacts
 	role p:post_qualifiers? conjunction:(that/who) s q:qualifier? s contracted_clauses s
 	{
 	  def ast
-	    # contracted_clauses.ast will return an array of Readings, but the first clause is special. We must:
+	    # contracted_clauses.ast will return an array of Clauses, but the first clause is special. We must:
 	    # * prepend a new role (we get the Role to build *two* ast nodes)
 	    # * attach the qualifiers
 	    clauses_ast = contracted_clauses.ast
@@ -185,7 +185,7 @@ module ActiveFacts
 	    # A contraction returns an array containing:
 	    # * a role AST
 	    # * a qualifiers array
-	    # * an array of Readings
+	    # * an array of Clauses
 	    [role.ast, p.empty? ? [] : p.list] + clauses_ast
 	  end
 	}
