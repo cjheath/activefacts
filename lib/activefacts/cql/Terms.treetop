@@ -137,12 +137,12 @@ module ActiveFacts
         tail:(s '-'? s w:id     &{|s| w = s[3].text_value; input.context.term_continues?(w) })*
                                 &{|s| input.context.term_complete? }
         {
-	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, objectification_join = nil
+	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, nested_clauses = nil
 	    t = x.context[:term]
 	    gt = x.context[:global_term]
 	    leading_adjective = t[0...-gt.size-1] if t.size > gt.size and t[-gt.size..-1] == gt
 	    trailing_adjective = t[gt.size+1..-1] if t.size > gt.size and t[0...gt.size] == gt
-	    Compiler::VarRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, value_constraint, literal, objectification_join)
+	    Compiler::VarRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, value_constraint, literal, nested_clauses)
 	  end
 
 	  def value		# Sometimes we just want the full term name
@@ -153,8 +153,8 @@ module ActiveFacts
 	/
 	s head:id '-' s term	&{|s| s[4].ast.leading_adjective == nil }
 	{
-	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, objectification_join = nil
-	    ast = term.ast(quantifier, function_call, role_name, value_constraint, literal, objectification_join)
+	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, nested_clauses = nil
+	    ast = term.ast(quantifier, function_call, role_name, value_constraint, literal, nested_clauses)
 	    ast.leading_adjective = head.text_value
 	    ast
 	  end

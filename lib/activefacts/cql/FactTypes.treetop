@@ -93,7 +93,7 @@ module ActiveFacts
 	    r = contracted_clauses.ast	# An array of clause asts
 	    r[0].conjunction = conjunction
 	    # pre-qualifiers apply to the first clause, post_qualifiers and context_note to the last
-	    # REVISIT: This may be incorrect where the last is an objectification join
+	    # REVISIT: This may be incorrect where the last is a nested clause
 	    r[0].qualifiers << q.text_value unless q.empty?
 	    r[-1].qualifiers += p.list unless p.empty?
 	    r[-1].context_note = c.ast unless c.empty?
@@ -272,14 +272,15 @@ module ActiveFacts
 	      raise "It is not permitted to provide both a literal value and a value constraint" if value_constraint and literal
 	    end
 
-	    objectification_join = if oj.empty?
+	    nested_clauses =
+	      if oj.empty?
 		nil
 	      else
 		ast = oj.ast
 		ast[0].conjunction = 'where'
 		ast
 	      end
-	    player.ast(quantifier, value_constraint, literal, objectification_join)
+	    player.ast(quantifier, value_constraint, literal, nested_clauses)
 	  end
         }
       end

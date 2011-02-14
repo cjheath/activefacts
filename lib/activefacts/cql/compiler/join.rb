@@ -46,8 +46,8 @@ module ActiveFacts
                 # Create the JoinNode and JoinRole in any case though.
                 refs_count = variable.refs.size
                 objectification_ref_count = 0
-                if var_ref.objectification_join
-                  var_ref.objectification_join.each do |ojc|
+                if var_ref.nested_clauses
+                  var_ref.nested_clauses.each do |ojc|
                     objectification_ref_count += ojc.var_refs.select{|var_ref| var_ref.variable.refs.size > 1}.size
                   end
                 end
@@ -101,13 +101,13 @@ module ActiveFacts
                 end
               end
 
-              if var_ref.objectification_join
+              if var_ref.nested_clauses
                 # We are looking at a role whose player is an objectification of a fact type,
                 # which will have ImplicitFactTypes for each role.
                 # Each of these ImplicitFactTypes has a single phantom role played by the objectifying entity type
                 # One of these phantom roles is likely to be the subject of an objectification join step.
-                var_ref.objectification_join.each do |r|
-                  debug :join, "Building objectification join for #{var_ref.objectification_join.inspect}" do
+                var_ref.nested_clauses.each do |r|
+                  debug :join, "Building objectification join for #{var_ref.nested_clauses.inspect}" do
                     build_join_steps r, roles_by_variable, variable.join_node
                   end
                 end
@@ -137,7 +137,7 @@ module ActiveFacts
         def all_variables_in_clauses clauses
           clauses.map do |clause|
             clause.var_refs.map do |var_ref|
-              [var_ref.variable] + (var_ref.objectification_join ? all_variables_in_clauses(var_ref.objectification_join) : [])
+              [var_ref.variable] + (var_ref.nested_clauses ? all_variables_in_clauses(var_ref.nested_clauses) : [])
             end
           end.
             flatten.

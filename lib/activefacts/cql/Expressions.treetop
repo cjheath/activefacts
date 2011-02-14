@@ -55,9 +55,9 @@ module ActiveFacts
       rule derived_variable
         variable:term s p:function_call* role_id:(role_name / subscript )?
         {
-	  def ast quantifier = nil, value_constraint = nil, literal = nil, objectification_join = nil
+	  def ast quantifier = nil, value_constraint = nil, literal = nil, nested_clauses = nil
 	    role_name = role_id.empty? ? nil : role_id.value
-	    var = variable.ast(quantifier, nil, role_name, value_constraint, literal, objectification_join)
+	    var = variable.ast(quantifier, nil, role_name, value_constraint, literal, nested_clauses)
 	    if p.empty?
 	      var
 	    else

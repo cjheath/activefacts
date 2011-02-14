@@ -42,7 +42,7 @@ module ActiveFacts
         def match_condition_fact_types
           @conditions.each do |condition|
             next if condition.is_naked_object_type
-            # REVISIT: Many conditions will imply a number of differnt join steps, which need to be handled (similar to objectification joins).
+            # REVISIT: Many conditions will imply a number of different join steps, which need to be handled (similar to nested_clauses).
             fact_type = condition.match_existing_fact_type @context
             raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
           end

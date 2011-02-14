@@ -47,8 +47,8 @@ module ActiveFacts
             next unless l = var_ref.literal    # No literal
             next if var_ref.variable.instance   # Already bound
             player = var_ref.variable.player
-            # raise "A literal may not be an objectification" if var_ref.role_ref.objectification_join
-            # raise "Not processing facts involving objectification joins yet" if var_ref.role_ref
+            # raise "A literal may not be an objectification" if var_ref.role_ref.nested_clauses
+            # raise "Not processing facts involving nested clauses yet" if var_ref.role_ref
             debug :instance, "Making #{player.class.basename} #{player.name} using #{l.inspect}" do
               var_ref.variable.instance = instance_identified_by_literal(player, l)
             end
@@ -56,7 +56,7 @@ module ActiveFacts
           end
 
           if clause.phrases.size == 1 and (var_ref = clause.phrases[0]).is_a?(Compiler::VarRef)
-            if var_ref.objectification_join
+            if var_ref.nested_clauses
               # Assign the objectified fact type as this clause's fact type?
               clause.fact_type = var_ref.player.fact_type
               clause
@@ -129,7 +129,7 @@ module ActiveFacts
         # Occasionally we need to search through all the clauses:
         def all_clauses
           @clauses.map do |clause|
-            [clause] + clause.var_refs.map{|vr| vr.objectification_join}
+            [clause] + clause.var_refs.map{|vr| vr.nested_clauses}
           end.flatten.compact
         end
 

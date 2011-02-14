@@ -197,7 +197,7 @@ module ActiveFacts
         def compile
           @clauses = @clauses_lists.map do |clauses_list|
             raise "REVISIT: Join presence constraints not supported yet" if clauses_list.size > 1 or
-              clauses_list.detect{|clause| clause.var_refs.detect{|vr| vr.objectification_join } }
+              clauses_list.detect{|clause| clause.var_refs.detect{|vr| vr.nested_clauses } }
             clauses_list[0]
           end
 
@@ -279,7 +279,7 @@ module ActiveFacts
               map do |clauses_list, variables|
             # Does this clauses_list involve a join?
             if clauses_list.size > 1 or
-              clauses_list.detect{|clause| clause.var_refs.detect{|var_ref| var_ref.objectification_join } }
+              clauses_list.detect{|clause| clause.var_refs.detect{|var_ref| var_ref.nested_clauses } }
 
               debug :join, "Building join for #{clauses_list.inspect}" do
                 debug :join, "Constrained variables are #{@common_variables.inspect}"

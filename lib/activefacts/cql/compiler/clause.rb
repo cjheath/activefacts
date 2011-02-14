@@ -5,7 +5,7 @@ module ActiveFacts
       class Clause
         attr_reader :phrases
         attr_accessor :qualifiers, :context_note
-        attr_accessor :conjunction      # one of {nil, 'and', ',', 'or'} LATER: 'where' for objectification joins
+        attr_accessor :conjunction      # one of {nil, 'and', ',', 'or', 'where'}
         attr_reader :fact_type, :reading, :role_sequence    # These are the Metamodel objects
         attr_reader :side_effects
         attr_writer :fact_type          # Assigned for a bare (existential) objectification fact
@@ -47,7 +47,7 @@ module ActiveFacts
             @phrases.inject(""){|s, p|
               if VarRef === p
                 s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s +
-                  ((oj = p.objectification_join) ?  ' ('+ oj.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' ' + ')' : '') +
+                  ((oj = p.nested_clauses) ?  ' ('+ oj.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' ' + ')' : '') +
                 ' '
               elsif FunctionCallChain === p
                 s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s
@@ -65,21 +65,21 @@ module ActiveFacts
         def identify_players_with_role_name context
           var_refs.each do |var_ref|
             var_ref.identify_player(context) if var_ref.role_name
-            # Include players in an objectification join, if any
-            var_ref.objectification_join.each{|clause| clause.identify_players_with_role_name(context)} if var_ref.objectification_join
+            # Include players in nested clauses, if any
+            var_ref.nested_clauses.each{|clause| clause.identify_players_with_role_name(context)} if var_ref.nested_clauses
           end
         end
 
         def identify_other_players context
           var_refs.each do |var_ref|
             var_ref.identify_player(context) unless var_ref.player
-            # Include players in an objectification join, if any
-            var_ref.objectification_join.each{|clause| clause.identify_other_players(context)} if var_ref.objectification_join
+            # Include players in nested clauses, if any
+            var_ref.nested_clauses.each{|clause| clause.identify_other_players(context)} if var_ref.nested_clauses
           end
         end
 
         def includes_literals
-          var_refs.detect{|var_ref| var_ref.literal || (ja = var_ref.objectification_join and ja.detect{|jr| jr.includes_literals })}
+          var_refs.detect{|var_ref| var_ref.literal || (ja = var_ref.nested_clauses and ja.detect{|jr| jr.includes_literals })}
         end
 
         def is_equality_comparison
@@ -97,8 +97,8 @@ module ActiveFacts
 
           var_refs.each do |var_ref|
             var_ref.bind context
-            # Include players in an objectification join, if any
-            var_ref.objectification_join.each{|clause| clause.bind_roles(context)} if var_ref.objectification_join
+            # Include players in nested clauses, if any
+            var_ref.nested_clauses.each{|clause| clause.bind_roles(context)} if var_ref.nested_clauses
           end
         end
 
@@ -147,11 +147,11 @@ module ActiveFacts
             debug :matching, "Looking for existing #{players.size}-ary fact types matching '#{contracted_role && contracted_role.inspect+' '}#{inspect}'" do
               debug :matching, "Players are '#{player_names.inspect}'"
 
-              # Match existing fact types in objectification joins first (not for contractions):
+              # Match existing fact types in nested clauses first (not for contractions):
               if !contracted_role
                 vrs.each do |var_ref|
-                  next unless joins = var_ref.objectification_join and !joins.empty?
-                  var_ref.objectification_join.each do |oj|
+                  next unless joins = var_ref.nested_clauses and !joins.empty?
+                  var_ref.nested_clauses.each do |oj|
                     ft = oj.match_existing_fact_type(context)
                     raise "Unrecognised fact type #{oj.display}" unless ft
                     if (ft && ft.entity_type == var_ref.player)
@@ -752,19 +752,19 @@ module ActiveFacts
       end
 
       class VarRef
-        attr_reader :term, :trailing_adjective, :quantifier, :function_call, :role_name, :value_constraint, :literal, :objectification_join
+        attr_reader :term, :trailing_adjective, :quantifier, :function_call, :role_name, :value_constraint, :literal, :nested_clauses
         attr_accessor :leading_adjective, :trailing_adjective
         attr_accessor :player
         attr_accessor :variable
         attr_accessor :clause    # The clause that this VarRef is part of
         attr_accessor :role       # This refers to the ActiveFacts::Metamodel::Role
         attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
-        attr_accessor :objectification_of # If objectification_join is set, this is the fact type it objectifies
+        attr_accessor :objectification_of # If nested_clauses is set, this is the fact type it objectifies
         attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
         attr_writer :leading_adjective
         attr_writer :role_name    # For assigning subscript when found in identifying roles list
 
-        def initialize term, leading_adjective = nil, trailing_adjective = nil, quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, objectification_join = nil
+        def initialize term, leading_adjective = nil, trailing_adjective = nil, quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, nested_clauses = nil
           @term = term
           @leading_adjective = leading_adjective
           @trailing_adjective = trailing_adjective
@@ -773,7 +773,7 @@ module ActiveFacts
           @role_name = role_name
           @value_constraint = value_constraint
           @literal = literal
-          @objectification_join = objectification_join
+          @nested_clauses = nested_clauses
         end
 
         def inspect
@@ -806,7 +806,7 @@ module ActiveFacts
         end
 
         def includes_literals
-          @objectification_join && @objectification_join.detect{|oj| oj.includes_literals}
+          @nested_clauses && @nested_clauses.detect{|oj| oj.includes_literals}
         end
 
         def identify_player context
