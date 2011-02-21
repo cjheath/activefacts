@@ -70,14 +70,12 @@ module ActiveFacts
           # Override for constraint types that need loose binding (same role player matching with different adjectives)
         end
 
-        def bind_clauses
+        def bind_clauses extra = []
           @context = CompilationContext.new(@vocabulary)
           @context.left_contraction_allowed = true
 
+          @context.bind @clauses_lists, extra
           @clauses_lists.map do |clauses_list|
-            clauses_list.each{ |clause| clause.identify_players_with_role_name(@context) }
-            clauses_list.each{ |clause| clause.identify_other_players(@context) }
-            clauses_list.each{ |clause| clause.bind_roles @context }  # Create the Variables
             @context.left_contractable_clause = nil # Don't contract outside this set of clauses
             clauses_list.each do |clause| 
               fact_type = clause.match_existing_fact_type @context
@@ -85,6 +83,8 @@ module ActiveFacts
             end
           end
 
+          # Any constrained roles will be first identified here.
+          # This means that they can't introduce role names.
           loose_binding
 
           # Ok, we have bound all players by subscript/role_name, by adjectives, and by loose binding,
@@ -141,12 +141,10 @@ module ActiveFacts
           end
         end
 
-        def loose_bind_roles
+        def loose_bind
           # Apply loose binding over applicable @roles:
           debug :binding, "Check for loose bindings on #{@roles.size} roles in #{self.class.name}" do
             @roles.each do |var_ref|
-              var_ref.identify_player @context
-              var_ref.bind @context
               if var_ref.variable.refs.size < @clauses_lists.size+1
                 debug :binding, "Insufficient bindings for #{var_ref.inspect} (#{var_ref.variable.refs.size}, expected #{@clauses_lists.size+1}), attempting loose binding" do
                   @clauses_lists.each do |clauses_list|
@@ -201,10 +199,10 @@ module ActiveFacts
             clauses_list[0]
           end
 
-          bind_clauses
+          bind_clauses @var_refs
 
           if @var_refs.size > 0
-            bind_roles
+            bind_constrained_roles
           else
             cb = common_variables
             raise "Either/or must have only one duplicated role, not #{cb.inspect}" unless cb.size == 1
@@ -241,10 +239,8 @@ module ActiveFacts
           # loose_bind_wherever_possible
         end
 
-        def bind_roles
+        def bind_constrained_roles
           @var_refs.each do |var_ref|
-            var_ref.identify_player @context
-            var_ref.bind @context
             if var_ref.variable.refs.size == 1
               # Apply loose binding over the constrained roles
               candidates =
@@ -371,7 +367,7 @@ module ActiveFacts
         end
 
         def compile
-          bind_clauses
+          bind_clauses @roles
           common_variables
 
           role_sequences =
@@ -394,7 +390,7 @@ module ActiveFacts
           if @roles.size == 0
             loose_bind_wherever_possible
           else
-            loose_bind_roles
+            loose_bind
           end
         end
 

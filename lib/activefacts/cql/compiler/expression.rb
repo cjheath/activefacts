@@ -1,0 +1,420 @@
+module ActiveFacts
+  module CQL
+    class Compiler
+
+      # An Operation is a binary or ternary fact type involving an operator,
+      # a result, and one or two operands.
+      # Viewed as a result, it behaves like a VarRef with a nested Clause.
+      # Viewed as a fact type, it behaves like a Clause.
+      #
+      # The only exception here is an equality comparison, where it may
+      # turn out that the equality is merely a projection. In this case
+      # the Operation is dropped from the clauses and is replaced by the
+      # projected operand.
+      #
+      # Each operand may be a Literal, a VarRef, or another Operation,
+      # so we need to recurse down the tree to build the join.
+      #
+      class Operation
+        # VarRef (in)compatibility:
+        [ :term, :leading_adjective, :trailing_adjective, :role_name, :quantifier,
+          :value_constraint, :embedded_presence_constraint, :literal
+        ].each do |s|
+          define_method(s) { raise "Unexpected call to Operation\##{s}" }
+          define_method(:"#{s}=") { raise "Unexpected call to Operation\##{s}=" }
+        end
+        def role_name; nil; end
+        attr_accessor :player     # What ObjectType does the Variable denote
+        attr_accessor :variable   # What Variable for that ObjectType
+        attr_accessor :clause     # What clause does the result participate in?
+        attr_accessor :role       # Which Role of this ObjectType
+        attr_accessor :role_ref   # Which RoleRef to that Role
+        def nested_clauses; @nested_clauses ||= [self]; end
+        def clause; self; end
+        def objectification_of; @fact_type; end
+
+        # Clause (in)compatibility:
+        [ :phrases, :qualifiers, :context_note, :reading, :role_sequence, :fact
+        ].each do |s|
+          define_method(s) { raise "Unexpected call to Operation\##{s}" }
+          define_method(:"#{s}=") { raise "Unexpected call to Operation\##{s}=" }
+        end
+        def conjunction; nil; end
+        attr_reader :fact_type
+        def objectified_as; self; end   # The VarRef which objectified this fact type
+
+        def operands context = nil
+          raise "REVISIT: Implement operand enumeration in the operator subclass #{self.class.name}"
+        end
+
+        def identify_players_with_role_name context
+          # Just recurse, there's no way (yet: REVISIT?) to add a role name to the result of an expression
+          var_refs.each { |o|
+            o.identify_players_with_role_name(context)
+          }
+          # As yet, an operation cannot have a role name:
+          # identify_player context if role_name
+        end
+
+        def identify_other_players context
+          # Just recurse, there's no way (yet: REVISIT?) to add a role name to the result of an expression
+          var_refs.each { |o|
+            o.identify_other_players(context)
+          }
+          identify_player context
+        end
+
+        def bind context
+          var_refs.each do |o|
+            o.bind context
+          end
+          r = result(context)
+          r.bind context
+        end
+
+        # Return a VarRef that refers to the result role of the operator fact type
+        # It must not be called until the players are all identified and bound.
+        def result(context)
+          @result or begin
+            name = result_type_name(context)
+            @result = VarRef.new(result_type_name(context))
+            @result.player = result_value_type(context, name)
+            @result
+          end
+        end
+
+        def result_type_name(context)
+          raise "REVISIT: Implement result_type_name in the #{self.class.name} subclass"
+        end
+
+        def result_value_type(context, name)
+          vocabulary = context.vocabulary
+          constellation = vocabulary.constellation
+          constellation.ValueType(vocabulary, name)
+        end
+
+        def is_naked_object_type
+          false # All Operations are non-naked
+        end
+
+        def match_existing_fact_type context
+          opnds = var_refs
+          clause_ast = Clause.new(
+              (opnds.size > 1 ? [opnds[0]] : []) + [operator, opnds[-1]]
+            )
+
+          # REVISIT: All operands must be value-types or simply-identified Entity Types.
+
+          # REVISIT: We should auto-create joins from Entity Types to an identifying ValueType
+          # REVISIT: We should traverse up the supertype of ValueTypes to find a DataType
+          @fact_type = clause_ast.match_existing_fact_type(context, :exact_type => true)
+          return @fact_type if @fact_type
+
+          @fact_type = clause_ast.make_fact_type context.vocabulary
+          reading = clause_ast.make_reading context.vocabulary, @fact_type
+          rrs = reading.role_sequence.all_role_ref_in_order
+          opnds[0].role_ref = rrs[0]
+          opnds[-1].role_ref = rrs[-1]
+          @fact_type
+        end
+
+        def is_existential_type
+          false
+        end
+
+        def is_equality_comparison
+          false
+        end
+
+        def operator
+          raise "REVISIT: Implement operator access in the operator subclass #{self.class.name}"
+        end
+
+=begin
+        def includes_literals
+          var_refs.detect{|o|
+            o.includes_literals
+          }
+        end
+=end
+      end
+
+      class Comparison < Operation
+        attr_accessor :operator, :e1, :e2, :qualifiers, :conjunction
+
+        def initialize operator, e1, e2, qualifiers = []
+          @operator, @e1, @e2, @qualifiers = operator, e1, e2, qualifiers
+        end
+
+        def var_refs
+          [@e1, @e2]
+        end
+
+        def result(context)
+          return @result = nil if @projection
+          @result ||= begin
+            result = VarRef.new('Boolean')
+            result.player = result_value_type(context, 'Boolean')
+            result
+          end
+        end
+
+        def result_type_name(context)
+          "compare#{operator}(#{[@e1,@e2].map{|e| e.result(context).player.name}*', '}))"
+        end
+
+        def is_equality_comparison
+          @operator == '='
+        end
+
+        def identify_player context
+          @player || begin
+            if @projection
+              raise "REVISIT: The player is the projected expression"
+            end
+            v = context.vocabulary
+            @player = v.constellation.ValueType(v, 'Boolean')
+          end
+        end
+
+=begin
+        def project lr
+          @projection = lr
+          projected_rr = lr == :left ? @e2 : @e1
+          true
+        end
+=end
+
+        def inspect; to_s; end
+
+        def to_s
+          "compare#{operator}(#{e1.to_s} #{e2.to_s}#{@qualifiers.empty? ? '' : ', ['+@qualifiers*', '+']'})"
+        end
+      end
+
+      class Sum < Operation
+        attr_accessor :terms
+        def initialize *terms
+          @terms = terms
+        end
+
+        def var_refs
+          @terms
+        end
+
+        def operator
+          '+'
+        end
+
+        def identify_player context
+          @player || begin
+            # The players in the @terms have already been identified
+            # REVISIT: Check compliance of all units in @terms, and apply conversions where necessary
+            # REVISIT: The type of this result should be derived from type promotion rules. Here, we take the left-most.
+            # REVISIT: We should define a subtype of the result type here, and apply the units to it.
+            v = context.vocabulary
+            @player = @terms[0].player
+            puts "Assigning player for '#{to_s}' to #{@player.name}"
+            @player
+          end
+        end
+
+        def result_type_name(context)
+          puts "Getting Sum@result_type_name for '#{to_s}'"
+          "sum(#{ @terms.map{|f| f.result(context).player.name}*', ' })"
+        end
+
+=begin
+        def result_value_type(context, name)
+          # REVISIT: If there are units involved, check compatibility
+          vt = super
+          vt
+        end
+=end
+
+        def inspect; to_s; end
+
+        def to_s
+          'sum(' + @terms.map{|term| "#{term.to_s}" } * ' ' + ')'
+        end
+      end
+
+      class Product < Operation
+        attr_accessor :factors
+        def initialize *factors
+          @factors = factors
+        end
+
+        def var_refs
+          @factors
+        end
+
+        def operator
+          '*'
+        end
+
+        def identify_player context
+          @player || begin
+            # The players in the @factors have already been identified
+            # REVISIT: Calculate the units of the result from the units in @factors
+            # REVISIT: The type of this result should be derived from type promotion rules. Here, we take the left-most.
+            # REVISIT: We should define a subtype of the result type here, and apply the units to it.
+            v = context.vocabulary
+            @player = @factors[0].player
+          end
+        end
+
+        def result_type_name(context)
+          "product(#{ @factors.map{|f| f.result(context).player.name}*', ' })"
+        end
+
+=begin
+        def result_value_type(context, name)
+          vt = super
+          # REVISIT: If there are units involved, create the result units
+          vt
+        end
+=end
+
+        def inspect; to_s; end
+
+        def to_s
+          'product(' + @factors.map{|factor| "#{factor.to_s}" } * ' ' + ')'
+        end
+      end
+
+      class Reciprocal < Operation
+        attr_accessor :divisor
+        def initialize divisor
+          @divisor = divisor
+        end
+
+        def operator
+          '1/'
+        end
+
+        def var_refs
+          [@divisor]
+        end
+
+        def identify_player context
+          @player || begin
+            # The player in @divisor has already been identified
+            # REVISIT: Calculate the units of the result from the units in @divisor
+            # REVISIT: Do we want integer division?
+            v = context.vocabulary
+            @player = v.constellation.ValueType(v, 'Real')
+          end
+        end
+
+=begin
+        def result(context)
+          raise hell
+          @result ||= VarRef.new(divisor.result(context).player.name)
+        end
+=end
+
+        def inspect; to_s; end
+
+        def to_s
+          "reciprocal(#{factor.to_s})"
+        end
+      end
+
+      class Negate
+        attr_accessor :term
+        def initialize term
+          @term = term
+        end
+
+        def operator
+          '0-'
+        end
+
+        def identify_player context
+          @player || begin
+            # The player in @term have already been identified
+            v = context.vocabulary
+            @player = @term.player
+          end
+        end
+
+=begin
+        def result(context)
+          raise hell
+          @result ||= VarRef.new(term.result(context).player.name)
+        end
+=end
+
+        def inspect; to_s; end
+
+        def to_s
+          "negate(#{term.to_s})"
+        end
+      end
+
+      class Literal
+        attr_accessor :literal, :unit, :role, :role_ref, :clause
+        attr_reader :objectification_of, :leading_adjective, :trailing_adjective, :value_constraint
+
+        def initialize literal, unit
+          @literal, @unit = literal, unit
+        end
+
+        # Stubs:
+        def role_name; nil; end
+        def nested_clauses; nil; end
+
+        def inspect; to_s; end
+
+        def to_s
+          unit ? "(#{@literal.to_s} in #{unit.to_s})" : @literal.to_s
+        end
+
+        def player
+          @player
+        end
+
+        def identify_players_with_role_name(context)
+          # Nothing to do here, move along
+        end
+
+        def identify_other_players(context)
+          identify_player context
+        end
+
+        def identify_player context
+          @player || begin
+            player_name = 
+              case @literal
+              when String; 'String'
+              when Float; 'Real'
+              when Numeric; 'Integer'
+              when TrueClass, FalseClass; 'Boolean'
+              end
+            v = context.vocabulary
+            @player = v.constellation.ValueType(v, player_name)
+          end
+        end
+
+        def bind context
+          @variable || begin
+            key = "#{@player.name} #{@literal}"
+            @variable = (context.variables[key] ||= Variable.new(@player))
+            @variable.refs << self
+          end
+        end
+
+        def result(context)
+          self
+        end
+
+        def variable
+          @variable
+        end
+
+      end
+
+    end
+  end
+end

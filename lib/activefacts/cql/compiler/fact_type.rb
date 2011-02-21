@@ -9,16 +9,14 @@ module ActiveFacts
         def initialize name, conditions = nil, returning = nil
           super name
           @conditions = conditions
-          @returning = returning
+          @returning = returning || []
         end
 
         def prepare_roles clauses = nil
-          @context ||= CompilationContext.new(@vocabulary)
-          clauses = (clauses || []) + @conditions
-          clauses.each{ |clause| clause.identify_players_with_role_name(@context) }
-          clauses.each{ |clause| clause.identify_other_players(@context) }
-          # REVISIT: identify and bind players in @returning clauses also.
-          clauses.each{ |clause| clause.bind_roles @context }  # Create the Variables
+          debug :binding, "preparing roles" do
+            @context ||= CompilationContext.new(@vocabulary)
+            @context.bind clauses||[], @conditions, @returning
+          end
         end
 
         def compile
@@ -30,10 +28,12 @@ module ActiveFacts
 
           # Build the join:
           unless @conditions.empty? and !@returning
-            @join = build_join_nodes(@conditions.flatten)
-            @roles_by_variable = build_all_join_steps(@conditions)
-            @join.validate
-            @join
+            debug :join, "building fact_type join" do
+              @join = build_join_nodes(@conditions.flatten)
+              @roles_by_variable = build_all_join_steps(@conditions)
+              @join.validate
+              @join
+            end
           end
           @context.left_contraction_allowed = false
           @join
@@ -43,9 +43,24 @@ module ActiveFacts
           @conditions.each do |condition|
             next if condition.is_naked_object_type
             # REVISIT: Many conditions will imply a number of different join steps, which need to be handled (similar to nested_clauses).
-            fact_type = condition.match_existing_fact_type @context
-            raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
+            debug :projection, "matching condition fact_type #{condition.inspect}" do
+              fact_type = condition.match_existing_fact_type @context
+              raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
+            end
           end
+        end
+
+        def detect_projection_by_equality condition
+          return false unless condition.is_a?(Comparison)
+          if is_projected_role(condition.e1)
+            condition.project :left
+          elsif is_projected_role(condition.e2)
+            condition.project :right
+          end
+        end
+
+        def is_projected_role(rr)
+          false
         end
       end
 
@@ -58,6 +73,10 @@ module ActiveFacts
         def initialize name, clauses, conditions = nil, returning = nil
           super name, conditions, returning
           @clauses = clauses
+          if ec = @clauses.detect{|r| r.is_equality_comparison}
+            @clauses.delete(ec)
+            @conditions.unshift(ec)
+          end
         end
 
         def compile
@@ -158,12 +177,22 @@ module ActiveFacts
           end
         end
 
+        # A Comparison in the conditions which projects a role is not treated as a comparison, just as projection
+        def is_projected_role(rr)
+          # rr is a RoleRef on one side of the comparison.
+          # If its binding contains a reference from our readings, it's projected.
+          rr.variable.refs.detect do |ref|
+            @readings.include?(ref.reading)
+          end
+        end
+
         def check_compatibility_of_matched_clauses
           # REVISIT: If we have conditions, we must match all given clauses exactly (no side-effects)
           @existing_clauses = @clauses.
             select{ |clause| clause.match_existing_fact_type @context }.
             sort_by{ |clause| clause.side_effects.cost }
           fact_types = @existing_clauses.map{ |clause| clause.fact_type }.uniq.compact
+
           return nil if fact_types.empty?
           # If there's only a single clause, the match must be exact:
           return nil if @clauses.size == 1 && @existing_clauses[0].side_effects.cost != 0
@@ -313,346 +342,6 @@ module ActiveFacts
           # REVISIT: @returning = returning
         end
       end
-
-      # An Operation invokes a binary fact type with a unary operator,
-      # or a ternary fact type with a binary operator, of the forms:
-      # Result = <op> Value1
-      # Result = Value1 <op> Value2
-      # where the value type of Result is determined from the arguments
-      #
-      # Each Value may be a Literal, a VarRef, or another Operation,
-      # so we need to recurse down the tree to build the join.
-      class Operation
-        attr_reader :fact_type
-
-        def identify_players_with_role_name context
-          @context ||= context
-          all_operands.each { |o|
-            o.identify_player(context) if o.is_a?(VarRef) && o.role_name
-          }
-        end
-
-        def identify_other_players context
-          all_operands.each { |o|
-            o.identify_player(context) if o.is_a?(VarRef) && !o.role_name
-          }
-        end
-
-        def bind_roles context
-          @context ||= context
-          all_operands.each do |o|
-            o.bind context if o.is_a?(VarRef)
-          end
-        end
-
-        def is_naked_object_type
-          false
-        end
-
-        def includes_literals
-          operand_asts.detect{|o|
-            o.includes_literals
-          }
-        end
-
-        def is_equality_comparison
-          false
-        end
-
-        def operator
-          raise "REVISIT: Implement operator access in the operator subclass #{self.class.name}"
-        end
-
-        def operand_asts
-          raise "REVISIT: Implement operand AST enumeration in the operator subclass #{self.class.name}"
-        end
-
-        def operands context = nil
-          raise "REVISIT: Implement operand enumeration in the operator subclass #{self.class.name}"
-        end
-
-        # Return a VarRef that refers to the result role of the operator fact type
-        # It must not be called until the players are all identified and bound.
-        def result
-          raise "REVISIT: Implement result production in the operator subclasses"
-        end
-
-        def var_refs
-          operands @context
-        end
-
-        def match_existing_fact_type context
-          opnds = operands(context)
-          clause_ast = Clause.new(
-              (opnds.size > 1 ? [opnds[0]] : []) + [operator, opnds[-1]]
-            )
-
-          # REVISIT: All operands must be value-types or simply-identified Entity Types.
-
-          # REVISIT: We should auto-create joins from Entity Types to an identifying ValueType
-          # REVISIT: We should traverse up the supertype of ValueTypes to find a DataType
-          @fact_type = clause_ast.match_existing_fact_type(context, :exact_type => true)
-          return @fact_type if @fact_type
-
-          @fact_type = clause_ast.make_fact_type context.vocabulary
-          clause_ast.make_reading context.vocabulary, @fact_type
-          @fact_type
-        end
-      end
-
-        class Comparison < Operation
-        attr_accessor :operator, :e1, :e2, :qualifiers, :conjunction
-        def initialize operator, e1, e2, qualifiers = []
-          @operator, @e1, @e2, @qualifiers = operator, e1, e2, qualifiers
-        end
-
-        def leaf_operand
-          nil
-        end
-
-        def operand_asts
-          [@e1, @e2]
-        end
-
-        def operands(context)
-          operand_asts.map{|t| t.result(context)}
-        end
-
-        def all_operands
-          Array(e1.leaf_operand || e1.all_operands) +
-            Array(e2.leaf_operand || e2.all_operands)
-        end
-
-        def result o
-          @result ||= VarRef.new('Boolean')
-        end
-
-        def is_equality_comparison
-          @operator == '='
-        end
-
-        def to_s
-        "(#{operator} #{e1.to_s} #{e2.to_s}#{@qualifiers.empty? ? '' : ', ['+@qualifiers*', '+']'})"
-        end
-      end
-
-      class Sum < Operation
-        attr_accessor :terms
-        def initialize *terms
-          @terms = terms
-        end
-
-        def operator
-          '+'
-        end
-
-        def operand_asts
-          terms
-        end
-
-        def operands(context)
-          terms.map{|t| t.result(context)}
-        end
-
-        def all_operands
-          @terms.map{|t| Array(t.leaf_operand || t.all_operands) }.flatten
-        end
-
-        def var_refs
-          @terms
-        end
-
-        def result(context)
-          # REVISIT: A sum has the type of its first operand. Do we want that?
-          @result ||= VarRef.new(@terms[0].result(context).player.name)
-        end
-
-        def to_s
-          '(+ ' + @terms.map{|term| "#{term.to_s}" } * ' ' + ')'
-        end
-      end
-
-      class Product < Operation
-        attr_accessor :factors
-        def initialize *factors
-          @factors = factors
-        end
-
-        def operator
-          '*'
-        end
-
-        def operand_asts
-          @factors
-        end
-
-        def operands(context)
-          @factors.map{|t| t.result(context)}
-        end
-
-        def all_operands
-          @factors.map{|f| Array(f.leaf_operand || f.all_operands) }.flatten
-        end
-
-        def var_refs
-          @factors
-        end
-
-        def result(context)
-          # REVISIT: A product has the type of its first operand. Do we want that?
-          @result ||= VarRef.new(@factors[0].result(context).player.name)
-        end
-
-        def to_s
-          '(* ' + @factors.map{|factor| "#{factor.to_s}" } * ' ' + ')'
-        end
-      end
-
-      class Reciprocal < Operation
-        attr_accessor :divisor
-        def initialize divisor
-          @divisor = divisor
-        end
-
-        def operator
-          '1/'
-        end
-
-        def operand_asts
-          [@divisor]
-        end
-
-        def operands(context)
-          [@divisor.result(context)]
-        end
-
-        def all_operands
-          Array(@divisor.leaf_operand || @divisor.all_operands)
-        end
-
-        def result(context)
-          @result ||= VarRef.new(divisor.result(context).player.name)
-        end
-
-        def to_s
-          "(/ #{factor.to_s})"
-        end
-      end
-
-      class Negate
-        attr_accessor :term
-        def initialize term
-          @term = term
-        end
-
-        def operator
-          '0-'
-        end
-
-        def operand_asts
-          [@term]
-        end
-
-        def operands(context)
-          [@term.result(context)]
-        end
-
-        def all_operands
-          Array(@term.leaf_operand || @term.all_operands)
-        end
-
-        def result(context)
-          @result ||= VarRef.new(term.result(context).player.name)
-        end
-
-        def to_s
-          "(- #{term.to_s})"
-        end
-      end
-
-      class FunctionCallChain
-        attr_accessor :variable, :calls
-        def initialize var, *calls
-          @variable = var
-          @calls = calls
-        end
-
-        def operand_asts
-          [@variable]
-        end
-
-        def operands(context)
-          [@variable.result(context)]
-        end
-
-        def result
-          # REVISIT: We need to know the result type for each function
-          # Here, assume Integer (works for count at least!)
-          @result ||= VarRef.new('Integer')
-        end
-
-        def all_operands
-          Array(@variable.leaf_operand || @variable.all_operands)
-        end
-
-        def to_s
-          @variable.to_s + @calls.map{|call| '.'+call.to_s} * ''
-        end
-      end
-
-      class FunctionCall
-        attr_accessor :name, :params
-        def initialize name, *params
-          @name = name
-          @params = params
-        end
-
-        def to_s
-          "#{@name}(#{@params.map{|param| param.to_s}*', '})"
-        end
-      end
-
-      class Literal
-        attr_accessor :literal, :unit
-        def initialize literal, unit
-          @literal, @unit = literal, unit
-        end
-
-        def to_s
-          unit ? "(#{@literal.to_s} in #{unit.to_s})" : @literal.to_s
-        end
-
-        def leaf_operand
-          self
-        end
-
-        def kind
-          case @literal
-          when String; 'String'
-          when Float; 'Real'
-          when Numeric; 'Integer'
-          when TrueClass, FalseClass; 'Boolean'
-          end
-        end
-
-        def includes_literals
-          true
-        end
-
-        def result(context)
-          return @result if @result
-          vt_name = kind
-          (v = context.vocabulary).constellation.ValueType(v, vt_name)
-          @result = VarRef.new(
-            vt_name, nil, nil, nil, nil, nil, nil, @literal
-          )
-          @result.identify_player context
-          @result.bind context
-          @result
-        end
-
-      end
-
     end
   end
 end

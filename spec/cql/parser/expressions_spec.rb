@@ -17,7 +17,7 @@ describe "ASTs from Derived Fact Types with expressions" do
     }.should parse_to_ast \
       %q{FactType: [{Director} "is old"] where {Person} "directs" {Company} ,
         {Person} "is of" {Age} ,
-        (> {Age} 60)}
+        compare>({Age} 60)}
   end
 
   it "should parse a comparison clause with subscripts" do
@@ -29,7 +29,7 @@ describe "ASTs from Derived Fact Types with expressions" do
         where {Person} "directs" {Company} ,
         {Person} "has" {Salary(2)} ,
         {Person} "is of" {Age(1)} ,
-        (> {Age(1)} {Salary(2)})
+        compare>({Age(1)} {Salary(2)})
       }
   end
 
@@ -38,7 +38,7 @@ describe "ASTs from Derived Fact Types with expressions" do
       Person is independent: Person has taxable- Income and taxable Income >= 20000 dollars or Person has sugar-Daddy;
     }.should parse_to_ast \
       %q{FactType: [{Person} "is independent"] where {Person} "has" {taxable- Income} and
-        (>= {taxable- Income} (20000 in dollars)) or {Person} "has" {sugar- Daddy}}
+        compare>=({taxable- Income} (20000 in dollars)) or {Person} "has" {sugar- Daddy}}
   end
 
   it "should parse a reading with a contracted comparison expression" do
@@ -47,7 +47,7 @@ describe "ASTs from Derived Fact Types with expressions" do
     }.should parse_to_ast \
       %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
         {Person} "is of" {Age}
-        > (> {Age} (+ 20 (* 2 20)))}
+        > compare>({Age} sum(20 product(2 20)))}
   end
 
   it "should parse a right-contracted comparison clause after a right-contracted clause" do
@@ -56,7 +56,7 @@ describe "ASTs from Derived Fact Types with expressions" do
     }.should parse_to_ast \
       %q{FactType: [{Director} "is old"] where {Company} "is directed by" {Person} who
         {Person} "is of" {Age} >
-        (> {Age} 60)}
+        compare>({Age} 60)}
   end
 
   it "should parse a simple reading with qualifiers" do
@@ -86,7 +86,7 @@ describe "ASTs from Derived Fact Types with expressions" do
       %q{FactType: [{Person(1)} "is ancestor of adult" {Person(2)}] where
         ["maybe", "transitive"] {Person(1)} "is parent of" {Person(2)}
         who ["maybe", "static"] {Person(2)} "is of" {Age}
-        >= (>= {Age} 21, [definitely])}
+        >= compare>=({Age} 21, [definitely])}
   end
 
   it "should parse a comparison expression with a contracted reading" do
@@ -94,7 +94,7 @@ describe "ASTs from Derived Fact Types with expressions" do
       Director is old: Person directs company, 3*30 >= Age that is of Person;
     }.should parse_to_ast \
       %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
-        (>= (* 3 30) {Age})
+        compare>=(product(3 30) {Age})
         that {Age} "is of" {Person}}
   end
 
@@ -104,8 +104,8 @@ describe "ASTs from Derived Fact Types with expressions" do
     }.should parse_to_ast \
       %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
         {Person} "is of" {Age} ,
-        (<= 20 {Age}, [maybe]) 
-        < (< {Age} 60, [definitely])}
+        compare<=(20 {Age}, [maybe]) 
+        < compare<({Age} 60, [definitely])}
   end
 
   it "should parse a comparison expression with right-contracted then left-contracted comparisons"
@@ -123,8 +123,8 @@ describe "ASTs from Derived Fact Types with expressions" do
       A is a farce: maybe A has completely- B [transitive, acyclic] < 5, B -c = 2;
     }.should parse_to_ast \
       %q{FactType: [{A} "is a farce"] where ["acyclic", "maybe", "transitive"] {A} "has" {completely- B}
-        < (< {completely- B} 5)
-        , (= {B -c} 2)}
+        < compare<({completely- B} 5)
+        , compare=({B -c} 2)}
   end
 
   it "should parse multiple leading and trailing adjectives with contracted comparisons" do
@@ -132,8 +132,8 @@ describe "ASTs from Derived Fact Types with expressions" do
       A is a farce: maybe A has completely- green B [transitive, acyclic] < 9, B c -d = 2;
     }.should parse_to_ast \
       %q{FactType: [{A} "is a farce"] where ["acyclic", "maybe", "transitive"] {A} "has" {completely- green B} 
-      < (< {completely- green B} 9)
-      , (= {B c -d} 2)}
+      < compare<({completely- green B} 9)
+      , compare=({B c -d} 2)}
   end
 
   it "should parse a comparison clause containing units" do
@@ -149,31 +149,16 @@ describe "ASTs from Derived Fact Types with expressions" do
       %q{ValueType: Width is written as Integer in [["mm", 1]];},
       %q{FactType: [{Window} "requires toughening"] where {Window} "has" {Width} ,
         {Window} "has" {Height}
-        , (>= (* {Width} {Height}) (10 in feet^2))}
+        , compare>=(product({Width} {Height}) (10 in feet^2))}
   end
 
-  it "should parse a fact type containing a function call" do
+  it "should parse nested expressions" do
     %q{
-      AnnualIncome is where
-        Person has total- Income in Year where
-          Person has total- Income.sum(),
-          Income was earned in current- Time.Year() (as Year);
+      A is written as B;
+      A > B+3*(4+5)?
     }.should parse_to_ast \
-      %q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}]
-        where {Person} "has" {total- Income}.sum() ,
-        {Income} "was earned in" {current- Time (as Year)}.Year()}
-  end
-
-  it "should parse a fact type containing a function call with subscripts" do
-    %q{
-      AnnualIncome is where
-        Person has total- Income in Year where
-          Person has total- Income.sum(),
-          Income was earned in current- Time.Year()(1);
-    }.should parse_to_ast \
-      %q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}]
-        where {Person} "has" {total- Income}.sum() ,
-        {Income} "was earned in" {current- Time(1)}.Year()}
+      %q{ValueType: A is written as B;},
+      %q{FactType: [] where compare>({A} sum({B} product(3 sum(4 5))))}
   end
 
   it "should parse a fact type containing an expression with subscripts"

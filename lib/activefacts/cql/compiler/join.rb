@@ -10,6 +10,10 @@ module ActiveFacts
               each do |variable|
                 debug :join, "Creating join node #{join.all_join_node.size} for #{variable.inspect}"
                 variable.join_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => variable.player)
+                if literal = variable.refs.detect{|r| r.literal}
+                  unit = @constellation.Unit.detect{|k, v| [v.name, v.plural_name].include? literal.unit} if literal.unit
+                  variable.join_node.value = [literal.literal.to_s, literal.is_a?(String), unit]
+                end
               end
             join
           end
@@ -93,9 +97,9 @@ module ActiveFacts
                     # I don't want to do this for now because the verbaliser will always verbalise all join steps.
                   if variable.join_node.object_type != role.object_type and
                     0 == (variable.join_node.object_type.supertypes_transitive & role.object_type.supertypes_transitive).size
-                    raise "Internal error: Trying to add role of #{role.object_type.name} to join node for #{variable.join_node.object_type.name} in '#{clause.fact_type.default_reading}'"
+                    raise "Internal error: Trying to add role of #{role.object_type.name} to join node #{variable.join_node.ordinal} for #{variable.join_node.object_type.name} in '#{clause.fact_type.default_reading}'"
                   end
-                  raise "Internal error: Trying to add role of #{role.object_type.name} to join node for #{variable.join_node.object_type.name}" unless variable.join_node.object_type == role.object_type
+                  raise "Internal error: Trying to add role of #{role.object_type.name} to join node #{variable.join_node.ordinal} for #{variable.join_node.object_type.name}" unless variable.join_node.object_type == role.object_type
                   join_role = @constellation.JoinRole(variable.join_node, role)
                   join_roles << join_role
                 end

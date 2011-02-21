@@ -12,10 +12,8 @@ module ActiveFacts
           @population = @constellation.Population(@vocabulary, @population_name)
 
           @context = CompilationContext.new(@vocabulary)
+          @context.bind @clauses
           @context.left_contraction_allowed = true
-          @clauses.each{ |clause| clause.identify_players_with_role_name(@context) }
-          @clauses.each{ |clause| clause.identify_other_players(@context) }
-          @clauses.each{ |clause| clause.bind_roles @context }
           @clauses.each{ |clause| clause.match_existing_fact_type @context }
 
           # Figure out the simple existential facts and find fact types:
@@ -147,7 +145,6 @@ module ActiveFacts
             fact = clause.fact_type.all_fact.detect do |f|
               # Get the role values of this fact in the order of the clause we just bound
               role_values_in_clause_order = f.all_role_value.sort_by do |rv|
-                debugger unless clause.reading
                 clause.reading.role_sequence.all_role_ref.detect{|rr| rr.role == rv.role}.ordinal
               end
               # If all this fact's role values are played by the bound instances, it's the same fact

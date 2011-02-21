@@ -6,9 +6,9 @@ module ActiveFacts
         attr_reader :phrases
         attr_accessor :qualifiers, :context_note
         attr_accessor :conjunction      # one of {nil, 'and', ',', 'or', 'where'}
-        attr_reader :fact_type, :reading, :role_sequence    # These are the Metamodel objects
-        attr_reader :side_effects
-        attr_writer :fact_type          # Assigned for a bare (existential) objectification fact
+        attr_accessor :fact_type
+        attr_reader :reading, :role_sequence    # These are the Metamodel objects
+        attr_reader :side_effects       # How to adjust the phrases if this fact_type match is accepted
         attr_accessor :fact             # When binding fact instances the fact goes here
         attr_accessor :objectified_as   # The VarRef which objectified this fact type
 
@@ -20,7 +20,7 @@ module ActiveFacts
         end
 
         def var_refs
-          @phrases.select{|r| r.is_a?(VarRef)}
+          @phrases.select{|r| r.respond_to?(:player)}
         end
 
         # A clause that contains only the name of a ObjectType and no literal or reading text
@@ -45,16 +45,17 @@ module ActiveFacts
           }#{
             quotes = false
             @phrases.inject(""){|s, p|
-              if VarRef === p
+              if String === p
+                s + (quotes ? '' : (quotes = true; '"')) + p.to_s + ' '
+#              REVISIT: Add something here when I re-add functions
+#              elsif FunctionCallChain === p
+#                s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s
+              else # if VarRef === p
                 s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s +
                   ((oj = p.nested_clauses) ?  ' ('+ oj.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' ' + ')' : '') +
                 ' '
-              elsif FunctionCallChain === p
-                s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s
-              elsif String === p
-                s + (quotes ? '' : (quotes = true; '"')) + p.to_s + ' '
-              else
-                raise "Unexpected phrase type in clause: #{p.to_s}"
+#              else
+#                raise "Unexpected phrase type in clause: #{p.to_s}"
               end
             }.sub(/ $/,'') + (quotes ? '"' : '')
           }#{
@@ -64,15 +65,13 @@ module ActiveFacts
 
         def identify_players_with_role_name context
           var_refs.each do |var_ref|
-            var_ref.identify_player(context) if var_ref.role_name
-            # Include players in nested clauses, if any
-            var_ref.nested_clauses.each{|clause| clause.identify_players_with_role_name(context)} if var_ref.nested_clauses
+            var_ref.identify_players_with_role_name(context)
           end
         end
 
         def identify_other_players context
           var_refs.each do |var_ref|
-            var_ref.identify_player(context) unless var_ref.player
+            var_ref.identify_other_players(context)
             # Include players in nested clauses, if any
             var_ref.nested_clauses.each{|clause| clause.identify_other_players(context)} if var_ref.nested_clauses
           end
@@ -86,7 +85,7 @@ module ActiveFacts
           false
         end
 
-        def bind_roles context
+        def bind context
           role_names = var_refs.map{ |var_ref| var_ref.role_name }.compact
 
           # Check uniqueness of role names and subscripts within this clause:
@@ -97,8 +96,6 @@ module ActiveFacts
 
           var_refs.each do |var_ref|
             var_ref.bind context
-            # Include players in nested clauses, if any
-            var_ref.nested_clauses.each{|clause| clause.bind_roles(context)} if var_ref.nested_clauses
           end
         end
 
@@ -318,7 +315,7 @@ module ActiveFacts
               intervening_words = []
               while (phrase = phrases[phrase_num])
                 phrase_num += 1
-                if phrase.is_a?(VarRef)
+                if phrase.respond_to?(:player)
                   next_player_phrase = phrase
                   next_player_phrase_num = phrase_num-1
                   break
@@ -520,7 +517,7 @@ module ActiveFacts
           fact_type = vocabulary.constellation.FactType(:new)
           debug :matching, "Making new fact type for #{@phrases.inspect}" do
             @phrases.each do |phrase|
-              next unless phrase.is_a?(VarRef)
+              next unless phrase.respond_to?(:player)
               phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :object_type => phrase.player)
               phrase.role.role_name = phrase.role_name if phrase.role_name && phrase.role_name.is_a?(String)
             end
@@ -536,7 +533,7 @@ module ActiveFacts
           index = 0
           debug :matching, "Making new reading for #{@phrases.inspect}" do
             reading_words.map! do |phrase|
-              if phrase.is_a?(VarRef)
+              if phrase.respond_to?(:player)
                 # phrase.role will be set if this reading was used to make_fact_type.
                 # Otherwise we have to find the existing role via the Variable. This is pretty ugly.
                 unless phrase.role
@@ -591,7 +588,7 @@ module ActiveFacts
           reading_words = []
           new_role_sequence_needed = false
           @phrases.each do |phrase|
-            if phrase.is_a?(VarRef)
+            if phrase.respond_to?(:player)
               role_phrases << phrase
               reading_words << "{#{phrase.role_ref.ordinal}}"
               if phrase.role_name != phrase.role_ref.role.role_name ||
@@ -752,17 +749,15 @@ module ActiveFacts
       end
 
       class VarRef
-        attr_reader :term, :trailing_adjective, :quantifier, :function_call, :role_name, :value_constraint, :literal, :nested_clauses
-        attr_accessor :leading_adjective, :trailing_adjective
-        attr_accessor :player
-        attr_accessor :variable
-        attr_accessor :clause    # The clause that this VarRef is part of
-        attr_accessor :role       # This refers to the ActiveFacts::Metamodel::Role
-        attr_accessor :role_ref   # This refers to the ActiveFacts::Metamodel::RoleRef
+        attr_reader :term, :quantifier, :function_call, :value_constraint, :literal, :nested_clauses
+        attr_accessor :leading_adjective, :trailing_adjective, :role_name
+        attr_accessor :player     # What ObjectType does the Variable denote
+        attr_accessor :variable   # What Variable for that ObjectType
+        attr_accessor :role       # Which Role of this ObjectType
+        attr_accessor :role_ref   # Which RoleRef to that Role
+        attr_accessor :clause     # The clause that this VarRef is part of
         attr_accessor :objectification_of # If nested_clauses is set, this is the fact type it objectifies
         attr_reader :embedded_presence_constraint   # This refers to the ActiveFacts::Metamodel::PresenceConstraint
-        attr_writer :leading_adjective
-        attr_writer :role_name    # For assigning subscript when found in identifying roles list
 
         def initialize term, leading_adjective = nil, trailing_adjective = nil, quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, nested_clauses = nil
           @term = term
@@ -809,11 +804,28 @@ module ActiveFacts
           @nested_clauses && @nested_clauses.detect{|oj| oj.includes_literals}
         end
 
+        # We create value types for the results of arithmetic expressions, and they get assigned here:
+        def player=(player)
+          @player = player
+        end
+
+        def identify_players_with_role_name(context)
+          identify_player(context) if role_name
+          # Include players in nested clauses, if any
+          nested_clauses.each{|clause| clause.identify_players_with_role_name(context)} if nested_clauses
+        end
+
+        def identify_other_players context
+          identify_player context
+        end
+
         def identify_player context
-          @player = context.object_type @term
-          raise "ObjectType #{@term} unrecognised" unless @player
-          context.player_by_role_name[@role_name] = player if @role_name
-          @player
+          @player || begin
+            @player = context.object_type @term
+            raise "ObjectType #{@term} unrecognised" unless @player
+            context.player_by_role_name[@role_name] = player if @role_name
+            @player
+          end
         end
 
         def uses_role_name?
@@ -834,6 +846,7 @@ module ActiveFacts
         end
 
         def bind context
+          @nested_clauses.each{|c| c.bind context} if @nested_clauses
           if role_name = @role_name
             # Omit these tests to see if anything evil eventuates:
             #if @leading_adjective || @trailing_adjective
@@ -940,10 +953,6 @@ module ActiveFacts
             constraint
           end
 
-        end
-
-        def leaf_operand
-          self
         end
 
         def result(context = nil)

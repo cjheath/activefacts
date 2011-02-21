@@ -1,15 +1,18 @@
 module CompileHelpers
   def baseline
-    @base_facts = @constellation.FactType.values-@constellation.ImplicitFactType.values
+    @base_facts = @constellation.FactType.values - @constellation.ImplicitFactType.values
     @base_objects = @constellation.ObjectType.values
+    @base_joins = @constellation.Join.values
+    @base_join_steps = @constellation.JoinStep.values
+    @base_join_nodes = @constellation.JoinNode.values
   end
 
   def fact_types
-    @constellation.FactType.values-@base_facts-@constellation.ImplicitFactType.values
+    @constellation.FactType.values - @constellation.ImplicitFactType.values - @base_facts
   end
 
   def object_types
-    @constellation.ObjectType.values-@base_objects
+    @constellation.ObjectType.values - @base_objects
   end
 
   def fact_readings fact_type
@@ -18,6 +21,18 @@ module CompileHelpers
 
   def fact_pcs fact_type
     fact_type.all_role.map{|r| r.all_role_ref.map{|rr| rr.role_sequence.all_presence_constraint.to_a}}.flatten.uniq
+  end
+
+  def joins
+    @constellation.Join.values - @base_joins
+  end
+
+  def join_steps
+    @constellation.JoinStep.values - @base_join_steps
+  end
+
+  def join_nodes
+    @constellation.JoinNode.values - @base_join_nodes
   end
 
   def parse string

@@ -4,14 +4,15 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/cql/parser'
-
 require 'activefacts/cql/compiler/shared'
 require 'activefacts/cql/compiler/value_type'
 require 'activefacts/cql/compiler/entity_type'
 require 'activefacts/cql/compiler/clause'
 require 'activefacts/cql/compiler/fact_type'
+require 'activefacts/cql/compiler/expression'
 require 'activefacts/cql/compiler/fact'
 require 'activefacts/cql/compiler/constraint'
+require 'activefacts/cql/compiler/join'
 
 module ActiveFacts
   module CQL

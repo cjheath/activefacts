@@ -69,6 +69,16 @@ module ActiveFacts
 
           player
         end
+
+        # Pass in an array of clauses or VarRefs for player identification and binding (creating the Variables)
+        # It's necessary to identify all players that define a role name first,
+        # so those names exist in the context for where they're used.
+        def bind *clauses
+          cl = clauses.flatten
+          cl.each { |clause| clause.identify_players_with_role_name(self) }
+          cl.each { |clause| clause.identify_other_players(self) }
+          cl.each { |clause| clause.bind(self) }
+        end
       end
 
       class Definition
@@ -126,11 +136,3 @@ module ActiveFacts
     end
   end
 end
-
-require 'activefacts/cql/compiler/value_type'
-require 'activefacts/cql/compiler/entity_type'
-require 'activefacts/cql/compiler/clause'
-require 'activefacts/cql/compiler/fact_type'
-require 'activefacts/cql/compiler/fact'
-require 'activefacts/cql/compiler/constraint'
-require 'activefacts/cql/compiler/join'

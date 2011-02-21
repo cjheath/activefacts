@@ -40,6 +40,10 @@ module ::Metamodel
     value_type 
   end
 
+  class DisjunctionId < AutoCounter
+    value_type 
+  end
+
   class DisplayRoleNamesSetting < String
     value_type 
     restrict 'false', 'true'
@@ -179,6 +183,11 @@ module ::Metamodel
     has_one :discussion, :mandatory => true     # See Discussion.all_context_note
     has_one :fact_type                          # See FactType.all_context_note
     has_one :object_type                        # See ObjectType.all_context_note
+  end
+
+  class Disjunction
+    identified_by :disjunction_id
+    one_to_one :disjunction_id, :mandatory => true  # See DisjunctionId.disjunction
   end
 
   class Enforcement
@@ -379,6 +388,7 @@ module ::Metamodel
 
   class JoinStep
     identified_by :input_join_role, :output_join_role
+    has_one :disjunction                        # See Disjunction.all_join_step
     has_one :fact_type, :mandatory => true      # See FactType.all_join_step
     has_one :input_join_role, :class => JoinRole, :mandatory => true  # See JoinRole.all_join_step_as_input_join_role
     maybe :is_anti

@@ -46,10 +46,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Blog.orm</DependentUpon>
     </Compile>
-    <Compile Include="BPMN._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>BPMN.orm</DependentUpon>
-    </Compile>
     <Compile Include="CompanyDirectorEmployee._ORMCustomToolReport.cs">
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -213,10 +209,6 @@
   <ItemGroup Condition="Exists('Units.orm')">
   </ItemGroup>
   <ItemGroup>
-    <None Include="BPMN.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>BPMN._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
     <None Include="CompanyDirectorEmployee.DCIL.xml">
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -284,6 +276,7 @@
     <None Include="OilSupply.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>OilSupply._ORMCustomToolReport.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </None>
     <None Include="OneToOnes.orm">
       <Generator>ORMCustomTool</Generator>

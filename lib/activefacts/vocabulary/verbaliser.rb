@@ -646,16 +646,19 @@ module ActiveFacts
         exit_node = @join_nodes.detect{|jn| jn.all_join_role.detect{|jr| jr.role == last_role_ref.role}}
         exit_step = nil
 
+        count = 0
         while other_step =
           @join_steps.
             detect{|js|
               next unless js.is_objectification_step
+              # REVISIT: This test is too weak: We need to ensure that the same join nodes are involved, not just the same object types:
               next unless js.input_join_role.join_node.object_type == fact_type.entity_type || js.output_join_role.join_node.object_type == fact_type.entity_type
               exit_step = js if js.output_join_role.join_node == exit_node
               true
             }
           debug :join, "Emitting objectified FT allows deleting #{other_step.describe}"
           step_completed(other_step)
+#          raise "The objectification of '#{fact_type.default_reading}' should not cause the deletion of more than #{fact_type.all_role.size} other join steps" if (count += 1) > fact_type.all_role.size
         end
         [ reading, exit_step ? exit_step.input_join_role.join_node : exit_node, exit_step, last_is_contractable]
       end

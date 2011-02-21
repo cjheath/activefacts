@@ -477,6 +477,12 @@ module ActiveFacts
             return
           end
 
+          # Internal check: We must have located the players here
+          if i = players.index(nil)
+            rrs = transposed_role_refs[i]
+            raise "Internal error detecting constrained object types in join involving #{rrs.map{|rr| rr.role.fact_type.default_reading}.uniq*', '}"
+          end
+
           # Loose binding will apply only to the constrained roles, not to all roles. Not handled here.
           mode = c.is_mandatory ? "exactly one" : "at most one"
           puts "for each #{players.map{|p| p.name}*", "} #{mode} of these holds:\n\t" +

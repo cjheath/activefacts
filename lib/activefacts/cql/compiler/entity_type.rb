@@ -42,6 +42,8 @@ module ActiveFacts
           # Identification may be via a mode (create it) or by forward-referenced entity types (allow those):
           prepare_identifier context
 
+          context.bind @clauses, @identification.is_a?(Array) ? @identification : []
+
           # Create the fact types that define the identifying roles:
           fact_types = create_identifying_fact_types context
 
@@ -86,15 +88,14 @@ module ActiveFacts
           return unless @identification
           @identification.map do |id|
             if id.is_a?(VarRef)
-              id.identify_player(context)
-              variable = id.bind(context)
+              variable = id.variable
               roles = variable.refs.map{|r| r.role}.compact.uniq
               raise "Looking for an occurrence of identifying role #{id.inspect}, but found #{roles.size == 0 ? "none" : roles.size}" if roles.size != 1
               roles[0]
             else
               # id is a clause of a unary fact type.
               id.identify_other_players context
-              id.bind_roles context
+              id.bind context
               matching_clause =
                 @clauses.detect { |clause| clause.phrases_match id.phrases }
               raise "Unary identifying role '#{id.inspect}' is not found in the defined fact types" unless matching_clause
@@ -145,15 +146,11 @@ module ActiveFacts
         def create_identifying_fact_types context
           fact_types = []
           # Categorise the clauses into fact types according to the roles they play.
-          @clauses.each{ |clause| clause.identify_players_with_role_name(context) }
-          @clauses.each{ |clause| clause.identify_other_players(context) }
           @clauses.inject({}) do |hash, clause|
             players_key = clause.var_refs.map{|vr| vr.key.compact}.sort
             (hash[players_key] ||= []) << clause
             hash
           end.each do |players_key, clauses|
-            clauses.each{ |clause| clause.bind_roles context }  # Create the Variables
-
             # REVISIT: Loose binding goes here; it might merge some Compiler#Roles
 
             fact_type = create_identifying_fact_type(context, clauses)

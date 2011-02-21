@@ -134,7 +134,7 @@ module ActiveFacts
       # During the prescan we need to know where terms in a role list finish.
       # This rule matches any non-term expressions that may follow a role list.
       rule role_list_constraint_followers
-	occurs
+	occurs s quantifier s 'time'
       end
 
       # >>>>>>>>>>>>>>>>>>>> Quantifiers <<<<<<<<<<<<<<<<<<<<

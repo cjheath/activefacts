@@ -189,6 +189,7 @@ class JoinStep
   property :output_join_role_fact_type_id, Integer, :key => true	# Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :output_join_role_ordinal, Integer, :key => true	# Join Step has output-Join Role and Join Role is where Join Node includes Role and Role is where Fact Type has Ordinal role
   belongs_to :output_join_role, 'JoinRole', :child_key => [:output_join_role_join_node_join_id, :output_join_role_join_node_ordinal, :output_join_role_fact_type_id, :output_join_role_ordinal], :parent_key => [:join_node_join_id, :join_node_ordinal, :role_fact_type_id, :role_ordinal]	# Join Step has output-Join Role
+  property :disjunction_id, Integer	# maybe Join Step falls under Disjunction and Disjunction has Disjunction Id
   property :fact_type_id, Integer, :required => true	# Join Step traverses Fact Type and Fact Type has Fact Type Id
   belongs_to :fact_type, 'FactType'	# Join Step traverses Fact Type
   property :is_anti, Boolean, :required => true	# is anti Join Step

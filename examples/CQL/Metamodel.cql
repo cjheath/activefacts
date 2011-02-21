@@ -12,6 +12,7 @@ Context Note Kind is written as String restricted to {'as_opposed_to', 'because'
 Date is written as Date;
 Denominator is written as Unsigned Integer(32);
 Discussion is written as String;
+Disjunction Id is written as Auto Counter;
 Display Role Names Setting is written as String restricted to {'false', 'true'};
 Enforcement Code is written as String(16);
 Ephemera URL is written as String;
@@ -61,6 +62,8 @@ Context Note has one Context Note Kind,
 	Context Note Kind is of Context Note;
 Context Note has one Discussion,
 	Discussion is for Context Note;
+
+Disjunction is identified by its Id;
 
 Enforcement is identified by Constraint where
 	Constraint requires at most one Enforcement,
@@ -226,6 +229,8 @@ Join Role is independent where
 Join Step is identified by input-Join Role and output-Join Role where
 	Join Step has one input-Join Role,
 	Join Step has one output-Join Role;
+Join Step falls under at most one Disjunction,
+	Disjunction covers at least one Join Step;
 Join Step traverses one Fact Type,
 	Fact Type directs Join Step;
 Join Step involves incidental-Join Role,

@@ -53,30 +53,11 @@ module ActiveFacts
       end
 
       rule derived_variable
-        variable:term s p:function_call* role_id:(role_name / subscript )?
+        variable:term s role_id:(role_name / subscript )?
         {
 	  def ast quantifier = nil, value_constraint = nil, literal = nil, nested_clauses = nil
 	    role_name = role_id.empty? ? nil : role_id.value
-	    var = variable.ast(quantifier, nil, role_name, value_constraint, literal, nested_clauses)
-	    if p.empty?
-	      var
-	    else
-	      Compiler::FunctionCallChain.new(var, *p.elements.map{|f| f.ast})
-	    end
-	  end
-        }
-      end
-
-      rule function_call
-        '.' s func:id s param_list:( '(' s params:( p0:expression s tail:( ',' s p1:expression s )* )? ')' s )?
-        {
-	  def ast
-	    if param_list.empty? || param_list.params.empty?
-	      params = []
-	    else
-	      params = [param_list.params.p0.ast] + param_list.params.tail.elements.map{|param| param.p1.ast }
-	    end
-	    Compiler::FunctionCall.new(func.value, *params)
+	    variable.ast(quantifier, nil, role_name, value_constraint, literal, nested_clauses)
 	  end
         }
       end

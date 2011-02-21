@@ -521,7 +521,8 @@ module ActiveFacts
           (is_unary_step ? " (unary) " : "from #{input_join_role.describe} ") +
           "#{is_anti && 'not '}" +
           "to #{output_join_role.describe} " +
-          "over " + (is_objectification_step ? 'objectification ' : '') +
+          "over " +
+          (is_objectification_step ? 'objectification ' : '') +
           "'#{fact_type.default_reading}'"
       end
 
@@ -548,8 +549,7 @@ module ActiveFacts
         object_type.name +
           (subscript ? "(#{subscript})" : '') +
           " JN#{ordinal}" +
-#          (all_join_role.detect{|jr| jr.role_ref} ? " (projected)" : "") +
-          (value ? ' = '+value.describe : '')
+          (value ? ' = '+value.to_s : '')
       end
 
       def all_join_step
