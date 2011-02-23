@@ -119,10 +119,12 @@ require 'rspec/expectations'
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
-# require File.dirname(__FILE__) + '/../helpers/compiler_helper'  # Can't see how to include/extend these methods correctly
+require File.dirname(__FILE__) + '/../helpers/compile_helpers'  # Can't see how to include/extend these methods correctly
 
 describe "When compiling a join, " do
   before :each do
+    extend CompileHelpers
+
     prefix = %q{
       vocabulary Tests;
       Boy is written as String;
@@ -135,12 +137,13 @@ describe "When compiling a join, " do
     @compiler.compile(prefix)
     @constellation = @compiler.vocabulary.constellation
 
+    baseline
+
+=begin
     def self.baseline
       @base_facts = @constellation.FactType.values-@constellation.ImplicitFactType.values
       @base_objects = @constellation.ObjectType.values
     end
-
-    baseline
 
     def self.fact_types
       @constellation.FactType.values-@base_facts-@constellation.ImplicitFactType.values
@@ -161,6 +164,7 @@ describe "When compiling a join, " do
       joins.size.should == 1
       joins[0]
     end
+=end
 
     def self.compile string
       lambda {

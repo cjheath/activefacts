@@ -23,6 +23,15 @@ module CompileHelpers
     fact_type.all_role.map{|r| r.all_role_ref.map{|rr| rr.role_sequence.all_presence_constraint.to_a}}.flatten.uniq
   end
 
+  def derivation fact_type
+    # PENDING: When the fact type's roles are projected, use this instead:
+    # j = fact_type.all_role.map{|r| r.all_join_role.map{|jr| jr.join}}.flatten.uniq - @base_joins
+    j = joins
+    j.size.should == 1
+    join = j[0]
+    join
+  end
+
   def joins
     @constellation.Join.values - @base_joins
   end
