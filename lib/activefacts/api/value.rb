@@ -15,7 +15,6 @@ module ActiveFacts
 
       # Value instance methods:
       def initialize(*args) #:nodoc:
-        args[0] = args[0].__getobj__ if RoleProxy === args[0]
         super(args)
       end
 
@@ -69,7 +68,6 @@ module ActiveFacts
           # If the single arg is the correct class or a subclass, use it directly
           #puts "#{basename}.identifying_role_values#{args.inspect}"
           if (args.size == 1 and (arg = args[0]).is_a?(self.class))   # No secondary supertypes allowed for value types
-            arg = arg.__getobj__ if RoleProxy === arg
             return arg
           end
           new(*args)

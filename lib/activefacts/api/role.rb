@@ -50,7 +50,6 @@ module ActiveFacts
         # If the value is a compatible class, use it (if in another constellation, clone it),
         # else create a compatible object using the value as constructor parameters.
         if value.is_a?(@counterpart_object_type)  # REVISIT: may be a non-primary subtype of counterpart_object_type
-          value = value.__getobj__ if RoleProxy === value
           # Check that the value is in a compatible constellation, clone if not:
           if constellation && (vc = value.constellation) && vc != constellation
             value = value.clone   # REVISIT: There's sure to be things we should reset/clone here, like non-identifying roles

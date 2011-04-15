@@ -127,7 +127,6 @@ module ActiveFacts
           # use the instance's identifying_role_values
           if (args.size == 1 and
               (arg = args[0]).is_a?(self))       # REVISIT: or a secondary supertype
-            arg = arg.__getobj__ if RoleProxy === arg
             return arg.identifying_role_values
           end
 
@@ -142,7 +141,6 @@ module ActiveFacts
           role_args.map do |role, arg|
             #puts "Getting identifying_role_value for #{role.counterpart_object_type.basename} using #{arg.inspect}"
             next !!arg unless role.counterpart  # Unary
-            arg = arg.__getobj__ if RoleProxy === arg
             if arg.is_a?(role.counterpart_object_type)              # REVISIT: or a secondary supertype
               # Note that with a secondary supertype, it must still return the values of these identifying_role_names
               next arg.identifying_role_values
@@ -180,7 +178,6 @@ module ActiveFacts
               elsif !role.counterpart
                 value = role_key = !!arg        # Unary
               elsif arg.is_a?(role.counterpart_object_type)      # REVISIT: or a secondary supertype
-                arg = arg.__getobj__ if RoleProxy === arg
                 raise "Connecting values across constellations" unless arg.constellation == constellation
                 value, role_key = arg, arg.identifying_role_values
               else
