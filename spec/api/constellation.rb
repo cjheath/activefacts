@@ -69,8 +69,8 @@ describe "A Constellation instance" do
     lambda {
         name = @constellation.Name("foo")
         foo = @constellation.LegalEntity("foo")
-        acme = @constellation.Company("Acme, Inc")
-        fred_fly = @constellation.Person("fred", "fly")
+        acme = @constellation.Company("Acme, Inc", :auto_counter_value => :new)
+        fred_fly = @constellation.Person("fred", "fly", :auto_counter_value => :new)
       }.should_not raise_error
     name.class.should == Mod::Name
     name.constellation.should == @constellation
@@ -85,13 +85,13 @@ describe "A Constellation instance" do
   it "should re-use instances constructed the same way" do
     name1 = @constellation.Name("foo")
     foo1 = @constellation.LegalEntity("foo")
-    acme1 = @constellation.Company("Acme, Inc")
-    fred_fly1 = @constellation.Person("fred", "fly")
+    acme1 = @constellation.Company("Acme, Inc", :auto_counter_value => :new)
+    fred_fly1 = @constellation.Person("fred", "fly", :auto_counter_value => :new)
 
     name2 = @constellation.Name("foo")
     foo2 = @constellation.LegalEntity("foo")
-    acme2 = @constellation.Company("Acme, Inc")
-    fred_fly2 = @constellation.Person("fred", "fly")
+    acme2 = @constellation.Company("Acme, Inc", :auto_counter_value => :new)
+    fred_fly2 = @constellation.Person("fred", "fly", :auto_counter_value => :new)
 
     name1.object_id.should == name2.object_id
     foo1.object_id.should == foo2.object_id
