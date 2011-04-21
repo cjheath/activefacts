@@ -287,8 +287,7 @@ module ActiveFacts
             throw "For Subtype fact #{name}, the subtype #{subtype_id} was not found" if !subtype
             debug :orm, "#{subtype.name} is a subtype of #{supertype.name}"
 
-            inheritance_fact = @constellation.TypeInheritance(subtype, supertype)
-            inheritance_fact.fact_type_id = :new
+            inheritance_fact = @constellation.TypeInheritance(subtype, supertype, :fact_type_id => :new)
             if x["IsPrimary"] == "true" or           # Old way
               x["PreferredIdentificationPath"] == "true"   # Newer
               debug :orm, "#{supertype.name} is primary supertype of #{subtype.name}"
