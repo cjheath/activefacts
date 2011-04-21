@@ -13,9 +13,9 @@ module ActiveFacts
       end
 
       def preferred_reading
-        p = all_reading_by_ordinal[0]
-        raise "No reading for (#{all_role.map{|r| r.object_type.name}*", "})" unless p
-        p
+        pr = all_reading_by_ordinal[0]
+        raise "No reading for (#{all_role.map{|r| r.object_type.name}*", "})" unless pr
+        pr
       end
 
       def describe(highlight = nil)
@@ -85,6 +85,33 @@ module ActiveFacts
       def preferred_reference
         fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == self }
       end
+
+      # Return true if this role is functional (has only one instance wrt its player)
+      # A role in an objectified fact type is deemed to refer to the implicit role of the objectification.
+      def is_functional
+        fact_type.entity_type or
+        fact_type.all_role.size != 2 or
+          all_role_ref.detect do |rr|
+            rr.role_sequence.all_role_ref.size == 1 and
+              rr.role_sequence.all_presence_constraint.detect do |pc|
+                pc.max_frequency == 1 and !pc.enforcement   # Alethic uniqueness constraint
+              end
+          end
+      end
+
+      def role_method
+        if fact_type.all_role.size == 1
+          # The object of an objectified unary has no boolean; the existence of the object is the fact
+          return nil if fact_type.entity_type
+          return preferred_role_name(role)
+        end
+        if fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+          # No method is available to indicate that the object is the specified subtype
+          # In future, this might be implemented using the type discriminator
+          return nil
+        end
+      end
+
     end
 
     class RoleRef
