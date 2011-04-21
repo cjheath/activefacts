@@ -21,6 +21,7 @@ module ActiveFacts
       def value_type_end
       end
 
+      # Dump the roles for an object type (excluding the roles of a fact type which is objectified)
       def roles_dump(o)
         o.all_role.
           select{|role|
@@ -35,12 +36,14 @@ module ActiveFacts
       end
 
       def role_dump(role)
+        return if role.fact_type.entity_type
+
         fact_type = role.fact_type
         if fact_type.all_role.size == 1
-          unary_dump(role, preferred_role_name(role)) unless fact_type.entity_type
-          # REVISIT: If the objectified fact type has already been dumped, we'll get nothing.
+          unary_dump(role, preferred_role_name(role))
           return
         elsif fact_type.all_role.size != 2
+          # Shouldn't come here, except perhaps for an invalid model
           return  # ternaries and higher are always objectified
         end
 
@@ -50,50 +53,24 @@ module ActiveFacts
           return
         end
 
-        # Find any uniqueness constraint over this role:
-        fact_constraints = @presence_constraints_by_fact[fact_type]
-        #debug "Considering #{fact_constraints.size} fact constraints over fact role #{role.object_type.name}"
-        ucs = fact_constraints.select{|c| c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) && c.max_frequency == 1 }
-        # Emit "has_one/one_to_one..." only for functional roles here:
-        #debug "Considering #{ucs.size} unique constraints over role #{role.object_type.name}"
-        unless ucs.find {|c|
-              c.role_sequence.all_role_ref.map(&:role) == [role]
-          }
-          #debug "No uniqueness constraint found for #{role} in #{fact_type}"
-          return
-        end
+        return unless role.is_functional
 
-        if fact_type.entity_type
-          # other_role is a phantom played by the entity type that objectifies this fact type.
-          # REVISIT: No rolename can be provided for the phantom role, so _as_XYZ doesn't occur
-          other_player = fact_type.entity_type
-          return unless @object_types_dumped[other_player]
+        other_role = fact_type.all_role.select{|r| r != role}[0]
+        other_role_name = preferred_role_name(other_role)
+        other_player = other_role.object_type
 
-          other_role_name = other_player.name.gsub(/ /,'_').snakecase
-          other_role_method = role.object_type.name.gsub(/ /,'_').snakecase
-          one_to_one = true
-        else
+        # It's a one_to_one if there's a uniqueness constraint on the other role:
+        one_to_one = other_role.is_functional
+        return if one_to_one &&
+            !@object_types_dumped[other_role.object_type]
 
-          other_role = fact_type.all_role.select{|r| r != role}[0]
-          other_role_name = preferred_role_name(other_role)
-          other_player = other_role.object_type
-
-          # It's a one_to_one if there's a uniqueness constraint on the other role:
-          one_to_one = ucs.find {|c| c.role_sequence.all_role_ref.map(&:role) == [other_role] }
-          if one_to_one &&
-              !@object_types_dumped[other_role.object_type]
-            #debug "Will dump 1:1 later for #{role} in #{fact_type}"
-            return
-          end
-
-          # Find role name:
-          role_method = preferred_role_name(role)
-          other_role_method = one_to_one ? role_method : "all_"+role_method
-          # puts "---"+role.role_name if role.role_name
-          if other_role_name != other_player.name.gsub(/ /,'_').snakecase and
-            role_method == role.object_type.name.gsub(/ /,'_').snakecase
-            other_role_method += "_as_#{other_role_name}"
-          end
+        # Find role name:
+        role_method = preferred_role_name(role)
+        other_role_method = one_to_one ? role_method : "all_"+role_method
+        # puts "---"+role.role_name if role.role_name
+        if other_role_name != other_player.name.gsub(/ /,'_').snakecase and
+          role_method == role.object_type.name.gsub(/ /,'_').snakecase
+          other_role_method += "_as_#{other_role_name}"
         end
 
         role_name = role_method
