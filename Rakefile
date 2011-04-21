@@ -25,6 +25,7 @@ and object models in SQL, Ruby and other languages.
   p.post_install_message = 'For more information on ActiveFacts, see http://dataconstellation.com/ActiveFacts'
   p.rubyforge_name       = "cjheath@rubyforge.org"
   p.extra_deps         = [
+    ['activefacts-api','>= 0.8.9'],
     ['treetop','>= 1.4.1'],
     ['rake','>= 0.8.7'],
   ]
@@ -35,8 +36,8 @@ and object models in SQL, Ruby and other languages.
   # Magic Hoe hook to prevent the generation of diagrams:
   ENV['NODOT'] = 'yes'
   p.spec_extras[:rdoc_options] = ['-S'] +
+    # RDoc used to have these options: -A has_one -A one_to_one -A maybe
     %w{
-      -A has_one -A one_to_one -A maybe
       -x lib/activefacts/cql/.*.rb
       -x lib/activefacts/vocabulary/.*.rb
     }
