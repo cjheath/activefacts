@@ -32,6 +32,7 @@ module ActiveFacts
           compile(f.read)
         end
         @filename = old_filename
+        @vocabulary
       end
 
       def compile input

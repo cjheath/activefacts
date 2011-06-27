@@ -5,5 +5,5 @@
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
-  VERSION = '0.9.0'
+  VERSION = '0.8.10'
 end

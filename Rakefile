@@ -1,4 +1,6 @@
-%w[rubygems hoe rake rake/clean fileutils newgem rubigen].each { |f| require f }
+%w[rubygems hoe rake rake/clean fileutils newgem thread rubigen].each { |f|
+  require f
+}
 
 require 'rspec'
 require 'rspec/core/rake_task'
@@ -25,7 +27,7 @@ and object models in SQL, Ruby and other languages.
   p.post_install_message = 'For more information on ActiveFacts, see http://dataconstellation.com/ActiveFacts'
   p.rubyforge_name       = "cjheath@rubyforge.org"
   p.extra_deps         = [
-    ['activefacts-api','>= 0.8.9'],
+    ['activefacts-api','>= 0.8.10'],
     ['treetop','>= 1.4.1'],
     ['rake','>= 0.8.7'],
   ]

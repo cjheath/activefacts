@@ -24,6 +24,10 @@ module ActiveFacts
           define_method(:"#{s}=") { raise "Unexpected call to Operation\##{s}=" }
         end
         def role_name; nil; end
+        def leading_adjective; nil; end
+        def trailing_adjective; nil; end
+        def value_constraint; nil; end
+        def literal; nil; end
         attr_accessor :player     # What ObjectType does the Variable denote
         attr_accessor :variable   # What Variable for that ObjectType
         attr_accessor :clause     # What clause does the result participate in?
@@ -68,19 +72,12 @@ module ActiveFacts
           var_refs.each do |o|
             o.bind context
           end
-          r = result(context)
-          r.bind context
-        end
-
-        # Return a VarRef that refers to the result role of the operator fact type
-        # It must not be called until the players are all identified and bound.
-        def result(context)
-          @result or begin
-            name = result_type_name(context)
-            @result = VarRef.new(result_type_name(context))
-            @result.player = result_value_type(context, name)
-            @result
-          end
+          name = result_type_name(context)
+          @player = result_value_type(context, name)
+          key = "#{name} #{object_id}"  # Every Operation result is a unique Variable
+          @variable = (context.variables[key] ||= Variable.new(@player))
+          @variable.refs << self
+          @variable
         end
 
         def result_type_name(context)
@@ -99,9 +96,15 @@ module ActiveFacts
 
         def match_existing_fact_type context
           opnds = var_refs
+          result_var_ref = VarRef.new(@variable.player.name)
+          result_var_ref.player = @variable.player
+          result_var_ref.variable = @variable
+          @variable.refs << result_var_ref
           clause_ast = Clause.new(
-              (opnds.size > 1 ? [opnds[0]] : []) + [operator, opnds[-1]]
-            )
+            [result_var_ref, '='] +
+              (opnds.size > 1 ? [opnds[0]] : []) +
+              [operator, opnds[-1]]
+          )
 
           # REVISIT: All operands must be value-types or simply-identified Entity Types.
 
@@ -115,6 +118,10 @@ module ActiveFacts
           rrs = reading.role_sequence.all_role_ref_in_order
           opnds[0].role_ref = rrs[0]
           opnds[-1].role_ref = rrs[-1]
+          opnds.each do |opnd|
+            next unless opnd.is_a?(Operation)
+            opnd.match_existing_fact_type context
+          end
           @fact_type
         end
 
@@ -130,13 +137,6 @@ module ActiveFacts
           raise "REVISIT: Implement operator access in the operator subclass #{self.class.name}"
         end
 
-=begin
-        def includes_literals
-          var_refs.detect{|o|
-            o.includes_literals
-          }
-        end
-=end
       end
 
       class Comparison < Operation
@@ -150,17 +150,24 @@ module ActiveFacts
           [@e1, @e2]
         end
 
-        def result(context)
-          return @result = nil if @projection
-          @result ||= begin
-            result = VarRef.new('Boolean')
-            result.player = result_value_type(context, 'Boolean')
-            result
+        def bind context
+          var_refs.each do |o|
+            o.bind context
           end
+
+          # REVISIT: Return the projected binding instead:
+          return @result = nil if @projection
+
+          name = 'Boolean'
+          @player = result_value_type(context, name)
+          key = "#{name} #{object_id}"  # Every Comparison result is a unique Variable
+          @variable = (context.variables[key] ||= Variable.new(@player))
+          @variable.refs << self
+          @variable
         end
 
         def result_type_name(context)
-          "compare#{operator}(#{[@e1,@e2].map{|e| e.result(context).player.name}*', '}))"
+          "compare#{operator}(#{[@e1,@e2].map{|e| e.player.name}*', '}))"
         end
 
         def is_equality_comparison
@@ -214,14 +221,12 @@ module ActiveFacts
             # REVISIT: We should define a subtype of the result type here, and apply the units to it.
             v = context.vocabulary
             @player = @terms[0].player
-            puts "Assigning player for '#{to_s}' to #{@player.name}"
             @player
           end
         end
 
         def result_type_name(context)
-          puts "Getting Sum@result_type_name for '#{to_s}'"
-          "sum(#{ @terms.map{|f| f.result(context).player.name}*', ' })"
+          "sum(#{ @terms.map{|f| f.player.name}*', ' })"
         end
 
 =begin
@@ -265,7 +270,7 @@ module ActiveFacts
         end
 
         def result_type_name(context)
-          "product(#{ @factors.map{|f| f.result(context).player.name}*', ' })"
+          "product(#{ @factors.map{|f| f.player.name}*', ' })"
         end
 
 =begin
@@ -308,9 +313,8 @@ module ActiveFacts
         end
 
 =begin
-        def result(context)
+        def result_type_name(context)
           raise hell
-          @result ||= VarRef.new(divisor.result(context).player.name)
         end
 =end
 
@@ -340,9 +344,8 @@ module ActiveFacts
         end
 
 =begin
-        def result(context)
+        def result_type_name(context)
           raise hell
-          @result ||= VarRef.new(term.result(context).player.name)
         end
 =end
 
@@ -385,7 +388,7 @@ module ActiveFacts
 
         def identify_player context
           @player || begin
-            player_name = 
+            player_name =
               case @literal
               when String; 'String'
               when Float; 'Real'
@@ -405,14 +408,9 @@ module ActiveFacts
           end
         end
 
-        def result(context)
-          self
-        end
-
         def variable
           @variable
         end
-
       end
 
     end

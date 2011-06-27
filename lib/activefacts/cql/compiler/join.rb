@@ -40,9 +40,10 @@ module ActiveFacts
               # but we need to create JoinRoles for those roles.
               # REVISIT: JoinRoles may need to save residual_adjectives
               variable = var_ref.variable
-              role = (var_ref && var_ref.role) || var_ref.role_ref.role
+              role = (var_ref && var_ref.role) || (var_ref.role_ref && var_ref.role_ref.role)
               join_role = nil
 
+              debugger unless clause.fact_type
               if (clause.fact_type.entity_type)
                 # This clause is of an objectified fact type.
                 # We need a join step from this role to the phantom role, but not
@@ -100,7 +101,11 @@ module ActiveFacts
                     raise "Internal error: Trying to add role of #{role.object_type.name} to join node #{variable.join_node.ordinal} for #{variable.join_node.object_type.name} in '#{clause.fact_type.default_reading}'"
                   end
                   raise "Internal error: Trying to add role of #{role.object_type.name} to join node #{variable.join_node.ordinal} for #{variable.join_node.object_type.name}" unless variable.join_node.object_type == role.object_type
-                  join_role = @constellation.JoinRole(variable.join_node, role)
+                  begin
+                    join_role = @constellation.JoinRole(variable.join_node, role)
+                  rescue ArgumentError => e
+                    join_role = @constellation.JoinRole(variable.join_node, role)
+                  end
                   join_roles << join_role
                 end
               end
@@ -141,6 +146,7 @@ module ActiveFacts
         def all_variables_in_clauses clauses
           clauses.map do |clause|
             clause.var_refs.map do |var_ref|
+              raise "Variable reference #{var_ref.inspect} is not bound to a variable" unless var_ref.variable
               [var_ref.variable] + (var_ref.nested_clauses ? all_variables_in_clauses(var_ref.nested_clauses) : [])
             end
           end.

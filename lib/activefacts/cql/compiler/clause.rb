@@ -147,6 +147,7 @@ module ActiveFacts
               # Match existing fact types in nested clauses first (not for contractions):
               if !contracted_role
                 vrs.each do |var_ref|
+                  next if var_ref.is_a?(Operation)
                   next unless joins = var_ref.nested_clauses and !joins.empty?
                   var_ref.nested_clauses.each do |oj|
                     ft = oj.match_existing_fact_type(context)

@@ -6,7 +6,6 @@ vocabulary Metamodel;
 Adjective is written as String(64);
 Agent Name is written as String;
 Assimilation is written as String restricted to {'partitioned', 'separate'};
-Context Note Id is written as Auto Counter;
 Context Note Kind is written as String restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
 Date is written as Date;
 Denominator is written as Unsigned Integer(32);
@@ -15,11 +14,9 @@ Display Role Names Setting is written as String restricted to {'false', 'true'};
 Enforcement Code is written as String(16);
 Ephemera URL is written as String;
 Exponent is written as Signed Integer(16);
-Fact Id is written as Auto Counter;
 Frequency is written as Unsigned Integer(32);
 GUID is written as String;
-Instance Id is written as Auto Counter;
-Join Id is written as Auto Counter;
+Language Code is written as Char(3);
 Length is written as Unsigned Integer(32);
 Literal is written as String;
 Name is written as String(64);
@@ -28,14 +25,12 @@ Offset is written as Decimal;
 Ordinal is written as Unsigned Integer(16);
 Pronoun is written as String(20) restricted to {'feminine', 'masculine', 'neuter', 'personal'};
 Ring Type is written as String;
-Role Sequence Id is written as Auto Counter;
 Rotation Setting is written as String restricted to {'left', 'right'};
 Scale is written as Unsigned Integer(32);
-Shape Id is written as Auto Counter;
 Subscript is written as Unsigned Integer(16);
 Text is written as String(256);
 Transaction Timing is written as String restricted to {'assert', 'commit'};
-Unit Id is written as Auto Counter;
+Unit Code is written as Char;
 X is written as Signed Integer(32);
 Y is written as Signed Integer(32);
 
@@ -53,11 +48,13 @@ Concept is identified by GUID where
 	Concept has one GUID,
 	GUID is of at most one Concept;
 
-Constraint is a kind of Concept [partitioned];
+Constraint is a kind of Concept;
 Name is of Constraint,
 	Constraint is called at most one Name;
 
-Context Note is identified by its Id;
+Context Note is identified by GUID where
+	Context Note has one GUID,
+	GUID is of at most one Context Note;
 Concept has Context Note,
 	Context Note applies to at most one Concept;
 Context Note has one Context Note Kind,
@@ -72,18 +69,24 @@ Enforcement notifies at most one Agent;
 Enforcement has one Enforcement Code,
 	Enforcement Code is of Enforcement;
 
-Fact is identified by its Id;
+Fact is identified by GUID where
+	Fact has one GUID,
+	GUID is of at most one Fact;
 
-Fact Type is a kind of Concept [partitioned];
+Fact Type is a kind of Concept;
 Fact is of one Fact Type;
 
 Implicit Fact Type is a kind of Fact Type;
 
-Instance is identified by its Id;
+Instance is identified by GUID where
+	Instance has one GUID,
+	GUID is of at most one Instance;
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
 
-Join is identified by its Id;
+Join is identified by GUID where
+	Join has one GUID,
+	GUID is of at most one Join;
 
 Join Node is identified by Join and Ordinal where
 	Join includes Join Node,
@@ -91,10 +94,12 @@ Join Node is identified by Join and Ordinal where
 	Join Node has one Ordinal position;
 Join Node has at most one Subscript,
 	Subscript is of Join Node;
-Join Node has role-Name,
-	Name is of at most one Join Node;
+Join Node has at most one role-Name,
+	Name is of Join Node;
 
-Object Type is a kind of Concept [partitioned];
+Language is identified by its Code;
+
+Object Type is a kind of Concept;
 Instance is of one Object Type;
 Join Node is for one Object Type,
 	Object Type is referenced in Join Node;
@@ -121,7 +126,7 @@ Reading has one Text;
 Ring Constraint is a kind of Constraint;
 Ring Constraint is of one Ring Type;
 
-Role is a kind of Concept [partitioned] where
+Role is a kind of Concept where
 	Fact Type has at least one Ordinal role;
 Implicit Fact Type is implied by one Role (as Implying Role),
 	Implying Role implies at most one Implicit Fact Type;
@@ -133,7 +138,9 @@ Role is of Ring Constraint;  // Avoid ambiguity; this is a new fact type
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 
-Role Sequence is identified by its Id;
+Role Sequence is identified by GUID where
+	Role Sequence has one GUID,
+	GUID is of at most one Role Sequence;
 Presence Constraint covers one Role Sequence;
 Reading is in one Role Sequence,
 	Role Sequence is for Reading;
@@ -148,7 +155,9 @@ Role Value is of one Role;
 
 Set Constraint is a kind of Constraint;
 
-Shape is identified by its Id;
+Shape is identified by GUID where
+	Shape has one GUID,
+	GUID is of at most one Shape;
 Shape is at at most one Position;
 Shape is expanded;
 
@@ -156,7 +165,11 @@ Subset Constraint is a kind of Set Constraint;
 Subset Constraint covers one subset-Role Sequence;
 Subset Constraint covers one superset-Role Sequence;
 
-Unit is identified by its Id;
+Topic is identified by Name where
+	Topic has one Name,
+	Name is of at most one Topic;
+
+Unit is identified by its Code;
 Ephemera URL provides Unit coefficient,
 	Unit uses coefficient from at most one Ephemera URL;
 Name is of Unit,
@@ -172,7 +185,8 @@ Value is identified by Literal and Value is a string and Unit where
 	Value is a string,
 	Value is in at most one Unit,
 	Unit is of Value;
-Instance has at most one Value;
+Instance has at most one Value,
+	Value is of Instance;
 Join Node has at most one Value;
 
 Value Constraint is a kind of Constraint;
@@ -191,8 +205,11 @@ Value Type has at most one auto- assigned Transaction Timing;
 Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
 	Supertype is supertype of Value Type;
 
-Vocabulary is identified by Name where
-	Vocabulary is called one Name;
+Vocabulary is where
+	Topic is described in Language,
+	Language describes Topic;
+Reading is for at most one Vocabulary,
+	Vocabulary contains Reading;
 Vocabulary contains Constraint,
 	Constraint belongs to at most one Vocabulary;
 Vocabulary includes Unit,
@@ -234,12 +251,13 @@ Shape is in one Diagram,
 	Diagram includes Shape;
 
 Entity Type is a kind of Object Type;
-Entity Type nests at most one Fact Type,
-	Fact Type is nested as at most one Entity Type;
+Entity Type objectifies at most one Fact Type,
+	Fact Type is objectified as at most one Entity Type;
 
 Facet is where
 	Value Type has facet called Name,
 	Name is a facet of Value Type;
+Facet has values of at most one Value Type;
 
 Facet Value is where
 	Value Type defines Facet as having one Value,
@@ -279,9 +297,9 @@ Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shap
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
 
-Population is identified by Vocabulary and Name where
-	Vocabulary includes Population,
-	Population belongs to at most one Vocabulary,
+Population is identified by Topic and Name where
+	Topic includes Population,
+	Population belongs to at most one Topic,
 	Population has one Name,
 	Name is of Population;
 Population includes Fact,
@@ -331,13 +349,12 @@ Set Exclusion Constraint is a kind of Set Comparison Constraint;
 Set Exclusion Constraint is mandatory;
 
 Term is where
-	Vocabulary contains Name;
-Term designates at most one Object Type,
-	Object Type uses one Term;
-Term is secondary for at most one Object Type (as Secondary),
-	Secondary has secondary-Term;
-Term (as Role Name) is name of Role Ref,
-	Role Ref has at most one Role Name;
+	Vocabulary uses Name for one Object Type,
+	Vocabulary refers to Object Type as Name,
+	Name applies to Object Type in Vocabulary;
+Term (as Role Name) is name of Role,
+	Role has at most one Role Name;
+Term is preferred;
 
 Type Inheritance is where
 	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
@@ -395,15 +412,6 @@ for each Join Role at most one of these holds:
 for each Join Role at most one of these holds:
 	Join Step(1) has output-Join Role,
 	Join Role is incidentally involved in Join Step;
-for each Term at most one of these holds:
-	Term designates Object Type,
-	Term is name of Role Ref;
-for each Term at most one of these holds:
-	Term designates Object Type(1),
-	Term is secondary for Object Type(2);
-for each Term at most one of these holds:
-	Term is secondary for Object Type,
-	Term is name of Role Ref;
 Join Node is for Object Type that plays Role
 	if and only if
 	Join Node includes Role;
@@ -434,10 +442,6 @@ each Role Sequence occurs at least one time in
 	Role Sequence in Ordinal position includes Role;
 each Set Comparison Constraint occurs at least 2 times in
 	Set Comparison Constraint has in Ordinal position Role Sequence;
-each Term occurs at least one time in
-	Term designates Object Type(1),
-	Term is secondary for Object Type(2),
-	Term is name of Role Ref;
 either Value Range has minimum Bound(2) or Value Range has maximum Bound(1);
 each combination Vocabulary, Name occurs at most one time in
 	Constraint belongs to Vocabulary,
@@ -445,3 +449,6 @@ each combination Vocabulary, Name occurs at most one time in
 each combination Vocabulary, Name occurs at most one time in
 	Unit is in Vocabulary,
 	Unit is called Name;
+each combination Vocabulary, Object Type, Term occurs at most one time in
+	Vocabulary uses Name for Object Type,
+	Term is preferred;
