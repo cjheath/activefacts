@@ -1315,9 +1315,11 @@ module ActiveFacts
                 when 'ModelNoteShape'
                   # REVISIT: Add model notes
                 when 'ObjectTypeShape'
+                  position = convert_position(bounds, Gravity::NW, 31, 31)
                   shape = @constellation.ObjectTypeShape(
                       :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :object_type => subject,
+                      :position => position,
                       :has_expanded_reference_mode => false # REVISIT
                     )
                 else
@@ -1386,9 +1388,9 @@ module ActiveFacts
           position = convert_position(xr_shape['AbsoluteBounds'])
           case xr_shape.name
           when 'ObjectifiedFactTypeNameShape'
-            @constellation.ObjectifiedFactTypeNameShape(shape, :diagram => diagram, :position => position, :is_expanded => false)
+            @constellation.ObjectifiedFactTypeNameShape(shape, :shape_id => :new, :diagram => diagram, :position => position, :is_expanded => false)
           when 'ReadingShape'
-            @constellation.ReadingShape(:new, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
+            @constellation.ReadingShape(shape, :shape_id => :new, :fact_type_shape=>shape, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
           when 'RoleNameShape'
             role = @by_id[xr_shape.xpath("ormDiagram:Subject")[0]['ref']]
             role_display = role_display_for_role(shape, x_role_display, role)
@@ -1403,7 +1405,7 @@ module ActiveFacts
             debug :orm, "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name} for #{constraint.inspect}"
 
             role_display = role_display_for_role(shape, x_role_display, constraint.role)
-            debug :orm, "ValueConstraintShape is on #{role_ordinal}'th role (by #{x_role_display.size > 0 ? 'role_display' : 'fact roles'})"
+            debug :orm, "ValueConstraintShape is on #{role_display.ordinal}'th role (by #{x_role_display.size > 0 ? 'role_display' : 'fact roles'})"
             @constellation.ValueConstraintShape(
               :new, :diagram => diagram, :position => position, :is_expanded => false,
               :constraint => constraint,
@@ -1425,7 +1427,7 @@ module ActiveFacts
         role_display = @constellation.RoleDisplay(fact_type_shape, role_ordinal, :role => role)
       end
 
-      DIAGRAM_SCALE = 384
+      DIAGRAM_SCALE = 96*1.2
       def convert_position(bounds, gravity = Gravity::NW, xoffs = 0, yoffs = 0)
         return nil unless bounds
         bf = bounds.split(/, /).map{|b|b.to_f}
