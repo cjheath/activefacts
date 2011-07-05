@@ -45,7 +45,9 @@ module ActiveFacts
               :uuid=>uuids[o],
               :name=>o.name,
               :shapes => o.all_object_type_shape.map do |shape|
-                {:diagram=>uuids[shape.diagram], :x=>shape.position.x, :y=>shape.position.y}
+                { :diagram=>uuids[shape.diagram], :uuid => SysUUID.new.sysuuid,
+                  :x=>shape.position.x, :y=>shape.position.y
+                }
               end
             }
             if o.is_a?(ActiveFacts::Metamodel::EntityType)
@@ -88,13 +90,16 @@ module ActiveFacts
               # REVISIT: Place a ValueConstraint and shape
               # REVISIT: Place a RoleName shape
               {:uuid=>uuid, :player=>uuids[role.object_type]}
+              # N.B. The object_type shape to which this role is attached is not in the meta-model
+              # Attach to the closest instance on this diagram (if any)
             end
             j[:shapes] = f.all_fact_type_shape.map do |shape|
               sj = {
-                :diagram=>uuids[shape.diagram],
+                :diagram=>uuids[shape.diagram], :uuid => SysUUID.new.sysuuid,
                 :x=>shape.position.x, :y=>shape.position.y
               }
               if shape.all_role_display.size > 0
+                #debugger if shape.all_role_display.size < 2
                 sj[:role_order] = shape.all_role_display.sort_by{|rd| rd.ordinal }.map{|rd| uuids[rd.role] }
               end
               if n = shape.objectified_fact_type_name_shape
@@ -128,7 +133,9 @@ module ActiveFacts
               :uuid => uuid,
               :type => c.class.basename,
               :shapes => c.all_constraint_shape.map do |shape|
-                { :diagram=>uuids[shape.diagram], :x=>shape.position.x, :y=>shape.position.y }
+                { :diagram=>uuids[shape.diagram], :uuid => SysUUID.new.sysuuid,
+                  :x=>shape.position.x, :y=>shape.position.y
+                }
               end
             }
             # REVISIT: constraint type

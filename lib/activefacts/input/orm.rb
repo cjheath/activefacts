@@ -1299,14 +1299,14 @@ module ActiveFacts
                   read_fact_type_shape diagram, x_shape, is_expanded, bounds, subject
                 when 'ExternalConstraintShape', 'FrequencyConstraintShape'
                   # REVISIT: The offset might depend on the constraint type. This is right for subset and other round ones.
-                  position = convert_position(bounds, Gravity::NW, 31, 31)
+                  position = convert_position(bounds, Gravity::C, 31, 31)
                   shape = @constellation.ConstraintShape(
                       :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :constraint => subject
                     )
                 when 'RingConstraintShape'
                   # REVISIT: The offset might depend on the ring constraint type. This is right for basic round ones.
-                  position = convert_position(bounds, Gravity::NW, 31, 31)
+                  position = convert_position(bounds, Gravity::C, 31, 31)
                   shape = @constellation.RingConstraintShape(
                       :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :constraint => subject
@@ -1315,7 +1315,8 @@ module ActiveFacts
                 when 'ModelNoteShape'
                   # REVISIT: Add model notes
                 when 'ObjectTypeShape'
-                  position = convert_position(bounds, Gravity::NW, 31, 31)
+                  position = convert_position(bounds, Gravity::C, 0, 0)
+                  # $stderr.puts "#{subject.name}: bounds=#{bounds} -> position = (#{position.x}, #{position.y})"
                   shape = @constellation.ObjectTypeShape(
                       :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :object_type => subject,
@@ -1344,21 +1345,22 @@ module ActiveFacts
           when 'VerticalRotatedRight'; 'right'
           else nil
           end
-        # Position of a fact type is the top-left of the first role box
-        offs_x = 0
-        offs_y = 0
-        if fact_type.entity_type          # If objectified, move right 12, down 24
-          offs_x += 12
-          offs_y += 24
+
+        # Position of a fact type is the centre of the row of role boxes
+        offs_x = 11
+        offs_y = -12
+        if fact_type.entity_type
+          offs_x -= 1
+          offs_y -= 9
         end
 
-        # count internal UC's, add 27 Y units for each:
-        iucs = fact_type.internal_presence_constraints.select{|uc| uc.max_frequency == 1 }
-        offs_y += iucs.size*27
-        position = convert_position(bounds, Gravity::NW, offs_x, offs_y)
+        position = convert_position(bounds, Gravity::S, offs_x, offs_y)
+
+        # $stderr.puts "#{fact_type.describe}: bounds=#{bounds} -> position = (#{position.x}, #{position.y})"
+
         debug :orm, "REVISIT: Can't place rotated fact type correctly on diagram yet" if rotation_setting
 
-        debug :orm, "fact type at #{position.x},#{position.y} has display_role_names_setting=#{display_role_names_setting.inspect}, rotation_setting=#{rotation_setting.inspect}, #{iucs.size} IUC's"
+        debug :orm, "fact type at #{position.x},#{position.y} has display_role_names_setting=#{display_role_names_setting.inspect}, rotation_setting=#{rotation_setting.inspect}"
         shape = @constellation.FactTypeShape(
             :new,
             :diagram => diagram,
@@ -1427,9 +1429,10 @@ module ActiveFacts
         role_display = @constellation.RoleDisplay(fact_type_shape, role_ordinal, :role => role)
       end
 
-      DIAGRAM_SCALE = 96*1.2
-      def convert_position(bounds, gravity = Gravity::NW, xoffs = 0, yoffs = 0)
+      DIAGRAM_SCALE = 96*1.5
+      def convert_position(bounds, gravity = Gravity::C, xoffs = 0, yoffs = 0)
         return nil unless bounds
+        # Bounds is top, left, width, height in inches
         bf = bounds.split(/, /).map{|b|b.to_f}
         sizefrax = [
           [0, 0], [1, 0], [2, 0],
@@ -1437,8 +1440,8 @@ module ActiveFacts
           [0, 2], [1, 2], [2, 2],
         ]
 
-        x = (DIAGRAM_SCALE * bf[0]+bf[2]*sizefrax[gravity][0]/2).round + xoffs
-        y = (DIAGRAM_SCALE * bf[1]+bf[3]*sizefrax[gravity][1]/2).round + yoffs
+        x = (DIAGRAM_SCALE * (bf[0]+bf[2]*sizefrax[gravity][0]/2)).round + xoffs
+        y = (DIAGRAM_SCALE * (bf[1]+bf[3]*sizefrax[gravity][1]/2)).round + yoffs
         @constellation.Position(x, y)
       end
 
