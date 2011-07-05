@@ -12,7 +12,7 @@ require 'rubygems'
 if d = ENV['DEBUG'] and d.split(/,/).include?('debug')
   begin
     require 'ruby-debug'
-    Debugger.start(:post_mortem => true)        # Stop when an exception is thrown, but before it's rescued
+    Debugger.start # (:post_mortem => true)  # Some Ruby versions crash on post-mortem debugging
   rescue LoadError
     # Ok, no debugger, tough luck.
   end
