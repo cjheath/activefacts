@@ -109,14 +109,28 @@ module ActiveFacts
             end
             f.internal_presence_constraints.each do |ipc|
               uuid = (uuids[ipc] ||= SysUUID.new.sysuuid)
-              (j[:constraints] ||= []) <<
-                {
+
+              constraint = {
                   :uuid => uuid,
                   :min => ipc.min_frequency,
                   :max => ipc.max_frequency,
                   :is_preferred => ipc.is_preferred_identifier,
                   :mandatory => ipc.is_mandatory
                 }
+
+              # Get the role (or excluded role, for a UC)
+              roles = ipc.role_sequence.all_role_ref_in_order.map{|r| r.role}
+              if roles.size > 1 || (!ipc.is_mandatory && ipc.max_frequency == 1)
+                # This can be only a uniqueness constraint. Record the missing role, if any
+                role = (f.all_role.to_a - roles)[0]
+                constraint[:uniqueExcept] = uuids[role]
+              else
+                # An internal mandatory or frequency constraint applies to only one role.
+                # If it's also unique (max == 1), that applies on the counterpart role.
+                # You can also have a mandatory frequency constraint, but that applies on this role.
+                constraint[:role] = uuids[roles[0]]
+              end
+              (j[:constraints] ||= []) << constraint
             end
             # REVISIT: RingConstraints
             # REVISIT: RotationSetting
