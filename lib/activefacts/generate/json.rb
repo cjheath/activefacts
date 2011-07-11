@@ -32,7 +32,7 @@ module ActiveFacts
         "diagrams: [\n#{
           @vocabulary.all_diagram.sort_by{|o| o.name.gsub(/ /,'')}.map do |d|
             uuid = uuids[d] ||= SysUUID.new.sysuuid
-            j = {:uuid=>uuid, :name=>d.name}
+            j = {:uuid => uuid, :name => d.name}
             "    #{j.to_json}"
           end*",\n"
         }\n  ],"
@@ -42,14 +42,17 @@ module ActiveFacts
           object_types.map do |o|
             uuids[o] ||= SysUUID.new.sysuuid
             j = {
-              :uuid=>uuids[o],
-              :name=>o.name,
+              :uuid => uuids[o],
+              :name => o.name,
               :shapes => o.all_object_type_shape.map do |shape|
-                { :diagram=>uuids[shape.diagram], :uuid => SysUUID.new.sysuuid,
-                  :x=>shape.position.x, :y=>shape.position.y
+                { :diagram => uuids[shape.diagram],
+                  :uuid => SysUUID.new.sysuuid,
+                  :x => shape.position.x,
+                  :y => shape.position.y
                 }
               end
             }
+
             if o.is_a?(ActiveFacts::Metamodel::EntityType)
               # Entity Type may be objectified, and may have supertypes:
               if o.fact_type
@@ -81,42 +84,83 @@ module ActiveFacts
         puts "  fact_types: [\n#{
           fact_types.map do |f|
             uuids[f] ||= SysUUID.new.sysuuid
-            j = {:uuid=>uuids[f]}
-            # REVISIT: Place the ReadingShape
+            j = {:uuid => uuids[f]}
+
             j[:objectified_as] = uuids[f.entity_type] if f.entity_type
-            j[:roles] = f.all_role.map do |role|
+
+            # Emit roles
+            roles = f.all_role.sort_by{|r| r.ordinal }
+            j[:roles] = roles.map do |role|
               uuid = (uuids[role] ||= SysUUID.new.sysuuid)
               # REVISIT: Internal Mandatory Constraints
               # REVISIT: Place a ValueConstraint and shape
               # REVISIT: Place a RoleName shape
-              {:uuid=>uuid, :player=>uuids[role.object_type]}
+              {:uuid => uuid, :player => uuids[role.object_type]}
               # N.B. The object_type shape to which this role is attached is not in the meta-model
               # Attach to the closest instance on this diagram (if any)
             end
+
+            # Emit readings. Each is a [role_order, text] pair
+            j[:readings] = f.all_reading.map do |r|
+              role_refs = r.role_sequence.all_role_ref_in_order
+              [
+                role_order(uuids, role_refs.map{|rr| rr.role}, roles),
+                r.text.gsub(/\{([0-9])\}/) do |insert|
+                  role_ref = role_refs[$1.to_i]
+                  la = role_ref.leading_adjective
+                  la = nil if la == ''
+                  ta = role_ref.trailing_adjective
+                  ta = nil if ta == ''
+                  (la ? la+'-' : '') +
+                    (la && la.index(' ') ? ' ' : '') +
+                    insert +
+                    (ta && ta.index(' ') ? ' ' : '') +
+                    (ta ? '-'+ta : '')
+                end
+              ]
+            end.sort_by{|(ro,text)| ro }.map do |(ro,text)|
+              [ ro, text ]
+            end
+
+            # Emit shapes
             j[:shapes] = f.all_fact_type_shape.map do |shape|
               sj = {
-                :diagram=>uuids[shape.diagram], :uuid => SysUUID.new.sysuuid,
-                :x=>shape.position.x, :y=>shape.position.y
+                :diagram => uuids[shape.diagram],
+                :uuid => SysUUID.new.sysuuid,
+                :x => shape.position.x,
+                :y => shape.position.y
               }
+
+              # Add the role_order, if specified
               if shape.all_role_display.size > 0
-                #debugger if shape.all_role_display.size < 2
-                sj[:role_order] = shape.all_role_display.sort_by{|rd| rd.ordinal }.map{|rd| uuids[rd.role] }
+                ro = role_order(
+                  uuids,
+                  shape.all_role_display.sort_by{|rd| rd.ordinal }.map{|rd| rd.role },
+                  roles
+                )
+                sj[:role_order] = ro if ro
               end
+
+              # REVISIT: Place the ReadingShape
+
+              # Emit the position of the name, if objectified
               if n = shape.objectified_fact_type_name_shape
-                sj[:name_shape] = {:x=>n.position.x, :y=>n.position.y}
+                sj[:name_shape] = {:x => n.position.x, :y => n.position.y}
               end
               sj
             end
+
+            # Emit Internal Presence Constraints
             f.internal_presence_constraints.each do |ipc|
               uuid = (uuids[ipc] ||= SysUUID.new.sysuuid)
 
               constraint = {
-                  :uuid => uuid,
-                  :min => ipc.min_frequency,
-                  :max => ipc.max_frequency,
-                  :is_preferred => ipc.is_preferred_identifier,
-                  :mandatory => ipc.is_mandatory
-                }
+                :uuid => uuid,
+                :min => ipc.min_frequency,
+                :max => ipc.max_frequency,
+                :is_preferred => ipc.is_preferred_identifier,
+                :mandatory => ipc.is_mandatory
+              }
 
               # Get the role (or excluded role, for a UC)
               roles = ipc.role_sequence.all_role_ref_in_order.map{|r| r.role}
@@ -132,8 +176,11 @@ module ActiveFacts
               end
               (j[:constraints] ||= []) << constraint
             end
+
             # REVISIT: RingConstraints
+
             # REVISIT: RotationSetting
+
             "    #{j.to_json}"
           end*",\n"
         }\n  ],"
@@ -147,8 +194,10 @@ module ActiveFacts
               :uuid => uuid,
               :type => c.class.basename,
               :shapes => c.all_constraint_shape.map do |shape|
-                { :diagram=>uuids[shape.diagram], :uuid => SysUUID.new.sysuuid,
-                  :x=>shape.position.x, :y=>shape.position.y
+                { :diagram => uuids[shape.diagram],
+                  :uuid => SysUUID.new.sysuuid,
+                  :x => shape.position.x,
+                  :y => shape.position.y
                 }
               end
             }
@@ -160,6 +209,15 @@ module ActiveFacts
 
         puts "}"
       end
+
+      def role_order(uuids, roles, order)
+        if (roles.size > 9)
+          roles.map{|r| uuids[r] }
+        else
+          roles.map{|r| order.index(r).to_s }*''
+        end
+      end
+
     end
   end
 end
