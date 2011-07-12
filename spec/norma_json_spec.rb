@@ -32,7 +32,7 @@ describe "Norma Loader" do
 
     it "should load #{orm_file} and dump CQL matching #{expected_file}" do
       begin
-        vocabulary = ActiveFacts::Input::ORM.readfile(orm_file, ['diagrams'])
+        vocabulary = ActiveFacts::Input::ORM.readfile(orm_file, 'diagrams')
       rescue => e
         raise unless orm_failures.include?(base)
         pending orm_failures[base]
