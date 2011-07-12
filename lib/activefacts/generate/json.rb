@@ -201,10 +201,59 @@ module ActiveFacts
                 }
               end
             }
-            # REVISIT: constraint type
-            # REVISIT: constrained role sequences
+
+            if (c.enforcement)
+              # REVISIT: Deontic constraint
+            end
+            if (c.all_context_note.size > 0)
+              # REVISIT: Context Notes
+            end
+
+            case c
+            when ActiveFacts::Metamodel::PresenceConstraint
+              j[:min_frequency] = c.min_frequency
+              j[:max_frequency] = c.max_frequency
+              j[:is_mandatory] = c.is_mandatory
+              j[:is_preferred_identifier] = c.is_preferred_identifier
+              rss = [c.role_sequence.all_role_ref_in_order.map(&:role)]
+
+            when ActiveFacts::Metamodel::RingConstraint
+              j[:ringKind] = c.ring_type
+              rss = [[c.role, c.other_role]]
+
+            when ActiveFacts::Metamodel::SetComparisonConstraint
+              rss = c.
+                all_set_comparison_roles.sort_by{|scr| scr.ordinal}.
+                map{|scr| scr.role_sequence.all_role_ref_in_order.map(&:role) }
+              if (ActiveFacts::Metamodel::SetExclusionConstraint === c)
+                j[:is_mandatory] = c.is_mandatory
+              end
+
+            when ActiveFacts::Metamodel::SubsetConstraint
+              rss = [c.subset_role_sequence, c.superset_role_sequence].
+                map{|rs| rs.all_role_ref_in_order.map(&:role) }
+
+            when ActiveFacts::Metamodel::ValueConstraint
+              next nil  # REVISIT: Should have been handled elsewhere
+              if (c.role)
+                # Should have been handled as role.role_value_constraint
+              elsif (c.value_type)
+                # Should have been handled as object_type.value_constraint
+              end
+              j[:allowed_ranges] = c.all_allowed_range.map{|ar|
+                [ ar.value_range.minimum_bound, ar.value_range.maximum_bound ].
+                  map{|b| [b.value.literal, b.value.unit.name, b.is_inclusive] }
+              }
+
+            else
+              raise "REVISIT: Constraint type not yet dumped to JSON"
+            end
+
+            # rss contains the constrained role sequences; map to uuids
+            j[:role_sequences] = rss.map{|rs| rs.map{|role| uuids[role] } }
+
             "    #{j.to_json}"
-          end*",\n"
+          end.compact*",\n"
         }\n  ]"
 
         puts "}"

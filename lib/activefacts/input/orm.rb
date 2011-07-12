@@ -1296,17 +1296,20 @@ module ActiveFacts
                 bounds = x_shape['AbsoluteBounds']
                 case shape_type = x_shape.name
                 when 'FactTypeShape'
-                  read_fact_type_shape diagram, x_shape, is_expanded, bounds, subject
+                  if subject
+                    read_fact_type_shape diagram, x_shape, is_expanded, bounds, subject
+                  # else REVISIT: probably a derived fact type
+                  end
                 when 'ExternalConstraintShape', 'FrequencyConstraintShape'
                   # REVISIT: The offset might depend on the constraint type. This is right for subset and other round ones.
-                  position = convert_position(bounds, Gravity::C, 31, 31)
+                  position = convert_position(bounds, Gravity::C)
                   shape = @constellation.ConstraintShape(
                       :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :constraint => subject
                     )
                 when 'RingConstraintShape'
                   # REVISIT: The offset might depend on the ring constraint type. This is right for basic round ones.
-                  position = convert_position(bounds, Gravity::C, 31, 31)
+                  position = convert_position(bounds, Gravity::C)
                   shape = @constellation.RingConstraintShape(
                       :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :constraint => subject
@@ -1315,7 +1318,7 @@ module ActiveFacts
                 when 'ModelNoteShape'
                   # REVISIT: Add model notes
                 when 'ObjectTypeShape'
-                  position = convert_position(bounds, Gravity::C, 0, 0)
+                  position = convert_position(bounds, Gravity::C)
                   # $stderr.puts "#{subject.name}: bounds=#{bounds} -> position = (#{position.x}, #{position.y})"
                   shape = @constellation.ObjectTypeShape(
                       :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
