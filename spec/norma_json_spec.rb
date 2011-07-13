@@ -42,11 +42,11 @@ describe "Norma Loader" do
       # Save the actual file:
       File.open(actual_file, "w") { |f| f.write json_text }
 
-      # pending "Converting to JSON created new UUIDs every time"
+      pending("expected output file #{expected_file} not found") unless File.exists? expected_file
 
-      # pending("expected output file #{expected_file} not found") unless File.exists? expected_file
-
-      # expected_text = File.open(expected_file) {|f| f.read }
+      expected_text = File.open(expected_file) {|f| f.read }
+      json_text.should_not differ_from(expected_text)
+      File.delete(actual_file)
     end
   end
 end

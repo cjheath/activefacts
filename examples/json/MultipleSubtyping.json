@@ -1,0 +1,22 @@
+{ model: 'MultipleSubtyping',
+diagrams: [
+    {"uuid":"a2a6adb3-0fb3-3524-b6ee-6976a3","name":"MultipleSubtyping"}
+  ],
+  object_types: [
+    {"uuid":"74a98def-482e-06c1-8345-838b21","supertypes":[["d1a1a542-c588-2b36-9bd4-d6a805","4829bf1f-f6a0-beca-d378-a75f30"]],"name":"Adult","shapes":[{"diagram":"a2a6adb3-0fb3-3524-b6ee-6976a3","y":392,"uuid":"24b4efb7-5e42-bdff-eee4-1027d3","x":425}]},
+    {"uuid":"fe83811d-d57b-b5db-772d-258775","supertypes":[["d1a1a542-c588-2b36-9bd4-d6a805","3df18ca3-726e-4925-43fe-149652"]],"name":"Child","shapes":[{"diagram":"a2a6adb3-0fb3-3524-b6ee-6976a3","y":392,"uuid":"1ff602eb-0468-fc87-1790-c69b41","x":211}]},
+    {"uuid":"a589cb47-00c7-49b9-6734-d7369a","supertypes":[["d1a1a542-c588-2b36-9bd4-d6a805","0eadaafd-1fe6-e302-73d6-13ffb1"]],"name":"Female","shapes":[{"diagram":"a2a6adb3-0fb3-3524-b6ee-6976a3","y":392,"uuid":"0e7af2ac-d608-0609-5474-4bcea2","x":694}]},
+    {"uuid":"d8e8110b-1008-c0cf-fffc-985a93","supertypes":[["d1a1a542-c588-2b36-9bd4-d6a805","b6c337ff-ca57-e1b0-6008-784bd7"]],"name":"Male","shapes":[{"diagram":"a2a6adb3-0fb3-3524-b6ee-6976a3","y":392,"uuid":"c53f2c73-9220-9304-2f6d-dafbde","x":598}]},
+    {"uuid":"d1a1a542-c588-2b36-9bd4-d6a805","name":"Person","shapes":[{"diagram":"a2a6adb3-0fb3-3524-b6ee-6976a3","y":215,"uuid":"db03d17e-b373-4797-8099-61e032","x":456}]},
+    {"uuid":"60947c52-e7ee-8a90-afe1-36a6fe","supertype":"783246ee-0f76-4b2e-ba31-29177e","name":"Person Name","shapes":[]},
+    {"uuid":"783246ee-0f76-4b2e-ba31-29177e","name":"String","shapes":[]},
+    {"uuid":"e0a2da15-5709-a558-c550-0500d0","supertypes":[["d1a1a542-c588-2b36-9bd4-d6a805","89f8b4fb-9b69-73c7-aa0d-03c428"]],"name":"Teenager","shapes":[{"diagram":"a2a6adb3-0fb3-3524-b6ee-6976a3","y":392,"uuid":"bae58a20-4f4b-7976-2360-36be95","x":318}]}
+  ],
+  fact_types: [
+    {"uuid":"cd405e65-5972-e194-6acc-a35e20","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"11cc65ad-612f-427d-e6b9-f04dd2","is_preferred":null,"min":1,"max":1,"role":"b83c3d4a-d895-37b7-70a0-e11c21","mandatory":true},{"uuid":"c799de49-b76d-c4fb-c38c-3030e0","is_preferred":true,"min":0,"uniqueExcept":"b83c3d4a-d895-37b7-70a0-e11c21","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"d1a1a542-c588-2b36-9bd4-d6a805","uuid":"b83c3d4a-d895-37b7-70a0-e11c21"},{"player":"60947c52-e7ee-8a90-afe1-36a6fe","uuid":"08d97017-3672-5fc5-5ea0-c4b81a"}]}
+  ],
+  constraints: [
+    {"type":"SetExclusionConstraint","is_mandatory":true,"uuid":"2fc53b1f-d09a-4f81-a772-2c5c24","role_sequences":[["b6c337ff-ca57-e1b0-6008-784bd7"],["0eadaafd-1fe6-e302-73d6-13ffb1"]],"shapes":[{"diagram":"a2a6adb3-0fb3-3524-b6ee-6976a3","y":330,"uuid":"62687217-ab62-d84c-2c48-2bec2c","x":579}]},
+    {"type":"SetExclusionConstraint","is_mandatory":true,"uuid":"ada96df2-cedb-6a7c-b8a6-a67a84","role_sequences":[["3df18ca3-726e-4925-43fe-149652"],["89f8b4fb-9b69-73c7-aa0d-03c428"],["4829bf1f-f6a0-beca-d378-a75f30"]],"shapes":[{"diagram":"a2a6adb3-0fb3-3524-b6ee-6976a3","y":327,"uuid":"c9adb91e-d00b-e1e2-cba7-47a219","x":400}]}
+  ]
+}

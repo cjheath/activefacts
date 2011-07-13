@@ -1,0 +1,20 @@
+{ model: 'Death',
+diagrams: [
+    {"uuid":"34bf7ee7-99db-4c56-7072-b1eddb","name":"Death"}
+  ],
+  object_types: [
+    {"uuid":"b992c807-41a3-080a-fc91-38c45e","supertype":"f0f44306-5843-c26e-d0cc-3fca99","name":"Cause Of Death","shapes":[{"diagram":"34bf7ee7-99db-4c56-7072-b1eddb","y":98,"uuid":"8f39546c-d962-d565-db35-f2d233","x":473}]},
+    {"uuid":"34bf7ee7-99db-4c56-7072-b1eddb","objectifies":"cb3860eb-139e-50f4-64f8-d1f603","name":"Death","shapes":[]},
+    {"uuid":"d43b5b70-5ecb-1e46-6ffc-e876d4","name":"Person","shapes":[{"diagram":"34bf7ee7-99db-4c56-7072-b1eddb","y":98,"uuid":"15edc83a-eeda-75e7-3227-af2eb0","x":113}]},
+    {"uuid":"1240b15b-8e25-fb68-66ab-1fb677","supertype":"f0f44306-5843-c26e-d0cc-3fca99","name":"Person Name","shapes":[]},
+    {"uuid":"f0f44306-5843-c26e-d0cc-3fca99","name":"String","shapes":[]}
+  ],
+  fact_types: [
+    {"uuid":"8cacd901-3c26-77de-2986-8fa6b8","readings":[["01","{0} was due to {1}"]],"constraints":[{"uuid":"b0bb7062-67db-2abb-ce9b-5a187e","is_preferred":null,"min":0,"uniqueExcept":"90ee0198-616f-b4b5-9e5c-f03901","max":1,"mandatory":null}],"shapes":[{"diagram":"34bf7ee7-99db-4c56-7072-b1eddb","y":98,"uuid":"1cf6b6d9-4898-7b79-811c-04b2a1","x":352}],"roles":[{"player":"34bf7ee7-99db-4c56-7072-b1eddb","uuid":"3f0ee67d-e0aa-7b52-347d-31401e"},{"player":"b992c807-41a3-080a-fc91-38c45e","uuid":"90ee0198-616f-b4b5-9e5c-f03901"}]},
+    {"objectified_as":"34bf7ee7-99db-4c56-7072-b1eddb","uuid":"cb3860eb-139e-50f4-64f8-d1f603","readings":[["0","{0} is dead"]],"constraints":[{"uuid":"7fc00145-c44d-00c1-91d5-a628ec","is_preferred":true,"min":1,"max":1,"role":"f31b194a-6671-bb2e-dddf-2706d5","mandatory":true}],"shapes":[{"diagram":"34bf7ee7-99db-4c56-7072-b1eddb","name_shape":{"y":62,"x":241},"y":94,"uuid":"f2626ad2-e175-10cd-6c9f-6ce138","x":250}],"roles":[{"player":"d43b5b70-5ecb-1e46-6ffc-e876d4","uuid":"f31b194a-6671-bb2e-dddf-2706d5"}]},
+    {"uuid":"b8be1a86-052c-27b6-8483-78851e","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"060a21a8-4f16-4c16-ef6e-f251b0","is_preferred":null,"min":1,"max":1,"role":"df4bcf35-49cd-53eb-d5dd-cf54a9","mandatory":true},{"uuid":"bd6c8cdd-cf56-2dac-f230-e073b3","is_preferred":true,"min":0,"uniqueExcept":"df4bcf35-49cd-53eb-d5dd-cf54a9","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"d43b5b70-5ecb-1e46-6ffc-e876d4","uuid":"df4bcf35-49cd-53eb-d5dd-cf54a9"},{"player":"1240b15b-8e25-fb68-66ab-1fb677","uuid":"083f8783-6737-e307-13b1-f03156"}]}
+  ],
+  constraints: [
+
+  ]
+}

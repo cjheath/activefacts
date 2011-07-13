@@ -1,0 +1,20 @@
+{ model: 'OneToOnes',
+diagrams: [
+    {"uuid":"fb95d173-6c1a-6af2-d116-88477a","name":"OneToOnes"}
+  ],
+  object_types: [
+    {"uuid":"4ec1828e-55cf-bdc6-7cb0-56d211","name":"Auto Counter","shapes":[]},
+    {"uuid":"c4c70a57-f088-4309-775d-8e053c","name":"Boy","shapes":[{"diagram":"fb95d173-6c1a-6af2-d116-88477a","y":99,"uuid":"81b633e9-8cf7-7d04-6e12-c730ae","x":307}]},
+    {"uuid":"d5247b7b-335c-ae5b-c471-f66e9d","supertype":"4ec1828e-55cf-bdc6-7cb0-56d211","name":"Boy ID","shapes":[]},
+    {"uuid":"b41684f5-e3ed-3cdf-c295-725b1a","name":"Girl","shapes":[{"diagram":"fb95d173-6c1a-6af2-d116-88477a","y":99,"uuid":"224849dc-7115-12c4-1538-d02e53","x":101}]},
+    {"uuid":"fc778cff-4fdd-bbec-25cb-37bb49","supertype":"4ec1828e-55cf-bdc6-7cb0-56d211","name":"Girl ID","shapes":[]}
+  ],
+  fact_types: [
+    {"uuid":"13ebd871-8250-216b-4049-cfbd6a","readings":[["01","{0} is going out with {1}"],["10","{0} is going out with {1}"]],"constraints":[{"uuid":"1ddde7b8-39ac-2e58-ff93-a6dbc8","is_preferred":null,"min":0,"uniqueExcept":"50997b08-4d57-5381-9f33-f31c6b","max":1,"mandatory":null},{"uuid":"1e113857-a8c8-3a71-5df9-eee404","is_preferred":null,"min":0,"uniqueExcept":"c94fcfbc-4ff1-10c7-c076-028f44","max":1,"mandatory":null}],"shapes":[{"diagram":"fb95d173-6c1a-6af2-d116-88477a","y":100,"uuid":"56a1af1e-f53b-078d-e649-0ce80f","x":222}],"roles":[{"player":"b41684f5-e3ed-3cdf-c295-725b1a","uuid":"c94fcfbc-4ff1-10c7-c076-028f44"},{"player":"c4c70a57-f088-4309-775d-8e053c","uuid":"50997b08-4d57-5381-9f33-f31c6b"}]},
+    {"uuid":"54812f81-8e83-8d6d-4558-696323","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"865bc391-5c0e-2b73-8207-fc984a","is_preferred":null,"min":1,"max":1,"role":"09277303-0118-9c2f-8604-041e5b","mandatory":true},{"uuid":"4d1e8496-bb64-5cd9-2e45-156917","is_preferred":true,"min":0,"uniqueExcept":"09277303-0118-9c2f-8604-041e5b","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"c4c70a57-f088-4309-775d-8e053c","uuid":"09277303-0118-9c2f-8604-041e5b"},{"player":"d5247b7b-335c-ae5b-c471-f66e9d","uuid":"777baf74-6b09-d70a-5fcb-32f3a6"}]},
+    {"uuid":"3528e45e-ab02-fca3-9346-62cb0c","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"62ce44cf-e9a7-2ef2-bcb9-5cd4c6","is_preferred":null,"min":1,"max":1,"role":"4308b30d-3b25-68bc-7634-c28001","mandatory":true},{"uuid":"dd93a448-ba08-472e-b949-6215a3","is_preferred":true,"min":0,"uniqueExcept":"4308b30d-3b25-68bc-7634-c28001","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"b41684f5-e3ed-3cdf-c295-725b1a","uuid":"4308b30d-3b25-68bc-7634-c28001"},{"player":"fc778cff-4fdd-bbec-25cb-37bb49","uuid":"4d8be652-ad7c-753b-9977-b390ce"}]}
+  ],
+  constraints: [
+
+  ]
+}

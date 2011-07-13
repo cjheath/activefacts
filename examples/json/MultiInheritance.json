@@ -1,0 +1,25 @@
+{ model: 'MultiInheritance',
+diagrams: [
+    {"uuid":"6c1925db-2019-ffab-8f10-74d1c4","name":"MultiInheritance"}
+  ],
+  object_types: [
+    {"uuid":"6f973a27-9285-aa14-548d-b98301","supertypes":[["d3ab48dc-fd59-2db5-40f8-332105","496bf219-aa38-a6ff-cf8f-ee78d1"]],"name":"Australian","shapes":[{"diagram":"6c1925db-2019-ffab-8f10-74d1c4","y":230,"uuid":"e652bd72-70be-bc5c-0a74-b91092","x":274}]},
+    {"uuid":"f5a25f2b-818e-3252-b3df-7d162c","supertypes":[["100c6550-b953-1b0d-9de2-df9efb","91ea502f-1da7-d89b-a018-cb932e"],["6f973a27-9285-aa14-548d-b98301","4902dcc5-82a2-4cee-f80e-f22d3c"]],"name":"Australian Employee","shapes":[{"diagram":"6c1925db-2019-ffab-8f10-74d1c4","y":329,"uuid":"8f962ba7-a608-dbf1-5033-d6d92f","x":372}]},
+    {"uuid":"b47b6d34-201e-3afa-d2de-2dee18","name":"Auto Counter","shapes":[]},
+    {"uuid":"63393fe8-398a-8fc2-e89d-cc5c6b","name":"Char","shapes":[]},
+    {"uuid":"100c6550-b953-1b0d-9de2-df9efb","supertypes":[["d3ab48dc-fd59-2db5-40f8-332105","358f4935-d89a-8a83-cdfb-7ac7d6"]],"name":"Employee","shapes":[{"diagram":"6c1925db-2019-ffab-8f10-74d1c4","y":230,"uuid":"8b669653-63cb-0c23-6f3d-6a2049","x":468}]},
+    {"uuid":"a086b612-07f7-99bb-677c-816120","supertype":"b47b6d34-201e-3afa-d2de-2dee18","name":"Employee ID","shapes":[]},
+    {"uuid":"d3ab48dc-fd59-2db5-40f8-332105","name":"Person","shapes":[{"diagram":"6c1925db-2019-ffab-8f10-74d1c4","y":119,"uuid":"491979e8-981e-05df-72e4-14a344","x":363}]},
+    {"uuid":"acf26375-3d77-bfdc-9b5b-2638a1","supertype":"267bd970-d93d-f571-8d75-09f2ce","name":"Person Name","shapes":[]},
+    {"uuid":"267bd970-d93d-f571-8d75-09f2ce","name":"String","shapes":[]},
+    {"uuid":"ed809cd1-9715-3503-5996-a692f1","supertype":"63393fe8-398a-8fc2-e89d-cc5c6b","name":"TFN","shapes":[{"diagram":"6c1925db-2019-ffab-8f10-74d1c4","y":230,"uuid":"2066e84e-9bda-5d25-9b6b-2fbb1a","x":126}]}
+  ],
+  fact_types: [
+    {"uuid":"42f541b2-f6b7-2bb6-bc1f-dd4069","readings":[["01","{0} is of {1}"],["10","{0} has {1}"]],"constraints":[{"uuid":"25819641-16f9-ee6d-8dac-dbb4fb","is_preferred":null,"min":1,"max":1,"role":"9b76e29d-8f31-3f57-57a0-2f3cf8","mandatory":true},{"uuid":"ee265548-3b88-f1fa-caa7-b467b4","is_preferred":null,"min":0,"uniqueExcept":"9b76e29d-8f31-3f57-57a0-2f3cf8","max":1,"mandatory":null}],"shapes":[{"diagram":"6c1925db-2019-ffab-8f10-74d1c4","y":231,"uuid":"3df6f35c-e265-cb3c-c9e0-681dc1","x":201}],"roles":[{"player":"ed809cd1-9715-3503-5996-a692f1","uuid":"9b76e29d-8f31-3f57-57a0-2f3cf8"},{"player":"6f973a27-9285-aa14-548d-b98301","uuid":"b52a3b04-d1ef-01ef-6298-d18840"}]},
+    {"uuid":"655ecc17-8479-99a5-167c-7e058c","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"b0095e37-002d-9972-0b44-840f6e","is_preferred":null,"min":1,"max":1,"role":"3db0e28a-bca3-6fbe-cac4-e01fa4","mandatory":true},{"uuid":"e0315c33-e292-25e5-6d98-e78174","is_preferred":true,"min":0,"uniqueExcept":"3db0e28a-bca3-6fbe-cac4-e01fa4","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"100c6550-b953-1b0d-9de2-df9efb","uuid":"3db0e28a-bca3-6fbe-cac4-e01fa4"},{"player":"a086b612-07f7-99bb-677c-816120","uuid":"f567c5ec-3500-1f38-0f69-663766"}]},
+    {"uuid":"18211cbe-0f63-cf17-9ae8-a801de","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"1318abfd-4e60-e043-50fc-6869ed","is_preferred":null,"min":1,"max":1,"role":"bb01be36-137d-37c0-2193-5f5e58","mandatory":true},{"uuid":"8906f0ad-fbd8-09f7-a355-c014e5","is_preferred":true,"min":0,"uniqueExcept":"bb01be36-137d-37c0-2193-5f5e58","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"d3ab48dc-fd59-2db5-40f8-332105","uuid":"bb01be36-137d-37c0-2193-5f5e58"},{"player":"acf26375-3d77-bfdc-9b5b-2638a1","uuid":"13ac5755-14c7-bc08-a7a6-0c5cb2"}]}
+  ],
+  constraints: [
+
+  ]
+}

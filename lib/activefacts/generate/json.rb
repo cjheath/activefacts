@@ -5,7 +5,7 @@
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'json'
-require 'sysuuid'
+require 'digest/sha1'
 
 module ActiveFacts
   module Generate
@@ -31,8 +31,7 @@ module ActiveFacts
         puts "{ model: '#{@vocabulary.name}',\n" +
         "diagrams: [\n#{
           @vocabulary.all_diagram.sort_by{|o| o.name.gsub(/ /,'')}.map do |d|
-            uuid = uuids[d] ||= SysUUID.new.sysuuid
-            j = {:uuid => uuid, :name => d.name}
+            j = {:uuid => (uuids[d] ||= uuid_from_id(d)), :name => d.name}
             "    #{j.to_json}"
           end*",\n"
         }\n  ],"
@@ -40,13 +39,13 @@ module ActiveFacts
         object_types = @vocabulary.all_object_type.sort_by{|o| o.name.gsub(/ /,'')}
         puts "  object_types: [\n#{
           object_types.map do |o|
-            uuids[o] ||= SysUUID.new.sysuuid
+            uuids[o] ||= uuid_from_id(o)
             j = {
               :uuid => uuids[o],
               :name => o.name,
               :shapes => o.all_object_type_shape.map do |shape|
                 { :diagram => uuids[shape.diagram],
-                  :uuid => SysUUID.new.sysuuid,
+                  :uuid => uuid_from_id(shape),
                   :x => shape.position.x,
                   :y => shape.position.y
                 }
@@ -56,19 +55,23 @@ module ActiveFacts
             if o.is_a?(ActiveFacts::Metamodel::EntityType)
               # Entity Type may be objectified, and may have supertypes:
               if o.fact_type
-                uuid = (uuids[o.fact_type] ||= SysUUID.new.sysuuid)
+                uuid = (uuids[o.fact_type] ||= uuid_from_id(o.fact_type))
                 j[:objectifies] = uuid
               end
               if o.all_type_inheritance_as_subtype.size > 0
                 j[:supertypes] = o.
                   all_type_inheritance_as_subtype.
                   sort_by{|ti| ti.provides_identification ? 0 : 1}.
-                  map{|ti| uuids[ti.supertype] ||= SysUUID.new.sysuuid }
+                  map{|ti|
+                    [ uuids[ti.supertype] ||= uuid_from_id(ti.supertype),
+                      uuids[ti.supertype_role] = uuid_from_id(ti.supertype_role)
+                    ]
+                  }
               end
             else
               # ValueType usually has a supertype:
               if (o.supertype)
-                j[:supertype] = (uuids[o.supertype] ||= SysUUID.new.sysuuid)
+                j[:supertype] = (uuids[o.supertype] ||= uuid_from_id(o.supertype))
               end
             end
             # REVISIT: Place a ValueConstraint and shape
@@ -83,7 +86,7 @@ module ActiveFacts
           }
         puts "  fact_types: [\n#{
           fact_types.map do |f|
-            uuids[f] ||= SysUUID.new.sysuuid
+            uuids[f] ||= uuid_from_id(f)
             j = {:uuid => uuids[f]}
 
             j[:objectified_as] = uuids[f.entity_type] if f.entity_type
@@ -91,7 +94,7 @@ module ActiveFacts
             # Emit roles
             roles = f.all_role.sort_by{|r| r.ordinal }
             j[:roles] = roles.map do |role|
-              uuid = (uuids[role] ||= SysUUID.new.sysuuid)
+              uuid = (uuids[role] ||= uuid_from_id(role))
               # REVISIT: Internal Mandatory Constraints
               # REVISIT: Place a ValueConstraint and shape
               # REVISIT: Place a RoleName shape
@@ -126,7 +129,7 @@ module ActiveFacts
             j[:shapes] = f.all_fact_type_shape.map do |shape|
               sj = {
                 :diagram => uuids[shape.diagram],
-                :uuid => SysUUID.new.sysuuid,
+                :uuid => uuid_from_id(shape),
                 :x => shape.position.x,
                 :y => shape.position.y
               }
@@ -152,7 +155,7 @@ module ActiveFacts
 
             # Emit Internal Presence Constraints
             f.internal_presence_constraints.each do |ipc|
-              uuid = (uuids[ipc] ||= SysUUID.new.sysuuid)
+              uuid = (uuids[ipc] ||= uuid_from_id(ipc))
 
               constraint = {
                 :uuid => uuid,
@@ -177,7 +180,24 @@ module ActiveFacts
               (j[:constraints] ||= []) << constraint
             end
 
-            # REVISIT: RingConstraints
+            # Add ring constraints
+            f.all_role.
+              map{|r| r.all_ring_constraint.to_a+r.all_ring_constraint_as_other_role.to_a }.
+              flatten.uniq.each do |ring|
+                (j[:constraints] ||= []) << {
+                    :uuid => (uuids[ring] ||= uuid_from_id(ring)),
+                    :shapes => ring.all_constraint_shape.map do |shape|
+                      { :diagram => uuids[shape.diagram],
+                        :uuid => uuid_from_id(shape),
+                        :x => shape.position.x,
+                        :y => shape.position.y
+                      }
+                    end,
+                    :ringKind => ring.ring_type,
+                    :roles => [uuids[ring.role], uuids[ring.other_role]]
+                    # REVISIT: Deontic, enforcement
+                  }
+              end
 
             # REVISIT: RotationSetting
 
@@ -189,13 +209,13 @@ module ActiveFacts
           Constraint.values
         puts "  constraints: [\n#{
           constraints.select{|c| !uuids[c]}.map do |c|
-            uuid = uuids[c] ||= SysUUID.new.sysuuid
+            uuid = uuids[c] ||= uuid_from_id(c)
             j = {
               :uuid => uuid,
               :type => c.class.basename,
               :shapes => c.all_constraint_shape.map do |shape|
                 { :diagram => uuids[shape.diagram],
-                  :uuid => SysUUID.new.sysuuid,
+                  :uuid => uuid_from_id(shape),
                   :x => shape.position.x,
                   :y => shape.position.y
                 }
@@ -217,9 +237,14 @@ module ActiveFacts
               j[:is_preferred_identifier] = c.is_preferred_identifier
               rss = [c.role_sequence.all_role_ref_in_order.map(&:role)]
 
+              # Ignore internal presence constraints on TypeInheritance fact types
+              next nil if !c.role_sequence.all_role_ref.
+                detect{|rr|
+                  !rr.role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+                }
+
             when ActiveFacts::Metamodel::RingConstraint
-              j[:ringKind] = c.ring_type
-              rss = [[c.role, c.other_role]]
+              next nil  # These are emitted with the corresponding fact type
 
             when ActiveFacts::Metamodel::SetComparisonConstraint
               rss = c.
@@ -250,7 +275,11 @@ module ActiveFacts
             end
 
             # rss contains the constrained role sequences; map to uuids
-            j[:role_sequences] = rss.map{|rs| rs.map{|role| uuids[role] } }
+            j[:role_sequences] = rss.map{|rs|
+              rs.map do |role|
+                uuids[role]
+              end
+            }
 
             "    #{j.to_json}"
           end.compact*",\n"
@@ -265,6 +294,17 @@ module ActiveFacts
         else
           roles.map{|r| order.index(r).to_s }*''
         end
+      end
+
+      def uuid_from_id o
+        irvs = o.identifying_role_values.inspect
+        d = Digest::SHA1.digest irvs
+        # $stderr.puts "#{o.class.basename}: #{irvs}"
+        d[0,4].unpack("H8")[0]+'-'+
+          d[4,2].unpack("H4")[0]+'-'+
+          d[6,2].unpack("H4")[0]+'-'+
+          d[8,2].unpack("H4")[0]+'-'+
+          d[10,6].unpack("H6")[0]
       end
 
     end

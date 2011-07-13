@@ -1,0 +1,22 @@
+{ model: 'PersonPlaysGame',
+diagrams: [
+    {"uuid":"9dee93fa-180b-6040-9696-5fa39e","name":"AbsorbViaObjFact"}
+  ],
+  object_types: [
+    {"uuid":"ff530b96-59be-e9c6-3785-75645e","name":"Char","shapes":[]},
+    {"uuid":"37affb91-dd3b-57c3-6548-21404c","name":"Game","shapes":[{"diagram":"9dee93fa-180b-6040-9696-5fa39e","y":113,"uuid":"64b26673-53b5-c2ef-a106-b3ca86","x":326}]},
+    {"uuid":"ef05f090-cb9a-bddc-9b26-c05081","supertype":"ff530b96-59be-e9c6-3785-75645e","name":"Game Code","shapes":[]},
+    {"uuid":"1d58e9f6-2798-ed08-8344-abb9eb","name":"Person","shapes":[{"diagram":"9dee93fa-180b-6040-9696-5fa39e","y":113,"uuid":"b63474ec-c443-4d30-14b2-1c265f","x":113}]},
+    {"uuid":"ac8b0349-3b3a-6af4-95ad-0bee33","supertype":"1f6ce1d0-178d-b526-3549-ae6632","name":"Person Name","shapes":[]},
+    {"uuid":"ddf24df7-5ab2-8d77-9451-755636","objectifies":"482ad582-cf96-a6a0-9eff-80f065","name":"Playing","shapes":[]},
+    {"uuid":"1f6ce1d0-178d-b526-3549-ae6632","name":"String","shapes":[]}
+  ],
+  fact_types: [
+    {"objectified_as":"ddf24df7-5ab2-8d77-9451-755636","uuid":"482ad582-cf96-a6a0-9eff-80f065","readings":[["01","{0} plays {1}"]],"constraints":[{"uuid":"07cf8300-81ac-dcba-fc08-5d873f","is_preferred":true,"min":1,"uniqueExcept":null,"max":1,"mandatory":true}],"shapes":[{"diagram":"9dee93fa-180b-6040-9696-5fa39e","y":105,"uuid":"8642c38d-50e0-7a8c-43c1-924e04","x":230}],"roles":[{"player":"1d58e9f6-2798-ed08-8344-abb9eb","uuid":"cc3f21a9-cff7-958e-2cd8-4e6460"},{"player":"37affb91-dd3b-57c3-6548-21404c","uuid":"7ecb0a85-05f1-3a05-aa38-c4a15a"}]},
+    {"uuid":"d6f94d1d-15ae-c09c-a252-dc268c","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"081fcd98-f0ca-6464-5340-4b5842","is_preferred":null,"min":1,"max":1,"role":"a24c96e1-fad2-27b0-ef6e-c0bf53","mandatory":true},{"uuid":"baf66568-40d9-55ef-1bd4-330a95","is_preferred":true,"min":0,"uniqueExcept":"a24c96e1-fad2-27b0-ef6e-c0bf53","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"37affb91-dd3b-57c3-6548-21404c","uuid":"a24c96e1-fad2-27b0-ef6e-c0bf53"},{"player":"ef05f090-cb9a-bddc-9b26-c05081","uuid":"ec175b54-ab38-4765-0bd6-349361"}]},
+    {"uuid":"a112d509-5b0e-0762-804d-50a624","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"8b09670b-e558-a2f6-899d-a4ca92","is_preferred":null,"min":1,"max":1,"role":"5b1ba822-755a-dd35-ef75-faa594","mandatory":true},{"uuid":"91276336-0b57-1b76-85f5-788379","is_preferred":true,"min":0,"uniqueExcept":"5b1ba822-755a-dd35-ef75-faa594","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"1d58e9f6-2798-ed08-8344-abb9eb","uuid":"5b1ba822-755a-dd35-ef75-faa594"},{"player":"ac8b0349-3b3a-6af4-95ad-0bee33","uuid":"7200742e-5896-d639-070d-62d27b"}]}
+  ],
+  constraints: [
+
+  ]
+}

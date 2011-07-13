@@ -1,0 +1,26 @@
+{ model: 'SeparateSubtype',
+diagrams: [
+    {"uuid":"e79978bb-3626-91b9-784d-d09b4b","name":"OneToOnes"}
+  ],
+  object_types: [
+    {"uuid":"7e7753c2-5a46-8791-b9d3-bb5b90","name":"Auto Counter","shapes":[]},
+    {"uuid":"c214dfa8-ad36-3789-032c-87f982","name":"Claim","shapes":[{"diagram":"e79978bb-3626-91b9-784d-d09b4b","y":98,"uuid":"c51a0f02-2c61-7391-14f4-dd36d9","x":103}]},
+    {"uuid":"dc5c5a28-8780-36bd-7c3d-152bef","supertype":"7e7753c2-5a46-8791-b9d3-bb5b90","name":"Claim ID","shapes":[]},
+    {"uuid":"fdf574a2-a70a-4016-b454-380dde","name":"Date Time","shapes":[{"diagram":"e79978bb-3626-91b9-784d-d09b4b","y":173,"uuid":"f4d9ade4-9842-f16b-dd28-a6b6ac","x":496}]},
+    {"uuid":"db08d97f-cb9c-2c65-9e3a-d63245","name":"Driver","shapes":[{"diagram":"e79978bb-3626-91b9-784d-d09b4b","y":98,"uuid":"812e78de-c7ba-38a7-22e9-b06c15","x":732}]},
+    {"uuid":"06639702-7fe4-a767-08f7-f42c67","supertype":"d054091a-0d16-621e-7161-3847ce","name":"Driver Name","shapes":[]},
+    {"uuid":"76746a2a-4685-acae-fed7-4f4d29","name":"Incident","shapes":[{"diagram":"e79978bb-3626-91b9-784d-d09b4b","y":98,"uuid":"65ca8c73-b4e9-49fe-1db0-66e585","x":317}]},
+    {"uuid":"d054091a-0d16-621e-7161-3847ce","name":"String","shapes":[]},
+    {"uuid":"214da3e5-085c-ff0b-e145-f6189c","supertypes":[["76746a2a-4685-acae-fed7-4f4d29","988d22a5-d3a6-8555-a340-702a05"]],"name":"Vehicle Incident","shapes":[{"diagram":"e79978bb-3626-91b9-784d-d09b4b","y":98,"uuid":"d5919c02-d989-9cd7-d206-7ec545","x":493}]}
+  ],
+  fact_types: [
+    {"uuid":"d68ada4a-d50c-b151-0827-24d88a","readings":[["01","{0} occurred on {1}"]],"constraints":[{"uuid":"c35559b7-97f1-748e-6613-804fc1","is_preferred":null,"min":0,"uniqueExcept":"2f223ef3-4b1d-1b2c-e034-eb01ff","max":1,"mandatory":null}],"shapes":[{"diagram":"e79978bb-3626-91b9-784d-d09b4b","y":173,"uuid":"3cc3bc96-aff5-e5bd-f6e4-17c745","x":387}],"roles":[{"player":"76746a2a-4685-acae-fed7-4f4d29","uuid":"5e80af09-e98b-3717-1520-6ac2de"},{"player":"fdf574a2-a70a-4016-b454-380dde","uuid":"2f223ef3-4b1d-1b2c-e034-eb01ff"}]},
+    {"uuid":"41b2c234-3012-c753-b915-5dbc7a","readings":[["01","{0} occured while {1} was in charge"]],"constraints":[{"uuid":"373c116b-d499-0f8d-8070-d6ff75","is_preferred":null,"min":0,"uniqueExcept":"9f2d2767-71d6-8d5f-e032-a6009c","max":1,"mandatory":null}],"shapes":[{"diagram":"e79978bb-3626-91b9-784d-d09b4b","y":98,"uuid":"cdf65f86-bfa1-6596-c6cd-e2df0e","x":634}],"roles":[{"player":"214da3e5-085c-ff0b-e145-f6189c","uuid":"3c3ea454-ce44-3d09-8f55-feaa3b"},{"player":"db08d97f-cb9c-2c65-9e3a-d63245","uuid":"9f2d2767-71d6-8d5f-e032-a6009c"}]},
+    {"uuid":"8250042e-9a7c-babc-c1ff-f86c90","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"e6d31248-ae3e-1544-04b0-513f57","is_preferred":null,"min":1,"max":1,"role":"6495ff7e-2026-7011-e0ab-6f4b29","mandatory":true},{"uuid":"11f7f538-3d49-4d68-ab1b-e71c56","is_preferred":true,"min":0,"uniqueExcept":"6495ff7e-2026-7011-e0ab-6f4b29","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"db08d97f-cb9c-2c65-9e3a-d63245","uuid":"6495ff7e-2026-7011-e0ab-6f4b29"},{"player":"06639702-7fe4-a767-08f7-f42c67","uuid":"6ec2bcb3-e3d8-d385-cb0d-666d47"}]},
+    {"uuid":"3067757d-f4f0-4bbf-63dd-e8f56e","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"b905959d-8066-d7da-0afb-7e2d25","is_preferred":null,"min":1,"max":1,"role":"f115cef8-0502-267a-cec7-09fd72","mandatory":true},{"uuid":"204518f6-467a-9dff-be8e-69c487","is_preferred":true,"min":0,"uniqueExcept":"f115cef8-0502-267a-cec7-09fd72","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"c214dfa8-ad36-3789-032c-87f982","uuid":"f115cef8-0502-267a-cec7-09fd72"},{"player":"dc5c5a28-8780-36bd-7c3d-152bef","uuid":"fe833fd0-a405-3272-107e-599e3d"}]},
+    {"uuid":"f53e4aa9-8601-5d79-2baf-0597f0","readings":[["01","{0} concerns {1}"]],"constraints":[{"uuid":"7e113e67-b45e-b5de-fca2-3323bd","is_preferred":true,"min":0,"uniqueExcept":"e66d69d9-1751-8b05-7297-396e42","max":1,"mandatory":null},{"uuid":"00452f8d-eafd-ae56-5b1c-cc205f","is_preferred":null,"min":1,"max":1,"role":"e66d69d9-1751-8b05-7297-396e42","mandatory":true}],"shapes":[{"diagram":"e79978bb-3626-91b9-784d-d09b4b","y":98,"uuid":"52be7af8-1e69-e25d-3268-557e08","x":222}],"roles":[{"player":"c214dfa8-ad36-3789-032c-87f982","uuid":"c8a71e87-be7c-59c2-18b4-d77f1d"},{"player":"76746a2a-4685-acae-fed7-4f4d29","uuid":"e66d69d9-1751-8b05-7297-396e42"}]}
+  ],
+  constraints: [
+
+  ]
+}

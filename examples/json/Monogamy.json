@@ -1,0 +1,22 @@
+{ model: 'Monogamy',
+diagrams: [
+    {"uuid":"afbada12-9cd6-1904-c0fb-1f8e21","name":"Monogamy"}
+  ],
+  object_types: [
+    {"uuid":"74f7cb25-88de-e214-e3e8-1560f6","name":"Auto Counter","shapes":[]},
+    {"uuid":"5d90f0d1-824a-d884-441c-e6ceca","supertypes":[["2bb6479d-7c83-6eec-0077-395623","ff924de3-bb13-d4b7-1d69-b704ac"]],"name":"Boy","shapes":[{"diagram":"afbada12-9cd6-1904-c0fb-1f8e21","y":233,"uuid":"de32fb84-73f1-e0fb-4621-75c76e","x":257}]},
+    {"uuid":"33bca377-9b31-f4cf-0931-5d5fe2","supertypes":[["2bb6479d-7c83-6eec-0077-395623","a043511d-9078-7606-9138-bbe743"]],"name":"Girl","shapes":[{"diagram":"afbada12-9cd6-1904-c0fb-1f8e21","y":233,"uuid":"bd0dc435-2413-f6f3-d891-081f32","x":96}]},
+    {"uuid":"1baf726f-a0df-29a0-bc72-a2003a","supertype":"4b9f0761-bc5a-6a68-92d4-efc237","name":"Name","shapes":[{"diagram":"afbada12-9cd6-1904-c0fb-1f8e21","y":98,"uuid":"2ddc2695-ed5a-e3df-afee-2c2591","x":368}]},
+    {"uuid":"2bb6479d-7c83-6eec-0077-395623","name":"Person","shapes":[{"diagram":"afbada12-9cd6-1904-c0fb-1f8e21","y":98,"uuid":"57c4449b-1182-5953-65c7-fd9d09","x":180}]},
+    {"uuid":"bcdfe592-a78b-27d7-896f-3e9878","supertype":"74f7cb25-88de-e214-e3e8-1560f6","name":"Person ID","shapes":[]},
+    {"uuid":"4b9f0761-bc5a-6a68-92d4-efc237","name":"String","shapes":[]}
+  ],
+  fact_types: [
+    {"uuid":"c33c5f39-5ba2-81e0-157a-d96fc0","readings":[["01","{0} is called {1}"]],"constraints":[{"uuid":"0cbf0810-fb52-27a8-4005-dbe37d","is_preferred":null,"min":1,"max":1,"role":"42f3bb89-4cf1-d490-8e54-c3ae32","mandatory":true}],"shapes":[{"diagram":"afbada12-9cd6-1904-c0fb-1f8e21","y":99,"uuid":"4abbd849-020d-eba1-99a6-428678","x":286}],"roles":[{"player":"2bb6479d-7c83-6eec-0077-395623","uuid":"42f3bb89-4cf1-d490-8e54-c3ae32"},{"player":"1baf726f-a0df-29a0-bc72-a2003a","uuid":"927dab58-6f2c-0d16-09b4-a038ab"}]},
+    {"uuid":"00b5c7d7-6fad-6566-1bde-6fc327","readings":[["01","{0} is going out with {1}"],["10","{0} is going out with {1}"]],"constraints":[{"uuid":"9bc10479-f46d-4a3e-0db1-81b2c1","is_preferred":null,"min":0,"uniqueExcept":"2fa151e1-8d32-c89f-87b1-73e885","max":1,"mandatory":null},{"uuid":"3e61b303-0ed9-1d47-9ee5-3c3b57","is_preferred":null,"min":0,"uniqueExcept":"1f7d815d-c7b2-e8b5-5bbf-1ac702","max":1,"mandatory":null},{"ringKind":"Symmetric","uuid":"cb680eee-9cb3-7058-eeb5-0735de","roles":["1f7d815d-c7b2-e8b5-5bbf-1ac702","2fa151e1-8d32-c89f-87b1-73e885"],"shapes":[{"diagram":"afbada12-9cd6-1904-c0fb-1f8e21","y":315,"uuid":"58dbfe8e-219d-ae6a-b0a4-69e925","x":180}]}],"shapes":[{"diagram":"afbada12-9cd6-1904-c0fb-1f8e21","y":234,"uuid":"c849c172-85ed-8173-d2c9-0a0ec9","x":191}],"roles":[{"player":"33bca377-9b31-f4cf-0931-5d5fe2","uuid":"1f7d815d-c7b2-e8b5-5bbf-1ac702"},{"player":"5d90f0d1-824a-d884-441c-e6ceca","uuid":"2fa151e1-8d32-c89f-87b1-73e885"}]},
+    {"uuid":"f5e9cf5a-84a3-85ae-3ee5-6148da","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"30262e2f-1404-2acc-4587-0637f0","is_preferred":null,"min":1,"max":1,"role":"42e63eb1-f86e-6dd8-6d6e-293a03","mandatory":true},{"uuid":"f1c3e7e5-0642-ef1f-0e84-25b11b","is_preferred":true,"min":0,"uniqueExcept":"42e63eb1-f86e-6dd8-6d6e-293a03","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"2bb6479d-7c83-6eec-0077-395623","uuid":"42e63eb1-f86e-6dd8-6d6e-293a03"},{"player":"bcdfe592-a78b-27d7-896f-3e9878","uuid":"1c1d4a2c-82d9-949d-bc5a-efbd47"}]}
+  ],
+  constraints: [
+    {"type":"SetExclusionConstraint","is_mandatory":true,"uuid":"fcaae215-2c67-c91a-21d7-ee8db0","role_sequences":[["a043511d-9078-7606-9138-bbe743"],["ff924de3-bb13-d4b7-1d69-b704ac"]],"shapes":[{"diagram":"afbada12-9cd6-1904-c0fb-1f8e21","y":184,"uuid":"5fa1a8e6-03e7-2210-30c9-10b1a3","x":180}]}
+  ]
+}

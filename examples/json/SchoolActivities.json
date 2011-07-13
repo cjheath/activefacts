@@ -1,0 +1,28 @@
+{ model: 'SchoolActivities',
+diagrams: [
+    {"uuid":"7ea221a2-36e9-0023-0f89-12cc0c","name":"SchoolActivities"}
+  ],
+  object_types: [
+    {"uuid":"f84027a5-dc8c-c93e-0759-3f4a34","name":"Activity","shapes":[{"diagram":"7ea221a2-36e9-0023-0f89-12cc0c","y":278,"uuid":"f84a17c3-876e-ecaa-2886-9cded8","x":515}]},
+    {"uuid":"9e537fa1-0b14-e48b-b3f8-beb5c0","supertype":"fb8b2318-6a02-61a8-4a16-36d643","name":"Activity Name","shapes":[]},
+    {"uuid":"45c337dc-89eb-8f93-5c8f-e1ca46","name":"School","shapes":[{"diagram":"7ea221a2-36e9-0023-0f89-12cc0c","y":98,"uuid":"84ff2e09-b474-45db-7cec-6bb420","x":316}]},
+    {"uuid":"aa9126ab-970a-c46a-b57e-6ee948","objectifies":"6dcf93e0-2cde-69ca-e4ed-f42254","name":"School Activity","shapes":[]},
+    {"uuid":"4b4556c0-19de-8980-e25c-903e98","supertype":"fb8b2318-6a02-61a8-4a16-36d643","name":"School Name","shapes":[]},
+    {"uuid":"fb8b2318-6a02-61a8-4a16-36d643","name":"String","shapes":[]},
+    {"uuid":"decc991d-2e22-1947-3f28-8e779d","name":"Student","shapes":[{"diagram":"7ea221a2-36e9-0023-0f89-12cc0c","y":278,"uuid":"e3da5fbe-f9ad-6e76-ee8c-06c6f6","x":127}]},
+    {"uuid":"97f76c1e-1abc-7b69-f69d-f608e8","supertype":"fb8b2318-6a02-61a8-4a16-36d643","name":"Student Name","shapes":[]},
+    {"uuid":"d55d88e0-5835-bb93-2ece-206940","objectifies":"263dedc5-6323-eab8-d146-19ea8f","name":"Student Participation","shapes":[]}
+  ],
+  fact_types: [
+    {"objectified_as":"aa9126ab-970a-c46a-b57e-6ee948","uuid":"6dcf93e0-2cde-69ca-e4ed-f42254","readings":[["01","{0} sanctions {1}"]],"constraints":[{"uuid":"66e57ad3-83b7-0c23-6e13-5c464e","is_preferred":true,"min":1,"uniqueExcept":null,"max":1,"mandatory":true}],"shapes":[{"diagram":"7ea221a2-36e9-0023-0f89-12cc0c","y":143,"uuid":"80596802-e539-f43f-ebeb-015709","x":482}],"roles":[{"player":"45c337dc-89eb-8f93-5c8f-e1ca46","uuid":"2a72971f-4e38-e75c-8aaf-53a2f1"},{"player":"f84027a5-dc8c-c93e-0759-3f4a34","uuid":"596cec6d-fda2-490c-dd1d-6b1d36"}]},
+    {"objectified_as":"d55d88e0-5835-bb93-2ece-206940","uuid":"263dedc5-6323-eab8-d146-19ea8f","readings":[["102","{0} represents {1} in {2}"],["120","{0} participates in {1} which is sanctioned by {2}"]],"constraints":[{"uuid":"01ae14b0-b06f-ac98-2038-0e0517","is_preferred":true,"min":1,"uniqueExcept":"45aa015a-44cf-fc32-81f9-4f1458","max":1,"mandatory":true}],"shapes":[{"diagram":"7ea221a2-36e9-0023-0f89-12cc0c","y":269,"uuid":"cc6dd497-9364-0b1f-32a1-448562","role_order":"102","x":326}],"roles":[{"player":"45c337dc-89eb-8f93-5c8f-e1ca46","uuid":"45aa015a-44cf-fc32-81f9-4f1458"},{"player":"decc991d-2e22-1947-3f28-8e779d","uuid":"27f0d021-7a9e-2e7a-68fd-acd078"},{"player":"f84027a5-dc8c-c93e-0759-3f4a34","uuid":"b975e983-8dce-282d-3b23-a050c0"}]},
+    {"uuid":"37c5d818-3cea-b261-f00f-3eed48","readings":[["10","{0} is enrolled in {1}"]],"constraints":[{"uuid":"95304e31-faed-377c-be76-8727db","is_preferred":null,"min":1,"max":1,"role":"edfab7b3-4b99-1db9-a55e-f7ece3","mandatory":true}],"shapes":[{"diagram":"7ea221a2-36e9-0023-0f89-12cc0c","y":152,"uuid":"05ea8c26-fa6d-2fcc-6198-084d35","role_order":"10","x":193}],"roles":[{"player":"45c337dc-89eb-8f93-5c8f-e1ca46","uuid":"5aedb434-be4c-41d4-1882-dd866f"},{"player":"decc991d-2e22-1947-3f28-8e779d","uuid":"edfab7b3-4b99-1db9-a55e-f7ece3"}]},
+    {"uuid":"873f0591-227a-127e-9d40-3217f8","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"2a644577-1aec-9730-40be-b1cc1b","is_preferred":null,"min":1,"max":1,"role":"abcf5723-8c3b-2831-bf98-8c0087","mandatory":true},{"uuid":"753db951-9284-aa2e-f7e6-ff4be7","is_preferred":true,"min":0,"uniqueExcept":"abcf5723-8c3b-2831-bf98-8c0087","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"decc991d-2e22-1947-3f28-8e779d","uuid":"abcf5723-8c3b-2831-bf98-8c0087"},{"player":"97f76c1e-1abc-7b69-f69d-f608e8","uuid":"5c4a877e-1283-d7a6-45b6-3983af"}]},
+    {"uuid":"6c215ad5-ec40-a1b0-c7cc-4ea010","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"93b46a71-c94d-0fdf-20b7-8b0016","is_preferred":null,"min":1,"max":1,"role":"7cf32538-2d33-0471-adc9-8ee401","mandatory":true},{"uuid":"0f2fbe76-7d5e-da41-f51b-85ba77","is_preferred":true,"min":0,"uniqueExcept":"7cf32538-2d33-0471-adc9-8ee401","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"f84027a5-dc8c-c93e-0759-3f4a34","uuid":"7cf32538-2d33-0471-adc9-8ee401"},{"player":"9e537fa1-0b14-e48b-b3f8-beb5c0","uuid":"07967901-9fd1-fc22-54b4-3528c2"}]},
+    {"uuid":"7c7bae8a-b924-9352-88f3-fbe428","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"1d68c9b8-0414-dc6c-06bc-a5c38e","is_preferred":null,"min":1,"max":1,"role":"b4bf9579-3f14-3b9a-8711-72cb91","mandatory":true},{"uuid":"c197cdf5-d72b-b995-fafe-527d84","is_preferred":true,"min":0,"uniqueExcept":"b4bf9579-3f14-3b9a-8711-72cb91","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"45c337dc-89eb-8f93-5c8f-e1ca46","uuid":"b4bf9579-3f14-3b9a-8711-72cb91"},{"player":"4b4556c0-19de-8980-e25c-903e98","uuid":"051f4f9f-23c9-4841-de7b-264dea"}]}
+  ],
+  constraints: [
+    {"type":"SubsetConstraint","uuid":"39a10793-6c33-bebd-a2ed-1276c0","role_sequences":[["45aa015a-44cf-fc32-81f9-4f1458","b975e983-8dce-282d-3b23-a050c0"],["2a72971f-4e38-e75c-8aaf-53a2f1","596cec6d-fda2-490c-dd1d-6b1d36"]],"shapes":[{"diagram":"7ea221a2-36e9-0023-0f89-12cc0c","y":206,"uuid":"91ba4dbb-f274-2821-4ea0-29ebe8","x":423}]},
+    {"type":"SubsetConstraint","uuid":"4afe8de7-37ac-0814-bc0c-30b69f","role_sequences":[["45aa015a-44cf-fc32-81f9-4f1458","27f0d021-7a9e-2e7a-68fd-acd078"],["5aedb434-be4c-41d4-1882-dd866f","edfab7b3-4b99-1db9-a55e-f7ece3"]],"shapes":[{"diagram":"7ea221a2-36e9-0023-0f89-12cc0c","y":221,"uuid":"ba04e6e5-f5df-24a3-8b78-34bc16","x":231}]}
+  ]
+}
