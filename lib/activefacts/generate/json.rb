@@ -40,17 +40,32 @@ module ActiveFacts
         puts "  object_types: [\n#{
           object_types.map do |o|
             uuids[o] ||= uuid_from_id(o)
+            ref_mode = nil
+            if o.is_a?(ActiveFacts::Metamodel::EntityType) and
+              p = o.preferred_identifier and
+              (rrs = p.role_sequence.all_role_ref).size == 1 and
+              (r = rrs.single.role).fact_type != o.fact_type and
+              r.object_type.is_a?(ActiveFacts::Metamodel::ValueType) and
+              !r.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+              ref_mode = "#{r.object_type.name}"
+              ref_mode.sub!(%r{#{o.name} *}, '.')
+            end
             j = {
               :uuid => uuids[o],
               :name => o.name,
               :shapes => o.all_object_type_shape.map do |shape|
-                { :diagram => uuids[shape.diagram],
+                x = { :diagram => uuids[shape.diagram],
+                  :is_expanded => shape.is_expanded,
                   :uuid => uuid_from_id(shape),
                   :x => shape.position.x,
                   :y => shape.position.y
                 }
+                x[:is_expanded] = true if ref_mode && shape.is_expanded  # Don't show the reference mode
+                x
               end
             }
+            j[:ref_mode] = ref_mode if ref_mode
+            j[:independent] = true if o.is_independent
 
             if o.is_a?(ActiveFacts::Metamodel::EntityType)
               # Entity Type may be objectified, and may have supertypes:
@@ -136,6 +151,9 @@ module ActiveFacts
 
               # Add the role_order, if specified
               if shape.all_role_display.size > 0
+                if shape.all_role_display.size != roles.size
+                  raise "Invalid RoleDisplay for #{f.default_reading}"
+                end
                 ro = role_order(
                   uuids,
                   shape.all_role_display.sort_by{|rd| rd.ordinal }.map{|rd| rd.role },
