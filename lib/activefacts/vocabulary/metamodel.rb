@@ -400,7 +400,6 @@ module ActiveFacts
     end
 
     class ObjectTypeShape < Shape
-      maybe :has_expanded_reference_mode
       has_one :object_type, :mandatory => true    # See ObjectType.all_object_type_shape
     end
 
