@@ -1323,8 +1323,7 @@ module ActiveFacts
                   shape = @constellation.ObjectTypeShape(
                       :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :object_type => subject,
-                      :position => position,
-                      :has_expanded_reference_mode => false # REVISIT
+                      :position => position
                     )
                 else
                   raise "Unknown shape #{x_shape.name}"
