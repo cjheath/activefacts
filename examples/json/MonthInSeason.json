@@ -1,20 +1,20 @@
 { model: 'MonthInSeason',
 diagrams: [
-    {"uuid":"ec59399e-1586-fb74-be7d-00a2ef","name":"MonthInSeason"}
+    {"name":"MonthInSeason","uuid":"ec59399e-1586-fb74-be7d-00a2ef"}
   ],
   object_types: [
-    {"uuid":"46cdecc2-ba8a-acec-ed31-1ac4fc","name":"Auto Counter","shapes":[]},
-    {"uuid":"1074b03d-06f5-1942-f863-4fa407","name":"Event","shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":208,"uuid":"7e30f4e3-45fa-e744-4074-48d120","x":325}]},
-    {"uuid":"7f4c8a51-4c88-2c74-6704-8309e9","supertype":"46cdecc2-ba8a-acec-ed31-1ac4fc","name":"Event Id","shapes":[]},
-    {"uuid":"8179b865-d027-6a3e-0317-3217e4","supertype":"a17de988-d5bc-f3d1-ae01-f81950","name":"Month","shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":95,"uuid":"d7ecc394-2ea9-efea-5065-5252fa","x":106}]},
-    {"uuid":"0865fd6b-0668-9c75-c760-019193","objectifies":"8c11bef1-498f-a2be-b82d-f2ca30","name":"Occurrence","shapes":[]},
-    {"uuid":"1ae3bdec-f4f0-2283-9e55-0f2291","supertype":"a17de988-d5bc-f3d1-ae01-f81950","name":"Season","shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":95,"uuid":"28ce4bd7-0ecc-27c4-d8b8-55ebfe","x":325}]},
-    {"uuid":"a17de988-d5bc-f3d1-ae01-f81950","name":"String","shapes":[]}
+    {"shapes":[],"name":"Auto Counter","uuid":"46cdecc2-ba8a-acec-ed31-1ac4fc"},
+    {"ref_mode":".Id","shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":208,"is_expanded":true,"x":325,"uuid":"2ffd8e97-4b30-00e0-6e78-4dc7bc"}],"name":"Event","uuid":"1074b03d-06f5-1942-f863-4fa407"},
+    {"supertype":"46cdecc2-ba8a-acec-ed31-1ac4fc","shapes":[],"name":"Event Id","uuid":"7f4c8a51-4c88-2c74-6704-8309e9"},
+    {"supertype":"a17de988-d5bc-f3d1-ae01-f81950","shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":95,"is_expanded":true,"x":106,"uuid":"236d8629-bffe-0541-068b-12e9f6"}],"name":"Month","uuid":"8179b865-d027-6a3e-0317-3217e4"},
+    {"objectifies":"a1c735e4-ea18-dedc-bfbe-23b63b","shapes":[],"name":"Occurrence","uuid":"0865fd6b-0668-9c75-c760-019193"},
+    {"supertype":"a17de988-d5bc-f3d1-ae01-f81950","shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":95,"is_expanded":true,"x":325,"uuid":"d2e7f40f-5e89-5c82-8a71-d5823a"}],"name":"Season","uuid":"1ae3bdec-f4f0-2283-9e55-0f2291"},
+    {"shapes":[],"name":"String","uuid":"a17de988-d5bc-f3d1-ae01-f81950"}
   ],
   fact_types: [
-    {"objectified_as":"0865fd6b-0668-9c75-c760-019193","uuid":"8c11bef1-498f-a2be-b82d-f2ca30","readings":[["10","{0} occurred in {1}"]],"constraints":[{"uuid":"8ecfc6a3-44d9-a388-5e45-fe5412","is_preferred":true,"min":1,"uniqueExcept":null,"max":1,"mandatory":true}],"shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":199,"uuid":"d9248405-a587-44c0-a96e-ad0bab","x":233}],"roles":[{"player":"8179b865-d027-6a3e-0317-3217e4","uuid":"b9941282-9edb-856b-9bcb-799eb3"},{"player":"1074b03d-06f5-1942-f863-4fa407","uuid":"2b467fe6-0587-25ff-878d-373593"}]},
-    {"uuid":"b4d9947f-4852-9df6-c466-dcd2a1","readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"constraints":[{"uuid":"9ec6c765-781c-e69b-b81c-609587","is_preferred":null,"min":1,"max":1,"role":"5de66a25-54cc-8df0-30df-c80678","mandatory":true},{"uuid":"aca96328-bbde-7a7f-ca88-4700bc","is_preferred":true,"min":0,"uniqueExcept":"5de66a25-54cc-8df0-30df-c80678","max":1,"mandatory":null}],"shapes":[],"roles":[{"player":"1074b03d-06f5-1942-f863-4fa407","uuid":"5de66a25-54cc-8df0-30df-c80678"},{"player":"7f4c8a51-4c88-2c74-6704-8309e9","uuid":"b5d673eb-f3ae-01c0-e238-cd81e3"}]},
-    {"uuid":"d3e0524a-1f84-27fd-8fa8-5fe2fa","readings":[["01","{0} is in {1}"]],"constraints":[{"uuid":"330f1cd2-81b9-1267-76dd-dc2048","is_preferred":null,"min":0,"uniqueExcept":"e8266467-3777-41da-9ba2-99d3a6","max":1,"mandatory":null},{"uuid":"624ca18e-43ad-eac9-49d9-0f9d55","is_preferred":false,"min":1,"max":null,"role":"e8266467-3777-41da-9ba2-99d3a6","mandatory":true}],"shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":95,"uuid":"55ce6963-0158-6f4b-dfc6-77c623","x":234}],"roles":[{"player":"8179b865-d027-6a3e-0317-3217e4","uuid":"e66812ca-5c23-fe3a-b5a8-bbb6a7"},{"player":"1ae3bdec-f4f0-2283-9e55-0f2291","uuid":"e8266467-3777-41da-9ba2-99d3a6"}]}
+    {"readings":[["10","{0} occurred in {1}"]],"shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":199,"x":233,"uuid":"3894ad55-b6ae-5d09-b29e-eefbf2"}],"constraints":[{"is_preferred":true,"uniqueExcept":null,"min":1,"max":1,"mandatory":true,"uuid":"6b5976c4-732c-828b-56e2-cc6cfc"}],"roles":[{"player":"8179b865-d027-6a3e-0317-3217e4","uuid":"2550c0d7-6637-300a-483a-1b3023"},{"player":"1074b03d-06f5-1942-f863-4fa407","uuid":"89ce5f83-eccd-20db-769b-077a9c"}],"objectified_as":"0865fd6b-0668-9c75-c760-019193","uuid":"a1c735e4-ea18-dedc-bfbe-23b63b"},
+    {"readings":[["01","{0} has {1}"],["10","{0} is of {1}"]],"shapes":[],"constraints":[{"is_preferred":null,"min":1,"max":1,"role":"7ac8a446-b8ea-4e37-d688-fb99a1","mandatory":true,"uuid":"8c11bef1-498f-a2be-b82d-f2ca30"},{"is_preferred":true,"uniqueExcept":"7ac8a446-b8ea-4e37-d688-fb99a1","min":0,"max":1,"mandatory":null,"uuid":"b4d9947f-4852-9df6-c466-dcd2a1"}],"roles":[{"player":"1074b03d-06f5-1942-f863-4fa407","uuid":"7ac8a446-b8ea-4e37-d688-fb99a1"},{"player":"7f4c8a51-4c88-2c74-6704-8309e9","uuid":"c99a2b70-b539-5951-daa2-100032"}],"uuid":"af38ab67-95e2-a76d-a58d-3e3a54"},
+    {"readings":[["01","{0} is in {1}"]],"shapes":[{"diagram":"ec59399e-1586-fb74-be7d-00a2ef","y":95,"x":234,"uuid":"e7b4e1f9-d233-0f88-35d4-df2aaf"}],"constraints":[{"is_preferred":null,"uniqueExcept":"0b15b880-e759-b918-6c02-340655","min":0,"max":1,"mandatory":null,"uuid":"b6ca056a-6724-6309-08d0-292869"},{"is_preferred":false,"min":1,"max":null,"role":"0b15b880-e759-b918-6c02-340655","mandatory":true,"uuid":"a11ba944-5644-2b65-04d9-eafc71"}],"roles":[{"player":"8179b865-d027-6a3e-0317-3217e4","uuid":"922232b2-6ad2-255d-8f06-684491"},{"player":"1ae3bdec-f4f0-2283-9e55-0f2291","uuid":"0b15b880-e759-b918-6c02-340655"}],"uuid":"0eb2062d-3d7d-f6d6-2a58-3f7b79"}
   ],
   constraints: [
 
