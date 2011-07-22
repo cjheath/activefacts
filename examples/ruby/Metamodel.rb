@@ -409,7 +409,6 @@ module ::Metamodel
   end
 
   class ObjectTypeShape < Shape
-    maybe :has_expanded_reference_mode
     has_one :object_type, :mandatory => true    # See ObjectType.all_object_type_shape
   end
 
@@ -500,6 +499,7 @@ module ::Metamodel
 
   class EntityType < ObjectType
     one_to_one :fact_type                       # See FactType.entity_type
+    maybe :is_implied_by_objectification
   end
 
   class Facet

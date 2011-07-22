@@ -339,19 +339,14 @@ module ActiveFacts
             next if x.xpath("orm:DerivationRule").size > 0
             throw "Nested fact #{fact_id} not found" if !fact_type
 
-            #if is_implied
-            #    puts "Implied type #{name} (#{id}) nests #{fact_type ? fact_type.fact_type_id : "unknown"}"
-            #    @by_id[id] = fact_type
-            #else
-            begin
-              debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.fact_type_id}"
-              @nested_types <<
-                @by_id[id] =
-                nested_type = @constellation.EntityType(@vocabulary, name)
-              independent = x['IsIndependent']
-              nested_type.is_independent = true if independent && independent == 'true' && !is_implied
-              nested_type.fact_type = fact_type
-            end
+            debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.fact_type_id}"
+            @nested_types <<
+              @by_id[id] =
+              nested_type = @constellation.EntityType(@vocabulary, name)
+            independent = x['IsIndependent']
+            nested_type.is_independent = true if independent && independent == 'true' && !is_implied
+            nested_type.is_implied_by_objectification = is_implied
+            nested_type.fact_type = fact_type
           }
         end
       end
@@ -1352,8 +1347,8 @@ module ActiveFacts
         offs_x = 11
         offs_y = -12
         if fact_type.entity_type
-          offs_x -= 1
-          offs_y -= 9
+          offs_x -= 12
+          offs_y -= 9 if !fact_type.entity_type.is_implied_by_objectification
         end
 
         position = convert_position(bounds, Gravity::S, offs_x, offs_y)

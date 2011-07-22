@@ -41,6 +41,10 @@ module ActiveFacts
       value_type 
     end
 
+    class DisjunctionId < AutoCounter
+      value_type 
+    end
+
     class DisplayRoleNamesSetting < String
       value_type 
       restrict 'false', 'true'
@@ -180,6 +184,11 @@ module ActiveFacts
       has_one :discussion, :mandatory => true     # See Discussion.all_context_note
       has_one :fact_type                          # See FactType.all_context_note
       has_one :object_type                        # See ObjectType.all_context_note
+    end
+
+    class Disjunction
+      identified_by :disjunction_id
+      one_to_one :disjunction_id, :mandatory => true  # See DisjunctionId.disjunction
     end
 
     class Enforcement
@@ -380,6 +389,7 @@ module ActiveFacts
 
     class JoinStep
       identified_by :input_join_role, :output_join_role
+      has_one :disjunction                        # See Disjunction.all_join_step
       has_one :fact_type, :mandatory => true      # See FactType.all_join_step
       has_one :input_join_role, :class => JoinRole, :mandatory => true  # See JoinRole.all_join_step_as_input_join_role
       maybe :is_anti
@@ -490,9 +500,7 @@ module ActiveFacts
 
     class EntityType < ObjectType
       one_to_one :fact_type                       # See FactType.entity_type
-    end
-
-    class ImplicitBooleanValueType < ValueType
+      maybe :is_implied_by_objectification
     end
 
     class Facet
@@ -501,19 +509,22 @@ module ActiveFacts
       has_one :value_type, :mandatory => true     # See ValueType.all_facet
     end
 
+    class FacetValue
+      identified_by :value_type, :facet
+      has_one :facet, :mandatory => true          # See Facet.all_facet_value
+      has_one :value, :mandatory => true          # See Value.all_facet_value
+      has_one :value_type, :mandatory => true     # See ValueType.all_facet_value
+    end
+
+    class ImplicitBooleanValueType < ValueType
+    end
+
     class TypeInheritance < FactType
       identified_by :subtype, :supertype
       has_one :subtype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_subtype
       has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
       has_one :assimilation                       # See Assimilation.all_type_inheritance
       maybe :provides_identification
-    end
-
-    class FacetValue
-      identified_by :value_type, :facet
-      has_one :facet, :mandatory => true          # See Facet.all_facet_value
-      has_one :value, :mandatory => true          # See Value.all_facet_value
-      has_one :value_type, :mandatory => true     # See ValueType.all_facet_value
     end
 
   end

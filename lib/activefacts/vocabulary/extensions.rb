@@ -53,6 +53,10 @@ module ActiveFacts
           reading.text =~ /\{\d\}/ and reading.role_sequence.all_role_ref_in_order[$1.to_i].role == role
         end || preferred_reading
       end
+
+      def all_role_in_order
+        all_role.sort_by{|r| r.ordinal}
+      end
     end
 
     class Role

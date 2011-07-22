@@ -364,6 +364,8 @@ CREATE TABLE JoinStep (
 GO
 
 CREATE TABLE ObjectType (
+	-- maybe Entity Type is a kind of Object Type and Entity Type is implied by objectification,
+	EntityTypeIsImpliedByObjectification    bit NULL,
 	-- Object Type is independent,
 	IsIndependent                           bit NOT NULL,
 	-- Object Type is called Name,
@@ -543,8 +545,6 @@ CREATE TABLE Shape (
 	IsExpanded                              bit NOT NULL,
 	-- maybe Model Note Shape is a kind of Shape and Model Note Shape is for Context Note and Context Note has Context Note Id,
 	ModelNoteShapeContextNoteId             int NULL,
-	-- maybe Object Type Shape is a kind of Shape and Object Type Shape has expanded reference mode,
-	ObjectTypeShapeHasExpandedReferenceMode bit NULL,
 	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Object Type and Object Type is called Name,
 	ObjectTypeShapeObjectTypeName           varchar(64) NULL,
 	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,

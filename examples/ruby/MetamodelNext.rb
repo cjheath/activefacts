@@ -15,10 +15,6 @@ module ::Metamodel
     restrict 'partitioned', 'separate'
   end
 
-  class ContextNoteId < AutoCounter
-    value_type 
-  end
-
   class ContextNoteKind < String
     value_type 
     restrict 'as_opposed_to', 'because', 'so_that', 'to_avoid'
@@ -53,10 +49,6 @@ module ::Metamodel
     value_type :length => 16
   end
 
-  class FactId < AutoCounter
-    value_type 
-  end
-
   class Frequency < UnsignedInteger
     value_type :length => 32
   end
@@ -65,12 +57,8 @@ module ::Metamodel
     value_type 
   end
 
-  class InstanceId < AutoCounter
-    value_type 
-  end
-
-  class JoinId < AutoCounter
-    value_type 
+  class LanguageCode < Char
+    value_type :length => 3
   end
 
   class Length < UnsignedInteger
@@ -83,7 +71,6 @@ module ::Metamodel
 
   class Name < String
     value_type :length => 64
-    has_one :join_node, :counterpart => :role_name  # See JoinNode.all_role_name
   end
 
   class Numerator < Decimal
@@ -107,10 +94,6 @@ module ::Metamodel
     value_type 
   end
 
-  class RoleSequenceId < AutoCounter
-    value_type 
-  end
-
   class RotationSetting < String
     value_type 
     restrict 'left', 'right'
@@ -118,10 +101,6 @@ module ::Metamodel
 
   class Scale < UnsignedInteger
     value_type :length => 32
-  end
-
-  class ShapeId < AutoCounter
-    value_type 
   end
 
   class Subscript < UnsignedInteger
@@ -137,7 +116,7 @@ module ::Metamodel
     restrict 'assert', 'commit'
   end
 
-  class UnitId < AutoCounter
+  class UnitCode < Char
     value_type 
   end
 
@@ -172,11 +151,11 @@ module ::Metamodel
   end
 
   class ContextNote
-    identified_by :context_note_id
+    identified_by :guid
     has_one :concept                            # See Concept.all_context_note
-    one_to_one :context_note_id, :mandatory => true  # See ContextNoteId.context_note
     has_one :context_note_kind, :mandatory => true  # See ContextNoteKind.all_context_note
     has_one :discussion, :mandatory => true     # See Discussion.all_context_note
+    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.context_note
   end
 
   class Enforcement
@@ -187,9 +166,9 @@ module ::Metamodel
   end
 
   class Fact
-    identified_by :fact_id
-    one_to_one :fact_id, :mandatory => true     # See FactId.fact
+    identified_by :guid
     has_one :fact_type, :mandatory => true      # See FactType.all_fact
+    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.fact
     has_one :population, :mandatory => true     # See Population.all_fact
   end
 
@@ -200,17 +179,17 @@ module ::Metamodel
   end
 
   class Instance
-    identified_by :instance_id
+    identified_by :guid
     one_to_one :fact                            # See Fact.instance
-    one_to_one :instance_id, :mandatory => true  # See InstanceId.instance
+    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.instance
     has_one :object_type, :mandatory => true    # See ObjectType.all_instance
     has_one :population, :mandatory => true     # See Population.all_instance
     has_one :value                              # See Value.all_instance
   end
 
   class Join
-    identified_by :join_id
-    one_to_one :join_id, :mandatory => true     # See JoinId.join
+    identified_by :guid
+    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.join
   end
 
   class JoinNode
@@ -218,8 +197,14 @@ module ::Metamodel
     has_one :join, :mandatory => true           # See Join.all_join_node
     has_one :object_type, :mandatory => true    # See ObjectType.all_join_node
     has_one :ordinal, :mandatory => true        # See Ordinal.all_join_node
+    has_one :role_name, :class => Name          # See Name.all_join_node_as_role_name
     has_one :subscript                          # See Subscript.all_join_node
     has_one :value                              # See Value.all_join_node
+  end
+
+  class Language
+    identified_by :language_code
+    one_to_one :language_code, :mandatory => true  # See LanguageCode.language
   end
 
   class ObjectType < Concept
@@ -247,6 +232,7 @@ module ::Metamodel
     has_one :ordinal, :mandatory => true        # See Ordinal.all_reading
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_reading
     has_one :text, :mandatory => true           # See Text.all_reading
+    has_one :vocabulary                         # See Vocabulary.all_reading
   end
 
   class RingConstraint < Constraint
@@ -260,12 +246,13 @@ module ::Metamodel
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
     one_to_one :implicit_fact_type, :counterpart => :implying_role  # See ImplicitFactType.implying_role
     has_one :object_type, :mandatory => true    # See ObjectType.all_role
+    has_one :role_name, :class => "Term"        # See Term.all_role_as_role_name
   end
 
   class RoleSequence
-    identified_by :role_sequence_id
+    identified_by :guid
+    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.role_sequence
     maybe :has_unused_dependency_to_force_table_in_norma
-    one_to_one :role_sequence_id, :mandatory => true  # See RoleSequenceId.role_sequence
   end
 
   class RoleValue
@@ -280,11 +267,11 @@ module ::Metamodel
   end
 
   class Shape
-    identified_by :shape_id
+    identified_by :guid
     has_one :diagram, :mandatory => true        # See Diagram.all_shape
+    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.shape
     maybe :is_expanded
     has_one :position                           # See Position.all_shape
-    one_to_one :shape_id, :mandatory => true    # See ShapeId.shape
   end
 
   class SubsetConstraint < SetConstraint
@@ -292,15 +279,20 @@ module ::Metamodel
     has_one :superset_role_sequence, :class => RoleSequence, :mandatory => true  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
   end
 
+  class Topic
+    identified_by :name
+    one_to_one :name, :mandatory => true        # See Name.topic
+  end
+
   class Unit
-    identified_by :unit_id
+    identified_by :unit_code
     has_one :coefficient                        # See Coefficient.all_unit
     has_one :ephemera_url, :class => EphemeraURL  # See EphemeraURL.all_unit
     maybe :is_fundamental
     has_one :name, :mandatory => true           # See Name.all_unit
     has_one :offset                             # See Offset.all_unit
     has_one :plural_name, :class => Name        # See Name.all_unit_as_plural_name
-    one_to_one :unit_id, :mandatory => true     # See UnitId.unit
+    one_to_one :unit_code, :mandatory => true   # See UnitCode.unit
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_unit
   end
 
@@ -325,8 +317,9 @@ module ::Metamodel
   end
 
   class Vocabulary
-    identified_by :name
-    one_to_one :name, :mandatory => true        # See Name.vocabulary
+    identified_by :topic, :language
+    has_one :language, :mandatory => true       # See Language.all_vocabulary
+    has_one :topic, :mandatory => true          # See Topic.all_vocabulary
   end
 
   class Agreement
@@ -373,12 +366,14 @@ module ::Metamodel
 
   class EntityType < ObjectType
     one_to_one :fact_type                       # See FactType.entity_type
+    maybe :is_implied_by_objectification
   end
 
   class Facet
     identified_by :value_type, :name
     has_one :name, :mandatory => true           # See Name.all_facet
     has_one :value_type, :mandatory => true     # See ValueType.all_facet
+    has_one :facet_value_type, :class => ValueType  # See ValueType.all_facet_as_facet_value_type
   end
 
   class FacetValue
@@ -418,7 +413,6 @@ module ::Metamodel
   end
 
   class ObjectTypeShape < Shape
-    maybe :has_expanded_reference_mode
     has_one :object_type, :mandatory => true    # See ObjectType.all_object_type_shape
   end
 
@@ -428,9 +422,9 @@ module ::Metamodel
   end
 
   class Population
-    identified_by :vocabulary, :name
+    identified_by :topic, :name
     has_one :name, :mandatory => true           # See Name.all_population
-    has_one :vocabulary                         # See Vocabulary.all_population
+    has_one :topic                              # See Topic.all_population
   end
 
   class ReadingShape < Shape
@@ -461,7 +455,6 @@ module ::Metamodel
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
     one_to_one :join_role                       # See JoinRole.role_ref
     has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
-    has_one :role_name, :class => "Term"        # See Term.all_role_ref_as_role_name
     has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
   end
 
@@ -485,9 +478,9 @@ module ::Metamodel
   class Term
     identified_by :vocabulary, :name
     has_one :name, :mandatory => true           # See Name.all_term
+    has_one :object_type, :mandatory => true    # See ObjectType.all_term
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_term
-    one_to_one :object_type                     # See ObjectType.term
-    has_one :secondary, :class => ObjectType    # See ObjectType.all_term_as_secondary
+    maybe :is_preferred
   end
 
   class TypeInheritance

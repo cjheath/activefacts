@@ -258,7 +258,6 @@ Object Type is independent;
 Object Type Shape is a kind of Shape;
 Object Type Shape is for one Object Type,
 	Object Type has Object Type Shape;
-Object Type Shape has expanded reference mode;
 
 Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shape where
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
@@ -343,6 +342,7 @@ Allowed Range is where
 Entity Type is a kind of Object Type;
 Entity Type nests at most one Fact Type,
 	Fact Type is nested as at most one Entity Type;
+Entity Type is implied by objectification;
 
 Facet is where
 	Value Type has facet called Name,
@@ -403,6 +403,8 @@ Role Value is of Instance that is of Object Type
 Role Value fulfils Fact that is of Fact Type
 	if and only if
 	Role Value is of Role (where Fact Type has Ordinal role);
+Entity Type is implied by objectification
+	only if Entity Type nests Fact Type;
 Presence Constraint is preferred identifier
 	only if Presence Constraint has max Frequency;
 Value Type has Scale

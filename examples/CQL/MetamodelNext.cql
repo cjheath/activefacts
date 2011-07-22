@@ -84,7 +84,7 @@ Instance is identified by GUID where
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
 
-Join is identified by GUID where
+Join is independent identified by GUID where
 	Join has one GUID,
 	GUID is of at most one Join;
 
@@ -202,7 +202,7 @@ Value Type is of at most one Unit;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
 Value Type has at most one auto- assigned Transaction Timing;
-Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
+Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic, intransitive],
 	Supertype is supertype of Value Type;
 
 Vocabulary is where
@@ -253,11 +253,12 @@ Shape is in one Diagram,
 Entity Type is a kind of Object Type;
 Entity Type objectifies at most one Fact Type,
 	Fact Type is objectified as at most one Entity Type;
+Entity Type is implied by objectification;
 
 Facet is where
 	Value Type has facet called Name,
 	Name is a facet of Value Type;
-Facet has values of at most one Value Type;
+Facet has values of at most one facet-Value Type;
 
 Facet Value is where
 	Value Type defines Facet as having one Value,
@@ -291,7 +292,6 @@ Model Note Shape is for one Context Note;
 Object Type Shape is a kind of Shape;
 Object Type Shape is for one Object Type,
 	Object Type has Object Type Shape;
-Object Type Shape has expanded reference mode;
 
 Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shape where
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
@@ -421,6 +421,8 @@ Role Value is of Instance that is of Object Type
 Role Value fulfils Fact that is of Fact Type
 	if and only if
 	Role Value is of Role (where Fact Type has Ordinal role);
+Entity Type is implied by objectification
+	only if Entity Type objectifies Fact Type;
 Presence Constraint is preferred identifier
 	only if Presence Constraint has max Frequency;
 Value Type has Scale
