@@ -24,6 +24,14 @@ describe "Norma Loader" do
     output.read
   end
 
+  def sequential_uuids t
+    i = 1
+    sequence = {}
+    t.gsub /"........-....-....-....-......"/ do |uuid|
+      (sequence[uuid] ||= i += 1).to_s
+    end
+  end
+
   pattern = ENV["AFTESTS"] || "*"
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{/norma/(.*).orm\Z}, '/json/\1.json')
@@ -45,7 +53,7 @@ describe "Norma Loader" do
       pending("expected output file #{expected_file} not found") unless File.exists? expected_file
 
       expected_text = File.open(expected_file) {|f| f.read }
-      json_text.should_not differ_from(expected_text)
+      sequential_uuids(json_text).should_not differ_from(sequential_uuids(expected_text))
       File.delete(actual_file)
     end
   end

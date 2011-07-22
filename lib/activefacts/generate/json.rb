@@ -38,7 +38,7 @@ module ActiveFacts
 
         object_types = @vocabulary.all_object_type.sort_by{|o| o.name.gsub(/ /,'')}
         puts "  object_types: [\n#{
-          object_types.map do |o|
+          object_types.sort_by{|o|o.identifying_role_values.inspect}.map do |o|
             uuids[o] ||= uuid_from_id(o)
             ref_mode = nil
             if o.is_a?(ActiveFacts::Metamodel::EntityType) and
@@ -72,6 +72,7 @@ module ActiveFacts
               if o.fact_type
                 uuid = (uuids[o.fact_type] ||= uuid_from_id(o.fact_type))
                 j[:objectifies] = uuid
+                j[:implicit] = true if o.is_implied_by_objectification
               end
               if o.all_type_inheritance_as_subtype.size > 0
                 j[:supertypes] = o.
@@ -100,11 +101,13 @@ module ActiveFacts
             ActiveFacts::Metamodel::ImplicitFactType === ft || ActiveFacts::Metamodel::TypeInheritance === ft
           }
         puts "  fact_types: [\n#{
-          fact_types.map do |f|
+          fact_types.sort_by{|f| f.identifying_role_values.inspect}.map do |f|
             uuids[f] ||= uuid_from_id(f)
             j = {:uuid => uuids[f]}
 
-            j[:objectified_as] = uuids[f.entity_type] if f.entity_type
+            if f.entity_type
+              j[:objectified_as] = uuids[f.entity_type]
+            end
 
             # Emit roles
             roles = f.all_role.sort_by{|r| r.ordinal }
@@ -199,7 +202,7 @@ module ActiveFacts
             end
 
             # Add ring constraints
-            f.all_role.
+            f.all_role_in_order.
               map{|r| r.all_ring_constraint.to_a+r.all_ring_constraint_as_other_role.to_a }.
               flatten.uniq.each do |ring|
                 (j[:constraints] ||= []) << {
@@ -226,7 +229,7 @@ module ActiveFacts
         constraints = @vocabulary.constellation.
           Constraint.values
         puts "  constraints: [\n#{
-          constraints.select{|c| !uuids[c]}.map do |c|
+          constraints.sort_by{|c|c.identifying_role_values.inspect}.select{|c| !uuids[c]}.map do |c|
             uuid = uuids[c] ||= uuid_from_id(c)
             j = {
               :uuid => uuid,
