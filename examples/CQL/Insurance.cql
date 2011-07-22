@@ -208,8 +208,9 @@ Vehicle was sold by at most one Dealer;
 Driver is a kind of Person;
 
 Driving is where
-	Vehicle Incident involves one Driver,
-	Driver drove covered vehicle in at least one Vehicle Incident;
+	Vehicle Incident occurred while being driven;
+Driver was Driving,
+	Driving was by one Driver;
 Driving followed at most one Intoxication;
 Driving resulted in at most one blood-Test Result;
 Driving resulted in at most one breath-Test Result;

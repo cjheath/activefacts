@@ -32,7 +32,7 @@ CREATE VIEW dbo.VehicleInAsset_VIN (VehicleVIN) WITH SCHEMABINDING AS
 	WHERE	VehicleVIN IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX VehiclePK ON dbo.VehicleInAsset_VIN(VehicleVIN)
+CREATE UNIQUE CLUSTERED INDEX PK_VehicleInAsset ON dbo.VehicleInAsset_VIN(VehicleVIN)
 GO
 
 CREATE TABLE Claim (
@@ -238,7 +238,7 @@ CREATE VIEW dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr 
 	  AND	DriverYearNr IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX DriverMustHaveSupertypePerson ON dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr(DriverLicenseNumber, DriverLicenseType, DriverYearNr)
+CREATE UNIQUE CLUSTERED INDEX IX_LicenseInPartyByDriverLicenseNumberDriverLicenseTypeDriverYearNr ON dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr(DriverLicenseNumber, DriverLicenseType, DriverYearNr)
 GO
 
 CREATE TABLE Policy (
@@ -366,23 +366,23 @@ GO
 CREATE TABLE VehicleIncident (
 	-- maybe Vehicle Incident has Description,
 	Description                             varchar(1024) NULL,
-	-- Driving is where Vehicle Incident involves Driver and maybe Driving resulted in blood-Test Result,
+	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving resulted in blood-Test Result,
 	DrivingBloodTestResult                  varchar NULL,
-	-- Driving is where Vehicle Incident involves Driver and maybe Driving resulted in breath-Test Result,
+	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving resulted in breath-Test Result,
 	DrivingBreathTestResult                 varchar NULL,
-	-- Driving is where Vehicle Incident involves Driver and Driving Charge is where Driving resulted in Charge and Driving Charge is where Driving resulted in Charge,
+	-- Driving is where Vehicle Incident occurred while being driven and Driving Charge is where Driving resulted in Charge and Driving Charge is where Driving resulted in Charge,
 	DrivingCharge                           varchar NOT NULL,
-	-- Driving is where Vehicle Incident involves Driver and Driving is where Vehicle Incident involves Driver and Party has Party ID,
+	-- Driving is where Vehicle Incident occurred while being driven and Driver was Driving and Party has Party ID,
 	DrivingDriverID                         int NOT NULL,
-	-- Driving is where Vehicle Incident involves Driver and maybe Driving resulted in driver taken to hospital-Name,
+	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving resulted in driver taken to hospital-Name,
 	DrivingHospitalName                     varchar(256) NULL,
-	-- Driving is where Vehicle Incident involves Driver and maybe Driving followed Intoxication,
+	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving followed Intoxication,
 	DrivingIntoxication                     varchar NULL,
-	-- Driving is where Vehicle Incident involves Driver and Driving Charge is where Driving resulted in Charge and Driving Charge is a warning,
+	-- Driving is where Vehicle Incident occurred while being driven and Driving Charge is where Driving resulted in Charge and Driving Charge is a warning,
 	DrivingIsAWarning                       bit NOT NULL,
-	-- Driving is where Vehicle Incident involves Driver and maybe Driving was without owners consent for nonconsent-Reason,
+	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was without owners consent for nonconsent-Reason,
 	DrivingNonconsentReason                 varchar NULL,
-	-- Driving is where Vehicle Incident involves Driver and maybe Driving was unlicenced for unlicensed-Reason,
+	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was unlicenced for unlicensed-Reason,
 	DrivingUnlicensedReason                 varchar NULL,
 	-- Vehicle Incident is a kind of Incident and Claim has Claim ID,
 	IncidentID                              int IDENTITY NOT NULL,
@@ -398,8 +398,7 @@ CREATE TABLE VehicleIncident (
 	WeatherDescription                      varchar(1024) NULL,
 	PRIMARY KEY(IncidentID),
 	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID),
-	FOREIGN KEY (LossTypeCode) REFERENCES LossType (LossTypeCode),
-	FOREIGN KEY (DrivingDriverID) REFERENCES Party (PartyID)
+	FOREIGN KEY (LossTypeCode) REFERENCES LossType (LossTypeCode)
 )
 GO
 

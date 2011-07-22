@@ -420,10 +420,10 @@ module ::Insurance
 
   class Driving
     identified_by :vehicle_incident
-    has_one :driver, :mandatory => true         # See Driver.all_driving
     one_to_one :vehicle_incident, :mandatory => true  # See VehicleIncident.driving
     has_one :blood_test_result, :class => TestResult  # See TestResult.all_driving_as_blood_test_result
     has_one :breath_test_result, :class => TestResult  # See TestResult.all_driving_as_breath_test_result
+    has_one :driver, :mandatory => true         # See Driver.all_driving
     has_one :hospital_name, :class => Name, :counterpart => :driver_hospitalised  # See Name.all_driver_hospitalised
     has_one :intoxication                       # See Intoxication.all_driving
     has_one :nonconsent_reason, :class => Reason  # See Reason.all_driving_as_nonconsent_reason
