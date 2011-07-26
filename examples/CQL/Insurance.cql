@@ -18,7 +18,6 @@ Cover Type Code is written as Char;
 Cover Type Name is written as String;
 Date is written as Date;
 Date Time is written as Date Time;
-Demerit Kind Name is written as String;
 Description is written as String(1024);
 Email is written as String;
 Engine Number is written as String;
@@ -41,7 +40,6 @@ Policy Serial is written as Unsigned Integer(32) restricted to {1..99999};
 Policy Wording Text is written as String;
 Postcode is written as String;
 Price is written as Decimal(18,2);
-Prod Description is written as String(80);
 Product Code is written as Unsigned Integer(8) restricted to {1..99};
 Reason is written as String;
 Registration Nr is written as Char(8);
@@ -50,8 +48,10 @@ State Code is written as Unsigned Integer(8) restricted to {0..9};
 State Name is written as String(256);
 Street is written as String(256);
 Test Result is written as String;
+Text is written as String;
 Time is written as Time;
 Title is written as String;
+Underwriting Question ID is written as Auto Counter;
 VIN is written as Unsigned Integer(32);
 Year Nr is written as Signed Integer(32);
 
@@ -69,8 +69,6 @@ Claim has one Claim Sequence (as p_sequence),
 Cover Type is identified by its Code;
 Cover Type has one Cover Type Name,
 	Cover Type Name is of at most one Cover Type;
-
-Demerit Kind is independent identified by its Name;
 
 Incident is identified by Claim where
 	Claim concerns at most one Incident,
@@ -123,14 +121,18 @@ Policy Wording is identified by its Text;
 Product is identified by its Code;
 Alias is of at most one Product,
 	Product has at most one Alias;
-Prod Description is of at most one Product,
-	Product has at most one Prod Description;
+Description is of at most one Product,
+	Product has at most one Description;
 
 Registration is identified by its Nr;
 
 State is independent identified by its Code;
 State Name is of at most one State,
 	State has at most one State Name;
+
+Underwriting Question is identified by its ID;
+Text is of at most one Underwriting Question,
+	Underwriting Question has one Text;
 
 Vehicle is a kind of Asset identified by VIN where
 	Vehicle has one VIN,
@@ -176,8 +178,6 @@ Person lives at at most one Address;
 Witness lives at at most one Address;
 
 Authorised Rep is a kind of Party;
-
-Client is a kind of Party;
 
 Company is a kind of Party;
 Company has one contact-Person,
@@ -225,6 +225,8 @@ Driving Charge is a warning;
 Finance Institution is a kind of Company;
 Vehicle is subject to finance with at most one Finance Institution;
 
+Insured is a kind of Party;
+
 Insurer is a kind of Company;
 
 Investigator is a kind of Contractor;
@@ -256,8 +258,8 @@ ITC Claimed is for Policy,
 	Policy has at most one ITC Claimed;
 Policy was sold by at most one Authorised Rep,
 	Authorised Rep sold Policy;
-Policy belongs to one Client,
-	Client has Policy;
+Policy belongs to one Insured,
+	Insured has Policy;
 
 Property Damage is identified by Incident and Address where
 	Incident caused Property Damage,
@@ -278,11 +280,11 @@ Third Party vehicle is of at most one Vehicle Type;
 Third Party vehicle is of at most one model-Year;
 Third Party drove at most one vehicle-Registration;
 
-Underwriting Demerit is identified by Vehicle Incident and Demerit Kind where
+Underwriting Demerit is identified by Vehicle Incident and Underwriting Question where
 	Vehicle Incident occurred despite Underwriting Demerit,
 	Underwriting Demerit preceded one Vehicle Incident,
-	Underwriting Demerit has one Demerit Kind,
-	Demerit Kind is of Underwriting Demerit;
+	Underwriting Demerit has one Underwriting Question,
+	Underwriting Question is of Underwriting Demerit;
 Underwriting Demerit occurred at most one occurrence-Count times;
 
 Assessor is a kind of Contractor;

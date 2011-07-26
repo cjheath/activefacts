@@ -127,13 +127,6 @@ CREATE TABLE CoverWording (
 )
 GO
 
-CREATE TABLE DemeritKind (
-	-- Demerit Kind has Demerit Kind Name,
-	DemeritKindName                         varchar NOT NULL,
-	PRIMARY KEY(DemeritKindName)
-)
-GO
-
 CREATE TABLE LossType (
 	-- Loss Type involves driving,
 	InvolvesDriving                         bit NOT NULL,
@@ -246,10 +239,10 @@ CREATE TABLE Policy (
 	ApplicationNr                           int NOT NULL,
 	-- maybe Policy was sold by Authorised Rep and Party has Party ID,
 	AuthorisedRepID                         int NULL,
-	-- Policy belongs to Client and Party has Party ID,
-	ClientID                                int NOT NULL,
 	-- maybe ITC Claimed is for Policy,
 	ITCClaimed                              decimal(18, 2) NULL CHECK((ITCClaimed >= 0.0 AND ITCClaimed <= 100.0)),
+	-- Policy belongs to Insured and Party has Party ID,
+	InsuredID                               int NOT NULL,
 	-- Policy is for product having Product and Product has Product Code,
 	PProductCode                            tinyint NOT NULL,
 	-- Policy has Policy Serial,
@@ -260,15 +253,15 @@ CREATE TABLE Policy (
 	PYearNr                                 int NOT NULL,
 	PRIMARY KEY(PYearNr, PProductCode, PStateCode, PSerial),
 	FOREIGN KEY (AuthorisedRepID) REFERENCES Party (PartyID),
-	FOREIGN KEY (ClientID) REFERENCES Party (PartyID)
+	FOREIGN KEY (InsuredID) REFERENCES Party (PartyID)
 )
 GO
 
 CREATE TABLE Product (
 	-- maybe Alias is of Product,
 	Alias                                   char(3) NULL,
-	-- maybe Prod Description is of Product,
-	ProdDescription                         varchar(80) NULL,
+	-- maybe Description is of Product,
+	Description                             varchar(1024) NULL,
 	-- Product has Product Code,
 	ProductCode                             tinyint NOT NULL CHECK((ProductCode >= 1 AND ProductCode <= 99)),
 	PRIMARY KEY(ProductCode)
@@ -283,12 +276,12 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ProductByAlias ON dbo.Product_Alias(Alias)
 GO
 
-CREATE VIEW dbo.Product_ProdDescription (ProdDescription) WITH SCHEMABINDING AS
-	SELECT ProdDescription FROM dbo.Product
-	WHERE	ProdDescription IS NOT NULL
+CREATE VIEW dbo.Product_Description (Description) WITH SCHEMABINDING AS
+	SELECT Description FROM dbo.Product
+	WHERE	Description IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ProductByProdDescription ON dbo.Product_ProdDescription(ProdDescription)
+CREATE UNIQUE CLUSTERED INDEX IX_ProductByDescription ON dbo.Product_Description(Description)
 GO
 
 CREATE TABLE PropertyDamage (
@@ -352,14 +345,23 @@ CREATE TABLE ThirdParty (
 GO
 
 CREATE TABLE UnderwritingDemerit (
-	-- Underwriting Demerit has Demerit Kind and Demerit Kind has Demerit Kind Name,
-	DemeritKindName                         varchar NOT NULL,
 	-- maybe Underwriting Demerit occurred occurrence-Count times,
 	OccurrenceCount                         int NULL,
+	-- Underwriting Demerit has Underwriting Question and Underwriting Question has Underwriting Question ID,
+	UnderwritingQuestionID                  int NOT NULL,
 	-- Vehicle Incident occurred despite Underwriting Demerit and Vehicle Incident is a kind of Incident and Claim has Claim ID,
 	VehicleIncidentID                       int NOT NULL,
-	PRIMARY KEY(VehicleIncidentID, DemeritKindName),
-	FOREIGN KEY (DemeritKindName) REFERENCES DemeritKind (DemeritKindName)
+	PRIMARY KEY(VehicleIncidentID, UnderwritingQuestionID)
+)
+GO
+
+CREATE TABLE UnderwritingQuestion (
+	-- Text is of Underwriting Question,
+	Text                                    varchar NOT NULL,
+	-- Underwriting Question has Underwriting Question ID,
+	UnderwritingQuestionID                  int IDENTITY NOT NULL,
+	PRIMARY KEY(UnderwritingQuestionID),
+	UNIQUE(Text)
 )
 GO
 
@@ -460,6 +462,10 @@ GO
 
 ALTER TABLE ThirdParty
 	ADD FOREIGN KEY (VehicleIncidentID) REFERENCES VehicleIncident (IncidentID)
+GO
+
+ALTER TABLE UnderwritingDemerit
+	ADD FOREIGN KEY (UnderwritingQuestionID) REFERENCES UnderwritingQuestion (UnderwritingQuestionID)
 GO
 
 ALTER TABLE UnderwritingDemerit

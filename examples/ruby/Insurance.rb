@@ -64,10 +64,6 @@ module ::Insurance
     value_type 
   end
 
-  class DemeritKindName < String
-    value_type 
-  end
-
   class Description < String
     value_type :length => 1024
   end
@@ -159,10 +155,6 @@ module ::Insurance
     value_type :length => 18, :scale => 2
   end
 
-  class ProdDescription < String
-    value_type :length => 80
-  end
-
   class ProductCode < UnsignedInteger
     value_type :length => 8
     restrict 1..99
@@ -197,11 +189,19 @@ module ::Insurance
     value_type 
   end
 
+  class Text < String
+    value_type 
+  end
+
   class Time < ::Time
     value_type 
   end
 
   class Title < String
+    value_type 
+  end
+
+  class UnderwritingQuestionID < AutoCounter
     value_type 
   end
 
@@ -234,11 +234,6 @@ module ::Insurance
     identified_by :cover_type_code
     one_to_one :cover_type_code, :mandatory => true  # See CoverTypeCode.cover_type
     one_to_one :cover_type_name, :mandatory => true  # See CoverTypeName.cover_type
-  end
-
-  class DemeritKind
-    identified_by :demerit_kind_name
-    one_to_one :demerit_kind_name, :mandatory => true  # See DemeritKindName.demerit_kind
   end
 
   class Incident
@@ -310,7 +305,7 @@ module ::Insurance
   class Product
     identified_by :product_code
     one_to_one :alias                           # See Alias.product
-    one_to_one :prod_description                # See ProdDescription.product
+    one_to_one :description                     # See Description.product
     one_to_one :product_code, :mandatory => true  # See ProductCode.product
   end
 
@@ -323,6 +318,12 @@ module ::Insurance
     identified_by :state_code
     one_to_one :state_code, :mandatory => true  # See StateCode.state
     one_to_one :state_name                      # See StateName.state
+  end
+
+  class UnderwritingQuestion
+    identified_by :underwriting_question_id
+    one_to_one :text, :mandatory => true        # See Text.underwriting_question
+    one_to_one :underwriting_question_id, :class => UnderwritingQuestionID, :mandatory => true  # See UnderwritingQuestionID.underwriting_question
   end
 
   class Vehicle < Asset
@@ -376,9 +377,6 @@ module ::Insurance
   end
 
   class AuthorisedRep < Party
-  end
-
-  class Client < Party
   end
 
   class Company < Party
@@ -440,6 +438,9 @@ module ::Insurance
   class FinanceInstitution < Company
   end
 
+  class Insured < Party
+  end
+
   class Insurer < Company
   end
 
@@ -466,7 +467,7 @@ module ::Insurance
     identified_by :p_year, :p_product, :p_state, :p_serial
     has_one :application, :mandatory => true    # See Application.all_policy
     has_one :authorised_rep                     # See AuthorisedRep.all_policy
-    has_one :client, :mandatory => true         # See Client.all_policy
+    has_one :insured, :mandatory => true        # See Insured.all_policy
     has_one :itc_claimed, :class => ITCClaimed  # See ITCClaimed.all_policy
     has_one :p_product, :class => Product, :mandatory => true  # See Product.all_policy_as_p_product
     has_one :p_serial, :class => PolicySerial, :mandatory => true  # See PolicySerial.all_policy_as_p_serial
@@ -499,9 +500,9 @@ module ::Insurance
   end
 
   class UnderwritingDemerit
-    identified_by :vehicle_incident, :demerit_kind
-    has_one :demerit_kind, :mandatory => true   # See DemeritKind.all_underwriting_demerit
+    identified_by :vehicle_incident, :underwriting_question
     has_one :occurrence_count, :class => Count  # See Count.all_underwriting_demerit_as_occurrence_count
+    has_one :underwriting_question, :mandatory => true  # See UnderwritingQuestion.all_underwriting_demerit
     has_one :vehicle_incident, :mandatory => true  # See VehicleIncident.all_underwriting_demerit
   end
 
