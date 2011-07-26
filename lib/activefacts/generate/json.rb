@@ -155,7 +155,7 @@ module ActiveFacts
               # Add the role_order, if specified
               if shape.all_role_display.size > 0
                 if shape.all_role_display.size != roles.size
-                  raise "Invalid RoleDisplay for #{f.default_reading}"
+                  raise "Invalid RoleDisplay for #{f.default_reading} in #{shape.diagram.name} diagram"
                 end
                 ro = role_order(
                   uuids,

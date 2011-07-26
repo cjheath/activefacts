@@ -1419,7 +1419,11 @@ module ActiveFacts
       # Find or create the RoleDisplay for this role in this fact_type_shape, given (possibly empty) x_role_display nodes:
       def role_display_for_role(fact_type_shape, x_role_display, role)
         if x_role_display.size == 0
-          role_ordinal = fact_type_shape.fact_type.all_role.to_a.index(role)
+          # There's no x_role_display, which means the roles are in displayed 
+          # the same order as in the fact type. However, we need a RoleDisplay
+          # to attach a ReadingShape or ValueConstraintShape, so make them all.
+          fact_type_shape.fact_type.all_role.each{|r| @constellation.RoleDisplay(fact_type_shape, r.ordinal, :role => r) }
+          role_ordinal = fact_type_shape.fact_type.all_role_in_order.index(role)
         else
           role_ordinal = x_role_display.map{|rd| @by_id[rd['ref']]}.index(role)
         end
