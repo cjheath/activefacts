@@ -55,7 +55,7 @@ begin
   # Generate the output:
   output_klass.new(vocabulary, *generator_options).generate if vocabulary
 rescue => e
-  puts "#{e.message}"
+  $stderr.puts "#{e.message}"
   # puts "\t#{e.backtrace*"\n\t"}"
-  puts "\t#{e.backtrace*"\n\t"}" if debug :exception
+  $stderr.puts "\t#{e.backtrace*"\n\t"}" if debug :exception
 end
