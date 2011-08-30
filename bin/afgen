@@ -8,16 +8,6 @@ $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'rubygems'
 
-# Load the ruby debugger before everything else, if requested
-if d = ENV['DEBUG'] and d.split(/,/).include?('debug')
-  begin
-    require 'ruby-debug'
-    Debugger.start # (:post_mortem => true)  # Some Ruby versions crash on post-mortem debugging
-  rescue LoadError
-    # Ok, no debugger, tough luck.
-  end
-end
-
 require 'activefacts'
 require 'activefacts/vocabulary'
 

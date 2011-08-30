@@ -150,3 +150,21 @@ class Array
     self
   end
 end
+
+# Load the ruby debugger before everything else, if requested
+if debug :debug
+  begin
+    require 'ruby-debug'
+    Debugger.start # (:post_mortem => true)  # Some Ruby versions crash on post-mortem debugging
+  rescue LoadError
+    # Ok, no debugger, tough luck.
+  end
+
+  if debug :trap
+    trap('SIGINT') do
+      puts "Stopped at:\n\t"+caller*"\n\t"
+      debugger
+      true
+    end
+  end
+end
