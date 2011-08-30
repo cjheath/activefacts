@@ -305,8 +305,10 @@ module ActiveFacts
       # these expansions include frequency constraints, role names and value constraints as passed-in,
       # and also define adjectives by using the hyphenated form (on at least the first occurrence).
       def expand_reading(reading, frequency_constraints = [], define_role_names = nil, value_constraints = [], &subscript_block)
-        reading.expand(frequency_constraints, define_role_names, value_constraints) do |role_ref|
-          (!(role_ref.role.role_name and define_role_names != nil) and p = player(role_ref) and p.subscript) ? "(#{p.subscript})" : ""
+        reading.expand(frequency_constraints, define_role_names, value_constraints) do |role_ref, *parts|
+          parts + [
+            (!(role_ref.role.role_name and define_role_names != nil) and p = player(role_ref) and p.subscript) ? "(#{p.subscript})" : nil
+          ]
         end
       end
 

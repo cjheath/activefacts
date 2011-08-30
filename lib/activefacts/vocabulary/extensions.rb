@@ -183,7 +183,7 @@ module ActiveFacts
 
     class EntityType
       def preferred_identifier
-        #return @preferred_identifier if @preferred_identifier
+        return @preferred_identifier if @preferred_identifier
         if fact_type
 
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles
@@ -394,39 +394,42 @@ module ActiveFacts
         (0...role_refs.size).each{|i|
             role_ref = role_refs[i]
             role = role_ref.role
-            la = "#{role_ref.leading_adjective}".sub(/(.\b|.\Z)/, '\1-').sub(/- /,'-  ')
-            la = nil if la == ""
+            l_adj = "#{role_ref.leading_adjective}".sub(/(.\b|.\Z)/, '\1-').sub(/- /,'-  ')
+            l_adj = nil if l_adj == ""
             # Double the space to compensate for space removed below
-            ta = "#{role_ref.trailing_adjective}".sub(/(\b.|\A.)/, '-\1').sub(/ -/,'  -')
-            ta = nil if ta == ""
+            t_adj = "#{role_ref.trailing_adjective}".sub(/(\b.|\A.)/, '-\1').sub(/ -/,'  -')
+            t_adj = nil if t_adj == ""
 
-            expanded.gsub!(/\{#{i}\}/) {
+            expanded.gsub!(/\{#{i}\}/) do
                 role_ref = role_refs[i]
                 player = role_ref.role.object_type
                 role_name = role.role_name
                 role_name = nil if role_name == ""
                 if role_name && define_role_names == false
-                  la = ta = nil   # When using role names, don't add adjectives
+                  l_adj = t_adj = nil   # When using role names, don't add adjectives
                 end
-                fc = frequency_constraints[i]
-                fc = fc.frequency if fc && fc.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
-                if fc.is_a?(Array)
-                  fc, player_name = *fc
+                freq_con = frequency_constraints[i]
+                freq_con = freq_con.frequency if freq_con && freq_con.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
+                if freq_con.is_a?(Array)
+                  freq_con, player_name = *freq_con
                 else
                   player_name = player.name
                 end
                 literal = literals[i]
-                [
-                  fc ? fc : nil,
-                  la,
+                words = [
+                  freq_con ? freq_con : nil,
+                  l_adj,
                   define_role_names == false && role_name ? role_name : player_name,
-                  ta,
+                  t_adj,
                   define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil,
                   # Can't have both a literal and a value constraint, but we don't enforce that here:
                   literal ? literal : nil
-                ].compact*" " +
-                  (subscript_block ? subscript_block.call(role_ref) : "")
-            }
+                ]
+                if (subscript_block)
+                  words = subscript_block.call(role_ref, *words)
+                end
+                words.compact*" "
+            end
         }
         expanded.gsub!(/ ?- ?/, '-')        # Remove single spaces around adjectives
         #debug "Expanded '#{expanded}' using #{frequency_constraints.inspect}"
