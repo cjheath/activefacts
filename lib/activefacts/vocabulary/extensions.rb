@@ -448,6 +448,37 @@ module ActiveFacts
           end
         end
       end
+
+      # Return the array of the numbers of the RoleRefs inserted into this reading from the role_sequence
+      def role_numbers
+        text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
+      end
+
+      def expand_with_final_presence_constraint &b
+        # Arrange the roles in order they occur in this reading:
+        role_refs = role_sequence.all_role_ref_in_order
+        role_numbers = text.scan(/\{(\d)\}/).flatten.map{|m| Integer(m) }
+        roles = role_numbers.map{|m| role_refs[m].role }
+        fact_constraints = fact_type.internal_presence_constraints
+
+        # Find the constraints that constrain frequency over each role we can verbalise:
+        frequency_constraints = []
+        roles.each do |role|
+          frequency_constraints <<
+            if (role == roles.last)   # On the last role of the reading, emit any presence constraint
+              constraint = fact_constraints.
+                detect do |c|  # Find a UC that spans all other Roles
+                  c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) &&
+                    roles-c.role_sequence.all_role_ref.map(&:role) == [role]
+                end
+              constraint && constraint.frequency
+            else
+              nil
+            end
+        end
+
+        expand(frequency_constraints) { |*a| b && b.call(*a) }
+      end
     end
 
     class ValueConstraint
