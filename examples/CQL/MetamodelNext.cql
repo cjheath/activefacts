@@ -48,7 +48,7 @@ Concept is identified by GUID where
 	Concept has one GUID,
 	GUID is of at most one Concept;
 
-Constraint is a kind of Concept;
+Constraint is a kind of Concept [partitioned];
 Name is of Constraint,
 	Constraint is called at most one Name;
 
@@ -73,7 +73,7 @@ Fact is identified by GUID where
 	Fact has one GUID,
 	GUID is of at most one Fact;
 
-Fact Type is a kind of Concept;
+Fact Type is a kind of Concept [partitioned];
 Fact is of one Fact Type;
 
 Implicit Fact Type is a kind of Fact Type;
@@ -99,7 +99,7 @@ Join Node has at most one role-Name,
 
 Language is identified by its Code;
 
-Object Type is a kind of Concept;
+Object Type is a kind of Concept [partitioned];
 Instance is of one Object Type;
 Join Node is for one Object Type,
 	Object Type is referenced in Join Node;
@@ -126,7 +126,7 @@ Reading has one Text;
 Ring Constraint is a kind of Constraint;
 Ring Constraint is of one Ring Type;
 
-Role is a kind of Concept where
+Role is a kind of Concept [partitioned] where
 	Fact Type has at least one Ordinal role;
 Implicit Fact Type is implied by one Role (as Implying Role),
 	Implying Role implies at most one Implicit Fact Type;
@@ -144,7 +144,6 @@ Role Sequence is identified by GUID where
 Presence Constraint covers one Role Sequence;
 Reading is in one Role Sequence,
 	Role Sequence is for Reading;
-Role Sequence has unused dependency to force table in norma;
 
 Role Value is identified by Instance and Fact where
 	Instance plays Role Value,
