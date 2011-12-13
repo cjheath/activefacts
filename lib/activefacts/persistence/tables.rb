@@ -237,6 +237,12 @@ module ActiveFacts
                     }
                   debug :absorption, "#{object_type.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
 
+                  # If all non-identifying functional roles are one-to-ones that can be flipped, do that:
+                  if non_identifying_refs_from.all? { |ref| ref.role_type == :one_one && (ref.to.is_table || ref.to.tentative) }
+                    non_identifying_refs_from.each { |ref| ref.flip }
+                    non_identifying_refs_from = []
+                  end
+
                   if object_type.references_to.size > 1 and
                       non_identifying_refs_from.size > 0
                     debug :absorption, "#{object_type.name} has non-identifying functional dependencies so 3NF requires it be a table"
