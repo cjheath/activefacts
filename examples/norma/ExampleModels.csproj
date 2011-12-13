@@ -629,23 +629,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('MetamodelNext.orm')">
-    <None Include="MetamodelNext.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MetamodelNext.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="MetamodelNext.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MetamodelNext.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="MetamodelNext.SQLServer.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MetamodelNext.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('RedundantDependency.orm')">
     <None Include="RedundantDependency.DCIL.xml">
       <AutoGen>True</AutoGen>
@@ -798,6 +781,23 @@
     <None Include="Diplomacy.SQLServer.sql">
       <AutoGen>True</AutoGen>
       <DependentUpon>Diplomacy.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('MetamodelNext.orm')">
+    <None Include="MetamodelNext.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelNext.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="MetamodelNext.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelNext.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="MetamodelNext.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MetamodelNext.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
