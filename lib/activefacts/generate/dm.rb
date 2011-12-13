@@ -105,8 +105,16 @@ module ActiveFacts
             supertype = (a = o.absorbed_via and a.role_type == :supertype) ? supertype = a.from : nil
             if o.is_a?(ActiveFacts::Metamodel::EntityType)
               if secondary_supertypes = o.supertypes-[supertype] and
-                secondary_supertypes.size > 0
-                raise "Cannot handle models that contain classes like #{o.name} with external supertypes (#{secondary_supertypes.map{|t|t.name}*", "})"
+                secondary_supertypes.size > 0 and
+                secondary_supertypes.detect do |sst|
+                  sst_ref_facts = sst.preferred_identifier.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
+                  non_identifying_inheritable_references =
+                    sst.references_from.reject do |ref|
+                      sst_ref_facts.include?(ref.fact_type)
+                    end
+                  non_identifying_inheritable_references.size > 0
+                end
+                raise "Cannot map classes like #{o.name} with roles inherited from external supertypes (#{secondary_supertypes.map{|t|t.name}*", "})"
               end
               pi = o.preferred_identifier
               identifying_role_refs = pi.role_sequence.all_role_ref.sort_by{|role_ref| role_ref.ordinal}

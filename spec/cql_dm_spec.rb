@@ -38,7 +38,6 @@ describe "CQL Loader with DataMapper output" do
   mapping_failures = {  # These models can't be mapped to DM
     'OrienteeringER' => 'Invalid CQL results in unmappable model',
     'Insurance' => 'Cannot handle models that contain classes like Vehicle Incident with external supertypes (Incident)',
-    'MetamodelNext' => 'Cannot handle models that contain classes like Constraint with external supertypes (ObjectType)',
     'MultiInheritance' => 'Cannot handle models that contain classes like Australian Employee with external supertypes (Australian)',
     'SeparateSubtype' => 'Cannot handle models that contain classes like Vehicle Incident with external supertypes (Incident)',
     'ServiceDirector' => 'Cannot handle models that contain classes like Client with external supertypes (Company)',
