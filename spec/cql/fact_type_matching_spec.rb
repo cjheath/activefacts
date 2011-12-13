@@ -2,6 +2,7 @@
 # ActiveFacts CQL Fact Type matching tests
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
+$: << Dir::getwd
 
 require 'rspec/expectations'
 
