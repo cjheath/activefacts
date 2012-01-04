@@ -21,6 +21,7 @@ describe "Absorption" do
     Claim is identified by ClaimID where
       Claim has exactly one ClaimID,
       ClaimID is of at most one Claim;
+    Claim was reported on one DateTime;
   }
   AT_Incident = %Q{
     Incident is identified by Claim where
@@ -50,7 +51,7 @@ describe "Absorption" do
         #{AT_Prologue} #{AT_Claim} #{AT_Incident}
         Incident relates to loss on exactly one DateTime;
       },
-      :tables => { "Claim" => [%w{Claim ID}, %w{Incident Date Time}]}
+      :tables => { "Claim" => [%w{Claim ID}, %w{Date Time}, %w{Incident Date Time}]}
     },
 
     { :should => "absorb an objectified binary with single-role UC",
@@ -62,7 +63,7 @@ describe "Absorption" do
         Person has exactly one birth-DateTime;
       },
       :tables => {
-        "Claim" => [%w{Claim ID}, %w{Lodgement Date Time}, %w{Lodgement Person ID}],
+        "Claim" => [%w{Claim ID}, %w{Date Time}, %w{Lodgement Date Time}, %w{Lodgement Person ID}],
         "Party" => [%w{Party ID}, %w{Person Birth Date Time}]
       }
     },
