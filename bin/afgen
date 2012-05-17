@@ -54,4 +54,5 @@ rescue => e
   $stderr.puts "#{e.message}"
   # puts "\t#{e.backtrace*"\n\t"}"
   $stderr.puts "\t#{e.backtrace*"\n\t"}" if debug :exception
+  exit 1
 end
