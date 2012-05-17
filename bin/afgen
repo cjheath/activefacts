@@ -29,18 +29,24 @@ output_klass = eval("ActiveFacts::Generate::#{output_class}")
 raise "Expected #{output_handler} to define #{output_class}" unless output_klass
 
 # Load the file type input method
-arg, *options = *arg.split(/=/)
-extension = arg.sub(/\A.*\./,'').downcase
-input_handler = "activefacts/input/#{extension}"
-require input_handler
+if arg
+	arg, *options = *arg.split(/=/)
+	extension = arg.sub(/\A.*\./,'').downcase
+	input_handler = "activefacts/input/#{extension}"
+	require input_handler
 
-input_class = extension.upcase
-input_klass = ActiveFacts::Input.const_get(input_class.to_sym)
-raise "Expected #{input_handler} to define #{input_class}" unless input_klass
+	input_class = extension.upcase
+	input_klass = ActiveFacts::Input.const_get(input_class.to_sym)
+	raise "Expected #{input_handler} to define #{input_class}" unless input_klass
+end
 
 # Read the input file:
 begin
-  vocabulary = input_klass.readfile(arg, *options)
+  if input_klass
+    vocabulary = input_klass.readfile(arg, *options)
+  else
+    vocabulary = true
+  end
 
   # Generate the output:
   output_klass.new(vocabulary, *generator_options).generate if vocabulary
