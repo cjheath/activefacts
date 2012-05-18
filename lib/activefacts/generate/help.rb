@@ -38,7 +38,6 @@ inp is the name of a file input handler. Available input handlers are:
 
     public
       def generate(out = $>)
-        @vocabulary.tables if @tables || @columns || @indices
       end
     end
   end
