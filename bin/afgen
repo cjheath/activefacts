@@ -11,7 +11,7 @@ require 'rubygems'
 require 'activefacts'
 require 'activefacts/vocabulary'
 
-arg = ARGV.shift
+arg = ARGV.shift || "--help"
 
 # Load the required generator, or the default "text" generator:
 generator = "text"
