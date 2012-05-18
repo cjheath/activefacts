@@ -23,21 +23,26 @@ if arg =~ /^--([^=]*)(?:=(.*))?/
 end
 
 output_handler = "activefacts/generate/#{generator.downcase}"
-require output_handler
+begin
+  require output_handler
+rescue LoadError
+  $stderr.puts "Could not find output generator #{generator}. Try --help"
+  exit 1
+end
 output_class = generator.upcase.gsub(%r{[/\\]+},'::')
 output_klass = eval("ActiveFacts::Generate::#{output_class}")
 raise "Expected #{output_handler} to define #{output_class}" unless output_klass
 
 # Load the file type input method
 if arg
-	arg, *options = *arg.split(/=/)
-	extension = arg.sub(/\A.*\./,'').downcase
-	input_handler = "activefacts/input/#{extension}"
-	require input_handler
+  arg, *options = *arg.split(/=/)
+  extension = arg.sub(/\A.*\./,'').downcase
+  input_handler = "activefacts/input/#{extension}"
+  require input_handler
 
-	input_class = extension.upcase
-	input_klass = ActiveFacts::Input.const_get(input_class.to_sym)
-	raise "Expected #{input_handler} to define #{input_class}" unless input_klass
+  input_class = extension.upcase
+  input_klass = ActiveFacts::Input.const_get(input_class.to_sym)
+  raise "Expected #{input_handler} to define #{input_class}" unless input_klass
 end
 
 # Read the input file:
