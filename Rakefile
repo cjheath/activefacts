@@ -21,7 +21,7 @@ formal logic, producing a formal language that reads like plain
 English. ActiveFacts converts semantic models from CQL to relational
 and object models in SQL, Ruby and other languages.
 }
-  p.url = "http://dataconstellation.com/ActiveFacts/"
+  #p.url = "http://dataconstellation.com/ActiveFacts/"
   p.developer('Clifford Heath', 'cjh@dataconstellation.org')
   p.changes              = p.paragraphs_of("History.txt", 0..1).join("\n\n")
   p.post_install_message = 'For more information on ActiveFacts, see http://dataconstellation.com/ActiveFacts'

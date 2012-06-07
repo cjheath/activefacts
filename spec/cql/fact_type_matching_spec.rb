@@ -11,8 +11,6 @@ require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
 require 'spec/helpers/compile_helpers'
 
-require 'ruby-debug'; Debugger.start
-
 describe "When matching a reading" do
   before :each do
     extend CompileHelpers

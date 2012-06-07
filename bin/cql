@@ -8,14 +8,14 @@
 require 'readline'
 
 # Load the ruby debugger before everything else, if requested
-if d = ENV['DEBUG'] and d.split(/,/).include?('debug')
-  begin
-    require 'ruby-debug'
-    Debugger.start(:post_mortem => true)        # Stop when an exception is thrown, but before it's rescued
-  rescue LoadError
-    # Ok, no debugger, tough luck.
-  end
-end
+#if d = ENV['DEBUG'] and d.split(/,/).include?('debug')
+#  begin
+#    require 'ruby-debug'
+#    Debugger.start(:post_mortem => true)        # Stop when an exception is thrown, but before it's rescued
+#  rescue LoadError
+#    # Ok, no debugger, tough luck.
+#  end
+#end
 
 require 'activefacts'
 require 'activefacts/cql/compiler'
