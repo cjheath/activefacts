@@ -520,7 +520,7 @@ module ActiveFacts
             min_literal = min.literal
           end
         else
-          min_literal = infinity ? "INFINITY" : ""
+          min_literal = infinity ? "-Infinity" : ""
         end
         if max = value_range.maximum_bound
           max = max.value
@@ -530,7 +530,7 @@ module ActiveFacts
             max_literal = max.literal
           end
         else
-          max_literal = infinity ? "INFINITY" : ""
+          max_literal = infinity ? "Infinity" : ""
         end
 
         min_literal +
