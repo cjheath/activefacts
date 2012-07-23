@@ -1,6 +1,7 @@
 %w[rubygems hoe rake rake/clean fileutils newgem thread rubigen].each { |f|
   require f
 }
+Hoe.plugin :gemspec
 
 require 'rspec'
 require 'rspec/core/rake_task'
@@ -21,13 +22,13 @@ formal logic, producing a formal language that reads like plain
 English. ActiveFacts converts semantic models from CQL to relational
 and object models in SQL, Ruby and other languages.
 }
-  p.url = "http://dataconstellation.com/ActiveFacts/"
+  # p.url = "http://dataconstellation.com/ActiveFacts/"
   p.developer('Clifford Heath', 'cjh@dataconstellation.org')
   p.changes              = p.paragraphs_of("History.txt", 0..1).join("\n\n")
   p.post_install_message = 'For more information on ActiveFacts, see http://dataconstellation.com/ActiveFacts'
   p.rubyforge_name       = "cjheath@rubyforge.org"
   p.extra_deps         = [
-    ['activefacts-api','>= 0.8.10'],
+    ['activefacts-api','>= 0.8.12'],
     ['treetop','>= 1.4.1'],
     ['rake','>= 0.8.7'],
   ]
