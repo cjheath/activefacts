@@ -137,7 +137,7 @@ describe "When compiling an entity type, " do
         eval(lambda { example.call(*c) }, BlackHole.new)
       rescue => raised
       end
-      raise RSpec::Core::PendingExampleFixedError.new(msg) unless raised
+      raise RSpec::Core::Pending::PendingExampleFixedError.new(msg) unless raised
       throw :pending_declared_in_example, msg
     }
   end
@@ -306,7 +306,7 @@ describe "When compiling an entity type, " do
             test.call(@compiler.vocabulary.constellation)
           rescue RSpec::Expectations::ExpectationNotMetError
             raise
-          rescue RSpec::Core::ExamplePendingError
+          rescue RSpec::Core::Pending::PendingDeclaredInExample.new
             raise
           rescue => e
             puts "Failed on\n\t"+tests.select{|t| t.is_a?(String)}*" "

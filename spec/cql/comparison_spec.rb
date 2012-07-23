@@ -8,9 +8,7 @@ require 'rspec/expectations'
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
-require 'spec/helpers/compile_helpers'
-
-require 'ruby-debug'; Debugger.start
+require File.dirname(__FILE__) + '/../helpers/compile_helpers'
 
 describe "When matching a reading with an existing fact type" do
   before :each do
