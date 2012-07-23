@@ -7,8 +7,6 @@
 require 'rubygems'
 require 'activefacts'
 
-require 'ruby-debug'
-
 class Units
   class BaseUnit
     attr_reader :unit, :exponent
