@@ -15,7 +15,7 @@ describe "Entity Type class definitions" do
       end
       class Person < LegalEntity
         identified_by :name
-        has_one :name, :class => Name
+        one_to_one :name, :class => Name
       end
     end
   end
@@ -95,7 +95,7 @@ describe "Entity Type class definitions" do
           end
           class Bad
             identified_by :name
-            has_one :name, LegalEntity
+            one_to_one :name, LegalEntity
           end
         end
       }.should raise_error

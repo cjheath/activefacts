@@ -13,7 +13,7 @@ describe "Roles" do
       end
       class LegalEntity
         identified_by :name
-        has_one :name
+        one_to_one :name
       end
       class Contract
         identified_by :first, :second
@@ -105,17 +105,17 @@ describe "Roles" do
     le = Mod::LegalEntity.new(foo)
     le.respond_to?(:name).should be_true
     name = le.name
-    name.respond_to?(:all_legal_entity).should be_true
+    name.respond_to?(:legal_entity).should be_true
 
     #pending
-    Array(name.all_legal_entity).should === [le]
+    name.legal_entity.should === le
   end
 
   it "should instantiate subclasses sensibly" do
     c = ActiveFacts::API::Constellation.new(Mod)
     bloggs = c.LegalEntity("Bloggs & Co")
     #pending
-    p = c.Person("Fred", "Bloggs")
+    p = c.Person("Fred", "Bloggs", :name => "Bloggs, Fred")
     p.related_to = "Bloggs & Co"
     p.related_to.should be_is_a(Mod::LegalEntity)
     bloggs.object_id.should == p.related_to.object_id

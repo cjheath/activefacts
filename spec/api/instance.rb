@@ -43,7 +43,7 @@ describe "An instance of every type of ObjectType" do
       @base_types.each do |base_type|
         code = %Q{
           class TestBy#{base_type.name}
-            identified_by :#{base_type.name.snakecase}_value#{
+            identified_by :one_#{base_type.name.snakecase}_value#{
               @role_names.map do |role_name|
                 %Q{
             has_one :#{role_name}
@@ -53,7 +53,7 @@ describe "An instance of every type of ObjectType" do
           end
 
           class TestBy#{base_type.name}Sub
-            identified_by :#{base_type.name.snakecase}_sub_value#{
+            identified_by :one_#{base_type.name.snakecase}_sub_value#{
               @role_names.map do |role_name|
                 %Q{
             has_one :#{role_name}
@@ -232,7 +232,7 @@ describe "An instance of every type of ObjectType" do
           role = entity_type.roles(ir)
           role.should_not be_nil
           counterpart_object_type = role.counterpart_object_type
-          verbalisation.should =~ %r{\b#{counterpart_object_type.basename}\b}
+          verbalisation.should =~ %r{\bOne#{counterpart_object_type.basename}\b}
         end
     end
   end
@@ -255,8 +255,7 @@ describe "An instance of every type of ObjectType" do
       entity.class.identifying_role_names.each do |ir|
           role = entity.class.roles(ir)
           role.should_not be_nil
-          counterpart_object_type = role.counterpart_object_type
-          verbalisation.should =~ %r{\b#{counterpart_object_type.basename}\b}
+          verbalisation.should =~ %r{\b#{ir.to_s.camelcase}\b}
         end
     end
   end

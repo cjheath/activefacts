@@ -33,12 +33,12 @@ describe "A Constellation instance" do
 
       class LegalEntity
         identified_by :name
-        has_one :name
+        one_to_one :name
       end
 
       class SurrogateId
         identified_by :auto_counter_value
-        has_one :auto_counter_value
+        one_to_one :auto_counter_value
       end
 
       class Company < LegalEntity
