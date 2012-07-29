@@ -309,9 +309,9 @@ module ActiveFacts
       has_one :coefficient                        # See Coefficient.all_unit
       has_one :ephemera_url, :class => EphemeraURL  # See EphemeraURL.all_unit
       maybe :is_fundamental
-      has_one :name, :mandatory => true           # See Name.all_unit
+      one_to_one :name, :mandatory => true        # See Name.unit
       has_one :offset                             # See Offset.all_unit
-      has_one :plural_name, :class => Name        # See Name.all_unit_as_plural_name
+      one_to_one :plural_name, :class => Name     # See Name.unit_as_plural_name
       one_to_one :unit_id, :mandatory => true     # See UnitId.unit
       has_one :vocabulary, :mandatory => true     # See Vocabulary.all_unit
     end
