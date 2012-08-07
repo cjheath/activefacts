@@ -72,7 +72,7 @@ module ActiveFacts
 
       def unit? s
         name = @constellation.Name[s]
-        units = !name ? [] : name.all_unit.to_a + name.all_unit_as_plural_name.to_a
+        units = (!name ? [] : Array(name.unit) + Array(name.unit_as_plural_name)).uniq
         debug :units, "Looking for unit #{s}, got #{units.map{|u|u.name}.inspect}"
         units.size > 0
       end
