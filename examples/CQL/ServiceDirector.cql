@@ -58,14 +58,14 @@ Data Store is one Major-Version;
 Data Store is one Minor-Version;
 Data Store is one Revision-Version;
 
-Date is identified by DDMMYYYY where
-	Date has one DDMMYYYY,
-	DDMMYYYY is of at most one Date;
-Credential has at most one Expiration-Date;
+Date Time YMDHMS is identified by MDYHMS where
+	Date Time YMDHMS has one MDYHMS,
+	MDYHMS is of at most one Date Time YMDHMS;
 
-Date Time is identified by MDYHMS where
-	Date Time has one MDYHMS,
-	MDYHMS is of at most one Date Time;
+DateYYMMDD is identified by DDMMYYYY where
+	DateYYMMDD has one DDMMYYYY,
+	DDMMYYYY is of at most one DateYYMMDD;
+Credential has at most one Expiration-DateYYMMDD;
 
 Duration is identified by Seconds where
 	Duration has one Seconds,
@@ -126,16 +126,16 @@ Recurring Schedule wednesday;
 
 Satellite Message is identified by its Id;
 Satellite Message is designated for one Data Store;
-Satellite Message one Insertion-Date Time;
 Satellite Message has at most one Message Data;
 Satellite Message has at most one Message Header;
 Satellite Message is of at most one Provider Type;
 Satellite Message has one Serial Number;
+Satellite Message has one insertion-Date Time YMDHMS;
 
 Subscription is identified by its Nr;
 Company has one Driver- Tech Subscription;
-Subscription has one Beginning-Date;
-Subscription has at most one Ending-Date;
+Subscription has one Beginning-DateYYMMDD;
+Subscription has at most one Ending-DateYYMMDD;
 Subscription is enabled;
 
 Switch is identified by its Id;
@@ -155,10 +155,10 @@ Switch is backup updates;
 Switch is send disabled;
 Switch is test vectors enabled;
 
-Time is identified by HHMMSS where
-	Time has one HHMMSS,
-	HHMMSS is of at most one Time;
-Recurring Schedule has one Start-Time;
+TimeHMS is identified by HHMMSS where
+	TimeHMS has one HHMMSS,
+	HHMMSS is of at most one TimeHMS;
+Recurring Schedule has one Start-TimeHMS;
 
 Transaction is identified by its Nr;
 Satellite Message has at most one Group-Transaction;
@@ -210,11 +210,11 @@ Data Store Service has one Subscription;
  */
 either Company is client or Company is vendor but not both;
 for each Credential exactly one of these holds:
-	Data Store(2) requires Credential,
+	Data Store (2) requires Credential,
 	Data Store Service requires Credential,
 	Vendor requires Credential,
 	Data Store File Host System has Internal-Credential,
-	Data Store(1) has Internal-Credential;
+	Data Store (1) has Internal-Credential;
 for each Network exactly one of these holds:
 	Network is used by Host System,
 	Company has Origin-Network,

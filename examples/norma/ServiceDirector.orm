@@ -197,7 +197,7 @@
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_9CF454CC-75BB-426D-A14E-707A61974ABA" />
 			</orm:EntityType>
-			<orm:EntityType id="_FCF26D58-45D9-4AB9-A23F-2B46072FA2C7" Name="Date" _ReferenceMode="DDMMYYYY">
+			<orm:EntityType id="_FCF26D58-45D9-4AB9-A23F-2B46072FA2C7" Name="DateYYMMDD" _ReferenceMode="DDMMYYYY">
 				<orm:PlayedRoles>
 					<orm:Role ref="_B3C411D3-3730-4809-984F-0777771D4638" />
 					<orm:Role ref="_D1D0F26F-1A00-4A1C-AA6A-73C783A3B4A3" />
@@ -472,7 +472,7 @@
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_307E4C80-C1C7-40CC-8327-558C0DB4D4D4" ref="_EBD4E8D7-66E7-496F-BFBF-D59ED2A0E80A" Scale="0" Length="20" />
 			</orm:ValueType>
-			<orm:EntityType id="_7A6DB7AF-591B-4133-8212-EAB3B90E14AF" Name="Date Time" _ReferenceMode="MDYHMS">
+			<orm:EntityType id="_7A6DB7AF-591B-4133-8212-EAB3B90E14AF" Name="Date Time YMDHMS" _ReferenceMode="MDYHMS">
 				<orm:PlayedRoles>
 					<orm:Role ref="_81C4382A-96CB-4D29-93EC-DBA9919954CE" />
 					<orm:Role ref="_E863604A-15B0-4F36-B774-77B392D69900" />
@@ -676,7 +676,7 @@
 					</orm:ValueConstraint>
 				</orm:ValueRestriction>
 			</orm:ValueType>
-			<orm:EntityType id="_31CC0FA1-0FBC-4218-A844-C77EAF7BD242" Name="Time" _ReferenceMode="HHMMSS">
+			<orm:EntityType id="_31CC0FA1-0FBC-4218-A844-C77EAF7BD242" Name="TimeHMS" _ReferenceMode="HHMMSS">
 				<orm:PlayedRoles>
 					<orm:Role ref="_725B8B8A-C557-4592-B1F0-8A336D076DB4" />
 					<orm:Role ref="_14391E0C-0DDF-4C85-B671-8543F423A2C9" />
@@ -1659,7 +1659,7 @@
 					<orm:UniquenessConstraint ref="_9D493106-79A1-4D62-90B4-374211034299" />
 				</orm:InternalConstraints>
 			</orm:SubtypeFact>
-			<orm:Fact id="_2960AE41-DF4F-4A77-8A10-687A75F21410" _Name="DateHasDDMMYYYY">
+			<orm:Fact id="_2960AE41-DF4F-4A77-8A10-687A75F21410" _Name="DateYYMMDDHasDDMMYYYY">
 				<orm:FactRoles>
 					<orm:Role id="_B3C411D3-3730-4809-984F-0777771D4638" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_FCF26D58-45D9-4AB9-A23F-2B46072FA2C7" />
@@ -1704,7 +1704,7 @@
 					<orm:MandatoryConstraint ref="_3F406464-A850-4444-907D-E6CD5D2E7D13" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_6A51ECB1-402C-42D9-BC6D-A82ABD82F658" _Name="SubscriptionHasBeginningDate">
+			<orm:Fact id="_6A51ECB1-402C-42D9-BC6D-A82ABD82F658" _Name="SubscriptionHasBeginningDateYYMMDD">
 				<orm:FactRoles>
 					<orm:Role id="_1F400E94-FFAC-458E-9642-615DA6655666" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_668AF356-0013-4DDB-857B-C9B540B010B2" />
@@ -1735,7 +1735,7 @@
 					<orm:UniquenessConstraint ref="_99B1F306-764B-4C2A-BEE9-9FBF73CBC41E" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_A9136B9E-AC59-49E8-BDC6-E952A8F90EFB" _Name="SubscriptionHasEndingDate">
+			<orm:Fact id="_A9136B9E-AC59-49E8-BDC6-E952A8F90EFB" _Name="SubscriptionHasEndingDateYYMMDD">
 				<orm:FactRoles>
 					<orm:Role id="_1713D778-E4C0-4F1B-AD17-62E9F823C0C7" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_668AF356-0013-4DDB-857B-C9B540B010B2" />
@@ -3018,7 +3018,7 @@
 					<orm:UniquenessConstraint ref="_7BD49263-AAE0-4214-9592-BCB50D8C5792" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_73F7B801-C459-447E-93BE-D276B9A9AABA" _Name="CredentialHasExpirationDate">
+			<orm:Fact id="_73F7B801-C459-447E-93BE-D276B9A9AABA" _Name="CredentialHasExpirationDateYYMMDD">
 				<orm:FactRoles>
 					<orm:Role id="_10DA4C3D-CCB5-454C-8A22-C24B7B88A59C" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_E23C4075-07C7-4DB2-B589-DD5104A0E0EF" />
@@ -3428,7 +3428,7 @@
 					<orm:UniquenessConstraint ref="_E49DE65F-1D4C-4016-A8F1-880D41665095" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_CAD934D0-3FF9-40A2-B4A2-B73D5B5517CA" _Name="SatelliteMessageInsertionDateTime">
+			<orm:Fact id="_CAD934D0-3FF9-40A2-B4A2-B73D5B5517CA" _Name="SatelliteMessageHasInsertionDateTimeYMDHMS">
 				<orm:FactRoles>
 					<orm:Role id="_2B92F279-DFB7-4FF7-AA7A-6157E3791C5D" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_E679F953-724A-4F36-9862-B38261E1EEAE" />
@@ -3441,10 +3441,10 @@
 					<orm:ReadingOrder id="_A1B38F61-2CB8-40B2-B7C5-6EDE50F62849">
 						<orm:Readings>
 							<orm:Reading id="_8CF1CD7D-F700-4418-A175-40521CD04020">
-								<orm:Data>{0} Insertion- {1}</orm:Data>
+								<orm:Data>{0} has insertion- {1}</orm:Data>
 								<orm:ExpandedData>
-									<orm:RoleText RoleIndex="0" FollowingText=" " />
-									<orm:RoleText RoleIndex="1" PreBoundText="Insertion " />
+									<orm:RoleText RoleIndex="0" FollowingText=" has " />
+									<orm:RoleText RoleIndex="1" PreBoundText="insertion " />
 								</orm:ExpandedData>
 							</orm:Reading>
 						</orm:Readings>
@@ -3459,7 +3459,7 @@
 					<orm:MandatoryConstraint ref="_290057B8-C358-47B6-9982-1501440B3A95" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_25F4E4D2-A6DF-45C8-BF30-7F2FB43E6E40" _Name="DateTimeHasMDYHMS">
+			<orm:Fact id="_25F4E4D2-A6DF-45C8-BF30-7F2FB43E6E40" _Name="DateTimeYMDHMSHasMDYHMS">
 				<orm:FactRoles>
 					<orm:Role id="_81C4382A-96CB-4D29-93EC-DBA9919954CE" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_7A6DB7AF-591B-4133-8212-EAB3B90E14AF" />
@@ -3517,9 +3517,9 @@
 					<orm:ReadingOrder id="_4A1962C6-555B-439F-AFC9-B6FAA06A6EDB">
 						<orm:Readings>
 							<orm:Reading id="_7DB46ED5-D352-4B2A-8F02-9FB7C4CB4717">
-								<orm:Data>{0} Is Designated for {1}</orm:Data>
+								<orm:Data>{0} is designated for {1}</orm:Data>
 								<orm:ExpandedData>
-									<orm:RoleText RoleIndex="0" FollowingText=" Is Designated for " />
+									<orm:RoleText RoleIndex="0" FollowingText=" is designated for " />
 								</orm:ExpandedData>
 							</orm:Reading>
 						</orm:Readings>
@@ -4104,7 +4104,7 @@
 					<orm:UniquenessConstraint ref="_6BE2EC80-D54E-4F05-9944-D6EF9F114A38" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_4590F82C-98CA-49DE-B92C-8877B3226B49" _Name="RecurringScheduleHasStartTime">
+			<orm:Fact id="_4590F82C-98CA-49DE-B92C-8877B3226B49" _Name="RecurringScheduleHasStartTimeHMS">
 				<orm:FactRoles>
 					<orm:Role id="_99B4F86A-3536-44B8-8380-B1E45A2ADD0D" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_356BCB5F-BA9A-4872-A3DD-D1D37D75C10D" />
@@ -4135,7 +4135,7 @@
 					<orm:MandatoryConstraint ref="_2778087D-232E-4A09-9046-30044FDA63A3" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_5CDF57DE-0A37-47CC-A4A2-37CF93F95A91" _Name="TimeHasHHMMSS">
+			<orm:Fact id="_5CDF57DE-0A37-47CC-A4A2-37CF93F95A91" _Name="TimeHMSHasHHMMSS">
 				<orm:FactRoles>
 					<orm:Role id="_725B8B8A-C557-4592-B1F0-8A336D076DB4" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_31CC0FA1-0FBC-4218-A844-C77EAF7BD242" />
@@ -7087,7 +7087,7 @@ user/password which are not given
 					<ormDiagram:Role ref="_F75BCBCC-9EFD-4DB0-A20A-EE1257E10A5B" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_175F3CD4-4388-458A-8880-D52EC7C92B96" IsExpanded="true" AbsoluteBounds="5.1253192537389323, 1.6878033154989343, 0.84245728969573974, 0.35900605320930479">
+			<ormDiagram:ObjectTypeShape id="_175F3CD4-4388-458A-8880-D52EC7C92B96" IsExpanded="true" AbsoluteBounds="5.1194802337251231, 1.6878033154989343, 0.85413532972335815, 0.35900605320930479">
 				<ormDiagram:Subject ref="_FCF26D58-45D9-4AB9-A23F-2B46072FA2C7" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_C9433229-E4A9-403E-AD6E-B8E5F2DF1F01" IsExpanded="true" AbsoluteBounds="4.0940692537389323, 1.4937500000000004, 0.38388888899236917, 0.24388888899236916">
@@ -7431,7 +7431,7 @@ user/password which are not given
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_73F7B801-C459-447E-93BE-D276B9A9AABA" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_02D38920-1C19-449F-BBF2-93956FEAD394" IsExpanded="true" AbsoluteBounds="5.6708333333333307, 2.3746204218385554, 0.84245728969573974, 0.35900605320930479">
+			<ormDiagram:ObjectTypeShape id="_02D38920-1C19-449F-BBF2-93956FEAD394" IsExpanded="true" AbsoluteBounds="5.6649943133195215, 2.3746204218385554, 0.85413532972335815, 0.35900605320930479">
 				<ormDiagram:Subject ref="_FCF26D58-45D9-4AB9-A23F-2B46072FA2C7" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ModelNoteShape id="_52622B4E-E7D5-4B94-BF24-4F03B55FC661" IsExpanded="true" AbsoluteBounds="4.1375000794728614, 3.1308702628928362, 2.1161666666666665, 0.387">
@@ -7914,13 +7914,13 @@ user/password which are not given
 			</ormDiagram:FactTypeShape>
 			<ormDiagram:FactTypeShape id="_4A72EF19-86A1-4ED6-8E31-A27CEF64AD8D" IsExpanded="true" AbsoluteBounds="3.993173722426095, 1.708867164216936, 0.38388888899236917, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_D428843A-9BA6-43F1-8687-031594C032F6" IsExpanded="true" AbsoluteBounds="3.993173722426095, 2.0175075665116315, 0.46197959780693054, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_D428843A-9BA6-43F1-8687-031594C032F6" IsExpanded="true" AbsoluteBounds="3.993173722426095, 2.0175075665116315, 0.63183367252349854, 0.12950302660465241">
 						<ormDiagram:Subject ref="_A1B38F61-2CB8-40B2-B7C5-6EDE50F62849" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_CAD934D0-3FF9-40A2-B4A2-B73D5B5517CA" />
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_3953A16B-28E3-4052-BF8A-E1C85A9604E6" IsExpanded="true" AbsoluteBounds="4.8785905480384777, 1.686308582108468, 0.70516889810562133, 0.35900605320930479">
+			<ormDiagram:ObjectTypeShape id="_3953A16B-28E3-4052-BF8A-E1C85A9604E6" IsExpanded="true" AbsoluteBounds="4.6530283629894207, 1.686308582108468, 1.1562932682037355, 0.35900605320930479">
 				<ormDiagram:Subject ref="_7A6DB7AF-591B-4133-8212-EAB3B90E14AF" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_910D481D-535D-4C00-93C2-8D77F570A0A1" IsExpanded="true" AbsoluteBounds="0.60662162303924561, 0.585585005581379, 0.87136762857437133, 0.22950302660465241">
@@ -7931,7 +7931,7 @@ user/password which are not given
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_3D479237-7BEA-4C41-8DAD-E17797E736C2" IsExpanded="true" AbsoluteBounds="3.993173722426095, 2.3496420743875222, 0.38388888899236917, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_B37FE7A5-08A0-48C7-9C7E-EF9712AAC477" IsExpanded="true" AbsoluteBounds="3.993173722426095, 2.6582824766822175, 0.79281049966812134, 0.12950302660465241">
+					<ormDiagram:ReadingShape id="_B37FE7A5-08A0-48C7-9C7E-EF9712AAC477" IsExpanded="true" AbsoluteBounds="3.993173722426095, 2.6582824766822175, 0.76575154066085815, 0.12950302660465241">
 						<ormDiagram:Subject ref="_4A1962C6-555B-439F-AFC9-B6FAA06A6EDB" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8675,8 +8675,8 @@ user/password which are not given
 		<ormtooial:FactTypeMapsTowardsRole id="_0DA6977A-AA11-44F6-B591-F00B95B9DC34" FactType="_499A504A-7D54-4653-9423-66D2E6C948A4" TowardsRole="_DFAC228C-D789-4991-91FC-603DD17E005D" Depth="Deep" UniquenessPattern="OneToOne" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_8A8E0E33-FB2B-4640-97F5-ABDAF2B12544" FactType="_D2625CC6-CBEE-4AA1-8ABE-E58041514440" TowardsRole="_FB024051-6342-4126-AC95-BE5DB10FBD2F" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_0EA3E2EF-BC1D-470C-95A8-4F1AEF8E3542" FactType="_B2DBEDD4-360A-41BF-A505-D899407C7DAA" TowardsRole="_8404BDC3-211D-4022-8723-A977F82E9945" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_A6EFA569-84CB-4FF0-A5D6-E57CE6661C73" FactType="_2960AE41-DF4F-4A77-8A10-687A75F21410" TowardsRole="_B3C411D3-3730-4809-984F-0777771D4638" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_1D0E3C04-1D68-46D6-871D-F3786C082D67" FactType="_25F4E4D2-A6DF-45C8-BF30-7F2FB43E6E40" TowardsRole="_81C4382A-96CB-4D29-93EC-DBA9919954CE" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_A6EFA569-84CB-4FF0-A5D6-E57CE6661C73" FactType="_2960AE41-DF4F-4A77-8A10-687A75F21410" TowardsRole="_B3C411D3-3730-4809-984F-0777771D4638" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_6C1AF1B6-1665-4F7B-BAA7-4F56D246FAA8" FactType="_F19AB5A0-289A-470C-B3DB-C2B4FF3E7D66" TowardsRole="_BA346C17-7B8E-4E8E-AFA8-86D7CA1253B6" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_14E487FA-6E52-4160-9A1D-E7D4EEF7D3BD" FactType="_62998130-6535-4D06-82AF-4F7358028160" TowardsRole="_60D855F2-F881-4C3B-861A-AC7CA0ECF52C" Depth="Deep" UniquenessPattern="Subtype" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_EC04CA6B-7923-466A-B7E7-C4D27764752A" FactType="_0881811B-3846-4CD9-B99B-8136050F0074" TowardsRole="_87A49703-CA70-4874-B41B-ADA150F4C506" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
@@ -8721,11 +8721,11 @@ user/password which are not given
 		<ormtooial:FactTypeMapsTowardsRole id="_DCAE365F-0FE2-44E1-9B61-5705D45E1ABC" FactType="_04408B0B-7DAC-46B8-8F51-04E2D2A86126" TowardsRole="_9DFD77A9-28B1-4C4B-A23A-EA70F012A586" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_54C17AD1-6050-48AE-AC23-0445F42BAF06" FactType="_A6B7992B-3628-4F06-892B-D0D2A4F77023" TowardsRole="_1964A009-E110-40B2-BD9A-F8E13A317F1B" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_7B7A34A4-97AB-4CB5-99A1-D71B70B63CEA" FactType="_EA2F1A6C-6467-4D65-B4DB-C2B785EC60E7" TowardsRole="_42BA5BAD-A072-49B9-91EE-6FD906F6D45F" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
+		<ormtooial:FactTypeMapsTowardsRole id="_B144A6D8-260D-440C-A4CC-3E9FC9CDFB41" FactType="_CAD934D0-3FF9-40A2-B4A2-B73D5B5517CA" TowardsRole="_2B92F279-DFB7-4FF7-AA7A-6157E3791C5D" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_6D86C8EE-667A-4B8F-B35D-9CD870E3E68F" FactType="_5E1E7C12-C34C-4595-803F-AFF96947253F" TowardsRole="_474A9270-4F74-499A-B308-7632831D4F95" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_9FE190F2-2088-4B20-B7BD-DA7226424497" FactType="_6674D339-3856-47F4-9B99-2E999C3B2632" TowardsRole="_54823299-AB53-47D0-9907-CFB35CBDFF37" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_18AC6489-69A9-48F9-A5A4-059F1460DB0B" FactType="_8A0025AE-B525-4122-A2F2-B706EF4EB6C0" TowardsRole="_0800E28E-BFBE-47EE-9919-2E286D06552E" Depth="Shallow" UniquenessPattern="OneToOne" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_D7242998-751E-4438-A13E-315F2DE482F7" FactType="_3533AD7B-A004-4962-83B0-E80D96968DEE" TowardsRole="_4D9AB7B0-4790-4337-B490-D38A12008110" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
-		<ormtooial:FactTypeMapsTowardsRole id="_B144A6D8-260D-440C-A4CC-3E9FC9CDFB41" FactType="_CAD934D0-3FF9-40A2-B4A2-B73D5B5517CA" TowardsRole="_2B92F279-DFB7-4FF7-AA7A-6157E3791C5D" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_65A0EB27-3C0F-40BB-96F8-F3EA275F6B03" FactType="_D4EC0A97-EAA1-4FB1-864D-F908A2DA50F3" TowardsRole="_29E539B0-7030-4B41-A755-3ACAD0148CB3" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="TowardsRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_4B32AF11-FC05-4923-A64F-BEA81646BA22" FactType="_563867E3-3F54-4F61-9721-E47DA75C7A85" TowardsRole="_D2DF6EC3-FE4A-4DC4-A754-BA2E3839ABF9" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="OppositeRoleMandatory" />
 		<ormtooial:FactTypeMapsTowardsRole id="_8C76F18D-B4F8-4731-86B4-C4461C8242F3" FactType="_9147FE9B-C993-414B-A730-3D168391C02E" TowardsRole="_429130A5-4CDE-4E53-83C1-879581DAE04D" Depth="Shallow" UniquenessPattern="OneToMany" MandatoryPattern="BothRolesMandatory" />
@@ -9133,8 +9133,8 @@ user/password which are not given
 					<rcd:Table id="_B1B0EF0A-2D0C-430A-891F-180155BD064D" Name="Subscription">
 						<rcd:Columns>
 							<rcd:Column id="_F29EC23C-8294-465A-90CE-3C0D4697DB62" Name="subscriptionNr" />
-							<rcd:Column id="_88D51D03-D0CE-406B-82B6-9BD1E1E67D22" Name="beginningDate" />
-							<rcd:Column id="_6AE45685-1123-43AA-9146-14A8EAF98248" Name="endingDate" IsNullable="true" />
+							<rcd:Column id="_88D51D03-D0CE-406B-82B6-9BD1E1E67D22" Name="beginningDateYYMMDD" />
+							<rcd:Column id="_6AE45685-1123-43AA-9146-14A8EAF98248" Name="endingDateYYMMDD" IsNullable="true" />
 							<rcd:Column id="_5B939CBF-7F73-463D-8CA6-CB0CC5BF4C22" Name="isEnabled" IsNullable="true" />
 						</rcd:Columns>
 						<rcd:Constraints>
@@ -9150,7 +9150,7 @@ user/password which are not given
 							<rcd:Column id="_9393E9EB-5382-44F4-B5F8-7D3402C9A8C1" Name="credentialNr" />
 							<rcd:Column id="_744BB55B-ABA1-490C-87E5-1AB333BAE96C" Name="userName" />
 							<rcd:Column id="_AB5C93A4-60A3-492A-B86C-0C7694C02A45" Name="password" />
-							<rcd:Column id="_48E287C0-795D-4EFD-9E46-F53AAB8CB01B" Name="expirationDate" IsNullable="true" />
+							<rcd:Column id="_48E287C0-795D-4EFD-9E46-F53AAB8CB01B" Name="expirationDateYYMMDD" IsNullable="true" />
 							<rcd:Column id="_628D3BB0-A9FF-4AE6-AD69-B0C5E2C7FC02" Name="dataStore" IsNullable="true" />
 							<rcd:Column id="_084A4FA8-B80F-4615-A948-17CD4D2D547C" Name="vendor" IsNullable="true" />
 							<rcd:Column id="_984ED99C-E172-4C99-8B89-2A9031A9CFC4" Name="dataStoreServiceVendor" IsNullable="true" />
@@ -9449,7 +9449,7 @@ user/password which are not given
 							<rcd:Column id="_9E446739-C430-48C9-9254-5F814875219E" Name="satelliteMessageId" />
 							<rcd:Column id="_0B75ED33-AA74-496B-8234-C5458A25C762" Name="groupTransaction" IsNullable="true" />
 							<rcd:Column id="_27DB1A44-2D4B-426B-A19F-FFA242F58B84" Name="providerType" IsNullable="true" />
-							<rcd:Column id="_2549C401-6AF6-45AF-A2D2-2BA074826C38" Name="insertionDateTime" />
+							<rcd:Column id="_2549C401-6AF6-45AF-A2D2-2BA074826C38" Name="insertionDateTimeYMDHMS" />
 							<rcd:Column id="_006B3980-68B5-4AF0-9F71-BA6FE6C5D504" Name="serialNumber" />
 							<rcd:Column id="_D1DB89E0-FA8E-410F-863E-A26A31C458CD" Name="messageHeader" IsNullable="true" />
 							<rcd:Column id="_92C9D792-FB6E-40D1-9048-88F8399FB4D0" Name="messageData" IsNullable="true" />
@@ -9480,7 +9480,7 @@ user/password which are not given
 							<rcd:Column id="_46A6D2E6-36BF-4D95-B753-B9CE6EFC0EA4" Name="friday" IsNullable="true" />
 							<rcd:Column id="_6B7AD5EC-954A-44AC-9B5E-244597A28D5E" Name="saturday" IsNullable="true" />
 							<rcd:Column id="_B8585CBC-1E0E-4831-8935-57A32D815E8C" Name="sunday" IsNullable="true" />
-							<rcd:Column id="_FDD45B72-64A8-4F5F-A4CF-C9C2CFC1F097" Name="startTime" />
+							<rcd:Column id="_FDD45B72-64A8-4F5F-A4CF-C9C2CFC1F097" Name="startTimeHMS" />
 							<rcd:Column id="_86E893FB-2C99-4969-9DB4-0CD315D7C78E" Name="duration" />
 							<rcd:Column id="_49048620-2CC4-43E1-918C-FDD4A88C233E" Name="monitor" IsNullable="true" />
 							<rcd:Column id="_B99A4974-F1DE-41F3-8446-E085B6F020FA" Name="integratingMonitor" IsNullable="true" />
