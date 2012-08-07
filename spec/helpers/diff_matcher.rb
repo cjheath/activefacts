@@ -1,5 +1,7 @@
 require 'pathname'
 
+require 'rspec/matchers'
+
 class RSpec::Matchers::DSL::Matcher
   attr_writer :expected
 end
