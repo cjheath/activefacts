@@ -343,24 +343,6 @@ describe "An instance of every type of ObjectType" do
     end
   end
 
-  it "that is an entity type should not allow its identifying roles to be re-assigned" do
-    @entities.zip(@test_role_names).each do |entity, identifying_role|
-      @test_role_names.zip(@role_values).each do |role_name, value|
-        if entity.class.identifying_role_names.include?(role_name) && entity.send(role_name) != nil && value != nil
-          lambda {
-              entity.send(:"#{role_name}=", value)
-            }.should raise_error
-        end
-        one_role = :"one_#{role_name}"
-        if entity.class.identifying_role_names.include?(one_role) && entity.send(one_role) != nil
-          lambda {
-              entity.send(:"one_#{role_name}=", value)
-            }.should raise_error
-        end
-      end
-    end
-  end
-
   it "that is an entity type should allow its identifying roles to be assigned to and from nil" do
     @entities.zip(@test_role_names).each do |entity, identifying_role|
       @test_role_names.zip(@role_values).each do |role_name, value|

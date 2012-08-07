@@ -51,12 +51,6 @@ describe "AutoCounter Value Type instances" do
       }.should raise_error
   end
 
-  it "should not allow its identifying roles to be assigned" do
-    lambda {
-        @thing.thing_id = @thing_id
-      }.should raise_error
-  end
-
   it "should allow an existing counter to be re-used" do
     @new_thing = Mod::Thing.new(@thing_id)
     @new_thing.thing_id.should == @thing_id

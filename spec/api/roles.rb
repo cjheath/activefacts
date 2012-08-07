@@ -64,8 +64,7 @@ describe "Roles" do
     end
     # print "Mod::Existing2.roles = "; p Mod::Existing2.roles
     r = Mod::Existing2.roles(:given_name)
-    r.should_not be_nil
-    Symbol.should === r.counterpart_object_type
+    r.counterpart_object_type.should == nil
     module Mod
       class GivenName < String
         value_type
