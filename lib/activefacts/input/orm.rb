@@ -790,196 +790,204 @@ module ActiveFacts
       # object type, which might involve subtyping or objectification joins.
       #
       def make_joins(constraint_type, name, role_sequences)
-        # Get the object types constrained for each position in the role sequences.
-        # Supertyping joins may be needed to reach them.
-        end_points = []   # An array of the common supertype for matching role_refs across the sequences
-        end_joins = []    # An array of booleans indicating whether any role_sequence requires a subtyping join
-        role_sequences[0].all_role_ref.size.times do |i|
-          role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
-          if (fact_types = role_refs.map{|rr| rr.role.fact_type}).uniq.size == 1
-            raise "In #{constraint_type} #{name}, there is a faulty join"
-            next
-          end
-          if (players = role_refs.map{|rr| rr.role.object_type}).uniq.size == 1
-            end_point = players[0]
-            end_joins[i] = false
-          else
-            # Can the players be joined using a subtyping join?
-            common_supertypes = players[1..-1].
-              inject(players[0].supertypes_transitive) do |remaining, player|
-                remaining & player.supertypes_transitive
-              end
-            end_point = common_supertypes[0]
-
-            raise "constrained roles of #{constraint_type} constraint #{name} are incompatible (#{players.map(&:name)*', '})" if common_supertypes.size == 0
-            end_joins[i] = true
-          end
-          end_points[i] = end_point
-        end
-
-        # For each role_sequence, find the object type over which the join is implied (nil if no join)
-        sequence_join_over = []
-        if role_sequences[0].all_role_ref.size > 1    # There are joins within each sequence.
-          sequence_join_over = []
-          sequence_joined_roles = []
-          role_sequences.map do |rs|
-            join_over, joined_roles = *ActiveFacts::Metamodel.join_roles_over(rs.all_role_ref.map{|rr| rr.role})
-            sequence_join_over << join_over
-            sequence_joined_roles << joined_roles
-          end
-        end
-
-        # If there are no joins, we can drop out here.
-        if sequence_join_over.compact.empty? && !end_joins.detect{|e| true}
-          return
-        end
-
-        debug :join, "#{constraint_type} join constraint #{name} over #{role_sequences.map{|rs|rs.describe}*', '}"
-
-        join = nil
-        debug :join, "#{constraint_type} join constraint #{name} constrains #{
-            end_points.zip(end_joins).map{|(p,j)| p.name+(j ? ' & subtypes':'')}*', '
-          }#{
-          if role_sequences[0].all_role_ref.size > 1
-            ", joined over #{
-              sequence_join_over.zip(sequence_joined_roles).map{|o, roles|
-                (o ? o.name : '(none)') +
-                  (roles ? " to (#{roles.map{|role| role ? role.fact_type.default_reading : 'null'}*','})" : '')
-              }*', '}"
-          else
-            ''
-          end
-        }" do
-
-          # There may be one join per role sequence:
-          role_sequences.zip(sequence_join_over||[], sequence_joined_roles||[]).map do |role_sequence, join_over, joined_roles|
-            # Skip if there's no join here (sequence join nor end-point subset join)
-            role_refs = role_sequence.all_role_ref_in_order
-            if !join_over and !role_refs.detect{|rr| rr.role.object_type != end_points[rr.ordinal]}
-              # No sequence join nor end_point join here
-              next
+        begin
+          # Get the object types constrained for each position in the role sequences.
+          # Supertyping joins may be needed to reach them.
+          end_points = []   # An array of the common supertype for matching role_refs across the sequences
+          end_joins = []    # An array of booleans indicating whether any role_sequence requires a subtyping join
+          role_sequences[0].all_role_ref.size.times do |i|
+            role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
+            if (fact_types = role_refs.map{|rr| rr.role.fact_type}).uniq.size == 1
+              # $stderr.puts(role_sequences.map{|rs| rs.all_role_ref.map{|rr| rr.role.fact_type.describe(rr.role)}}.inspect)
+              raise "In #{constraint_type} #{name} role sequence #{i}, there is a faulty join involving just 1 fact type: '#{fact_types[0].default_reading}'"
             end
-
-            # A RoleSequence for the actual join end-points
-            replacement_rs = @constellation.RoleSequence(:new)
-
-            join = @constellation.Join(:new)
-            join_node = nil
-            join_role = nil
-            role_refs.zip(joined_roles||[]).each_with_index do |(role_ref, joined_role), i|
-
-              # Each role_ref is to an object joined via joined_role to join_node (or which will be the join_node)
-
-              # Create a join node for the actual end-point (supertype of the constrained roles)
-              end_point = end_points[i]
-              raise "In #{constraint_type} #{name}, there is a faulty join" unless end_point
-              debug :join, "Join Node #{join.all_join_node.size} is for #{end_point.name}"
-              end_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => end_point)
-
-              # We're going to rewrite the constraint to constrain the supertype roles, but assume they're the same:
-              role_node = end_node
-              end_role = role_ref.role
-
-              # Create subtyping join steps at the end-point, if needed:
-              projecting_jr = nil
-              constrained_join_role = nil
-              if (subtype = role_ref.role.object_type) != end_point
-                debug :join, "Making subtyping join steps from #{subtype.name} to #{end_point.name}" do
-                  # There may be more than one supertyping level. Make the steps:
-                  subtyping_steps = subtype_join_steps(join, subtype, end_point)
-                  js = subtyping_steps[0]
-                  constrained_join_role = subtyping_steps[-1].input_join_role
-
-                  # Replace the constrained role and node with the supertype ones:
-                  end_node = join.all_join_node.detect{|jn| jn.object_type == end_point }
-                  projecting_jr = js.output_join_role
-                  end_role = js.fact_type.all_role.detect{|r| r.object_type == end_point }
-                  role_node = join.all_join_node.detect{|jn| jn.object_type == role_ref.role.object_type }
+            if (players = role_refs.map{|rr| rr.role.object_type}).uniq.size == 1
+              end_point = players[0]
+              end_joins[i] = false
+            else
+              # Can the players be joined using a subtyping join?
+              common_supertypes = players[1..-1].
+                inject(players[0].supertypes_transitive) do |remaining, player|
+                  remaining & player.supertypes_transitive
                 end
+              end_point = common_supertypes[0]
+
+              raise "constrained roles of #{constraint_type} constraint #{name} are incompatible (#{players.map(&:name)*', '})" if common_supertypes.size == 0
+              end_joins[i] = true
+            end
+            end_points[i] = end_point
+          end
+
+          # For each role_sequence, find the object type over which the join is implied (nil if no join)
+          sequence_join_over = []
+          if role_sequences[0].all_role_ref.size > 1    # There are joins within each sequence.
+            sequence_join_over = []
+            sequence_joined_roles = []
+            role_sequences.map do |rs|
+              join_over, joined_roles = *ActiveFacts::Metamodel.join_roles_over(rs.all_role_ref.map{|rr| rr.role})
+              sequence_join_over << join_over
+              sequence_joined_roles << joined_roles
+            end
+          end
+
+          # If there are no joins, we can drop out here.
+          if sequence_join_over.compact.empty? && !end_joins.detect{|e| true}
+            return true
+          end
+
+          debug :join, "#{constraint_type} join constraint #{name} over #{role_sequences.map{|rs|rs.describe}*', '}"
+
+          join = nil
+          debug :join, "#{constraint_type} join constraint #{name} constrains #{
+              end_points.zip(end_joins).map{|(p,j)| (p ? p.name : 'NULL')+(j ? ' & subtypes':'')}*', '
+            }#{
+            if role_sequences[0].all_role_ref.size > 1
+              ", joined over #{
+                sequence_join_over.zip(sequence_joined_roles).map{|o, roles|
+                  (o ? o.name : '(none)') +
+                    (roles ? " to (#{roles.map{|role| role ? role.fact_type.default_reading : 'null'}*','})" : '')
+                }*', '}"
+            else
+              ''
+            end
+          }" do
+
+            # There may be one join per role sequence:
+            role_sequences.zip(sequence_join_over||[], sequence_joined_roles||[]).map do |role_sequence, join_over, joined_roles|
+              # Skip if there's no join here (sequence join nor end-point subset join)
+              role_refs = role_sequence.all_role_ref_in_order
+              if !join_over and !role_refs.detect{|rr| rr.role.object_type != end_points[rr.ordinal]}
+                # No sequence join nor end_point join here
+                next
               end
 
-              raise "Internal error: making illegal reference to join node" if end_role.object_type != end_node.object_type
-              rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => end_role)
-              projecting_jr ||= (constrained_join_role = @constellation.JoinRole(end_node, end_role))
-              projecting_jr.role_ref = rr   # Project this RoleRef
+              # A RoleSequence for the actual join end-points
+              replacement_rs = @constellation.RoleSequence(:new)
 
-              if join_over
-                if !join_node     # Create the JoinNode when processing the first role
-                  debug :join, "Join Node #{join.all_join_node.size} is over #{join_over.name}"
-                  join_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => join_over)
-                end
-                debug :join, "Making join step from #{end_point.name} to #{join_over.name}" do
-                  rs = @constellation.RoleSequence(:new)
-                  # Detect the fact type over which we're joining (may involve objectification)
-                  raise "Internal error: making illegal reference to join node" if role_ref.role.object_type != role_node.object_type
-                  @constellation.RoleRef(rs, 0, :role => role_ref.role)
-                  role_jr = @constellation.JoinRole(role_node, role_ref.role)
-                  raise "Internal error: making illegal reference to join node" if joined_role.object_type != join_node.object_type
-                  @constellation.RoleRef(rs, 1, :role => joined_role)
-                  join_jr = @constellation.JoinRole(join_node, joined_role)
+              join = @constellation.Join(:new)
+              join_node = nil
+              join_role = nil
+              role_refs.zip(joined_roles||[]).each_with_index do |(role_ref, joined_role), i|
 
-                  js = @constellation.JoinStep(role_jr, join_jr, :fact_type => joined_role.fact_type)
-                  debug :join, "New join step #{js.describe}"
+                # Each role_ref is to an object joined via joined_role to join_node (or which will be the join_node)
+
+                # Create a join node for the actual end-point (supertype of the constrained roles)
+                end_point = end_points[i]
+                unless end_point
+                  raise "In #{constraint_type} #{name}, there is a faulty join"
                 end
-              else
-                debug :join, "Need join step for non-join_over role #{end_point.name} #{role_ref.describe} in #{role_ref.role.fact_type.default_reading}"
-                if (roles = role_ref.role.fact_type.all_role.to_a).size > 1
-                  # Here we have an end join (step already created) but no sequence join
-                  if join_node
-                    raise "Internal error: making illegal join step" if role_ref.role.object_type != role_node.object_type
-                    join_jr = @constellation.JoinRole(join_node, join_role)
+                debug :join, "Join Node #{join.all_join_node.size} is for #{end_point.name}"
+                end_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => end_point)
+
+                # We're going to rewrite the constraint to constrain the supertype roles, but assume they're the same:
+                role_node = end_node
+                end_role = role_ref.role
+
+                # Create subtyping join steps at the end-point, if needed:
+                projecting_jr = nil
+                constrained_join_role = nil
+                if (subtype = role_ref.role.object_type) != end_point
+                  debug :join, "Making subtyping join steps from #{subtype.name} to #{end_point.name}" do
+                    # There may be more than one supertyping level. Make the steps:
+                    subtyping_steps = subtype_join_steps(join, subtype, end_point)
+                    js = subtyping_steps[0]
+                    constrained_join_role = subtyping_steps[-1].input_join_role
+
+                    # Replace the constrained role and node with the supertype ones:
+                    end_node = join.all_join_node.detect{|jn| jn.object_type == end_point }
+                    projecting_jr = js.output_join_role
+                    end_role = js.fact_type.all_role.detect{|r| r.object_type == end_point }
+                    role_node = join.all_join_node.detect{|jn| jn.object_type == role_ref.role.object_type }
+                  end
+                end
+
+                raise "Internal error: making illegal reference to join node" if end_role.object_type != end_node.object_type
+                rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => end_role)
+                projecting_jr ||= (constrained_join_role = @constellation.JoinRole(end_node, end_role))
+                projecting_jr.role_ref = rr   # Project this RoleRef
+
+                if join_over
+                  if !join_node     # Create the JoinNode when processing the first role
+                    debug :join, "Join Node #{join.all_join_node.size} is over #{join_over.name}"
+                    join_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => join_over)
+                  end
+                  debug :join, "Making join step from #{end_point.name} to #{join_over.name}" do
+                    rs = @constellation.RoleSequence(:new)
+                    # Detect the fact type over which we're joining (may involve objectification)
+                    raise "Internal error: making illegal reference to join node" if role_ref.role.object_type != role_node.object_type
+                    @constellation.RoleRef(rs, 0, :role => role_ref.role)
                     role_jr = @constellation.JoinRole(role_node, role_ref.role)
-                    js = @constellation.JoinStep(join_jr, role_jr, :fact_type => role_ref.role.fact_type)
-                    roles -= [join_role, role_ref.role]
-                    roles.each do |incidental_role|
-                      jn = @constellation.JoinNode(join, join.all_join_node.size, :object_type => incidental_role.object_type)
-                      jr = @constellation.JoinRole(jn, incidental_role, :join_step => js)
-                    end
-                  else
-                    if role_sequence.all_role_ref.size > 1
-                      join_node = role_node
-                      join_role = role_ref.role
-                    else
-                      # There's no join in this role sequence, so we'd drop of fthe bottom without doing the right things. Why?
-                      # Without this case, Supervision.orm omits "that runs Company" from the exclusion constraint, and I'm not sure why.
-                      # I think the "then" code causes it to drop out the bottom without making the step (which is otherwise made in every case, see CompanyDirectorEmployee for example)
+                    raise "Internal error: making illegal reference to join node" if joined_role.object_type != join_node.object_type
+                    @constellation.RoleRef(rs, 1, :role => joined_role)
+                    join_jr = @constellation.JoinRole(join_node, joined_role)
+
+                    js = @constellation.JoinStep(role_jr, join_jr, :fact_type => joined_role.fact_type)
+                    debug :join, "New join step #{js.describe}"
+                  end
+                else
+                  debug :join, "Need join step for non-join_over role #{end_point.name} #{role_ref.describe} in #{role_ref.role.fact_type.default_reading}"
+                  if (roles = role_ref.role.fact_type.all_role.to_a).size > 1
+                    # Here we have an end join (step already created) but no sequence join
+                    if join_node
+                      raise "Internal error: making illegal join step" if role_ref.role.object_type != role_node.object_type
+                      join_jr = @constellation.JoinRole(join_node, join_role)
                       role_jr = @constellation.JoinRole(role_node, role_ref.role)
-                      js = nil
-                      role_ref.role.fact_type.all_role.each do |role|
-                        next if role == role_jr.role
-                        next if role_sequence.all_role_ref.detect{|rr| rr.role == role}
-                        jn = @constellation.JoinNode(join, join.all_join_node.size, :object_type => role.object_type)
-                        jr = @constellation.JoinRole(jn, role)
-                        if js
-                          jr.join_step = js  # Incidental role
-                        else
-                          js = @constellation.JoinStep(role_jr, jr, :fact_type => role_ref.role.fact_type)
+                      js = @constellation.JoinStep(join_jr, role_jr, :fact_type => role_ref.role.fact_type)
+                      roles -= [join_role, role_ref.role]
+                      roles.each do |incidental_role|
+                        jn = @constellation.JoinNode(join, join.all_join_node.size, :object_type => incidental_role.object_type)
+                        jr = @constellation.JoinRole(jn, incidental_role, :join_step => js)
+                      end
+                    else
+                      if role_sequence.all_role_ref.size > 1
+                        join_node = role_node
+                        join_role = role_ref.role
+                      else
+                        # There's no join in this role sequence, so we'd drop of fthe bottom without doing the right things. Why?
+                        # Without this case, Supervision.orm omits "that runs Company" from the exclusion constraint, and I'm not sure why.
+                        # I think the "then" code causes it to drop out the bottom without making the step (which is otherwise made in every case, see CompanyDirectorEmployee for example)
+                        role_jr = @constellation.JoinRole(role_node, role_ref.role)
+                        js = nil
+                        role_ref.role.fact_type.all_role.each do |role|
+                          next if role == role_jr.role
+                          next if role_sequence.all_role_ref.detect{|rr| rr.role == role}
+                          jn = @constellation.JoinNode(join, join.all_join_node.size, :object_type => role.object_type)
+                          jr = @constellation.JoinRole(jn, role)
+                          if js
+                            jr.join_step = js  # Incidental role
+                          else
+                            js = @constellation.JoinStep(role_jr, jr, :fact_type => role_ref.role.fact_type)
+                          end
                         end
                       end
                     end
+                  else
+                    # Unary fact type, make a Join Step from and to the constrained_join_role
+                    jr = @constellation.JoinRole(constrained_join_role.join_node, role_ref.role)
+                    js = @constellation.JoinStep(jr, jr, :fact_type => role_ref.role.fact_type)
                   end
-                else
-                  # Unary fact type, make a Join Step from and to the constrained_join_role
-                  jr = @constellation.JoinRole(constrained_join_role.join_node, role_ref.role)
-                  js = @constellation.JoinStep(jr, jr, :fact_type => role_ref.role.fact_type)
                 end
               end
+
+              # Thoroughly check that this is a valid join
+              join.validate
+              debug :join, "Join has projected nodes #{replacement_rs.describe}"
+
+              # Constrain the replacement role sequence, which has the attached join:
+              role_sequences[role_sequences.index(role_sequence)] = replacement_rs
             end
-
-            # Thoroughly check that this is a valid join
-            join.validate
-            debug :join, "Join has projected nodes #{replacement_rs.describe}"
-
-            # Constrain the replacement role sequence, which has the attached join:
-            role_sequences[role_sequences.index(role_sequence)] = replacement_rs
+            return true
           end
+        rescue => e
+          $stderr.puts '// '+e.to_s
+          return false
         end
 
       end
 
       def read_exclusion_constraints
         x_exclusion_constraints = @x_model.xpath("orm:Constraints/orm:ExclusionConstraint")
-        debug :orm, "Reading exclusion constraints" do
+        debug :orm, "Reading #{x_exclusion_constraints.size} exclusion constraints" do
           x_exclusion_constraints.each{|x|
             id = x['id']
             name = x["Name"] || ''
@@ -1003,7 +1011,7 @@ module ActiveFacts
 
             next if role_sequences.compact.size != role_sequences.size  # Role sequence missing; includes a derived fact type role
 
-            make_joins('exclusion', name+(x_mandatory ? '/'+x_mandatory['Name'] : ''), role_sequences)
+            next unless make_joins('exclusion', name+(x_mandatory ? '/'+x_mandatory['Name'] : ''), role_sequences)
 
             ec = @constellation.SetExclusionConstraint(:new)
             ec.vocabulary = @vocabulary
@@ -1036,7 +1044,7 @@ module ActiveFacts
                 }
 
             next if role_sequences.compact.size != role_sequences.size  # Role sequence missing; includes a derived fact type role
-            make_joins('equality', name, role_sequences)
+            next unless make_joins('equality', name, role_sequences)
 
             ec = @constellation.SetEqualityConstraint(:new)
             ec.vocabulary = @vocabulary
@@ -1066,7 +1074,7 @@ module ActiveFacts
                   )
                 }
             next if role_sequences.compact.size != role_sequences.size  # Role sequence missing; includes a derived fact type role
-            make_joins('subset', name, role_sequences)
+            next unless make_joins('subset', name, role_sequences)
 
             ec = @constellation.SubsetConstraint(:new)
             ec.vocabulary = @vocabulary

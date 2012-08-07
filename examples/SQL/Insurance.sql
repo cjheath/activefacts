@@ -161,14 +161,6 @@ GO
 CREATE TABLE Party (
 	-- maybe Company is a kind of Party and Company has contact-Person and Party has Party ID,
 	CompanyContactPersonID                  int NULL,
-	-- maybe Person is a kind of Party and maybe Driver is a kind of Person and maybe Driver holds License and License is international,
-	DriverIsInternational                   bit NULL,
-	-- maybe Person is a kind of Party and maybe Driver is a kind of Person and maybe Driver holds License and License has License Number,
-	DriverLicenseNumber                     varchar NULL,
-	-- maybe Person is a kind of Party and maybe Driver is a kind of Person and maybe Driver holds License and License is of License Type,
-	DriverLicenseType                       varchar NULL,
-	-- maybe Person is a kind of Party and maybe Driver is a kind of Person and maybe Driver holds License and maybe License was granted in Year and Year has Year Nr,
-	DriverYearNr                            int NULL,
 	-- Party is a company,
 	IsACompany                              bit NOT NULL,
 	-- Party has Party ID,
@@ -195,6 +187,12 @@ CREATE TABLE Party (
 	PersonGivenName                         varchar(256) NULL,
 	-- maybe Person is a kind of Party and Person has Contact Methods and maybe Contact Methods includes home-Phone and Phone has Phone Nr,
 	PersonHomePhoneNr                       varchar NULL,
+	-- maybe Person is a kind of Party and maybe Person holds License and License is international,
+	PersonIsInternational                   bit NULL,
+	-- maybe Person is a kind of Party and maybe Person holds License and License has License Number,
+	PersonLicenseNumber                     varchar NULL,
+	-- maybe Person is a kind of Party and maybe Person holds License and License is of License Type,
+	PersonLicenseType                       varchar NULL,
 	-- maybe Person is a kind of Party and Person has Contact Methods and maybe Contact Methods includes mobile-Phone and Phone has Phone Nr,
 	PersonMobilePhoneNr                     varchar NULL,
 	-- maybe Person is a kind of Party and maybe Person has Occupation,
@@ -203,6 +201,8 @@ CREATE TABLE Party (
 	PersonPreferredContactMethod            char(1) NULL CHECK(PersonPreferredContactMethod = 'B' OR PersonPreferredContactMethod = 'H' OR PersonPreferredContactMethod = 'M'),
 	-- maybe Person is a kind of Party and Person has Title,
 	PersonTitle                             varchar NULL,
+	-- maybe Person is a kind of Party and maybe Person holds License and maybe License was granted in Year and Year has Year Nr,
+	PersonYearNr                            int NULL,
 	-- maybe Party has postal-Address and Address is in City,
 	PostalAddressCity                       varchar NULL,
 	-- maybe Party has postal-Address and maybe Address is in Postcode,
@@ -216,22 +216,12 @@ CREATE TABLE Party (
 )
 GO
 
-CREATE VIEW dbo.LicenseInParty_DriverLicenseNumber (DriverLicenseNumber) WITH SCHEMABINDING AS
-	SELECT DriverLicenseNumber FROM dbo.Party
-	WHERE	DriverLicenseNumber IS NOT NULL
+CREATE VIEW dbo.LicenseInParty_PersonLicenseNumber (PersonLicenseNumber) WITH SCHEMABINDING AS
+	SELECT PersonLicenseNumber FROM dbo.Party
+	WHERE	PersonLicenseNumber IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_LicenseInPartyByDriverLicenseNumber ON dbo.LicenseInParty_DriverLicenseNumber(DriverLicenseNumber)
-GO
-
-CREATE VIEW dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr (DriverLicenseNumber, DriverLicenseType, DriverYearNr) WITH SCHEMABINDING AS
-	SELECT DriverLicenseNumber, DriverLicenseType, DriverYearNr FROM dbo.Party
-	WHERE	DriverLicenseNumber IS NOT NULL
-	  AND	DriverLicenseType IS NOT NULL
-	  AND	DriverYearNr IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_LicenseInPartyByDriverLicenseNumberDriverLicenseTypeDriverYearNr ON dbo.LicenseInParty_DriverLicenseNumberDriverLicenseTypeDriverYearNr(DriverLicenseNumber, DriverLicenseType, DriverYearNr)
+CREATE UNIQUE CLUSTERED INDEX IX_LicenseInPartyByPersonLicenseNumber ON dbo.LicenseInParty_PersonLicenseNumber(PersonLicenseNumber)
 GO
 
 CREATE TABLE Policy (
@@ -368,22 +358,22 @@ GO
 CREATE TABLE VehicleIncident (
 	-- maybe Vehicle Incident has Description,
 	Description                             varchar(1024) NULL,
-	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving resulted in blood-Test Result,
+	-- Driving is where Vehicle Incident occurred while being driven and Hospitalization is where Driving resulted in driver taken to Hospital and maybe Hospitalization resulted in blood-Test Result,
 	DrivingBloodTestResult                  varchar NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving resulted in breath-Test Result,
 	DrivingBreathTestResult                 varchar NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and Driving Charge is where Driving resulted in Charge and Driving Charge is where Driving resulted in Charge,
 	DrivingCharge                           varchar NOT NULL,
-	-- Driving is where Vehicle Incident occurred while being driven and Driver was Driving and Party has Party ID,
-	DrivingDriverID                         int NOT NULL,
-	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving resulted in driver taken to hospital-Name,
-	DrivingHospitalName                     varchar(256) NULL,
+	-- Driving is where Vehicle Incident occurred while being driven and Hospitalization is where Driving resulted in driver taken to Hospital and Hospitalization is where Driving resulted in driver taken to Hospital and Hospital has Hospital Name,
+	DrivingHospitalName                     varchar NOT NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving followed Intoxication,
 	DrivingIntoxication                     varchar NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and Driving Charge is where Driving resulted in Charge and Driving Charge is a warning,
 	DrivingIsAWarning                       bit NOT NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was without owners consent for nonconsent-Reason,
 	DrivingNonconsentReason                 varchar NULL,
+	-- Driving is where Vehicle Incident occurred while being driven and Person was Driving and Party has Party ID,
+	DrivingPersonID                         int NOT NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was unlicenced for unlicensed-Reason,
 	DrivingUnlicensedReason                 varchar NULL,
 	-- Vehicle Incident is a kind of Incident and Claim has Claim ID,

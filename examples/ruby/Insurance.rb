@@ -76,6 +76,10 @@ module ::Insurance
     value_type 
   end
 
+  class HospitalName < String
+    value_type 
+  end
+
   class ITCClaimed < Decimal
     value_type :length => 18, :scale => 2
     restrict 0.0..100.0
@@ -234,6 +238,11 @@ module ::Insurance
     identified_by :cover_type_code
     one_to_one :cover_type_code, :mandatory => true  # See CoverTypeCode.cover_type
     one_to_one :cover_type_name, :mandatory => true  # See CoverTypeName.cover_type
+  end
+
+  class Hospital
+    identified_by :hospital_name
+    one_to_one :hospital_name, :mandatory => true  # See HospitalName.hospital
   end
 
   class Incident
@@ -413,18 +422,13 @@ module ::Insurance
   class Dealer < Party
   end
 
-  class Driver < Person
-  end
-
   class Driving
     identified_by :vehicle_incident
     one_to_one :vehicle_incident, :mandatory => true  # See VehicleIncident.driving
-    has_one :blood_test_result, :class => TestResult  # See TestResult.all_driving_as_blood_test_result
     has_one :breath_test_result, :class => TestResult  # See TestResult.all_driving_as_breath_test_result
-    has_one :driver, :mandatory => true         # See Driver.all_driving
-    has_one :hospital_name, :class => Name, :counterpart => :driver_hospitalised  # See Name.all_driver_hospitalised
     has_one :intoxication                       # See Intoxication.all_driving
     has_one :nonconsent_reason, :class => Reason  # See Reason.all_driving_as_nonconsent_reason
+    has_one :person, :mandatory => true         # See Person.all_driving
     has_one :unlicensed_reason, :class => Reason  # See Reason.all_driving_as_unlicensed_reason
   end
 
@@ -438,6 +442,13 @@ module ::Insurance
   class FinanceInstitution < Company
   end
 
+  class Hospitalization
+    identified_by :driving
+    one_to_one :driving, :mandatory => true     # See Driving.hospitalization
+    has_one :hospital, :mandatory => true       # See Hospital.all_hospitalization
+    has_one :blood_test_result, :class => TestResult  # See TestResult.all_hospitalization_as_blood_test_result
+  end
+
   class Insured < Party
   end
 
@@ -448,11 +459,11 @@ module ::Insurance
   end
 
   class License
-    identified_by :driver
-    one_to_one :driver, :mandatory => true      # See Driver.license
+    identified_by :person
     maybe :is_international
     one_to_one :license_number, :mandatory => true  # See LicenseNumber.license
     has_one :license_type, :mandatory => true   # See LicenseType.all_license
+    one_to_one :person, :mandatory => true      # See Person.license
     has_one :year                               # See Year.all_license
   end
 

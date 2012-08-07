@@ -21,6 +21,7 @@ Date Time is written as Date Time;
 Description is written as String(1024);
 Email is written as String;
 Engine Number is written as String;
+Hospital Name is written as String;
 ITC Claimed is written as Decimal(18,2) restricted to {0.0..100.0};
 Intoxication is written as String;
 Liability Code is written as Char(1) restricted to {'D', 'L', 'R', 'U'};
@@ -69,6 +70,8 @@ Claim has one Claim Sequence (as p_sequence),
 Cover Type is identified by its Code;
 Cover Type has one Cover Type Name,
 	Cover Type Name is of at most one Cover Type;
+
+Hospital is identified by its Name;
 
 Incident is identified by Claim where
 	Claim concerns at most one Incident,
@@ -205,18 +208,14 @@ Cover Wording is where
 Dealer is a kind of Party;
 Vehicle was sold by at most one Dealer;
 
-Driver is a kind of Person;
-
 Driving is where
 	Vehicle Incident occurred while being driven;
-Driver was Driving,
-	Driving was by one Driver;
 Driving followed at most one Intoxication;
-Driving resulted in at most one blood-Test Result;
 Driving resulted in at most one breath-Test Result;
-Driving (as driver_hospitalised) resulted in driver taken to at most one hospital-Name;
 Driving was without owners consent for at most one nonconsent-Reason;
 Driving was unlicenced for at most one unlicensed-Reason;
+Person was Driving,
+	Driving was by one Person;
 
 Driving Charge is where
 	Driving resulted in one Charge;
@@ -225,15 +224,19 @@ Driving Charge is a warning;
 Finance Institution is a kind of Company;
 Vehicle is subject to finance with at most one Finance Institution;
 
+Hospitalization is where
+	Driving resulted in driver taken to one Hospital;
+Hospitalization resulted in at most one blood-Test Result;
+
 Insured is a kind of Party;
 
 Insurer is a kind of Company;
 
 Investigator is a kind of Contractor;
 
-License is identified by Driver where
-	Driver holds at most one License,
-	License is held by one Driver;
+License is identified by Person where
+	Person holds at most one License,
+	License is held by one Person;
 License has one License Number,
 	License Number is of at most one License;
 License is of one License Type,
