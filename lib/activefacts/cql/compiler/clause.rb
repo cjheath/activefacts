@@ -963,16 +963,20 @@ module ActiveFacts
 
       class Quantifier
         attr_accessor :enforcement
+        attr_accessor :context_note
         attr_reader :min, :max
 
-        def initialize min, max, enforcement = nil
+        def initialize min, max, enforcement = nil, context_note = nil
           @min = min
           @max = max
           @enforcement = enforcement
+          @context_note = context_note
         end
 
         def inspect
-          "[#{@min}..#{@max}]"
+          "[#{@min}..#{@max}]#{
+            @context_note && ' ' + @context_note.inspect
+          }"
         end
       end
 

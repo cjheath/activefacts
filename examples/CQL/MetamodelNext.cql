@@ -48,7 +48,7 @@ Concept is identified by GUID where
 	Concept has one GUID,
 	GUID is of at most one Concept;
 
-Constraint is a kind of Concept [partitioned];
+Constraint is a kind of Concept [separate];
 Name is of Constraint,
 	Constraint is called at most one Name;
 
@@ -69,40 +69,21 @@ Enforcement notifies at most one Agent;
 Enforcement has one Enforcement Code,
 	Enforcement Code is of Enforcement;
 
-Fact is identified by GUID where
-	Fact has one GUID,
-	GUID is of at most one Fact;
+Fact is a kind of Concept [separate];
 
-Fact Type is a kind of Concept [partitioned];
+Fact Type is a kind of Concept [separate];
 Fact is of one Fact Type;
 
 Implicit Fact Type is a kind of Fact Type;
 
-Instance is identified by GUID where
-	Instance has one GUID,
-	GUID is of at most one Instance;
+Instance is a kind of Concept;
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
 
-Join is independent identified by GUID where
-	Join has one GUID,
-	GUID is of at most one Join;
-
-Join Node is identified by Join and Ordinal where
-	Join includes Join Node,
-	Join Node is in one Join,
-	Join Node has one Ordinal position;
-Join Node has at most one Subscript,
-	Subscript is of Join Node;
-Join Node has at most one role-Name,
-	Name is of Join Node;
-
 Language is identified by its Code;
 
-Object Type is a kind of Concept [partitioned];
+Object Type is a kind of Concept [separate];
 Instance is of one Object Type;
-Join Node is for one Object Type,
-	Object Type is referenced in Join Node;
 Object Type uses at most one Pronoun;
 Object Type is independent;
 
@@ -116,6 +97,10 @@ Presence Constraint has at most one min-Frequency restricted to {2..};
 Presence Constraint is mandatory;
 Presence Constraint is preferred identifier;
 
+Query is independent identified by GUID where
+	Query has one GUID,
+	GUID is of at most one Query;
+
 Reading is identified by Fact Type and Ordinal where
 	Fact Type has Reading,
 	Reading is for one Fact Type,
@@ -126,7 +111,7 @@ Reading has one Text;
 Ring Constraint is a kind of Constraint;
 Ring Constraint is of one Ring Type;
 
-Role is a kind of Concept [partitioned] where
+Role is a kind of Concept [separate] where
 	Fact Type has at least one Ordinal role;
 Implicit Fact Type is implied by one Role (as Implying Role),
 	Implying Role implies at most one Implicit Fact Type;
@@ -186,7 +171,6 @@ Value is identified by Literal and Value is a string and Unit where
 	Unit is of Value;
 Instance has at most one Value,
 	Value is of Instance;
-Join Node has at most one Value;
 
 Value Constraint is a kind of Constraint;
 Role has at most one role-Value Constraint,
@@ -200,9 +184,21 @@ Value Type has at most one Scale,
 Value Type is of at most one Unit;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
-Value Type has at most one auto- assigned Transaction Timing;
+Value Type has at most one autoassigned-Transaction Timing;
 Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic, intransitive],
 	Supertype is supertype of Value Type;
+
+Variable is identified by Query and Ordinal where
+	Query includes Variable,
+	Variable is in one Query,
+	Variable has one Ordinal position;
+Variable is for one Object Type,
+	Object Type is referenced in Variable;
+Variable has at most one Subscript,
+	Subscript is of Variable;
+Variable is bound to at most one Value;
+Variable has at most one role-Name,
+	Name is of Variable;
 
 Vocabulary is where
 	Topic is described in Language,
@@ -271,20 +267,6 @@ Fact Type Shape has at most one Rotation Setting;
 
 Implicit Boolean Value Type is a kind of Value Type;
 
-Join Role is independent where
-	Join Node includes at least one Role,
-	Role connects to Join Node;
-
-Join Step is identified by input-Join Role and output-Join Role where
-	Join Step has one input-Join Role,
-	Join Step has one output-Join Role;
-Join Step traverses one Fact Type,
-	Fact Type directs Join Step;
-Join Step involves incidental-Join Role,
-	Join Role is incidentally involved in at most one Join Step;
-is anti Join Step;
-Join Step is outer;
-
 Model Note Shape is a kind of Shape;
 Model Note Shape is for one Context Note;
 
@@ -330,7 +312,6 @@ Role Ref is where
 	Role is in Role Sequence in one Ordinal place,
 	Role Sequence includes Role in Ordinal place,
 	Role has Ordinal place in Role Sequence;
-Join Role projects at most one Role Ref;
 Role Ref has at most one leading-Adjective;
 Role Ref has at most one trailing-Adjective;
 
@@ -347,10 +328,26 @@ Set Equality Constraint is a kind of Set Comparison Constraint;
 Set Exclusion Constraint is a kind of Set Comparison Constraint;
 Set Exclusion Constraint is mandatory;
 
+Span is independent where
+	Variable draws instances from at least one Role,
+	Role populates Variable;
+Span projects at most one Role Ref;
+
+Step is identified by input-Span and output-Span where
+	Step has one input-Span,
+	Step has one output-Span;
+Step traverses one Fact Type,
+	Fact Type directs Step;
+Step involves incidental-Span,
+	Span is incidentally involved in at most one Step;
+Step is disallowed;
+Step is optional;
+
 Term is where
-	Vocabulary uses Name for one Object Type,
-	Vocabulary refers to Object Type as Name,
-	Name applies to Object Type in Vocabulary;
+	Vocabulary uses Name,
+	Name applies in Vocabulary;
+Term applies to at most one Instance;
+Term applies to at most one Object Type;
 Term (as Role Name) is name of Role,
 	Role has at most one Role Name;
 Term is preferred;
@@ -384,7 +381,9 @@ for each Concept exactly one of these holds:
 	Concept is an Object Type,
 	Concept is a Fact Type,
 	Concept is a Constraint,
-	Concept is a Role;
+	Concept is a Role,
+	Concept is a Fact,
+	Concept is an Instance;
 for each Constraint exactly one of these holds:
 	Constraint is a Presence Constraint,
 	Constraint is a Set Constraint,
@@ -405,21 +404,21 @@ either Value Constraint constrains Value Type or Value Constraint applies to Rol
 for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
-for each Join Role at most one of these holds:
-	Join Step (1) has input-Join Role,
-	Join Role is incidentally involved in Join Step;
-for each Join Role at most one of these holds:
-	Join Step (1) has output-Join Role,
-	Join Role is incidentally involved in Join Step;
-Join Node is for Object Type that plays Role
-	if and only if
-	Join Node includes Role;
+for each Span at most one of these holds:
+	Step (1) has input-Span,
+	Span is incidentally involved in Step;
+for each Span at most one of these holds:
+	Step (1) has output-Span,
+	Span is incidentally involved in Step;
 Role Value is of Instance that is of Object Type
 	if and only if
 	Role Value is of Role that is played by Object Type;
 Role Value fulfils Fact that is of Fact Type
 	if and only if
 	Role Value is of Role (where Fact Type has Ordinal role);
+Variable is for Object Type that plays Role
+	if and only if
+	Variable draws instances from Role;
 Entity Type is implied by objectification
 	only if Entity Type objectifies Fact Type;
 Presence Constraint is preferred identifier
@@ -438,7 +437,7 @@ each Presence Constraint occurs at least one time in
 	Presence Constraint has max Frequency(1),
 	Presence Constraint is mandatory;
 each Role Ref occurs at most one time in
-	Join Role projects Role Ref;
+	Span projects Role Ref;
 each Role Sequence occurs at least one time in
 	Role Sequence in Ordinal position includes Role;
 each Set Comparison Constraint occurs at least 2 times in
@@ -450,6 +449,7 @@ each combination Vocabulary, Name occurs at most one time in
 each combination Vocabulary, Name occurs at most one time in
 	Unit is in Vocabulary,
 	Unit is called Name;
-each combination Vocabulary, Object Type, Term occurs at most one time in
-	Vocabulary uses Name for Object Type,
-	Term is preferred;
+each combination Vocabulary, Term(1), Object Type occurs at most one time in
+	Vocabulary uses Name,
+	Term(1) is preferred,
+	Term(2) applies to Object Type;

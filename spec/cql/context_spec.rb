@@ -41,7 +41,7 @@ describe "Business Context Notes" do
     ],
     # Entity and Fact types
     # Entity and Fact types
-    [ 'Foo is identified by Bar [independent] where Foo has one Bar (so that we have an id);',
+    [ 'Foo is identified by Bar [independent] where Foo has one(to avoid fuckups) Bar (so that we have an id);',
       1, 'so_that'
     ],
     [ 'Baz has one Bar (so that we have an id), Bar is of one Baz (because we need that);',

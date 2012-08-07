@@ -165,10 +165,8 @@ module ::Metamodel
     has_one :enforcement_code, :mandatory => true  # See EnforcementCode.all_enforcement
   end
 
-  class Fact
-    identified_by :guid
+  class Fact < Concept
     has_one :fact_type, :mandatory => true      # See FactType.all_fact
-    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.fact
     has_one :population, :mandatory => true     # See Population.all_fact
   end
 
@@ -178,28 +176,11 @@ module ::Metamodel
   class ImplicitFactType < FactType
   end
 
-  class Instance
-    identified_by :guid
+  class Instance < Concept
     one_to_one :fact                            # See Fact.instance
-    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.instance
     has_one :object_type, :mandatory => true    # See ObjectType.all_instance
     has_one :population, :mandatory => true     # See Population.all_instance
     has_one :value                              # See Value.all_instance
-  end
-
-  class Join
-    identified_by :guid
-    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.join
-  end
-
-  class JoinNode
-    identified_by :join, :ordinal
-    has_one :join, :mandatory => true           # See Join.all_join_node
-    has_one :object_type, :mandatory => true    # See ObjectType.all_join_node
-    has_one :ordinal, :mandatory => true        # See Ordinal.all_join_node
-    has_one :role_name, :class => Name          # See Name.all_join_node_as_role_name
-    has_one :subscript                          # See Subscript.all_join_node
-    has_one :value                              # See Value.all_join_node
   end
 
   class Language
@@ -224,6 +205,11 @@ module ::Metamodel
     has_one :max_frequency, :class => Frequency  # See Frequency.all_presence_constraint_as_max_frequency
     has_one :min_frequency, :class => Frequency  # See Frequency.all_presence_constraint_as_min_frequency
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_presence_constraint
+  end
+
+  class Query
+    identified_by :guid
+    one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.query
   end
 
   class Reading
@@ -252,7 +238,6 @@ module ::Metamodel
   class RoleSequence
     identified_by :guid
     one_to_one :guid, :class => GUID, :mandatory => true  # See GUID.role_sequence
-    maybe :has_unused_dependency_to_force_table_in_norma
   end
 
   class RoleValue
@@ -308,12 +293,22 @@ module ::Metamodel
   end
 
   class ValueType < ObjectType
-    has_one :auto_assigned_transaction_timing, :class => TransactionTiming  # See TransactionTiming.all_value_type_as_auto_assigned_transaction_timing
+    has_one :autoassigned_transaction_timing, :class => TransactionTiming  # See TransactionTiming.all_value_type_as_autoassigned_transaction_timing
     has_one :length                             # See Length.all_value_type
     has_one :scale                              # See Scale.all_value_type
     has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
     has_one :unit                               # See Unit.all_value_type
     one_to_one :value_constraint                # See ValueConstraint.value_type
+  end
+
+  class Variable
+    identified_by :query, :ordinal
+    has_one :object_type, :mandatory => true    # See ObjectType.all_variable
+    has_one :ordinal, :mandatory => true        # See Ordinal.all_variable
+    has_one :query, :mandatory => true          # See Query.all_variable
+    has_one :role_name, :class => Name          # See Name.all_variable_as_role_name
+    has_one :subscript                          # See Subscript.all_variable
+    has_one :value                              # See Value.all_variable
   end
 
   class Vocabulary
@@ -392,22 +387,6 @@ module ::Metamodel
   class ImplicitBooleanValueType < ValueType
   end
 
-  class JoinRole
-    identified_by :join_node, :role
-    has_one :join_node, :mandatory => true      # See JoinNode.all_join_role
-    has_one :role, :mandatory => true           # See Role.all_join_role
-    has_one :join_step, :counterpart => :incidental_join_role  # See JoinStep.all_incidental_join_role
-  end
-
-  class JoinStep
-    identified_by :input_join_role, :output_join_role
-    has_one :fact_type, :mandatory => true      # See FactType.all_join_step
-    has_one :input_join_role, :class => JoinRole, :mandatory => true  # See JoinRole.all_join_step_as_input_join_role
-    maybe :is_anti
-    maybe :is_outer
-    has_one :output_join_role, :class => JoinRole, :mandatory => true  # See JoinRole.all_join_step_as_output_join_role
-  end
-
   class ModelNoteShape < Shape
     has_one :context_note, :mandatory => true   # See ContextNote.all_model_note_shape
   end
@@ -453,7 +432,6 @@ module ::Metamodel
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role_ref
     has_one :role, :mandatory => true           # See Role.all_role_ref
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
-    one_to_one :join_role                       # See JoinRole.role_ref
     has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
     has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
   end
@@ -475,12 +453,30 @@ module ::Metamodel
     maybe :is_mandatory
   end
 
+  class Span
+    identified_by :variable, :role
+    has_one :role, :mandatory => true           # See Role.all_span
+    has_one :variable, :mandatory => true       # See Variable.all_span
+    one_to_one :role_ref                        # See RoleRef.span
+    has_one :step, :counterpart => :incidental_span  # See Step.all_incidental_span
+  end
+
+  class Step
+    identified_by :input_span, :output_span
+    has_one :fact_type, :mandatory => true      # See FactType.all_step
+    has_one :input_span, :class => Span, :mandatory => true  # See Span.all_step_as_input_span
+    maybe :is_disallowed
+    maybe :is_optional
+    has_one :output_span, :class => Span, :mandatory => true  # See Span.all_step_as_output_span
+  end
+
   class Term
     identified_by :vocabulary, :name
     has_one :name, :mandatory => true           # See Name.all_term
-    has_one :object_type, :mandatory => true    # See ObjectType.all_term
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_term
+    has_one :instance                           # See Instance.all_term
     maybe :is_preferred
+    has_one :object_type                        # See ObjectType.all_term
   end
 
   class TypeInheritance

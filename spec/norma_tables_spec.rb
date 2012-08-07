@@ -19,7 +19,7 @@ orm_failures = {
 }
 norma_table_exceptions = {
   "Metamodel" => [[], %w{Agreement Enforcement}],                   # ActiveFacts absorbs Agreement into ContextNote, Enforcement into Constraint
-  "MetamodelNext" => [[], %w{Agreement Enforcement}],
+  "MetamodelNext" => [[], %w{Agreement Enforcement TypeInheritance}],
   "Orienteering" => [%w{Punch}, []],                                # NORMA doesn't make a table for the IDENTITY field
   "OrienteeringER" => [%w{SeriesEvent}, []],                        # NORMA doesn't make a table for the IDENTITY field
   "RedundantDependency" => [%w{Politician StateOrProvince}, %w{LegislativeDistrict}],   # NORMA doesn't make a table for the 3 IDENTITY fields
