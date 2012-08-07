@@ -125,7 +125,7 @@ describe "When comparing roles of a reading with an existing reading" do
       side_effects = match_readings_to_existing(@asts[0], @simple_ft.all_reading.single)
       side_effects.size.should == 2
       side_effects[0].should_not be_nil
-      side_effects.to_s.should == '[side-effects are [{Boy} absorbs 0/0 at 0, {Girl -troublemaker} absorbs 0/0 at 5 with residual adjectives] with residual adjectives]'
+      side_effects.to_s.should == '[side-effects are [{Boy} absorbs 0/0 at 0, {Girl -troublemaker} absorbs 0/0 at 5 with residual adjectives] with residual adjectives, nil]'
     end
 
     it "should match with explicit and local trailing adjective" do
