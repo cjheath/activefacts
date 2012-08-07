@@ -138,8 +138,8 @@ end
 class JoinNode
   include DataMapper::Resource
 
-  property :ordinal, Integer, :key => true	# Join Node has Ordinal position
   property :join_id, Integer, :key => true	# Join includes Join Node and Join has Join Id
+  property :ordinal, Integer, :key => true	# Join Node has Ordinal position
   property :subscript, Integer	# maybe Join Node has Subscript
   property :role_name, String, :length => 64	# maybe Join Node has role-Name
   property :value_literal, String	# maybe Join Node has Value and Value is represented by Literal
@@ -200,8 +200,8 @@ end
 class ObjectType
   include DataMapper::Resource
 
-  property :name, String, :length => 64, :key => true	# Object Type is called Name
   property :vocabulary_name, String, :length => 64, :key => true	# Object Type belongs to Vocabulary and Vocabulary is called Name
+  property :name, String, :length => 64, :key => true	# Object Type is called Name
   property :pronoun, String, :length => 20	# maybe Object Type uses Pronoun
   property :is_independent, Boolean, :required => true	# Object Type is independent
   has n, :context_note, 'ContextNote', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type has Context Note
@@ -212,6 +212,7 @@ class ObjectType
 end
 
 class EntityType < ObjectType
+  property :is_implied_by_objectification, Boolean, :required => true	# Entity Type is implied by objectification
   has 1, :fact_type, 'FactType', :child_key => [:entity_type_name, :entity_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type nests Fact Type
   has n, :type_inheritance_as_subtype, 'TypeInheritance', :child_key => [:subtype_name, :subtype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type is subtype of super-Entity Type
   has n, :type_inheritance_as_supertype, 'TypeInheritance', :child_key => [:supertype_name, :supertype_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Entity Type is subtype of super-Entity Type
@@ -229,9 +230,9 @@ end
 class Reading
   include DataMapper::Resource
 
-  property :ordinal, Integer, :key => true	# Reading is in Ordinal position
   property :fact_type_id, Integer, :key => true	# Fact Type has Reading and Fact Type has Fact Type Id
   belongs_to :fact_type, 'FactType'	# Fact Type has Reading
+  property :ordinal, Integer, :key => true	# Reading is in Ordinal position
   property :text, String, :length => 256, :required => true	# Reading has Text
   property :role_sequence_id, Integer, :required => true	# Reading is in Role Sequence and Role Sequence has Role Sequence Id
   belongs_to :role_sequence, 'RoleSequence'	# Reading is in Role Sequence
@@ -311,10 +312,10 @@ end
 class RoleValue
   include DataMapper::Resource
 
-  property :fact_id, Integer, :key => true	# Role Value fulfils Fact and Fact has Fact Id
-  belongs_to :fact	# Role Value fulfils Fact
   property :instance_id, Integer, :key => true	# Instance plays Role Value and Instance has Instance Id
   belongs_to :instance	# Instance plays Role Value
+  property :fact_id, Integer, :key => true	# Role Value fulfils Fact and Fact has Fact Id
+  belongs_to :fact	# Role Value fulfils Fact
   property :role_fact_type_id, Integer, :required => true	# Role Value is of Role and Role is where Fact Type has Ordinal role and Fact Type has Fact Type Id
   property :role_ordinal, Integer, :required => true	# Role Value is of Role and Role is where Fact Type has Ordinal role
   belongs_to :role, :child_key => [:role_fact_type_id, :role_ordinal], :parent_key => [:fact_type_id, :ordinal]	# Role Value is of Role
@@ -383,7 +384,6 @@ class ObjectTypeShape < Shape
   property :object_type_vocabulary_name, String, :length => 64, :required => true	# Object Type Shape is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name
   property :object_type_name, String, :length => 64, :required => true	# Object Type Shape is for Object Type and Object Type is called Name
   belongs_to :object_type, 'ObjectType', :child_key => [:object_type_name, :object_type_vocabulary_name], :parent_key => [:name, :vocabulary_name]	# Object Type Shape is for Object Type
-  property :has_expanded_reference_mode, Boolean, :required => true	# Object Type Shape has expanded reference mode
   has n, :value_constraint_shape, 'ValueConstraintShape', :child_key => [:object_type_shape_id], :parent_key => [:shape_id]	# Value Constraint Shape is for Object Type Shape
 end
 

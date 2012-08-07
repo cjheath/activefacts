@@ -13,11 +13,11 @@ end
 class Seat
   include DataMapper::Resource
 
-  property :number, Integer, :key => true	# Seat has Number
   property :venue_id, Integer, :key => true	# Seat is at Venue and Venue has Venue Id
   belongs_to :venue	# Seat is at Venue
-  property :row, String, :length => 2, :key => true	# Seat is in Row
   property :reserve, String, :length => 20, :key => true	# Seat is in Reserve
+  property :row, String, :length => 2, :key => true	# Seat is in Row
+  property :number, Integer, :key => true	# Seat has Number
   has n, :ticket, :child_key => [:seat_number, :seat_reserve, :seat_row, :seat_venue_id], :parent_key => [:number, :reserve, :row, :venue_id]	# Ticket is for Seat
 end
 

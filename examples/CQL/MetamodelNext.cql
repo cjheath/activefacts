@@ -393,8 +393,8 @@ either Object Type is an Entity Type or Object Type is a Value Type but not both
 for each Role Sequence exactly one of these holds:
 	Role Sequence is for Reading,
 	Presence Constraint covers Role Sequence,
-	Subset Constraint(1) covers subset-Role Sequence,
-	Subset Constraint(2) covers superset-Role Sequence,
+	Subset Constraint (1) covers subset-Role Sequence,
+	Subset Constraint (2) covers superset-Role Sequence,
 	Role Sequence is Ordinal in Set Comparison Constraint;
 either Set Comparison Constraint is a Set Exclusion Constraint or Set Comparison Constraint is a Set Equality Constraint but not both;
 either Set Constraint is a Set Comparison Constraint or Set Constraint is a Subset Constraint but not both;
@@ -406,10 +406,10 @@ for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
 for each Join Role at most one of these holds:
-	Join Step(1) has input-Join Role,
+	Join Step (1) has input-Join Role,
 	Join Role is incidentally involved in Join Step;
 for each Join Role at most one of these holds:
-	Join Step(1) has output-Join Role,
+	Join Step (1) has output-Join Role,
 	Join Role is incidentally involved in Join Step;
 Join Node is for Object Type that plays Role
 	if and only if

@@ -37,18 +37,18 @@ end
 class Meeting
   include DataMapper::Resource
 
-  property :company_name, String, :length => 48, :key => true	# Company held Meeting and Company is called Company Name
-  belongs_to :company	# Company held Meeting
   property :date, DateTime, :key => true	# Meeting is held on Date
   property :is_board_meeting, Boolean, :key => true	# Meeting is board meeting
+  property :company_name, String, :length => 48, :key => true	# Company held Meeting and Company is called Company Name
+  belongs_to :company	# Company held Meeting
   has n, :attendance, :child_key => [:meeting_company_name, :meeting_date, :meeting_is_board_meeting], :parent_key => [:company_name, :date, :is_board_meeting]	# Person attended Meeting
 end
 
 class Person
   include DataMapper::Resource
 
-  property :family_name, String, :length => 48, :key => true	# maybe family-Name is of Person
   property :given_name, String, :length => 48, :key => true	# Person has given-Name
+  property :family_name, String, :length => 48, :key => true	# maybe family-Name is of Person
   property :birth_date, DateTime	# maybe Person was born on birth-Date
   has n, :attendance_as_attendee, 'Attendance', :child_key => [:attendee_family_name, :attendee_given_name], :parent_key => [:family_name, :given_name]	# Person attended Meeting
   has n, :directorship_as_director, 'Directorship', :child_key => [:director_family_name, :director_given_name], :parent_key => [:family_name, :given_name]	# Person directs Company
