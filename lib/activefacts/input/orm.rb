@@ -472,16 +472,24 @@ module ActiveFacts
           role = role_ref.role
 
           word = '\b[A-Za-z_][A-Za-z0-9_]+\b'
-          leading_adjectives_re = "#{word}-(?: +#{word})*"
-          trailing_adjectives_re = "(?:#{word} +)*-#{word}"
+          leading_adjectives_re = "#{word}-+(?: +#{word})*"
+          trailing_adjectives_re = "(?:#{word} +)*-+#{word}"
           role_with_adjectives_re =
             %r| ?(#{leading_adjectives_re})? *\{#{i}\} *(#{trailing_adjectives_re})? ?|
+
+          # A hyphenated pre-bound reading looks like this:
+          # <orm:Data>{0} has pre-- bound {1}</orm:Data>
 
           text.gsub!(role_with_adjectives_re) {
             # REVISIT: Don't want to strip all spaces here any more:
             #puts "text=#{text.inspect}, la=#{$1.inspect}, ta=#{$2.inspect}" if $1 || $2
-            la = ($1||'').gsub(/\s+/,' ').sub(/-/,'').strip
-            ta = ($2||'').gsub(/\s+/,' ').sub(/-/,'').strip
+            la = ($1||'').gsub(/\s+/,' ') # Strip duplicate spaces
+            ta = ($2||'').gsub(/\s+/,' ')
+            # When we have "aaa-bbb" we want "aaa bbb"
+            # When we have "aaa- bbb" we want "aaa bbb"
+            # When we have "aaa-- bbb" we want "aaa-bbb"
+            la = la.sub(/(-)?- ?/,'\1').strip
+            ta = ta.sub(/ ?(-)?-/,'\1').strip
             #puts "Setting leading adj #{la.inspect} from #{text.inspect} for #{role_ref.role.object_type.name}" if la != ""
             # REVISIT: Dunno what's up here, but removing the "if" test makes this chuck exceptions:
             role_ref.leading_adjective = la if la != ""

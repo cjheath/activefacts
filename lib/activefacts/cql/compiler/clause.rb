@@ -351,13 +351,15 @@ module ActiveFacts
               if la = role_ref.leading_adjective and !la.empty?
                 # The leading adjectives must match, one way or another
                 la = la.split(/\s+/)
-                return nil unless la[0,intervening_words.size] == intervening_words
+                # We may have hyphenated adjectives. Break them up to check:
+                iw = intervening_words.map{|w| w.split(/-/)}.flatten
+                return nil unless la[0,iw.size] == iw
                 # Any intervening_words matched, see what remains
-                la.slice!(0, intervening_words.size)
+                la.slice!(0, iw.size)
 
                 # If there were intervening_words, the remaining reading adjectives must match the phrase's leading_adjective exactly.
                 phrase_la = (next_player_phrase.leading_adjective||'').split(/\s+/)
-                return nil if !intervening_words.empty? && la != phrase_la
+                return nil if !iw.empty? && la != phrase_la
                 # If not, the phrase's leading_adjectives must *end* with the reading's
                 return nil if phrase_la[-la.size..-1] != la
                 role_has_residual_adjectives = true if phrase_la.size > la.size
@@ -468,7 +470,8 @@ module ActiveFacts
               # the role_ref, those must be local, and we'll need to extract them.
 
               if rra = side_effect.role_ref.trailing_adjective
-                debug :matching, "Deleting matched trailing adjective '#{rra}'#{side_effect.absorbed_followers>0 ? " in #{side_effect.absorbed_followers} followers" : ""}"
+                debug :matching, "Deleting matched trailing adjective '#{rra}'#{side_effect.absorbed_followers>0 ? " in #{side_effect.absorbed_followers} followers" : ""}, cost is #{side_effect.cost}"
+                side_effect.cancel_cost side_effect.absorbed_followers
 
                 # These adjective(s) matched either an adjective here, or a follower word, or both.
                 if a = phrase.trailing_adjective
@@ -487,7 +490,8 @@ module ActiveFacts
               end
 
               if rra = side_effect.role_ref.leading_adjective
-                debug :matching, "Deleting matched leading adjective '#{rra}'#{side_effect.absorbed_precursors>0 ? " in #{side_effect.absorbed_precursors} precursors" : ""}}"
+                debug :matching, "Deleting matched leading adjective '#{rra}'#{side_effect.absorbed_precursors>0 ? " in #{side_effect.absorbed_precursors} precursors" : ""}, cost is #{side_effect.cost}"
+                side_effect.cancel_cost side_effect.absorbed_precursors
 
                 # These adjective(s) matched either an adjective here, or a precursor word, or both.
                 if a = phrase.leading_adjective
@@ -694,11 +698,16 @@ module ActiveFacts
           @absorbed_followers = absorbed_followers
           @common_supertype = common_supertype
           @residual_adjectives = residual_adjectives
+          @cancelled_cost = 0
           debug :matching_fails, "Saving side effects for #{@phrase.term}, absorbs #{@absorbed_precursors}/#{@absorbed_followers}#{@common_supertype ? ', join over supertype '+ @common_supertype.name : ''}" if @absorbed_precursors+@absorbed_followers+(@common_supertype ? 1 : 0) > 0
         end
 
         def cost
-          absorbed_precursors + absorbed_followers + (common_supertype ? 1 : 0)
+          absorbed_precursors + absorbed_followers + (common_supertype ? 1 : 0) - @cancelled_cost
+        end
+
+        def cancel_cost c
+          @cancelled_cost += c
         end
 
         def to_s

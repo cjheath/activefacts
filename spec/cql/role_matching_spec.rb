@@ -9,7 +9,7 @@ require 'rspec/expectations'
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
-require 'spec/helpers/compile_helpers'
+require File.dirname(__FILE__) + '/../helpers/compile_helpers'
 
 describe "When comparing roles of a reading with an existing reading" do
   before :each do
@@ -105,7 +105,7 @@ describe "When comparing roles of a reading with an existing reading" do
       side_effects = match_readings_to_existing(@asts[0], @hurts_ft.all_reading.single)
       pending "Thinks trailing adjectives are always residual"
       side_effects[0].should_not be_nil
-      side_effects.to_s.should == ''
+      side_effects[0].to_s.should == ''
     end
 
     it "should match with implicit trailing adjective" do

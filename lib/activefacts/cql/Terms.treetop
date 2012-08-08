@@ -82,6 +82,8 @@ module ActiveFacts
         )* [?;] s
       end
 
+      # Derived values are new terms introduced by an = sign before an expression
+      # This rule handles trailing words of a multi-word derived value
       rule derived_value_continuation
         s '-' tail:(s !global_term !(that/who) id)*
 	{
@@ -105,12 +107,13 @@ module ActiveFacts
 	  }
       end
 
+      # Used during the pre-scan, match a term with new adjective(s)
       rule new_adjective_term
-        !global_term adj:id '-' lead_intervening s global_term	  # Definitely a new leading adjective for this term
-          &{|s| input.context.new_leading_adjective_term([s[1].text_value, s[3].value].compact*" ", s[5].text_value) }
+        !global_term adj:id '-' '-'? lead_intervening s global_term	  # Definitely a new leading adjective for this term
+          &{|s| adj = [s[1].text_value, s[4].value].compact*" "; input.context.new_leading_adjective_term(adj, s[6].text_value) }
         /
-        global_term s trail_intervening '-' !global_term adj:id	  # Definitely a new trailing adjective for this term
-          &{|s| input.context.new_trailing_adjective_term([s[2].value, s[5].text_value].compact*" ", s[0].text_value) }
+        global_term s trail_intervening '-' '-'? !global_term adj:id	  # Definitely a new trailing adjective for this term
+          &{|s| adj = [s[2].value, s[6].text_value].compact*" "; input.context.new_trailing_adjective_term(adj, s[0].text_value) }
       end
 
       rule lead_intervening	# Words intervening between a new adjective and the term
@@ -134,7 +137,7 @@ module ActiveFacts
       # This is the rule to use after the prescan; it only succeeds on a complete term or role reference
       rule term
         s head:id x             &{|s| w = s[1].text_value; input.context.term_starts?(w, s[2]) }
-        tail:(s '-'? s w:id     &{|s| w = s[3].text_value; input.context.term_continues?(w) })*
+        tail:(s '-'? '-'? s w:id     &{|s| w = s[4].text_value; input.context.term_continues?(w) })*
                                 &{|s| input.context.term_complete? }
         {
 	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, nested_clauses = nil
@@ -151,7 +154,7 @@ module ActiveFacts
 	  def node_type; :term; end
         }
 	/
-	s head:id '-' s term	&{|s| s[4].ast.leading_adjective == nil }
+	s head:id '-' '-'? s term	&{|s| s[5].ast.leading_adjective == nil }
 	{
 	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, nested_clauses = nil
 	    ast = term.ast(quantifier, function_call, role_name, value_constraint, literal, nested_clauses)

@@ -193,9 +193,13 @@ module ActiveFacts
             sort_by{ |clause| clause.side_effects.cost }
           fact_types = @existing_clauses.map{ |clause| clause.fact_type }.uniq.compact
 
-          return nil if fact_types.empty?
-          # If there's only a single clause, the match must be exact:
-          return nil if @clauses.size == 1 && @existing_clauses[0].side_effects.cost != 0
+          return nil if fact_types.empty?   # There are no matched fact types
+
+          if @clauses.size == 1 && @existing_clauses[0].side_effects.cost != 0
+            debug :matching, "There's only a single clause, but it's not an exact match"
+            return nil
+          end
+
           if (fact_types.size > 1)
             # There must be only one fact type with exact matches:
             if @existing_clauses[0].side_effects.cost != 0 or

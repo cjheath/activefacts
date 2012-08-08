@@ -63,12 +63,12 @@ module ActiveFacts
         end
 
         def new_leading_adjective_term(adj, term)
-          index_name(@role_names, "#{adj} #{term}", term) && debug(:context, "new role '#{adj}- #{term}'")
+          index_name(@role_names, "#{adj} #{term}", term) && debug(:context, "new compound term '#{adj}- #{term}'")
           true
         end
 
         def new_trailing_adjective_term(adj, term)
-          index_name(@role_names, "#{term} #{adj}", term) && debug(:context, "new role '#{term} -#{adj}'")
+          index_name(@role_names, "#{term} #{adj}", term) && debug(:context, "new compound term '#{term} -#{adj}'")
           true
         end
 

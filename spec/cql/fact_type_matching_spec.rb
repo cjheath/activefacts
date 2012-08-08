@@ -278,5 +278,37 @@ describe "When matching a reading" do
         (pcs = fact_pcs(fact_type)).size.should == 1
       end
     end
+
+    describe "with hyphenated adjectives" do
+      before :each do
+        compile %q{Girl is going out with at most one butt-- ugly Boy;}
+        # baseline
+      end
+
+      it "should match using explicit adjectives" do
+        compile %q{
+            Girl is going out with butt-- ugly Boy,
+            butt-ugly Boy is going out with Girl;
+          }
+        (new_fact_types = fact_types).size.should == 1
+        (fact_type = new_fact_types[0]).all_reading.size.should == 2
+        (pcs = fact_pcs(fact_type)).size.should == 1
+        # REVISIT: Check new and existing reading
+      end
+
+      it "should match using implicit adjectives" do
+        compile %q{
+            Girl is going out with butt-ugly Boy,
+            butt-- ugly Boy is going out with Girl;
+          }
+        (new_fact_types = fact_types).size.should == 1
+        (fact_type = new_fact_types[0]).all_reading.size.should == 2
+        (pcs = fact_pcs(fact_type)).size.should == 1
+        # REVISIT: Check new and existing reading
+      end
+    end
+
+    describe "with hyphenated trailing adjectives" do
+    end
   end
 end

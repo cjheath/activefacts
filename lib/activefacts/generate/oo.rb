@@ -105,12 +105,12 @@ module ActiveFacts
 
         # REVISIT: Consider whether NOT to use the adjective if it's a prefix of the role_name
         la = preferred_role_ref.leading_adjective
-        role_words << la.gsub(/ /,'_') if la && la != "" and !role.role_name
+        role_words << la.gsub(/[- ]/,'_') if la && la != "" and !role.role_name
 
-        role_words << (role_name || role.object_type.name.gsub(/ /,'_'))
+        role_words << (role_name || role.object_type.name.gsub(/[- ]/,'_'))
         # REVISIT: Same when trailing_adjective is a suffix of the role_name
         ta = preferred_role_ref.trailing_adjective
-        role_words << ta.gsub(/ /,'_') if ta && ta != "" and !role_name
+        role_words << ta.gsub(/[- ]/,'_') if ta && ta != "" and !role_name
         n = role_words.map{|w| w.gsub(/([a-z])([A-Z]+)/,'\1_\2').downcase}*"_"
         # debug "\tresult=#{n}"
         n.gsub(' ','_') 
