@@ -3,7 +3,7 @@ vocabulary Units;
 /*
  * Units
  */
-1 converts to K;
+1000.0 converts to K;
 0.000000000000000001 converts to atto;
 13.0 converts to bakersdozen;
 1 converts to bit;

@@ -82,10 +82,6 @@ module ActiveFacts
             # Skip value-type derived units
             next if unit.name =~ /\^/
 
-            # Don't dump fundamental units which have normal derived units, they are implied:
-            next if unit.is_fundamental &&
-              unit.all_derivation_as_base_unit.detect{|d| d.derived_unit.name !~ /\^/}
-
             if !done_banner
               done_banner = true
               units_banner
