@@ -23,7 +23,6 @@ norma_table_exceptions = {
   "Orienteering" => [%w{Punch}, []],                                # NORMA doesn't make a table for the IDENTITY field
   "OrienteeringER" => [%w{SeriesEvent}, []],                        # NORMA doesn't make a table for the IDENTITY field
   "RedundantDependency" => [%w{Politician StateOrProvince}, %w{LegislativeDistrict}],   # NORMA doesn't make a table for the 3 IDENTITY fields
-  "SeparateSubtype" => [%w{Claim}, %w{Incident}],                   # NORMA doesn't make a table for the IDENTITY field. Even when Claim is independent, it still doesn't absorb Incident either and I don't know why, must ask Matt.
   "Warehousing" => [%w{Product Warehouse}, []],                     # NORMA doesn't make a table for the IDENTITY field
   "ServiceDirector" => [%w{DataStoreService MonitorNotificationUser}, %w{DataStoreFileHostSystem }],
   
