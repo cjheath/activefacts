@@ -13,24 +13,16 @@ CREATE TABLE Address (
 )
 GO
 
-CREATE TABLE Politician (
-	-- maybe Politician represents Legislative District and Legislative District has District Number,
-	LegislativeDistrictNumber               int NULL,
-	-- maybe Politician represents Legislative District and Legislative District is for State Or Province and State Or Province has State Or Province Id,
-	LegislativeDistrictStateOrProvinceId    int NULL,
-	-- Politician has Politician Id,
-	PoliticianId                            int IDENTITY NOT NULL,
-	PRIMARY KEY(PoliticianId)
+CREATE TABLE LegislativeDistrict (
+	-- Legislative District has District Number,
+	DistrictNumber                          int NOT NULL,
+	-- Politician represents Legislative District and Politician has Politician Id,
+	PoliticianId                            int NOT NULL,
+	-- Legislative District is for State Or Province and State Or Province has State Or Province Id,
+	StateOrProvinceId                       int NOT NULL,
+	PRIMARY KEY(DistrictNumber, StateOrProvinceId),
+	UNIQUE(PoliticianId)
 )
-GO
-
-CREATE VIEW dbo.Politician_LegislativeDistrictNumberLegislativeDistrictStateOrProvinceId (LegislativeDistrictNumber, LegislativeDistrictStateOrProvinceId) WITH SCHEMABINDING AS
-	SELECT LegislativeDistrictNumber, LegislativeDistrictStateOrProvinceId FROM dbo.Politician
-	WHERE	LegislativeDistrictNumber IS NOT NULL
-	  AND	LegislativeDistrictStateOrProvinceId IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_PoliticianByLegislativeDistrictNumberLegislativeDistrictStateOrProvinceId ON dbo.Politician_LegislativeDistrictNumberLegislativeDistrictStateOrProvinceId(LegislativeDistrictNumber, LegislativeDistrictStateOrProvinceId)
 GO
 
 CREATE TABLE StateOrProvince (
@@ -41,6 +33,14 @@ CREATE TABLE StateOrProvince (
 GO
 
 ALTER TABLE Address
+	ADD FOREIGN KEY (LegislativeDistrictNumber, LegislativeDistrictStateOrProvinceId) REFERENCES LegislativeDistrict (DistrictNumber, StateOrProvinceId)
+GO
+
+ALTER TABLE Address
+	ADD FOREIGN KEY (StateOrProvinceId) REFERENCES StateOrProvince (StateOrProvinceId)
+GO
+
+ALTER TABLE LegislativeDistrict
 	ADD FOREIGN KEY (StateOrProvinceId) REFERENCES StateOrProvince (StateOrProvinceId)
 GO
 
