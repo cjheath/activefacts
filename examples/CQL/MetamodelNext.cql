@@ -129,6 +129,7 @@ Role Sequence is identified by GUID where
 Presence Constraint covers one Role Sequence;
 Reading is in one Role Sequence,
 	Role Sequence is for Reading;
+Role Sequence has unused dependency to force table in norma;
 
 Role Value is identified by Instance and Fact where
 	Instance plays Role Value,
@@ -184,7 +185,7 @@ Value Type has at most one Scale,
 Value Type is of at most one Unit;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
-Value Type has at most one autoassigned-Transaction Timing;
+Value Type has at most one auto-- assigned Transaction Timing;
 Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic, intransitive],
 	Supertype is supertype of Value Type;
 
@@ -273,6 +274,7 @@ Model Note Shape is for one Context Note;
 Object Type Shape is a kind of Shape;
 Object Type Shape is for one Object Type,
 	Object Type has Object Type Shape;
+Object Type Shape has expanded reference mode;
 
 Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shape where
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
