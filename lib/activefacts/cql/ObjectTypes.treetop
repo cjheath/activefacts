@@ -164,7 +164,9 @@ module ActiveFacts
       end
 
       rule mapping_pragma
-        (independent / separate / partitioned / personal / feminine / masculine)
+        (independent / separate / partitioned / personal / feminine / masculine /
+	  was s names:(id s)+ { def text_value; [ was.text_value, names.elements.map{|n|n.text_value} ]; end }
+	)
           { def value; text_value; end }
       end
 
