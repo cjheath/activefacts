@@ -412,7 +412,7 @@ module ActiveFacts
             debug :mode, "Creating new ValueType PresenceConstraint"
           else
             debug :mode, "Marking existing ValueType PresenceConstraint as preferred"
-            rs1.all_presence_constraint[0].is_preferred_identifier = true
+            rs1.all_presence_constraint.single.is_preferred_identifier = true
           end
         end
 
