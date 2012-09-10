@@ -496,7 +496,9 @@ module ActiveFacts
 
         def compile
           @constraint = @constellation.ValueConstraint(:new)
-          $stderr.puts "REVISIT: units on value constraints are not yet processed" if @units
+          raise "Units on value constraints are not yet processed (at line #{'REVISIT'})" if @units
+              # @string.line_of(node.interval.first)
+
           @value_ranges.each do |range|
             min, max = Array === range ? range : [range, range]
             v_range = @constellation.ValueRange(
