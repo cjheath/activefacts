@@ -394,9 +394,10 @@ module ActiveFacts
         (0...role_refs.size).each{|i|
             role_ref = role_refs[i]
             role = role_ref.role
-            l_adj = "#{role_ref.leading_adjective}".sub(/(.\b|.\Z)/, '\1-').sub(/- /,'-  ')
+            l_adj = "#{role_ref.leading_adjective}".sub(/(\b-\b|.\b|.\Z)/, '\1-').sub(/\b--\b/,'-- ').sub(/- /,'-  ')
             l_adj = nil if l_adj == ""
             # Double the space to compensate for space removed below
+            # REVISIT: hyphenated trailing adjectives are not correctly represented here
             t_adj = "#{role_ref.trailing_adjective}".sub(/(\b.|\A.)/, '-\1').sub(/ -/,'  -')
             t_adj = nil if t_adj == ""
 
