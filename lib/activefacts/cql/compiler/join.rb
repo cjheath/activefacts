@@ -10,8 +10,10 @@ module ActiveFacts
               each do |variable|
                 debug :join, "Creating join node #{join.all_join_node.size} for #{variable.inspect}"
                 variable.join_node = @constellation.JoinNode(join, join.all_join_node.size, :object_type => variable.player)
-                if lv = variable.refs.detect{|r| r.literal}
-                  literal = lv.literal
+                if literal = variable.refs.detect{|r| r.literal}
+                  if literal.kind_of?(ActiveFacts::CQL::Compiler::VarRef)
+                    literal = literal.literal
+                  end
                   unit = @constellation.Unit.detect{|k, v| [v.name, v.plural_name].include? literal.unit} if literal.unit
                   variable.join_node.value = [literal.literal.to_s, literal.is_a?(String), unit]
                 end
