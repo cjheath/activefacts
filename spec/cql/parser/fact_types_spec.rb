@@ -24,6 +24,9 @@ describe "Fact Types" do
 #    ],
     [ "A is interesting : b- C has F -g;",
       ["FactType: [{A} \"is interesting\"] where {b- C} \"has\" {F -g}"]
+    ],
+    [ "A has one pre-- bound B;",
+      [%q{FactType: [{A} "has" {[1..1] pre-bound- B}]}]
     ]
     # REVISIT: Test all quantifiers
   ]

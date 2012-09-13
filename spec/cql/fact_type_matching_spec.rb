@@ -285,6 +285,14 @@ describe "When matching a reading" do
         # baseline
       end
 
+      it "should compile them correctly" do
+        (new_fact_types = fact_types).size.should == 1
+        (readings = new_fact_types[0].all_reading).size.should == 1
+        (role_refs = readings.single.role_sequence.all_role_ref).size.should == 2
+        (boy_role_ref = role_refs.sort_by{|rr| rr.ordinal}[1])
+        boy_role_ref.leading_adjective.should == 'butt-ugly'
+      end
+
       it "should match using explicit adjectives" do
         compile %q{
             Girl is going out with butt-- ugly Boy,
@@ -298,8 +306,8 @@ describe "When matching a reading" do
 
       it "should match using implicit adjectives" do
         compile %q{
-            Girl is going out with butt-ugly Boy,
-            butt-- ugly Boy is going out with Girl;
+            Girl is going out with butt-- ugly Boy,
+            butt-ugly Boy is going out with Girl;
           }
         (new_fact_types = fact_types).size.should == 1
         (fact_type = new_fact_types[0]).all_reading.size.should == 2
@@ -309,6 +317,19 @@ describe "When matching a reading" do
     end
 
     describe "with hyphenated trailing adjectives" do
+      before :each do
+        compile %q{Girl is going out with at most one Boy tres --gross;}
+        # baseline
+      end
+
+      it "should compile them correctly" do
+        (new_fact_types = fact_types).size.should == 1
+        (readings = new_fact_types[0].all_reading).size.should == 1
+        (role_refs = readings.single.role_sequence.all_role_ref).size.should == 2
+        (boy_role_ref = role_refs.sort_by{|rr| rr.ordinal}[1])
+        boy_role_ref.trailing_adjective.should == 'tres-gross'
+      end
+
     end
   end
 end
