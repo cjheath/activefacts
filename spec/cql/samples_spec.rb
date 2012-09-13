@@ -103,6 +103,14 @@ describe "Sample data" do
     ],
   ]
 
+  def render_value v
+    if v.to_s !~ /[^-+0-9.]/ and (n = eval(v.to_s) rescue nil)
+      n
+    else
+      "'"+v.to_s.gsub(/'/,'\\\'')+"'"
+    end
+  end
+
   # REVISIT: This code does a better job than verbalise. Consider incorporating it?
   def instance_name(i)
     if i.is_a?(ActiveFacts::Metamodel::Fact)
@@ -112,14 +120,14 @@ describe "Sample data" do
       role_values_in_reading_order = fact.all_role_value.sort_by{|rv| reading_roles.index(rv.role) }
       instance_verbalisations = role_values_in_reading_order.map do |rv|
         next nil unless v = rv.instance.value
-        v.to_s
+        render_value(v)
       end
       return reading.expand([], false, instance_verbalisations)
       # REVISIT: Include the instance_names of all role players
     end
 
     if i.object_type.is_a?(ActiveFacts::Metamodel::ValueType)
-      return "#{i.object_type.name} #{i.value}"
+      return "#{i.object_type.name} #{render_value(i.value)}"
     end
 
     if i.object_type.fact_type      # An instance of an objectified fact type
