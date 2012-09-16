@@ -64,6 +64,8 @@ module ActiveFacts
 
       rule joined_clauses
         qualified_clauses
+	  # REVISIT: This creates no precedence between and/or, which could cause confusion.
+	  # Should disallow mixed conjuntions - using a sempred?
           ftail:( conjunction:(',' / and / or ) s qualified_clauses s )*
 	{
 	  def ast
@@ -248,8 +250,35 @@ module ActiveFacts
 	  }
       end
 
-      # This is the rule that causes most back-tracking. I think you can see why.
       rule role
+	aggregate
+	/
+	simple_role
+      end
+
+      rule aggregate
+	aggregate:id s of s term s	# REVISIT: this term may need to pre-scanned in the qualified_clauses
+	in s '('
+	  qualified_clauses	# REVISIT: Need to test to verify this is the right level (not joined_clauses, etc)
+	s ')'
+	{
+	  def ast
+	    raise "Not implemented: AST for '#{aggregate.text_value} of #{term.text_value}'"
+	    # This returns just the role with the nested clauses, which doesn;t even work:
+	    term.ast(
+	      nil,	# No quantifier
+	      nil,	# No function call
+	      nil,	# No role_name
+	      nil,	# No value_constraint
+	      nil,	# No literal
+	      qualified_clauses.ast
+	    )
+	  end
+	}
+      end
+
+      # This is the rule that causes most back-tracking. I think you can see why.
+      rule simple_role
 	q:(quantifier enforcement cn:context_note?)?
         player:derived_variable
         lr:(
