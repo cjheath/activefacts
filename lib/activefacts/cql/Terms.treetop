@@ -8,19 +8,8 @@ module ActiveFacts
   module CQL
     grammar Terms
       rule term_definition_name
-        id s
-         t:(!non_term_def id s)*
-        {
-	  def value
-            t.elements.inject([
-              id.value
-            ]){|a, e| a << e.id.value}*' '
-          end
-
-	  def node_type
-	    :term
-	  end
-        }
+        id s t:(!non_term_def id s)*
+	  <Parser::TermDefinitionNameNode>
       end
 
       rule non_term_def
@@ -69,12 +58,15 @@ module ActiveFacts
         &{|s| input.context.reset_role_names }
         (
           context_note                      # Context notes have different lexical conventions
-          / '(' as S term_definition_name s ')' s    # Prescan for a Role Name
+          / '(' as S term_definition_name s ')' s    # Prepare for a Role Name
             &{|s| input.context.role_name(s[3].value) }
-	  / new_derived_value
-          / new_adjective_term		    # Adjective definitions
+	  / new_derived_value		    # Prepare for a derived term
+          / new_adjective_term		    # Prepae for an existing term with new Adjectives
+	# The remaining rules exist to correctly eat up anything that doesn't match the above:
           / global_term                     # If we see A B - C D, don't recognise B as a new adjective for C D.
+	  / prescan_aggregate
           / id
+	  # / literal # REVISIT: Literals might contain "(as Foo)" and mess things up
           / range                           # Covers all numbers and strings
           / comparator                      # handle two-character operators
           / S                               # White space and comments, must precede / and *
@@ -82,15 +74,9 @@ module ActiveFacts
         )* [?;] s
       end
 
-      # Derived values are new terms introduced by an = sign before an expression
-      # This rule handles trailing words of a multi-word derived value
-      rule derived_value_continuation
-        s '-' tail:(s !global_term !(that/who) id)*
-	{
-	  def value
-	    tail.elements.map{|e| e.id.text_value}
-	  end
-	}
+      # Not sure this is even needed, but it doesn't seem to hurt:
+      rule prescan_aggregate
+	aggregate_type:id s of s global_term in s &'('
       end
 
       rule new_derived_value
@@ -105,6 +91,17 @@ module ActiveFacts
 	    name = [s[3].text_value] + (s[4].empty? ? [] : s[4].value)
 	    input.context.object_type(name*' ', "derived value type")
 	  }
+      end
+
+      # Derived values are new terms introduced by an = sign before an expression
+      # This rule handles trailing words of a multi-word derived value
+      rule derived_value_continuation
+        s '-' tail:(s !global_term !(that/who) id)*
+	{
+	  def value
+	    tail.elements.map{|e| e.id.text_value}
+	  end
+	}
       end
 
       # Used during the pre-scan, match a term with new adjective(s)
@@ -136,39 +133,14 @@ module ActiveFacts
 
       # This is the rule to use after the prescan; it only succeeds on a complete term or role reference
       rule term
-        s head:id x             &{|s| w = s[1].text_value; input.context.term_starts?(w, s[2]) }
-        tail:(s '-'? dbl:'-'? s w:id     &{|s| w = s[4].text_value; input.context.term_continues?(w) })*
-                                &{|s| input.context.term_complete? }
-        {
-	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, nested_clauses = nil
-	    t = x.context[:term]
-	    gt = x.context[:global_term]
-	    if t.size > gt.size and t[-gt.size..-1] == gt
-	      leading_adjective = t[0...-gt.size-1]
-	      leading_adjective.sub!(/ /, '-') if !tail.elements[0].dbl.empty?
-	    end
-	    if t.size > gt.size and t[0...gt.size] == gt
-	      trailing_adjective = t[gt.size+1..-1]
-	      trailing_adjective.sub!(/ (\S*)\Z/, '-\1') if !tail.elements[-1].dbl.empty?
-	    end
-	    Compiler::VarRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, value_constraint, literal, nested_clauses)
-	  end
-
-	  def value		# Sometimes we just want the full term name
-            x.context[:term]
-          end
-	  def node_type; :term; end
-        }
+        s head:id x		  &{|s| w = s[1].text_value; input.context.term_starts?(w, s[2]) }
+        tail:(
+	  s '-'? dbl:'-'? s w:id  &{|s| w = s[4].text_value; input.context.term_continues?(w) }
+	)*			  &{|s| input.context.term_complete? }
+	  <Parser::TermNode>
 	/
 	s head:id '-' '-'? s term	&{|s| s[5].ast.leading_adjective == nil }
-	{
-	  def ast quantifier = nil, function_call = nil, role_name = nil, value_constraint = nil, literal = nil, nested_clauses = nil
-	    ast = term.ast(quantifier, function_call, role_name, value_constraint, literal, nested_clauses)
-	    ast.leading_adjective = head.text_value
-	    ast
-	  end
-	  def node_type; :term; end
-	}
+	  <Parser::TermLANode>
       end
 
       rule x

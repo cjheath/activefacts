@@ -38,6 +38,12 @@ module ActiveFacts
 	{ def independent; !i.empty?; end }
       end
 
+      rule in_which	# Introduce an objectification join
+	where /	    # Old syntax
+	in s which  # preferred syntax
+	{ def independent; !i.empty?; end }
+      end
+
       # Units conversion keyword
       rule conversion
 	converts s a:(approximately s)? to s
@@ -273,6 +279,7 @@ module ActiveFacts
       rule true 'true' !alphanumeric end 
       rule vocabulary 'vocabulary' !alphanumeric end 
       rule where 'where' !alphanumeric end 
+      rule which 'which' !alphanumeric end 
       rule was 'was' !alphanumeric end 
       rule who 'who' !alphanumeric end 
 

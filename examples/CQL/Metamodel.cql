@@ -404,7 +404,7 @@ Role Value is of Instance that is of Object Type
 	Role Value is of Role that is played by Object Type;
 Role Value fulfils Fact that is of Fact Type
 	if and only if
-	Role Value is of Role (where Fact Type has Ordinal role);
+	Role Value is of Role (in which Fact Type has Ordinal role);
 Entity Type is implied by objectification
 	only if Entity Type nests Fact Type;
 Presence Constraint is preferred identifier

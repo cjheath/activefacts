@@ -319,7 +319,7 @@ module ActiveFacts
       end
 
       rule objectification_join
-        '(' s where s facts:joined_clauses s ')' s
+        '(' s in_which s facts:joined_clauses s ')' s
 	{
 	  def ast
 	    facts.ast
