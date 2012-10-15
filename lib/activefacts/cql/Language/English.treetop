@@ -38,6 +38,12 @@ module ActiveFacts
 	{ def independent; !i.empty?; end }
       end
 
+      rule in_which	# Introduce an objectification join
+	where /	    # Old syntax
+	in s which  # preferred syntax
+	{ def independent; !i.empty?; end }
+      end
+
       # Units conversion keyword
       rule conversion
 	converts s a:(approximately s)? to s
@@ -240,6 +246,7 @@ module ActiveFacts
       rule feminine 'feminine' !alphanumeric end 
       rule identified ('known'/'identified') !alphanumeric end 
       rule if 'if' !alphanumeric end
+      rule in 'in' !alphanumeric end
       rule import 'import' !alphanumeric end
       rule independent 'independent' !alphanumeric end 
       rule intransitive 'intransitive' !alphanumeric end
@@ -250,6 +257,7 @@ module ActiveFacts
       rule maybe 'maybe' !alphanumeric end
       rule only 'only' !alphanumeric end
       rule or 'or' !alphanumeric end 
+      rule of 'of' !alphanumeric end 
       rule ordering_prefix by s (ascending/descending)? s end
       rule otherwise 'otherwise' !alphanumeric end 
       rule partitioned 'partitioned' !alphanumeric end 
@@ -271,6 +279,7 @@ module ActiveFacts
       rule true 'true' !alphanumeric end 
       rule vocabulary 'vocabulary' !alphanumeric end 
       rule where 'where' !alphanumeric end 
+      rule which 'which' !alphanumeric end 
       rule was 'was' !alphanumeric end 
       rule who 'who' !alphanumeric end 
 

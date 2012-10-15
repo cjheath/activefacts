@@ -18,6 +18,14 @@ require 'activefacts/cql/FactTypes'
 require 'activefacts/cql/Context'
 require 'activefacts/cql/CQLParser'
 
+module ActiveFacts
+  module CQL
+    class Parser < CQLParser
+    end
+  end
+end
+require 'activefacts/cql/nodes'
+
 class Treetop::Runtime::SyntaxNode
   def node_type
     terminal? ? :keyword : :composite
@@ -33,7 +41,7 @@ module ActiveFacts
     end
 
     # Extend the generated parser:
-    class Parser < CQLParser
+    class Parser
       include ActiveFacts
 
       # The Context manages some key information revealed or needed during parsing

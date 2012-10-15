@@ -628,7 +628,7 @@ module ActiveFacts
         # role_refs = steps.map{|step| [step.input_join_role.join_node, step.output_join_role.join_node].map{|jn| jn.all_role_ref.detect{|rr| rr.role.fact_type == object_type.fact_type}}}.flatten.compact.uniq
 
         reading = object_type.fact_type.preferred_reading
-        " (where #{expand_reading_text(objectification_step, reading.text, reading.role_sequence, player_by_role)})" 
+        " (in which #{expand_reading_text(objectification_step, reading.text, reading.role_sequence, player_by_role)})" 
       end
 
       def elided_objectification(next_step, fact_type, last_is_contractable, next_node)

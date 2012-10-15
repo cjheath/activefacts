@@ -28,6 +28,6 @@ Service earned a tip of at most one Amount;
 /*
  * Constraints:
  */
-Service (where Waiter served Meal) earned a tip of Amount
+Service (in which Waiter served Meal) earned a tip of Amount
 	if and only if
 	Waiter for serving Meal reported a tip of Amount;
