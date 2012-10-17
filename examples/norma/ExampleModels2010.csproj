@@ -1,0 +1,823 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{20C04CA6-72A9-4C0C-A4F8-5173BBC91687}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ExampleModels</RootNamespace>
+    <AssemblyName>ExampleModels</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Address._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Address.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Blog._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+    </Compile>
+    <Compile Include="CompanyDirectorEmployee._ORMCustomToolReport.cs">
+      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="Death._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Death.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Diplomacy._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Diplomacy.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Insurance._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Insurance.orm</DependentUpon>
+    </Compile>
+    <Compile Include="JoinEquality._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Marriage._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Marriage.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Metamodel._ORMCustomToolReport.cs">
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="Monogamy._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Monogamy.orm</DependentUpon>
+    </Compile>
+    <Compile Include="MonthInSeason._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MonthInSeason.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Moon._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Moon.orm</DependentUpon>
+    </Compile>
+    <Compile Include="MultiInheritance._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MultiInheritance.orm</DependentUpon>
+    </Compile>
+    <Compile Include="MultipleSubtyping._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MultipleSubtyping.orm</DependentUpon>
+    </Compile>
+    <Compile Include="OddIdentifier._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OddIdentifier.orm</DependentUpon>
+    </Compile>
+    <Compile Include="OilSupply._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OilSupply.orm</DependentUpon>
+    </Compile>
+    <Compile Include="OneToOnes._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOnes.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Orienteering._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orienteering.orm</DependentUpon>
+    </Compile>
+    <Compile Include="NonRoleId._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>NonRoleId.orm</DependentUpon>
+    </Compile>
+    <Compile Include="PersonPlaysGame._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PersonPlaysGame.orm</DependentUpon>
+    </Compile>
+    <Compile Include="RedundantDependency._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedundantDependency.orm</DependentUpon>
+    </Compile>
+    <Compile Include="SchoolActivities._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SchoolActivities.orm</DependentUpon>
+    </Compile>
+    <Compile Include="SeparateSubtype._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SeparateSubtype.orm</DependentUpon>
+    </Compile>
+    <Compile Include="ServiceDirector._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceDirector.orm</DependentUpon>
+    </Compile>
+    <Compile Include="SimplestUnary._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimplestUnary.orm</DependentUpon>
+    </Compile>
+    <Compile Include="SubtypePI._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SubtypePI.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Supervision._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Supervision.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Tests.Test5.Load._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
+    </Compile>
+    <Compile Include="WaiterTips._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WaiterTips.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Warehousing._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Genealogy._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy.orm</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowInRoomInBldg._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Blog.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Blog._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="WindowInRoomInBldg.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>WindowInRoomInBldg._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Genealogy.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Genealogy._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Death.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Death._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Orienteering.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Orienteering._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Address.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Address._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="SchoolActivities.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>SchoolActivities._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="SubtypePI.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>SubtypePI._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Units.orm')">
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CompanyDirectorEmployee.DCIL.xml">
+      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
+    <None Include="CompanyDirectorEmployee.DDIL.xml">
+      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
+    <None Include="CompanyDirectorEmployee.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>CompanyDirectorEmployee._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="CompanyDirectorEmployee.SQLServer.sql">
+      <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
+    <None Include="Diplomacy.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Diplomacy._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Insurance.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Insurance._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="JoinEquality.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>JoinEquality._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Marriage.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Marriage._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Metamodel.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Metamodel._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Monogamy.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Monogamy._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="MonthInSeason.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>MonthInSeason._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Moon.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Moon._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="MultiInheritance.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>MultiInheritance._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="MultipleSubtyping.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>MultipleSubtyping._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="OddIdentifier.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>OddIdentifier._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="OilSupply.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>OilSupply._ORMCustomToolReport.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="OneToOnes.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>OneToOnes._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="NonRoleId.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>NonRoleId._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="PersonPlaysGame.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>PersonPlaysGame._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="RedundantDependency.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>RedundantDependency._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="SeparateSubtype.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>SeparateSubtype._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="ServiceDirector.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>ServiceDirector._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="SimplestUnary.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>SimplestUnary._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Supervision.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Supervision._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Tests.Test5.Load.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Tests.Test5.Load._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="WaiterTips.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>WaiterTips._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Warehousing.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Warehousing._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Genealogy.orm')">
+    <None Include="Genealogy.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Genealogy.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Genealogy.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Genealogy.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Insurance.orm')">
+    <None Include="Insurance.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Insurance.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Insurance.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Insurance.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Insurance.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Insurance.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('MultiInheritance.orm')">
+    <None Include="MultiInheritance.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MultiInheritance.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="MultiInheritance.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MultiInheritance.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="MultiInheritance.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MultiInheritance.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Address.orm')">
+    <None Include="Address.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Address.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Address.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Address.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Address.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Address.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Orienteering.orm')">
+    <None Include="Orienteering.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orienteering.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Orienteering.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orienteering.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Orienteering.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Orienteering.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('SchoolActivities.orm')">
+    <None Include="SchoolActivities.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SchoolActivities.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="SchoolActivities.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SchoolActivities.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="SchoolActivities.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SchoolActivities.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('SubtypePI.orm')">
+    <None Include="SubtypePI.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SubtypePI.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="SubtypePI.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SubtypePI.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="SubtypePI.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SubtypePI.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Warehousing.orm')">
+    <None Include="Warehousing.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Warehousing.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Warehousing.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Marriage.orm')">
+    <None Include="Marriage.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Marriage.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Marriage.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Marriage.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Marriage.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Marriage.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('WindowInRoomInBldg.orm')">
+    <None Include="WindowInRoomInBldg.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="WindowInRoomInBldg.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="WindowInRoomInBldg.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WindowInRoomInBldg.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('SimplestUnary.orm')">
+    <None Include="SimplestUnary.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimplestUnary.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="SimplestUnary.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimplestUnary.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="SimplestUnary.MySQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimplestUnary.orm</DependentUpon>
+      <ORMGenerator>DDILtoMySQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('PersonPlaysGame.orm')">
+    <None Include="PersonPlaysGame.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PersonPlaysGame.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="PersonPlaysGame.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PersonPlaysGame.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="PersonPlaysGame.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PersonPlaysGame.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Death.orm')">
+    <None Include="Death.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Death.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Death.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Death.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Death.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Death.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('OilSupply.orm')">
+    <None Include="OilSupply.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OilSupply.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="OilSupply.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OilSupply.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="OilSupply.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OilSupply.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('OneToOnes.orm')">
+    <None Include="OneToOnes.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOnes.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="OneToOnes.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOnes.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="OneToOnes.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOnes.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('SeparateSubtype.orm')">
+    <None Include="SeparateSubtype.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SeparateSubtype.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="SeparateSubtype.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SeparateSubtype.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="SeparateSubtype.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SeparateSubtype.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('MonthInSeason.orm')">
+    <None Include="MonthInSeason.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MonthInSeason.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="MonthInSeason.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MonthInSeason.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="MonthInSeason.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MonthInSeason.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('OddIdentifier.orm')">
+    <None Include="OddIdentifier.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OddIdentifier.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="OddIdentifier.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OddIdentifier.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="OddIdentifier.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OddIdentifier.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('RedundantDependency.orm')">
+    <None Include="RedundantDependency.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedundantDependency.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="RedundantDependency.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedundantDependency.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="RedundantDependency.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RedundantDependency.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Tests.Test5.Load.orm')">
+    <None Include="Tests.Test5.Load.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Tests.Test5.Load.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Tests.Test5.Load.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Tests.Test5.Load.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Moon.orm')">
+    <None Include="Moon.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Moon.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Moon.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Moon.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Moon.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Moon.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Richmond-ORMModel-v0.9.orm')">
+  </ItemGroup>
+  <ItemGroup Condition="Exists('JoinEquality.orm')">
+    <None Include="JoinEquality.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="JoinEquality.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="JoinEquality.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinEquality.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('ServiceDirector.orm')">
+    <None Include="ServiceDirector.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceDirector.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="ServiceDirector.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceDirector.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="ServiceDirector.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceDirector.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Metamodel.orm')">
+    <None Include="Metamodel.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Metamodel.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Metamodel.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Metamodel.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Supervision.orm')">
+    <None Include="Supervision.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Supervision.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Supervision.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Supervision.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Supervision.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Supervision.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Blog.orm')">
+    <None Include="Blog.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Blog.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Blog.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Blog.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Diplomacy.orm')">
+    <None Include="Diplomacy.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Diplomacy.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Diplomacy.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Diplomacy.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Diplomacy.SQLServer.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Diplomacy.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLServer</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
