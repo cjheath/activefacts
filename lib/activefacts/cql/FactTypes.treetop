@@ -264,7 +264,7 @@ module ActiveFacts
 	{
 	  def ast
 	    raise "Not implemented: AST for '#{aggregate.text_value} of #{term.text_value}'"
-	    # This returns just the role with the nested clauses, which doesn;t even work:
+	    # This returns just the role with the nested clauses, which doesn't even work:
 	    term.ast(
 	      nil,	# No quantifier
 	      nil,	# No function call
