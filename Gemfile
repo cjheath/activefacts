@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
-gem 'activefacts-api'
+gem 'activefacts-api', '~>0.9.1'
+gem 'treetop'
 gem 'nokogiri'
 
 group :development do
