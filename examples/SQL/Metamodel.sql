@@ -381,7 +381,7 @@ CREATE TABLE ObjectType (
 	Name                                    varchar(64) NOT NULL,
 	-- maybe Object Type uses Pronoun,
 	Pronoun                                 varchar(20) NULL CHECK(Pronoun = 'feminine' OR Pronoun = 'masculine' OR Pronoun = 'neuter' OR Pronoun = 'personal'),
-	-- maybe Value Type is a kind of Object Type and maybe Value Type has auto- assigned Transaction Timing,
+	-- maybe Value Type is a kind of Object Type and maybe Value Type has auto-- assigned Transaction Timing,
 	ValueTypeAutoAssignedTransactionTiming  varchar NULL CHECK(ValueTypeAutoAssignedTransactionTiming = 'assert' OR ValueTypeAutoAssignedTransactionTiming = 'commit'),
 	-- maybe Value Type is a kind of Object Type and maybe Value Type has Length,
 	ValueTypeLength                         int NULL,
