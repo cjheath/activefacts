@@ -1,12 +1,15 @@
 source 'https://rubygems.org'
 
-gem 'activefacts-api', '~>0.9.1'
+gem 'activefacts-api', '~>0.9.2'
 gem 'treetop'
 gem 'nokogiri'
 
 group :development do
+  gem 'dm-core'
+  gem 'dm-constraints'
+  gem 'dm-migrations'
   gem 'jeweler'
-  gem 'rspec', '~>2.6.0'
+  gem 'rspec', '~>2.11.0'
   gem 'rake'
 end
 

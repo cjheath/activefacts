@@ -65,6 +65,7 @@ gem "rspec", :require => "spec/rake/spectask"
 
 RSpec::Core::RakeTask.new do |t|
     t.ruby_opts = ['-I', "lib"]
+    t.rspec_opts = %w{-f d}
     # t.pattern = FileList['spec/**/*_spec.rb']
     # t.rcov = true
     # t.rcov_opts = ['--exclude', 'spec,/usr/lib/ruby' ]
