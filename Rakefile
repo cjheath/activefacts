@@ -1,3 +1,5 @@
+require 'rubygems'
+require 'rake'
 require 'fileutils'
 require File.dirname(__FILE__) + '/lib/activefacts'
 
@@ -53,20 +55,37 @@ and object models in SQL, Ruby and other languages.
 end
 Jeweler::RubygemsDotOrgTasks.new
 
-Dir['tasks/**/*.rake'].each { |t| load t }
-
-# TODO - want other tests/tasks run by default? Add them to the list
-# task :default => [:spec, :features]
+# Dir['tasks/**/*.rake'].each { |t| load t }
 
 require 'rspec'
 require 'rspec/core/rake_task'
 
 gem "rspec", :require => "spec/rake/spectask"
 
-RSpec::Core::RakeTask.new do |t|
+task :default => :spec
+
+desc "Run Rspec tests"
+RSpec::Core::RakeTask.new(:spec) do |t|
     t.ruby_opts = ['-I', "lib"]
     t.rspec_opts = %w{-f d}
     # t.pattern = FileList['spec/**/*_spec.rb']
     # t.rcov = true
     # t.rcov_opts = ['--exclude', 'spec,/usr/lib/ruby' ]
 end
+
+desc "Run RSpec tests and produce coverage files (results viewable in coverage/index.html)"
+RSpec::Core::RakeTask.new(:coverage) do |spec|
+  if RUBY_VERSION < '1.9'
+    spec.rcov_opts = [
+        '--exclude', 'spec',
+        '--exclude', 'gem/*'
+      ]
+    spec.rcov = true
+  else
+    spec.rspec_opts = ['--require', 'simplecov_helper']
+  end
+end
+
+task :cov => :coverage
+task :rcov => :coverage
+task :simplecov => :coverage

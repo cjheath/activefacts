@@ -5,5 +5,12 @@
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 module ActiveFacts
-  VERSION = '0.8.14'
+  module Version
+    MAJOR = 0
+    MINOR = 8
+    PATCH = 15
+
+    STRING = [MAJOR, MINOR, PATCH].compact.join('.')
+  end
+  VERSION = Version::STRING
 end
