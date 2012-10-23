@@ -158,10 +158,20 @@ module ActiveFacts
     end
 
     class Vocabulary
+      @@relational_transforms = []
+
       # return an Array of ObjectTypes that will have their own tables
       def tables
         decide_tables if !@tables
+        @@relational_transform.each{|tr| tr.call(self)}
         @tables
+      end
+
+      def self.relational_transform &block
+        # Add this block to the additional transformations which wil be applied
+        # to the relational schema after the initial absorption.
+        # For example, to perform injection of surrogate keys to replace composite keys...
+        @@relational_transforms << block
       end
 
       def decide_tables #:nodoc:
