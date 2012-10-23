@@ -6,6 +6,7 @@
 #
 require 'rubygems'
 require 'polyglot'
+require 'stringio'
 require 'activefacts/support'
 require 'activefacts/input/cql'
 require 'activefacts/generate/ruby'
