@@ -163,7 +163,7 @@ module ActiveFacts
       # return an Array of ObjectTypes that will have their own tables
       def tables
         decide_tables if !@tables
-        @@relational_transform.each{|tr| tr.call(self)}
+        @@relational_transforms.each{|tr| tr.call(self)}
         @tables
       end
 
