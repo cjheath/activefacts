@@ -70,7 +70,7 @@ module ActiveFacts
         s import S vocabulary_name alias_list ';'
         {
 	  def ast
-	    Compiler::Import.new(id.value, alias_list.value)
+	    Compiler::Import.new(import.input.parser, vocabulary_name.value, alias_list.value)
 	  end
         }
       end

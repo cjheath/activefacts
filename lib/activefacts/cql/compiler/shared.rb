@@ -111,13 +111,18 @@ module ActiveFacts
       end
 
       class Import < Definition
-        def initialize name, alias_list
+        def initialize parser, name, alias_hash
+          @parser = parser
           @name = name
-          @alias_list = alias_list
+          @alias_hash = alias_hash
         end
 
         def to_s
-          "#{@vocabulary.to_s} imports #{alias_list*', '};"
+          "#{@vocabulary.to_s} imports #{@alias_hash.map{|k,v| "#{k} as #{v}" }*', '};"
+        end
+
+        def compile
+          @parser.compile_import(@name, @alias_hash)
         end
       end
 
