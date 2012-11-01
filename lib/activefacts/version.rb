@@ -8,7 +8,7 @@ module ActiveFacts
   module Version
     MAJOR = 0
     MINOR = 8
-    PATCH = 15
+    PATCH = 16
 
     STRING = [MAJOR, MINOR, PATCH].compact.join('.')
   end
