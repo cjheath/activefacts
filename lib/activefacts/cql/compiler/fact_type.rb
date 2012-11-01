@@ -192,6 +192,8 @@ module ActiveFacts
           # REVISIT: If we have conditions, we must match all given clauses exactly (no side-effects)
           @existing_clauses = @clauses.
             select{ |clause| clause.match_existing_fact_type @context }.
+            # subtyping match is not allowed for fact type extension:
+            reject{ |clause| clause.side_effects.role_side_effects.detect{|se| se.common_supertype } }.
             sort_by{ |clause| clause.side_effects.cost }
           fact_types = @existing_clauses.map{ |clause| clause.fact_type }.uniq.compact
 

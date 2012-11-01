@@ -118,7 +118,6 @@ Role is a kind of Concept identified by Fact Type and Ordinal [partitioned] wher
 	Ordinal applies to Role;
 Implicit Fact Type is implied by one Role (as Implying Role),
 	Implying Role implies at most one Implicit Fact Type;
-Ring Constraint has at most one other-Role;
 Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is of Ring Constraint;  // Avoid ambiguity; this is a new fact type
@@ -175,7 +174,6 @@ Instance has at most one Value;
 Join Node has at most one Value;
 
 Value Constraint is a kind of Constraint;
-Role has at most one role-Value Constraint;
 Role has at most one role-Value Constraint,
 	Value Constraint applies to at most one Role;
 
@@ -333,7 +331,6 @@ Value Type has at most one Length,
 Value Type has at most one Scale,
 	Scale is of Value Type;
 Value Type is of at most one Unit;
-Value Type has at most one Value Constraint;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
 Value Type has at most one auto-- assigned Transaction Timing;
