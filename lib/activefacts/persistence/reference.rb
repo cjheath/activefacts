@@ -203,7 +203,7 @@ module ActiveFacts
   end
 
   module Metamodel          #:nodoc:
-    class ObjectType
+    class ObjectType < Concept
       # Say whether the independence of this object is still under consideration
       # This is used in detecting dependency cycles, such as occurs in the Metamodel
       attr_accessor :tentative          #:nodoc:

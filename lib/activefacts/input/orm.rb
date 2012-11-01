@@ -63,8 +63,8 @@ module ActiveFacts
         "DateAndTimeTemporal" => "Date Time",
         "TrueOrFalseLogical" => "Boolean",
         "YesOrNoLogical" => "Boolean",
-        "RowIdOther" => "Integer(8)",
-        "ObjectIdOther" => "Integer(8)"
+        "RowIdOther" => "Guid",
+        "ObjectIdOther" => "Guid"
       }
     RESERVED_WORDS = %w{
       and but each each either false if maybe no none not one or some that true where
@@ -155,7 +155,7 @@ module ActiveFacts
           entity_types <<
             @by_id[id] =
               entity_type =
-              @constellation.EntityType(@vocabulary, name)
+              @constellation.EntityType(@vocabulary, name, :guid => :new)
             independent = x['IsIndependent']
             entity_type.is_independent = true if independent && independent == 'true'
             personal = x['IsPersonal']
@@ -216,14 +216,14 @@ module ActiveFacts
           supertype_name = x_supertype['Name']
           raise "Supertype of #{name} is post-defined but recursiving processing failed" unless supertype
           raise "Supertype #{supertype_name} of #{name} is not a value type" unless supertype.kind_of? ActiveFacts::Metamodel::ValueType
-          value_super_type = @constellation.ValueType(@vocabulary, supertype_name)
+          value_super_type = @constellation.ValueType(@vocabulary, supertype_name, :guid => :new)
         else
           # REVISIT: Need to handle standard types better here:
-          value_super_type = type_name != name ? @constellation.ValueType(@vocabulary, type_name) : nil
+          value_super_type = type_name != name ? @constellation.ValueType(@vocabulary, type_name, :guid => :new) : nil
         end
 
         @by_id[id] =
-          vt = @constellation.ValueType(@vocabulary, name)
+          vt = @constellation.ValueType(@vocabulary, name, :guid => :new)
         vt.supertype = value_super_type
         vt.length = length if length
         vt.scale = scale if scale && scale != 0
@@ -316,7 +316,7 @@ module ActiveFacts
             next if subtype.kind_of? ActiveFacts::Metamodel::ValueType or
                         supertype.kind_of? ActiveFacts::Metamodel::ValueType
 
-            inheritance_fact = @constellation.TypeInheritance(subtype, supertype, :fact_type_id => :new)
+            inheritance_fact = @constellation.TypeInheritance(subtype, supertype, :guid => :new)
             if x["IsPrimary"] == "true" or           # Old way
               x["PreferredIdentificationPath"] == "true"   # Newer
               debug :orm, "#{supertype.name} is primary supertype of #{subtype.name}"
@@ -328,8 +328,8 @@ module ActiveFacts
             facts << @by_id[id] = inheritance_fact
 
             # Create the new Roles so we can find constraints on them:
-            subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, :object_type => subtype)
-            supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, :object_type => supertype)
+            subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, :object_type => subtype, :guid => :new)
+            supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, :object_type => supertype, :guid => :new)
 
             # Create readings, so constraints can be verbalised for example:
             rs = @constellation.RoleSequence(:new)
@@ -368,10 +368,10 @@ module ActiveFacts
             next if x.xpath("orm:DerivationRule").size > 0
             throw "Nested fact #{fact_id} not found" if !fact_type
 
-            debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.fact_type_id}"
+            debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.guid}"
             @nested_types <<
               @by_id[id] =
-              nested_type = @constellation.EntityType(@vocabulary, name)
+              nested_type = @constellation.EntityType(@vocabulary, name, :guid => :new)
             independent = x['IsIndependent']
             nested_type.is_independent = true if independent && independent == 'true' && !is_implied
             nested_type.is_implied_by_objectification = is_implied
@@ -443,11 +443,11 @@ module ActiveFacts
                 debug :orm, "#{@vocabulary.name}, RoleName=#{x['Name'].inspect} played by object_type=#{object_type.name}"
                 throw "Role is played by #{object_type.class} not ObjectType" if !(@constellation.vocabulary.object_type(:ObjectType) === object_type)
 
-                debug :orm, "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.fact_type_id} played by #{object_type.name}"
+                debug :orm, "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.guid} played by #{object_type.name}"
 
-                role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :object_type => object_type)
+                role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :object_type => object_type, :guid => :new)
                 role.role_name = name if name && name != object_type.name
-                debug :orm, "Fact #{fact_name} (id #{fact_type.fact_type_id.object_id}) role #{x['Name']} is played by #{object_type.name}, role is #{role.object_id}"
+                debug :orm, "Fact #{fact_name} (id #{fact_type.guid.object_id}) role #{x['Name']} is played by #{object_type.name}, role is #{role.object_id}"
 
                 x_vr = x.xpath("orm:ValueRestriction/orm:RoleValueConstraint")
                 x_vr.each{|vr|
@@ -1190,7 +1190,7 @@ module ActiveFacts
 
       def read_instances
         debug :orm, "Reading sample data" do
-          population = @constellation.Population(@vocabulary, "sample")
+          population = @constellation.Population(@vocabulary, "sample", :guid => :new)
 
           # Value instances first, then entities then facts:
 
@@ -1436,9 +1436,9 @@ module ActiveFacts
           position = convert_position(xr_shape['AbsoluteBounds'])
           case xr_shape.name
           when 'ObjectifiedFactTypeNameShape'
-            @constellation.ObjectifiedFactTypeNameShape(shape, :shape_id => :new, :diagram => diagram, :position => position, :is_expanded => false)
+            @constellation.ObjectifiedFactTypeNameShape(shape, :guid => :new, :diagram => diagram, :position => position, :is_expanded => false)
           when 'ReadingShape'
-            @constellation.ReadingShape(shape, :shape_id => :new, :fact_type_shape=>shape, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
+            @constellation.ReadingShape(shape, :guid => :new, :fact_type_shape=>shape, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
           when 'RoleNameShape'
             role = @by_id[xr_shape.xpath("ormDiagram:Subject")[0]['ref']]
             role_display = role_display_for_role(shape, x_role_display, role)

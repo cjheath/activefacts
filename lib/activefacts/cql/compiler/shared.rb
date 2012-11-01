@@ -64,7 +64,7 @@ module ActiveFacts
           player ||= @player_by_role_name[name]
 
           if !player && @allowed_forward_terms.include?(name)
-            player = constellation.EntityType(@vocabulary, name)
+            player = constellation.EntityType(@vocabulary, name, :guid => :new)
           end
 
           player

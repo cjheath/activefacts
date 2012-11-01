@@ -6,22 +6,16 @@ vocabulary Metamodel;
 Adjective is written as String(64);
 Agent Name is written as String;
 Assimilation is written as String restricted to {'partitioned', 'separate'};
-Constraint Id is written as Auto Counter;
-Context Note Id is written as Auto Counter;
 Context Note Kind is written as String restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
 Date is written as Date;
 Denominator is written as Unsigned Integer(32);
 Discussion is written as String;
-Disjunction Id is written as Auto Counter;
 Display Role Names Setting is written as String restricted to {'false', 'true'};
 Enforcement Code is written as String(16);
 Ephemera URL is written as String;
 Exponent is written as Signed Integer(16);
-Fact Id is written as Auto Counter;
-Fact Type Id is written as Auto Counter;
 Frequency is written as Unsigned Integer(32);
-Instance Id is written as Auto Counter;
-Join Id is written as Auto Counter;
+Guid is written as Guid;
 Length is written as Unsigned Integer(32);
 Literal is written as String;
 Name is written as String(64);
@@ -30,14 +24,11 @@ Offset is written as Decimal;
 Ordinal is written as Unsigned Integer(16);
 Pronoun is written as String(20) restricted to {'feminine', 'masculine', 'neuter', 'personal'};
 Ring Type is written as String;
-Role Sequence Id is written as Auto Counter;
 Rotation Setting is written as String restricted to {'left', 'right'};
 Scale is written as Unsigned Integer(32);
-Shape Id is written as Auto Counter;
 Subscript is written as Unsigned Integer(16);
 Text is written as String(256);
 Transaction Timing is written as String restricted to {'assert', 'commit'};
-Unit Id is written as Auto Counter;
 X is written as Signed Integer(32);
 Y is written as Signed Integer(32);
 
@@ -46,24 +37,30 @@ Y is written as Signed Integer(32);
  */
 Agent is identified by its Name;
 
+Alternative Set is identified by Guid where
+	Alternative Set has one Guid,
+	Guid is of at most one Alternative Set;
+
 Coefficient is identified by Numerator and Denominator and Coefficient is precise where
 	Coefficient has one Numerator,
 	Coefficient has one Denominator,
 	Coefficient is precise;
 
-Constraint is identified by its Id;
+Concept is identified by Guid where
+	Concept has one Guid,
+	Guid is of at most one Concept;
+
+Constraint is a kind of Concept [partitioned];
 Name is of Constraint,
 	Constraint is called at most one Name;
 
-Context Note is identified by its Id;
-Constraint has Context Note,
-	Context Note applies to at most one Constraint;
+Context Note is a kind of Concept [partitioned];
+Concept has Context Note,
+	Context Note applies to at most one Concept;
 Context Note has one Context Note Kind,
 	Context Note Kind is of Context Note;
 Context Note has one Discussion,
 	Discussion is for Context Note;
-
-Disjunction is identified by its Id;
 
 Enforcement is identified by Constraint where
 	Constraint requires at most one Enforcement,
@@ -72,20 +69,18 @@ Enforcement notifies at most one Agent;
 Enforcement has one Enforcement Code,
 	Enforcement Code is of Enforcement;
 
-Fact is identified by its Id;
+Fact is a kind of Concept [partitioned];
 
-Fact Type is identified by its Id;
+Fact Type is a kind of Concept [partitioned];
 Fact is of one Fact Type;
-Fact Type has Context Note,
-	Context Note applies to at most one Fact Type;
 
 Implicit Fact Type is a kind of Fact Type;
 
-Instance is identified by its Id;
+Instance is a kind of Concept [partitioned];
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
 
-Join is identified by its Id;
+Join is a kind of Concept [partitioned];
 
 Join Node is identified by Join and Ordinal where
 	Join includes Join Node,
@@ -116,10 +111,14 @@ Reading has one Text;
 Ring Constraint is a kind of Constraint;
 Ring Constraint is of one Ring Type;
 
-Role is where
-	Fact Type has at least one Ordinal role;
+Role is a kind of Concept identified by Fact Type and Ordinal [partitioned] where
+	Role belongs to one Fact Type,
+	Fact Type contains Role,
+	Role fills one Ordinal,
+	Ordinal applies to Role;
 Implicit Fact Type is implied by one Role (as Implying Role),
 	Implying Role implies at most one Implicit Fact Type;
+Ring Constraint has at most one other-Role;
 Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is of Ring Constraint;  // Avoid ambiguity; this is a new fact type
@@ -128,7 +127,9 @@ Role is of Ring Constraint,
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
 
-Role Sequence is identified by its Id;
+Role Sequence is identified by Guid where
+	Role Sequence has one Guid,
+	Guid is of at most one Role Sequence;
 Presence Constraint covers one Role Sequence;
 Reading is in one Role Sequence,
 	Role Sequence is for Reading;
@@ -143,7 +144,9 @@ Role Value is of one Role;
 
 Set Constraint is a kind of Constraint;
 
-Shape is identified by its Id;
+Shape is identified by Guid where
+	Shape has one Guid,
+	Guid is of at most one Shape;
 Shape is at at most one Position;
 Shape is expanded;
 
@@ -151,7 +154,7 @@ Subset Constraint is a kind of Set Constraint;
 Subset Constraint covers one subset-Role Sequence;
 Subset Constraint covers one superset-Role Sequence;
 
-Unit is identified by its Id;
+Unit is a kind of Concept [partitioned];
 Ephemera URL provides Unit coefficient,
 	Unit uses coefficient from at most one Ephemera URL;
 Name is of at most one Unit,
@@ -172,6 +175,7 @@ Instance has at most one Value;
 Join Node has at most one Value;
 
 Value Constraint is a kind of Constraint;
+Role has at most one role-Value Constraint;
 Role has at most one role-Value Constraint,
 	Value Constraint applies to at most one Role;
 
@@ -230,8 +234,8 @@ Join Role is independent where
 Join Step is identified by input-Join Role and output-Join Role where
 	Join Step has one input-Join Role,
 	Join Step has one output-Join Role;
-Join Step falls under at most one Disjunction,
-	Disjunction covers at least one Join Step;
+Join Step falls under at most one Alternative Set,
+	Alternative Set covers at least one Join Step;
 Join Step traverses one Fact Type,
 	Fact Type directs Join Step;
 Join Step involves incidental-Join Role,
@@ -242,15 +246,12 @@ Join Step is outer;
 Model Note Shape is a kind of Shape;
 Model Note Shape is for one Context Note;
 
-Object Type is identified by Vocabulary and Name where
+Object Type is a kind of Concept identified by Vocabulary and Name [partitioned] where
 	Object Type belongs to one Vocabulary,
-	Vocabulary contains Object Type,
 	Object Type is called one Name;
 Instance is of one Object Type;
 Join Node is for one Object Type,
 	Object Type is referenced in Join Node;
-Object Type has Context Note,
-	Context Note applies to at most one Object Type;
 Object Type uses at most one Pronoun;
 Object Type plays Role,
 	Role is played by one Object Type;
@@ -265,7 +266,7 @@ Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shap
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
 
-Population is identified by Vocabulary and Name where
+Population is a kind of Concept identified by Vocabulary and Name [partitioned] where
 	Vocabulary includes Population,
 	Population belongs to at most one Vocabulary,
 	Population has one Name,
@@ -332,10 +333,11 @@ Value Type has at most one Length,
 Value Type has at most one Scale,
 	Scale is of Value Type;
 Value Type is of at most one Unit;
+Value Type has at most one Value Constraint;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
 Value Type has at most one auto-- assigned Transaction Timing;
-Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic],
+Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic, transitive],
 	Supertype is supertype of Value Type;
 
 Allowed Range is where
@@ -366,14 +368,21 @@ Type Inheritance provides identification;
 /*
  * Constraints:
  */
+for each Concept exactly one of these holds:
+	Concept is an Instance,
+	Concept is a Fact,
+	Concept is an Object Type,
+	Concept is a Role,
+	Concept is a Fact Type,
+	Concept is a Constraint,
+	Concept is a Population,
+	Concept is an Unit,
+	Concept is a Join,
+	Concept is a Context Note;
 for each Constraint exactly one of these holds:
 	Constraint is a Presence Constraint,
 	Constraint is a Set Constraint,
 	Constraint is a Ring Constraint;
-for each Context Note exactly one of these holds:
-	Context Note applies to Object Type,
-	Context Note applies to Fact Type,
-	Context Note applies to Constraint;
 either Object Type is an Entity Type or Object Type is a Value Type but not both;
 for each Role Sequence exactly one of these holds:
 	Role Sequence is for Reading,
@@ -404,7 +413,7 @@ Role Value is of Instance that is of Object Type
 	Role Value is of Role that is played by Object Type;
 Role Value fulfils Fact that is of Fact Type
 	if and only if
-	Role Value is of Role (in which Fact Type has Ordinal role);
+	Role Value is of Role that belongs to Fact Type;
 Entity Type is implied by objectification
 	only if Entity Type nests Fact Type;
 Presence Constraint is preferred identifier

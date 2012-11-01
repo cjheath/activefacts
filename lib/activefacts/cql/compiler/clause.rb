@@ -523,7 +523,7 @@ module ActiveFacts
           debug :matching, "Making new fact type for #{@phrases.inspect}" do
             @phrases.each do |phrase|
               next unless phrase.respond_to?(:player)
-              phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :object_type => phrase.player)
+              phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :object_type => phrase.player, :guid => :new)
               phrase.role.role_name = phrase.role_name if phrase.role_name && phrase.role_name.is_a?(String)
             end
           end

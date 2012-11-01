@@ -28,14 +28,7 @@ module ActiveFacts
               :context_note_kind => @context_kind,
               :discussion => @discussion
             )
-          case target
-          when ActiveFacts::Metamodel::ObjectType
-            context_note.object_type = target
-          when ActiveFacts::Metamodel::Constraint
-            context_note.constraint = target
-          when ActiveFacts::Metamodel::FactType
-            context_note.fact_type = target
-          end
+          context_note.concept = target
           if @agreed_date || @agreed_agents
             agreement = constellation.Agreement(context_note)
             agreement.date = @agreed_date if @agreed_date

@@ -140,7 +140,7 @@ module ActiveFacts
             end
             e = @constellation.EntityType[[@vocabulary, @name]]
             raise "You can't objectify #{@name}, it already exists" if e
-            e = @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type)
+            e = @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type, :guid => :new)
             e.create_implicit_fact_types
             if @pragmas
               e.is_independent = true if @pragmas.delete('independent')

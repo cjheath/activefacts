@@ -28,7 +28,7 @@ module ActiveFacts
         end
 
         def compile
-          @entity_type = @constellation.EntityType(@vocabulary, @name)
+          @entity_type = @constellation.EntityType(@vocabulary, @name, :guid => :new)
           @entity_type.is_independent = true if (@pragmas.include? 'independent')
 
           # REVISIT: CQL needs a way to indicate whether subtype migration can occur.
@@ -214,7 +214,7 @@ module ActiveFacts
 
         def add_supertype(supertype_name, not_identifying)
           debug :supertype, "Adding supertype #{supertype_name}" do
-            supertype = @constellation.EntityType(@vocabulary, supertype_name)
+            supertype = @constellation.EntityType(@vocabulary, supertype_name, :guid => :new)
 
             # Did we already know about this supertype?
             return if @entity_type.all_type_inheritance_as_subtype.detect{|ti| ti.supertype == supertype}
@@ -222,15 +222,15 @@ module ActiveFacts
             # By default, the first supertype identifies this entity type
             is_identifying_supertype = !not_identifying && @entity_type.all_type_inheritance_as_subtype.size == 0
 
-            inheritance_fact = @constellation.TypeInheritance(@entity_type, supertype, :fact_type_id => :new)
+            inheritance_fact = @constellation.TypeInheritance(@entity_type, supertype, :guid => :new)
 
             assimilations = @pragmas.select { |p| ['absorbed', 'separate', 'partitioned'].include? p}
             raise "Conflicting assimilation pragmas #{assimilations*', '}" if assimilations.size > 1
             inheritance_fact.assimilation = assimilations[0]
 
             # Create a reading:
-            sub_role = @constellation.Role(inheritance_fact, 0, :object_type => @entity_type)
-            super_role = @constellation.Role(inheritance_fact, 1, :object_type => supertype)
+            sub_role = @constellation.Role(inheritance_fact, 0, :object_type => @entity_type, :guid => :new)
+            super_role = @constellation.Role(inheritance_fact, 1, :object_type => supertype, :guid => :new)
 
             rs = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs, 0, :role => sub_role)
@@ -279,8 +279,8 @@ module ActiveFacts
             # Find or Create an appropriate ValueType called '#{vt_name}', of the supertype '#{mode}'
             unless vt = @constellation.ObjectType[[@vocabulary.identifying_role_values, vt_name]] or
                    vt = @constellation.ObjectType[[@vocabulary.identifying_role_values, vt_name = "#{name} #{mode}"]]
-              base_vt = @constellation.ValueType(@vocabulary, mode)
-              vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt)
+              base_vt = @constellation.ValueType(@vocabulary, mode, :guid => :new)
+              vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt, :guid => :new)
               if parameters
                 length, scale = *parameters
                 vt.length = length if length
@@ -313,8 +313,8 @@ module ActiveFacts
           unless fact_type
             fact_type = @constellation.FactType(:new)
             fact_types << fact_type
-            entity_role = @constellation.Role(fact_type, 0, :object_type => @entity_type)
-            identifying_role = @constellation.Role(fact_type, 1, :object_type => identifying_type)
+            entity_role = @constellation.Role(fact_type, 0, :object_type => @entity_type, :guid => :new)
+            identifying_role = @constellation.Role(fact_type, 1, :object_type => identifying_type, :guid => :new)
           end
           @identification[0].role = identifying_role
 

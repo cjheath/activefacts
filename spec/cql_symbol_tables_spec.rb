@@ -102,7 +102,7 @@ describe "CQL Symbol table" do
     it "should define #{description}" do
       if result
         # Predefine an entity type, some cases use it:
-        @constellation.EntityType(@vocabulary.identifying_role_values, "Person")
+        @constellation.EntityType(@vocabulary.identifying_role_values, "Person", :guid => :new)
 
         player, bound = @symbols.bind(*args)
         player.should_not be_nil

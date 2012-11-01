@@ -44,8 +44,8 @@ module ActiveFacts
         # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
         # We only do it when the unary fact type is not objectified
         implicit_fact_type = @constellation.ImplicitFactType(:new, :implying_role => role)
-        entity_type = @entity_type || @constellation.ImplicitBooleanValueType(role.object_type.vocabulary, "_ImplicitBooleanValueType")
-        phantom_role = @constellation.Role(implicit_fact_type, 0, :object_type => entity_type)
+        entity_type = @entity_type || @constellation.ImplicitBooleanValueType(role.object_type.vocabulary, "_ImplicitBooleanValueType", :guid => :new)
+        phantom_role = @constellation.Role(implicit_fact_type, 0, :object_type => entity_type, :guid => :new)
       end
 
       def reading_preferably_starting_with_role role
@@ -372,7 +372,7 @@ module ActiveFacts
         fact_type.all_role.each do |role|
           next if role.implicit_fact_type     # Already exists
           implicit_fact_type = @constellation.ImplicitFactType(:new, :implying_role => role)
-          phantom_role = @constellation.Role(implicit_fact_type, 0, :object_type => self)
+          phantom_role = @constellation.Role(implicit_fact_type, 0, :object_type => self, :guid => :new)
           # We could create a copy of the visible external role here, but there's no need yet...
           # Nor is there a need for a presence constraint, readings, etc.
         end
@@ -644,7 +644,7 @@ module ActiveFacts
     class Join
       def show
         steps_shown = {}
-        debug :join, "Displaying full contents of Join #{join_id}" do
+        debug :join, "Displaying full contents of Join #{guid}" do
           all_join_node.sort_by{|jn| jn.ordinal}.each do |join_node|
             debug :join, "#{join_node.describe}" do
               join_node.all_join_step.

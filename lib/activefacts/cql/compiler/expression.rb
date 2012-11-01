@@ -87,7 +87,7 @@ module ActiveFacts
         def result_value_type(context, name)
           vocabulary = context.vocabulary
           constellation = vocabulary.constellation
-          constellation.ValueType(vocabulary, name)
+          constellation.ValueType(vocabulary, name, :guid => :new)
         end
 
         def is_naked_object_type
@@ -180,7 +180,7 @@ module ActiveFacts
               raise "REVISIT: The player is the projected expression"
             end
             v = context.vocabulary
-            @player = v.constellation.ValueType(v, 'Boolean')
+            @player = v.constellation.ValueType(v, 'Boolean', :guid => :new)
           end
         end
 
@@ -308,7 +308,7 @@ module ActiveFacts
             # REVISIT: Calculate the units of the result from the units in @divisor
             # REVISIT: Do we want integer division?
             v = context.vocabulary
-            @player = v.constellation.ValueType(v, 'Real')
+            @player = v.constellation.ValueType(v, 'Real', :guid => :new)
           end
         end
 
@@ -396,7 +396,7 @@ module ActiveFacts
               when TrueClass, FalseClass; 'Boolean'
               end
             v = context.vocabulary
-            @player = v.constellation.ValueType(v, player_name)
+            @player = v.constellation.ValueType(v, player_name, :guid => :new)
           end
         end
 

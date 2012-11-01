@@ -15,8 +15,8 @@ describe "CQL Dumper" do
   before :each do
     @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
     @vocabulary = @constellation.Vocabulary("TestVocab")
-    @string_type = @constellation.ValueType(@vocabulary, "String")
-    @integer_type = @constellation.ValueType(@vocabulary, "Integer")
+    @string_type = @constellation.ValueType(@vocabulary, "String", :guid => :new)
+    @integer_type = @constellation.ValueType(@vocabulary, "Integer", :guid => :new)
     @dumper = ActiveFacts::Generate::CQL.new(@constellation)
   end
 
@@ -28,7 +28,7 @@ describe "CQL Dumper" do
   end
 
   it "should dump a String ValueType" do
-    vt = @constellation.ValueType(@vocabulary, "Name", :supertype => @string_type, :length => 20)
+    vt = @constellation.ValueType(@vocabulary, "Name", :supertype => @string_type, :length => 20, :guid => :new)
     vt.supertype = @string_type
     vt.length = 20
     #p vt.class.roles.keys.sort_by{|s| s.to_s}
@@ -45,7 +45,7 @@ END
   end
 
   it "should dump an Integer ValueType" do
-    vt = @constellation.ValueType(@vocabulary, "Count", :supertype => @integer_type, :length => 32)
+    vt = @constellation.ValueType(@vocabulary, "Count", :supertype => @integer_type, :length => 32, :guid => :new)
     cql.should == <<END
 vocabulary TestVocab;
 
@@ -58,8 +58,8 @@ END
   end
 
   def value_type(name, datatype = "String", length = 0, scale = 0)
-    dt = @constellation.ValueType(@vocabulary, datatype)
-    vt = @constellation.ValueType(@vocabulary, name, :supertype => dt)
+    dt = @constellation.ValueType(@vocabulary, datatype, :guid => :new)
+    vt = @constellation.ValueType(@vocabulary, name, :supertype => dt, :guid => :new)
     vt.length = length if length != 0
     vt.scale = scale if scale != 0
     vt
@@ -68,8 +68,8 @@ END
   def one_to_many(one, many, reading)
     # Join them with a fact type:
     ft = @constellation.FactType(:new)
-    role0 = @constellation.Role(ft, 0, :object_type => one)
-    role1 = @constellation.Role(ft, 1, :object_type => many)
+    role0 = @constellation.Role(ft, 0, :object_type => one, :guid => :new)
+    role1 = @constellation.Role(ft, 1, :object_type => many, :guid => :new)
 
     # Make a role sequence:
     rs = @constellation.RoleSequence(:new)
@@ -90,8 +90,8 @@ END
   def one_to_one(first, second, reading)
     # Join them with a fact type:
     ft = @constellation.FactType(:new)
-    role0 = @constellation.Role(ft, 0, :object_type => first)
-    role1 = @constellation.Role(ft, 1, :object_type => second)
+    role0 = @constellation.Role(ft, 0, :object_type => first, :guid => :new)
+    role1 = @constellation.Role(ft, 1, :object_type => second, :guid => :new)
 
     # Make a role sequence for the reading
     rs = @constellation.RoleSequence(:new)
@@ -141,8 +141,8 @@ END
   end
 
   it "should dump an named EntityType" do
-    vt = @constellation.ValueType(@vocabulary, "Name", :supertype => @string_type, :length => 20)
-    et = @constellation.EntityType(@vocabulary, "Company")
+    vt = @constellation.ValueType(@vocabulary, "Name", :supertype => @string_type, :length => 20, :guid => :new)
+    et = @constellation.EntityType(@vocabulary, "Company", :guid => :new)
 
     ft = one_to_one(et, vt, "{0} is called {1}")
 

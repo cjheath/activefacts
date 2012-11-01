@@ -51,7 +51,7 @@ module ActiveFacts
             when ActiveFacts::Metamodel::PresenceConstraint
               fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq  # All fact types spanned by this constraint
               if fact_types.size == 1     # There's only one, save it:
-                # debug "Single-fact constraint on #{fact_types[0].fact_type_id}: #{c.name}"
+                # debug "Single-fact constraint on #{fact_types[0].guid}: #{c.name}"
                 (@presence_constraints_by_fact[fact_types[0]] ||= []) << c
               end
             when ActiveFacts::Metamodel::RingConstraint
@@ -348,7 +348,7 @@ module ActiveFacts
 
         # debug "for fact type #{fact_type.to_s}, considering\n\t#{fact_constraints.map(&:to_s)*",\n\t"}"
         # debug "#{fact_type.name} has readings:\n\t#{fact_type.readings.map(&:name)*"\n\t"}"
-        # debug "Dumping #{fact_type.fact_type_id} as a fact type"
+        # debug "Dumping #{fact_type.guid} as a fact type"
 
         # Fact types that aren't nested have no names
         name = fact_type.entity_type && fact_type.entity_type.name
@@ -501,8 +501,6 @@ module ActiveFacts
               !c.role_sequence.all_role_ref.detect{|rr| rr.join_role } &&
               c.max_frequency == 1 &&         # Uniqueness
               fact_types[0].all_role.size == c.role_sequence.all_role_ref.size
-              # debugger if !$constraint_id || c.constraint_id.object_id == $foo
-              # $constraint_id ||= 1
               next
             end
 
