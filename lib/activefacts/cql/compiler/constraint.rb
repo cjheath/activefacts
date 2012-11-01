@@ -427,7 +427,12 @@ module ActiveFacts
 
       class RingConstraint < Constraint
         Types = %w{acyclic intransitive symmetric asymmetric transitive antisymmetric irreflexive reflexive}
-        Pairs = { :intransitive => [:acyclic, :asymmetric, :symmetric], :irreflexive => [:symmetric] }
+        Pairs = {
+          :intransitive => [:acyclic, :asymmetric, :symmetric],
+          :transitive => [:acyclic],
+          :acyclic => [:transitive],
+          :irreflexive => [:symmetric]
+        }
 
         def initialize role_sequence, qualifiers
           super nil, nil
@@ -465,7 +470,7 @@ module ActiveFacts
           # Ensure that the keys in Pairs follow others:
           @rings = @rings.partition{|rc| !Pairs.keys.include?(rc.downcase.to_sym) }.flatten
 
-          if @rings.size > 1 and !Pairs[@rings[-1].to_sym].include?(@rings[0].to_sym)
+          if @rings.size > 1 and !(p = Pairs[@rings[-1].to_sym]) and !p.include?(@rings[0].to_sym)
             raise "incompatible ring constraint types (#{@rings*", "})"
           end
           ring_type = @rings.map{|c| c.capitalize}*""
