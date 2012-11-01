@@ -276,12 +276,10 @@ module ActiveFacts
               #}
               debug :instance, "This #{object_type.name} value already exists" if instance
               unless instance
-                instance = @constellation.Instance(
-                    :new,
-                    :object_type => object_type,
-                    :population => @population,
-                    :value => [literal.to_s, is_a_string, nil]
-                  )
+                instance = @constellation.Instance(:new)
+                instance.object_type = object_type
+                instance.population = @population
+                instance.value = [literal.to_s, is_a_string, nil]
                 @bound_facts << instance
               end
               instance
