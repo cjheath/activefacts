@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "activefacts"
-  s.version = "0.8.15"
+  s.version = "0.8.16"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Clifford Heath"]
-  s.date = "2012-10-18"
+  s.date = "2012-11-01"
   s.description = "\nActiveFacts provides a semantic modeling language, the Constellation\nQuery Language (CQL).  CQL combines natural language verbalisation and\nformal logic, producing a formal language that reads like plain\nEnglish. ActiveFacts converts semantic models from CQL to relational\nand object models in SQL, Ruby and other languages.\n"
   s.email = "cjh@dataconstellation.com"
   s.executables = ["afgen", "cql"]
@@ -180,7 +180,7 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<activefacts-api>, ["~> 0.9.2"])
+      s.add_runtime_dependency(%q<activefacts-api>, ["~> 0.9.3"])
       s.add_runtime_dependency(%q<treetop>, [">= 0"])
       s.add_runtime_dependency(%q<nokogiri>, [">= 0"])
       s.add_development_dependency(%q<dm-core>, [">= 0"])
@@ -197,7 +197,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<jeweler>, ["~> 1.5.2"])
       s.add_development_dependency(%q<rdoc>, [">= 2.4.2"])
     else
-      s.add_dependency(%q<activefacts-api>, ["~> 0.9.2"])
+      s.add_dependency(%q<activefacts-api>, ["~> 0.9.3"])
       s.add_dependency(%q<treetop>, [">= 0"])
       s.add_dependency(%q<nokogiri>, [">= 0"])
       s.add_dependency(%q<dm-core>, [">= 0"])
@@ -215,7 +215,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rdoc>, [">= 2.4.2"])
     end
   else
-    s.add_dependency(%q<activefacts-api>, ["~> 0.9.2"])
+    s.add_dependency(%q<activefacts-api>, ["~> 0.9.3"])
     s.add_dependency(%q<treetop>, [">= 0"])
     s.add_dependency(%q<nokogiri>, [">= 0"])
     s.add_dependency(%q<dm-core>, [">= 0"])
