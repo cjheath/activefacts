@@ -37,7 +37,8 @@ module ActiveFacts
             context_note.fact_type = target
           end
           if @agreed_date || @agreed_agents
-            agreement = constellation.Agreement(context_note, :date => @agreed_date)
+            agreement = constellation.Agreement(context_note)
+            agreement.date = @agreed_date if @agreed_date
             @agreed_agents.each do |agent|
               constellation.ContextAgreedBy(agreement, agent)
             end
