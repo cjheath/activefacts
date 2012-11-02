@@ -20,7 +20,7 @@ describe "CQL Loader" do
     "units" => "Unit verbalisation into CQL is not implemented"
   }
   cql_cql_failures = {
-#    "Insurance" => "Misses a join in a subset constraint",
+#    "Insurance" => "Misses a query in a subset constraint",
 #    "OddIdentifier" => "Doesn't support identification of object fact types using mixed external/internal roles",
   }
   # Generate and return the CQL for the given vocabulary

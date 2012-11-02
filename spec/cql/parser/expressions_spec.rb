@@ -163,7 +163,7 @@ describe "ASTs from Derived Fact Types with expressions" do
 
   it "should parse a fact type containing an expression with subscripts"
 
-  it "should parse a fact type containing objectification joins and contractions" do
+  it "should parse a fact type containing objectification steps and contractions" do
     %q{
       Driving was negligent where
         Driving (where maybe Driver drove in Incident [acyclic] that definitely is of Claim [intransitive]) followed Intoxication [static];

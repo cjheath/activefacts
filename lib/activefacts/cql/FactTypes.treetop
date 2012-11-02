@@ -8,10 +8,10 @@ module ActiveFacts
   module CQL
     grammar FactTypes
       rule query
-	s joined_clauses r:returning_clause? '?'
+	s query_clauses r:returning_clause? '?'
 	{
 	  def ast
-	    Compiler::FactType.new nil, [], joined_clauses.ast, (r.empty? ? nil : r)
+	    Compiler::FactType.new nil, [], query_clauses.ast, (r.empty? ? nil : r)
 	  end
 	}
       end
@@ -33,13 +33,13 @@ module ActiveFacts
       end
 
       rule anonymous_fact_type
-        joined_clauses
-          ctail:( (':' / where) s a:joined_clauses s)?
+        query_clauses
+          ctail:( (':' / where) s a:query_clauses s)?
           returning_clause?
         s ';'
         {
 	  def ast
-            clauses_ast = joined_clauses.ast
+            clauses_ast = query_clauses.ast
             conditions = !ctail.empty? ? ctail.a.ast : []
 	    returning = respond_to?(:returning_clause) ? returning_clause.ast : nil
 	    value_derivation = clauses_ast.detect{|r| r.is_equality_comparison}
@@ -62,7 +62,7 @@ module ActiveFacts
         }
       end
 
-      rule joined_clauses
+      rule query_clauses
         qualified_clauses
 	  # REVISIT: This creates no precedence between and/or, which could cause confusion.
 	  # Should disallow mixed conjuntions - using a sempred?
@@ -259,7 +259,7 @@ module ActiveFacts
       rule aggregate
 	aggregate:id s of s term s	# REVISIT: this term may need to pre-scanned in the qualified_clauses
 	in s '('
-	  qualified_clauses	# REVISIT: Need to test to verify this is the right level (not joined_clauses, etc)
+	  qualified_clauses	# REVISIT: Need to test to verify this is the right level (not query_clauses, etc)
 	s ')'
 	{
 	  def ast
@@ -286,7 +286,7 @@ module ActiveFacts
 	  /
 	  value_constraint enforcement
 	)?
-	oj:objectification_join?
+	oj:objectification_step?
         {
 	  def ast
 	    if !q.empty? && q.quantifier.value
@@ -318,8 +318,8 @@ module ActiveFacts
         }
       end
 
-      rule objectification_join
-        '(' s in_which s facts:joined_clauses s ')' s
+      rule objectification_step
+        '(' s in_which s facts:query_clauses s ')' s
 	{
 	  def ast
 	    facts.ast

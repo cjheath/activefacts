@@ -26,17 +26,17 @@ module ActiveFacts
           @context.left_contraction_allowed = true
           match_condition_fact_types
 
-          # Build the join:
+          # Build the query:
           unless @conditions.empty? and !@returning
-            debug :join, "building fact_type join" do
-              @join = build_variables(@conditions.flatten)
+            debug :query, "building query for derived fact type" do
+              @query = build_variables(@conditions.flatten)
               @roles_by_binding = build_all_steps(@conditions)
-              @join.validate
-              @join
+              @query.validate
+              @query
             end
           end
           @context.left_contraction_allowed = false
-          @join
+          @query
         end
 
         def match_condition_fact_types
@@ -170,7 +170,7 @@ module ActiveFacts
         end
 
         def project_clause_roles(clause)
-          # Attach the clause's role references to the projected roles of the join
+          # Attach the clause's role references to the projected roles of the query
           clause.refs.each_with_index do |ref, i|
             role, play = @roles_by_binding[ref.binding]
             raise "#{ref} must be a role projected from the conditions" unless role

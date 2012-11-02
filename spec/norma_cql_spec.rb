@@ -12,12 +12,12 @@ require 'activefacts/generate/cql'
 
 describe "Norma Loader" do
   orm_failures = {
-    "SubtypePI" => "Has an illegal uniqueness join constraint",
+    "SubtypePI" => "Has an illegal uniqueness constraint",
   }
   orm_cql_failures = {
     # "OddIdentifier" => "Strange identification pattern is incorrectly verbalised to CQL",  # Fixed
     "UnaryIdentification" => "No PI for VisitStatus",
-    "Supervision" => "Join constraints not imported from NORMA",
+    "Supervision" => "Derivations are not imported from NORMA",
   }
   # Generate and return the CQL for the given vocabulary
   def cql(vocabulary)

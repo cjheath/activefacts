@@ -82,22 +82,22 @@ module ActiveFacts
           loose_binding
 
           # Ok, we have bound all players by subscript/role_name, by adjectives, and by loose binding,
-          # and matched all the fact types that matter. Now assemble a join (with all steps) for
-          # each join list, and build an array of the bindings that are involved in the steps.
+          # and matched all the fact types that matter. Now assemble a query (with all steps) for
+          # each query list, and build an array of the bindings that are involved in the steps.
           @bindings_by_list =
             @clauses_lists.map do |clauses_list|
               all_bindings_in_clauses(clauses_list)
             end
 
-          warn_ignored_joins
+          warn_ignored_queries
         end
 
-        def warn_ignored_joins
-          # Warn about ignored joins
+        def warn_ignored_queries
+          # Warn about ignored queries
           @clauses_lists.each do |clauses_list|
-            fact_types = clauses_list.map{|join| join.refs[0].role_ref.role.fact_type}.uniq
+            fact_types = clauses_list.map{|clauses| clauses.refs[0].role_ref.role.fact_type}.uniq
             if fact_types.size > 1
-              puts "------->>>> Join ignored in #{self.class}: #{fact_types.map{|ft| ft.preferred_reading.expand}*' and '}"
+              raise "------->>>> join ignored in #{self.class}: #{fact_types.map{|ft| ft.preferred_reading.expand}*' and '}"
             end
           end
         end
@@ -188,7 +188,7 @@ module ActiveFacts
 
         def compile
           @clauses = @clauses_lists.map do |clauses_list|
-            raise "REVISIT: Join presence constraints not supported yet" if clauses_list.size > 1 or
+            raise "REVISIT: join presence constraints not supported yet" if clauses_list.size > 1 or
               clauses_list.detect{|clause| clause.refs.detect{|vr| vr.nested_clauses } }
             clauses_list[0]
           end
@@ -259,28 +259,28 @@ module ActiveFacts
           super context_note, enforcement, clauses_lists
         end
 
-        def warn_ignored_joins
+        def warn_ignored_queries
           # No warnings needed here any more
         end
 
-        def role_sequences_for_common_bindings ignore_trailing_joins = false
+        def role_sequences_for_common_bindings ignore_trailing_steps = false
           @clauses_lists.
               zip(@bindings_by_list).
               map do |clauses_list, bindings|
-            # Does this clauses_list involve a join?
+            # Does this clauses_list involve a query?
             if clauses_list.size > 1 or
               clauses_list.detect{|clause| clause.refs.detect{|ref| ref.nested_clauses } }
 
-              debug :join, "Building join for #{clauses_list.inspect}" do
-                debug :join, "Constrained bindings are #{@common_bindings.inspect}"
+              debug :query, "Building query for #{clauses_list.inspect}" do
+                debug :query, "Constrained bindings are #{@common_bindings.inspect}"
                 # Every Binding in these clauses becomes a Variable,
                 # and every clause becomes a Step (and a RoleSequence).
                 # The returned RoleSequences contains the RoleRefs for the common_bindings.
 
-                # Create a join with a variable for every binding and all steps:
-                join = build_variables(clauses_list)
+                # Create a query with a variable for every binding and all steps:
+                query = build_variables(clauses_list)
                 roles_by_binding = build_all_steps(clauses_list)
-                join.validate
+                query.validate
 
                 # Create the projected RoleSequence for the constraint:
                 role_sequence = @constellation.RoleSequence(:new)
@@ -292,18 +292,18 @@ module ActiveFacts
                 role_sequence
               end
             else
-              # There's no join in this clauses_list, just create a role_sequence
+              # There's no query in this clauses_list, just create a role_sequence
               role_sequence = @constellation.RoleSequence(:new)
-              join_bindings = bindings-@common_bindings
-              unless join_bindings.empty? or ignore_trailing_joins && join_bindings.size <= 1
-                debug :constraint, "REVISIT: #{self.class}: Ignoring join from #{@common_bindings.inspect} to #{join_bindings.inspect} in #{clauses_list.inspect}"
+              query_bindings = bindings-@common_bindings
+              unless query_bindings.empty? or ignore_trailing_steps && query_bindings.size <= 1
+                debug :constraint, "REVISIT: #{self.class}: Ignoring query from #{@common_bindings.inspect} to #{query_bindings.inspect} in #{clauses_list.inspect}"
               end
               @common_bindings.each do |binding|
                 roles = clauses_list.
                   map do |clause|
                     clause.refs.detect{|vr| vr.binding == binding }
                   end.
-                  compact.  # A join clause will probably not have the common binding
+                  compact.  # A query clause will probably not have the common binding
                   map do |ref|
                     ref.role_ref && ref.role_ref.role or ref.role
                   end.

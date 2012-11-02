@@ -38,7 +38,7 @@ module ActiveFacts
 	{ def independent; !i.empty?; end }
       end
 
-      rule in_which	# Introduce an objectification join
+      rule in_which	# Introduce an objectification step
 	where /	    # Old syntax
 	in s which  # preferred syntax
 	{ def independent; !i.empty?; end }

@@ -13,7 +13,7 @@ module ActiveFacts
       # projected operand.
       #
       # Each operand may be a Literal, a Reference, or another Operation,
-      # so we need to recurse down the tree to build the join.
+      # so we need to recurse down the tree to build the query.
       #
       class Operation
         # Reference (in)compatibility:
@@ -108,7 +108,7 @@ module ActiveFacts
 
           # REVISIT: All operands must be value-types or simply-identified Entity Types.
 
-          # REVISIT: We should auto-create joins from Entity Types to an identifying ValueType
+          # REVISIT: We should auto-create steps from Entity Types to an identifying ValueType
           # REVISIT: We should traverse up the supertype of ValueTypes to find a DataType
           @fact_type = clause_ast.match_existing_fact_type(context, :exact_type => true)
           return @fact_type if @fact_type

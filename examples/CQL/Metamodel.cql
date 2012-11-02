@@ -5,6 +5,7 @@ vocabulary Metamodel;
  */
 Adjective is written as String(64);
 Agent Name is written as String;
+Aggregate Code is written as String(32);
 Assimilation is written as String restricted to {'partitioned', 'separate'};
 Context Note Kind is written as String restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
 Date is written as Date;
@@ -37,9 +38,12 @@ Y is written as Signed Integer(32);
  */
 Agent is identified by its Name;
 
+Aggregate is identified by its Code;
+
 Alternative Set is identified by Guid where
 	Alternative Set has one Guid,
 	Guid is of at most one Alternative Set;
+Alternative Set members are exclusive;
 
 Coefficient is identified by Numerator and Denominator and Coefficient is precise where
 	Coefficient has one Numerator,
@@ -80,8 +84,6 @@ Instance is a kind of Concept [partitioned];
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
 
-Join is a kind of Concept [partitioned];
-
 Position is identified by X and Y where
 	Position is at one X,
 	Position is at one Y;
@@ -91,6 +93,8 @@ Presence Constraint has at most one max-Frequency restricted to {1..};
 Presence Constraint has at most one min-Frequency restricted to {2..};
 Presence Constraint is mandatory;
 Presence Constraint is preferred identifier;
+
+Query is a kind of Concept [partitioned];
 
 Reading is identified by Fact Type and Ordinal where
 	Fact Type has Reading,
@@ -147,7 +151,7 @@ Subset Constraint covers one superset-Role Sequence;
 Unit is a kind of Concept [partitioned];
 Ephemera URL provides Unit coefficient,
 	Unit uses coefficient from at most one Ephemera URL;
-Name is of Unit,
+Name is of at most one Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
 Unit has at most one Offset;
@@ -167,13 +171,15 @@ Value Constraint is a kind of Constraint;
 Role has at most one role-Value Constraint,
 	Value Constraint applies to at most one Role;
 
-Variable is identified by Join and Ordinal where
-	Join includes Variable,
-	Variable is in one Join,
+Variable is identified by Query and Ordinal where
+	Query includes Variable,
+	Variable is in one Query,
 	Variable has one Ordinal position;
+Variable projects at most one Role (as Projection),
+	Projection is projected from at most one Variable;
 Variable has at most one Subscript,
 	Subscript is of Variable;
-Variable has at most one Value;
+Variable is bound to at most one Value;
 Variable has at most one role-Name,
 	Name is of Variable;
 
@@ -183,6 +189,10 @@ Vocabulary contains Constraint,
 	Constraint belongs to at most one Vocabulary;
 Vocabulary includes Unit,
 	Unit is in one Vocabulary;
+
+Aggregation is where
+	Aggregate of aggregated-Variable is bound as one Variable,
+	Variable is bound to Aggregate over aggregated-Variable;
 
 Agreement is identified by Context Note where
 	Context Note was added by at most one Agreement,
@@ -248,9 +258,9 @@ Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shap
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
 
-Play is independent where
-	Variable includes at least one Role,
-	Role connects to Variable;
+Play is where
+	Variable is restricted by Role,
+	Role controls Variable;
 
 Population is a kind of Concept identified by Vocabulary and Name [partitioned] where
 	Vocabulary includes Population,
@@ -312,8 +322,8 @@ Step traverses one Fact Type,
 	Fact Type directs Step;
 Step involves incidental-Play,
 	Play is incidentally involved in at most one Step;
-is anti Step;
-Step is outer;
+Step is disallowed;
+Step is optional;
 
 Value Constraint Shape is a kind of Constraint Shape;
 Role Display has at most one Value Constraint Shape,
@@ -374,7 +384,7 @@ for each Concept exactly one of these holds:
 	Concept is a Constraint,
 	Concept is a Population,
 	Concept is an Unit,
-	Concept is a Join,
+	Concept is a Query,
 	Concept is a Context Note;
 for each Constraint exactly one of these holds:
 	Constraint is a Presence Constraint,
@@ -410,7 +420,7 @@ Role Value fulfils Fact that is of Fact Type
 	Role Value is of Role that belongs to Fact Type;
 Variable is for Object Type that plays Role
 	if and only if
-	Variable includes Role;
+	Variable is restricted by Role;
 Entity Type is implied by objectification
 	only if Entity Type nests Fact Type;
 Presence Constraint is preferred identifier

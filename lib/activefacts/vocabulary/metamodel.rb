@@ -11,6 +11,10 @@ module ActiveFacts
       value_type 
     end
 
+    class AggregateCode < String
+      value_type :length => 32
+    end
+
     class Assimilation < String
       value_type 
       restrict 'partitioned', 'separate'
@@ -126,9 +130,15 @@ module ActiveFacts
       one_to_one :agent_name, :mandatory => true  # See AgentName.agent
     end
 
+    class Aggregate
+      identified_by :aggregate_code
+      one_to_one :aggregate_code, :mandatory => true  # See AggregateCode.aggregate
+    end
+
     class AlternativeSet
       identified_by :guid
       one_to_one :guid, :mandatory => true        # See Guid.alternative_set
+      maybe :members_are_exclusive
     end
 
     class Coefficient
@@ -179,19 +189,6 @@ module ActiveFacts
       has_one :value                              # See Value.all_instance
     end
 
-    class Join < Concept
-    end
-
-    class Variable
-      identified_by :join, :ordinal
-      has_one :join, :mandatory => true           # See Join.all_variable
-      has_one :object_type, :mandatory => true    # See ObjectType.all_variable
-      has_one :ordinal, :mandatory => true        # See Ordinal.all_variable
-      has_one :role_name, :class => Name          # See Name.all_variable_as_role_name
-      has_one :subscript                          # See Subscript.all_variable
-      has_one :value                              # See Value.all_variable
-    end
-
     class Position
       identified_by :x, :y
       has_one :x, :mandatory => true              # See X.all_position
@@ -204,6 +201,9 @@ module ActiveFacts
       has_one :max_frequency, :class => Frequency  # See Frequency.all_presence_constraint_as_max_frequency
       has_one :min_frequency, :class => Frequency  # See Frequency.all_presence_constraint_as_min_frequency
       has_one :role_sequence, :mandatory => true  # See RoleSequence.all_presence_constraint
+    end
+
+    class Query < Concept
     end
 
     class Reading
@@ -280,9 +280,27 @@ module ActiveFacts
       one_to_one :role, :counterpart => :role_value_constraint  # See Role.role_value_constraint
     end
 
+    class Variable
+      identified_by :query, :ordinal
+      has_one :object_type, :mandatory => true    # See ObjectType.all_variable
+      has_one :ordinal, :mandatory => true        # See Ordinal.all_variable
+      one_to_one :projection, :class => Role      # See Role.variable_as_projection
+      has_one :query, :mandatory => true          # See Query.all_variable
+      has_one :role_name, :class => Name          # See Name.all_variable_as_role_name
+      has_one :subscript                          # See Subscript.all_variable
+      has_one :value                              # See Value.all_variable
+    end
+
     class Vocabulary
       identified_by :name
       one_to_one :name, :mandatory => true        # See Name.vocabulary
+    end
+
+    class Aggregation
+      identified_by :aggregate, :aggregated_variable
+      has_one :aggregate, :mandatory => true      # See Aggregate.all_aggregation
+      has_one :aggregated_variable, :class => Variable, :mandatory => true  # See Variable.all_aggregation_as_aggregated_variable
+      has_one :variable, :mandatory => true       # See Variable.all_aggregation
     end
 
     class Agreement
@@ -333,23 +351,6 @@ module ActiveFacts
       has_one :rotation_setting                   # See RotationSetting.all_fact_type_shape
     end
 
-    class Play
-      identified_by :variable, :role
-      has_one :variable, :mandatory => true      # See Variable.all_play
-      has_one :role, :mandatory => true           # See Role.all_play
-      has_one :step, :counterpart => :incidental_play  # See Step.all_incidental_play
-    end
-
-    class Step
-      identified_by :input_play, :output_play
-      has_one :alternative_set                    # See AlternativeSet.all_step
-      has_one :fact_type, :mandatory => true      # See FactType.all_step
-      has_one :input_play, :class => Play, :mandatory => true  # See Play.all_step_as_input_play
-      maybe :is_anti
-      maybe :is_outer
-      has_one :output_play, :class => Play, :mandatory => true  # See Play.all_step_as_output_play
-    end
-
     class ModelNoteShape < Shape
       has_one :context_note, :mandatory => true   # See ContextNote.all_model_note_shape
     end
@@ -370,6 +371,13 @@ module ActiveFacts
     class ObjectifiedFactTypeNameShape < Shape
       identified_by :fact_type_shape
       one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.objectified_fact_type_name_shape
+    end
+
+    class Play
+      identified_by :variable, :role
+      has_one :role, :mandatory => true           # See Role.all_play
+      has_one :variable, :mandatory => true       # See Variable.all_play
+      has_one :step, :counterpart => :incidental_play  # See Step.all_incidental_play
     end
 
     class Population < Concept
@@ -404,9 +412,9 @@ module ActiveFacts
       has_one :ordinal, :mandatory => true        # See Ordinal.all_role_ref
       has_one :role, :mandatory => true           # See Role.all_role_ref
       has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
-      one_to_one :play                       # See Play.role_ref
       has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
       has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
+      one_to_one :play                            # See Play.role_ref
     end
 
     class SetComparisonConstraint < SetConstraint
@@ -424,6 +432,16 @@ module ActiveFacts
 
     class SetExclusionConstraint < SetComparisonConstraint
       maybe :is_mandatory
+    end
+
+    class Step
+      identified_by :input_play, :output_play
+      has_one :alternative_set                    # See AlternativeSet.all_step
+      has_one :fact_type, :mandatory => true      # See FactType.all_step
+      has_one :input_play, :class => Play, :mandatory => true  # See Play.all_step_as_input_play
+      maybe :is_disallowed
+      maybe :is_optional
+      has_one :output_play, :class => Play, :mandatory => true  # See Play.all_step_as_output_play
     end
 
     class ValueConstraintShape < ConstraintShape

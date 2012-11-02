@@ -13,7 +13,7 @@ require 'activefacts/generate/sql/server'
 
 describe "NORMA Loader with SQL output" do
   orm_failures = {
-    "SubtypePI" => "Has an illegal uniqueness join constraint",
+    "SubtypePI" => "Has an illegal uniqueness constraint",
   }
   # Generate and return the SQL for the given vocabulary
   def sql(vocabulary)

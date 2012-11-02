@@ -52,8 +52,8 @@ describe "When matching a reading with an existing fact type" do
       end
     end
 
-    def one_join_with_value v, unit = nil
-      joins.size.should == 1
+    def one_query_with_value v, unit = nil
+      queries.size.should == 1
       (jss = steps).size.should == 2
       (jns = variables).size.should == 3
       integer_node = jns.detect{|jn| jn.object_type.name == 'Integer'}
@@ -72,7 +72,7 @@ describe "When matching a reading with an existing fact type" do
       comparison_ft = (new_fact_types - [is_old_ft])[0]
       (comparison_ft.all_reading.map{ |r| r.expand }*', ').should == "Boolean = Age >= Integer"
 
-      one_join_with_value 60, 'year'
+      one_query_with_value 60, 'year'
     end
 
     it "should create a comparison fact type twice without duplication"
@@ -83,7 +83,7 @@ describe "When matching a reading with an existing fact type" do
       (readings = new_fact_types[0].all_reading).size.should == 1
       readings.single.text.should == '{0} = {1} >= {2}'
 
-      one_join_with_value 60, 'year'
+      one_query_with_value 60, 'year'
     end
   end
 end

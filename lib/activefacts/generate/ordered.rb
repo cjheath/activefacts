@@ -298,7 +298,7 @@ module ActiveFacts
                 !fact_type.all_role.detect{|r| !@object_types_dumped[r.object_type] } &&
                 !fact_type.entity_type &&
                 derivation_precursors_complete(fact_type)
-              # REVISIT: A derived fact type must not be dumped before its joined fact types have
+              # REVISIT: A derived fact type must not be dumped before its dependent fact types have
             }.sort_by{|fact_type|
               fact_type_key(fact_type)
             }.each{|fact_type|
@@ -313,9 +313,9 @@ module ActiveFacts
       def derivation_precursors_complete(fact_type)
         pr = fact_type.preferred_reading
         return true unless jr = pr.role_sequence.all_role_ref.to_a[0].play
-        join = jr.variable.join
-        return false if join.all_step.detect{|js| !@fact_types_dumped[js.fact_type] }
-        return false if join.all_variable.detect{|jn| !@object_types_dumped[jn.object_type] }
+        query = jr.variable.query
+        return false if query.all_step.detect{|js| !@fact_types_dumped[js.fact_type] }
+        return false if query.all_variable.detect{|jn| !@object_types_dumped[jn.object_type] }
         true
       end
 

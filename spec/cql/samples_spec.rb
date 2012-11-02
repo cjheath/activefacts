@@ -51,11 +51,11 @@ describe "Sample data" do
       "Company has Company Name 'Microsoft';",
       [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
-    [   # The Company instance asserted with an joined identifying instance
+    [   # The Company instance asserted with a related identifying instance
       "Company has Company Name, Company Name 'Microsoft';",
       [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
-    [   # The same, with an explicit identifying instance join
+    [   # The same, with an explicit identifying value step
       "Company Name 'Microsoft', Company has Company Name;",
       [{:facts=>Set["Company has Company Name 'Microsoft'"], :instances=>Set["Company is identified by Company Name where Company has Company Name 'Microsoft'", "Company Name 'Microsoft'"]}]
     ],
@@ -220,7 +220,7 @@ describe "Sample data" do
 
   BadSamples.each do |c|
     source, missing = *Array(c)
-    it "should detect missing joins in #{source.inspect}" do
+    it "should detect missing queries in #{source.inspect}" do
       @text = SamplePrefix+source
       lambda do
         begin

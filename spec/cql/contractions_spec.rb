@@ -121,7 +121,7 @@ require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
 require File.dirname(__FILE__) + '/../helpers/compile_helpers'  # Can't see how to include/extend these methods correctly
 
-describe "When compiling a join, " do
+describe "When compiling a query, " do
   before :each do
     extend CompileHelpers
 
@@ -138,33 +138,6 @@ describe "When compiling a join, " do
     @constellation = @compiler.vocabulary.constellation
 
     baseline
-
-=begin
-    def self.baseline
-      @base_facts = @constellation.FactType.values-@constellation.ImplicitFactType.values
-      @base_objects = @constellation.ObjectType.values
-    end
-
-    def self.fact_types
-      @constellation.FactType.values-@base_facts-@constellation.ImplicitFactType.values
-    end
-
-    def self.object_types
-      @constellation.ObjectType.values-@base_objects
-    end
-
-    def self.fact_pcs fact_type
-      fact_type.all_role.map{|r| r.all_role_ref.map{|rr| rr.role_sequence.all_presence_constraint.to_a}}.flatten.uniq
-    end
-
-    def self.derivation fact_type
-      join = (joins = @constellation.Join.values.to_a)[0]
-      # PENDING: When the fact type's roles are projected, use this instead:
-      # joins = fact_type.all_role.map{|r| r.all_play.map{|jr| jr.join}}.flatten.uniq
-      joins.size.should == 1
-      joins[0]
-    end
-=end
 
     def self.compile string
       lambda {
@@ -185,29 +158,29 @@ describe "When compiling a join, " do
       fact_type = fact_types[0]
       (pcs = fact_pcs(fact_type)).size.should == 0
     end
-    it "should produce one join" do
+    it "should produce one query" do
       fact_type = fact_types[0]
-      join = derivation(fact_type)
+      query = derivation(fact_type)
     end
-    it "the join should have 3 nodes" do
+    it "the query should have 3 variables" do
       fact_type = fact_types[0]
-      join = derivation(fact_type)
-      nodes = join.all_variable.to_a
-      nodes.size.should == 3
+      query = derivation(fact_type)
+      variables = query.all_variable.to_a
+      variables.size.should == 3
     end
-    it "the join should have 2 steps" do
+    it "the query should have 2 steps" do
       fact_type = fact_types[0]
-      join = derivation(fact_type)
-      steps = join.all_step.to_a
+      query = derivation(fact_type)
+      steps = query.all_step.to_a
       steps.size.should == 2
     end
 
-    it "and should project the fact type roles from the join" do
+    it "and should project the fact type roles from the query" do
       pending "Plays are not yet projected" do
-        join = derivation(fact_type)
-        joins = fact_type.all_role.map{|r| r.all_play.map{|jr| jr.join}}.flatten.uniq
-        joins.size == 1
-        joins.should == [join]
+        query = derivation(fact_type)
+        queries = fact_type.all_role.map{|r| r.all_play.map{|play| play.query}}.flatten.uniq
+        queries.size == 1
+        queries.should == [query]
       end
     end
   end

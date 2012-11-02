@@ -10,6 +10,10 @@ module ::Metamodel
     value_type 
   end
 
+  class AggregateCode < String
+    value_type :length => 32
+  end
+
   class Assimilation < String
     value_type 
     restrict 'partitioned', 'separate'
@@ -125,9 +129,15 @@ module ::Metamodel
     one_to_one :agent_name, :mandatory => true  # See AgentName.agent
   end
 
+  class Aggregate
+    identified_by :aggregate_code
+    one_to_one :aggregate_code, :mandatory => true  # See AggregateCode.aggregate
+  end
+
   class AlternativeSet
     identified_by :guid
     one_to_one :guid, :mandatory => true        # See Guid.alternative_set
+    maybe :members_are_exclusive
   end
 
   class Coefficient
@@ -178,9 +188,6 @@ module ::Metamodel
     has_one :value                              # See Value.all_instance
   end
 
-  class Join < Concept
-  end
-
   class Position
     identified_by :x, :y
     has_one :x, :mandatory => true              # See X.all_position
@@ -193,6 +200,9 @@ module ::Metamodel
     has_one :max_frequency, :class => Frequency  # See Frequency.all_presence_constraint_as_max_frequency
     has_one :min_frequency, :class => Frequency  # See Frequency.all_presence_constraint_as_min_frequency
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_presence_constraint
+  end
+
+  class Query < Concept
   end
 
   class Reading
@@ -252,7 +262,7 @@ module ::Metamodel
     has_one :coefficient                        # See Coefficient.all_unit
     has_one :ephemera_url, :class => EphemeraURL  # See EphemeraURL.all_unit
     maybe :is_fundamental
-    has_one :name, :mandatory => true           # See Name.all_unit
+    one_to_one :name, :mandatory => true        # See Name.unit
     has_one :offset                             # See Offset.all_unit
     one_to_one :plural_name, :class => Name     # See Name.unit_as_plural_name
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_unit
@@ -270,10 +280,11 @@ module ::Metamodel
   end
 
   class Variable
-    identified_by :join, :ordinal
-    has_one :join, :mandatory => true           # See Join.all_variable
+    identified_by :query, :ordinal
     has_one :object_type, :mandatory => true    # See ObjectType.all_variable
     has_one :ordinal, :mandatory => true        # See Ordinal.all_variable
+    one_to_one :projection, :class => Role      # See Role.variable_as_projection
+    has_one :query, :mandatory => true          # See Query.all_variable
     has_one :role_name, :class => Name          # See Name.all_variable_as_role_name
     has_one :subscript                          # See Subscript.all_variable
     has_one :value                              # See Value.all_variable
@@ -282,6 +293,13 @@ module ::Metamodel
   class Vocabulary
     identified_by :name
     one_to_one :name, :mandatory => true        # See Name.vocabulary
+  end
+
+  class Aggregation
+    identified_by :aggregate, :aggregated_variable
+    has_one :aggregate, :mandatory => true      # See Aggregate.all_aggregation
+    has_one :aggregated_variable, :class => Variable, :mandatory => true  # See Variable.all_aggregation_as_aggregated_variable
+    has_one :variable, :mandatory => true       # See Variable.all_aggregation
   end
 
   class Agreement
@@ -420,8 +438,8 @@ module ::Metamodel
     has_one :alternative_set                    # See AlternativeSet.all_step
     has_one :fact_type, :mandatory => true      # See FactType.all_step
     has_one :input_play, :class => Play, :mandatory => true  # See Play.all_step_as_input_play
-    maybe :is_anti
-    maybe :is_outer
+    maybe :is_disallowed
+    maybe :is_optional
     has_one :output_play, :class => Play, :mandatory => true  # See Play.all_step_as_output_play
   end
 

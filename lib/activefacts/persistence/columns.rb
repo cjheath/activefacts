@@ -55,18 +55,18 @@ module ActiveFacts
       end
 
       # A Column name is a sequence of names (derived from the to_roles of the References)
-      # joined by a joiner string (pass nil to get the original array of names)
+      # appended by a separator string (pass nil to get the original array of names)
       # The names to use is derived from the to_names of each Reference,
       # modified by these rules:
       # * A reference after the first one which is not a TypeInheritance but where the _from_ object plays the sole role in the preferred identifier of the _to_ entity is ignored,
       # * A reference (after a name has been retained) which is a TypeInheritance retains the names of the subtype,
       # * If the names retained so far end in XYZ and the to_names start with XYZ, remove the duplication
       # * If we have retained the name of an entity, and this reference is the sole identifying role of an entity, and the identifying object has a name that is prefixed by the name of the object it identifies, remove the prefix and use just the suffix.
-      def name(joiner = "")
-        self.class.name(@references, joiner)
+      def name(separator = "")
+        self.class.name(@references, separator)
       end
 
-      def self.name(refs, joiner = "")
+      def self.name(refs, separator = "")
         last_names = []
         names = refs.
           inject([]) do |a, ref|
@@ -131,7 +131,7 @@ module ActiveFacts
           }
 
         name_array = names.map{|n| n.sub(/^[a-z]/){|s| s.upcase}}
-        joiner ? name_array * joiner : name_array
+        separator ? name_array * separator : name_array
       end
 
       # Is this column mandatory or nullable?
@@ -168,7 +168,7 @@ module ActiveFacts
         return [vt.name, params, constraints]
       end
 
-      # The comment is the readings from the References expressed as a join
+      # The comment is the readings from the References expressed as a series of steps (not a full verbalisation)
       def comment
         @references.map do |ref|
           (ref.is_mandatory ? "" : "maybe ") +

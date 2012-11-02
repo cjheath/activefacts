@@ -1,8 +1,8 @@
 #
-# ActiveFacts CQL join compilation tests
+# ActiveFacts CQL query compilation tests
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
-# A join has at least one Step.
+# A query has at least one Step.
 # Each Step is over two Variables.
 # Each Variable is associated with one or more Role Refs
 # For a given Variable, all the Role Refs are for Roles played by the same ObjectType (which the Variable is for)
@@ -17,8 +17,8 @@ require 'activefacts/api/support'
 require 'activefacts/cql/compiler'
 # require File.dirname(__FILE__) + '/../helpers/compiler_helper'  # Can't see how to include/extend these methods correctly
 
-describe "Join construction from CQL" do
-  JoinsPrefix = %q{
+describe "query construction from CQL" do
+  QueriesPrefix = %q{
     vocabulary Tests;
     Product is identified by its Name;
     Purchase Order Item is identified by its ID;
@@ -31,7 +31,7 @@ describe "Join construction from CQL" do
     @compiler = ActiveFacts::CQL::Compiler.new('Test')
   end
 
-  JoinTests = [
+  QueryTests = [
     %q{
       Purchase Order Item matches Sales Order Item
         only if Purchase Order Item is for Product and Sales Order Item is for Product;
@@ -40,10 +40,10 @@ describe "Join construction from CQL" do
   ]
 
   before :each do
-    @compiler.compile(JoinsPrefix).should_not be_nil
+    @compiler.compile(QueriesPrefix).should_not be_nil
   end
 
-  JoinTests.each do |test|
+  QueryTests.each do |test|
     it "should process '#{test}' correctly" do
       result = @compiler.compile(test)
       puts @compiler.failure_reason unless result

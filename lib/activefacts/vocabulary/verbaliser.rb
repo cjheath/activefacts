@@ -9,7 +9,7 @@ module ActiveFacts
     #
     # The Verbaliser fulfils two roles:
     # * Maintains verbalisation context to expand readings using subscripting where needed
-    # * Verbalises Joins by iteratively choosing a Step and expanding readings
+    # * Verbalises Queries by iteratively choosing a Step and expanding readings
     #
     # The verbalisation context consists of a set of Players, each for one ObjectType.
     # There may be more than one Player for the same ObjectType. If adjectives or role
@@ -17,30 +17,30 @@ module ActiveFacts
     # Thus, the verbalisation context must be completely populated before subscript
     # generation, which must be before any Player name gets verbalised.
     #
-    # When a Player occurs in a Join, it corresponds to one Variable of that Join.
+    # When a Player occurs in a Query, it corresponds to one Variable of that Query.
     # Each such Player has one or more Plays, which refer to roles played by
-    # that ObjectType. Where a join traverses two roles of a ternary fact type, there
+    # that ObjectType. Where a query traverses two roles of a ternary fact type, there
     # will be a residual node that has only a single Play with no other meaning.
     # A Play must be for exactly one Player, so is used to identify a Player.
     #
-    # When a Player occurs outside a Join, it's identified by a projected RoleRef.
+    # When a Player occurs outside a Query, it's identified by a projected RoleRef.
     # REVISIT: This is untrue when a uniqueness constraint is imported from NORMA.
-    # In this case no join will be constructed to project the roles of the constrained
+    # In this case no query will be constructed to project the roles of the constrained
     # object type (only the constrained roles will be projected) - this will be fixed.
     #
     # Each constraint (except Ring Constraints) has one or more RoleSequence containing
-    # the projected RoleRefs. Each constrained RoleSequence may have an associated Join.
-    # If it has a Join, each RoleRef is projected from a Play, otherwise none are.
+    # the projected RoleRefs. Each constrained RoleSequence may have an associated Query.
+    # If it has a Query, each RoleRef is projected from a Play, otherwise none are.
     #
-    # The only type of join possible in a Ring Constraint is a subtyping join, which
+    # The only type of query possible in a Ring Constraint is a subtyping query, which
     # is always implicit and unambiguous, so is never instantiated.
     #
-    # A constrained RoleSequence that has no explicit Join may have an implicit join,
-    # as per ORM2, when the roles aren't in the same fact type.  These implicit joins
+    # A constrained RoleSequence that has no explicit Query may have an implicit query,
+    # as per ORM2, when the roles aren't in the same fact type.  These implicit queries
     # are over only one ObjectType, by traversing a single FactType (and possibly,
     # multiple TypeInheritance FactTypes) for each RoleRef. Note however that when
     # the ObjectType is an objectified Fact Type, the FactType traversed might be a
-    # phantom of the objectification. In the case of implicit joins, each Player is
+    # phantom of the objectification. In the case of implicit queries, each Player is
     # identified by the projected RoleRef, except for the joined-over ObjectType whose
     # Player is... well, read the next paragraph!
     #
@@ -48,13 +48,13 @@ module ActiveFacts
     # respect to PresenceConstraints imported from NORMA (both external mandatory
     # and external uniqueness constraints). The joined-over Player in a UC is
     # identified by its RoleRefs in the RoleSequence of the Fact Type's preferred
-    # reading. Subtyping joins in a mandatory constraint will probably malfunction.
-    # However, all other such joins are expliciti, and these should be also.
+    # reading. Subtyping steps in a mandatory constraint will probably malfunction.
+    # However, all other such queries are explicit, and these should be also.
     #
     # For a SetComparisonConstraint, there are two or more constrained RoleSequences.
     # The matching RoleRefs (by Ordinal position) are for joined players, that is,
     # one individual instance plays both roles. The RoleRefs must (now) be for the
-    # same ObjectType (no implicit subtyping Join is allowed). Instead, the input modules
+    # same ObjectType (no implicit subtyping step is allowed). Instead, the input modules
     # find the closest common supertype and create explicit Steps so its roles
     # can be projected.
     #
@@ -67,18 +67,18 @@ module ActiveFacts
     class Verbaliser
       # Verbalisation context:
       attr_reader :players
-      attr_reader :player_by_play        # Used for each join
-      attr_reader :player_joined_over         # Used when there's an implicit join
-      attr_reader :player_by_role_ref         # Used when a constrained role sequence has no join
+      attr_reader :player_by_play             # Used for each query
+      attr_reader :player_joined_over         # Used when there's an implicit query
+      attr_reader :player_by_role_ref         # Used when a constrained role sequence has no query
 
       # The projected role references over which we're verbalising
       attr_reader :role_refs
 
-      # Join Verbaliser context:
-      attr_reader :join
-      attr_reader :variables                 # All Variables
-      attr_reader :steps                 # All remaining unemitted Steps
-      attr_reader :steps_by_variable    # A Hash by Variable containing an array of remaining steps
+      # Query Verbaliser context:
+      attr_reader :query
+      attr_reader :variables                  # All Variables
+      attr_reader :steps                      # All remaining unemitted Steps
+      attr_reader :steps_by_variable          # A Hash by Variable containing an array of remaining steps
 
       def initialize role_refs = nil
         @role_refs = role_refs
@@ -89,8 +89,8 @@ module ActiveFacts
         @player_by_role_ref = {}
         @player_joined_over = nil
 
-        # Join Verbaliser context:
-        @join = nil
+        # Query Verbaliser context:
+        @query = nil
         @variables = []
         @steps = []
         @steps_by_variable = {}
@@ -99,10 +99,10 @@ module ActiveFacts
       end
 
       class Player
-        attr_accessor :object_type, :variables_by_join, :subscript, :plays, :role_refs
+        attr_accessor :object_type, :variables_by_query, :subscript, :plays, :role_refs
         def initialize object_type
           @object_type = object_type
-          @variables_by_join = {}
+          @variables_by_query = {}
           @subscript = nil
           @plays = []
           @role_refs = []
@@ -122,12 +122,12 @@ module ActiveFacts
                 rr.trailing_adjective
               ].compact}.uniq.sort
           end
-          adjuncts += [@variables_by_join.values.map{|jn| jn.role_name}.compact[0]].compact
+          adjuncts += [@variables_by_query.values.map{|jn| jn.role_name}.compact[0]].compact
           adjuncts.flatten*"_"
         end
 
         def describe
-          @object_type.name + (@variables_by_join.size > 0 ? " (in #{@variables_by_join.size} joins)" : "")
+          @object_type.name + (@variables_by_query.size > 0 ? " (in #{@variables_by_query.size} variables)" : "")
         end
       end
 
@@ -152,10 +152,10 @@ module ActiveFacts
       def add_play player, play
         return if player.plays.include?(play)
         jn = play.variable
-        if jn1 = player.variables_by_join[jn.join] and jn1 != jn
-          raise "Player for #{player.object_type.name} may only have one variable per join, not #{jn1.object_type.name} and #{jn.object_type.name}"
+        if jn1 = player.variables_by_query[jn.query] and jn1 != jn
+          raise "Player for #{player.object_type.name} may only have one variable per query, not #{jn1.object_type.name} and #{jn.object_type.name}"
         end
-        player.variables_by_join[jn.join] = jn
+        player.variables_by_query[jn.query] = jn
         @player_by_play[play] = player
         player.plays << play
       end
@@ -218,14 +218,14 @@ module ActiveFacts
         # If any of these plays are for a known player, use that, else make a new player.
         existing_players = plays.map{|jr| @player_by_play[jr] }.compact.uniq
         if existing_players.size > 1
-          raise "Can't join these roles to more than one existing player: #{existing_players.map{|p|p.object_type.name}*', '}!"
+          raise "At most one existing player can play these roles: #{existing_players.map{|p|p.object_type.name}*', '}!"
         end
         p = existing_players[0] || player(plays[0])
         debugger if plays.detect{|jr| jr.role.object_type != p.object_type }
-        debug :subscript, "Joining roles to #{p.describe}" do
-          plays.each do |jr|
-            debug :subscript, "#{jr.describe}" do
-              add_play p, jr
+        debug :subscript, "roles are playes of #{p.describe}" do
+          plays.each do |play|
+            debug :subscript, "#{play.describe}" do
+              add_play p, play
             end
           end
         end
@@ -240,14 +240,14 @@ module ActiveFacts
         existing_players =
           role_refs.map{|rr| @player_by_role_ref[rr] || @player_by_play[rr.play] }.compact.uniq
         if existing_players.size > 1
-          raise "Can't join these role_refs to more than one existing player: #{existing_players.map{|p|p.object_type.name}*', '}!"
+          raise "At most one existing player can play these roles: #{existing_players.map{|p|p.object_type.name}*', '}!"
         end
         p = existing_players[0] || player(role_refs[0])
 
         debug :subscript, "#{existing_players[0] ? 'Adding to existing' : 'Creating new'} player for #{role_refs.map{|rr| rr.role.object_type.name}.uniq*', '}" do
           role_refs.each do |rr|
             unless p.object_type == rr.role.object_type
-              # This happens in SubtypePI because uniqueness constraint is built without its implicit subtyping join.
+              # This happens in SubtypePI because uniqueness constraint is built without its implicit subtyping step.
               # For now, explode only if there's no common supertype:
               if 0 == (p.object_type.supertypes_transitive & rr.role.object_type.supertypes_transitive).size
                 raise "REVISIT: Internal error, trying to add role of #{rr.role.object_type.name} to player #{p.object_type.name}"
@@ -291,7 +291,7 @@ module ActiveFacts
                 rname = (rr = player.role_refs[0]) && rr.role.role_name
                 if jrname and !rname
                   # puts "Oops: rolename #{rname.inspect} != #{jrname.inspect}" if jrname != rname
-                  player.variables_by_join.values.each{|jn| jn.role_name = jrname }
+                  player.variables_by_query.values.each{|jn| jn.role_name = jrname }
                else
                   player.subscript = s+1
                   s += 1
@@ -312,9 +312,9 @@ module ActiveFacts
         end
       end
 
-      # Where no explicit Join has been created, a join is still sometimes present (e.g. in a constraint from NORMA)
-      # REVISIT: This probably doesn't produce the required result. Need to fix the NORMA importer to create the join.
-      def role_refs_are_subtype_joined roles
+      # Where no explicit Query has been created, a query is still sometimes present (e.g. in a constraint from NORMA)
+      # REVISIT: This probably doesn't produce the required result. Need to fix the NORMA importer to create the query.
+      def role_refs_have_subtype_steps roles
         role_refs = roles.is_a?(Array) ? roles : roles.all_role_ref.to_a
         role_refs_by_object_type = role_refs.inject({}) { |h, r| (h[r.role.object_type] ||= []) << r; h }
         role_refs_by_object_type.values.each { |rrs|  role_refs_have_same_player(rrs) }
@@ -322,7 +322,7 @@ module ActiveFacts
 
       # These roles are the players in an implicit counterpart join in a Presence Constraint.
       # REVISIT: It's not clear that we can safely use the preferred_reading's RoleRefs here.
-      # Fix the CQL compiler to create proper joins for these presence constraints instead.
+      # Fix the CQL compiler to create proper queries for these presence constraints instead.
       def roles_have_same_player roles
         role_refs = roles.map do |role|
           role.fact_type.all_reading.map{|reading|
@@ -337,7 +337,7 @@ module ActiveFacts
         @role_refs = role_sequence.is_a?(Array) ? role_sequence : role_sequence.all_role_ref.to_a
 
         if jrr = @role_refs.detect{|rr| rr.play && rr.play.variable}
-          return prepare_join_players(jrr.play.variable.join)
+          return prepare_query_players(jrr.play.variable.query)
         end
 
         # Ensure that all the joined-over role_refs are indexed for subscript generation.
@@ -360,11 +360,11 @@ module ActiveFacts
         end
       end
 
-      def prepare_join_players join
-        debug :subscript, "Indexing roles of fact types in #{join.all_step.size} steps" do
+      def prepare_query_players query
+        debug :subscript, "Indexing roles of fact types in #{query.all_step.size} steps" do
           steps = []
           # Register all references to each variable as being for the same player:
-          join.all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
+          query.all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
             debug :subscript, "Adding Roles of #{variable.describe}" do
               plays_have_same_player(variable.all_play.to_a)
               steps = steps | variable.all_step
@@ -372,7 +372,7 @@ module ActiveFacts
           end
 
 =begin
-          # For each fact type traversed, register a player for each role *not* linked to this join
+          # For each fact type traversed, register a player for each role *not* linked to this query
           # REVISIT: Using the preferred_reading role_ref is wrong here; the same preferred_reading might occur twice,
           # so the respective object_type will need more than one Player and will be subscripted to keep them from being joined.
           # Accordingly, there must be a step for each such role, and to enforce that, I raise an exception here on duplication.
@@ -390,12 +390,12 @@ module ActiveFacts
 
             debug :subscript, "Residual roles in '#{fact_type.default_reading}' are" do
               prrs = fact_type.preferred_reading.role_sequence.all_role_ref
-              residual_roles = fact_type.all_role.select{|r| !r.all_role_ref.detect{|rr| rr.variable && rr.variable.join == join} }
+              residual_roles = fact_type.all_role.select{|r| !r.all_role_ref.detect{|rr| rr.variable && rr.variable.query == query} }
               residual_roles.each do |r|
-                debug :subscript, "Adding residual role for #{r.object_type.name} (in #{fact_type.default_reading}) not covered in join"
+                debug :subscript, "Adding residual role for #{r.object_type.name} (in #{fact_type.default_reading}) not covered in query"
                 preferred_role_ref = prrs.detect{|rr| rr.role == r}
                 if p = @player_by_role_ref[preferred_role_ref] and !p.role_refs.include?(preferred_role_ref)
-                  raise "Adding DUPLICATE residual role for #{r.object_type.name} not covered in join"
+                  raise "Adding DUPLICATE residual role for #{r.object_type.name} not covered in query"
                 end
                 role_refs_have_same_player([preferred_role_ref])
               end
@@ -405,14 +405,14 @@ module ActiveFacts
         end
       end
 
-      def verbalise_over_role_sequence role_sequence, joiner = ' and ', role_proximity = :both
+      def verbalise_over_role_sequence role_sequence, conjunction = ' and ', role_proximity = :both
         @role_refs = role_sequence.is_a?(Array) ? role_sequence : role_sequence.all_role_ref.to_a
 
         if jrr = role_refs.detect{|rr| rr.play}
-          return verbalise_join(jrr.play.variable.join)
+          return verbalise_query(jrr.play.variable.query)
         end
 
-        # First, figure out whether there's a join:
+        # First, figure out whether there's a query:
         join_over, joined_roles = *Metamodel.plays_over(role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
 
         role_by_fact_type = {}
@@ -425,7 +425,7 @@ module ActiveFacts
             joined_role = fact_type.all_role.select{|r| join_over.subtypes_transitive.include?(r.object_type)}[0]
             reading = fact_type.reading_preferably_starting_with_role joined_role
 
-            # Use the name of the joined_over object, not the role player, in case of a subtype join:
+            # Use the name of the joined_over object, not the role player, in case of a subtype step:
             rrrs = reading.role_sequence.all_role_ref_in_order
             role_index = (0..rrrs.size).detect{|i| rrrs[i].role == joined_role }
             name_substitutions[role_index] = [nil, join_over.name]
@@ -439,7 +439,7 @@ module ActiveFacts
           @player_by_role_ref.keys.each{|rr| player_by_role[rr.role] = @player_by_role_ref[rr] if rr.role.fact_type == fact_type }
           expand_reading_text(nil, reading.text, reading.role_sequence, player_by_role)
         end
-        joiner ? readings*joiner : readings
+        conjunction ? readings*conjunction : readings
       end
 
       # Expand this reading (or partial reading, during contraction)
@@ -457,7 +457,7 @@ module ActiveFacts
 
             player = player_by_role[role_ref.role]
 
-            play_name = player && player.variables_by_join.values.map{|jn| jn.role_name}.compact[0]
+            play_name = player && player.variables_by_query.values.map{|jn| jn.role_name}.compact[0]
             subscripted_player(role_ref, player && player.subscript, play_name) +
               objectification_verbalisation(role_ref.role.object_type)
           end
@@ -484,13 +484,13 @@ module ActiveFacts
           expand_reading_text(step, reading.text.sub(/\A\{\d\} /,''), reading.role_sequence, role_refs)
       end
 
-      # Each join we wish to verbalise must first have had its players prepared.
-      # Then, this prepares the join for verbalising:
-      def prepare_join join
-        @join = join
-        return unless join
+      # Each query we wish to verbalise must first have had its players prepared.
+      # Then, this prepares the query for verbalising:
+      def prepare_query query
+        @query = query
+        return unless query
 
-        @variables = join.all_variable.sort_by{|jn| jn.ordinal}
+        @variables = query.all_variable.sort_by{|jn| jn.ordinal}
 
         @steps = @variables.map{|jn| jn.all_step }.flatten.uniq
         @steps_by_variable = @variables.
@@ -524,19 +524,19 @@ module ActiveFacts
         # so just use any step involving this node, or just any step.
         if next_steps
           if next_step = next_steps.detect { |ns| !ns.is_objectification_step }
-            debug :join, "Chose new non-objectification step: #{next_step.describe}"
+            debug :query, "Chose new non-objectification step: #{next_step.describe}"
             return next_step
           end
         end
 
         if next_step = @steps.detect { |ns| !ns.is_objectification_step }
-          debug :join, "Chose random non-objectification step: #{next_step.describe}"
+          debug :query, "Chose random non-objectification step: #{next_step.describe}"
           return next_step
         end
 
         next_step = @steps[0]
         if next_step
-          debug :join, "Chose new random step from #{steps.size}: #{next_step.describe}"
+          debug :query, "Chose new random step from #{steps.size}: #{next_step.describe}"
           if next_step.is_objectification_step
             # if this objectification plays any roles (other than its FT roles) in remaining steps, use one of those first:
             fact_type = next_step.fact_type.implying_role.fact_type
@@ -582,7 +582,7 @@ module ActiveFacts
               end
             next_reading
           end
-        debug :join, "#{next_reading ? "'"+next_reading.expand+"'" : "No reading"} contracts against last node '#{next_node.object_type.name}'"
+        debug :query, "#{next_reading ? "'"+next_reading.expand+"'" : "No reading"} contracts against last node '#{next_node.object_type.name}'"
         return [next_step, next_reading]
       end
 
@@ -613,7 +613,7 @@ module ActiveFacts
                 js.input_play.variable.object_type == object_type || js.output_play.variable.object_type == object_type
             }
           steps << other_step
-          debug :join, "Emitting objectification step allows deleting #{other_step.describe}"
+          debug :query, "Emitting objectification step allows deleting #{other_step.describe}"
           step_completed(other_step)
         end
 
@@ -658,24 +658,24 @@ module ActiveFacts
               exit_step = js if js.output_play.variable == exit_node
               true
             }
-          debug :join, "Emitting objectified FT allows deleting #{other_step.describe}"
+          debug :query, "Emitting objectified FT allows deleting #{other_step.describe}"
           step_completed(other_step)
 #          raise "The objectification of '#{fact_type.default_reading}' should not cause the deletion of more than #{fact_type.all_role.size} other steps" if (count += 1) > fact_type.all_role.size
         end
         [ reading, exit_step ? exit_step.input_play.variable : exit_node, exit_step, last_is_contractable]
       end
 
-      def verbalise_join join
-        prepare_join join
+      def verbalise_query query
+        prepare_query query
         readings = ''
         next_node = @role_refs[0].play.variable   # Choose a place to start
         last_is_contractable = false
-        debug :join, "Variables are #{@variables.map{|jn| jn.describe }.inspect}, Steps are #{@steps.map{|js| js.describe }.inspect}" do
+        debug :query, "Variables are #{@variables.map{|jn| jn.describe }.inspect}, Steps are #{@steps.map{|js| js.describe }.inspect}" do
           until @steps.empty?
             next_reading = nil
             # Choose amonst all remaining steps we can take from the next node, if any
             next_steps = @steps_by_variable[next_node]
-            debug :join, "Next Steps from #{next_node.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
+            debug :query, "Next Steps from #{next_node.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
 
             # See if we can find a next step that contracts against the last (if any):
             next_step = nil
@@ -684,7 +684,7 @@ module ActiveFacts
                 end
 
             if next_step
-              debug :join, "Chose #{next_step.describe} because it's contractable against last node #{next_node.object_type.name} using #{next_reading.expand}"
+              debug :query, "Chose #{next_step.describe} because it's contractable against last node #{next_node.object_type.name} using #{next_reading.expand}"
 
               player_by_role =
                 next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }

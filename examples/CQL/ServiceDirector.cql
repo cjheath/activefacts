@@ -5,13 +5,12 @@ vocabulary ServiceDirector;
  */
 Company Code is written as Char(5);
 Credential Nr is written as Signed Integer(32);
-DDMMYYYY is written as Date;
 Data Store Name is written as String(15);
+Date is written as String;
+Date Time is written as String;
 Email Address is written as String(50);
-HHMMSS is written as Time;
 Host System Name is written as String(15);
 IP is written as String(16);
-MDYHMS is written as Auto Time Stamp;
 Message Data is written as Blob(8000);
 Message Header is written as String(30);
 Monitor Id is written as Auto Counter;
@@ -32,6 +31,7 @@ Serial Number is written as String(20);
 Service Type [independent] is written as String(15);
 Subscription Nr is written as Signed Integer(32);
 Switch Id is written as Auto Counter;
+Time is written as String;
 Transaction Nr is written as Unsigned Integer(32);
 Truck PCID is written as Unsigned Integer(32);
 User Name is written as String(20);
@@ -46,26 +46,18 @@ Company is client;
 Company is vendor;
 
 Credential is identified by its Nr;
+Credential has at most one Expiration-Date;
 Credential has one Password;
 Credential has one User Name;
 
 Data Store is identified by its Name;
 Data Store requires at least one Credential;
 Data Store has one Friendly-Name;
-Data Store has at most one Heart- Beat Truck PCID;
+Data Store has at most one HeartBeat-Truck PCID;
 Data Store has one Internal-Credential;
 Data Store is one Major-Version;
 Data Store is one Minor-Version;
 Data Store is one Revision-Version;
-
-Date Time YMDHMS is identified by MDYHMS where
-	Date Time YMDHMS has one MDYHMS,
-	MDYHMS is of at most one Date Time YMDHMS;
-
-DateYYMMDD is identified by DDMMYYYY where
-	DateYYMMDD has one DDMMYYYY,
-	DDMMYYYY is of at most one DateYYMMDD;
-Credential has at most one Expiration-DateYYMMDD;
 
 Duration is identified by Seconds where
 	Duration has one Seconds,
@@ -89,8 +81,8 @@ Monitor is owned by one Monitoring Application;
 
 Network is identified by its Nr;
 Company has at least one Origin-Network;
-Data Store has Tcp- Proxy Network,
-	Tcp- Proxy Network is in at most one Data Store;
+Data Store has TcpProxy-Network,
+	TcpProxy-Network is in at most one Data Store;
 Host System uses at least one Network,
 	Network is used by at most one Host System;
 Network uses at most one Domain-Name;
@@ -102,7 +94,7 @@ Network is ip_single;
 Network is ip_subnet;
 
 Notification Level is identified by its Nr;
-Notification Level has one Initial- Delay Duration;
+Notification Level has one InitialDelay-Duration;
 Notification Level has one Repeat-Duration;
 
 Notification Type is independent identified by its Name;
@@ -110,12 +102,13 @@ Notification Type is independent identified by its Name;
 Provider Type is identified by its Id;
 
 Recurring Schedule is identified by its Id;
-Monitor has All- Exclusion Recurring Schedule,
-	All- Exclusion Recurring Schedule applies to at most one Monitor;
-Monitor (as IntegratingMonitor) has Integration- Exclusion Recurring Schedule;  // Avoid ambiguity; this is a new fact type
-Monitor (as IntegratingMonitor) has Integration- Exclusion Recurring Schedule,
-	Integration- Exclusion Recurring Schedule applies to at most one IntegratingMonitor;
+Monitor has AllExclusion-Recurring Schedule,
+	AllExclusion-Recurring Schedule applies to at most one Monitor;
+Monitor (as IntegratingMonitor) has IntegrationExclusion-Recurring Schedule;  // Avoid ambiguity; this is a new fact type
+Monitor (as IntegratingMonitor) has IntegrationExclusion-Recurring Schedule,
+	IntegrationExclusion-Recurring Schedule applies to at most one IntegratingMonitor;
 Recurring Schedule has one Duration;
+Recurring Schedule has one Start-Time;
 Recurring Schedule friday;
 Recurring Schedule monday;
 Recurring Schedule saturday;
@@ -130,12 +123,12 @@ Satellite Message has at most one Message Data;
 Satellite Message has at most one Message Header;
 Satellite Message is of at most one Provider Type;
 Satellite Message has one Serial Number;
-Satellite Message has one insertion-Date Time YMDHMS;
+Satellite Message has one insertion-Date Time;
 
 Subscription is identified by its Nr;
-Company has one Driver- Tech Subscription;
-Subscription has one Beginning-DateYYMMDD;
-Subscription has at most one Ending-DateYYMMDD;
+Company has one DriverTech-Subscription;
+Subscription has one Beginning-Date;
+Subscription has at most one Ending-Date;
 Subscription is enabled;
 
 Switch is identified by its Id;
@@ -154,11 +147,6 @@ Switch is backup messages;
 Switch is backup updates;
 Switch is send disabled;
 Switch is test vectors enabled;
-
-TimeHMS is identified by HHMMSS where
-	TimeHMS has one HHMMSS,
-	HHMMSS is of at most one TimeHMS;
-Recurring Schedule has one Start-TimeHMS;
 
 Transaction is identified by its Nr;
 Satellite Message has at most one Group-Transaction;
@@ -218,7 +206,7 @@ for each Credential exactly one of these holds:
 for each Network exactly one of these holds:
 	Network is used by Host System,
 	Company has Origin-Network,
-	Tcp- Proxy Network is in Data Store;
+	TcpProxy-Network is in Data Store;
 for each Network exactly one of these holds:
 	Network is ip_single,
 	Network is ip_subnet,
@@ -241,7 +229,7 @@ Switch is on private Network
 	Data Store has Legacy Switch;
 Client has default Data Store
 	only if Client uses Data Store;
-Tcp Proxy Network is in Data Store
+TcpProxy Network is in Data Store
 	only if Network is ip_single;
 Network uses Domain Name
 	only if Network is ip_single;
@@ -276,7 +264,7 @@ each Recurring Schedule occurs at least one time in
 each Service occurs one time in
 	Vendor provides Service;
 each Subscription occurs at most one time in
-	Company has Driver Tech Subscription;
+	Company has DriverTech Subscription;
 each Subscription occurs at most one time in
 	Data Store Service has Subscription;
 each Switch occurs at most one time in

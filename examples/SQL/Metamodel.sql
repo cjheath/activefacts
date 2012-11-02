@@ -1,3 +1,19 @@
+CREATE TABLE Aggregation (
+	-- Aggregation is where Variable is bound to Aggregate over aggregated-Variable and Aggregate has Aggregate Code,
+	AggregateCode                           varchar(32) NOT NULL,
+	-- Aggregation is where Variable is bound to Aggregate over aggregated-Variable and Variable has Ordinal position,
+	AggregatedVariableOrdinal               shortint NOT NULL,
+	-- Aggregation is where Variable is bound to Aggregate over aggregated-Variable and Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	AggregatedVariableQueryGuid             Guid NOT NULL,
+	-- Aggregation is where Variable is bound to Aggregate over aggregated-Variable and Variable has Ordinal position,
+	VariableOrdinal                         shortint NOT NULL,
+	-- Aggregation is where Variable is bound to Aggregate over aggregated-Variable and Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	VariableQueryGuid                       Guid NOT NULL,
+	PRIMARY KEY(VariableQueryGuid, VariableOrdinal, AggregateCode, AggregatedVariableQueryGuid, AggregatedVariableOrdinal),
+	UNIQUE(AggregateCode, AggregatedVariableQueryGuid, AggregatedVariableOrdinal)
+)
+GO
+
 CREATE TABLE AllowedRange (
 	-- Allowed Range is where Value Constraint allows Value Range and Constraint is a kind of Concept and Concept has Guid,
 	ValueConstraintGuid                     Guid NOT NULL,
@@ -18,6 +34,15 @@ CREATE TABLE AllowedRange (
 	-- Allowed Range is where Value Constraint allows Value Range and maybe Value Range has minimum-Bound and Bound has Value and maybe Value is in Unit and Unit is a kind of Concept and Concept has Guid,
 	ValueRangeMinimumBoundValueUnitGuid     Guid NULL,
 	UNIQUE(ValueConstraintGuid, ValueRangeMinimumBoundValueLiteral, ValueRangeMinimumBoundValueIsAString, ValueRangeMinimumBoundValueUnitGuid, ValueRangeMinimumBoundIsInclusive, ValueRangeMaximumBoundValueLiteral, ValueRangeMaximumBoundValueIsAString, ValueRangeMaximumBoundValueUnitGuid, ValueRangeMaximumBoundIsInclusive)
+)
+GO
+
+CREATE TABLE AlternativeSet (
+	-- Alternative Set has Guid,
+	Guid                                    Guid NOT NULL,
+	-- Alternative Set members are exclusive,
+	MembersAreExclusive                     bit NOT NULL,
+	PRIMARY KEY(Guid)
 )
 GO
 
@@ -267,13 +292,6 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceByFactGuid ON dbo.Instance_FactGuid(FactGuid)
 GO
 
-CREATE TABLE [Join] (
-	-- Join is a kind of Concept and Concept has Guid,
-	ConceptGuid                             Guid NOT NULL,
-	PRIMARY KEY(ConceptGuid)
-)
-GO
-
 CREATE TABLE ObjectType (
 	-- Object Type is a kind of Concept and Concept has Guid,
 	ConceptGuid                             Guid NOT NULL,
@@ -317,45 +335,32 @@ CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraint
 GO
 
 CREATE TABLE Play (
-	-- Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	-- Play is where Variable is restricted by Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	RoleFactTypeGuid                        Guid NOT NULL,
-	-- Play is where Variable includes Role and Role fills Ordinal,
+	-- Play is where Variable is restricted by Role and Role fills Ordinal,
 	RoleOrdinal                             shortint NOT NULL,
-	-- maybe Play projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role,
-	RoleRefOrdinal                          shortint NULL,
-	-- maybe Play projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Guid,
-	RoleRefRoleSequenceGuid                 Guid NULL,
-	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable is restricted by Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	StepInputPlayRoleFactTypeGuid           Guid NULL,
-	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable includes Role and Role fills Ordinal,
+	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable is restricted by Role and Role fills Ordinal,
 	StepInputPlayRoleOrdinal                shortint NULL,
-	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
-	StepInputPlayVariableJoinGuid           Guid NULL,
-	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable includes Role and Variable has Ordinal position,
+	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable is restricted by Role and Variable has Ordinal position,
 	StepInputPlayVariableOrdinal            shortint NULL,
-	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable is restricted by Role and Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	StepInputPlayVariableQueryGuid          Guid NULL,
+	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable is restricted by Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	StepOutputPlayRoleFactTypeGuid          Guid NULL,
-	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable includes Role and Role fills Ordinal,
+	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable is restricted by Role and Role fills Ordinal,
 	StepOutputPlayRoleOrdinal               shortint NULL,
-	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
-	StepOutputPlayVariableJoinGuid          Guid NULL,
-	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable includes Role and Variable has Ordinal position,
+	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable is restricted by Role and Variable has Ordinal position,
 	StepOutputPlayVariableOrdinal           shortint NULL,
-	-- Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
-	VariableJoinGuid                        Guid NOT NULL,
-	-- Play is where Variable includes Role and Variable has Ordinal position,
+	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable is restricted by Role and Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	StepOutputPlayVariableQueryGuid         Guid NULL,
+	-- Play is where Variable is restricted by Role and Variable has Ordinal position,
 	VariableOrdinal                         shortint NOT NULL,
-	PRIMARY KEY(VariableJoinGuid, VariableOrdinal, RoleFactTypeGuid, RoleOrdinal)
+	-- Play is where Variable is restricted by Role and Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	VariableQueryGuid                       Guid NOT NULL,
+	PRIMARY KEY(VariableQueryGuid, VariableOrdinal, RoleFactTypeGuid, RoleOrdinal)
 )
-GO
-
-CREATE VIEW dbo.Play_RoleRefRoleSequenceGuidRoleRefOrdinal (RoleRefRoleSequenceGuid, RoleRefOrdinal) WITH SCHEMABINDING AS
-	SELECT RoleRefRoleSequenceGuid, RoleRefOrdinal FROM dbo.Play
-	WHERE	RoleRefRoleSequenceGuid IS NOT NULL
-	  AND	RoleRefOrdinal IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_PlayByRoleRefRoleSequenceGuidRoleRefOrdinal ON dbo.Play_RoleRefRoleSequenceGuidRoleRefOrdinal(RoleRefRoleSequenceGuid, RoleRefOrdinal)
 GO
 
 CREATE TABLE Population (
@@ -367,6 +372,13 @@ CREATE TABLE Population (
 	VocabularyName                          varchar(64) NULL,
 	UNIQUE(VocabularyName, Name),
 	UNIQUE(ConceptGuid)
+)
+GO
+
+CREATE TABLE Query (
+	-- Query is a kind of Concept and Concept has Guid,
+	ConceptGuid                             Guid NOT NULL,
+	PRIMARY KEY(ConceptGuid)
 )
 GO
 
@@ -434,6 +446,14 @@ CREATE TABLE RoleRef (
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role,
 	Ordinal                                 shortint NOT NULL,
+	-- maybe Play projects Role Ref and Play is where Variable is restricted by Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	PlayRoleFactTypeGuid                    Guid NULL,
+	-- maybe Play projects Role Ref and Play is where Variable is restricted by Role and Role fills Ordinal,
+	PlayRoleOrdinal                         shortint NULL,
+	-- maybe Play projects Role Ref and Play is where Variable is restricted by Role and Variable has Ordinal position,
+	PlayVariableOrdinal                     shortint NULL,
+	-- maybe Play projects Role Ref and Play is where Variable is restricted by Role and Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	PlayVariableQueryGuid                   Guid NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	RoleFactTypeGuid                        Guid NOT NULL,
 	-- Role Ref is where Role Sequence in Ordinal position includes Role and Role fills Ordinal,
@@ -444,8 +464,20 @@ CREATE TABLE RoleRef (
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceGuid, Ordinal),
 	UNIQUE(RoleFactTypeGuid, RoleOrdinal, RoleSequenceGuid),
+	FOREIGN KEY (PlayRoleFactTypeGuid, PlayRoleOrdinal, PlayVariableOrdinal, PlayVariableQueryGuid) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableOrdinal, VariableQueryGuid),
 	FOREIGN KEY (RoleFactTypeGuid, RoleOrdinal) REFERENCES Role (FactTypeGuid, Ordinal)
 )
+GO
+
+CREATE VIEW dbo.RoleRef_PlayVariableQueryGuidPlayVariableOrdinalPlayRoleFactTypeGuidPlayRoleOrdinal (PlayVariableQueryGuid, PlayVariableOrdinal, PlayRoleFactTypeGuid, PlayRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT PlayVariableQueryGuid, PlayVariableOrdinal, PlayRoleFactTypeGuid, PlayRoleOrdinal FROM dbo.RoleRef
+	WHERE	PlayVariableQueryGuid IS NOT NULL
+	  AND	PlayVariableOrdinal IS NOT NULL
+	  AND	PlayRoleFactTypeGuid IS NOT NULL
+	  AND	PlayRoleOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByPlayVariableQueryGuidPlayVariableOrdinalPlayRoleFactTypeGuidPlayRoleOrdinal ON dbo.RoleRef_PlayVariableQueryGuidPlayVariableOrdinalPlayRoleFactTypeGuidPlayRoleOrdinal(PlayVariableQueryGuid, PlayVariableOrdinal, PlayRoleFactTypeGuid, PlayRoleOrdinal)
 GO
 
 CREATE TABLE RoleSequence (
@@ -604,30 +636,31 @@ CREATE TABLE Step (
 	AlternativeSetGuid                      Guid NULL,
 	-- Step traverses Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	FactTypeGuid                            Guid NOT NULL,
-	-- Step has input-Play and Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	-- Step has input-Play and Play is where Variable is restricted by Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	InputPlayRoleFactTypeGuid               Guid NOT NULL,
-	-- Step has input-Play and Play is where Variable includes Role and Role fills Ordinal,
+	-- Step has input-Play and Play is where Variable is restricted by Role and Role fills Ordinal,
 	InputPlayRoleOrdinal                    shortint NOT NULL,
-	-- Step has input-Play and Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
-	InputPlayVariableJoinGuid               Guid NOT NULL,
-	-- Step has input-Play and Play is where Variable includes Role and Variable has Ordinal position,
+	-- Step has input-Play and Play is where Variable is restricted by Role and Variable has Ordinal position,
 	InputPlayVariableOrdinal                shortint NOT NULL,
-	-- is anti Step,
-	IsAnti                                  bit NOT NULL,
-	-- Step is outer,
-	IsOuter                                 bit NOT NULL,
-	-- Step has output-Play and Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	-- Step has input-Play and Play is where Variable is restricted by Role and Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	InputPlayVariableQueryGuid              Guid NOT NULL,
+	-- Step is disallowed,
+	IsDisallowed                            bit NOT NULL,
+	-- Step is optional,
+	IsOptional                              bit NOT NULL,
+	-- Step has output-Play and Play is where Variable is restricted by Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	OutputPlayRoleFactTypeGuid              Guid NOT NULL,
-	-- Step has output-Play and Play is where Variable includes Role and Role fills Ordinal,
+	-- Step has output-Play and Play is where Variable is restricted by Role and Role fills Ordinal,
 	OutputPlayRoleOrdinal                   shortint NOT NULL,
-	-- Step has output-Play and Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
-	OutputPlayVariableJoinGuid              Guid NOT NULL,
-	-- Step has output-Play and Play is where Variable includes Role and Variable has Ordinal position,
+	-- Step has output-Play and Play is where Variable is restricted by Role and Variable has Ordinal position,
 	OutputPlayVariableOrdinal               shortint NOT NULL,
-	PRIMARY KEY(InputPlayVariableJoinGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, OutputPlayVariableJoinGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal),
+	-- Step has output-Play and Play is where Variable is restricted by Role and Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	OutputPlayVariableQueryGuid             Guid NOT NULL,
+	PRIMARY KEY(InputPlayVariableQueryGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, OutputPlayVariableQueryGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal),
+	FOREIGN KEY (AlternativeSetGuid) REFERENCES AlternativeSet (Guid),
 	FOREIGN KEY (FactTypeGuid) REFERENCES FactType (ConceptGuid),
-	FOREIGN KEY (InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, InputPlayVariableJoinGuid, InputPlayVariableOrdinal) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableJoinGuid, VariableOrdinal),
-	FOREIGN KEY (OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal, OutputPlayVariableJoinGuid, OutputPlayVariableOrdinal) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableJoinGuid, VariableOrdinal)
+	FOREIGN KEY (InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, InputPlayVariableOrdinal, InputPlayVariableQueryGuid) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableOrdinal, VariableQueryGuid),
+	FOREIGN KEY (OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal, OutputPlayVariableOrdinal, OutputPlayVariableQueryGuid) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableOrdinal, VariableQueryGuid)
 )
 GO
 
@@ -653,6 +686,7 @@ CREATE TABLE Unit (
 	-- Vocabulary includes Unit and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(ConceptGuid),
+	UNIQUE(Name),
 	UNIQUE(VocabularyName, Name)
 )
 GO
@@ -666,28 +700,50 @@ CREATE UNIQUE CLUSTERED INDEX IX_UnitByPluralName ON dbo.Unit_PluralName(PluralN
 GO
 
 CREATE TABLE Variable (
-	-- Join includes Variable and Join is a kind of Concept and Concept has Guid,
-	JoinGuid                                Guid NOT NULL,
 	-- Variable is for Object Type and Object Type is called Name,
 	ObjectTypeName                          varchar(64) NOT NULL,
 	-- Variable is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	ObjectTypeVocabularyName                varchar(64) NOT NULL,
 	-- Variable has Ordinal position,
 	Ordinal                                 shortint NOT NULL,
+	-- maybe Variable projects Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	ProjectionFactTypeGuid                  Guid NULL,
+	-- maybe Variable projects Role and Role fills Ordinal,
+	ProjectionOrdinal                       shortint NULL,
+	-- Query includes Variable and Query is a kind of Concept and Concept has Guid,
+	QueryGuid                               Guid NOT NULL,
 	-- maybe Variable has role-Name,
 	RoleName                                varchar(64) NULL,
 	-- maybe Variable has Subscript,
 	Subscript                               shortint NULL,
-	-- maybe Variable has Value and Value is a string,
+	-- maybe Variable is bound to Value and Value is a string,
 	ValueIsAString                          bit NULL,
-	-- maybe Variable has Value and Value is represented by Literal,
+	-- maybe Variable is bound to Value and Value is represented by Literal,
 	ValueLiteral                            varchar NULL,
-	-- maybe Variable has Value and maybe Value is in Unit and Unit is a kind of Concept and Concept has Guid,
+	-- maybe Variable is bound to Value and maybe Value is in Unit and Unit is a kind of Concept and Concept has Guid,
 	ValueUnitGuid                           Guid NULL,
-	PRIMARY KEY(JoinGuid, Ordinal),
-	FOREIGN KEY (JoinGuid) REFERENCES [Join] (ConceptGuid),
-	FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+	PRIMARY KEY(QueryGuid, Ordinal),
+	FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName),
+	FOREIGN KEY (QueryGuid) REFERENCES Query (ConceptGuid),
+	FOREIGN KEY (ProjectionFactTypeGuid, ProjectionOrdinal) REFERENCES Role (FactTypeGuid, Ordinal)
 )
+GO
+
+CREATE VIEW dbo.Variable_ProjectionFactTypeGuidProjectionOrdinal (ProjectionFactTypeGuid, ProjectionOrdinal) WITH SCHEMABINDING AS
+	SELECT ProjectionFactTypeGuid, ProjectionOrdinal FROM dbo.Variable
+	WHERE	ProjectionFactTypeGuid IS NOT NULL
+	  AND	ProjectionOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_VariableByProjectionFactTypeGuidProjectionOrdinal ON dbo.Variable_ProjectionFactTypeGuidProjectionOrdinal(ProjectionFactTypeGuid, ProjectionOrdinal)
+GO
+
+ALTER TABLE Aggregation
+	ADD FOREIGN KEY (AggregatedVariableOrdinal, AggregatedVariableQueryGuid) REFERENCES Variable (Ordinal, QueryGuid)
+GO
+
+ALTER TABLE Aggregation
+	ADD FOREIGN KEY (VariableOrdinal, VariableQueryGuid) REFERENCES Variable (Ordinal, QueryGuid)
 GO
 
 ALTER TABLE AllowedRange
@@ -775,15 +831,11 @@ ALTER TABLE Play
 GO
 
 ALTER TABLE Play
-	ADD FOREIGN KEY (RoleRefOrdinal, RoleRefRoleSequenceGuid) REFERENCES RoleRef (Ordinal, RoleSequenceGuid)
+	ADD FOREIGN KEY (StepInputPlayRoleFactTypeGuid, StepInputPlayRoleOrdinal, StepInputPlayVariableOrdinal, StepInputPlayVariableQueryGuid, StepOutputPlayRoleFactTypeGuid, StepOutputPlayRoleOrdinal, StepOutputPlayVariableOrdinal, StepOutputPlayVariableQueryGuid) REFERENCES Step (InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, InputPlayVariableOrdinal, InputPlayVariableQueryGuid, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal, OutputPlayVariableOrdinal, OutputPlayVariableQueryGuid)
 GO
 
 ALTER TABLE Play
-	ADD FOREIGN KEY (StepInputPlayRoleFactTypeGuid, StepInputPlayRoleOrdinal, StepInputPlayVariableJoinGuid, StepInputPlayVariableOrdinal, StepOutputPlayRoleFactTypeGuid, StepOutputPlayRoleOrdinal, StepOutputPlayVariableJoinGuid, StepOutputPlayVariableOrdinal) REFERENCES Step (InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, InputPlayVariableJoinGuid, InputPlayVariableOrdinal, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal, OutputPlayVariableJoinGuid, OutputPlayVariableOrdinal)
-GO
-
-ALTER TABLE Play
-	ADD FOREIGN KEY (VariableJoinGuid, VariableOrdinal) REFERENCES Variable (JoinGuid, Ordinal)
+	ADD FOREIGN KEY (VariableOrdinal, VariableQueryGuid) REFERENCES Variable (Ordinal, QueryGuid)
 GO
 
 ALTER TABLE Reading

@@ -66,7 +66,7 @@ END
   end
 
   def one_to_many(one, many, reading)
-    # Join them with a fact type:
+    # Combine them with a fact type:
     ft = @constellation.FactType(:new)
     role0 = @constellation.Role(ft, 0, :object_type => one, :guid => :new)
     role1 = @constellation.Role(ft, 1, :object_type => many, :guid => :new)
@@ -88,7 +88,7 @@ END
   end
 
   def one_to_one(first, second, reading)
-    # Join them with a fact type:
+    # Combine them with a fact type:
     ft = @constellation.FactType(:new)
     role0 = @constellation.Role(ft, 0, :object_type => first, :guid => :new)
     role1 = @constellation.Role(ft, 1, :object_type => second, :guid => :new)

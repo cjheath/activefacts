@@ -13,7 +13,7 @@ require 'activefacts/generate/ruby'
 
 describe "Column lists from absorption compared with Ruby's" do
   orm_failures = {
-    "SubtypePI" => "Has an illegal uniqueness join constraint",
+    "SubtypePI" => "Has an illegal uniqueness constraint",
   }
   norma_ruby_failures = {
     "UnaryIdentification" => "No PI for VisitStatus",

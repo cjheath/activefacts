@@ -19,7 +19,7 @@ end
 
 describe "NORMA Loader with Ruby output" do
   orm_failures = {
-    "SubtypePI" => "Has an illegal uniqueness join constraint",
+    "SubtypePI" => "Has an illegal uniqueness constraint",
   }
 
   # Generate and return the Ruby for the given vocabulary

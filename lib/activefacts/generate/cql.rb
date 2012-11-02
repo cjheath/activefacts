@@ -408,11 +408,11 @@ module ActiveFacts
         # having no exact match, but having instead exactly one role of the same player in the readings.
 
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
-        # For a mandatory constraint (min_frequency == 1, max == nil or 1) any subtyping join is over the proximate role player
-        # For all other presence constraints any subtyping join is over the counterpart player
+        # For a mandatory constraint (min_frequency == 1, max == nil or 1) any subtyping step is over the proximate role player
+        # For all other presence constraints any subtyping step is over the counterpart player
         role_proximity = c.min_frequency == 1 && [nil, 1].include?(c.max_frequency) ? :proximate : :counterpart
         if role_proximity == :proximate
-          verbaliser.role_refs_are_subtype_joined(c.role_sequence)
+          verbaliser.role_refs_have_subtype_steps(c.role_sequence)
         else
           join_over, joined_roles = ActiveFacts::Metamodel.plays_over(c.role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
           verbaliser.roles_have_same_player(joined_roles) if join_over
@@ -445,14 +445,14 @@ module ActiveFacts
 
         # Tell the verbaliser all we know, so it can figure out which players to subscript:
         players = []
-        debug :subscript, "Preparing join across projected roles in set comparison constraint" do
+        debug :subscript, "Preparing query across projected roles in set comparison constraint" do
           transposed_role_refs.each do |role_refs|
-            verbaliser.role_refs_are_subtype_joined role_refs
+            verbaliser.role_refs_have_subtype_steps role_refs
             join_over, = ActiveFacts::Metamodel.plays_over(role_refs.map{|rr| rr.role})
             players << join_over
           end
         end
-        debug :subscript, "Preparing join between roles in set comparison constraint" do
+        debug :subscript, "Preparing query between roles in set comparison constraint" do
           role_sequences.each do |role_sequence|
             debug :subscript, "role sequence is #{role_sequence.describe}" do
               verbaliser.prepare_role_sequence role_sequence
@@ -462,7 +462,7 @@ module ActiveFacts
         verbaliser.create_subscripts :normal
 
         if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.play}}
-          # This set constraint has an explicit join. Verbalise it.
+          # This set constraint has an explicit query. Verbalise it.
 
           readings_list = role_sequences.
             map do |rs|
@@ -480,7 +480,7 @@ module ActiveFacts
           # Internal check: We must have located the players here
           if i = players.index(nil)
             rrs = transposed_role_refs[i]
-            raise "Internal error detecting constrained object types in join involving #{rrs.map{|rr| rr.role.fact_type.default_reading}.uniq*', '}"
+            raise "Internal error detecting constrained object types in query involving #{rrs.map{|rr| rr.role.fact_type.default_reading}.uniq*', '}"
           end
 
           # Loose binding will apply only to the constrained roles, not to all roles. Not handled here.
@@ -499,7 +499,7 @@ module ActiveFacts
           return
         end
 
-        # A constrained role may involve a subtyping join. We substitute the name of the supertype for all occurrences.
+        # A constrained role may involve a subtyping step. We substitute the name of the supertype for all occurrences.
         players = transposed_role_refs.map{|role_refs| common_supertype(role_refs.map{|rr| rr.role.object_type})}
         raise "Constraint must cover matching roles" if players.compact.size < players.size
 
@@ -507,7 +507,7 @@ module ActiveFacts
           map do |scr|
             # verbaliser.verbalise_over_role_sequence(scr.role_sequence)
             # REVISIT: verbalise_over_role_sequence cannot do what we need here, because of the
-            # possibility of subtyping joins in the constrained roles across the different scr's
+            # possibility of subtyping steps in the constrained roles across the different scr's
             # The following code uses "players" and "constrained_roles" to create substitutions.
             # These should instead be passed to the verbaliser (one variable per index, role_refs for each).
             fact_types_processed = {}
@@ -515,7 +515,7 @@ module ActiveFacts
             join_over, joined_roles = *Metamodel.plays_over(constrained_roles)
             constrained_roles.map do |constrained_role|
               fact_type = constrained_role.fact_type
-              next nil if fact_types_processed[fact_type] # Don't emit the same fact type twice (in case of objectification join)
+              next nil if fact_types_processed[fact_type] # Don't emit the same fact type twice (in case of objectification step)
               fact_types_processed[fact_type] = true
               reading = fact_type.reading_preferably_starting_with_role(constrained_role)
               expand_constrained(verbaliser, reading, constrained_roles, players)
@@ -540,7 +540,7 @@ module ActiveFacts
         transposed_role_refs = [c.subset_role_sequence, c.superset_role_sequence].map{|rs| rs.all_role_ref_in_order.to_a}.transpose
 
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
-        transposed_role_refs.each { |role_refs| verbaliser.role_refs_are_subtype_joined role_refs }
+        transposed_role_refs.each { |role_refs| verbaliser.role_refs_have_subtype_steps role_refs }
         verbaliser.prepare_role_sequence c.subset_role_sequence
         verbaliser.prepare_role_sequence c.superset_role_sequence
         verbaliser.create_subscripts :normal

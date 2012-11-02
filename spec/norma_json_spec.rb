@@ -12,7 +12,7 @@ require 'activefacts/generate/json'
 
 describe "Norma Loader" do
   orm_failures = {
-    "SubtypePI" => "Has an illegal uniqueness join constraint",
+    "SubtypePI" => "Has an illegal uniqueness constraint",
   }
 
   # Generate and return the CQL for the given vocabulary

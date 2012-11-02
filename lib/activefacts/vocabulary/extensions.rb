@@ -127,7 +127,7 @@ module ActiveFacts
         role.fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == role}
       end
 
-      def role_name(joiner = "-")
+      def role_name(separator = "-")
         name_array =
           if role.fact_type.all_role.size == 1
             if role.fact_type.is_a?(ImplicitFactType)
@@ -138,7 +138,7 @@ module ActiveFacts
           else
             role.role_name || [leading_adjective, role.object_type.name, trailing_adjective].compact.map{|w| w.split(/\s/)}.flatten
           end
-        return joiner ? Array(name_array)*joiner : Array(name_array)
+        return separator ? Array(name_array)*separator : Array(name_array)
       end
 
       def cql_name
@@ -583,9 +583,9 @@ module ActiveFacts
     class Step
       def describe
         "Step " +
-          "#{is_outer && 'maybe '}" +
+          "#{is_optional && 'maybe '}" +
           (is_unary_step ? " (unary) " : "from #{input_play.describe} ") +
-          "#{is_anti && 'not '}" +
+          "#{is_disallowed && 'not '}" +
           "to #{output_play.describe} " +
           "over " +
           (is_objectification_step ? 'objectification ' : '') +
@@ -641,20 +641,20 @@ module ActiveFacts
       end
     end
 
-    class Join
+    class Query
       def show
         steps_shown = {}
-        debug :join, "Displaying full contents of Join #{guid}" do
+        debug :query, "Displaying full contents of Query #{guid}" do
           all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
-            debug :join, "#{variable.describe}" do
+            debug :query, "#{variable.describe}" do
               variable.all_step.
                 each do |step|
                   next if steps_shown[step]
                   steps_shown[step] = true
-                  debug :join, "#{step.describe}"
+                  debug :query, "#{step.describe}"
                 end
               variable.all_play.each do |play|
-                debug :join, "role of #{play.describe} in '#{play.role.fact_type.default_reading}'"
+                debug :query, "role of #{play.describe} in '#{play.role.fact_type.default_reading}'"
               end
             end
           end
@@ -665,7 +665,7 @@ module ActiveFacts
         all_variable.map{|jn| jn.all_step.to_a}.flatten.uniq
       end
 
-      # Check all parts of this join for validity
+      # Check all parts of this query for validity
       def validate
         show
         return
@@ -769,10 +769,10 @@ module ActiveFacts
       end
     end
 
-    # Some joins must be over the proximate roles, some over the counterpart roles.
+    # Some queries must be over the proximate roles, some over the counterpart roles.
     # Return the common superclass of the appropriate roles, and the actual roles
     def self.plays_over roles, options = :both   # Or :proximate, :counterpart
-      # If we can stay inside this objectified FT, there's no join:
+      # If we can stay inside this objectified FT, there's no query:
       roles = Array(roles)  # To be safe, in case we get a role collection proxy
       return nil if roles.size == 1 or
         options != :counterpart && roles.map{|role| role.fact_type}.uniq.size == 1
@@ -792,7 +792,7 @@ module ActiveFacts
                 counterpart_role = possible_roles[0]
                 d_c_o[1]  # No change
               else
-                # puts "#{constraint_type} #{name}: Awkward, try counterpart-role join on a >2ary '#{fact_type.default_reading}'"
+                # puts "#{constraint_type} #{name}: Awkward, try counterpart-role query on a >2ary '#{fact_type.default_reading}'"
                 # Try all roles; hopefully we don't have two roles with a matching candidate here:
                 # Find which role is compatible with the existing supertypes, if any
                 if d_c_o
@@ -835,12 +835,12 @@ module ActiveFacts
           d_c_o
         end # inject
 
-      # Discount a subtype join over an object type that's not a player here,
-      # if we can use an objectification join to an object type that is:
+      # Discount a subtype step over an object type that's not a player here,
+      # if we can use an objectification step to an object type that is:
       if counterpart_sups.size > 0 && obj_sups.size > 0 && counterpart_sups[0] != obj_sups[0]
-        debug :join, "ambiguous join, could be over #{counterpart_sups[0].name} or #{obj_sups[0].name}"
+        debug :query, "ambiguous query, could be over #{counterpart_sups[0].name} or #{obj_sups[0].name}"
         if !roles.detect{|r| r.object_type == counterpart_sups[0]} and roles.detect{|r| r.object_type == obj_sups[0]}
-          debug :join, "discounting #{counterpart_sups[0].name} in favour of direct objectification"
+          debug :query, "discounting #{counterpart_sups[0].name} in favour of direct objectification"
           counterpart_sups = []
         end
       end

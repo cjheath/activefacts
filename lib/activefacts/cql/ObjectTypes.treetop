@@ -171,10 +171,10 @@ module ActiveFacts
       end
 
       rule entity_clauses
-        (':' / where) s joined_clauses
+        (':' / where) s query_clauses
         {
 	  def ast
-            joined_clauses.ast
+            query_clauses.ast
 	  end
         }
       end

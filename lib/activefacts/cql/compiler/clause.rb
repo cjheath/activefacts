@@ -148,7 +148,7 @@ module ActiveFacts
               if !contracted_role
                 vrs.each do |ref|
                   next if ref.is_a?(Operation)
-                  next unless joins = ref.nested_clauses and !joins.empty?
+                  next unless steps = ref.nested_clauses and !steps.empty?
                   ref.nested_clauses.each do |oj|
                     ft = oj.match_existing_fact_type(context)
                     raise "Unrecognised fact type #{oj.display}" unless ft
@@ -157,12 +157,12 @@ module ActiveFacts
                       oj.objectified_as = ref
                     end
                   end
-                  raise "#{ref.inspect} contains objectification joins that do not objectify it" unless ref.objectification_of
+                  raise "#{ref.inspect} contains objectification steps that do not objectify it" unless ref.objectification_of
                 end
               end
 
               # For each role player, find the compatible types (the set of all subtypes and supertypes).
-              # For a player that's an objectification, we don't allow implicit supertype joins
+              # For a player that's an objectification, we don't allow implicit supertype steps
               player_related_types =
                 vrs.zip(players).map do |ref, player|
                   disallow_subtyping = ref && ref.objectification_of || options[:exact_type]
@@ -173,7 +173,7 @@ module ActiveFacts
               debug :matching, "Players must match '#{player_related_types.map{|pa| pa.map{|p|p.name}}.inspect}'"
 
               # The candidate fact types have the right number of role players of related types.
-              # If any role is played by a supertype or subtype of the required type, there's an implicit subtyping join
+              # If any role is played by a supertype or subtype of the required type, there's an implicit subtyping steps
               candidate_fact_types =
                 player_related_types[0].map do |related_type|
                   related_type.all_role.select do |role|
@@ -202,7 +202,7 @@ module ActiveFacts
                     map{ |role| role.fact_type}
                 end.flatten.uniq
 
-              # If there is more than one possible exact match (same adjectives) with different subyping, the implicit join is ambiguous and is not allowed
+              # If there is more than one possible exact match (same adjectives) with different subyping, the implicit query is ambiguous and is not allowed
 
               debug :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching '#{contracted_role && contracted_role.inspect+' '}#{inspect}'" do
                 matches = {}
@@ -221,7 +221,7 @@ module ActiveFacts
                 # the whole declaration has been processed and the extra adjectives can be matched.
 
                 best_matches = matches.keys.sort_by{|match|
-                  # Between equivalents, prefer the one without a join on the first role
+                  # Between equivalents, prefer the one without steps on the first role
                   (m = matches[match]).cost*2 + ((!(e = m.role_side_effects[0]) || e.cost) == 0 ? 0 : 1)
                 }
                 debug :matching_fails, "Found #{matches.size} valid matches#{matches.size > 0 ? ', best is '+best_matches[0].expand : ''}"
@@ -337,7 +337,7 @@ module ActiveFacts
                   return nil
                 end
 
-                debug :matching_fails, "Subtype join is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
+                debug :matching_fails, "Subtype step is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
               else
                 if !next_player_phrase
                   next    # Contraction succeeded so far
@@ -423,20 +423,20 @@ module ActiveFacts
             end
 
             if fact_type.is_a?(Metamodel::TypeInheritance)
-              # There may be only one subtyping join on a TypeInheritance fact type.
-              ti_joins = side_effects.select{|side_effect| side_effect.common_supertype}
-              if ti_joins.size > 1   # Not allowed
-                debug :matching_fails, "Can't have more than one subtyping join on a TypeInheritance fact type"
+              # There may be only one subtyping step on a TypeInheritance fact type.
+              ti_steps = side_effects.select{|side_effect| side_effect.common_supertype}
+              if ti_steps.size > 1   # Not allowed
+                debug :matching_fails, "Can't have more than one subtyping step on a TypeInheritance fact type"
                 return nil
               end
 
-              if ti = ti_joins[0]
-                # The Type Inheritance join must continue in the same direction as this reading.
+              if ti = ti_steps[0]
+                # The Type Inheritance step must continue in the same direction as this reading.
                 allowed = fact_type.supertype == ti.role_ref.role.object_type ?
                     fact_type.subtype.supertypes_transitive :
                     fact_type.supertype.subtypes_transitive
                 if !allowed.include?(ti.common_supertype)
-                  debug :matching_fails, "Implicit subtyping join extends in the wrong direction"
+                  debug :matching_fails, "Implicit subtyping step extends in the wrong direction"
                   return nil
                 end
               end
@@ -460,7 +460,7 @@ module ActiveFacts
             side_effects.apply_all do |side_effect|
               phrase = side_effect.phrase
 
-              # We re-use the role_ref if possible (no extra adjectives were used, no rolename or join, etc).
+              # We re-use the role_ref if possible (no extra adjectives were used, no rolename or step, etc).
               debug :matching, "side-effect means binding #{phrase.inspect} matches role ref #{side_effect.role_ref.role.object_type.name}"
               phrase.role_ref = side_effect.role_ref
 
@@ -699,7 +699,7 @@ module ActiveFacts
           @common_supertype = common_supertype
           @residual_adjectives = residual_adjectives
           @cancelled_cost = 0
-          debug :matching_fails, "Saving side effects for #{@phrase.term}, absorbs #{@absorbed_precursors}/#{@absorbed_followers}#{@common_supertype ? ', join over supertype '+ @common_supertype.name : ''}" if @absorbed_precursors+@absorbed_followers+(@common_supertype ? 1 : 0) > 0
+          debug :matching_fails, "Saving side effects for #{@phrase.term}, absorbs #{@absorbed_precursors}/#{@absorbed_followers}#{@common_supertype ? ', step over supertype '+ @common_supertype.name : ''}" if @absorbed_precursors+@absorbed_followers+(@common_supertype ? 1 : 0) > 0
         end
 
         def cost
@@ -749,7 +749,7 @@ module ActiveFacts
         def describe
           actual_effects =
             @role_side_effects.map do |side_effect|
-              ( [side_effect.common_supertype ? "supertype join over #{side_effect.common_supertype.name}" : nil] +
+              ( [side_effect.common_supertype ? "supertype step over #{side_effect.common_supertype.name}" : nil] +
                 [side_effect.absorbed_precursors > 0 ? "absorbs #{side_effect.absorbed_precursors} preceding words" : nil] +
                 [side_effect.absorbed_followers > 0 ? "absorbs #{side_effect.absorbed_followers} following words" : nil]
               )

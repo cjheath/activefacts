@@ -1,5 +1,5 @@
 #
-# ActiveFacts CQL Join Expressions
+# ActiveFacts CQL Expressions
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 
@@ -55,7 +55,7 @@ describe "When compiling expressions" do
       comparison_ft = (new_fact_types - [is_old_ft])[0]
       (comparison_ft.all_reading.map{ |r| r.expand }*', ').should == "Boolean = Age >= product(Integer, sum(Integer, Integer))"
 
-      # one_join_with_value 60, 'year'
+      # one_query_with_value 60, 'year'
     end
   end
 end
