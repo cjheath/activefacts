@@ -150,7 +150,7 @@ module ActiveFacts
 	  { # A forward-referenced entity type
 	    # REVISIT: A change in this rule might allow forward-referencing a multi-word term
 	    def ast
-	      Compiler::VarRef.new(id.text_value, nil, nil, nil, ss.empty? ? nil : ss.value)
+	      Compiler::Reference.new(id.text_value, nil, nil, nil, ss.empty? ? nil : ss.value)
 	    end
 	  }
       end

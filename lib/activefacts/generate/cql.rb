@@ -367,13 +367,13 @@ module ActiveFacts
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
         verbaliser.alternate_readings fact_type.all_reading
         pr = fact_type.preferred_reading
-        if (pr.role_sequence.all_role_ref.to_a[0].join_role)
+        if (pr.role_sequence.all_role_ref.to_a[0].play)
           verbaliser.prepare_role_sequence pr.role_sequence
         end
         verbaliser.create_subscripts(:rolenames)
 
         print(fact_readings_with_constraints(verbaliser, fact_type)*",\n\t")
-        if (pr.role_sequence.all_role_ref.to_a[0].join_role)
+        if (pr.role_sequence.all_role_ref.to_a[0].play)
           print ":\n\t"+verbaliser.verbalise_over_role_sequence(pr.role_sequence)
         end
         puts(';')
@@ -414,7 +414,7 @@ module ActiveFacts
         if role_proximity == :proximate
           verbaliser.role_refs_are_subtype_joined(c.role_sequence)
         else
-          join_over, joined_roles = ActiveFacts::Metamodel.join_roles_over(c.role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
+          join_over, joined_roles = ActiveFacts::Metamodel.plays_over(c.role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
           verbaliser.roles_have_same_player(joined_roles) if join_over
         end
 
@@ -448,7 +448,7 @@ module ActiveFacts
         debug :subscript, "Preparing join across projected roles in set comparison constraint" do
           transposed_role_refs.each do |role_refs|
             verbaliser.role_refs_are_subtype_joined role_refs
-            join_over, = ActiveFacts::Metamodel.join_roles_over(role_refs.map{|rr| rr.role})
+            join_over, = ActiveFacts::Metamodel.plays_over(role_refs.map{|rr| rr.role})
             players << join_over
           end
         end
@@ -461,7 +461,7 @@ module ActiveFacts
         end
         verbaliser.create_subscripts :normal
 
-        if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.join_role}}
+        if role_sequences.detect{|scr| scr.all_role_ref.detect{|rr| rr.play}}
           # This set constraint has an explicit join. Verbalise it.
 
           readings_list = role_sequences.
@@ -509,10 +509,10 @@ module ActiveFacts
             # REVISIT: verbalise_over_role_sequence cannot do what we need here, because of the
             # possibility of subtyping joins in the constrained roles across the different scr's
             # The following code uses "players" and "constrained_roles" to create substitutions.
-            # These should instead be passed to the verbaliser (one join node per index, role_refs for each).
+            # These should instead be passed to the verbaliser (one variable per index, role_refs for each).
             fact_types_processed = {}
             constrained_roles = scr.role_sequence.all_role_ref_in_order.map{|rr| rr.role}
-            join_over, joined_roles = *Metamodel.join_roles_over(constrained_roles)
+            join_over, joined_roles = *Metamodel.plays_over(constrained_roles)
             constrained_roles.map do |constrained_role|
               fact_type = constrained_role.fact_type
               next nil if fact_types_processed[fact_type] # Don't emit the same fact type twice (in case of objectification join)

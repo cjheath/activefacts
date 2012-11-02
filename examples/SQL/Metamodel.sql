@@ -66,13 +66,22 @@ CREATE TABLE [Constraint] (
 )
 GO
 
+CREATE VIEW dbo.RingConstraintInConstraint_RingConstraintRoleFactTypeGuidRingConstraintRoleOrdinal (RingConstraintRoleFactTypeGuid, RingConstraintRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT RingConstraintRoleFactTypeGuid, RingConstraintRoleOrdinal FROM dbo.[Constraint]
+	WHERE	RingConstraintRoleFactTypeGuid IS NOT NULL
+	  AND	RingConstraintRoleOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX PK_RingConstraintInConstraint ON dbo.RingConstraintInConstraint_RingConstraintRoleFactTypeGuidRingConstraintRoleOrdinal(RingConstraintRoleFactTypeGuid, RingConstraintRoleOrdinal)
+GO
+
 CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid (SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid) WITH SCHEMABINDING AS
 	SELECT SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid FROM dbo.[Constraint]
 	WHERE	SubsetConstraintSubsetRoleSequenceGuid IS NOT NULL
 	  AND	SubsetConstraintSupersetRoleSequenceGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
+CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
 GO
 
 CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal (ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
@@ -81,7 +90,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValue
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -202,7 +211,7 @@ CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocab
 	  AND	EntityTypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
+CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeVocabularyNameEntityTypeName ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
@@ -212,7 +221,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
+CREATE UNIQUE CLUSTERED INDEX IX_TypeInheritanceInFactTypeByTypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdent ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
@@ -223,7 +232,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX TypeInheritanceUQ ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
 GO
 
 CREATE TABLE Instance (
@@ -262,105 +271,6 @@ CREATE TABLE [Join] (
 	-- Join is a kind of Concept and Concept has Guid,
 	ConceptGuid                             Guid NOT NULL,
 	PRIMARY KEY(ConceptGuid)
-)
-GO
-
-CREATE TABLE JoinNode (
-	-- Join includes Join Node and Join is a kind of Concept and Concept has Guid,
-	JoinGuid                                Guid NOT NULL,
-	-- Join Node is for Object Type and Object Type is called Name,
-	ObjectTypeName                          varchar(64) NOT NULL,
-	-- Join Node is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
-	ObjectTypeVocabularyName                varchar(64) NOT NULL,
-	-- Join Node has Ordinal position,
-	Ordinal                                 shortint NOT NULL,
-	-- maybe Join Node has role-Name,
-	RoleName                                varchar(64) NULL,
-	-- maybe Join Node has Subscript,
-	Subscript                               shortint NULL,
-	-- maybe Join Node has Value and Value is a string,
-	ValueIsAString                          bit NULL,
-	-- maybe Join Node has Value and Value is represented by Literal,
-	ValueLiteral                            varchar NULL,
-	-- maybe Join Node has Value and maybe Value is in Unit and Unit is a kind of Concept and Concept has Guid,
-	ValueUnitGuid                           Guid NULL,
-	PRIMARY KEY(JoinGuid, Ordinal),
-	FOREIGN KEY (JoinGuid) REFERENCES [Join] (ConceptGuid)
-)
-GO
-
-CREATE TABLE JoinRole (
-	-- Join Role is where Join Node includes Role and Join includes Join Node and Join is a kind of Concept and Concept has Guid,
-	JoinNodeJoinGuid                        Guid NOT NULL,
-	-- Join Role is where Join Node includes Role and Join Node has Ordinal position,
-	JoinNodeOrdinal                         shortint NOT NULL,
-	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
-	JoinStepInputJoinRoleFactTypeGuid       Guid NULL,
-	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join is a kind of Concept and Concept has Guid,
-	JoinStepInputJoinRoleJoinNodeJoinGuid   Guid NULL,
-	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
-	JoinStepInputJoinRoleJoinNodeOrdinal    shortint NULL,
-	-- maybe Join Step involves incidental-Join Role and Join Step has input-Join Role and Join Role is where Join Node includes Role and Role fills Ordinal,
-	JoinStepInputJoinRoleOrdinal            shortint NULL,
-	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
-	JoinStepOutputJoinRoleFactTypeGuid      Guid NULL,
-	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join is a kind of Concept and Concept has Guid,
-	JoinStepOutputJoinRoleJoinNodeJoinGuid  Guid NULL,
-	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
-	JoinStepOutputJoinRoleJoinNodeOrdinal   shortint NULL,
-	-- maybe Join Step involves incidental-Join Role and Join Step has output-Join Role and Join Role is where Join Node includes Role and Role fills Ordinal,
-	JoinStepOutputJoinRoleOrdinal           shortint NULL,
-	-- Join Role is where Join Node includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
-	RoleFactTypeGuid                        Guid NOT NULL,
-	-- Join Role is where Join Node includes Role and Role fills Ordinal,
-	RoleOrdinal                             shortint NOT NULL,
-	-- maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role,
-	RoleRefOrdinal                          shortint NULL,
-	-- maybe Join Role projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Guid,
-	RoleRefRoleSequenceGuid                 Guid NULL,
-	PRIMARY KEY(JoinNodeJoinGuid, JoinNodeOrdinal, RoleFactTypeGuid, RoleOrdinal),
-	FOREIGN KEY (JoinNodeJoinGuid, JoinNodeOrdinal) REFERENCES JoinNode (JoinGuid, Ordinal)
-)
-GO
-
-CREATE VIEW dbo.JoinRole_RoleRefRoleSequenceGuidRoleRefOrdinal (RoleRefRoleSequenceGuid, RoleRefOrdinal) WITH SCHEMABINDING AS
-	SELECT RoleRefRoleSequenceGuid, RoleRefOrdinal FROM dbo.JoinRole
-	WHERE	RoleRefRoleSequenceGuid IS NOT NULL
-	  AND	RoleRefOrdinal IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_JoinRoleByRoleRefRoleSequenceGuidRoleRefOrdinal ON dbo.JoinRole_RoleRefRoleSequenceGuidRoleRefOrdinal(RoleRefRoleSequenceGuid, RoleRefOrdinal)
-GO
-
-CREATE TABLE JoinStep (
-	-- maybe Join Step falls under Alternative Set and Alternative Set has Guid,
-	AlternativeSetGuid                      Guid NULL,
-	-- Join Step traverses Fact Type and Fact Type is a kind of Concept and Concept has Guid,
-	FactTypeGuid                            Guid NOT NULL,
-	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
-	InputJoinRoleFactTypeGuid               Guid NOT NULL,
-	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join is a kind of Concept and Concept has Guid,
-	InputJoinRoleJoinNodeJoinGuid           Guid NOT NULL,
-	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
-	InputJoinRoleJoinNodeOrdinal            shortint NOT NULL,
-	-- Join Step has input-Join Role and Join Role is where Join Node includes Role and Role fills Ordinal,
-	InputJoinRoleOrdinal                    shortint NOT NULL,
-	-- is anti Join Step,
-	IsAnti                                  bit NOT NULL,
-	-- Join Step is outer,
-	IsOuter                                 bit NOT NULL,
-	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
-	OutputJoinRoleFactTypeGuid              Guid NOT NULL,
-	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Join includes Join Node and Join is a kind of Concept and Concept has Guid,
-	OutputJoinRoleJoinNodeJoinGuid          Guid NOT NULL,
-	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Join Node has Ordinal position,
-	OutputJoinRoleJoinNodeOrdinal           shortint NOT NULL,
-	-- Join Step has output-Join Role and Join Role is where Join Node includes Role and Role fills Ordinal,
-	OutputJoinRoleOrdinal                   shortint NOT NULL,
-	PRIMARY KEY(InputJoinRoleJoinNodeJoinGuid, InputJoinRoleJoinNodeOrdinal, InputJoinRoleFactTypeGuid, InputJoinRoleOrdinal, OutputJoinRoleJoinNodeJoinGuid, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleFactTypeGuid, OutputJoinRoleOrdinal),
-	FOREIGN KEY (FactTypeGuid) REFERENCES FactType (ConceptGuid),
-	FOREIGN KEY (InputJoinRoleJoinNodeJoinGuid, InputJoinRoleJoinNodeOrdinal, InputJoinRoleFactTypeGuid, InputJoinRoleOrdinal) REFERENCES JoinRole (JoinNodeJoinGuid, JoinNodeOrdinal, RoleFactTypeGuid, RoleOrdinal),
-	FOREIGN KEY (OutputJoinRoleJoinNodeJoinGuid, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleFactTypeGuid, OutputJoinRoleOrdinal) REFERENCES JoinRole (JoinNodeJoinGuid, JoinNodeOrdinal, RoleFactTypeGuid, RoleOrdinal)
 )
 GO
 
@@ -404,6 +314,48 @@ CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeValueConstraintGuid (ValueTypeVal
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraintGuid ON dbo.ValueTypeInObjectType_ValueTypeValueConstraintGuid(ValueTypeValueConstraintGuid)
+GO
+
+CREATE TABLE Play (
+	-- Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	RoleFactTypeGuid                        Guid NOT NULL,
+	-- Play is where Variable includes Role and Role fills Ordinal,
+	RoleOrdinal                             shortint NOT NULL,
+	-- maybe Play projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role,
+	RoleRefOrdinal                          shortint NULL,
+	-- maybe Play projects Role Ref and Role Ref is where Role Sequence in Ordinal position includes Role and Role Sequence has Guid,
+	RoleRefRoleSequenceGuid                 Guid NULL,
+	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	StepInputPlayRoleFactTypeGuid           Guid NULL,
+	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable includes Role and Role fills Ordinal,
+	StepInputPlayRoleOrdinal                shortint NULL,
+	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
+	StepInputPlayVariableJoinGuid           Guid NULL,
+	-- maybe Step involves incidental-Play and Step has input-Play and Play is where Variable includes Role and Variable has Ordinal position,
+	StepInputPlayVariableOrdinal            shortint NULL,
+	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	StepOutputPlayRoleFactTypeGuid          Guid NULL,
+	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable includes Role and Role fills Ordinal,
+	StepOutputPlayRoleOrdinal               shortint NULL,
+	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
+	StepOutputPlayVariableJoinGuid          Guid NULL,
+	-- maybe Step involves incidental-Play and Step has output-Play and Play is where Variable includes Role and Variable has Ordinal position,
+	StepOutputPlayVariableOrdinal           shortint NULL,
+	-- Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
+	VariableJoinGuid                        Guid NOT NULL,
+	-- Play is where Variable includes Role and Variable has Ordinal position,
+	VariableOrdinal                         shortint NOT NULL,
+	PRIMARY KEY(VariableJoinGuid, VariableOrdinal, RoleFactTypeGuid, RoleOrdinal)
+)
+GO
+
+CREATE VIEW dbo.Play_RoleRefRoleSequenceGuidRoleRefOrdinal (RoleRefRoleSequenceGuid, RoleRefOrdinal) WITH SCHEMABINDING AS
+	SELECT RoleRefRoleSequenceGuid, RoleRefOrdinal FROM dbo.Play
+	WHERE	RoleRefRoleSequenceGuid IS NOT NULL
+	  AND	RoleRefOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_PlayByRoleRefRoleSequenceGuidRoleRefOrdinal ON dbo.Play_RoleRefRoleSequenceGuidRoleRefOrdinal(RoleRefRoleSequenceGuid, RoleRefOrdinal)
 GO
 
 CREATE TABLE Population (
@@ -618,7 +570,7 @@ CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeGuid (FactTypeS
 	WHERE	FactTypeShapeGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeGuid ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeGuid(FactTypeShapeGuid)
+CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAObjectifiedFactTypeNameShape ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeGuid(FactTypeShapeGuid)
 GO
 
 CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeGuid (FactTypeShapeGuid) WITH SCHEMABINDING AS
@@ -626,7 +578,7 @@ CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeGuid (FactTypeShapeGuid) WITH S
 	WHERE	FactTypeShapeGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeGuid ON dbo.ReadingShapeInShape_FactTypeShapeGuid(FactTypeShapeGuid)
+CREATE UNIQUE CLUSTERED INDEX ShapeMayBeAReadingShape ON dbo.ReadingShapeInShape_FactTypeShapeGuid(FactTypeShapeGuid)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeGuidRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeGuid, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS
@@ -645,6 +597,38 @@ CREATE VIEW dbo.ValueConstraintShapeInShape_ValueConstraintShapeRoleDisplayFactT
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintShapeInShapeByValueConstraintShapeRoleDisplayFactTypeShapeGuidValueConstraintShapeRoleDisplayOrdinal ON dbo.ValueConstraintShapeInShape_ValueConstraintShapeRoleDisplayFactTypeShapeGuidValueConstraintShapeRoleDisplayOrdinal(ValueConstraintShapeRoleDisplayFactTypeShapeGuid, ValueConstraintShapeRoleDisplayOrdinal)
+GO
+
+CREATE TABLE Step (
+	-- maybe Step falls under Alternative Set and Alternative Set has Guid,
+	AlternativeSetGuid                      Guid NULL,
+	-- Step traverses Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	FactTypeGuid                            Guid NOT NULL,
+	-- Step has input-Play and Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	InputPlayRoleFactTypeGuid               Guid NOT NULL,
+	-- Step has input-Play and Play is where Variable includes Role and Role fills Ordinal,
+	InputPlayRoleOrdinal                    shortint NOT NULL,
+	-- Step has input-Play and Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
+	InputPlayVariableJoinGuid               Guid NOT NULL,
+	-- Step has input-Play and Play is where Variable includes Role and Variable has Ordinal position,
+	InputPlayVariableOrdinal                shortint NOT NULL,
+	-- is anti Step,
+	IsAnti                                  bit NOT NULL,
+	-- Step is outer,
+	IsOuter                                 bit NOT NULL,
+	-- Step has output-Play and Play is where Variable includes Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
+	OutputPlayRoleFactTypeGuid              Guid NOT NULL,
+	-- Step has output-Play and Play is where Variable includes Role and Role fills Ordinal,
+	OutputPlayRoleOrdinal                   shortint NOT NULL,
+	-- Step has output-Play and Play is where Variable includes Role and Join includes Variable and Join is a kind of Concept and Concept has Guid,
+	OutputPlayVariableJoinGuid              Guid NOT NULL,
+	-- Step has output-Play and Play is where Variable includes Role and Variable has Ordinal position,
+	OutputPlayVariableOrdinal               shortint NOT NULL,
+	PRIMARY KEY(InputPlayVariableJoinGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, OutputPlayVariableJoinGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal),
+	FOREIGN KEY (FactTypeGuid) REFERENCES FactType (ConceptGuid),
+	FOREIGN KEY (InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, InputPlayVariableJoinGuid, InputPlayVariableOrdinal) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableJoinGuid, VariableOrdinal),
+	FOREIGN KEY (OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal, OutputPlayVariableJoinGuid, OutputPlayVariableOrdinal) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableJoinGuid, VariableOrdinal)
+)
 GO
 
 CREATE TABLE Unit (
@@ -669,7 +653,6 @@ CREATE TABLE Unit (
 	-- Vocabulary includes Unit and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(ConceptGuid),
-	UNIQUE(Name),
 	UNIQUE(VocabularyName, Name)
 )
 GO
@@ -680,6 +663,31 @@ CREATE VIEW dbo.Unit_PluralName (PluralName) WITH SCHEMABINDING AS
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_UnitByPluralName ON dbo.Unit_PluralName(PluralName)
+GO
+
+CREATE TABLE Variable (
+	-- Join includes Variable and Join is a kind of Concept and Concept has Guid,
+	JoinGuid                                Guid NOT NULL,
+	-- Variable is for Object Type and Object Type is called Name,
+	ObjectTypeName                          varchar(64) NOT NULL,
+	-- Variable is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ObjectTypeVocabularyName                varchar(64) NOT NULL,
+	-- Variable has Ordinal position,
+	Ordinal                                 shortint NOT NULL,
+	-- maybe Variable has role-Name,
+	RoleName                                varchar(64) NULL,
+	-- maybe Variable has Subscript,
+	Subscript                               shortint NULL,
+	-- maybe Variable has Value and Value is a string,
+	ValueIsAString                          bit NULL,
+	-- maybe Variable has Value and Value is represented by Literal,
+	ValueLiteral                            varchar NULL,
+	-- maybe Variable has Value and maybe Value is in Unit and Unit is a kind of Concept and Concept has Guid,
+	ValueUnitGuid                           Guid NULL,
+	PRIMARY KEY(JoinGuid, Ordinal),
+	FOREIGN KEY (JoinGuid) REFERENCES [Join] (ConceptGuid),
+	FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+)
 GO
 
 ALTER TABLE AllowedRange
@@ -758,24 +766,24 @@ ALTER TABLE Instance
 	ADD FOREIGN KEY (PopulationName, PopulationVocabularyName) REFERENCES Population (Name, VocabularyName)
 GO
 
-ALTER TABLE JoinNode
-	ADD FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+ALTER TABLE ObjectType
+	ADD FOREIGN KEY (ValueTypeUnitGuid) REFERENCES Unit (ConceptGuid)
 GO
 
-ALTER TABLE JoinRole
-	ADD FOREIGN KEY (JoinStepInputJoinRoleFactTypeGuid, JoinStepInputJoinRoleJoinNodeJoinGuid, JoinStepInputJoinRoleJoinNodeOrdinal, JoinStepInputJoinRoleOrdinal, JoinStepOutputJoinRoleFactTypeGuid, JoinStepOutputJoinRoleJoinNodeJoinGuid, JoinStepOutputJoinRoleJoinNodeOrdinal, JoinStepOutputJoinRoleOrdinal) REFERENCES JoinStep (InputJoinRoleFactTypeGuid, InputJoinRoleJoinNodeJoinGuid, InputJoinRoleJoinNodeOrdinal, InputJoinRoleOrdinal, OutputJoinRoleFactTypeGuid, OutputJoinRoleJoinNodeJoinGuid, OutputJoinRoleJoinNodeOrdinal, OutputJoinRoleOrdinal)
-GO
-
-ALTER TABLE JoinRole
+ALTER TABLE Play
 	ADD FOREIGN KEY (RoleFactTypeGuid, RoleOrdinal) REFERENCES Role (FactTypeGuid, Ordinal)
 GO
 
-ALTER TABLE JoinRole
+ALTER TABLE Play
 	ADD FOREIGN KEY (RoleRefOrdinal, RoleRefRoleSequenceGuid) REFERENCES RoleRef (Ordinal, RoleSequenceGuid)
 GO
 
-ALTER TABLE ObjectType
-	ADD FOREIGN KEY (ValueTypeUnitGuid) REFERENCES Unit (ConceptGuid)
+ALTER TABLE Play
+	ADD FOREIGN KEY (StepInputPlayRoleFactTypeGuid, StepInputPlayRoleOrdinal, StepInputPlayVariableJoinGuid, StepInputPlayVariableOrdinal, StepOutputPlayRoleFactTypeGuid, StepOutputPlayRoleOrdinal, StepOutputPlayVariableJoinGuid, StepOutputPlayVariableOrdinal) REFERENCES Step (InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, InputPlayVariableJoinGuid, InputPlayVariableOrdinal, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal, OutputPlayVariableJoinGuid, OutputPlayVariableOrdinal)
+GO
+
+ALTER TABLE Play
+	ADD FOREIGN KEY (VariableJoinGuid, VariableOrdinal) REFERENCES Variable (JoinGuid, Ordinal)
 GO
 
 ALTER TABLE Reading

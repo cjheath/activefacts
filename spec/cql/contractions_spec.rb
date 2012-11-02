@@ -160,7 +160,7 @@ describe "When compiling a join, " do
     def self.derivation fact_type
       join = (joins = @constellation.Join.values.to_a)[0]
       # PENDING: When the fact type's roles are projected, use this instead:
-      # joins = fact_type.all_role.map{|r| r.all_join_role.map{|jr| jr.join}}.flatten.uniq
+      # joins = fact_type.all_role.map{|r| r.all_play.map{|jr| jr.join}}.flatten.uniq
       joins.size.should == 1
       joins[0]
     end
@@ -192,20 +192,20 @@ describe "When compiling a join, " do
     it "the join should have 3 nodes" do
       fact_type = fact_types[0]
       join = derivation(fact_type)
-      nodes = join.all_join_node.to_a
+      nodes = join.all_variable.to_a
       nodes.size.should == 3
     end
     it "the join should have 2 steps" do
       fact_type = fact_types[0]
       join = derivation(fact_type)
-      steps = join.all_join_step.to_a
+      steps = join.all_step.to_a
       steps.size.should == 2
     end
 
     it "and should project the fact type roles from the join" do
-      pending "Join roles are not yet projected" do
+      pending "Plays are not yet projected" do
         join = derivation(fact_type)
-        joins = fact_type.all_role.map{|r| r.all_join_role.map{|jr| jr.join}}.flatten.uniq
+        joins = fact_type.all_role.map{|r| r.all_play.map{|jr| jr.join}}.flatten.uniq
         joins.size == 1
         joins.should == [join]
       end

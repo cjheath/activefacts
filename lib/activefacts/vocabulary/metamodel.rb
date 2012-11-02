@@ -182,14 +182,14 @@ module ActiveFacts
     class Join < Concept
     end
 
-    class JoinNode
+    class Variable
       identified_by :join, :ordinal
-      has_one :join, :mandatory => true           # See Join.all_join_node
-      has_one :object_type, :mandatory => true    # See ObjectType.all_join_node
-      has_one :ordinal, :mandatory => true        # See Ordinal.all_join_node
-      has_one :role_name, :class => Name          # See Name.all_join_node_as_role_name
-      has_one :subscript                          # See Subscript.all_join_node
-      has_one :value                              # See Value.all_join_node
+      has_one :join, :mandatory => true           # See Join.all_variable
+      has_one :object_type, :mandatory => true    # See ObjectType.all_variable
+      has_one :ordinal, :mandatory => true        # See Ordinal.all_variable
+      has_one :role_name, :class => Name          # See Name.all_variable_as_role_name
+      has_one :subscript                          # See Subscript.all_variable
+      has_one :value                              # See Value.all_variable
     end
 
     class Position
@@ -333,21 +333,21 @@ module ActiveFacts
       has_one :rotation_setting                   # See RotationSetting.all_fact_type_shape
     end
 
-    class JoinRole
-      identified_by :join_node, :role
-      has_one :join_node, :mandatory => true      # See JoinNode.all_join_role
-      has_one :role, :mandatory => true           # See Role.all_join_role
-      has_one :join_step, :counterpart => :incidental_join_role  # See JoinStep.all_incidental_join_role
+    class Play
+      identified_by :variable, :role
+      has_one :variable, :mandatory => true      # See Variable.all_play
+      has_one :role, :mandatory => true           # See Role.all_play
+      has_one :step, :counterpart => :incidental_play  # See Step.all_incidental_play
     end
 
-    class JoinStep
-      identified_by :input_join_role, :output_join_role
-      has_one :alternative_set                    # See AlternativeSet.all_join_step
-      has_one :fact_type, :mandatory => true      # See FactType.all_join_step
-      has_one :input_join_role, :class => JoinRole, :mandatory => true  # See JoinRole.all_join_step_as_input_join_role
+    class Step
+      identified_by :input_play, :output_play
+      has_one :alternative_set                    # See AlternativeSet.all_step
+      has_one :fact_type, :mandatory => true      # See FactType.all_step
+      has_one :input_play, :class => Play, :mandatory => true  # See Play.all_step_as_input_play
       maybe :is_anti
       maybe :is_outer
-      has_one :output_join_role, :class => JoinRole, :mandatory => true  # See JoinRole.all_join_step_as_output_join_role
+      has_one :output_play, :class => Play, :mandatory => true  # See Play.all_step_as_output_play
     end
 
     class ModelNoteShape < Shape
@@ -404,7 +404,7 @@ module ActiveFacts
       has_one :ordinal, :mandatory => true        # See Ordinal.all_role_ref
       has_one :role, :mandatory => true           # See Role.all_role_ref
       has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
-      one_to_one :join_role                       # See JoinRole.role_ref
+      one_to_one :play                       # See Play.role_ref
       has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
       has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
     end

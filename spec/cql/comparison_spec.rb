@@ -54,12 +54,12 @@ describe "When matching a reading with an existing fact type" do
 
     def one_join_with_value v, unit = nil
       joins.size.should == 1
-      (jss = join_steps).size.should == 2
-      (jns = join_nodes).size.should == 3
+      (jss = steps).size.should == 2
+      (jns = variables).size.should == 3
       integer_node = jns.detect{|jn| jn.object_type.name == 'Integer'}
       integer_node.should_not be_nil
       value_should_match integer_node.value, v, unit
-      # pending should test content of the join steps
+      # pending should test content of the steps
     end
 
     it "should create a comparison fact type" do

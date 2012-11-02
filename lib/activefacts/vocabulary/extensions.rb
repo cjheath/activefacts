@@ -580,29 +580,29 @@ module ActiveFacts
       end
     end
 
-    class JoinStep
+    class Step
       def describe
-        "JoinStep " +
+        "Step " +
           "#{is_outer && 'maybe '}" +
-          (is_unary_step ? " (unary) " : "from #{input_join_role.describe} ") +
+          (is_unary_step ? " (unary) " : "from #{input_play.describe} ") +
           "#{is_anti && 'not '}" +
-          "to #{output_join_role.describe} " +
+          "to #{output_play.describe} " +
           "over " +
           (is_objectification_step ? 'objectification ' : '') +
           "'#{fact_type.default_reading}'"
       end
 
       def is_unary_step
-        # Preserve this in case we have to use a real join_node for the phantom
-        input_join_role == output_join_role
+        # Preserve this in case we have to use a real variable for the phantom
+        input_play == output_play
       end
 
       def is_objectification_step
         fact_type.is_a?(ImplicitFactType)
       end
 
-      def all_join_role
-        [input_join_role, output_join_role].uniq + all_incidental_join_role.to_a
+      def all_play
+        [input_play, output_play].uniq + all_incidental_play.to_a
       end
 
       def external_fact_type
@@ -610,7 +610,7 @@ module ActiveFacts
       end
     end
 
-    class JoinNode
+    class Variable
       def describe
         object_type.name +
           (subscript ? "(#{subscript})" : '') +
@@ -618,26 +618,26 @@ module ActiveFacts
           (value ? ' = '+value.to_s : '')
       end
 
-      def all_join_step
-        all_join_role.map do |jr|
-          jr.all_join_step_as_input_join_role.to_a +
-            jr.all_join_step_as_output_join_role.to_a
+      def all_step
+        all_play.map do |jr|
+          jr.all_step_as_input_play.to_a +
+            jr.all_step_as_output_play.to_a
         end.
           flatten.
           uniq
       end
     end
 
-    class JoinRole
+    class Play
       def describe
-        "#{role.object_type.name} JN#{join_node.ordinal}" +
+        "#{role.object_type.name} JN#{variable.ordinal}" +
           (role_ref ? " (projected)" : "")
       end
 
-      def all_join_step
-        (all_join_step_as_input_join_role.to_a +
-          all_join_step_as_output_join_role.to_a +
-          [join_step]).flatten.compact.uniq
+      def all_step
+        (all_step_as_input_play.to_a +
+          all_step_as_output_play.to_a +
+          [step]).flatten.compact.uniq
       end
     end
 
@@ -645,24 +645,24 @@ module ActiveFacts
       def show
         steps_shown = {}
         debug :join, "Displaying full contents of Join #{guid}" do
-          all_join_node.sort_by{|jn| jn.ordinal}.each do |join_node|
-            debug :join, "#{join_node.describe}" do
-              join_node.all_join_step.
-                each do |join_step|
-                  next if steps_shown[join_step]
-                  steps_shown[join_step] = true
-                  debug :join, "#{join_step.describe}"
+          all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
+            debug :join, "#{variable.describe}" do
+              variable.all_step.
+                each do |step|
+                  next if steps_shown[step]
+                  steps_shown[step] = true
+                  debug :join, "#{step.describe}"
                 end
-              join_node.all_join_role.each do |join_role|
-                debug :join, "role of #{join_role.describe} in '#{join_role.role.fact_type.default_reading}'"
+              variable.all_play.each do |play|
+                debug :join, "role of #{play.describe} in '#{play.role.fact_type.default_reading}'"
               end
             end
           end
         end
       end
 
-      def all_join_step
-        all_join_node.map{|jn| jn.all_join_step.to_a}.flatten.uniq
+      def all_step
+        all_variable.map{|jn| jn.all_step.to_a}.flatten.uniq
       end
 
       # Check all parts of this join for validity
@@ -670,27 +670,27 @@ module ActiveFacts
         show
         return
 
-        # Check the join nodes:
-        join_steps = []
-        join_nodes = all_join_node.sort_by{|jn| jn.ordinal}
-        join_nodes.each_with_index do |join_node, i|
-          raise "Join node #{i} should have ordinal #{join_node.ordinal}" unless join_node.ordinal == i
-          raise "Join Node #{i} has missing object_type" unless join_node.object_type
-          join_node.all_join_role do |join_role|
-            raise "Join Node for #{object_type.name} includes role played by #{join_role.object_type.name}" unless join_role.object_type == object_type
+        # Check the variables:
+        steps = []
+        variables = all_variable.sort_by{|jn| jn.ordinal}
+        variables.each_with_index do |variable, i|
+          raise "Variable #{i} should have ordinal #{variable.ordinal}" unless variable.ordinal == i
+          raise "Variable #{i} has missing object_type" unless variable.object_type
+          variable.all_play do |play|
+            raise "Variable for #{object_type.name} includes role played by #{play.object_type.name}" unless play.object_type == object_type
           end
-          join_steps += join_node.all_join_step
+          steps += variable.all_step
         end
-        join_steps.uniq!
+        steps.uniq!
 
-        # Check the join steps:
-        join_steps.each do |join_step|
-          raise "Join Step has missing fact type" unless join_step.fact_type
-          raise "Join Step has missing input node" unless join_step.input_join_role
-          raise "Join Step has missing output node" unless join_step.output_join_role
-          if (role = input_join_role).role.fact_type != fact_type or
-            (role = output_join_role).role.fact_type != fact_type
-            raise "Join Step has role #{role.describe} which doesn't belong to the fact type '#{fact_type.default_reading}' it traverses"
+        # Check the steps:
+        steps.each do |step|
+          raise "Step has missing fact type" unless step.fact_type
+          raise "Step has missing input node" unless step.input_play
+          raise "Step has missing output node" unless step.output_play
+          if (role = input_play).role.fact_type != fact_type or
+            (role = output_play).role.fact_type != fact_type
+            raise "Step has role #{role.describe} which doesn't belong to the fact type '#{fact_type.default_reading}' it traverses"
           end
         end
 
@@ -726,8 +726,8 @@ module ActiveFacts
               @role = role
               @role_sequence = role_sequence
             end
-            def join_node; nil; end
-            def join_role; nil; end
+            def variable; nil; end
+            def play; nil; end
             def leading_adjective; nil; end
             def trailing_adjective; nil; end
             def describe
@@ -771,7 +771,7 @@ module ActiveFacts
 
     # Some joins must be over the proximate roles, some over the counterpart roles.
     # Return the common superclass of the appropriate roles, and the actual roles
-    def self.join_roles_over roles, options = :both   # Or :proximate, :counterpart
+    def self.plays_over roles, options = :both   # Or :proximate, :counterpart
       # If we can stay inside this objectified FT, there's no join:
       roles = Array(roles)  # To be safe, in case we get a role collection proxy
       return nil if roles.size == 1 or
@@ -788,7 +788,7 @@ module ActiveFacts
           counterpart_role_supertypes =
             if fact_type.all_role.size > 2
               possible_roles = fact_type.all_role.select{|r| d_c_o && d_c_o[1].include?(r.object_type) }
-              if possible_roles.size == 1 # Only one candidate matches the types of the possible join nodes
+              if possible_roles.size == 1 # Only one candidate matches the types of the possible variables
                 counterpart_role = possible_roles[0]
                 d_c_o[1]  # No change
               else

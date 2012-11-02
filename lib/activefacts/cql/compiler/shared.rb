@@ -2,20 +2,20 @@ module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
 
-      # In a declaration, a Variable has one or more VarRef's.
-      # A Variable is for a single ObjectType, normally related to just one Role,
-      # and the references (VarRefs) to it will normally be the object_type name
+      # In a declaration, a Binding has one or more Reference's.
+      # A Binding is for a single ObjectType, normally related to just one Role,
+      # and the references (References) to it will normally be the object_type name
       # with the same adjectives (modulo loose binding),
       # or a role name or subscript reference.
       #
-      # In some situations a Variable will have some VarRefs with the same adjectives,
-      # and one or more VarRefs with no adjectives - this is called "loose binding".
-      class Variable
+      # In some situations a Binding will have some References with the same adjectives,
+      # and one or more References with no adjectives - this is called "loose binding".
+      class Binding
         attr_reader :player             # The ObjectType (object type)
-        attr_reader :refs               # an array of the VarRefs
+        attr_reader :refs               # an array of the References
         attr_reader :role_name
-        attr_accessor :rebound_to       # Loose binding may set this to another variable
-        attr_accessor :join_node
+        attr_accessor :rebound_to       # Loose binding may set this to another binding
+        attr_accessor :variable
         attr_accessor :instance         # When binding fact instances, the instance goes here
 
         def initialize player, role_name = nil
@@ -43,14 +43,14 @@ module ActiveFacts
         attr_accessor :left_contraction_allowed
         attr_accessor :left_contractable_clause
         attr_accessor :left_contraction_conjunction
-        attr_reader :variables             # The Variables in this declaration
+        attr_reader :bindings             # The Bindings in this declaration
         attr_reader :player_by_role_name
 
         def initialize vocabulary
           @vocabulary = vocabulary
           @vocabulary_identifier = @vocabulary.identifying_role_values
           @allowed_forward_terms = []
-          @variables = {}
+          @bindings = {}
           @player_by_role_name = {}
           @left_contraction_allowed = false
         end
@@ -70,7 +70,7 @@ module ActiveFacts
           player
         end
 
-        # Pass in an array of clauses or VarRefs for player identification and binding (creating the Variables)
+        # Pass in an array of clauses or References for player identification and binding (creating the Bindings)
         # It's necessary to identify all players that define a role name first,
         # so those names exist in the context for where they're used.
         def bind *clauses

@@ -13,7 +13,7 @@ module ActiveFacts
             trailing_adjective = t[gt.size+1..-1]
             trailing_adjective.sub!(/ (\S*)\Z/, '-\1') if !tail.elements[-1].dbl.empty?
           end
-          Compiler::VarRef.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, value_constraint, literal, nested_clauses)
+          Compiler::Reference.new(gt, leading_adjective, trailing_adjective, quantifier, function_call, role_name, value_constraint, literal, nested_clauses)
         end
 
         def value             # Sometimes we just want the full term name

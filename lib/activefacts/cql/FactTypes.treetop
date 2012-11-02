@@ -51,7 +51,7 @@ module ActiveFacts
 	    elsif (clauses_ast.size == 1 &&
 	      clauses_ast[0].phrases.size == 1 &&
 	      (popname = clauses_ast[0].phrases[0]) &&
-	      !popname.is_a?(Compiler::VarRef) &&
+	      !popname.is_a?(Compiler::Reference) &&
 	      conditions.detect{|r| r.includes_literals}
 	    )
 	      Compiler::Fact.new conditions, popname

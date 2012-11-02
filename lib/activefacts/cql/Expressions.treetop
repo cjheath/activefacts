@@ -53,11 +53,11 @@ module ActiveFacts
       end
 
       rule derived_variable
-        variable:term s role_id:(role_name / subscript )?
+        derived:term s role_id:(role_name / subscript )?
         {
 	  def ast quantifier = nil, value_constraint = nil, literal = nil, nested_clauses = nil
 	    role_name = role_id.empty? ? nil : role_id.value
-	    variable.ast(quantifier, nil, role_name, value_constraint, literal, nested_clauses)
+	    derived.ast(quantifier, nil, role_name, value_constraint, literal, nested_clauses)
 	  end
         }
       end

@@ -82,15 +82,6 @@ Instance objectifies at most one Fact,
 
 Join is a kind of Concept [partitioned];
 
-Join Node is identified by Join and Ordinal where
-	Join includes Join Node,
-	Join Node is in one Join,
-	Join Node has one Ordinal position;
-Join Node has at most one Subscript,
-	Subscript is of Join Node;
-Join Node has at most one role-Name,
-	Name is of Join Node;
-
 Position is identified by X and Y where
 	Position is at one X,
 	Position is at one Y;
@@ -156,7 +147,7 @@ Subset Constraint covers one superset-Role Sequence;
 Unit is a kind of Concept [partitioned];
 Ephemera URL provides Unit coefficient,
 	Unit uses coefficient from at most one Ephemera URL;
-Name is of at most one Unit,
+Name is of Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
 Unit has at most one Offset;
@@ -171,11 +162,20 @@ Value is identified by Literal and Value is a string and Unit where
 	Value is in at most one Unit,
 	Unit is of Value;
 Instance has at most one Value;
-Join Node has at most one Value;
 
 Value Constraint is a kind of Constraint;
 Role has at most one role-Value Constraint,
 	Value Constraint applies to at most one Role;
+
+Variable is identified by Join and Ordinal where
+	Join includes Variable,
+	Variable is in one Join,
+	Variable has one Ordinal position;
+Variable has at most one Subscript,
+	Subscript is of Variable;
+Variable has at most one Value;
+Variable has at most one role-Name,
+	Name is of Variable;
 
 Vocabulary is identified by Name where
 	Vocabulary is called one Name;
@@ -225,22 +225,6 @@ Fact Type Shape is for one Fact Type,
 	Fact Type has Fact Type Shape;
 Fact Type Shape has at most one Rotation Setting;
 
-Join Role is independent where
-	Join Node includes at least one Role,
-	Role connects to Join Node;
-
-Join Step is identified by input-Join Role and output-Join Role where
-	Join Step has one input-Join Role,
-	Join Step has one output-Join Role;
-Join Step falls under at most one Alternative Set,
-	Alternative Set covers at least one Join Step;
-Join Step traverses one Fact Type,
-	Fact Type directs Join Step;
-Join Step involves incidental-Join Role,
-	Join Role is incidentally involved in at most one Join Step;
-is anti Join Step;
-Join Step is outer;
-
 Model Note Shape is a kind of Shape;
 Model Note Shape is for one Context Note;
 
@@ -248,12 +232,12 @@ Object Type is a kind of Concept identified by Vocabulary and Name [partitioned]
 	Object Type belongs to one Vocabulary,
 	Object Type is called one Name;
 Instance is of one Object Type;
-Join Node is for one Object Type,
-	Object Type is referenced in Join Node;
 Object Type uses at most one Pronoun;
 Object Type plays Role,
 	Role is played by one Object Type;
 Object Type is independent;
+Variable is for one Object Type,
+	Object Type is referenced in Variable;
 
 Object Type Shape is a kind of Shape;
 Object Type Shape is for one Object Type,
@@ -263,6 +247,10 @@ Object Type Shape has expanded reference mode;
 Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shape where
 	Objectified Fact Type Name Shape is for one Fact Type Shape,
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
+
+Play is independent where
+	Variable includes at least one Role,
+	Role connects to Variable;
 
 Population is a kind of Concept identified by Vocabulary and Name [partitioned] where
 	Vocabulary includes Population,
@@ -298,7 +286,7 @@ Role Ref is where
 	Role is in Role Sequence in one Ordinal place,
 	Role Sequence includes Role in Ordinal place,
 	Role has Ordinal place in Role Sequence;
-Join Role projects at most one Role Ref;
+Play projects at most one Role Ref;
 Role Ref has at most one leading-Adjective;
 Role Ref has at most one trailing-Adjective;
 
@@ -314,6 +302,18 @@ Set Equality Constraint is a kind of Set Comparison Constraint;
 
 Set Exclusion Constraint is a kind of Set Comparison Constraint;
 Set Exclusion Constraint is mandatory;
+
+Step is identified by input-Play and output-Play where
+	Step has one input-Play,
+	Step has one output-Play;
+Step falls under at most one Alternative Set,
+	Alternative Set covers at least one Step;
+Step traverses one Fact Type,
+	Fact Type directs Step;
+Step involves incidental-Play,
+	Play is incidentally involved in at most one Step;
+is anti Step;
+Step is outer;
 
 Value Constraint Shape is a kind of Constraint Shape;
 Role Display has at most one Value Constraint Shape,
@@ -396,21 +396,21 @@ either Value Constraint constrains Value Type or Value Constraint applies to Rol
 for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
-for each Join Role at most one of these holds:
-	Join Step (1) has input-Join Role,
-	Join Role is incidentally involved in Join Step;
-for each Join Role at most one of these holds:
-	Join Step (1) has output-Join Role,
-	Join Role is incidentally involved in Join Step;
-Join Node is for Object Type that plays Role
-	if and only if
-	Join Node includes Role;
+for each Play at most one of these holds:
+	Step (1) has input-Play,
+	Play is incidentally involved in Step;
+for each Play at most one of these holds:
+	Step (1) has output-Play,
+	Play is incidentally involved in Step;
 Role Value is of Instance that is of Object Type
 	if and only if
 	Role Value is of Role that is played by Object Type;
 Role Value fulfils Fact that is of Fact Type
 	if and only if
 	Role Value is of Role that belongs to Fact Type;
+Variable is for Object Type that plays Role
+	if and only if
+	Variable includes Role;
 Entity Type is implied by objectification
 	only if Entity Type nests Fact Type;
 Presence Constraint is preferred identifier
@@ -429,7 +429,7 @@ each Presence Constraint occurs at least one time in
 	Presence Constraint has max Frequency(1),
 	Presence Constraint is mandatory;
 each Role Ref occurs at most one time in
-	Join Role projects Role Ref;
+	Play projects Role Ref;
 each Role Sequence occurs at least one time in
 	Role Sequence in Ordinal position includes Role;
 each Set Comparison Constraint occurs at least 2 times in

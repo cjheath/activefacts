@@ -9,7 +9,7 @@ module ActiveFacts
     #
     # The Verbaliser fulfils two roles:
     # * Maintains verbalisation context to expand readings using subscripting where needed
-    # * Verbalises Joins by iteratively choosing a Join Step and expanding readings
+    # * Verbalises Joins by iteratively choosing a Step and expanding readings
     #
     # The verbalisation context consists of a set of Players, each for one ObjectType.
     # There may be more than one Player for the same ObjectType. If adjectives or role
@@ -17,11 +17,11 @@ module ActiveFacts
     # Thus, the verbalisation context must be completely populated before subscript
     # generation, which must be before any Player name gets verbalised.
     #
-    # When a Player occurs in a Join, it corresponds to one Join Node of that Join.
-    # Each such Player has one or more JoinRoles, which refer to roles played by
+    # When a Player occurs in a Join, it corresponds to one Variable of that Join.
+    # Each such Player has one or more Plays, which refer to roles played by
     # that ObjectType. Where a join traverses two roles of a ternary fact type, there
-    # will be a residual node that has only a single JoinRole with no other meaning.
-    # A JoinRole must be for exactly one Player, so is used to identify a Player.
+    # will be a residual node that has only a single Play with no other meaning.
+    # A Play must be for exactly one Player, so is used to identify a Player.
     #
     # When a Player occurs outside a Join, it's identified by a projected RoleRef.
     # REVISIT: This is untrue when a uniqueness constraint is imported from NORMA.
@@ -30,7 +30,7 @@ module ActiveFacts
     #
     # Each constraint (except Ring Constraints) has one or more RoleSequence containing
     # the projected RoleRefs. Each constrained RoleSequence may have an associated Join.
-    # If it has a Join, each RoleRef is projected from a JoinRole, otherwise none are.
+    # If it has a Join, each RoleRef is projected from a Play, otherwise none are.
     #
     # The only type of join possible in a Ring Constraint is a subtyping join, which
     # is always implicit and unambiguous, so is never instantiated.
@@ -55,7 +55,7 @@ module ActiveFacts
     # The matching RoleRefs (by Ordinal position) are for joined players, that is,
     # one individual instance plays both roles. The RoleRefs must (now) be for the
     # same ObjectType (no implicit subtyping Join is allowed). Instead, the input modules
-    # find the closest common supertype and create explicit JoinSteps so its roles
+    # find the closest common supertype and create explicit Steps so its roles
     # can be projected.
     #
     # When expanding Reading text however, the RoleRefs in the reading's RoleSequence
@@ -67,7 +67,7 @@ module ActiveFacts
     class Verbaliser
       # Verbalisation context:
       attr_reader :players
-      attr_reader :player_by_join_role        # Used for each join
+      attr_reader :player_by_play        # Used for each join
       attr_reader :player_joined_over         # Used when there's an implicit join
       attr_reader :player_by_role_ref         # Used when a constrained role sequence has no join
 
@@ -76,35 +76,35 @@ module ActiveFacts
 
       # Join Verbaliser context:
       attr_reader :join
-      attr_reader :join_nodes                 # All Join Nodes
-      attr_reader :join_steps                 # All remaining unemitted Join Steps
-      attr_reader :join_steps_by_join_node    # A Hash by Join Node containing an array of remaining steps
+      attr_reader :variables                 # All Variables
+      attr_reader :steps                 # All remaining unemitted Steps
+      attr_reader :steps_by_variable    # A Hash by Variable containing an array of remaining steps
 
       def initialize role_refs = nil
         @role_refs = role_refs
 
         # Verbalisation context:
         @players = []
-        @player_by_join_role = {}
+        @player_by_play = {}
         @player_by_role_ref = {}
         @player_joined_over = nil
 
         # Join Verbaliser context:
         @join = nil
-        @join_nodes = []
-        @join_steps = []
-        @join_steps_by_join_node = {}
+        @variables = []
+        @steps = []
+        @steps_by_variable = {}
 
         add_role_refs role_refs if role_refs
       end
 
       class Player
-        attr_accessor :object_type, :join_nodes_by_join, :subscript, :join_roles, :role_refs
+        attr_accessor :object_type, :variables_by_join, :subscript, :plays, :role_refs
         def initialize object_type
           @object_type = object_type
-          @join_nodes_by_join = {}
+          @variables_by_join = {}
           @subscript = nil
-          @join_roles = []
+          @plays = []
           @role_refs = []
         end
 
@@ -122,21 +122,21 @@ module ActiveFacts
                 rr.trailing_adjective
               ].compact}.uniq.sort
           end
-          adjuncts += [@join_nodes_by_join.values.map{|jn| jn.role_name}.compact[0]].compact
+          adjuncts += [@variables_by_join.values.map{|jn| jn.role_name}.compact[0]].compact
           adjuncts.flatten*"_"
         end
 
         def describe
-          @object_type.name + (@join_nodes_by_join.size > 0 ? " (in #{@join_nodes_by_join.size} joins)" : "")
+          @object_type.name + (@variables_by_join.size > 0 ? " (in #{@variables_by_join.size} joins)" : "")
         end
       end
 
       # Find or create a Player to which we can add this role_ref
       def player(ref)
-        existing_player = if ref.is_a?(ActiveFacts::Metamodel::JoinRole)
-            @player_by_join_role[ref]
+        existing_player = if ref.is_a?(ActiveFacts::Metamodel::Play)
+            @player_by_play[ref]
           else
-            @player_by_role_ref[ref] or ref.join_role && @player_by_join_role[ref.join_role]
+            @player_by_role_ref[ref] or ref.play && @player_by_play[ref.play]
           end
         if existing_player
           debug :player, "Using existing player for #{ref.role.object_type.name} #{ref.respond_to?(:role_sequence) && ref.role_sequence.all_reading.size > 0 ? ' in reading' : ''}in '#{ref.role.fact_type.default_reading}'"
@@ -149,22 +149,22 @@ module ActiveFacts
         end
       end
 
-      def add_join_role player, join_role
-        return if player.join_roles.include?(join_role)
-        jn = join_role.join_node
-        if jn1 = player.join_nodes_by_join[jn.join] and jn1 != jn
-          raise "Player for #{player.object_type.name} may only have one join node per join, not #{jn1.object_type.name} and #{jn.object_type.name}"
+      def add_play player, play
+        return if player.plays.include?(play)
+        jn = play.variable
+        if jn1 = player.variables_by_join[jn.join] and jn1 != jn
+          raise "Player for #{player.object_type.name} may only have one variable per join, not #{jn1.object_type.name} and #{jn.object_type.name}"
         end
-        player.join_nodes_by_join[jn.join] = jn
-        @player_by_join_role[join_role] = player
-        player.join_roles << join_role
+        player.variables_by_join[jn.join] = jn
+        @player_by_play[play] = player
+        player.plays << play
       end
 
       # Add a RoleRef to an existing Player
       def add_role_player player, role_ref
         #debug :subscript, "Adding role_ref #{role_ref.object_id} to player #{player.object_id}"
-        if jr = role_ref.join_role
-          add_join_role(player, jr)
+        if jr = role_ref.play
+          add_play(player, jr)
         elsif !player.role_refs.include?(role_ref)
           debug :subscript, "Adding reference to player #{player.object_id} for #{role_ref.role.object_type.name} in #{role_ref.role_sequence.describe} with #{role_ref.role_sequence.all_reading.size} readings"
           player.role_refs.push(role_ref)
@@ -212,20 +212,20 @@ module ActiveFacts
         end
       end
 
-      def join_roles_have_same_player join_roles
-        return if join_roles.empty?
+      def plays_have_same_player plays
+        return if plays.empty?
 
-        # If any of these join_roles are for a known player, use that, else make a new player.
-        existing_players = join_roles.map{|jr| @player_by_join_role[jr] }.compact.uniq
+        # If any of these plays are for a known player, use that, else make a new player.
+        existing_players = plays.map{|jr| @player_by_play[jr] }.compact.uniq
         if existing_players.size > 1
           raise "Can't join these roles to more than one existing player: #{existing_players.map{|p|p.object_type.name}*', '}!"
         end
-        p = existing_players[0] || player(join_roles[0])
-        debugger if join_roles.detect{|jr| jr.role.object_type != p.object_type }
+        p = existing_players[0] || player(plays[0])
+        debugger if plays.detect{|jr| jr.role.object_type != p.object_type }
         debug :subscript, "Joining roles to #{p.describe}" do
-          join_roles.each do |jr|
+          plays.each do |jr|
             debug :subscript, "#{jr.describe}" do
-              add_join_role p, jr
+              add_play p, jr
             end
           end
         end
@@ -238,7 +238,7 @@ module ActiveFacts
 
         # If any of these role_refs are for a known player, use that, else make a new player.
         existing_players =
-          role_refs.map{|rr| @player_by_role_ref[rr] || @player_by_join_role[rr.join_role] }.compact.uniq
+          role_refs.map{|rr| @player_by_role_ref[rr] || @player_by_play[rr.play] }.compact.uniq
         if existing_players.size > 1
           raise "Can't join these role_refs to more than one existing player: #{existing_players.map{|p|p.object_type.name}*', '}!"
         end
@@ -287,11 +287,11 @@ module ActiveFacts
                     p.role_refs.map{|rr| rr.role.fact_type.preferred_reading.text}.sort.to_s
                 }.
                 each do |player|
-                jrname = player.join_roles.map{|jr| jr.role_ref && jr.role_ref.role.role_name}.compact[0]
+                jrname = player.plays.map{|jr| jr.role_ref && jr.role_ref.role.role_name}.compact[0]
                 rname = (rr = player.role_refs[0]) && rr.role.role_name
                 if jrname and !rname
                   # puts "Oops: rolename #{rname.inspect} != #{jrname.inspect}" if jrname != rname
-                  player.join_nodes_by_join.values.each{|jn| jn.role_name = jrname }
+                  player.variables_by_join.values.each{|jn| jn.role_name = jrname }
                else
                   player.subscript = s+1
                   s += 1
@@ -336,8 +336,8 @@ module ActiveFacts
       def prepare_role_sequence role_sequence, join_over = nil
         @role_refs = role_sequence.is_a?(Array) ? role_sequence : role_sequence.all_role_ref.to_a
 
-        if jrr = @role_refs.detect{|rr| rr.join_role && rr.join_role.join_node}
-          return prepare_join_players(jrr.join_role.join_node.join)
+        if jrr = @role_refs.detect{|rr| rr.play && rr.play.variable}
+          return prepare_join_players(jrr.play.variable.join)
         end
 
         # Ensure that all the joined-over role_refs are indexed for subscript generation.
@@ -361,13 +361,13 @@ module ActiveFacts
       end
 
       def prepare_join_players join
-        debug :subscript, "Indexing roles of fact types in #{join.all_join_step.size} join steps" do
-          join_steps = []
-          # Register all references to each join node as being for the same player:
-          join.all_join_node.sort_by{|jn| jn.ordinal}.each do |join_node|
-            debug :subscript, "Adding Roles of #{join_node.describe}" do
-              join_roles_have_same_player(join_node.all_join_role.to_a)
-              join_steps = join_steps | join_node.all_join_step
+        debug :subscript, "Indexing roles of fact types in #{join.all_step.size} steps" do
+          steps = []
+          # Register all references to each variable as being for the same player:
+          join.all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
+            debug :subscript, "Adding Roles of #{variable.describe}" do
+              plays_have_same_player(variable.all_play.to_a)
+              steps = steps | variable.all_step
             end
           end
 
@@ -375,22 +375,22 @@ module ActiveFacts
           # For each fact type traversed, register a player for each role *not* linked to this join
           # REVISIT: Using the preferred_reading role_ref is wrong here; the same preferred_reading might occur twice,
           # so the respective object_type will need more than one Player and will be subscripted to keep them from being joined.
-          # Accordingly, there must be a join step for each such role, and to enforce that, I raise an exception here on duplication.
-          # This isn't needed now all JoinNodes have at least one JoinRole
+          # Accordingly, there must be a step for each such role, and to enforce that, I raise an exception here on duplication.
+          # This isn't needed now all Variables have at least one Play
 
-          join_steps.map do |js|
+          steps.map do |js|
             if js.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
               js.fact_type.implying_role.fact_type
             else
               js.fact_type
             end
           end.uniq.each do |fact_type|
-          #join_steps.map{|js|js.fact_type}.uniq.each do |fact_type|
+          #steps.map{|js|js.fact_type}.uniq.each do |fact_type|
             next if fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
 
             debug :subscript, "Residual roles in '#{fact_type.default_reading}' are" do
               prrs = fact_type.preferred_reading.role_sequence.all_role_ref
-              residual_roles = fact_type.all_role.select{|r| !r.all_role_ref.detect{|rr| rr.join_node && rr.join_node.join == join} }
+              residual_roles = fact_type.all_role.select{|r| !r.all_role_ref.detect{|rr| rr.variable && rr.variable.join == join} }
               residual_roles.each do |r|
                 debug :subscript, "Adding residual role for #{r.object_type.name} (in #{fact_type.default_reading}) not covered in join"
                 preferred_role_ref = prrs.detect{|rr| rr.role == r}
@@ -408,12 +408,12 @@ module ActiveFacts
       def verbalise_over_role_sequence role_sequence, joiner = ' and ', role_proximity = :both
         @role_refs = role_sequence.is_a?(Array) ? role_sequence : role_sequence.all_role_ref.to_a
 
-        if jrr = role_refs.detect{|rr| rr.join_role}
-          return verbalise_join(jrr.join_role.join_node.join)
+        if jrr = role_refs.detect{|rr| rr.play}
+          return verbalise_join(jrr.play.variable.join)
         end
 
         # First, figure out whether there's a join:
-        join_over, joined_roles = *Metamodel.join_roles_over(role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
+        join_over, joined_roles = *Metamodel.plays_over(role_sequence.all_role_ref.map{|rr|rr.role}, role_proximity)
 
         role_by_fact_type = {}
         fact_types = @role_refs.map{|rr| ft = rr.role.fact_type; role_by_fact_type[ft] ||= rr.role; ft}.uniq
@@ -446,30 +446,30 @@ module ActiveFacts
       def expand_reading_text(step, text, role_sequence, player_by_role = {})
         if !player_by_role.empty? and !player_by_role.is_a?(Hash) || player_by_role.keys.detect{|k| !k.is_a?(ActiveFacts::Metamodel::Role)}
           debugger
-          raise "Need to change this call to expand_reading_text to pass a role->join_node hash"
+          raise "Need to change this call to expand_reading_text to pass a role->variable hash"
         end
         rrs = role_sequence.all_role_ref_in_order
         debug :subscript, "expanding '#{text}' with #{role_sequence.describe}" do
           text.gsub(/\{(\d)\}/) do
             role_ref = rrs[$1.to_i]
             # REVISIT: We may need to use the step's role_refs to expand the role players here, not the reading's one (extra adjectives?)
-            # REVISIT: There's no way to get literals to be emitted here (value join step or query result?)
+            # REVISIT: There's no way to get literals to be emitted here (value step or query result?)
 
             player = player_by_role[role_ref.role]
 
-            join_role_name = player && player.join_nodes_by_join.values.map{|jn| jn.role_name}.compact[0]
-            subscripted_player(role_ref, player && player.subscript, join_role_name) +
+            play_name = player && player.variables_by_join.values.map{|jn| jn.role_name}.compact[0]
+            subscripted_player(role_ref, player && player.subscript, play_name) +
               objectification_verbalisation(role_ref.role.object_type)
           end
         end
       end
 
-      def subscripted_player role_ref, subscript = nil, join_role_name = nil
+      def subscripted_player role_ref, subscript = nil, play_name = nil
         prr = @player_by_role_ref[role_ref]
         subscript ||= prr.subscript if prr
         debug :subscript, "Need to apply subscript #{subscript} to #{role_ref.role.object_type.name}" if subscript
         object_type = role_ref.role.object_type
-        (join_role_name ||
+        (play_name ||
           [
             role_ref.leading_adjective,
             object_type.name,
@@ -490,38 +490,38 @@ module ActiveFacts
         @join = join
         return unless join
 
-        @join_nodes = join.all_join_node.sort_by{|jn| jn.ordinal}
+        @variables = join.all_variable.sort_by{|jn| jn.ordinal}
 
-        @join_steps = @join_nodes.map{|jn| jn.all_join_step }.flatten.uniq
-        @join_steps_by_join_node = @join_nodes.
+        @steps = @variables.map{|jn| jn.all_step }.flatten.uniq
+        @steps_by_variable = @variables.
           inject({}) do |h, jn|
-            jn.all_join_step.each{|js| (h[jn] ||= []) << js}
+            jn.all_step.each{|js| (h[jn] ||= []) << js}
             h
           end
       end
 
       # Remove this step now that we've processed it:
       def step_completed(step)
-        @join_steps.delete(step)
+        @steps.delete(step)
 
-        input_node = step.input_join_role.join_node
-        steps = @join_steps_by_join_node[input_node]
+        input_node = step.input_play.variable
+        steps = @steps_by_variable[input_node]
         steps.delete(step)
-        @join_steps_by_join_node.delete(input_node) if steps.empty?
+        @steps_by_variable.delete(input_node) if steps.empty?
 
-        output_node = step.output_join_role.join_node
+        output_node = step.output_play.variable
         if (input_node != output_node)
-          steps = @join_steps_by_join_node[output_node]
+          steps = @steps_by_variable[output_node]
           steps.delete(step)
-          @join_steps_by_join_node.delete(output_node) if steps.empty?
+          @steps_by_variable.delete(output_node) if steps.empty?
         end
       end
 
       def choose_step(next_node)
-        next_steps = @join_steps_by_join_node[next_node]
+        next_steps = @steps_by_variable[next_node]
 
         # If we don't have a next_node against which we can contract,
-        # so just use any join step involving this node, or just any step.
+        # so just use any step involving this node, or just any step.
         if next_steps
           if next_step = next_steps.detect { |ns| !ns.is_objectification_step }
             debug :join, "Chose new non-objectification step: #{next_step.describe}"
@@ -529,27 +529,27 @@ module ActiveFacts
           end
         end
 
-        if next_step = @join_steps.detect { |ns| !ns.is_objectification_step }
+        if next_step = @steps.detect { |ns| !ns.is_objectification_step }
           debug :join, "Chose random non-objectification step: #{next_step.describe}"
           return next_step
         end
 
-        next_step = @join_steps[0]
+        next_step = @steps[0]
         if next_step
-          debug :join, "Chose new random step from #{join_steps.size}: #{next_step.describe}"
+          debug :join, "Chose new random step from #{steps.size}: #{next_step.describe}"
           if next_step.is_objectification_step
             # if this objectification plays any roles (other than its FT roles) in remaining steps, use one of those first:
             fact_type = next_step.fact_type.implying_role.fact_type
-            jn = [next_step.input_join_role.join_node, next_step.output_join_role.join_node].detect{|jn| jn.object_type == fact_type.entity_type}
-            sr = @join_steps_by_join_node[jn].reject{|t| r = t.fact_type.implying_role and r.fact_type == fact_type}
+            jn = [next_step.input_play.variable, next_step.output_play.variable].detect{|jn| jn.object_type == fact_type.entity_type}
+            sr = @steps_by_variable[jn].reject{|t| r = t.fact_type.implying_role and r.fact_type == fact_type}
             next_step = sr[0] if sr.size > 0 
           end
           return next_step
         end
-        raise "Internal error: There are more join steps here, but we failed to choose one"
+        raise "Internal error: There are more steps here, but we failed to choose one"
       end
 
-      # The join step we just emitted (using the reading given) is contractable iff
+      # The step we just emitted (using the reading given) is contractable iff
       # the reading has the next_node's role player as the final text
       def node_contractable_against_reading(next_node, reading)
         reading &&
@@ -586,46 +586,46 @@ module ActiveFacts
         return [next_step, next_reading]
       end
 
-      # REVISIT: There might be more than one objectification_verbalisation for a given object_type. Need to get the Join Node here and emit an objectification step involving that node.
+      # REVISIT: There might be more than one objectification_verbalisation for a given object_type. Need to get the Variable here and emit an objectification step involving that node.
       def objectification_verbalisation(object_type)
         objectified_node = nil
         unless object_type.is_a?(Metamodel::EntityType) and
           object_type.fact_type and            # Not objectified
-          objectification_step = @join_steps.
+          objectification_step = @steps.
             detect do |js|
-              # The objectifying entity type should always be the input_join_node here, but be safe:
+              # The objectifying entity type should always be the input_variable here, but be safe:
               js.is_objectification_step and
-                (objectified_node = js.input_join_role.join_node).object_type == object_type ||
-                (objectified_node = js.output_join_role.join_node).object_type == object_type
+                (objectified_node = js.input_play.variable).object_type == object_type ||
+                (objectified_node = js.output_play.variable).object_type == object_type
             end
           return ''
         end
 
         # REVISIT: We need to be working from the role_ref here - pass it in
-        # if objectification_step.join_node != role_ref.join_node
+        # if objectification_step.variable != role_ref.variable
 
         steps = [objectification_step]
         step_completed(objectification_step)
         while other_step =
-          @join_steps.
+          @steps.
             detect{|js|
               js.is_objectification_step and
-                js.input_join_role.join_node.object_type == object_type || js.output_join_role.join_node.object_type == object_type
+                js.input_play.variable.object_type == object_type || js.output_play.variable.object_type == object_type
             }
           steps << other_step
           debug :join, "Emitting objectification step allows deleting #{other_step.describe}"
           step_completed(other_step)
         end
 
-        # Find all references to roles in this objectified fact type which are relevant to the join nodes of these steps:
+        # Find all references to roles in this objectified fact type which are relevant to the variables of these steps:
         player_by_role = {}
-        steps.each do |join_step|
-          join_step.all_join_role.to_a.map do |jr|
-            player_by_role[jr.role] = @player_by_join_role[jr]
+        steps.each do |step|
+          step.all_play.to_a.map do |jr|
+            player_by_role[jr.role] = @player_by_play[jr]
           end
         end
 
-        # role_refs = steps.map{|step| [step.input_join_role.join_node, step.output_join_role.join_node].map{|jn| jn.all_role_ref.detect{|rr| rr.role.fact_type == object_type.fact_type}}}.flatten.compact.uniq
+        # role_refs = steps.map{|step| [step.input_play.variable, step.output_play.variable].map{|jn| jn.all_role_ref.detect{|rr| rr.role.fact_type == object_type.fact_type}}}.flatten.compact.uniq
 
         reading = object_type.fact_type.preferred_reading
         " (in which #{expand_reading_text(objectification_step, reading.text, reading.role_sequence, player_by_role)})" 
@@ -642,39 +642,39 @@ module ActiveFacts
         last_is_contractable = false unless reading
         reading ||= fact_type.preferred_reading
 
-        # Find which role occurs last in the reading, and which Join Node is attached
+        # Find which role occurs last in the reading, and which Variable is attached
         reading.text =~ /\{(\d)\}[^{]*\Z/
         last_role_ref = reading.role_sequence.all_role_ref_in_order[$1.to_i]
-        exit_node = @join_nodes.detect{|jn| jn.all_join_role.detect{|jr| jr.role == last_role_ref.role}}
+        exit_node = @variables.detect{|jn| jn.all_play.detect{|jr| jr.role == last_role_ref.role}}
         exit_step = nil
 
         count = 0
         while other_step =
-          @join_steps.
+          @steps.
             detect{|js|
               next unless js.is_objectification_step
-              # REVISIT: This test is too weak: We need to ensure that the same join nodes are involved, not just the same object types:
-              next unless js.input_join_role.join_node.object_type == fact_type.entity_type || js.output_join_role.join_node.object_type == fact_type.entity_type
-              exit_step = js if js.output_join_role.join_node == exit_node
+              # REVISIT: This test is too weak: We need to ensure that the same variables are involved, not just the same object types:
+              next unless js.input_play.variable.object_type == fact_type.entity_type || js.output_play.variable.object_type == fact_type.entity_type
+              exit_step = js if js.output_play.variable == exit_node
               true
             }
           debug :join, "Emitting objectified FT allows deleting #{other_step.describe}"
           step_completed(other_step)
-#          raise "The objectification of '#{fact_type.default_reading}' should not cause the deletion of more than #{fact_type.all_role.size} other join steps" if (count += 1) > fact_type.all_role.size
+#          raise "The objectification of '#{fact_type.default_reading}' should not cause the deletion of more than #{fact_type.all_role.size} other steps" if (count += 1) > fact_type.all_role.size
         end
-        [ reading, exit_step ? exit_step.input_join_role.join_node : exit_node, exit_step, last_is_contractable]
+        [ reading, exit_step ? exit_step.input_play.variable : exit_node, exit_step, last_is_contractable]
       end
 
       def verbalise_join join
         prepare_join join
         readings = ''
-        next_node = @role_refs[0].join_role.join_node   # Choose a place to start
+        next_node = @role_refs[0].play.variable   # Choose a place to start
         last_is_contractable = false
-        debug :join, "Join Nodes are #{@join_nodes.map{|jn| jn.describe }.inspect}, Join Steps are #{@join_steps.map{|js| js.describe }.inspect}" do
-          until @join_steps.empty?
+        debug :join, "Variables are #{@variables.map{|jn| jn.describe }.inspect}, Steps are #{@steps.map{|js| js.describe }.inspect}" do
+          until @steps.empty?
             next_reading = nil
             # Choose amonst all remaining steps we can take from the next node, if any
-            next_steps = @join_steps_by_join_node[next_node]
+            next_steps = @steps_by_variable[next_node]
             debug :join, "Next Steps from #{next_node.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
 
             # See if we can find a next step that contracts against the last (if any):
@@ -687,18 +687,18 @@ module ActiveFacts
               debug :join, "Chose #{next_step.describe} because it's contractable against last node #{next_node.object_type.name} using #{next_reading.expand}"
 
               player_by_role =
-                next_step.all_join_role.inject({}) {|h, jr| h[jr.role] = @player_by_join_role[jr]; h }
+                next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }
               readings += expand_contracted_text(next_step, next_reading, player_by_role)
               step_completed(next_step)
             else
               next_step = choose_step(next_node) if !next_step
 
               player_by_role =
-                next_step.all_join_role.inject({}) {|h, jr| h[jr.role] = @player_by_join_role[jr]; h }
+                next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }
 
               if next_step.is_unary_step
                 # Objectified unaries get emitted as unaries, not as objectifications:
-                role = next_step.input_join_role.role
+                role = next_step.input_play.role
                 role = role.fact_type.implying_role if role.fact_type.is_a?(ImplicitFactType)
                 next_reading = role.fact_type.preferred_reading
                 readings += " and " unless readings.empty?
@@ -709,11 +709,11 @@ module ActiveFacts
 
                 # This objectification step is over an implicit fact type, so player_by_role won't have all the players
                 # Add the players of other roles associated with steps from this objectified player.
-                objectified_node = next_step.input_join_role.join_node
-                raise "Assumption violated that the objectification is the input join role" unless objectified_node.object_type.fact_type
-                objectified_node.all_join_step.map do |other_step|
-                  (other_step.all_incidental_join_role.to_a + [other_step.output_join_role]).map do |jr|
-                    player_by_role[jr.role] = @player_by_join_role[jr]
+                objectified_node = next_step.input_play.variable
+                raise "Assumption violated that the objectification is the input play" unless objectified_node.object_type.fact_type
+                objectified_node.all_step.map do |other_step|
+                  (other_step.all_incidental_play.to_a + [other_step.output_play]).map do |jr|
+                    player_by_role[jr.role] = @player_by_play[jr]
                   end
                 end
 
@@ -732,7 +732,7 @@ module ActiveFacts
                     readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
                   end
                   # No need to continue if we just deleted the last step
-                  break if @join_steps.empty?
+                  break if @steps.empty?
 
                 end
               else
@@ -742,7 +742,7 @@ module ActiveFacts
                   detect do |reading|
                     reading_starts_with_node(reading, next_node)
                   end || fact_type.preferred_reading
-                # REVISIT: If this join step and reading has role references with adjectives, we need to expand using those
+                # REVISIT: If this step and reading has role references with adjectives, we need to expand using those
                 readings += " and " unless readings.empty?
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
                 step_completed(next_step)
@@ -750,8 +750,8 @@ module ActiveFacts
             end
 
             # Continue from this step with the node having the most steps remaining
-            input_steps = @join_steps_by_join_node[input_node = next_step.input_join_role.join_node] || []
-            output_steps = @join_steps_by_join_node[output_node = next_step.output_join_role.join_node] || []
+            input_steps = @steps_by_variable[input_node = next_step.input_play.variable] || []
+            output_steps = @steps_by_variable[output_node = next_step.output_play.variable] || []
             next_node = input_steps.size > output_steps.size ? input_node : output_node
             # Prepare for possible contraction following:
             last_is_contractable = next_reading && node_contractable_against_reading(next_node, next_reading)

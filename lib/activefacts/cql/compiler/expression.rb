@@ -4,7 +4,7 @@ module ActiveFacts
 
       # An Operation is a binary or ternary fact type involving an operator,
       # a result, and one or two operands.
-      # Viewed as a result, it behaves like a VarRef with a nested Clause.
+      # Viewed as a result, it behaves like a Reference with a nested Clause.
       # Viewed as a fact type, it behaves like a Clause.
       #
       # The only exception here is an equality comparison, where it may
@@ -12,11 +12,11 @@ module ActiveFacts
       # the Operation is dropped from the clauses and is replaced by the
       # projected operand.
       #
-      # Each operand may be a Literal, a VarRef, or another Operation,
+      # Each operand may be a Literal, a Reference, or another Operation,
       # so we need to recurse down the tree to build the join.
       #
       class Operation
-        # VarRef (in)compatibility:
+        # Reference (in)compatibility:
         [ :term, :leading_adjective, :trailing_adjective, :role_name, :quantifier,
           :value_constraint, :embedded_presence_constraint, :literal
         ].each do |s|
@@ -28,8 +28,8 @@ module ActiveFacts
         def trailing_adjective; nil; end
         def value_constraint; nil; end
         def literal; nil; end
-        attr_accessor :player     # What ObjectType does the Variable denote
-        attr_accessor :variable   # What Variable for that ObjectType
+        attr_accessor :player     # What ObjectType does the Binding denote
+        attr_accessor :binding    # What Binding for that ObjectType
         attr_accessor :clause     # What clause does the result participate in?
         attr_accessor :role       # Which Role of this ObjectType
         attr_accessor :role_ref   # Which RoleRef to that Role
@@ -45,7 +45,7 @@ module ActiveFacts
         end
         def conjunction; nil; end
         attr_reader :fact_type
-        def objectified_as; self; end   # The VarRef which objectified this fact type
+        def objectified_as; self; end   # The Reference which objectified this fact type
 
         def operands context = nil
           raise "REVISIT: Implement operand enumeration in the operator subclass #{self.class.name}"
@@ -53,7 +53,7 @@ module ActiveFacts
 
         def identify_players_with_role_name context
           # Just recurse, there's no way (yet: REVISIT?) to add a role name to the result of an expression
-          var_refs.each { |o|
+          refs.each { |o|
             o.identify_players_with_role_name(context)
           }
           # As yet, an operation cannot have a role name:
@@ -62,22 +62,22 @@ module ActiveFacts
 
         def identify_other_players context
           # Just recurse, there's no way (yet: REVISIT?) to add a role name to the result of an expression
-          var_refs.each { |o|
+          refs.each { |o|
             o.identify_other_players(context)
           }
           identify_player context
         end
 
         def bind context
-          var_refs.each do |o|
+          refs.each do |o|
             o.bind context
           end
           name = result_type_name(context)
           @player = result_value_type(context, name)
-          key = "#{name} #{object_id}"  # Every Operation result is a unique Variable
-          @variable = (context.variables[key] ||= Variable.new(@player))
-          @variable.refs << self
-          @variable
+          key = "#{name} #{object_id}"  # Every Operation result is a unique Binding
+          @binding = (context.bindings[key] ||= Binding.new(@player))
+          @binding.refs << self
+          @binding
         end
 
         def result_type_name(context)
@@ -95,13 +95,13 @@ module ActiveFacts
         end
 
         def match_existing_fact_type context
-          opnds = var_refs
-          result_var_ref = VarRef.new(@variable.player.name)
-          result_var_ref.player = @variable.player
-          result_var_ref.variable = @variable
-          @variable.refs << result_var_ref
+          opnds = refs
+          result_ref = Reference.new(@binding.player.name)
+          result_ref.player = @binding.player
+          result_ref.binding = @binding
+          @binding.refs << result_ref
           clause_ast = Clause.new(
-            [result_var_ref, '='] +
+            [result_ref, '='] +
               (opnds.size > 1 ? [opnds[0]] : []) +
               [operator, opnds[-1]]
           )
@@ -146,12 +146,12 @@ module ActiveFacts
           @operator, @e1, @e2, @qualifiers = operator, e1, e2, qualifiers
         end
 
-        def var_refs
+        def refs
           [@e1, @e2]
         end
 
         def bind context
-          var_refs.each do |o|
+          refs.each do |o|
             o.bind context
           end
 
@@ -160,10 +160,10 @@ module ActiveFacts
 
           name = 'Boolean'
           @player = result_value_type(context, name)
-          key = "#{name} #{object_id}"  # Every Comparison result is a unique Variable
-          @variable = (context.variables[key] ||= Variable.new(@player))
-          @variable.refs << self
-          @variable
+          key = "#{name} #{object_id}"  # Every Comparison result is a unique Binding
+          @binding = (context.bindings[key] ||= Binding.new(@player))
+          @binding.refs << self
+          @binding
         end
 
         def result_type_name(context)
@@ -205,7 +205,7 @@ module ActiveFacts
           @terms = terms
         end
 
-        def var_refs
+        def refs
           @terms
         end
 
@@ -250,7 +250,7 @@ module ActiveFacts
           @factors = factors
         end
 
-        def var_refs
+        def refs
           @factors
         end
 
@@ -298,7 +298,7 @@ module ActiveFacts
           '1/'
         end
 
-        def var_refs
+        def refs
           [@divisor]
         end
 
@@ -401,15 +401,15 @@ module ActiveFacts
         end
 
         def bind context
-          @variable || begin
+          @binding || begin
             key = "#{@player.name} #{@literal}"
-            @variable = (context.variables[key] ||= Variable.new(@player))
-            @variable.refs << self
+            @binding = (context.bindings[key] ||= Binding.new(@player))
+            @binding.refs << self
           end
         end
 
-        def variable
-          @variable
+        def binding
+          @binding
         end
       end
 

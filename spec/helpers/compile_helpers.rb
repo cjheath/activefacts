@@ -3,8 +3,8 @@ module CompileHelpers
     @base_facts = @constellation.FactType.values - @constellation.ImplicitFactType.values
     @base_objects = @constellation.ObjectType.values
     @base_joins = @constellation.Join.values
-    @base_join_steps = @constellation.JoinStep.values
-    @base_join_nodes = @constellation.JoinNode.values
+    @base_steps = @constellation.Step.values
+    @base_variables = @constellation.Variable.values
   end
 
   def fact_types
@@ -25,7 +25,7 @@ module CompileHelpers
 
   def derivation fact_type
     # PENDING: When the fact type's roles are projected, use this instead:
-    # j = fact_type.all_role.map{|r| r.all_join_role.map{|jr| jr.join}}.flatten.uniq - @base_joins
+    # j = fact_type.all_role.map{|r| r.all_play.map{|jr| jr.join}}.flatten.uniq - @base_joins
     j = joins
     j.size.should == 1
     join = j[0]
@@ -36,12 +36,12 @@ module CompileHelpers
     @constellation.Join.values - @base_joins
   end
 
-  def join_steps
-    @constellation.JoinStep.values - @base_join_steps
+  def steps
+    @constellation.Step.values - @base_steps
   end
 
-  def join_nodes
-    @constellation.JoinNode.values - @base_join_nodes
+  def variables
+    @constellation.Variable.values - @base_variables
   end
 
   def parse string

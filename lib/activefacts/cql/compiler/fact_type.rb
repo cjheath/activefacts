@@ -29,8 +29,8 @@ module ActiveFacts
           # Build the join:
           unless @conditions.empty? and !@returning
             debug :join, "building fact_type join" do
-              @join = build_join_nodes(@conditions.flatten)
-              @roles_by_variable = build_all_join_steps(@conditions)
+              @join = build_variables(@conditions.flatten)
+              @roles_by_binding = build_all_steps(@conditions)
               @join.validate
               @join
             end
@@ -42,7 +42,7 @@ module ActiveFacts
         def match_condition_fact_types
           @conditions.each do |condition|
             next if condition.is_naked_object_type
-            # REVISIT: Many conditions will imply a number of different join steps, which need to be handled (similar to nested_clauses).
+            # REVISIT: Many conditions will imply a number of different steps, which need to be handled (similar to nested_clauses).
             debug :projection, "matching condition fact_type #{condition.inspect}" do
               fact_type = condition.match_existing_fact_type @context
               raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
@@ -171,11 +171,11 @@ module ActiveFacts
 
         def project_clause_roles(clause)
           # Attach the clause's role references to the projected roles of the join
-          clause.var_refs.each_with_index do |var_ref, i|
-            role, join_role = @roles_by_variable[var_ref.variable]
-            raise "#{var_ref} must be a role projected from the conditions" unless role
-            raise "#{var_ref} has already-projected join role!" if join_role.role_ref
-            var_ref.role_ref.join_role = join_role
+          clause.refs.each_with_index do |ref, i|
+            role, play = @roles_by_binding[ref.binding]
+            raise "#{ref} must be a role projected from the conditions" unless role
+            raise "#{ref} has already-projected play!" if play.role_ref
+            ref.role_ref.play = play
           end
         end
 
@@ -183,7 +183,7 @@ module ActiveFacts
         def is_projected_role(rr)
           # rr is a RoleRef on one side of the comparison.
           # If its binding contains a reference from our readings, it's projected.
-          rr.variable.refs.detect do |ref|
+          rr.binding.refs.detect do |ref|
             @readings.include?(ref.reading)
           end
         end
@@ -237,8 +237,8 @@ module ActiveFacts
 
           # If there's an existing presence constraint that can be converted into a PC, do that:
           @clauses.each do |clause|
-            var_ref = clause.var_refs[-1] or next
-            epc = var_ref.embedded_presence_constraint or next
+            ref = clause.refs[-1] or next
+            epc = ref.embedded_presence_constraint or next
             epc.max_frequency == 1 or next
             next if epc.enforcement
             epc.is_preferred_identifier = true
@@ -265,12 +265,12 @@ module ActiveFacts
         end
 
         def verify_matching_roles
-          var_refs_by_clause_and_key = {}
-          clauses_by_var_refs =
+          refs_by_clause_and_key = {}
+          clauses_by_refs =
             @clauses.inject({}) do |hash, clause|
-              keys = clause.var_refs.map do |var_ref|
-                key = var_ref.key.compact
-                var_refs_by_clause_and_key[[clause, key]] = var_ref
+              keys = clause.refs.map do |ref|
+                key = ref.key.compact
+                refs_by_clause_and_key[[clause, key]] = ref
                 key
               end.sort_by{|a| a.map{|k|k.to_s}}
               raise "Fact types may not have duplicate roles" if keys.uniq.size < keys.size
@@ -278,14 +278,14 @@ module ActiveFacts
               hash
             end
 
-          if clauses_by_var_refs.size != 1 and @conditions.empty?
-            # Attempt loose binding here; it might merge some Compiler::VarRefs to share the same Variables
-            variants = clauses_by_var_refs.keys
-            (clauses_by_var_refs.size-1).downto(1) do |m|   # Start with the last one
+          if clauses_by_refs.size != 1 and @conditions.empty?
+            # Attempt loose binding here; it might merge some Compiler::References to share the same Variables
+            variants = clauses_by_refs.keys
+            (clauses_by_refs.size-1).downto(1) do |m|   # Start with the last one
               0.upto(m-1) do |l|                              # Try to rebind onto any lower one
                 common = variants[m]&variants[l]
-                clauses_l = clauses_by_var_refs[variants[l]]
-                clauses_m = clauses_by_var_refs[variants[m]]
+                clauses_l = clauses_by_refs[variants[l]]
+                clauses_m = clauses_by_refs[variants[m]]
                 l_keys = variants[l]-common
                 m_keys = variants[m]-common
                 debug :binding, "Try to collapse variant #{m} onto #{l}; diffs are #{l_keys.inspect} -> #{m_keys.inspect}"
@@ -295,16 +295,16 @@ module ActiveFacts
                   candidates = []
                   (0...m_keys.size).each do |j|
                     m_key = m_keys[j]
-                    l_var_ref = var_refs_by_clause_and_key[[clauses_l[0], l_key]]
-                    m_var_ref = var_refs_by_clause_and_key[[clauses_m[0], m_key]]
-                    debug :binding, "Can we match #{l_var_ref.inspect} (#{i}) with #{m_var_ref.inspect} (#{j})?"
-                    next if m_var_ref.player != l_var_ref.player
-                    if has_more_adjectives(m_var_ref, l_var_ref)
-                      debug :binding, "can rebind #{m_var_ref.inspect} to #{l_var_ref.inspect}"
-                      candidates << [m_var_ref, l_var_ref]
-                    elsif has_more_adjectives(l_var_ref, m_var_ref)
-                      debug :binding, "can rebind #{l_var_ref.inspect} to #{m_var_ref.inspect}"
-                      candidates << [l_var_ref, m_var_ref]
+                    l_ref = refs_by_clause_and_key[[clauses_l[0], l_key]]
+                    m_ref = refs_by_clause_and_key[[clauses_m[0], m_key]]
+                    debug :binding, "Can we match #{l_ref.inspect} (#{i}) with #{m_ref.inspect} (#{j})?"
+                    next if m_ref.player != l_ref.player
+                    if has_more_adjectives(m_ref, l_ref)
+                      debug :binding, "can rebind #{m_ref.inspect} to #{l_ref.inspect}"
+                      candidates << [m_ref, l_ref]
+                    elsif has_more_adjectives(l_ref, m_ref)
+                      debug :binding, "can rebind #{l_ref.inspect} to #{m_ref.inspect}"
+                      candidates << [l_ref, m_ref]
                     end
                   end
 
@@ -323,7 +323,7 @@ module ActiveFacts
                 else
                   # No point continuing, we failed on this one.
                   raise "All readings in a fact type definition must have matching role players, compare (#{
-                      clauses_by_var_refs.keys.map do |keys|
+                      clauses_by_refs.keys.map do |keys|
                         keys.map{|key| key*'-' }*", "
                       end*") with ("
                     })"

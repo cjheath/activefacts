@@ -312,10 +312,10 @@ module ActiveFacts
 
       def derivation_precursors_complete(fact_type)
         pr = fact_type.preferred_reading
-        return true unless jr = pr.role_sequence.all_role_ref.to_a[0].join_role
-        join = jr.join_node.join
-        return false if join.all_join_step.detect{|js| !@fact_types_dumped[js.fact_type] }
-        return false if join.all_join_node.detect{|jn| !@object_types_dumped[jn.object_type] }
+        return true unless jr = pr.role_sequence.all_role_ref.to_a[0].play
+        join = jr.variable.join
+        return false if join.all_step.detect{|js| !@fact_types_dumped[js.fact_type] }
+        return false if join.all_variable.detect{|jn| !@object_types_dumped[jn.object_type] }
         true
       end
 
@@ -498,7 +498,7 @@ module ActiveFacts
             # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
             fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq
             if fact_types.size == 1 &&
-              !c.role_sequence.all_role_ref.detect{|rr| rr.join_role } &&
+              !c.role_sequence.all_role_ref.detect{|rr| rr.play } &&
               c.max_frequency == 1 &&         # Uniqueness
               fact_types[0].all_role.size == c.role_sequence.all_role_ref.size
               next
