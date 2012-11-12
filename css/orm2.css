@@ -42,3 +42,45 @@ span {
 dd {
   margin-bottom: 0.5em;
 }
+
+.glossary-toc {
+  display: block;
+  margin: 0;
+  padding: 0 16px;
+  background: #DDD;
+  list-style: none;
+  font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
+  overflow: auto;
+  border-right: solid #DDD 3px;
+  height: 100%;
+  float: right;
+  width: 240px;
+}
+
+.glossary-doc {
+  display: block;
+  background: #EEE;
+  border-right: solid #EEE 3px;
+  font: 300 16px/1.4 "Myriad Pro", "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif;
+  height: 100%;
+  margin: 0;
+  overflow: auto;
+  padding: 0 30px;
+
+  left: 0px;
+  right: 240px;
+}
+
+.glossary-doc dl {
+  margin-bottom: 1600px;
+}
+
+.glossary-doc dd {
+  margin-bottom: 30px;
+}
+
+.glossary-facttype,
+.glossary-reading {
+  display: inline;
+  background: #DDD;
+}

@@ -40,33 +40,46 @@ module ActiveFacts
 
         def vocabulary_start
           puts "<link rel='stylesheet' href='css/orm2.css' media='screen' type='text/css'/>"
-          puts "<h1>#{@vocabulary.name}</h1>"
-          puts "<dl>"
         end
 
         def vocabulary_end
-          puts "</dl>"
         end
 
         def object_types_dump
-          @vocabulary.
-            all_object_type.
-            sort_by{|o| o.name.gsub(/ /,'').downcase}.
-            each do |o|
-              case o
-              when ActiveFacts::Metamodel::TypeInheritance
-                nil
-              when ActiveFacts::Metamodel::ValueType
-                value_type_dump(o)
-              else
-                if o.fact_type
-                  objectified_fact_type_dump(o)
-                else
-                  entity_type_dump(o)
-                end
-              end
-            end
-        end
+	  all_object_type =
+	    @vocabulary.
+	      all_object_type.
+	      sort_by{|o| o.name.gsub(/ /,'').downcase}
+
+	  # Put out a table of contents first:
+	  puts '<ol class="glossary-toc">'
+	  all_object_type.
+	    each do |o|
+	      puts "<li>#{termref(o.name)}</li>"
+	    end
+	  puts '</ol>'
+
+	  puts '<div class="glossary-doc">'
+	    puts "<h1>#{@vocabulary.name}</h1>"
+	    puts '<dl>'
+	    all_object_type.
+	      each do |o|
+		case o
+		when ActiveFacts::Metamodel::TypeInheritance
+		  nil
+		when ActiveFacts::Metamodel::ValueType
+		  value_type_dump(o)
+		else
+		  if o.fact_type
+		    objectified_fact_type_dump(o)
+		  else
+		    entity_type_dump(o)
+		  end
+		end
+	      end
+	    puts '</dl>'
+	  puts '</div>'
+	end
 
         def element(text, attrs, tag = 'span')
           "<#{tag}#{attrs.empty? ? '' : attrs.map{|k,v| " #{k}='#{v}'"}*''}>#{text}</#{tag}>"
@@ -91,8 +104,8 @@ module ActiveFacts
         def value_type_dump(o)
           return if o.all_role.size == 0  # Skip value types that are only used as supertypes
           puts "  <dt>" +
-            "Value Type: #{termdef(o.name)}" +
-            (o.supertype ? " (written as #{termref(o.supertype.name)})" : "") +
+            "#{termdef(o.name)} " +
+	    (o.supertype ? "is written as #{termref(o.supertype.name)}" : " (a fundamental data type)") +
             "</dt>"
 
           puts "  <dd>"
@@ -106,8 +119,11 @@ module ActiveFacts
               all_role.
               map{|r| r.fact_type}.
               uniq.
-              reject{|ft| ft.is_a?(ActiveFacts::Metamodel::TypeInheritance) || ft.is_a?(ActiveFacts::Metamodel::ImplicitFactType) }.
-              map { |ft| "    #{fact_type_with_constraints(ft, o)}</br>" }.
+              reject do |ft|
+#		ft.is_a?(ActiveFacts::Metamodel::TypeInheritance) or
+		ft.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+	      end.
+              map { |ft| "    #{fact_type_with_constraints(ft, o)}" }.
               sort * "\n"
           )
         end
@@ -131,21 +147,38 @@ module ActiveFacts
           )
         end
 
-        def fact_type(ft, wrt = nil)
+        def fact_type(ft, include_alternates = true, wrt = nil)
           role = ft.all_role.detect{|r| r.object_type == wrt}
           preferred_reading = ft.reading_preferably_starting_with_role(role)
           alternate_readings = ft.all_reading.reject{|r| r == preferred_reading}
-          expand_reading(preferred_reading) +
-            (alternate_readings.size > 0 ?
-              ' (alternatively, ' +
-              alternate_readings.map { |r| expand_reading(r)}*', ' +
-              ')' : '')
+
+	  %Q{<div class='glossary-facttype'>}+
+	    "<div class='glossary-reading'>\n" +
+	    expand_reading(preferred_reading) +
+	    "\n</div>\n" +
+            (if include_alternates and alternate_readings.size > 0
+              "<div class='glossary-alternates'>" +
+	      "(alternatively: " +
+              alternate_readings.map do |r|
+		"<div class='glossary-reading'>\n" +
+		  expand_reading(r) +
+		"</div>"
+	      end*",\n" +
+              ")</div>\n"
+	    else
+	      ''
+	    end) +
+	  "</div>\n"
         end
 
         def fact_type_with_constraints(ft, wrt = nil)
-          fact_type(ft, wrt) +
-            "<br/>\n<ul>\n" +
-            fact_type_constraints(ft) +
+          fact_type(ft, true, wrt) +
+            %Q{\n<ul class="glossary-constraints">\n}+
+	    (unless ft.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+	      fact_type_constraints(ft)
+	    else
+	      ''
+	    end) +
             "</ul>"
         end
 
@@ -166,8 +199,8 @@ module ActiveFacts
 
         def objectified_fact_type_dump(o)
           puts "  <dt>" +
-            "Entity Type: #{termdef(o.name)}" +
-            " (objectification of #{fact_type(o.fact_type)})" +
+            "#{termdef(o.name)}" +
+            " (in which #{fact_type(o.fact_type, false)})" +
             "</dt>"
           # REVISIT: Handle separate identification
 
@@ -175,7 +208,7 @@ module ActiveFacts
           puts fact_type_constraints(o.fact_type)
           o.fact_type.all_role_in_order.each do |r|
             n = r.object_type.name
-            puts "#{termref(o.name)} involves exactly one #{termref(r.role_name || n, n)}<br/>"
+            puts "#{termref(o.name)} involves <span class='keyword'>exactly one</span> #{termref(r.role_name || n, n)}<br/>"
           end
           relevant_facts_and_constraints(o)
           puts "  </dd>"
@@ -189,13 +222,16 @@ module ActiveFacts
           end
 
           puts "  <dt>" +
-            "Entity Type: #{termdef(o.name)}" +
-            " (" +
+            "#{termdef(o.name)} " +
             [
-              (supers.size > 0 ? "Subtype of #{supers.map{|s| s.name}*', '})" : nil),
-              (pi ? "identified by "+pi.role_sequence.describe : nil)
+              (supers.size > 0 ? "is a kind of #{supers.map{|s| termref(s.name)}*', '}" : nil),
+              (if pi
+		"is identified by " +
+		pi.role_sequence.describe.scan(/\w[\w\s]*/).map{|n| termref(n)}*", "
+	      else
+		nil
+	      end)
             ].compact*', '
-            ")" +
             "</dt>"
 
           puts "  <dd>"
