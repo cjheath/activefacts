@@ -73,6 +73,7 @@ module ActiveFacts
 	  puts '<ol class="glossary-toc">'
 	  all_object_type.
 	  reject do |o|
+	    o.name == '_ImplicitBooleanValueType' or
 	    o.kind_of?(ActiveFacts::Metamodel::ValueType) && o.all_role.size == 0 or
 	    o.kind_of?(ActiveFacts::Metamodel::TypeInheritance)
 	  end.
@@ -124,7 +125,8 @@ module ActiveFacts
         end
 
         def value_type_dump(o)
-          return if o.all_role.size == 0  # Skip value types that are only used as supertypes
+          return if o.all_role.size == 0 or  # Skip value types that are only used as supertypes
+	    o.name == '_ImplicitBooleanValueType'
           puts "  <dt>" +
             "#{termdef(o.name)} " +
 	    (o.supertype ? "<span class='keyword'>is written as</span> #{termref(o.supertype.name)}" : " (a fundamental data type)") +
