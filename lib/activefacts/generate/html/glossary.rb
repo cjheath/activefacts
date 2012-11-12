@@ -184,7 +184,7 @@ module ActiveFacts
           )
         end
 
-        def role_ref rr, freq_con, l_adj, name, t_adj, role_name_def, literal
+        def role_ref(rr, freq_con, l_adj, name, t_adj, role_name_def, literal)
           term_parts = [l_adj, termref(name), t_adj].compact
           [
             freq_con ? element(freq_con, :class=>:keyword) : nil,
@@ -194,34 +194,39 @@ module ActiveFacts
           ]
         end
 
-        def expand_reading(r)
+        def expand_reading(reading, include_rolenames = true)
           element(
-            r.expand do |*a|
-              role_ref(*a)
+            reading.expand([], include_rolenames) do |rr, freq_con, l_adj, name, t_adj, role_name_def, literal|
+	      if role_name_def
+		role_name_def = role_name_def.gsub(/\(as ([^)]+)\)/) {
+		  span("(as #{ termref(rr.role.object_type.name, $1) })", 'keyword')
+		}
+	      end
+              role_ref rr, freq_con, l_adj, name, t_adj, role_name_def, literal
             end,
             {:class => 'copula'}
           )
         end
 
-        def fact_type(ft, include_alternates = true, wrt = nil)
+        def fact_type(ft, include_alternates = true, wrt = nil, include_rolenames = true)
           role = ft.all_role.detect{|r| r.object_type == wrt}
           preferred_reading = ft.reading_preferably_starting_with_role(role)
           alternate_readings = ft.all_reading.reject{|r| r == preferred_reading}
 
 	  div(
 	    div(
-	      expand_reading(preferred_reading),
+	      expand_reading(preferred_reading, include_rolenames),
 	      'glossary-reading'
 	    )+
 	    (if include_alternates and alternate_readings.size > 0
               div(
 		"(alternatively: " +
-		alternate_readings.map do |r|
+		alternate_readings.map do |reading|
 		  div(
-		    expand_reading(r),
+		    expand_reading(reading, include_rolenames),
 		    'glossary-reading'
 		  )
-		end*",\n",
+		end*",\n"+')',
 		'glossary-alternates'
 	      )
 	    else
@@ -261,12 +266,13 @@ module ActiveFacts
         def objectified_fact_type_dump(o)
           puts "  <dt>" +
             "#{termdef(o.name)}" +
-            " (#{span('in which', 'keyword')} #{fact_type(o.fact_type, false)})" +
+            " (#{span('in which', 'keyword')} #{fact_type(o.fact_type, false, nil, nil)})" +
             "</dt>"
           # REVISIT: Handle separate identification
 
           puts "  <dd>"
-          puts fact_type_constraints(o.fact_type)
+	  puts fact_type_with_constraints(o.fact_type)
+
           o.fact_type.all_role_in_order.each do |r|
             n = r.object_type.name
             puts "#{termref(o.name)} involves #{span('exactly one', 'keyword')} #{termref(r.role_name || n, n)}<br/>"
@@ -288,7 +294,15 @@ module ActiveFacts
               (supers.size > 0 ? "#{span('is a kind of', 'keyword')} #{supers.map{|s| termref(s.name)}*', '}" : nil),
               (if pi
 		"#{span('is identified by', 'keyword')} " +
-		pi.role_sequence.describe.scan(/[\w_][\w\s_]*/).map{|n| termref(n)}*", "
+		pi.role_sequence.all_role_ref_in_order.map do |rr|
+		  termref(
+		    rr.role.object_type.name,
+		    [ rr.leading_adjective,
+		      rr.role.role_name || rr.role.object_type.name,
+		      rr.trailing_adjective
+		    ].compact*'-'
+		  )
+		end*", "
 	      else
 		nil
 	      end)
