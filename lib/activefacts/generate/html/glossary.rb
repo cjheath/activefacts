@@ -108,6 +108,22 @@ module ActiveFacts
           "<#{tag}#{attrs.empty? ? '' : attrs.map{|k,v| " #{k}='#{v}'"}*''}>#{text}</#{tag}>"
         end
 
+	def span(text, klass)
+	  element(text, klass ? {:class => klass} : nil)
+	end
+
+	def div(text, klass)
+	  element(text, klass ? {:class => klass} : nil, 'div')
+	end
+
+	def h1(text, klass)
+	  element(text, klass ? {:class => klass} : nil, 'h1')
+	end
+
+	def dl(text, klass)
+	  element(text, klass ? {:class => klass} : nil, 'dl')
+	end
+
         # A definition of a term
         def termdef(name)
           element(name, {:name => name, :class => 'object_type'}, 'a')
@@ -129,13 +145,30 @@ module ActiveFacts
 	    o.name == '_ImplicitBooleanValueType'
           puts "  <dt>" +
             "#{termdef(o.name)} " +
-	    (o.supertype ? "<span class='keyword'>is written as</span> #{termref(o.supertype.name)}" : " (a fundamental data type)") +
+	    (if o.supertype
+	      span('is written as ', :keyword) + termref(o.supertype.name)
+	    else
+	      " (a fundamental data type)"
+	    end) +
             "</dt>"
 
           puts "  <dd>"
+	  value_sub_types(o)
           relevant_facts_and_constraints(o)
           puts "  </dd>"
         end
+
+	def value_sub_types(o)
+	  o.
+	    all_value_type_as_supertype.    # All value types for which o is a supertype
+	    sort_by{|sub| sub.name}.
+	    each do |sub|
+	      puts div(
+		"#{termref(sub.name)} #{span('is written as', 'keyword')} #{termref(o.name)}",
+		'glossary-facttype'
+	      )+'</br>'
+	    end
+	end
 
         def relevant_facts_and_constraints(o)
           puts(
@@ -175,23 +208,28 @@ module ActiveFacts
           preferred_reading = ft.reading_preferably_starting_with_role(role)
           alternate_readings = ft.all_reading.reject{|r| r == preferred_reading}
 
-	  %Q{<div class='glossary-facttype'>}+
-	    "<div class='glossary-reading'>\n" +
-	    expand_reading(preferred_reading) +
-	    "</div>" +
-            (if include_alternates and alternate_readings.size > 0
-              "<div class='glossary-alternates'>" +
-	      "(alternatively: " +
-              alternate_readings.map do |r|
-		"<div class='glossary-reading'>\n" +
-		  expand_reading(r) +
-		"</div>"
-	      end*",\n" +
-              ")</div>"
+	  div(
+	    div(
+	      expand_reading(preferred_reading),
+	      'glossary-reading'
+	    )+
+	    (if include_alternates and alternate_readings.size > 0
+              div(
+		"(alternatively: " +
+		alternate_readings.map do |r|
+		  div(
+		    expand_reading(r),
+		    'glossary-reading'
+		  )
+		end*",\n",
+		'glossary-alternates'
+	      )
 	    else
 	      ''
-	    end) +
-	  "</div>"
+	    end
+	    ),
+	    'glossary-facttype'
+	  )
         end
 
         def fact_type_with_constraints(ft, wrt = nil)
@@ -223,7 +261,7 @@ module ActiveFacts
         def objectified_fact_type_dump(o)
           puts "  <dt>" +
             "#{termdef(o.name)}" +
-            " (<span class='keyword'>in which</span> #{fact_type(o.fact_type, false)})" +
+            " (#{span('in which', 'keyword')} #{fact_type(o.fact_type, false)})" +
             "</dt>"
           # REVISIT: Handle separate identification
 
@@ -231,7 +269,7 @@ module ActiveFacts
           puts fact_type_constraints(o.fact_type)
           o.fact_type.all_role_in_order.each do |r|
             n = r.object_type.name
-            puts "#{termref(o.name)} involves <span class='keyword'>exactly one</span> #{termref(r.role_name || n, n)}<br/>"
+            puts "#{termref(o.name)} involves #{span('exactly one', 'keyword')} #{termref(r.role_name || n, n)}<br/>"
           end
           relevant_facts_and_constraints(o)
           puts "  </dd>"
@@ -247,9 +285,9 @@ module ActiveFacts
           puts "  <dt>" +
             "#{termdef(o.name)} " +
             [
-              (supers.size > 0 ? "<span class='keyword'>is a kind of</span> #{supers.map{|s| termref(s.name)}*', '}" : nil),
+              (supers.size > 0 ? "#{span('is a kind of', 'keyword')} #{supers.map{|s| termref(s.name)}*', '}" : nil),
               (if pi
-		"<span class='keyword'>is identified by</span> " +
+		"#{span('is identified by', 'keyword')} " +
 		pi.role_sequence.describe.scan(/[\w_][\w\s_]*/).map{|n| termref(n)}*", "
 	      else
 		nil
