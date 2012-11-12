@@ -72,6 +72,10 @@ module ActiveFacts
 	  # Put out a table of contents first:
 	  puts '<ol class="glossary-toc">'
 	  all_object_type.
+	  reject do |o|
+	    o.kind_of?(ActiveFacts::Metamodel::ValueType) && o.all_role.size == 0 or
+	    o.kind_of?(ActiveFacts::Metamodel::TypeInheritance)
+	  end.
 	    each do |o|
 	      puts "<li>#{termref(o.name)}</li>"
 	    end
