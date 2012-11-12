@@ -47,13 +47,12 @@ module ActiveFacts
 
 	    puts %Q{
 	      <style media='print' type='text/css'>
-	      .keyword { font-style: italic; }
-	      .term { font-weight: bold; }
-	      .glossary-toc { display: none; }
-	      .glossary-facttype,
-	      .glossary-reading {
-		display: inline;
-	      }
+              .keyword { color: #0000CC; font-style: italic; display: inline; }
+              .vocabulary, .object_type { color: #8A0092; font-weight: bold; }
+              .copula { color: #0E5400; }
+              .value { color: #FF990E; display: inline; }
+              .glossary-toc { display: none; }
+              .glossary-facttype, .glossary-reading { display: inline; }
 	      </style>
 	    }
 
@@ -108,20 +107,20 @@ module ActiveFacts
           "<#{tag}#{attrs.empty? ? '' : attrs.map{|k,v| " #{k}='#{v}'"}*''}>#{text}</#{tag}>"
         end
 
-	def span(text, klass)
-	  element(text, klass ? {:class => klass} : nil)
+	def span(text, klass = nil)
+	  element(text, klass ? {:class => klass} : {})
 	end
 
-	def div(text, klass)
-	  element(text, klass ? {:class => klass} : nil, 'div')
+	def div(text, klass = nil)
+	  element(text, klass ? {:class => klass} : {}, 'div')
 	end
 
-	def h1(text, klass)
-	  element(text, klass ? {:class => klass} : nil, 'h1')
+	def h1(text, klass = nil)
+	  element(text, klass ? {:class => klass} : {}, 'h1')
 	end
 
-	def dl(text, klass)
-	  element(text, klass ? {:class => klass} : nil, 'dl')
+	def dl(text, klass = nil)
+	  element(text, klass ? {:class => klass} : {}, 'dl')
 	end
 
         # A definition of a term
@@ -155,6 +154,7 @@ module ActiveFacts
           puts "  <dd>"
 	  value_sub_types(o)
           relevant_facts_and_constraints(o)
+	  values(o)
           puts "  </dd>"
         end
 
@@ -168,6 +168,20 @@ module ActiveFacts
 		'glossary-facttype'
 	      )+'</br>'
 	    end
+	end
+
+	def values(o)
+	  o.all_instance.each do |i|
+	    v = i.value
+	    puts div(
+	      (i.population.name.empty? ? '' : i.population.name+': ') +
+	      termref(o.name) + ' ' +
+	      div(
+              # v.is_a_string ? v.literal.inspect : v.literal,
+		v.literal.inspect,
+		'value')
+	      )
+	  end
 	end
 
         def relevant_facts_and_constraints(o)
@@ -238,7 +252,15 @@ module ActiveFacts
         end
 
         def fact_type_with_constraints(ft, wrt = nil)
-          fact_type(ft, true, wrt) +
+	  if ft.entity_type
+	    div(
+	      termref(ft.entity_type.name) +
+	      div(' is where ', 'keyword') +
+	      fact_type(ft, true, wrt)
+	    )
+	  else
+	    fact_type(ft, true, wrt)
+	  end +
             %Q{\n<ul class="glossary-constraints">\n}+
 	    (unless ft.is_a?(ActiveFacts::Metamodel::TypeInheritance)
 	      fact_type_constraints(ft)
@@ -311,8 +333,40 @@ module ActiveFacts
 
           puts "  <dd>"
           relevant_facts_and_constraints(o)
+	  entities(o)
           puts "  </dd>"
         end
+
+	def entities(o)
+	  return if o.preferred_identifier.role_sequence.all_role_ref.size > 1 # REVISIT: Composite identification
+	  o.all_instance.each do |i|
+	    v = i.value
+	    ii = i    # The identifying instance
+
+	    until v
+	      pi = ii.object_type.preferred_identifier		  # ii is an Entity Type
+	      break if pi.role_sequence.all_role_ref.size > 1	  # REVISIT: Composite identification
+
+	      identifying_fact_type = pi.role_sequence.all_role_ref.single.role.fact_type
+	      # Find the role played by this instance through which it is identified:
+	      irv = i.all_role_value.detect{|rv| rv.fact.fact_type == identifying_fact_type }
+	      # Get the other RoleValue in what must be a binary fact type:
+	      orv = irv.fact.all_role_value.detect{|rv| rv != irv}
+	      ii = orv.instance
+	      v = ii.value    # Does this instance have a value? If so, we're done.
+	    end
+
+	    next unless v
+	    puts div(
+	      (i.population.name.empty? ? '' : i.population.name+': ') +
+	      termref(o.name) + ' ' +
+	      div(
+              # v.is_a_string ? v.literal.inspect : v.literal,
+		v.literal.inspect,
+		'value')
+	      )
+	  end
+	end
 
       end
     end
