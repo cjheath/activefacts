@@ -39,7 +39,25 @@ module ActiveFacts
         end
 
         def vocabulary_start
-          puts "<link rel='stylesheet' href='css/orm2.css' media='screen' type='text/css'/>"
+          # puts "<link rel='stylesheet' href='css/orm2.css' media='screen' type='text/css'/>"
+	  File.open(File.dirname(__FILE__)+"/../../../../css/orm2.css") do |f|
+	    puts "<style media='screen' type='text/css'>"
+	    puts f.read
+	    puts "</style>"
+
+	    puts %Q{
+	      <style media='print' type='text/css'>
+	      .keyword { font-style: italic; }
+	      .term { font-weight: bold; }
+	      .glossary-toc { display: none; }
+	      .glossary-facttype,
+	      .glossary-reading {
+		display: inline;
+	      }
+	      </style>
+	    }
+
+	  end
         end
 
         def vocabulary_end
@@ -105,7 +123,7 @@ module ActiveFacts
           return if o.all_role.size == 0  # Skip value types that are only used as supertypes
           puts "  <dt>" +
             "#{termdef(o.name)} " +
-	    (o.supertype ? "is written as #{termref(o.supertype.name)}" : " (a fundamental data type)") +
+	    (o.supertype ? "<span class='keyword'>is written as</span> #{termref(o.supertype.name)}" : " (a fundamental data type)") +
             "</dt>"
 
           puts "  <dd>"
@@ -120,7 +138,6 @@ module ActiveFacts
               map{|r| r.fact_type}.
               uniq.
               reject do |ft|
-#		ft.is_a?(ActiveFacts::Metamodel::TypeInheritance) or
 		ft.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
 	      end.
               map { |ft| "    #{fact_type_with_constraints(ft, o)}" }.
@@ -155,7 +172,7 @@ module ActiveFacts
 	  %Q{<div class='glossary-facttype'>}+
 	    "<div class='glossary-reading'>\n" +
 	    expand_reading(preferred_reading) +
-	    "\n</div>\n" +
+	    "</div>" +
             (if include_alternates and alternate_readings.size > 0
               "<div class='glossary-alternates'>" +
 	      "(alternatively: " +
@@ -164,11 +181,11 @@ module ActiveFacts
 		  expand_reading(r) +
 		"</div>"
 	      end*",\n" +
-              ")</div>\n"
+              ")</div>"
 	    else
 	      ''
 	    end) +
-	  "</div>\n"
+	  "</div>"
         end
 
         def fact_type_with_constraints(ft, wrt = nil)
@@ -200,7 +217,7 @@ module ActiveFacts
         def objectified_fact_type_dump(o)
           puts "  <dt>" +
             "#{termdef(o.name)}" +
-            " (in which #{fact_type(o.fact_type, false)})" +
+            " (<span class='keyword'>in which</span> #{fact_type(o.fact_type, false)})" +
             "</dt>"
           # REVISIT: Handle separate identification
 
@@ -224,10 +241,10 @@ module ActiveFacts
           puts "  <dt>" +
             "#{termdef(o.name)} " +
             [
-              (supers.size > 0 ? "is a kind of #{supers.map{|s| termref(s.name)}*', '}" : nil),
+              (supers.size > 0 ? "<span class='keyword'>is a kind of</span> #{supers.map{|s| termref(s.name)}*', '}" : nil),
               (if pi
-		"is identified by " +
-		pi.role_sequence.describe.scan(/\w[\w\s]*/).map{|n| termref(n)}*", "
+		"<span class='keyword'>is identified by</span> " +
+		pi.role_sequence.describe.scan(/[\w_][\w\s_]*/).map{|n| termref(n)}*", "
 	      else
 		nil
 	      end)
