@@ -129,12 +129,12 @@ Reading is in one Role Sequence,
 	Role Sequence is for Reading;
 Role Sequence has unused dependency to force table in norma;
 
-Role Value is identified by Instance and Fact where
-	Instance plays Role Value,
-	Role Value is of one Instance,
+Role Value is identified by Fact and Role where
 	Role Value fulfils one Fact,
-	Fact includes at least one Role Value;
-Role Value is of one Role;
+	Fact includes at least one Role Value,
+	Role Value is of one Role;
+Instance plays Role Value,
+	Role Value is of one Instance;
 
 Set Constraint is a kind of Constraint;
 
@@ -172,7 +172,7 @@ Role has at most one role-Value Constraint,
 	Value Constraint applies to at most one Role;
 
 Variable is identified by Query and Ordinal where
-	Query includes Variable,
+	Query includes at least one Variable,
 	Variable is in one Query,
 	Variable has one Ordinal position;
 Variable projects at most one Role (as Projection),
@@ -315,10 +315,10 @@ Set Exclusion Constraint is mandatory;
 
 Step is identified by input-Play and output-Play where
 	Step has one input-Play,
-	Step has one output-Play;
+	Step has at most one output-Play;
 Step falls under at most one Alternative Set,
 	Alternative Set covers at least one Step;
-Step traverses one Fact Type,
+Step specifies one Fact Type,
 	Fact Type directs Step;
 Step involves incidental-Play,
 	Play is incidentally involved in at most one Step;
@@ -425,6 +425,8 @@ Entity Type is implied by objectification
 	only if Entity Type nests Fact Type;
 Presence Constraint is preferred identifier
 	only if Presence Constraint has max Frequency;
+Step involves incidental Play
+	only if Step has output Play;
 Value Type has Scale
 	only if Value Type has Length;
 either Agreement was reached by Agent or Agreement was on Date;

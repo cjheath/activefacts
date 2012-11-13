@@ -236,7 +236,7 @@ module ActiveFacts
     end
 
     class RoleValue
-      identified_by :instance, :fact
+      identified_by :fact, :role
       has_one :fact, :mandatory => true           # See Fact.all_role_value
       has_one :instance, :mandatory => true       # See Instance.all_role_value
       has_one :population, :mandatory => true     # See Population.all_role_value
@@ -413,8 +413,8 @@ module ActiveFacts
       has_one :role, :mandatory => true           # See Role.all_role_ref
       has_one :role_sequence, :mandatory => true  # See RoleSequence.all_role_ref
       has_one :leading_adjective, :class => Adjective  # See Adjective.all_role_ref_as_leading_adjective
-      has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
       one_to_one :play                            # See Play.role_ref
+      has_one :trailing_adjective, :class => Adjective  # See Adjective.all_role_ref_as_trailing_adjective
     end
 
     class SetComparisonConstraint < SetConstraint
@@ -441,7 +441,7 @@ module ActiveFacts
       has_one :input_play, :class => Play, :mandatory => true  # See Play.all_step_as_input_play
       maybe :is_disallowed
       maybe :is_optional
-      has_one :output_play, :class => Play, :mandatory => true  # See Play.all_step_as_output_play
+      has_one :output_play, :class => Play        # See Play.all_step_as_output_play
     end
 
     class ValueConstraintShape < ConstraintShape

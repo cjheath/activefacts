@@ -235,7 +235,7 @@ module ::Metamodel
   end
 
   class RoleValue
-    identified_by :instance, :fact
+    identified_by :fact, :role
     has_one :fact, :mandatory => true           # See Fact.all_role_value
     has_one :instance, :mandatory => true       # See Instance.all_role_value
     has_one :population, :mandatory => true     # See Population.all_role_value
@@ -440,7 +440,7 @@ module ::Metamodel
     has_one :input_play, :class => Play, :mandatory => true  # See Play.all_step_as_input_play
     maybe :is_disallowed
     maybe :is_optional
-    has_one :output_play, :class => Play, :mandatory => true  # See Play.all_step_as_output_play
+    has_one :output_play, :class => Play        # See Play.all_step_as_output_play
   end
 
   class ValueConstraintShape < ConstraintShape
