@@ -5,14 +5,14 @@
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/vocabulary'
-require 'activefacts/generate/ordered'
+require 'activefacts/generate/helpers/ordered'
 
 module ActiveFacts
   module Generate #:nodoc:
     # Generate CQL for an ActiveFacts vocabulary.
     # Invoke as
     #   afgen --cql <file>.cql
-    class CQL < OrderedDumper
+    class CQL < Helpers::OrderedDumper
     private
       def vocabulary_start(vocabulary)
         puts "vocabulary #{vocabulary.name};\n\n"

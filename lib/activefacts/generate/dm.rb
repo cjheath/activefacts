@@ -11,11 +11,11 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/persistence'
-require 'activefacts/generate/oo'
+require 'activefacts/generate/helpers/oo'
 
 module ActiveFacts
   module Generate
-    class DM < OO #:nodoc:
+    class DM < Helpers::OO #:nodoc:
       # Generate SQL for DataMapper for an ActiveFacts vocabulary.
       # Invoke as
       #   afgen --dm[=options] <file>.cql

@@ -11,27 +11,37 @@ require 'rubygems'
 require 'activefacts'
 require 'activefacts/vocabulary'
 
-arg = ARGV.shift || "--help"
+module ActiveFacts::Generate; end
+module ActiveFacts::Generate::Helpers; end
+module ActiveFacts::Generate::Transform; end
 
-# Load the required generator, or the default "text" generator:
-generator = "text"
-generator_options = []
-if arg =~ /^--([^=]*)(?:=(.*))?/
-  generator = $1
-  generator_options = ($2||"").split(/,/)
+# Load the generators and transforms:
+generators = []
+transforms = []
+base_generators = ActiveFacts::Generate.constants
+base_transforms = ActiveFacts::Generate::Transform.constants
+arg = ARGV.shift || "--help"
+while arg =~ /^--([^=]*)(?:=(.*))?/
+  begin
+    require "activefacts/generate/#{$1}"
+    new_generators = ActiveFacts::Generate.constants
+    new_transforms = ActiveFacts::Generate::Transform.constants
+    options = ($2||"").split(/,/)
+    generators += (new_generators-base_generators).map do |generator|
+      [ generator, options ]
+    end
+    transforms += (new_transforms-base_transforms).map do |transform|
+      [ transform, options ]
+    end
+    base_generators = new_generators
+    base_transforms = new_transforms
+  rescue LoadError
+    $stderr.puts "Could not find output module #{generator}. Try --help"
+    exit 1
+  end
+
   arg = ARGV.shift
 end
-
-output_handler = "activefacts/generate/#{generator.downcase}"
-begin
-  require output_handler
-rescue LoadError
-  $stderr.puts "Could not find output generator #{generator}. Try --help"
-  exit 1
-end
-output_class = generator.upcase.gsub(%r{[/\\]+},'::')
-output_klass = eval("ActiveFacts::Generate::#{output_class}")
-raise "Expected #{output_handler} to define #{output_class}" unless output_klass
 
 # Load the file type input method
 if arg
@@ -53,8 +63,17 @@ begin
     vocabulary = true
   end
 
+  exit 0 unless vocabulary
+
+  # Apply the transforms
+  transforms.each do |transform, options|
+    eval("ActiveFacts::Generate::Transform::#{transform}").new(vocabulary, *options).transform
+  end
+
   # Generate the output:
-  output_klass.new(vocabulary, *generator_options).generate if vocabulary
+  generators.each do |generator, options|
+    eval("ActiveFacts::Generate::#{generator}").new(vocabulary, *options).generate
+  end
 rescue => e
   $stderr.puts "#{e.message}"
   # puts "\t#{e.backtrace*"\n\t"}"

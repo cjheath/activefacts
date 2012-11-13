@@ -9,7 +9,7 @@ require 'activefacts/persistence'
 
 module ActiveFacts
   module Generate
-    class SQL #:nodoc:
+    module SQL #:nodoc:
       # Generate SQL for MySQL for an ActiveFacts vocabulary.
       # Invoke as
       #   afgen --sql/mysql[=options] <file>.cql

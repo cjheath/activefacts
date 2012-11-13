@@ -5,7 +5,7 @@
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/vocabulary'
-require 'activefacts/generate/oo'
+require 'activefacts/generate/helpers/oo'
 
 module ActiveFacts
   module Generate
@@ -15,7 +15,7 @@ module ActiveFacts
     # Options are comma or space separated:
     # * help list available options
     # * sql Emit the sql mapping for tables/columns (REVISIT: not functional at present)
-    class RUBY < OO
+    class RUBY < Helpers::OO
     private
 
       def set_option(option)

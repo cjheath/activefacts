@@ -11,7 +11,6 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/api'
-require 'activefacts/generate/ordered'
 require 'activefacts/generate/cql'
 
 module ActiveFacts
