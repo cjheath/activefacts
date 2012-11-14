@@ -35,8 +35,8 @@ while arg =~ /^--([^=]*)(?:=(.*))?/
     end
     base_generators = new_generators
     base_transforms = new_transforms
-  rescue LoadError
-    $stderr.puts "Could not find output module #{generator}. Try --help"
+  rescue LoadError => e
+    $stderr.puts "Could not find output module #{$1}. Try --help"
     exit 1
   end
 

@@ -14,16 +14,34 @@ module ActiveFacts
     class HELP
     private
       def initialize(vocabulary, *options)
+	generators = $:.
+	  map{|path|
+            Dir[path+"/activefacts/generate/**/*.rb"].
+	      reject{|p|
+		p =~ %r{/(transform|helpers)/}
+	      }.
+	      map{|p|
+                p.sub(%r{.*/activefacts/generate/}, '').sub(/\.rb/,'')
+              }
+          }
+	transformers = $:.
+	  map{|path|
+            Dir[path+"/activefacts/generate/transform/**/*.rb"].
+	      map{|p|
+                p.sub(%r{.*/activefacts/generate/}, '').sub(/\.rb/,'')
+	      }
+          }
+
         puts %Q{
-Usage: afgen --generator[=options] file.inp[=options]
+Usage: afgen [ --transformer[=options] ... ] [ --generator[=options] ... ] file.inp[=options]
         options are comma-separated lists. Use =help to get more information.
 
 Available generators are:
-        #{$:.map{|path|
-            Dir[path+"/activefacts/generate/**.rb"].map{|p|
-                p.sub(%r{.*/}, '').sub(/\.rb/,'')
-            }
-        }.flatten.uniq.sort.join("\n\t")
+        #{generators.flatten.uniq.sort.join("\n\t")
+}
+
+Available transformers are:
+        #{transformers.flatten.uniq.sort.join("\n\t")
 }
 
 inp is the name of a file input handler. Available input handlers are:
