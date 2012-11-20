@@ -13,8 +13,8 @@ require 'activefacts/vocabulary'
 generators = []
 arg = ARGV.shift || "--help"
 while arg =~ /^--([^=]*)(?:=(.*))?/
+  module_name, options = $1, ($2||"").split(/,/)
   begin
-    module_name, options = $1, ($2||"").split(/,/)
     base_generators = ActiveFacts::Registry.generators.keys
 
     require "activefacts/generate/#{module_name}"
@@ -26,7 +26,7 @@ while arg =~ /^--([^=]*)(?:=(.*))?/
     end
 
   rescue LoadError => e
-    $stderr.puts "Could not find output module #{$1}. Try --help"
+    $stderr.puts "Could not find output module #{module_name}. Try --help"
     exit 1
   end
 
