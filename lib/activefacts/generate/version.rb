@@ -23,3 +23,4 @@ module ActiveFacts
   end
 end
 
+ActiveFacts::Registry.generator('version', ActiveFacts::Generate::VERSION)

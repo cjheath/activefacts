@@ -61,3 +61,4 @@ inp is the name of a file input handler. Available input handlers are:
   end
 end
 
+ActiveFacts::Registry.generator('help', ActiveFacts::Generate::HELP)

@@ -24,3 +24,4 @@ module ActiveFacts
   end
 end
 
+ActiveFacts::Registry.generator('text', ActiveFacts::Generate::TEXT)

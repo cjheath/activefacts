@@ -657,3 +657,5 @@ module ActiveFacts
     end
   end
 end
+
+ActiveFacts::Registry.generator('cql', ActiveFacts::Generate::CQL)

@@ -271,3 +271,5 @@ module ActiveFacts
     end
   end
 end
+
+ActiveFacts::Registry.generator('dm', ActiveFacts::Generate::DM)

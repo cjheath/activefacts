@@ -6,35 +6,25 @@
 #
 $:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
-require 'rubygems'
-
 require 'activefacts'
 require 'activefacts/vocabulary'
 
-module ActiveFacts::Generate; end
-module ActiveFacts::Generate::Helpers; end
-module ActiveFacts::Generate::Transform; end
-
-# Load the generators and transforms:
+# Load the generators:
 generators = []
-transforms = []
-base_generators = ActiveFacts::Generate.constants
-base_transforms = ActiveFacts::Generate::Transform.constants
 arg = ARGV.shift || "--help"
 while arg =~ /^--([^=]*)(?:=(.*))?/
   begin
-    require "activefacts/generate/#{$1}"
-    new_generators = ActiveFacts::Generate.constants
-    new_transforms = ActiveFacts::Generate::Transform.constants
-    options = ($2||"").split(/,/)
-    generators += (new_generators-base_generators).map do |generator|
-      [ generator, options ]
+    module_name, options = $1, ($2||"").split(/,/)
+    base_generators = ActiveFacts::Registry.generators.keys
+
+    require "activefacts/generate/#{module_name}"
+
+    # One require may load more than one generator. Extract new ones.
+    new_generators = ActiveFacts::Registry.generators
+    generators += (new_generators.keys-base_generators).map do |gn|
+      [new_generators[gn], options]
     end
-    transforms += (new_transforms-base_transforms).map do |transform|
-      [ transform, options ]
-    end
-    base_generators = new_generators
-    base_transforms = new_transforms
+
   rescue LoadError => e
     $stderr.puts "Could not find output module #{$1}. Try --help"
     exit 1
@@ -65,14 +55,9 @@ begin
 
   exit 0 unless vocabulary
 
-  # Apply the transforms
-  transforms.each do |transform, options|
-    eval("ActiveFacts::Generate::Transform::#{transform}").new(vocabulary, *options).transform
-  end
-
   # Generate the output:
   generators.each do |generator, options|
-    eval("ActiveFacts::Generate::#{generator}").new(vocabulary, *options).generate
+    generator.new(vocabulary, *options).generate
   end
 rescue => e
   $stderr.puts "#{e.message}"

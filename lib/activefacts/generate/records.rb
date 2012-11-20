@@ -43,3 +43,4 @@ module ActiveFacts
   end
 end
 
+ActiveFacts::Registry.generator('records', ActiveFacts::Generate::RECORDS)

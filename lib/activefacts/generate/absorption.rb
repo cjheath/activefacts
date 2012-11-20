@@ -4,6 +4,7 @@
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
+require 'activefacts/vocabulary'
 require 'activefacts/persistence'
 
 module ActiveFacts
@@ -65,3 +66,4 @@ module ActiveFacts
   end
 end
 
+ActiveFacts::Registry.generator('absorption', ActiveFacts::Generate::ABSORPTION)

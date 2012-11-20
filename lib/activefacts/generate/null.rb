@@ -29,3 +29,4 @@ module ActiveFacts
   end
 end
 
+ActiveFacts::Registry.generator('null', ActiveFacts::Generate::NULL)

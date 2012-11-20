@@ -332,3 +332,4 @@ module ActiveFacts
   end
 end
 
+ActiveFacts::Registry.generator('json', ActiveFacts::Generate::JSON)

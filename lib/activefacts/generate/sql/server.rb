@@ -266,3 +266,5 @@ CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.c
     end
   end
 end
+
+ActiveFacts::Registry.generator('sql/server', ActiveFacts::Generate::SQL::SERVER)

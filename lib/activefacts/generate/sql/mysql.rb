@@ -276,3 +276,5 @@ module ActiveFacts
     end
   end
 end
+
+ActiveFacts::Registry.generator('sql/mysql', ActiveFacts::Generate::SQL::MYSQL)

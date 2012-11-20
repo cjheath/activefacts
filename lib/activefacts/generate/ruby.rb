@@ -178,3 +178,5 @@ module ActiveFacts
     end
   end
 end
+
+ActiveFacts::Registry.generator('ruby', ActiveFacts::Generate::RUBY)
