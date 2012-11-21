@@ -4,6 +4,7 @@
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
+require 'activefacts'
 require 'activefacts/vocabulary'
 require 'activefacts/generate/helpers/oo'
 

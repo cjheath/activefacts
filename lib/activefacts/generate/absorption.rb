@@ -56,7 +56,7 @@ module ActiveFacts
                 [pk && pk.columns.include?(column) ? "*" : nil] +
                 (0...indices.size).select{|i| indices[i].columns.include?(column)}.map{|i| (i+1).to_i }
               index_nrs.compact!
-              (@paths ? column.references.map{|r| r.to_names}.flatten : column.name(nil)) * "." +
+              (@paths ? column.references.map{|r| r.to_names}.flatten : column.name(nil)) * '.' +
                 (index_nrs.empty? ? "" : "["+index_nrs*""+"]")
             end*", "
           }"

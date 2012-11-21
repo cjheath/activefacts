@@ -218,7 +218,7 @@ module ActiveFacts
     class ObjectType
       # The array of columns for this ObjectType's table
       def columns
-        @columns
+        @columns || populate_columns
       end
 
       def populate_columns  #:nodoc:

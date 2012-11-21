@@ -80,7 +80,9 @@ module ActiveFacts
   module Metamodel    #:nodoc:
     class ObjectType
       # An array of each Index for this table
-      def indices; @indices; end
+      def indices
+	@indices || populate_indices
+      end
 
       def clear_indices     #:nodoc:
         # Clear any previous indices
@@ -100,7 +102,7 @@ module ActiveFacts
         # order of the columns, not the same as the columns in the PK for which they might be an FK.
         all_column_by_ref_path =
           debug :index2, "Indexing columns by ref_path" do
-            @columns.inject({}) do |hash, column|
+            columns.inject({}) do |hash, column|
               debug :index2, "References in column #{name}.#{column.name}" do
                 ref_path = column.absorption_references
                 raise "No absorption_references for #{column.name} from #{column.references.map(&:to_s)*" and "}" if !ref_path || ref_path.empty?
@@ -118,10 +120,10 @@ module ActiveFacts
             inject({}) do |hash, ref_path|
               ref_path.each do |ref|
                 next unless ref.to_role
-                #debug :index2, "Considering #{ref_path.map(&:to_s)*" and "} yielding columns #{all_column_by_ref_path[ref_path].map{|c| c.name(".")}*", "}"
+                # debug :index2, "Considering #{ref_path.map(&:to_s)*" and "} yielding columns #{all_column_by_ref_path[ref_path].map{|c| c.name('.')}*", "}"
                 ref.to_role.all_role_ref.each do |role_ref|
                   all_pcs = role_ref.role_sequence.all_presence_constraint
-    #puts "pcs over #{ref_path.map{|r| r.to_names}.flatten*"."}: #{role_ref.role_sequence.all_presence_constraint.map(&:describe)*"; "}" if all_pcs.size > 0
+		  # puts "pcs over #{ref_path.map{|r| r.to_names}.flatten*'.'}: #{role_ref.role_sequence.all_presence_constraint.map(&:describe)*"; "}" if all_pcs.size > 0
                   pcs = all_pcs.
                     reject do |pc|
                       !pc.max_frequency or      # No maximum freq; cannot be a uniqueness constraint
@@ -175,6 +177,7 @@ module ActiveFacts
             index.columns.map(&:name)+['', index.over.name]
           end
         end
+	@indices
       end
 
     end

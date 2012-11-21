@@ -324,9 +324,6 @@ module ActiveFacts
           end
         end
 
-        populate_all_columns
-        populate_all_indices
-
         @tables =
           all_object_type.
           select { |f| f.is_table }.
