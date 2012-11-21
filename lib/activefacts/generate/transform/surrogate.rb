@@ -26,7 +26,7 @@ module ActiveFacts
 #	end
 
 	rrs.map do |rr|
-	  r = references_from.detect{|ref| rr.role = ref.to_role }
+	  r = references_from.detect{|ref| rr.role == ref.to_role }
 	  raise "fail in identifying_refs_from for #{name}" unless r
 	  r
 	end
@@ -35,22 +35,22 @@ module ActiveFacts
       def needs_surrogate
 
 	# A recursive proc to replace any reference to an Entity Type by its identifying references:
-	debug :transform_ar_expansion, "Expanding key for #{name}"
+	debug :transform_surrogate_expansion, "Expanding key for #{name}"
 	substitute_identifying_refs = proc do |object|
-	  if object.absorbed_via
+	  if ref = object.absorbed_via
 	    # This shouldn't be necessary, but see the absorbed_via comment above.
-	    absorbed_into = object.absorbed_via.from
-	    debug :transform_ar_expansion, "recursing to handle absorption into #{absorbed_into.name}"
+	    absorbed_into = ref.from
+	    debug :transform_surrogate_expansion, "recursing to handle absorption of #{object.name} into #{absorbed_into.name}"
 	    [substitute_identifying_refs.call(absorbed_into)]
 	  else
 	    irf = object.identifying_refs_from
-	    # debugger if irf.compact.empty?
-	    debug :transform_ar_expansion, "Iterating over #{irf.inspect}" do
+	    debug :transform_surrogate_expansion, "Iterating for #{object.name} over #{irf.inspect}" do
 	      irf.each_with_index do |ref, i|
 		next if ref.is_unary
 		next if ref.to_role.object_type.kind_of?(ActiveFacts::Metamodel::ValueType)
 		recurse_to = ref.to_role.object_type
-		debug :transform_ar_expansion, "#{i}: recursing to expand #{recurse_to.name} key in #{ref}" do
+
+		debug :transform_surrogate_expansion, "#{i}: recursing to expand #{recurse_to.name} key in #{ref}" do
 		  irf[i] = substitute_identifying_refs.call(recurse_to)
 		end
 	      end
@@ -60,11 +60,7 @@ module ActiveFacts
 	end
 	irf = substitute_identifying_refs.call(self)
 
-	# A multi-part key (for a join table)is only ok if the parts have unitary keys.
-	# This might become the case after the first pass however...
-	# return false if irf.detect{|r| Array(r).size > 1 }
-
-	debug :transform_ar, "#{name} is identified by #{irf.inspect}"
+	debug :transform_surrogate, "#{name} is identified by #{irf.inspect}"
 
 	pk_fks = identifying_refs_from.map do |ref|
 	  ref.to.is_table ? ref.to : nil
@@ -75,13 +71,15 @@ module ActiveFacts
 	# Multi-part identifiers are only allowed if each part is a foreign key (i.e. it's a join table):
 	if irf.size >= 2
 	  if pk_fks.include?(nil)
-	    debug :transform_ar, "#{self.name} needs a surrogate because its multi-part key contains a non-table"
+	    debug :transform_surrogate, "#{self.name} needs a surrogate because its multi-part key contains a non-table"
 	    return true
 	  # REVISIT: elsif pk_fks.detect{ a table with a multi-part key }
 	  else
-	    debug :transform_ar, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect}"
+	    debug :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect}"
 	  end
 	end
+
+	# REVISIT: New criteria for needing a surrogate should be added here
 
 	# return true if irf.size >= 2 and this object plays an identifying role for any other
 
