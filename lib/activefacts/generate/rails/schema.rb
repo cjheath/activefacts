@@ -23,8 +23,19 @@ module ActiveFacts
       def initialize(vocabulary, *options)
 	@vocabulary = vocabulary
 	@vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
-	@include_fks = options.include? "include_fks"
+	help if options.include? "help"
+	@exclude_fks = options.include? "exclude_fks"
 	@include_comments = options.include? "include_comments"
+	@closed_world = options.include? "closed_world"
+      end
+
+      def help
+	@helping = true
+	warn %Q{Options for --rails/schema:
+	exclude_fks		Don't generate foreign key definitions for use with the foreigner gem
+	include_comments	Generate a comment for each column showing the absorption path
+	closed_world		Set this if your DBMS only allows one null in a unique index (MS SQL)
+}
       end
 
       def warn *a
@@ -92,6 +103,7 @@ module ActiveFacts
 
     public
       def generate(out = $>)      #:nodoc:
+	return if @helping
 	@out = out
 
 	foreign_keys = []
@@ -168,17 +180,18 @@ module ActiveFacts
 	    ]
 	  end.flatten
 
-	  inline_fks = []
-	  table.foreign_keys.each do |fk|
-	    from_columns = fk.from_columns.map{|column| columnise(column.name('_'))}
-	    to_columns = fk.to_columns.map{|column| columnise(column.name('_'))}
-	    foreign_keys <<
-	      if (from_columns.length == 1)
-		"  add_foreign_key :#{pluralise(fk.from.name)}, :#{pluralise(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}"
-	      else
-		# This probably isn't going to work without Dr Nic's CPK gem:
-		"  add_foreign_key :#{pluralise(fk.to.name)}, :#{pluralise(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}]"
-	      end
+	  unless @exclude_fks
+	    table.foreign_keys.each do |fk|
+	      from_columns = fk.from_columns.map{|column| columnise(column.name('_'))}
+	      to_columns = fk.to_columns.map{|column| columnise(column.name('_'))}
+	      foreign_keys <<
+		if (from_columns.length == 1)
+		  "  add_foreign_key :#{pluralise(fk.from.name)}, :#{pluralise(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}"
+		else
+		  # This probably isn't going to work without Dr Nic's CPK gem:
+		  "  add_foreign_key :#{pluralise(fk.to.name)}, :#{pluralise(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}]"
+		end
+	    end
 	  end
 
 	  indices = table.indices
@@ -189,7 +202,7 @@ module ActiveFacts
 	    index_name = "index_#{ar_table_name+'_on_'+column_names*'_'}"
 	    index_name = index_name[0, 60] + (dup_id += 1).to_s if index_name.length > 63
 
-	    unique = !index.columns.detect{|column| !column.is_mandatory}
+	    unique = !index.columns.detect{|column| !column.is_mandatory} and !@closed_world
 	    index_text << %Q{  add_index "#{ar_table_name}", ["#{column_names*'", "'}"], :name => :#{index_name
 	    }#{
 	      unique ? ", :unique => true" : ''
