@@ -134,8 +134,19 @@ module ActiveFacts
 	  warn "Warning: #{table.name} has a multi-part primary key" if pk.length > 1 and !is_join_table
 
 	  needs_rails_id_field = (pk.length > 1) && !is_join_table
+	  move_pk_to_create_table_call = !needs_rails_id_field &&
+	      pk.length == 1 &&
+	      (to = pk[0].references[-1].to) &&
+	      to.supertypes_transitive.detect{|t| t.name == 'Auto Counter'}
 
-	  puts %Q{  create_table "#{ar_table_name}", :id => #{needs_rails_id_field}, :force => true do |t|}
+	  identity =
+	    if move_pk_to_create_table_call
+	      ":primary_key => :#{columnise(pk[0].name('_'))}"
+	    else
+	      ":id => #{needs_rails_id_field}"
+	    end
+
+	  puts %Q{  create_table "#{ar_table_name}", #{identity}, :force => true do |t|}
 
 	  # We sort the columns here, not in the persistence layer, because it affects
 	  # the ordering of columns in an index :-(.
@@ -156,6 +167,7 @@ module ActiveFacts
 		]
 	      end.
 	      map do |column|
+	    next [] if move_pk_to_create_table_call and column == pk[0]
 	    name = columnise(column.name('_'))
 	    type, params, constraints = column.type
 	    length = params[:length]
