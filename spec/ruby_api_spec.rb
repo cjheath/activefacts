@@ -17,7 +17,7 @@ describe "Requiring vocabularies in Ruby" do
     base = File.basename(ruby_file, ".rb")
     next if ruby_failures.include?(base)
     it "#{ruby_file} should load cleanly" do
-      require ruby_file
+      require "./"+ruby_file
     end
   end
 end

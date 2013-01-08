@@ -4,6 +4,7 @@
 #
 
 require 'stringio'
+require 'activefacts'
 require 'activefacts/support'
 require 'activefacts/vocabulary'
 require 'activefacts/generate/cql'
@@ -58,8 +59,10 @@ END
   end
 
   def value_type(name, datatype = "String", length = 0, scale = 0)
-    dt = @constellation.ValueType(@vocabulary, datatype, :guid => :new)
-    vt = @constellation.ValueType(@vocabulary, name, :supertype => dt, :guid => :new)
+    dt = @constellation.ValueType[[@vocabulary, datatype]] ||
+	@constellation.ValueType(@vocabulary, datatype, :guid => :new)
+    vt = @constellation.ValueType[[@vocabulary, name]] ||
+	@constellation.ValueType(@vocabulary, name, :supertype => dt, :guid => :new)
     vt.length = length if length != 0
     vt.scale = scale if scale != 0
     vt
