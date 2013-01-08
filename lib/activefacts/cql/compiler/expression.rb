@@ -87,7 +87,8 @@ module ActiveFacts
         def result_value_type(context, name)
           vocabulary = context.vocabulary
           constellation = vocabulary.constellation
-          constellation.ValueType(vocabulary, name, :guid => :new)
+          constellation.ValueType[[vocabulary, name]] ||
+	    constellation.ValueType(vocabulary, name, :guid => :new)
         end
 
         def is_naked_object_type
@@ -396,7 +397,7 @@ module ActiveFacts
               when TrueClass, FalseClass; 'Boolean'
               end
             v = context.vocabulary
-            @player = v.constellation.ValueType(v, player_name, :guid => :new)
+            @player = v.constellation.ValueType(v, player_name)
           end
         end
 
