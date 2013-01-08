@@ -372,7 +372,7 @@ module ActiveFacts
             fact_id = x_fact_type['ref']
             fact_type = @by_id[fact_id]
             next if x.xpath("orm:DerivationRule").size > 0
-            throw "Nested fact #{fact_id} not found" if !fact_type
+            next unless fact_type # "Nested fact #{fact_id} not found; objectification of a derived fact type?"
 
             debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.guid}"
             @nested_types <<
@@ -406,7 +406,6 @@ module ActiveFacts
             fact_name = nil if fact_name == ''
 
             x_fact_roles = x.xpath('orm:FactRoles/*')
-            x_reading_orders = x.xpath('orm:ReadingOrders/*')
 
             # Deal with FactRoles (Roles):
             debug :orm, "Reading fact roles" do
@@ -444,7 +443,7 @@ module ActiveFacts
                   @by_id.delete(ref)    # and de-index it from our list
                   next
                 end
-                throw "RolePlayer for '#{name}' #{ref} was not found" if !object_type
+                throw "RolePlayer for '#{name}' #{ref} in fact type #{x.parent.parent['_Name']} was not found" if !object_type
 
                 debug :orm, "#{@vocabulary.name}, RoleName=#{x['Name'].inspect} played by object_type=#{object_type.name}"
                 throw "Role is played by #{object_type.class} not ObjectType" if !(@constellation.vocabulary.object_type(:ObjectType) === object_type)
@@ -474,6 +473,7 @@ module ActiveFacts
 
             # Deal with Readings:
             debug :orm, "Reading fact readings" do
+	      x_reading_orders = x.xpath('orm:ReadingOrders/*')
               x_reading_orders.each{|x|
                 x_role_sequence = x.xpath('orm:RoleSequence/*')
                 x_readings = x.xpath('orm:Readings/orm:Reading/orm:Data')
