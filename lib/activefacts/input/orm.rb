@@ -219,7 +219,13 @@ module ActiveFacts
           value_super_type = @constellation.ValueType(@vocabulary, supertype_name, :guid => :new)
         else
           # REVISIT: Need to handle standard types better here:
-          value_super_type = type_name != name ? @constellation.ValueType(@vocabulary, type_name, :guid => :new) : nil
+          value_super_type =
+	    if type_name != name
+	      @constellation.ValueType[[@vocabulary, type_name]] ||
+		@constellation.ValueType(@vocabulary, type_name, :guid => :new)
+	    else
+	      nil
+	    end
         end
 
         @by_id[id] =
