@@ -69,9 +69,12 @@ module ActiveFacts
       def compile_import file, aliases
         saved_index = @index
         saved_block = @block
+	saved_string = @string
+	saved_input_length = @input_length
         old_filename = @filename
-        @filename = file+'.cql'
+        @filename = file+'.cql'	  # REVISIT: Use File.dirname(@filename)+@filename ?
 
+	# REVISIT: Save and use another @vocabulary for this file?
         File.open(@filename) do |f|
           ok = parse_all(f.read, nil, &@block)
         end
@@ -83,6 +86,8 @@ module ActiveFacts
       ensure
         @block = saved_block
         @index = saved_index
+	@input_length = saved_input_length
+	@string = saved_string
         @filename = old_filename
         nil
       end
