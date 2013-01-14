@@ -191,8 +191,8 @@ Vocabulary includes Unit,
 	Unit is in one Vocabulary;
 
 Aggregation is where
-	Aggregate of aggregated-Variable is bound as one Variable,
-	Variable is bound to Aggregate over aggregated-Variable;
+	Variable is bound to Aggregate over aggregated-Variable,
+	Aggregate of aggregated-Variable is bound as one Variable;
 
 Agreement is identified by Context Note where
 	Context Note was added by at most one Agreement,

@@ -7816,22 +7816,6 @@
 					</orm:Role>
 				</orm:FactRoles>
 				<orm:ReadingOrders>
-					<orm:ReadingOrder id="_3268180A-F180-4ADA-8EBF-6E193DC519AA">
-						<orm:Readings>
-							<orm:Reading id="_1FCACC99-1F09-4483-A348-0E834709E133">
-								<orm:Data>{0} of aggregated- {1} is bound as {2}</orm:Data>
-								<orm:ExpandedData>
-									<orm:RoleText RoleIndex="0" FollowingText=" of " />
-									<orm:RoleText RoleIndex="1" PreBoundText="aggregated " FollowingText=" is bound as " />
-								</orm:ExpandedData>
-							</orm:Reading>
-						</orm:Readings>
-						<orm:RoleSequence>
-							<orm:Role ref="_21FF1DBA-E5AB-4EAB-9468-5353D4615EA1" />
-							<orm:Role ref="_70FA8408-1733-4C78-AA11-E6EE43C02A40" />
-							<orm:Role ref="_5582E7E2-6737-4F84-BA78-70EF3ABAEACC" />
-						</orm:RoleSequence>
-					</orm:ReadingOrder>
 					<orm:ReadingOrder id="_FDE85D72-FE7C-4B8E-BD69-FEE65FB96B5B">
 						<orm:Readings>
 							<orm:Reading id="_DF326670-F065-41C6-B9E8-46EF875AF231">
@@ -7847,6 +7831,22 @@
 							<orm:Role ref="_5582E7E2-6737-4F84-BA78-70EF3ABAEACC" />
 							<orm:Role ref="_21FF1DBA-E5AB-4EAB-9468-5353D4615EA1" />
 							<orm:Role ref="_70FA8408-1733-4C78-AA11-E6EE43C02A40" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_3268180A-F180-4ADA-8EBF-6E193DC519AA">
+						<orm:Readings>
+							<orm:Reading id="_1FCACC99-1F09-4483-A348-0E834709E133">
+								<orm:Data>{0} of aggregated- {1} is bound as {2}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" of " />
+									<orm:RoleText RoleIndex="1" PreBoundText="aggregated " FollowingText=" is bound as " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_21FF1DBA-E5AB-4EAB-9468-5353D4615EA1" />
+							<orm:Role ref="_70FA8408-1733-4C78-AA11-E6EE43C02A40" />
+							<orm:Role ref="_5582E7E2-6737-4F84-BA78-70EF3ABAEACC" />
 						</orm:RoleSequence>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
@@ -11809,7 +11809,7 @@ an Object Type</orm:Text>
 			<orm:ImplicationError id="_71F85479-5F23-4DB4-9CEC-1E8CD3822388" Name="Constraint 'InclusiveOrConstraint1' in model 'Metamodel' is implied by at least one constraint of the same type attached to a subset of the same roles.">
 				<orm:SetConstraint ref="_79E061D0-65F1-4DFE-ABAD-CDB6BD6EE5CE" />
 			</orm:ImplicationError>
-			<orm:ImplicationError id="_B3472E42-8880-4CC1-B6B1-54E896726A0D" Name="Constraint 'ExternalUniquenessConstraint2' in model 'Metamodel' is implied by at least one constraint of the same type attached to a subset of the same roles.">
+			<orm:ImplicationError id="_35488CD6-66FB-4002-88FA-CF2F42405016" Name="Constraint 'ExternalUniquenessConstraint2' in model 'Metamodel' is implied by at least one constraint of the same type attached to a subset of the same roles.">
 				<orm:SetConstraint ref="_6FF18202-B62E-4360-B4B8-FA6FD4F92566" />
 			</orm:ImplicationError>
 		</orm:ModelErrors>
@@ -11834,7 +11834,7 @@ an Object Type</orm:Text>
 			<ormtooial:AbstractionModelGenerationSetting id="_78E69F6D-70FD-4F7E-930D-69D841F29B64" AlgorithmVersion="1.008">
 				<ormtooial:AbstractionModel ref="_2864B7FA-6FBE-4B7F-B519-EA46B095A655" />
 			</ormtooial:AbstractionModelGenerationSetting>
-			<oialtocdb:SchemaGenerationSetting id="_67495DF1-682A-41C4-8BB1-6E41493F4A57" CoreAlgorithmVersion="1.004" NameAlgorithmVersion="1.013">
+			<oialtocdb:SchemaGenerationSetting id="_67495DF1-682A-41C4-8BB1-6E41493F4A57" CoreAlgorithmVersion="1.004" NameAlgorithmVersion="1.014">
 				<oialtocdb:Schema ref="_1221C17C-6D21-4A5D-BD09-0586739B366D" />
 			</oialtocdb:SchemaGenerationSetting>
 		</orm:GenerationSettings>
@@ -14016,7 +14016,7 @@ an Object Type</orm:Text>
 					<ormDiagram:ReadingShape id="_3E9A617F-354F-4039-8989-AAA0E59DC364" IsExpanded="true" AbsoluteBounds="2.8686989354794079, 1.7706223992781451, 1.2352950572967529, 0.12950302660465241">
 						<ormDiagram:Subject ref="_5AD60648-D927-4EE5-9174-47432A37CBE4" />
 					</ormDiagram:ReadingShape>
-					<ormDiagram:RoleNameShape id="_80696D05-362C-4994-9AF6-9F578992ABC4" IsExpanded="true" AbsoluteBounds="2.7362609349070297, 1.1501229471399084, 0.54842573404312134, 0.12950302660465241">
+					<ormDiagram:RoleNameShape id="_80696D05-362C-4994-9AF6-9F578992ABC4" IsExpanded="true" AbsoluteBounds="2.7362609349070297, 1.1501229471399084, 0.05, 0.05">
 						<ormDiagram:Subject ref="_FF7DBB05-18ED-4BD2-9DD0-D0B258796E36" />
 					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
@@ -14071,9 +14071,9 @@ an Object Type</orm:Text>
 		<diagramDisplay:Diagram id="_8A7EB9D9-9782-4B98-BEB8-4925A92F418E" ref="_E6507DF3-A512-482F-A8D4-70334B31CAF2" CenterPoint="4.8164776654821759, 2.2093572938148003" ZoomFactor="1.3225" />
 		<diagramDisplay:Diagram id="_1BF33124-B049-4A79-8EEA-23EACFF57ADD" ref="_42D757AB-38DD-4061-8929-7BAEB5912A36" CenterPoint="4.8164776654821759, 2.2093572938148003" ZoomFactor="1.3225" />
 		<diagramDisplay:Diagram id="_A0714009-A428-4874-9506-9E54199C6261" ref="_59B9C1E4-B910-47AF-9659-F9D0F7DB420F" CenterPoint="4.4502205739941605, 3.1269691466826228" ZoomFactor="1.3225" />
-		<diagramDisplay:Diagram id="_B1F54A7E-3930-4803-B9CA-8762146921BF" ref="_E67D50F3-A512-482F-A8D4-70334B31CAF2" CenterPoint="3.9711527769990682, 1.9596862249584168" ZoomFactor="1.30760729" />
+		<diagramDisplay:Diagram id="_B1F54A7E-3930-4803-B9CA-8762146921BF" ref="_E67D50F3-A512-482F-A8D4-70334B31CAF2" CenterPoint="4.0189500019980535, 1.955703122875168" ZoomFactor="1.30760729" IsActive="true" />
 		<diagramDisplay:Diagram id="_D9EAA91F-2766-43C2-A029-2A9C308B0E77" ref="_ABD75742-38DD-4061-8929-7BAEB5912A36" CenterPoint="4.8164776654821759, 2.2093572938148003" ZoomFactor="1.3225" />
-		<diagramDisplay:Diagram id="_82A4D73D-7B13-4881-A51F-8CAB1D52E40B" ref="_40EBB5F3-C265-444F-8FB0-E8240F9F2278" CenterPoint="4.5153986443381093, 2.4796196166249898" ZoomFactor="1.15" IsActive="true" />
+		<diagramDisplay:Diagram id="_82A4D73D-7B13-4881-A51F-8CAB1D52E40B" ref="_40EBB5F3-C265-444F-8FB0-E8240F9F2278" CenterPoint="4.5697464715518077, 2.4750906310238485" ZoomFactor="1.15" />
 		<diagramDisplay:Diagram id="_2D90736A-0B96-49C0-A224-995D1259160E" ref="_190E178C-2240-4FB2-BC97-C46F01F5DE17" CenterPoint="4.8164776654821759, 2.2093572938148003" ZoomFactor="1.3225" />
 		<diagramDisplay:Diagram id="_57E7F408-FBE8-4009-82EC-A3E88F0DA20A" ref="_86C40B76-3BD0-48A2-82AE-0249005503FC" CenterPoint="6.3697916666666661, 2.921875" />
 		<diagramDisplay:Diagram id="_05371502-2ACB-43D7-8AE7-E8A19C0B2B13" ref="_6AEDDB43-BD63-487D-94C9-6E1E01CF1237" CenterPoint="6.3620371026822635, 2.7151790145338532" ZoomFactor="1.0761261" />

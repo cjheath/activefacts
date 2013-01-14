@@ -28,7 +28,8 @@ module ActiveFacts
         end
 
         def compile
-          @entity_type = @constellation.EntityType(@vocabulary, @name, :guid => :new)
+          @entity_type = @constellation.EntityType[[@vocabulary, @name]] ||
+	      @constellation.EntityType(@vocabulary, @name, :guid => :new)
           @entity_type.is_independent = true if (@pragmas.include? 'independent')
 
           # REVISIT: CQL needs a way to indicate whether subtype migration can occur.

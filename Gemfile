@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'activefacts-api', '~>0.9.3'
+gem 'activefacts-api', '~>0.9.4'
 gem 'treetop'
 gem 'nokogiri'
 gem 'rake'
