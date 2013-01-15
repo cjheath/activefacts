@@ -144,6 +144,10 @@ module ActiveFacts
         read_diagrams if @options.include?("diagrams")
       end
 
+      def id_of(x)
+	x['id'][1..-1]
+      end
+
       def read_entity_types
         # get and process all the entity types:
         entity_types = []
@@ -155,7 +159,7 @@ module ActiveFacts
           entity_types <<
             @by_id[id] =
               entity_type =
-              @constellation.EntityType(@vocabulary, name, :guid => :new)
+		@constellation.EntityType(@vocabulary, name, :guid => id_of(x))
             independent = x['IsIndependent']
             entity_type.is_independent = true if independent && independent == 'true'
             personal = x['IsPersonal']
@@ -216,20 +220,22 @@ module ActiveFacts
           supertype_name = x_supertype['Name']
           raise "Supertype of #{name} is post-defined but recursiving processing failed" unless supertype
           raise "Supertype #{supertype_name} of #{name} is not a value type" unless supertype.kind_of? ActiveFacts::Metamodel::ValueType
-          value_super_type = @constellation.ValueType(@vocabulary, supertype_name, :guid => :new)
+          value_super_type =
+	      @constellation.ValueType(@vocabulary, supertype_name, :guid => id_of(x_supertype))
         else
           # REVISIT: Need to handle standard types better here:
           value_super_type =
 	    if type_name != name
 	      @constellation.ValueType[[@vocabulary, type_name]] ||
-		@constellation.ValueType(@vocabulary, type_name, :guid => :new)
+		  @constellation.ValueType(@vocabulary, type_name, :guid => :new)
 	    else
 	      nil
 	    end
         end
 
         @by_id[id] =
-          vt = @constellation.ValueType(@vocabulary, name, :guid => :new)
+          vt = @constellation.ValueType[[@vocabulary, name]] ||
+	      @constellation.ValueType(@vocabulary, name, :guid => id_of(x))
         vt.supertype = value_super_type
         vt.length = length if length
         vt.scale = scale if scale && scale != 0
@@ -242,7 +248,7 @@ module ActiveFacts
         x_vr.each{|vr|
           x_ranges = vr.xpath("orm:ValueRanges/orm:ValueRange")
           next if x_ranges.size == 0
-          vt.value_constraint = @by_id[vr['id']] = @constellation.ValueConstraint(:new)
+          vt.value_constraint = @by_id[vr['id']] = @constellation.ValueConstraint(id_of(vr))
           x_ranges.each{|x_range|
             v_range = value_range(x_range)
             ar = @constellation.AllowedRange(vt.value_constraint, v_range)
@@ -251,16 +257,23 @@ module ActiveFacts
         vt
       end
 
+      def assert_value(val, string)
+	if val
+	  @constellation.Value(val.to_s, string, nil)
+	else
+	  nil
+	end
+      end
+
       def value_range(x_range)
         min = x_range['MinValue']
         max = x_range['MaxValue']
 
         strings = is_a_string(min) || is_a_string(max)
         # ValueRange takes a minimum and/or a maximum Bound, each takes value and whether inclusive
-        @constellation.ValueRange(
-            min && min != '' ? [[min, strings, nil], true] : nil,
-            max && max != '' ? [[max, strings, nil], true] : nil
-          )
+	@constellation.ValueRange(
+	  min.length > 0 ? @constellation.Bound(assert_value(min, strings), true) : nil,
+	  max.length > 0 ? @constellation.Bound(assert_value(max, strings), true) : nil)
       end
 
       def read_fact_types
@@ -277,7 +290,7 @@ module ActiveFacts
             next if x.xpath("orm:DerivationRule").size > 0
 
             debug :orm, "FactType #{name || id}"
-            facts << @by_id[id] = fact_type = @constellation.FactType(:new)
+            facts << @by_id[id] = fact_type = @constellation.FactType(id_of(x))
           }
         end
       end
@@ -322,7 +335,7 @@ module ActiveFacts
             next if subtype.kind_of? ActiveFacts::Metamodel::ValueType or
                         supertype.kind_of? ActiveFacts::Metamodel::ValueType
 
-            inheritance_fact = @constellation.TypeInheritance(subtype, supertype, :guid => :new)
+            inheritance_fact = @constellation.TypeInheritance(subtype, supertype, :guid => id_of(x))
             if x["IsPrimary"] == "true" or           # Old way
               x["PreferredIdentificationPath"] == "true"   # Newer
               debug :orm, "#{supertype.name} is primary supertype of #{subtype.name}"
@@ -334,8 +347,8 @@ module ActiveFacts
             facts << @by_id[id] = inheritance_fact
 
             # Create the new Roles so we can find constraints on them:
-            subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, :object_type => subtype, :guid => :new)
-            supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, :object_type => supertype, :guid => :new)
+            subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, :object_type => subtype, :guid => id_of(x_subtype_role))
+            supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, :object_type => supertype, :guid => id_of(x_supertype_role))
 
             # Create readings, so constraints can be verbalised for example:
             rs = @constellation.RoleSequence(:new)
@@ -377,7 +390,8 @@ module ActiveFacts
             debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.guid}"
             @nested_types <<
               @by_id[id] =
-              nested_type = @constellation.EntityType(@vocabulary, name, :guid => :new)
+              nested_type = @constellation.EntityType[[@vocabulary, name]] ||
+		  @constellation.EntityType(@vocabulary, name, :guid => id_of(x))
             independent = x['IsIndependent']
             nested_type.is_independent = true if independent && independent == 'true' && !is_implied
             nested_type.is_implied_by_objectification = is_implied
@@ -450,7 +464,7 @@ module ActiveFacts
 
                 debug :orm, "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.guid} played by #{object_type.name}"
 
-                role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :object_type => object_type, :guid => :new)
+                role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :object_type => object_type, :guid => id_of(x))
                 role.role_name = name if name && name != object_type.name
                 debug :orm, "Fact #{fact_name} (id #{fact_type.guid.object_id}) role #{x['Name']} is played by #{object_type.name}, role is #{role.object_id}"
 
@@ -458,7 +472,7 @@ module ActiveFacts
                 x_vr.each{|vr|
                   x_ranges = vr.xpath("orm:ValueRanges/orm:ValueRange")
                   next if x_ranges.size == 0
-                  role.role_value_constraint = @by_id[vr['id']] = @constellation.ValueConstraint(:new)
+                  role.role_value_constraint = @by_id[vr['id']] = @constellation.ValueConstraint(id_of(vr))
                   x_ranges.each{|x_range|
                     v_range = value_range(x_range)
                     ar = @constellation.AllowedRange(role.role_value_constraint, v_range)
@@ -689,7 +703,7 @@ module ActiveFacts
               end
             end
 
-            pc = @constellation.PresenceConstraint(:new)
+            pc = @constellation.PresenceConstraint(id_of(x))
             pc.vocabulary = @vocabulary
             pc.name = name
             pc.role_sequence = role_sequence
@@ -775,7 +789,7 @@ module ActiveFacts
               role.object_type == fact_type.supertype &&
               fact_type.provides_identification
 
-            pc = @constellation.PresenceConstraint(:new)
+            pc = @constellation.PresenceConstraint(id_of(x))
             pc.vocabulary = @vocabulary
             pc.name = name
             pc.role_sequence = role_sequence
@@ -1060,7 +1074,7 @@ module ActiveFacts
 
             next unless make_queries('exclusion', name+(x_mandatory ? '/'+x_mandatory['Name'] : ''), role_sequences)
 
-            ec = @constellation.SetExclusionConstraint(:new)
+            ec = @constellation.SetExclusionConstraint(id_of(x))
             ec.vocabulary = @vocabulary
             ec.name = name
             # ec.enforcement = 
@@ -1095,7 +1109,7 @@ module ActiveFacts
 
             next unless make_queries('equality', name, role_sequences)
 
-            ec = @constellation.SetEqualityConstraint(:new)
+            ec = @constellation.SetEqualityConstraint(id_of(x))
             ec.vocabulary = @vocabulary
             ec.name = name
             # ec.enforcement = 
@@ -1125,7 +1139,7 @@ module ActiveFacts
             next if role_sequences.compact.size != role_sequences.size  # Role sequence missing; includes a derived fact type role
             next unless make_queries('subset', name, role_sequences)
 
-            ec = @constellation.SubsetConstraint(:new)
+            ec = @constellation.SubsetConstraint(id_of(x))
             ec.vocabulary = @vocabulary
             ec.name = name
             # ec.enforcement = 
@@ -1155,7 +1169,7 @@ module ActiveFacts
               raise "Ring constraint has incompatible players #{from.object_type.name}, #{to.object_type.name}" if !join_over
               debug :query, "join ring constraint over #{join_over.name}"
             end
-            rc = @constellation.RingConstraint(:new)
+            rc = @constellation.RingConstraint(id_of(x))
             rc.vocabulary = @vocabulary
             rc.name = name
             # rc.enforcement = 
@@ -1183,7 +1197,7 @@ module ActiveFacts
             next unless role  # Role missing; belongs to a derived fact type
             debug :orm, "FrequencyConstraint(min #{min_frequency.inspect} max #{max_frequency.inspect} over #{role.fact_type.describe(role)} #{id} role ref = #{x_roles[0]["ref"]}"
             @by_id[id] = @constellation.PresenceConstraint(
-                :new,
+                id_of(x_frequency_constraint),
                 :vocabulary => @vocabulary,
                 :name => name = x_frequency_constraint["Name"] || '',
                 :role_sequence => role_sequence,
@@ -1216,7 +1230,7 @@ module ActiveFacts
               vt = @by_id[vt_id]
               throw "ValueType #{vtname} not found" unless vt
 
-              i = @constellation.Instance(:new, :population => population, :object_type => vt, :value => [v.text, is_a_string(v.text), nil])
+              i = @constellation.Instance(id_of(v.parent), :population => population, :object_type => vt, :value => [v.text, is_a_string(v.text), nil])
               @by_id[id] = i
               # show_xmlobj(v)
             }
@@ -1245,14 +1259,15 @@ module ActiveFacts
                 throw "EntityType #{etname} not found" unless et
               end
 
-              instance = @constellation.Instance(:new, :population => population, :object_type => et, :value => nil)
+              instance = @constellation.Instance(id_of(v), :population => population, :object_type => et, :value => nil)
               @by_id[id] = instance
               debug :orm, "Made new EntityType #{etname}"
             }
           end
 
           # The EntityType instances have implicit facts for the PI facts.
-          # We must create implicit PI facts after all the instances.
+	  # These are in the ORM file, but instead of using those,
+          # We create implicit PI facts after all the instances.
           entity_count = 0
           pi_fact_count = 0
           debug :orm, "Creating identifying facts for entities" do
@@ -1302,6 +1317,7 @@ module ActiveFacts
           # Use the "ref" attribute of FactTypeRoleInstance:
           x_fact_roles = @x_model.xpath("orm:Facts/orm:Fact/orm:Instances/orm:FactTypeInstance/orm:RoleInstances/orm:FactTypeRoleInstance")
 
+	  # REVISIT: This presumably duplicates the identifying fact instances for the above entities. Hmmm.
           last_id = nil
           fact = nil
           fact_roles = []
@@ -1356,14 +1372,14 @@ module ActiveFacts
                   # REVISIT: The offset might depend on the constraint type. This is right for subset and other round ones.
                   position = convert_position(bounds, Gravity::C)
                   shape = @constellation.ConstraintShape(
-                      :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
+                      :guid => id_of(x_shape), :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :constraint => subject
                     )
                 when 'RingConstraintShape'
                   # REVISIT: The offset might depend on the ring constraint type. This is right for basic round ones.
                   position = convert_position(bounds, Gravity::C)
                   shape = @constellation.RingConstraintShape(
-                      :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
+                      :guid => id_of(x_shape), :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :constraint => subject
                     )
                   shape.fact_type = subject.role.fact_type
@@ -1373,7 +1389,7 @@ module ActiveFacts
                   position = convert_position(bounds, Gravity::C)
                   # $stderr.puts "#{subject.name}: bounds=#{bounds} -> position = (#{position.x}, #{position.y})"
                   shape = @constellation.ObjectTypeShape(
-                      :new, :diagram => diagram, :position => position, :is_expanded => is_expanded,
+                      :guid => id_of(x_shape), :diagram => diagram, :position => position, :is_expanded => is_expanded,
                       :object_type => subject,
                       :position => position
                     )
@@ -1416,7 +1432,7 @@ module ActiveFacts
 
         debug :orm, "fact type at #{position.x},#{position.y} has display_role_names_setting=#{display_role_names_setting.inspect}, rotation_setting=#{rotation_setting.inspect}"
         shape = @constellation.FactTypeShape(
-            :new,
+            :guid => id_of(x_shape),
             :diagram => diagram,
             :position => position,
             :is_expanded => is_expanded,
@@ -1444,15 +1460,15 @@ module ActiveFacts
           position = convert_position(xr_shape['AbsoluteBounds'])
           case xr_shape.name
           when 'ObjectifiedFactTypeNameShape'
-            @constellation.ObjectifiedFactTypeNameShape(shape, :guid => :new, :diagram => diagram, :position => position, :is_expanded => false)
+            @constellation.ObjectifiedFactTypeNameShape(shape, :guid => id_of(xr_shape), :diagram => diagram, :position => position, :is_expanded => false)
           when 'ReadingShape'
-            @constellation.ReadingShape(shape, :guid => :new, :fact_type_shape=>shape, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
+            @constellation.ReadingShape(shape, :guid => id_of(xr_shape), :fact_type_shape=>shape, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
           when 'RoleNameShape'
             role = @by_id[xr_shape.xpath("ormDiagram:Subject")[0]['ref']]
             role_display = role_display_for_role(shape, x_role_display, role)
             debug :orm, "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name}"
             @constellation.RoleNameShape(
-              :new, :diagram => diagram, :position => position, :is_expanded => false,
+              id_of(xr_shape), :diagram => diagram, :position => position, :is_expanded => false,
               :role_display => role_display
             )
           when 'ValueConstraintShape'
@@ -1463,7 +1479,7 @@ module ActiveFacts
             role_display = role_display_for_role(shape, x_role_display, constraint.role)
             debug :orm, "ValueConstraintShape is on #{role_display.ordinal}'th role (by #{x_role_display.size > 0 ? 'role_display' : 'fact roles'})"
             @constellation.ValueConstraintShape(
-              :new, :diagram => diagram, :position => position, :is_expanded => false,
+              id_of(xr_shape), :diagram => diagram, :position => position, :is_expanded => false,
               :constraint => constraint,
               :object_type_shape => nil,  # This constraint is relative to a Fact Type, so must be on a role
               :role_display => role_display
