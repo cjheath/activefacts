@@ -16,8 +16,7 @@ Gem::Specification.new do |s|
   s.extensions = ["lib/activefacts/cql/Rakefile"]
   s.extra_rdoc_files = [
     "LICENSE",
-    "README.rdoc",
-    "TODO"
+    "README.rdoc"
   ]
   s.files = [
     "History.txt",
