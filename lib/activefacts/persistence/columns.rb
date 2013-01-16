@@ -136,7 +136,9 @@ module ActiveFacts
 
       # Is this column mandatory or nullable?
       def is_mandatory
-        !@references.detect{|ref| !ref.is_mandatory}
+	# REVISIT: Need to find out why unaries are always mandatory (CWA)
+        !references[-1].is_unary &&   # It's a unary
+	  !@references.detect{|ref| !ref.is_mandatory}
       end
 
       # Is this column an auto-assigned value type?
