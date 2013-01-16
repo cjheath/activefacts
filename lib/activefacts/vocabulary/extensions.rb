@@ -45,8 +45,8 @@ module ActiveFacts
         # We only do it when the unary fact type is not objectified
         implicit_fact_type = @constellation.ImplicitFactType(:new, :implying_role => role)
         entity_type = @entity_type ||
-	    @constellation.ImplicitBooleanValueType[[role.object_type.vocabulary, "_ImplicitBooleanValueType"]] ||
-	    @constellation.ImplicitBooleanValueType(role.object_type.vocabulary, "_ImplicitBooleanValueType", :guid => :new)
+	    @constellation.ImplicitBooleanValueType[[role.object_type.vocabulary.identifying_role_values, "_ImplicitBooleanValueType"]] ||
+	    @constellation.ImplicitBooleanValueType(role.object_type.vocabulary.identifying_role_values, "_ImplicitBooleanValueType", :guid => :new)
         phantom_role = @constellation.Role(implicit_fact_type, 0, :object_type => entity_type, :guid => :new)
       end
 

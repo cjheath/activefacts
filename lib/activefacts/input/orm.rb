@@ -226,16 +226,16 @@ module ActiveFacts
           # REVISIT: Need to handle standard types better here:
           value_super_type =
 	    if type_name != name
-	      @constellation.ValueType[[@vocabulary, type_name]] ||
-		  @constellation.ValueType(@vocabulary, type_name, :guid => :new)
+	      @constellation.ValueType[[@vocabulary.identifying_role_values, type_name]] ||
+		  @constellation.ValueType(@vocabulary.identifying_role_values, type_name, :guid => :new)
 	    else
 	      nil
 	    end
         end
 
         @by_id[id] =
-          vt = @constellation.ValueType[[@vocabulary, name]] ||
-	      @constellation.ValueType(@vocabulary, name, :guid => id_of(x))
+          vt = @constellation.ValueType[[@vocabulary.identifying_role_values, name]] ||
+	      @constellation.ValueType(@vocabulary.identifying_role_values, name, :guid => id_of(x))
         vt.supertype = value_super_type
         vt.length = length if length
         vt.scale = scale if scale && scale != 0

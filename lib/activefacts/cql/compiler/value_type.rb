@@ -109,7 +109,7 @@ module ActiveFacts
           end
 
           # Create and initialise the ValueType:
-          vt = @constellation.ValueType[[@vocabulary, @name]] ||
+          vt = @constellation.ValueType[[@vocabulary.identifying_role_values, @name]] ||
 	      @constellation.ValueType(@vocabulary, @name, :guid => :new)
           vt.is_independent = true if (@pragmas.include? 'independent')
           vt.supertype = base_type if base_type

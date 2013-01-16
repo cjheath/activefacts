@@ -59,9 +59,9 @@ END
   end
 
   def value_type(name, datatype = "String", length = 0, scale = 0)
-    dt = @constellation.ValueType[[@vocabulary, datatype]] ||
+    dt = @constellation.ValueType[[@vocabulary.identifying_role_values, datatype]] ||
 	@constellation.ValueType(@vocabulary, datatype, :guid => :new)
-    vt = @constellation.ValueType[[@vocabulary, name]] ||
+    vt = @constellation.ValueType[[@vocabulary.identifying_role_values, name]] ||
 	@constellation.ValueType(@vocabulary, name, :supertype => dt, :guid => :new)
     vt.length = length if length != 0
     vt.scale = scale if scale != 0

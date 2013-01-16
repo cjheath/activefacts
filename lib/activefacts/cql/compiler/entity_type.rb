@@ -28,7 +28,7 @@ module ActiveFacts
         end
 
         def compile
-          @entity_type = @constellation.EntityType[[@vocabulary, @name]] ||
+          @entity_type = @constellation.EntityType[[@vocabulary.identifying_role_values, @name]] ||
 	      @constellation.EntityType(@vocabulary, @name, :guid => :new)
           @entity_type.is_independent = true if (@pragmas.include? 'independent')
 
@@ -280,7 +280,7 @@ module ActiveFacts
             # Find or Create an appropriate ValueType called '#{vt_name}', of the supertype '#{mode}'
             unless vt = @constellation.ObjectType[[@vocabulary.identifying_role_values, vt_name]] or
                    vt = @constellation.ObjectType[[@vocabulary.identifying_role_values, vt_name = "#{name} #{mode}"]]
-              base_vt = @constellation.ValueType[[@vocabulary, mode]] ||
+              base_vt = @constellation.ValueType[[@vocabulary.identifying_role_values, mode]] ||
 		  @constellation.ValueType(@vocabulary, mode, :guid => :new)
               vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt, :guid => :new)
               if parameters

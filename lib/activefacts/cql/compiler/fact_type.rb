@@ -138,7 +138,7 @@ module ActiveFacts
             if @fact_type.entity_type and @name != @fact_type.entity_type.name
               raise "Cannot objectify fact type as #{@name} and as #{@fact_type.entity_type.name}"
             end
-            e = @constellation.EntityType[[@vocabulary, @name]]
+            e = @constellation.EntityType[[@vocabulary.identifying_role_values, @name]]
             raise "You can't objectify #{@name}, it already exists" if e
             e = @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type, :guid => :new)
             e.create_implicit_fact_types
