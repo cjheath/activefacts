@@ -67,10 +67,8 @@ module ActiveFacts
 	      (o.supertypes_transitive-[o]).each do |supertype|
 		functions <<
 		  {
-		    "as #{supertype.name}" =>
-		      {
-			"type" => "#{supertype.name}"
-		      }
+		    "title" => "as #{supertype.name}",
+		    "type" => "#{supertype.name}"
 		  }
 	      end
 
@@ -78,10 +76,8 @@ module ActiveFacts
 	      (o.subtypes_transitive-[o]).each do |subtype|
 		functions <<
 		  {
-		    "as #{subtype.name}" =>
-		      {
-			"type" => "#{subtype.name}"
-		      }
+		    "title" => "as #{subtype.name}",
+		    "type" => "#{subtype.name}"
 		  }
 	      end
 
@@ -90,11 +86,9 @@ module ActiveFacts
 		o.fact_type.all_role.each do |role|
 		  functions <<
 		    {
-		      "involving #{role.role_name || role.object_type.name}" =>
-			{
-			  "type" => "#{role.object_type.name}",
-			  "where" => verbalise_role(role, true)  # REVISIT: Need plural setting here!
-			}
+		      "title" => "involving #{role.role_name || role.object_type.name}",
+		      "type" => "#{role.object_type.name}",
+		      "where" => verbalise_role(role, true)  # REVISIT: Need plural setting here!
 		    }
 		end
 	      end
@@ -145,11 +139,13 @@ module ActiveFacts
 		plural = !uc
 	      end
 
-	      node = { "type" => "#{type_name}" }
-	      functions << { "#{plural ? 'all ' : ''}#{counterpart_name}" => node }
+	      node = {
+		"title" => "#{plural ? 'all ' : ''}#{counterpart_name}",
+		"type" => "#{type_name}",
+		"where" => verbalise_role(role, plural)
+	      }
 	      node["is_list"] = true if plural
-
-	      node["where"] = verbalise_role(role, plural)
+	      functions << node 
 	    end
 
 	    types[o.name] = object_type if functions.size > 0
