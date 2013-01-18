@@ -372,3 +372,5 @@ module ActiveFacts
     end
   end
 end
+
+ActiveFacts::Registry.generator('html/glossary', ActiveFacts::Generate::HTML::GLOSSARY)
