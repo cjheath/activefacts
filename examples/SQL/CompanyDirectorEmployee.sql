@@ -8,7 +8,7 @@ CREATE TABLE Attendance (
 	-- Attendance is where Person attended Meeting and Meeting is held on Date,
 	MeetingDate                             datetime NOT NULL,
 	-- Attendance is where Person attended Meeting and Meeting is board meeting,
-	MeetingIsBoardMeeting                   bit NOT NULL,
+	MeetingIsBoardMeeting                   bit NULL,
 	UNIQUE(AttendeeGivenName, AttendeeFamilyName, MeetingDate, MeetingIsBoardMeeting, MeetingCompanyName)
 )
 GO
@@ -17,7 +17,7 @@ CREATE TABLE Company (
 	-- Company is called Company Name,
 	CompanyName                             varchar(48) NOT NULL,
 	-- Company is listed,
-	IsListed                                bit NOT NULL,
+	IsListed                                bit NULL,
 	PRIMARY KEY(CompanyName)
 )
 GO
@@ -42,8 +42,8 @@ CREATE TABLE Meeting (
 	-- Meeting is held on Date,
 	Date                                    datetime NOT NULL,
 	-- Meeting is board meeting,
-	IsBoardMeeting                          bit NOT NULL,
-	PRIMARY KEY(Date, IsBoardMeeting, CompanyName),
+	IsBoardMeeting                          bit NULL,
+	UNIQUE(Date, IsBoardMeeting, CompanyName),
 	FOREIGN KEY (CompanyName) REFERENCES Company (CompanyName)
 )
 GO

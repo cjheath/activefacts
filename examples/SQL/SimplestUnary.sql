@@ -1,6 +1,6 @@
 CREATE TABLE SomeString (
 	-- Some String is long,
-	IsLong                                  bit NOT NULL,
+	IsLong                                  bit NULL,
 	-- Some String has value,
 	SomeStringValue                         varchar NOT NULL,
 	PRIMARY KEY(SomeStringValue)

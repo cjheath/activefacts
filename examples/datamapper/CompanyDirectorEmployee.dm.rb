@@ -17,7 +17,7 @@ class Company
   include DataMapper::Resource
 
   property :company_name, String, :length => 48, :key => true	# Company is called Company Name
-  property :is_listed, Boolean, :required => true	# Company is listed
+  property :is_listed, Boolean	# Company is listed
   has n, :meeting	# Company held Meeting
   has n, :directorship	# Person directs Company
   has n, :employee	# Employee works at Company
@@ -63,7 +63,7 @@ class Employee < Person
 end
 
 class Manager < Employee
-  property :is_ceo, Boolean, :required => true	# Manager is ceo
+  property :is_ceo, Boolean	# Manager is ceo
   has n, :employee, :child_key => [:manager_nr], :parent_key => [:employee_nr]	# Employee is supervised by Manager
 end
 

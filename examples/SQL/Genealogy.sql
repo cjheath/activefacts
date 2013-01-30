@@ -33,7 +33,7 @@ GO
 
 CREATE TABLE Friend (
 	-- Friend is confirmed,
-	IsConfirmed                             bit NOT NULL,
+	IsConfirmed                             bit NULL,
 	-- Friend is where User is friend of other-User and User has User ID,
 	OtherUserID                             int NOT NULL,
 	-- Friend is where User is friend of other-User and User has User ID,

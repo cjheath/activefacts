@@ -32,7 +32,7 @@ class Friend
   belongs_to :user	# User is involved in Friend
   property :other_user_id, Integer, :key => true	# Friend is where User is friend of other-User and User has User ID
   belongs_to :other_user, 'User', :child_key => [:other_user_id], :parent_key => [:user_id]	# other_User is involved in Friend
-  property :is_confirmed, Boolean, :required => true	# Friend is confirmed
+  property :is_confirmed, Boolean	# Friend is confirmed
 end
 
 class Participation

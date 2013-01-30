@@ -40,7 +40,7 @@ CREATE TABLE AlternativeSet (
 	-- Alternative Set has Guid,
 	Guid                                    Guid NOT NULL,
 	-- Alternative Set members are exclusive,
-	MembersAreExclusive                     bit NOT NULL,
+	MembersAreExclusive                     bit NULL,
 	PRIMARY KEY(Guid)
 )
 GO
@@ -171,7 +171,7 @@ CREATE TABLE FacetValue (
 	-- Facet Value is where Value Type defines Facet as having Value and Facet is where Value Type has facet called Name and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	FacetValueTypeVocabularyName            varchar(64) NOT NULL,
 	-- Facet Value is where Value Type defines Facet as having Value and Value is a string,
-	ValueIsAString                          bit NOT NULL,
+	ValueIsAString                          bit NULL,
 	-- Facet Value is where Value Type defines Facet as having Value and Value is represented by Literal,
 	ValueLiteral                            varchar NOT NULL,
 	-- Facet Value is where Value Type defines Facet as having Value and Object Type is called Name,
@@ -288,7 +288,7 @@ CREATE TABLE ObjectType (
 	-- maybe Entity Type is a kind of Object Type and Entity Type is implied by objectification,
 	EntityTypeIsImpliedByObjectification    bit NULL,
 	-- Object Type is independent,
-	IsIndependent                           bit NOT NULL,
+	IsIndependent                           bit NULL,
 	-- Object Type is called Name,
 	Name                                    varchar(64) NOT NULL,
 	-- maybe Object Type uses Pronoun,
@@ -474,7 +474,7 @@ CREATE TABLE RoleSequence (
 	-- Role Sequence has Guid,
 	Guid                                    Guid NOT NULL,
 	-- Role Sequence has unused dependency to force table in norma,
-	HasUnusedDependencyToForceTableInNorma  bit NOT NULL,
+	HasUnusedDependencyToForceTableInNorma  bit NULL,
 	PRIMARY KEY(Guid)
 )
 GO
@@ -538,7 +538,7 @@ CREATE TABLE Shape (
 	-- Shape has Guid,
 	Guid                                    Guid NOT NULL,
 	-- Shape is expanded,
-	IsExpanded                              bit NOT NULL,
+	IsExpanded                              bit NULL,
 	-- maybe Model Note Shape is a kind of Shape and Model Note Shape is for Context Note and Context Note is a kind of Concept and Concept has Guid,
 	ModelNoteShapeContextNoteGuid           Guid NULL,
 	-- maybe Object Type Shape is a kind of Shape and Object Type Shape has expanded reference mode,
@@ -635,9 +635,9 @@ CREATE TABLE Step (
 	-- Step has input-Play and Play is where Variable is restricted by Role and Query includes Variable and Query is a kind of Concept and Concept has Guid,
 	InputPlayVariableQueryGuid              Guid NOT NULL,
 	-- Step is disallowed,
-	IsDisallowed                            bit NOT NULL,
+	IsDisallowed                            bit NULL,
 	-- Step is optional,
-	IsOptional                              bit NOT NULL,
+	IsOptional                              bit NULL,
 	-- maybe Step has output-Play and Play is where Variable is restricted by Role and Role belongs to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	OutputPlayRoleFactTypeGuid              Guid NULL,
 	-- maybe Step has output-Play and Play is where Variable is restricted by Role and Role fills Ordinal,
@@ -666,7 +666,7 @@ CREATE TABLE Unit (
 	-- maybe Ephemera URL provides Unit coefficient,
 	EphemeraURL                             varchar NULL,
 	-- Unit is fundamental,
-	IsFundamental                           bit NOT NULL,
+	IsFundamental                           bit NULL,
 	-- Name is of Unit,
 	Name                                    varchar(64) NOT NULL,
 	-- maybe Unit has Offset,
