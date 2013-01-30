@@ -6,6 +6,7 @@
 # Copyright (c) 2013 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/api'
+require 'activefacts/persistence'
 require 'json'
 
 module ActiveFacts
@@ -45,6 +46,16 @@ module ActiveFacts
 	  role.fact_type.default_reading(fc, false)
 	end
 
+	def titlize_words phrase
+	  phrase && phrase.split(/\s+/).map{|w| w.sub(/^[a-z]/) {|i| i.upcase}}*' '
+	end
+
+	def role_name(role)
+	  return role.role_name if role.role_name
+	  ref = role.preferred_reference
+	  [ titlize_words(ref.leading_adjective), role.object_type.name, titlize_words(ref.trailing_adjective)].compact*' '
+	end
+
 	def object_types_dump
 	  types = @metadata["types"]
 
@@ -52,8 +63,9 @@ module ActiveFacts
 	    o.name == '_ImplicitBooleanValueType'
 	  end.sort_by{|c| c.name}.each do |o|
 
+	    @tables ||= @vocabulary.tables
 	    object_type = {}
-	    object_type["is_main"] = false
+	    object_type["is_main"] = o.is_table
 	    functions = object_type["functions"] = []
 
 	    if o.is_a?(ActiveFacts::Metamodel::EntityType)
@@ -81,12 +93,12 @@ module ActiveFacts
 		  }
 	      end
 
-	      # If an objectified fact tye, export the fact type's roles
+	      # If an objectified fact type, export the fact type's roles
 	      if o.fact_type
 		o.fact_type.all_role.each do |role|
 		  functions <<
 		    {
-		      "title" => "involving #{role.role_name || role.object_type.name}",
+		      "title" => "involving #{role_name(role)}",
 		      "type" => "#{role.object_type.name}",
 		      "where" => verbalise_role(role, true)  # REVISIT: Need plural setting here!
 		    }
@@ -125,8 +137,7 @@ module ActiveFacts
 		# Handle binary roles
 		counterpart_role = (role.fact_type.all_role.to_a - [role])[0]
 		type_name = counterpart_role.object_type.name
-		counterpart_name = counterpart_role.role_name || type_name
-
+		counterpart_name = role_name(counterpart_role)
 		# Figure out whether the counterpart is plural (say "all ..." if so)
 		uc = role.all_role_ref.detect do |rr|
 		    rs = rr.role_sequence
