@@ -320,7 +320,7 @@ module ActiveFacts
             # REVISIT: Should index references by to_role:
             ref = references_from.detect {|ref| ref.to_role == role_ref.role}
 
-            raise "reference for role #{role.describe} not found on #{name} in #{references_from.size} references:\n\t#{references_from.map(&:to_s)*"\n\t"}" unless ref
+            raise "reference for role #{role_ref.describe} not found on #{name} in #{references_from.size} references:\n\t#{references_from.map(&:to_s)*"\n\t"}" unless ref
 
             ref.columns({})
           end.flatten
