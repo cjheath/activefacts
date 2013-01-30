@@ -3,6 +3,7 @@
 # Copyright (c) 2008 Clifford Heath. Read the LICENSE file.
 #
 
+require 'spec_helper'
 require 'activefacts/support'
 require 'activefacts/api/support'
 require 'activefacts/input/cql'

@@ -11,6 +11,8 @@ require 'helpers/file_matcher'
 require 'helpers/string_matcher'
 require 'helpers/parse_to_ast_matcher'
 
+Dir[File.dirname(__FILE__)+"/helpers/**rb"].each do |helper| require helper; end
+
 class String
   def strip_comments()
     c_comment = %r{/\*((?!\*/).)*\*/}m
