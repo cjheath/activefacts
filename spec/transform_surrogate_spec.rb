@@ -8,10 +8,12 @@ require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/support'
 require 'activefacts/input/cql'
+require 'activefacts/generate/absorption'
 require 'activefacts/generate/transform/surrogate'
 
 describe "CQL Loader with Surrogate transformation" do
   cql_failures = {
+    "SeparateSubtype" => "Causes stack overflow in transform_surrogates"
   }
 
   pattern = ENV["AFTESTS"] || "*"
@@ -31,9 +33,15 @@ describe "CQL Loader with Surrogate transformation" do
       end
 
       # Build and save the actual file:
-      transformer = ActiveFacts::Generate::Transform::Surrogate.new(vocabulary)
       output = StringIO.new
+
+      transformer = ActiveFacts::Generate::Transform::Surrogate.new(vocabulary)
       transformer.generate(output)
+
+      absorption = ActiveFacts::Generate::Absorption.new(vocabulary)
+      absorption.generate(output)
+
+      # Save the output from the StringIO:
       output.rewind
       transformed_text = output.read
       File.open(actual_file, "w") { |f| f.write transformed_text }

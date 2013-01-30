@@ -1,0 +1,6 @@
+Author: Author.Id[*], Author.Name[1]
+Comment: Author.Id, Comment.Id[*], Content.Style, Content.Text, Paragraph.ID
+Content: Style[*], Text[*]
+Paragraph: Content.Style, Content.Text, Ordinal[1], Paragraph.ID[*], Post.Id[1]
+Post: Author.Id, Post.Id[*], Topic.Id
+Topic: Parent.Topic.Id, Topic.Id[*], Topic.Name[1]

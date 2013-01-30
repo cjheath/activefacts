@@ -60,36 +60,97 @@ module ActiveFacts
 	end
 	irf = substitute_identifying_refs.call(self)
 
-	debug :transform_surrogate, "#{name} is identified by #{irf.inspect}"
+	debug :transform_surrogate, "Does #{name} need a surrogate? it's identified by #{irf.inspect}" do
 
-	pk_fks = identifying_refs_from.map do |ref|
-	  ref.to.is_table ? ref.to : nil
-	end
-
-	irf.flatten!
-
-	# Multi-part identifiers are only allowed if each part is a foreign key (i.e. it's a join table):
-	if irf.size >= 2
-	  if pk_fks.include?(nil)
-	    debug :transform_surrogate, "#{self.name} needs a surrogate because its multi-part key contains a non-table"
-	    return true
-	  # REVISIT: elsif pk_fks.detect{ a table with a multi-part key }
-	  else
-	    debug :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect}"
+	  pk_fks = identifying_refs_from.map do |ref|
+	    ref.to && ref.to.is_table ? ref.to : nil
 	  end
+
+	  irf.flatten!
+
+	  # Multi-part identifiers are only allowed if each part is a foreign key (i.e. it's a join table):
+	  if irf.size >= 2
+	    if pk_fks.include?(nil)
+	      debug :transform_surrogate, "#{self.name} needs a surrogate because its multi-part key contains a non-table"
+	      return true
+	    # REVISIT: elsif pk_fks.detect{ a table with a multi-part key }
+	    else
+	      debug :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect}"
+	      return false
+	    end
+	    return true
+	  end
+
+	  # Single-part key. It must be an Auto Counter, or we will add a surrogate
+
+	  unless irf[0].to.supertypes_transitive.map(&:name).include?('Auto Counter')
+	    debug :transform_surrogate, "#{self.name} needs a surrogate because #{irf[0].to.name} is not an AutoCounter"
+	    return true
+	  end
+
+	  false
 	end
-
-	# REVISIT: New criteria for needing a surrogate should be added here
-
-	# return true if irf.size >= 2 and this object plays an identifying role for any other
-
-	# Keys that are too big are disqualified:
-	# return true if irf.detect do |ref| ref.to_role.data_type.bytes > 32 end
-
-	false
       end
 
       def inject_surrogate
+	debug :transform_surrogate, "Injecting a surrogate key into #{self.name}"
+
+	# Disable the preferred identifier:
+	pi = preferred_identifier
+	debug :transform_surrogate, "pi for #{name} was '#{pi.describe}'"
+	pi.is_preferred_identifier = false
+	@preferred_identifier = nil   # Kill the cache
+
+	# Find or assert the Auto Counter value type
+	auto_counter = constellation.ValueType[[[vocabulary.name], "Auto Counter"]] ||
+	  constellation.ValueType(:vocabulary => vocabulary, :name => "Auto Counter", :guid => :new)
+	#p auto_counter
+
+	# Create a subtype to identify this entity type:
+	my_id = constellation.ValueType(:vocabulary => vocabulary, :name => self.name + " ID", :guid => :new, :supertype => auto_counter)
+
+	# Create a fact type
+	identifying_fact_type = constellation.FactType(:guid => :new)
+	my_role = constellation.Role(:guid => :new, :fact_type => identifying_fact_type, :ordinal => 0, :object_type => self)
+	id_role = constellation.Role(:guid => :new, :fact_type => identifying_fact_type, :ordinal => 1, :object_type => my_id)
+
+	# Create a reading (which needs a RoleSequence)
+	reading = constellation.Reading(
+	  :fact_type => identifying_fact_type,
+	  :ordinal => 0,
+	  :role_sequence => [:new],
+	  :text => "{0} has {1}"
+	)
+	constellation.RoleRef(:role_sequence => reading.role_sequence, :ordinal => 0, :role => my_role)
+	constellation.RoleRef(:role_sequence => reading.role_sequence, :ordinal => 1, :role => id_role)
+
+	# Create two uniqueness constraints for the one-to-one. Each needs a RoleSequence (two RoleRefs)
+	one_id = constellation.PresenceConstraint(
+	    :guid => :new,
+	    :vocabulary => vocabulary,
+	    :name => self.name+"HasOneID",
+	    :role_sequence => [:new],
+	    :is_mandatory => true,
+	    :min_frequency => 1,
+	    :max_frequency => 1,
+	    :is_preferred_identifier => false
+	  )
+	@constellation.RoleRef(:role_sequence => one_id.role_sequence, :ordinal => 0, :role => my_role)
+
+	one_me = constellation.PresenceConstraint(
+	    :guid => :new,
+	    :vocabulary => vocabulary,
+	    :name => self.name+"IDIsOfOne"+self.name,
+	    :role_sequence => [:new],
+	    :is_mandatory => false,
+	    :min_frequency => 0,
+	    :max_frequency => 1,
+	    :is_preferred_identifier => true
+	  )
+	@constellation.RoleRef(:role_sequence => one_me.role_sequence, :ordinal => 0, :role => id_role)
+
+	#p one_me
+	debug :transform_surrogate, "pi for #{name} is now '#{one_me.describe}'"
       end
 
     end
@@ -104,12 +165,15 @@ module ActiveFacts
 
 	def generate(out = $stdout)
 	  @out = out
-	  @vocabulary.tables.each do |table|
-	    unless table.needs_surrogate
-	      @out.puts "Need to inject a surrogate key into #{table.name}"
-	      table.inject_surrogate
+	  injections = 
+	    @vocabulary.tables.select do |table|
+	      table.needs_surrogate
 	    end
+	  injections.each do |table|
+	    table.inject_surrogate
 	  end
+
+	  @vocabulary.populate_all_references
 	end
       end
     end

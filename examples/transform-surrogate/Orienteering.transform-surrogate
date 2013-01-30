@@ -1,0 +1,11 @@
+Club: Club.Code[1], Club.ID[*], Club.Name[2]
+Entry: Course, Entry.ID[*], Event.ID[1], Finish.Placing, Person.ID[1], Score
+Event: Club.ID, Event.ID[*], Event.Name[1], Map.ID, Number[2], Series.ID[2], Start.Location, Start.Time
+Event Control: Control.Number[1], Event.Control.ID[*], Event.ID[1], Point.Value
+Event Scoring Method: Course[1], Event.ID[1], Event.Scoring.Method.ID[*], Scoring.Method
+Map: Accessibility, Map.ID[*], Map.Name[1], Owner.ID
+Person: Birth.Year, Club.ID, Family.Name[1], Gender, Given.Name[1], Person.ID[*], Post.Code
+Punch: Punch.ID[*]
+Punch Placement: Event.Control.ID[*], Punch.ID[*]
+Series: Name[1], Series.ID[*]
+Visit: Entry.ID[1], Punch.ID[1], Time[1], Visit.ID[*]

@@ -1,0 +1,6 @@
+Country: Country.ID[*], Country.Name[1]
+Diplomat: Diplomat.ID[*], Diplomat.Name[1], Represented.Country.ID, Served.Country.ID
+Fluency: Diplomat.ID[*], Language.ID[*]
+Language: Language.ID[*], Language.Name[1]
+LanguageUse: Country.ID[*], Language.ID[*]
+Representation: Ambassador.ID, Country.ID[*], Represented.Country.ID[*]

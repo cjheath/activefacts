@@ -19,7 +19,7 @@ module ActiveFacts
     # * paths Show the references paths through which each column was defined
     # * no_identifier Don't show the identified_by columns for an EntityType
 
-    class ABSORPTION
+    class Absorption
       def initialize(vocabulary, *options)  #:nodoc:
         @vocabulary = vocabulary
         @vocabulary = @vocabulary.Vocabulary.values[0] if ActiveFacts::API::Constellation === @vocabulary
@@ -29,6 +29,7 @@ module ActiveFacts
       end
 
       def generate(out = $>)  #:nodoc:
+	@out = out
         no_absorption = 0
         single_absorption_vts = 0
         single_absorption_ets = 0
@@ -46,7 +47,7 @@ module ActiveFacts
         pk = indices.select(&:is_primary)[0]
         indices = indices.clone
         indices.delete pk
-        puts "#{object_type.name}: #{
+        @out.puts "#{object_type.name}: #{
 #            "[#{object_type.indices.size} indices] "
 #          } #{
             object_type.columns.sort_by do |column|
@@ -66,4 +67,4 @@ module ActiveFacts
   end
 end
 
-ActiveFacts::Registry.generator('absorption', ActiveFacts::Generate::ABSORPTION)
+ActiveFacts::Registry.generator('absorption', ActiveFacts::Generate::Absorption)
