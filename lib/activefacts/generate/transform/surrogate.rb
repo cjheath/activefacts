@@ -173,7 +173,7 @@ module ActiveFacts
 	    table.inject_surrogate
 	  end
 
-	  @vocabulary.populate_all_references
+	  @vocabulary.decide_tables
 	end
       end
     end

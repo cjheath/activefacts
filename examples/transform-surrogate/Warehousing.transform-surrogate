@@ -1,12 +1,10 @@
 Bin: Bin.ID[*], Product.ID, Quantity, Warehouse.ID[1]
 Direct Order Match: Purchase.Order.Item.Product.ID[*], Purchase.Order.Item.Purchase.Order.ID[*], Sales.Order.Item.Product.ID[*], Sales.Order.Item.Sales.Order.ID[*]
-Dispatch: Dispatch.ID[*]
 Dispatch Item: Dispatch.ID, Dispatch.Item.ID[*], Product.ID, Quantity, Sales.Order.Item.Product.ID, Sales.Order.Item.Sales.Order.ID, Transfer.Request.ID
 Party: Party.ID[*]
 Product: Product.ID[*]
 Purchase Order: Purchase.Order.ID[*], Supplier.ID, Warehouse.ID
 Purchase Order Item: Product.ID[*], Purchase.Order.ID[*], Quantity
-Receipt: Receipt.ID[*]
 Received Item: Product.ID, Purchase.Order.Item.Product.ID, Purchase.Order.Item.Purchase.Order.ID, Quantity, Receipt.ID, Received.Item.ID[*], Transfer.Request.ID
 Sales Order: Customer.ID, Sales.Order.ID[*], Warehouse.ID
 Sales Order Item: Product.ID[*], Quantity, Sales.Order.ID[*]
