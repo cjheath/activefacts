@@ -1,11 +1,13 @@
 source 'https://rubygems.org'
 
-gem 'activefacts-api', '~>0.9.5'
+gem 'activefacts-api', '~>0.9.7'
+gem 'rbtree-pure'
 gem 'treetop'
 gem 'nokogiri'
 gem 'rake'
 
 group :development do
+  gem 'debugger', :platforms => [:mri_19]
   gem 'dm-core'
   gem 'dm-constraints'
   gem 'dm-migrations'
