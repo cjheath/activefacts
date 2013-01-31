@@ -236,7 +236,17 @@ module ActiveFacts
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
           raise "Illegal call to identifier_columns for absorbed ValueType #{name}" unless is_table
-          columns.select{|column| column.references[0] == self_value_reference}
+	  injected_surrogate_role = all_role.detect do |role|
+	      next if role.fact_type.all_role.size != 2
+	      counterpart_role = (role.fact_type.all_role.to_a-[role])[0]
+	      counterpart_role.all_role_ref.detect do |rr|
+		  rr.role_sequence.all_presence_constraint.detect do |pc|
+		      pc.max_frequency = 1 && pc.is_preferred_identifier
+		    end
+		end
+	    end
+          columns.select{|column| column.references[0].from_role == injected_surrogate_role } or
+	    columns.select{|column| column.references[0] == self_value_reference}
         end
       end
 

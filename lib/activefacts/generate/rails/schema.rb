@@ -198,10 +198,10 @@ module ActiveFacts
 	      to_columns = fk.to_columns.map{|column| columnise(column.name('_'))}
 	      foreign_keys <<
 		if (from_columns.length == 1)
-		  "  add_foreign_key :#{pluralise(fk.from.name)}, :#{pluralise(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}"
+		  "  add_foreign_key :#{pluralise(fk.from.name)}, :#{pluralise(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :dependent => :cascade"
 		else
 		  # This probably isn't going to work without Dr Nic's CPK gem:
-		  "  add_foreign_key :#{pluralise(fk.to.name)}, :#{pluralise(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}]"
+		  "  add_foreign_key :#{pluralise(fk.to.name)}, :#{pluralise(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}], :dependent => :cascade"
 		end
 	    end
 	  end
