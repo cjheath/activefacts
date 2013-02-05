@@ -155,7 +155,7 @@ module #{@concern}
 		    else
 		      %Q{      has_many :#{association_name = rails_plural_name(ref.from.name)}}
 		    end +
-		      %Q{, :foreign_key => :#{rails_singular_name(from_column.name)}, :dependent => destroy}
+		      %Q{, :foreign_key => :#{rails_singular_name(from_column.name)}, :dependent => :destroy}
 		  ] +
 		    # If ref.from is a join table, we can emit a has_many :through for each other key
 		    if ref.from.identifier_columns.length > 1
