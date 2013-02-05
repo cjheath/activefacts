@@ -266,8 +266,7 @@ module ActiveFacts
                         !ref.to or ref.to.absorbed_via == ref
                       end+object_type.references_to
                     ).reject do |ref|
-                      next true if !ref.to.is_table or
-                        ![:one_one, :supertype, :subtype].include?(ref.role_type)
+                      next true if !ref.to.is_table or !ref.is_one_to_one
 
                       # Don't absorb an object along a non-mandatory role (otherwise if it doesn't play that role, it can't exist either)
                       from_is_mandatory = !!ref.is_mandatory

@@ -152,9 +152,13 @@ module ActiveFacts
         end
       end
 
+      def is_one_to_one
+	[:one_one, :subtype, :supertype].include?(role_type)
+      end
+
       # For a one-to-one (or a subtyping fact type), reverse the direction.
       def flip                          #:nodoc:
-        raise "Illegal flip of #{self}" unless @to and [:one_one, :subtype, :supertype].include?(role_type)
+        raise "Illegal flip of #{self}" unless @to and is_one_to_one
 
         detabulate
 
