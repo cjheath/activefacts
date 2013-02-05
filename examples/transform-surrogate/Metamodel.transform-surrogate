@@ -1,27 +1,27 @@
 Aggregation: Aggregate.Code[1], Aggregated.Variable.ID[1], Aggregation.ID[*], Variable.ID
-Allowed Range: Allowed.Range.ID[*], Value.Constraint.ID[1], Value.Range.Maximum.Bound.Is.Inclusive[1], Value.Range.Maximum.Bound.Value.Is.A.String[1], Value.Range.Maximum.Bound.Value.Literal[1], Value.Range.Maximum.Bound.Value.Unit.ID[1], Value.Range.Minimum.Bound.Is.Inclusive[1], Value.Range.Minimum.Bound.Value.Is.A.String[1], Value.Range.Minimum.Bound.Value.Literal[1], Value.Range.Minimum.Bound.Value.Unit.ID[1]
-Alternative Set: Alternative.Set.ID[*], Guid[1], Members.Are.Exclusive
-Constraint: Concept.Guid[1], Constraint.ID[*], Enforcement.Agent.Name, Enforcement.Code, Name[5], Presence.Constraint.Is.Mandatory, Presence.Constraint.Is.Preferred.Identifier, Presence.Constraint.Max.Frequency, Presence.Constraint.Min.Frequency, Presence.Constraint.Role.Sequence.ID, Ring.Constraint.Other.Role.ID, Ring.Constraint.Ring.Type, Ring.Constraint.Role.ID[2], Set.Exclusion.Constraint.Is.Mandatory, Subset.Constraint.Subset.Role.Sequence.ID[3], Subset.Constraint.Superset.Role.Sequence.ID[3], Value.Constraint.Role.ID[4], Vocabulary.Name[5]
-Context According To: Agent.Name[1], Context.According.To.ID[*], Context.Note.ID[1], Date
-Context Agreed By: Agent.Name[1], Agreement.Context.Note.ID[1], Context.Agreed.By.ID[*]
-Context Note: Agreement.Date, Concept.Guid[1], Concept.Guid, Context.Note.ID[*], Context.Note.Kind, Discussion
-Derivation: Base.Unit.ID[*], Derived.Unit.ID[*], Exponent
-Facet Value: Facet.Name[1], Facet.Value.ID[*], Facet.Value.Type.Object.Type.ID[1], Value.Is.A.String, Value.Literal, Value.Type.Object.Type.ID[1], Value.Unit.ID
-Fact: Concept.Guid[1], Fact.ID[*], Fact.Type.ID, Population.ID
-Fact Type: Concept.Guid[1], Entity.Type.Object.Type.ID[2], Fact.Type.ID[*], Type.Inheritance.Assimilation, Type.Inheritance.Provides.Identification[3], Type.Inheritance.Subtype.Object.Type.ID[34], Type.Inheritance.Supertype.Object.Type.ID[4]
-Instance: Concept.Guid[1], Fact.ID[2], Instance.ID[*], Object.Type.ID, Population.ID, Value.Is.A.String, Value.Literal, Value.Unit.ID
-Object Type: Concept.Guid[1], Entity.Type.Is.Implied.By.Objectification, Is.Independent, Name[3], Object.Type.ID[*], Pronoun, Value.Type.Auto.Assigned.Transaction.Timing, Value.Type.Length, Value.Type.Scale, Value.Type.Supertype.Object.Type.ID, Value.Type.Unit.ID, Value.Type.Value.Constraint.ID[2], Vocabulary.Name[3]
+Allowed Range: Allowed.Range.ID[*], Value.Constraint.Guid[1], Value.Range.Maximum.Bound.Is.Inclusive[1], Value.Range.Maximum.Bound.Value.Is.A.String[1], Value.Range.Maximum.Bound.Value.Literal[1], Value.Range.Maximum.Bound.Value.Unit.Guid[1], Value.Range.Minimum.Bound.Is.Inclusive[1], Value.Range.Minimum.Bound.Value.Is.A.String[1], Value.Range.Minimum.Bound.Value.Literal[1], Value.Range.Minimum.Bound.Value.Unit.Guid[1]
+Alternative Set: Guid[*], Members.Are.Exclusive
+Constraint: Concept.Guid[*], Enforcement.Agent.Name, Enforcement.Code, Name[4], Presence.Constraint.Is.Mandatory, Presence.Constraint.Is.Preferred.Identifier, Presence.Constraint.Max.Frequency, Presence.Constraint.Min.Frequency, Presence.Constraint.Role.Sequence.Guid, Ring.Constraint.Other.Role.ID, Ring.Constraint.Ring.Type, Ring.Constraint.Role.ID[1], Set.Exclusion.Constraint.Is.Mandatory, Subset.Constraint.Subset.Role.Sequence.Guid[2], Subset.Constraint.Superset.Role.Sequence.Guid[2], Value.Constraint.Role.ID[3], Vocabulary.Name[4]
+Context According To: Agent.Name[1], Context.According.To.ID[*], Context.Note.Guid[1], Date
+Context Agreed By: Agent.Name[1], Agreement.Guid[1], Context.Agreed.By.ID[*]
+Context Note: Agreement.Date, Concept.Guid[*], Concept.Guid, Context.Note.Kind, Discussion
+Derivation: Base.Unit.Guid[*], Derived.Unit.Guid[*], Exponent
+Facet Value: Facet.Name[1], Facet.Value.ID[*], Facet.Value.Type.Object.Type.ID[1], Value.Is.A.String, Value.Literal, Value.Type.Object.Type.ID[1], Value.Unit.Guid
+Fact: Concept.Guid[*], Fact.Type.Guid, Population.ID
+Fact Type: Concept.Guid[*], Entity.Type.Object.Type.ID[1], Type.Inheritance.Assimilation, Type.Inheritance.Provides.Identification[2], Type.Inheritance.Subtype.Object.Type.ID[23], Type.Inheritance.Supertype.Object.Type.ID[3]
+Instance: Concept.Guid[*], Fact.Guid[1], Object.Type.ID, Population.ID, Value.Is.A.String, Value.Literal, Value.Unit.Guid
+Object Type: Concept.Guid[1], Entity.Type.Is.Implied.By.Objectification, Is.Independent, Name[3], Object.Type.ID[*], Pronoun, Value.Type.Auto.Assigned.Transaction.Timing, Value.Type.Length, Value.Type.Scale, Value.Type.Supertype.Object.Type.ID, Value.Type.Unit.Guid, Value.Type.Value.Constraint.Guid[2], Vocabulary.Name[3]
 Play: Role.ID[*], Step.Input.Play.Role.ID, Step.Input.Play.Variable.ID, Step.Output.Play.Role.ID, Step.Output.Play.Variable.ID, Variable.ID[*]
 Population: Concept.Guid[1], Name[2], Population.ID[*], Vocabulary.Name[2]
-Query: Concept.Guid[1], Query.ID[*]
-Reading: Fact.Type.ID[1], Ordinal[1], Reading.ID[*], Role.Sequence.ID, Text
-Role: Concept.Guid[1], Fact.Type.ID[2], Implicit.Fact.Type.ID[3], Object.Type.ID, Ordinal[2], Role.ID[*], Role.Name
-Role Display: Fact.Type.Shape.ID[1], Ordinal[1], Role.Display.ID[*], Role.ID
-Role Ref: Leading.Adjective, Ordinal[3], Play.Role.ID[1], Play.Variable.ID[1], Role.ID[2], Role.Ref.ID[*], Role.Sequence.ID[23], Trailing.Adjective
-Role Sequence: Guid[1], Has.Unused.Dependency.To.Force.Table.In.Norma, Role.Sequence.ID[*]
-Role Value: Fact.ID[*], Instance.ID, Population.ID, Role.ID[*]
-Set Comparison Roles: Ordinal[1], Role.Sequence.ID[2], Set.Comparison.Constraint.ID[12], Set.Comparison.Roles.ID[*]
-Shape: Constraint.Shape.Constraint.ID, Diagram.Name[1], Diagram.Vocabulary.Name[1], Fact.Type.Shape.Display.Role.Names.Setting, Fact.Type.Shape.Fact.Type.ID, Fact.Type.Shape.ID[3], Fact.Type.Shape.ID[2], Fact.Type.Shape.Reading.ID, Fact.Type.Shape.Rotation.Setting, Guid[4], Is.Expanded, Model.Note.Shape.Context.Note.ID, Object.Type.Shape.Has.Expanded.Reference.Mode, Object.Type.Shape.Object.Type.ID, Position.X[1], Position.Y[1], Ring.Constraint.Shape.Fact.Type.ID, Role.Name.Shape.Role.Display.ID[5], Shape.ID[*], Value.Constraint.Shape.Object.Type.Shape.ID, Value.Constraint.Shape.Role.Display.ID[6]
-Step: Alternative.Set.ID, Fact.Type.ID, Input.Play.Role.ID[*], Input.Play.Variable.ID[*], Is.Disallowed, Is.Optional, Output.Play.Role.ID[*], Output.Play.Variable.ID[*]
-Unit: Coefficient.Denominator, Coefficient.Is.Precise, Coefficient.Numerator, Concept.Guid[1], Ephemera.URL, Is.Fundamental, Name[24], Offset, Plural.Name[3], Unit.ID[*], Vocabulary.Name[4]
-Variable: Object.Type.ID, Ordinal[2], Projection.ID[1], Query.ID[2], Role.Name, Subscript, Value.Is.A.String, Value.Literal, Value.Unit.ID, Variable.ID[*]
+Query: Concept.Guid[*]
+Reading: Fact.Type.Guid[1], Ordinal[1], Reading.ID[*], Role.Sequence.Guid, Text
+Role: Concept.Guid[1], Fact.Type.Guid[2], Implicit.Fact.Type.Guid[3], Object.Type.ID, Ordinal[2], Role.ID[*], Role.Name
+Role Display: Fact.Type.Shape.Guid[1], Ordinal[1], Role.Display.ID[*], Role.ID
+Role Ref: Leading.Adjective, Ordinal[3], Play.Role.ID[1], Play.Variable.ID[1], Role.ID[2], Role.Ref.ID[*], Role.Sequence.Guid[23], Trailing.Adjective
+Role Sequence: Guid[*], Has.Unused.Dependency.To.Force.Table.In.Norma
+Role Value: Fact.Guid[*], Instance.Guid, Population.ID, Role.ID[*]
+Set Comparison Roles: Ordinal[1], Role.Sequence.Guid[2], Set.Comparison.Constraint.Guid[12], Set.Comparison.Roles.ID[*]
+Shape: Constraint.Shape.Constraint.Guid, Diagram.Name[1], Diagram.Vocabulary.Name[1], Fact.Type.Shape.Display.Role.Names.Setting, Fact.Type.Shape.Fact.Type.Guid, Fact.Type.Shape.Guid[3], Fact.Type.Shape.Guid[2], Fact.Type.Shape.Reading.ID, Fact.Type.Shape.Rotation.Setting, Guid[*], Is.Expanded, Model.Note.Shape.Context.Note.Guid, Object.Type.Shape.Has.Expanded.Reference.Mode, Object.Type.Shape.Object.Type.ID, Position.X[1], Position.Y[1], Ring.Constraint.Shape.Fact.Type.Guid, Role.Name.Shape.Role.Display.ID[4], Value.Constraint.Shape.Object.Type.Shape.Guid, Value.Constraint.Shape.Role.Display.ID[5]
+Step: Alternative.Set.Guid, Fact.Type.Guid, Input.Play.Role.ID[*], Input.Play.Variable.ID[*], Is.Disallowed, Is.Optional, Output.Play.Role.ID[*], Output.Play.Variable.ID[*]
+Unit: Coefficient.Denominator, Coefficient.Is.Precise, Coefficient.Numerator, Concept.Guid[*], Ephemera.URL, Is.Fundamental, Name[13], Offset, Plural.Name[2], Vocabulary.Name[3]
+Variable: Object.Type.ID, Ordinal[2], Projection.ID[1], Query.Guid[2], Role.Name, Subscript, Value.Is.A.String, Value.Literal, Value.Unit.Guid, Variable.ID[*]

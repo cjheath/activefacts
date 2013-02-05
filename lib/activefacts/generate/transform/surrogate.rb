@@ -68,7 +68,7 @@ module ActiveFacts
 
       def inject_surrogate
 	debug :transform_surrogate, "Adding surrogate ID to Value Type"
-	add_surrogate('Auto Counter', 'ID')	# REVISIT: This doesn't work because the mapper expects ValueTypes to be self-identifying
+	add_surrogate('Auto Counter', 'ID')
       end
     end
 
