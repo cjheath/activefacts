@@ -53,7 +53,7 @@ module ActiveFacts
             j = {
               :uuid => uuids[o],
               :name => o.name,
-              :shapes => o.all_object_type_shape.map do |shape|
+              :shapes => o.all_object_type_shape.sort_by{|s| [s.position.x, s.position.y]}.map do |shape|
                 x = { :diagram => uuids[shape.diagram],
                   :is_expanded => shape.is_expanded,
                   :uuid => uuid_from_id(shape),
@@ -144,7 +144,7 @@ module ActiveFacts
             end
 
             # Emit shapes
-            j[:shapes] = f.all_fact_type_shape.map do |shape|
+            j[:shapes] = f.all_fact_type_shape.sort_by{|s| [s.position.x, s.position.y]}.map do |shape|
               sj = {
                 :diagram => uuids[shape.diagram],
                 :uuid => uuid_from_id(shape),
@@ -175,7 +175,9 @@ module ActiveFacts
             end
 
             # Emit Internal Presence Constraints
-            f.internal_presence_constraints.each do |ipc|
+            f.internal_presence_constraints.to_a.sort_by{|ipc, z|
+		  [ipc.is_preferred_identifier ? 0 : 1, ipc.is_mandatory ? 0 : 1, ipc.min_frequency || 0, ipc.max_frequency || 1_000]
+		}.each do |ipc|
               uuid = (uuids[ipc] ||= uuid_from_id(ipc))
 
               constraint = {
@@ -207,7 +209,7 @@ module ActiveFacts
               flatten.uniq.each do |ring|
                 (j[:constraints] ||= []) << {
                     :uuid => (uuids[ring] ||= uuid_from_id(ring)),
-                    :shapes => ring.all_constraint_shape.map do |shape|
+                    :shapes => ring.all_constraint_shape.sort_by{|s| [s.position.x, s.position.y]}.map do |shape|
                       { :diagram => uuids[shape.diagram],
                         :uuid => uuid_from_id(shape),
                         :x => shape.position.x,
@@ -234,7 +236,7 @@ module ActiveFacts
             j = {
               :uuid => uuid,
               :type => c.class.basename,
-              :shapes => c.all_constraint_shape.map do |shape|
+              :shapes => c.all_constraint_shape.sort_by{|s| [s.position.x, s.position.y]}.map do |shape|
                 { :diagram => uuids[shape.diagram],
                   :uuid => uuid_from_id(shape),
                   :x => shape.position.x,
