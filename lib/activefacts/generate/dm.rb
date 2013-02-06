@@ -130,7 +130,7 @@ module ActiveFacts
             puts "  include DataMapper::Resource\n\n" unless supertype
 
             columns = o.columns
-            o.references_from.each do |ref|
+            o.references_from.sort_by{|r| r.to_s}.each do |ref|
               # A (set of) columns
               if !columns
                 # absorbed subtypes didn't have columns populated
@@ -141,7 +141,7 @@ module ActiveFacts
               # debugger if ref_columns.detect{|c| [:subtype, :supertype].include?(c.references[0].role_type)}
               ref_columns = columns.select{|c| c.references[0] == ref }
               # puts "  \# #{ref.reading}:"
-              ref_columns.each do |column|
+              ref_columns.sort_by{|column| column_name(column)}.each do |column|
                 type, params, constraints = column.type
                 length = params[:length]
                 length &&= length.to_i
@@ -191,7 +191,7 @@ module ActiveFacts
 
             # Emit the "has n," associations
             # REVISIT: Need to use ActiveSupport to pluralise these names, or disable inflexion somehow.
-            o.references_to.each do |ref|
+            o.references_to.sort_by{|r| [r.to_s, (r.from_role||r.to_role).ordinal] }.each do |ref|
               next unless is_model[ref.from]
               constraint = ''
               association_type =

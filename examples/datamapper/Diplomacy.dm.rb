@@ -15,11 +15,11 @@ end
 class Diplomat
   include DataMapper::Resource
 
-  property :diplomat_name, String, :key => true	# Diplomat has DiplomatName
   property :represented_country_name, String, :required => true	# Diplomat represents Country and Country has CountryName
   belongs_to :represented_country, 'Country', :child_key => [:represented_country_name], :parent_key => [:country_name]	# Diplomat represents Country
   property :served_country_name, String, :required => true	# Diplomat serves in Country and Country has CountryName
   belongs_to :served_country, 'Country', :child_key => [:served_country_name], :parent_key => [:country_name]	# Diplomat serves in Country
+  property :diplomat_name, String, :key => true	# Diplomat has DiplomatName
   has n, :fluency	# Diplomat speaks Language
 end
 
@@ -40,17 +40,17 @@ class Language
   include DataMapper::Resource
 
   property :language_name, String, :key => true	# Language has LanguageName
-  has n, :language_use, 'LanguageUse'	# Language is spoken in Country
   has n, :fluency	# Diplomat speaks Language
+  has n, :language_use, 'LanguageUse'	# Language is spoken in Country
 end
 
 class LanguageUse
   include DataMapper::Resource
 
-  property :language_name, String, :key => true	# LanguageUse is where Language is spoken in Country and Language has LanguageName
-  belongs_to :language	# Language is involved in LanguageUse
   property :country_name, String, :key => true	# LanguageUse is where Language is spoken in Country and Country has CountryName
   belongs_to :country	# Country is involved in LanguageUse
+  property :language_name, String, :key => true	# LanguageUse is where Language is spoken in Country and Language has LanguageName
+  belongs_to :language	# Language is involved in LanguageUse
 end
 
 class Representation

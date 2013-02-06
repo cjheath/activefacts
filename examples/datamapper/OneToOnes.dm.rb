@@ -11,8 +11,8 @@ end
 class Girl
   include DataMapper::Resource
 
-  property :girl_id, Serial	# Girl has Girl ID
   property :boy_id, Integer	# maybe Girl is going out with Boy and Boy has Boy ID
   has 1, :boy	# Girl is going out with Boy
+  property :girl_id, Serial	# Girl has Girl ID
 end
 

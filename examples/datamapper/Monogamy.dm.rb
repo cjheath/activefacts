@@ -4,8 +4,8 @@ require 'dm-constraints'
 class Person
   include DataMapper::Resource
 
-  property :person_id, Serial	# Person has Person ID
   property :name, String, :required => true	# Person is called Name
+  property :person_id, Serial	# Person has Person ID
 end
 
 class Boy < Person

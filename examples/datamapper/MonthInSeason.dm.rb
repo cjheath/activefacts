@@ -4,8 +4,8 @@ require 'dm-constraints'
 class Month
   include DataMapper::Resource
 
-  property :season, String	# maybe Month is in Season
   property :month_value, String, :key => true	# Month has value
+  property :season, String	# maybe Month is in Season
   has n, :occurrence	# Event occurred in Month
 end
 
