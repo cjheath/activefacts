@@ -6,7 +6,7 @@
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 #module ActiveFacts
-  $debug_indent = nil
+  $debug_indent = 0
   $debug_nested = false   # Set when a block enables all enclosed debugging
   $debug_keys = nil
   $debug_available = {}
@@ -14,13 +14,15 @@
   def debug_initialize
     # First time, initialise the tracing environment
     $debug_indent = 0
-    $debug_keys = {}
-    if (e = ENV["DEBUG"])
-      e.split(/[^_a-zA-Z0-9]/).each{|k| debug_enable(k) }
-      if $debug_keys[:help]
-        at_exit {
-          $stderr.puts "---\nDebugging keys available: #{$debug_available.keys.map{|s| s.to_s}.sort*", "}"
-        }
+    unless $debug_keys
+      $debug_keys = {}
+      if (e = ENV["DEBUG"])
+	e.split(/[^_a-zA-Z0-9]/).each{|k| debug_enable(k) }
+	if $debug_keys[:help]
+	  at_exit {
+	    $stderr.puts "---\nDebugging keys available: #{$debug_available.keys.map{|s| s.to_s}.sort*", "}"
+	  }
+	end
       end
     end
   end
@@ -72,7 +74,9 @@
   end
 
   def debug_show(*args)
-    debug_initialize unless $debug_indent
+    unless $debug_keys
+      debug_initialize
+    end
 
     enabled, key_to_show = debug_selected(args)
 
@@ -152,7 +156,7 @@ class Array
 end
 
 # Load the ruby debugger before everything else, if requested
-if debug :debug
+if debug :debug or debug :firstaid
   begin
     require 'ruby-debug'
     Debugger.start # (:post_mortem => true)  # Some Ruby versions crash on post-mortem debugging
@@ -165,6 +169,20 @@ if debug :debug
       puts "Stopped at:\n\t"+caller*"\n\t"
       debugger
       true
+    end
+  end
+
+  if debug :firstaid
+    puts "Preparing first aid kit"
+    class ::Exception
+      alias_method :firstaid_initialize, :initialize
+
+      def initialize *args, &b
+	send(:firstaid_initialize, *args, &b)
+	puts "Stopped due to #{self.class}: #{message} at "+caller*"\n\t"
+	debugger
+	true # Exception thrown
+      end
     end
   end
 end
