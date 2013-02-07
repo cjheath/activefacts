@@ -525,14 +525,6 @@ CREATE TABLE Shape (
 	FactTypeShapeDisplayRoleNamesSetting    varchar NULL CHECK(FactTypeShapeDisplayRoleNamesSetting = 'false' OR FactTypeShapeDisplayRoleNamesSetting = 'true'),
 	-- maybe Fact Type Shape is a kind of Shape and Fact Type Shape is for Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	FactTypeShapeFactTypeGuid               Guid NULL,
-	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Reading Shape and Reading Shape is a kind of Shape and Shape has Guid,
-	FactTypeShapeGuid                       Guid NULL,
-	-- maybe Fact Type Shape is a kind of Shape and maybe Objectified Fact Type Name Shape is for Fact Type Shape and Objectified Fact Type Name Shape is a kind of Shape and Shape has Guid,
-	FactTypeShapeGuid                       Guid NULL,
-	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Reading Shape and Reading Shape is for Reading and Fact Type has Reading and Fact Type is a kind of Concept and Concept has Guid,
-	FactTypeShapeReadingFactTypeGuid        Guid NULL,
-	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Reading Shape and Reading Shape is for Reading and Reading is in Ordinal position,
-	FactTypeShapeReadingOrdinal             shortint NULL,
 	-- maybe Fact Type Shape is a kind of Shape and maybe Fact Type Shape has Rotation Setting,
 	FactTypeShapeRotationSetting            varchar NULL CHECK(FactTypeShapeRotationSetting = 'left' OR FactTypeShapeRotationSetting = 'right'),
 	-- Shape has Guid,
@@ -547,10 +539,18 @@ CREATE TABLE Shape (
 	ObjectTypeShapeObjectTypeName           varchar(64) NULL,
 	-- maybe Object Type Shape is a kind of Shape and Object Type Shape is for Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	ObjectTypeShapeObjectTypeVocabularyName varchar(64) NULL,
+	-- maybe Objectified Fact Type Name Shape is a kind of Shape and Objectified Fact Type Name Shape is for Fact Type Shape and Shape has Guid,
+	ObjectifiedFactTypeNameShapeFactTypeShapeGuid Guid NULL,
 	-- maybe Shape is at Position and Position is at X,
 	PositionX                               int NULL,
 	-- maybe Shape is at Position and Position is at Y,
 	PositionY                               int NULL,
+	-- maybe Reading Shape is a kind of Shape and Fact Type Shape has Reading Shape and Shape has Guid,
+	ReadingShapeFactTypeShapeGuid           Guid NULL,
+	-- maybe Reading Shape is a kind of Shape and Reading Shape is for Reading and Fact Type has Reading and Fact Type is a kind of Concept and Concept has Guid,
+	ReadingShapeReadingFactTypeGuid         Guid NULL,
+	-- maybe Reading Shape is a kind of Shape and Reading Shape is for Reading and Reading is in Ordinal position,
+	ReadingShapeReadingOrdinal              shortint NULL,
 	-- maybe Constraint Shape is a kind of Shape and maybe Ring Constraint Shape is a kind of Constraint Shape and Ring Constraint Shape is attached to Fact Type and Fact Type is a kind of Concept and Concept has Guid,
 	RingConstraintShapeFactTypeGuid         Guid NULL,
 	-- maybe Role Name Shape is a kind of Shape and Role Name Shape is for Role Display and Role Display is where Fact Type Shape displays Role in Ordinal position and Shape has Guid,
@@ -569,12 +569,12 @@ CREATE TABLE Shape (
 	FOREIGN KEY (RingConstraintShapeFactTypeGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (FactTypeShapeFactTypeGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (ObjectTypeShapeObjectTypeName, ObjectTypeShapeObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName),
-	FOREIGN KEY (FactTypeShapeReadingFactTypeGuid, FactTypeShapeReadingOrdinal) REFERENCES Reading (FactTypeGuid, Ordinal),
+	FOREIGN KEY (ReadingShapeReadingFactTypeGuid, ReadingShapeReadingOrdinal) REFERENCES Reading (FactTypeGuid, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeRoleDisplayFactTypeShapeGuid, ValueConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeGuid, Ordinal),
 	FOREIGN KEY (RoleNameShapeRoleDisplayFactTypeShapeGuid, RoleNameShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeGuid, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeObjectTypeShapeGuid) REFERENCES Shape (Guid),
-	FOREIGN KEY (FactTypeShapeGuid) REFERENCES Shape (Guid),
-	FOREIGN KEY (FactTypeShapeGuid) REFERENCES Shape (Guid)
+	FOREIGN KEY (ObjectifiedFactTypeNameShapeFactTypeShapeGuid) REFERENCES Shape (Guid),
+	FOREIGN KEY (ReadingShapeFactTypeShapeGuid) REFERENCES Shape (Guid)
 )
 GO
 
@@ -587,20 +587,20 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameDiagramNamePositionXPositionY ON dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY(DiagramVocabularyName, DiagramName, PositionX, PositionY)
 GO
 
-CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeGuid (FactTypeShapeGuid) WITH SCHEMABINDING AS
-	SELECT FactTypeShapeGuid FROM dbo.Shape
-	WHERE	FactTypeShapeGuid IS NOT NULL
+CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_ObjectifiedFactTypeNameShapeFactTypeShapeGuid (ObjectifiedFactTypeNameShapeFactTypeShapeGuid) WITH SCHEMABINDING AS
+	SELECT ObjectifiedFactTypeNameShapeFactTypeShapeGuid FROM dbo.Shape
+	WHERE	ObjectifiedFactTypeNameShapeFactTypeShapeGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByFactTypeShapeGuid ON dbo.ObjectifiedFactTypeNameShapeInShape_FactTypeShapeGuid(FactTypeShapeGuid)
+CREATE UNIQUE CLUSTERED INDEX IX_ObjectifiedFactTypeNameShapeInShapeByObjectifiedFactTypeNameShapeFactTypeShapeGuid ON dbo.ObjectifiedFactTypeNameShapeInShape_ObjectifiedFactTypeNameShapeFactTypeShapeGuid(ObjectifiedFactTypeNameShapeFactTypeShapeGuid)
 GO
 
-CREATE VIEW dbo.ReadingShapeInShape_FactTypeShapeGuid (FactTypeShapeGuid) WITH SCHEMABINDING AS
-	SELECT FactTypeShapeGuid FROM dbo.Shape
-	WHERE	FactTypeShapeGuid IS NOT NULL
+CREATE VIEW dbo.ReadingShapeInShape_ReadingShapeFactTypeShapeGuid (ReadingShapeFactTypeShapeGuid) WITH SCHEMABINDING AS
+	SELECT ReadingShapeFactTypeShapeGuid FROM dbo.Shape
+	WHERE	ReadingShapeFactTypeShapeGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByFactTypeShapeGuid ON dbo.ReadingShapeInShape_FactTypeShapeGuid(FactTypeShapeGuid)
+CREATE UNIQUE CLUSTERED INDEX IX_ReadingShapeInShapeByReadingShapeFactTypeShapeGuid ON dbo.ReadingShapeInShape_ReadingShapeFactTypeShapeGuid(ReadingShapeFactTypeShapeGuid)
 GO
 
 CREATE VIEW dbo.RoleNameShapeInShape_RoleNameShapeRoleDisplayFactTypeShapeGuidRoleNameShapeRoleDisplayOrdinal (RoleNameShapeRoleDisplayFactTypeShapeGuid, RoleNameShapeRoleDisplayOrdinal) WITH SCHEMABINDING AS

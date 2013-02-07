@@ -368,7 +368,6 @@ module ::Metamodel
   end
 
   class ObjectifiedFactTypeNameShape < Shape
-    identified_by :fact_type_shape
     one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.objectified_fact_type_name_shape
   end
 
@@ -386,7 +385,6 @@ module ::Metamodel
   end
 
   class ReadingShape < Shape
-    identified_by :fact_type_shape
     one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.reading_shape
     has_one :reading, :mandatory => true        # See Reading.all_reading_shape
   end

@@ -254,8 +254,8 @@ Object Type Shape is for one Object Type,
 	Object Type has Object Type Shape;
 Object Type Shape has expanded reference mode;
 
-Objectified Fact Type Name Shape is a kind of Shape identified by Fact Type Shape where
-	Objectified Fact Type Name Shape is for one Fact Type Shape,
+Objectified Fact Type Name Shape is a kind of Shape;
+Objectified Fact Type Name Shape is for one Fact Type Shape,
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
 
 Play is where
@@ -274,8 +274,8 @@ Population includes Instance,
 Population includes Role Value,
 	Role Value belongs to one Population;
 
-Reading Shape is a kind of Shape identified by Fact Type Shape where
-	Fact Type Shape has at most one Reading Shape,
+Reading Shape is a kind of Shape;
+Fact Type Shape has at most one Reading Shape,
 	Reading Shape is for one Fact Type Shape;
 Reading Shape is for one Reading,
 	Reading has Reading Shape;
