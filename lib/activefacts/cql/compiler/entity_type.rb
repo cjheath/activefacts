@@ -214,7 +214,7 @@ module ActiveFacts
         end
 
         def add_supertype(supertype_name, not_identifying)
-          debug :supertype, "Adding supertype #{supertype_name}" do
+          debug :supertype, "Adding #{not_identifying ? '' : 'identifying '}supertype #{supertype_name} to #{@entity_type.name}" do
             supertype = @constellation.EntityType(@vocabulary, supertype_name)
 
             # Did we already know about this supertype?
@@ -269,6 +269,7 @@ module ActiveFacts
             pc2.min_frequency = 0
             pc2.max_frequency = 1
             # The supertype role often identifies the subtype:
+	    debug :supertype, "identification of #{@entity_type.name} via supertype #{supertype.name} was #{inheritance_fact.provides_identification ? '' : 'not '}added"
             pc2.is_preferred_identifier = inheritance_fact.provides_identification
           end
         end
