@@ -241,12 +241,15 @@ module ActiveFacts
 	      counterpart_role = (role.fact_type.all_role.to_a-[role])[0]
 	      counterpart_role.all_role_ref.detect do |rr|
 		  rr.role_sequence.all_presence_constraint.detect do |pc|
-		      pc.max_frequency == 1 && pc.is_preferred_identifier
+		      pc.role_sequence.all_role_ref.size == 1 && pc.max_frequency == 1 && pc.is_preferred_identifier
 		    end
 		end
 	    end
-          columns.select{|column| column.references[0].from_role == injected_surrogate_role } or
+	  if injected_surrogate_role
+	    columns.select{|column| column.references[0].from_role == injected_surrogate_role }
+	  else
 	    columns.select{|column| column.references[0] == self_value_reference}
+	  end
         end
       end
 
