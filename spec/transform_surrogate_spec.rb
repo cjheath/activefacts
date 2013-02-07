@@ -13,7 +13,6 @@ require 'activefacts/generate/transform/surrogate'
 
 describe "CQL Loader with Surrogate transformation" do
   cql_failures = {
-    "SeparateSubtype" => "Causes stack overflow in transform_surrogates"
   }
 
   pattern = ENV["AFTESTS"] || "*"
