@@ -25,7 +25,7 @@ norma_table_exceptions = {
   "RedundantDependency" => [%w{Politician StateOrProvince}, %w{LegislativeDistrict}],   # NORMA doesn't make a table for the 3 IDENTITY fields
   "Warehousing" => [%w{Product Warehouse}, []],                     # NORMA doesn't make a table for the IDENTITY field
   "ServiceDirector" => [%w{DataStoreService MonitorNotificationUser}, %w{DataStoreFileHostSystem }],
-  
+  "SeparateSubtype" => [%w{Claim}, %w{Incident}],
 }
   
 def extract_created_tables_from_sql sql_file

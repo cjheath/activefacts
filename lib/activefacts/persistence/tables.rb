@@ -260,6 +260,10 @@ module ActiveFacts
                     }
                   debug :absorption, "#{object_type.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
 
+=begin
+		  # This is kinda arbitrary. We need a policy for evaluating optional flips, so we can decide if they "improve" things.
+		  # The flipping that occurs below always eliminates a table by absorption, but this doesn't.
+
                   # If all non-identifying functional roles are one-to-ones that can be flipped, do that:
                   if non_identifying_refs_from.all? { |ref| ref.role_type == :one_one && (ref.to.is_table || ref.to.tentative) }
 		    debug :absorption, "Flipping references from #{object_type.name}" do
@@ -270,6 +274,7 @@ module ActiveFacts
 		    end
                     non_identifying_refs_from = []
                   end
+=end
 
                   if object_type.references_to.size > 1 and
                       non_identifying_refs_from.size > 0
@@ -299,7 +304,7 @@ module ActiveFacts
                   if absorption_paths.size > 0
                     debug :absorption, "#{object_type.name} is fully absorbed through #{absorption_paths.inspect}"
                     absorption_paths.each do |ref|
-                      debug :absorption, "flip #{ref} so #{object_type.name} can be absorbed"
+                      debug :absorption, "Flipping #{ref} so #{object_type.name} can be absorbed"
                       ref.flip if object_type == ref.from
                     end
                     object_type.definitely_not_table

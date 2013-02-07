@@ -3,7 +3,7 @@ CREATE TABLE SomeString (
 	IsLong                                  bit NULL,
 	-- Some String has value,
 	SomeStringValue                         varchar NOT NULL,
-	UNIQUE(IsLong, SomeStringValue)
+	PRIMARY KEY(SomeStringValue)
 )
 GO
 
