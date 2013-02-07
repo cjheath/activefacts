@@ -11,6 +11,7 @@ module ActiveFacts
 	constellation.FactType.values.each do |fact_type|
 	  if c = fact_type.check_and_add_spanning_uniqueness_constraint
 	    debug :constraint, "Checking for existence of at least one uniqueness constraint over the roles of #{fact_type.default_reading.inspect}"
+	    fact_type.check_and_add_spanning_uniqueness_constraint = nil
 	    c.call
 	  end
 	end
@@ -199,6 +200,11 @@ module ActiveFacts
       def preferred_identifier
         return @preferred_identifier if @preferred_identifier
         if fact_type
+	  # When compiling a fact instance, the delayed creation of a preferred identifier might be necessary
+	  if c = fact_type.check_and_add_spanning_uniqueness_constraint
+	    fact_type.check_and_add_spanning_uniqueness_constraint = nil
+	    c.call
+	  end
 
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles
           fact_roles = Array(fact_type.all_role)

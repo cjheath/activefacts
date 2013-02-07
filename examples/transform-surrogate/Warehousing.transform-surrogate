@@ -1,4 +1,4 @@
-Bin: Bin.ID[*], Product.ID, Quantity, Warehouse.ID[1]
+Bin: Bin.ID[*], Product.ID, Quantity, Warehouse.ID
 Direct Order Match: Purchase.Order.Item.Product.ID[*], Purchase.Order.Item.Purchase.Order.ID[*], Sales.Order.Item.Product.ID[*], Sales.Order.Item.Sales.Order.ID[*]
 Dispatch Item: Dispatch.ID, Dispatch.Item.ID[*], Product.ID, Quantity, Sales.Order.Item.Product.ID, Sales.Order.Item.Sales.Order.ID, Transfer.Request.ID
 Party: Party.ID[*]

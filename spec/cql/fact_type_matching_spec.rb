@@ -22,6 +22,7 @@ describe "When matching a reading" do
     }
     @compiler = ActiveFacts::CQL::Compiler.new('Test')
     @compiler.compile(prefix)
+    @compiler.vocabulary.finalise
     @constellation = @compiler.vocabulary.constellation
 
     baseline
@@ -219,8 +220,10 @@ describe "When matching a reading" do
             Girl is going out with ugly-Boy monster,
             Boy is going out with Girl;
           }
+	@compiler.vocabulary.finalise
         (new_fact_types = fact_types).size.should == 1
-        (fact_type = new_fact_types[0]).all_reading.size.should == 2
+        fact_type = new_fact_types[0]
+        fact_type.all_reading.size.should == 2
         (pcs = fact_pcs(fact_type)).size.should == 1
       end
     end

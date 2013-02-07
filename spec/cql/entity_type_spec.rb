@@ -301,6 +301,7 @@ describe "When compiling an entity type, " do
           result = @compiler.compile(MatchingPrefix+test)
           puts @compiler.failure_reason unless result
           result.should_not be_nil
+	  @compiler.vocabulary.finalise
         when Proc
           begin
             test.call(@compiler.vocabulary.constellation)

@@ -179,6 +179,7 @@ describe "Sample data" do
       lambda do
         begin
           @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
+	  @vocabulary.finalise
         rescue => exception
           if debug :exception
             puts "#{exception.message}"
