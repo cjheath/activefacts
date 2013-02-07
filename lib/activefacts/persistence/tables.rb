@@ -85,12 +85,25 @@ module ActiveFacts
           return @is_table = true
         end
 
-        # Subtypes are not a table unless partitioned or separate
-        # REVISIT: Support partitioned subtypes here
+	# Subtypes may be partitioned or separate, in which case they're definitely tables.
+	# Otherwise, if their identification is inherited from a supertype, they're definitely absorbed.
+	# If theey have separate identification, it might absorb them.
         if (!supertypes.empty?)
           as_ti = all_supertype_inheritance.detect{|ti| ti.assimilation}
-          debug :absorption, "EntityType #{name} is #{as_ti ? as_ti.assimilation+' from' : 'absorbed into'} supertype #{(as_ti ? as_ti.supertype : supertypes[0]).name}"
-          return @is_table = all_supertype_inheritance.detect{|ti| ti.assimilation} != nil
+          @is_table = as_ti != nil
+	  if @is_table
+	    debug :absorption, "EntityType #{name} is #{as_ti.assimilation} from supertype #{as_ti.supertype}"
+	  else
+	    identifying_fact_type = preferred_identifier.role_sequence.all_role_ref.to_a[0].role.fact_type
+	    if identifying_fact_type.is_a?(TypeInheritance)
+	      debug :absorption, "EntityType #{name} is absorbed into supertype #{supertypes[0].name}"
+	      @is_table = false
+	    else
+	      # Possibly absorbed, we'll have to see how that pans out
+	      @tentative = true
+	    end
+	  end
+          return @is_table
         end
 
         # If the preferred_identifier includes an auto_assigned ValueType
@@ -218,7 +231,7 @@ module ActiveFacts
               undecided.select do |object_type|
                 debug :absorption, "Considering #{object_type.name}:" do
                   debug :absorption, "refs to #{object_type.name} are from #{object_type.references_to.map{|ref| ref.from.name}*", "}" if object_type.references_to.size > 0
-                  debug :absorption, "refs from #{object_type.name} are to #{object_type.references_from.map{|ref| ref.to.name rescue ref.fact_type.default_reading}*", "}" if object_type.references_from.size > 0
+                  debug :absorption, "refs from #{object_type.name} are to #{object_type.references_from.map{|ref| ref.to ? ref.to.name : ref.fact_type.default_reading}*", "}" if object_type.references_from.size > 0
 
                   # Always absorb an objectified unary into its role player:
                   if object_type.fact_type && object_type.fact_type.all_role.size == 1
@@ -249,7 +262,12 @@ module ActiveFacts
 
                   # If all non-identifying functional roles are one-to-ones that can be flipped, do that:
                   if non_identifying_refs_from.all? { |ref| ref.role_type == :one_one && (ref.to.is_table || ref.to.tentative) }
-                    non_identifying_refs_from.each { |ref| ref.flip }
+		    debug :absorption, "Flipping references from #{object_type.name}" do
+		      non_identifying_refs_from.each do |ref|
+			debug :absorption, "Flipping #{ref}"
+			ref.flip
+		      end
+		    end
                     non_identifying_refs_from = []
                   end
 
