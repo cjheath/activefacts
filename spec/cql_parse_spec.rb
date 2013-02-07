@@ -20,6 +20,7 @@ describe "CQL Parser" do
     it "should load CQL #{cql_file} without parse errors" do
       broken = cql_failures[File.basename(cql_file, ".cql")]
 
+      vocabulary = nil
       if broken
         pending(broken) {
           lambda { vocabulary = ActiveFacts::Input::CQL.readfile(cql_file) }.should_not raise_error
