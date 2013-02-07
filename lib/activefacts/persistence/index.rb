@@ -150,16 +150,18 @@ module ActiveFacts
 
         debug :index, "All Indices in #{name}:" do
           @indices = columns_by_unique_constraint.map do |uc, columns_with_ordinal|
-            #puts "Index on #{name} over (#{columns_with_ordinal.sort.map{|ca| [ca[0], ca[1], ca[2].name].inspect}})"
+            debug :index, "Index due to uc #{uc.guid} on #{name} over (#{columns_with_ordinal.sort_by{|onc|onc[0]}.map{|ca| ca[2].name}.inspect})"
             columns = columns_with_ordinal.sort_by{|ca| [ca[0,2], ca[2].name]}.map{|ca| ca[2]}
             absorption_level = columns.map(&:absorption_level).min
             over = columns[0].references[absorption_level].from
 
             # Absorption through a one-to-one forms a UC that we don't need to enforce using an index:
-            next nil if over != self and
+	    if over != self and
               over.absorbed_via == columns[0].references[absorption_level-1] and
               (rr = uc.role_sequence.all_role_ref.single) and
               over.absorbed_via.fact_type.all_role.include?(rr.role)
+	      next nil
+	    end
 
             index = ActiveFacts::Persistence::Index.new(
               uc,

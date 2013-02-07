@@ -27,6 +27,7 @@ describe "CQL Parser" do
       else
         lambda { vocabulary = ActiveFacts::Input::CQL.readfile(cql_file) }.should_not raise_error
       end
+      vocabulary.finalise
     end
   end
 end

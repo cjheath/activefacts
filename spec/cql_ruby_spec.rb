@@ -48,6 +48,7 @@ describe "CQL Loader with Ruby output" do
       else
         vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
       end
+      vocabulary.finalise
 
       # Build and save the actual file:
       ruby_text = ruby(vocabulary)

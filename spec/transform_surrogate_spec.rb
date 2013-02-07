@@ -31,6 +31,7 @@ describe "CQL Loader with Surrogate transformation" do
       else
         vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
       end
+      vocabulary.finalise
 
       # Build and save the actual file:
       output = StringIO.new

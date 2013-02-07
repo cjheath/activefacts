@@ -130,6 +130,7 @@ module ActiveFacts
                 #:is_mandatory => true,
                 #:min_frequency => 1,
               )
+	    debug :constraint, "Made new preferred PC GUID=#{pc.guid} min=nil max=1 over #{role_sequence.describe}"
           end
         end
 
@@ -198,7 +199,7 @@ module ActiveFacts
           raise "#{@name} must only objectify one fact type" if @fact_type
           if fact_type.internal_presence_constraints.select{|pc| pc.max_frequency == 1}.size == 0
             # If there's no existing uniqueness constraint over this fact type, make a spanning one.
-            @constellation.PresenceConstraint(
+            pc = @constellation.PresenceConstraint(
               :new,
               :vocabulary => @vocabulary,
               :name => @entity_type.name+"UQ",
@@ -206,6 +207,7 @@ module ActiveFacts
               :is_preferred_identifier => false,  # We only get here when there is a reference mode on the entity type
               :max_frequency => 1
             )
+	    debug :constraint, "Made new objectification PC GUID=#{pc.guid} min=nil max=1 over #{fact_type.preferred_reading.role_sequence.describe}"
           end
 
           @fact_type = @entity_type.fact_type = fact_type
@@ -259,6 +261,7 @@ module ActiveFacts
             pc1.min_frequency = 1
             pc1.max_frequency = 1
             pc1.is_preferred_identifier = false
+	    debug :constraint, "Made new subtype PC GUID=#{pc1.guid} min=1 max=1 over #{p1rs.describe}"
 
             p2rs = @constellation.RoleSequence(:new)
             constellation.RoleRef(p2rs, 0).role = super_role
@@ -269,8 +272,9 @@ module ActiveFacts
             pc2.min_frequency = 0
             pc2.max_frequency = 1
             # The supertype role often identifies the subtype:
-	    debug :supertype, "identification of #{@entity_type.name} via supertype #{supertype.name} was #{inheritance_fact.provides_identification ? '' : 'not '}added"
             pc2.is_preferred_identifier = inheritance_fact.provides_identification
+	    debug :supertype, "identification of #{@entity_type.name} via supertype #{supertype.name} was #{inheritance_fact.provides_identification ? '' : 'not '}added"
+	    debug :constraint, "Made new supertype PC GUID=#{pc2.guid} min=1 max=1 over #{p2rs.describe}"
           end
         end
 
@@ -384,7 +388,7 @@ module ActiveFacts
               :is_preferred_identifier => false,
               :is_mandatory => true
             )
-            debug :mode, "Creating new EntityType PresenceConstraint"
+	    debug :constraint, "Made new refmode PC GUID=#{constraint.guid} min=1 max=1 over #{rs0.describe}"
           else
             debug :mode, "Using existing EntityType PresenceConstraint"
           end
@@ -412,7 +416,7 @@ module ActiveFacts
               :is_preferred_identifier => true,
               :is_mandatory => false
             )
-            debug :mode, "Creating new ValueType PresenceConstraint"
+	    debug :constraint, "Made new refmode ValueType PC GUID=#{constraint.guid} min=0 max=1 over #{rs1.describe}"
           else
             debug :mode, "Marking existing ValueType PresenceConstraint as preferred"
             rs1.all_presence_constraint.single.is_preferred_identifier = true

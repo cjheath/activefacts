@@ -225,6 +225,7 @@ module ActiveFacts
               :is_mandatory => @quantifier.min && @quantifier.min > 0
             )
           @enforcement.compile(@constellation, @constraint) if @enforcement
+	  debug :constraint, "Made new PC GUID=#{@constraint.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{role_sequence.describe}"
           super
         end
 

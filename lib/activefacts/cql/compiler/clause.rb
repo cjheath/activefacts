@@ -938,10 +938,11 @@ module ActiveFacts
             end
             constraint = find_pc_over_roles(constrained_roles)
             if constraint
-              debug :constraint, "Setting max frequency to #{@quantifier.max} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}"
               raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != @quantifier.max
+              debug :constraint, "Setting max frequency to #{@quantifier.max} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}" unless constraint.max_frequency
               constraint.max_frequency = @quantifier.max
               raise "Conflicting minimum frequency for constraint" if constraint.min_frequency && constraint.min_frequency != @quantifier.min
+              debug :constraint, "Setting min frequency to #{@quantifier.min} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}" unless constraint.min_frequency
               constraint.min_frequency = @quantifier.min
             else
               role_sequence = constellation.RoleSequence(:new)
@@ -956,7 +957,7 @@ module ActiveFacts
                   :max_frequency => @quantifier.max,
                   :min_frequency => @quantifier.min
                 )
-              debug :constraint, "Made new PC min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} constraint #{constraint.object_id} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
+              debug :constraint, "Made new embedded PC GUID=#{constraint.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
               @quantifier.enforcement.compile(constellation, constraint) if @quantifier.enforcement
               @embedded_presence_constraint = constraint
             end

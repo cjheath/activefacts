@@ -55,6 +55,8 @@ begin
 
   exit 0 unless vocabulary
 
+  vocabulary.finalise
+
   # Generate the output:
   generators.each do |generator, options|
     generator.new(vocabulary, *options).generate

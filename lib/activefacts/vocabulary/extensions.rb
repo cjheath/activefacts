@@ -6,8 +6,20 @@
 #
 module ActiveFacts
   module Metamodel
+    class Vocabulary
+      def finalise
+	constellation.FactType.values.each do |fact_type|
+	  if c = fact_type.check_and_add_spanning_uniqueness_constraint
+	    debug :constraint, "Checking for existence of at least one uniqueness constraint over the roles of #{fact_type.default_reading.inspect}"
+	    c.call
+	  end
+	end
+      end
+    end
 
     class FactType
+      attr_accessor :check_and_add_spanning_uniqueness_constraint
+
       def all_reading_by_ordinal
         all_reading.sort_by{|reading| reading.ordinal}
       end

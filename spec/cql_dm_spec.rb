@@ -74,6 +74,7 @@ describe "CQL Loader with DataMapper output" do
       else
         vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
       end
+      vocabulary.finalise
 
       # Build and save the actual file:
       dm_text = ''

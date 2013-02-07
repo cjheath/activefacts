@@ -52,6 +52,7 @@ describe "CQL Loader" do
           raise
         end
       end
+      vocabulary.finalise
 
       # Build and save the actual file:
       cql_text = cql(vocabulary)

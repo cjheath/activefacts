@@ -245,17 +245,32 @@ module ActiveFacts
             return
           end
 
-          # REVISIT: We need to check uniqueness constraints after processing the whole vocabulary
+          # We need to check uniqueness constraints after processing the whole vocabulary
           # raise "Fact type must be named as it has no identifying uniqueness constraint" unless @name || @fact_type.all_role.size == 1
-
-          @constellation.PresenceConstraint(
-            :new,
-            :vocabulary => @vocabulary,
-            :name => @fact_type.entity_type ? @fact_type.entity_type.name+"PK" : '',
-            :role_sequence => @fact_type.preferred_reading.role_sequence,
-            :max_frequency => 1,
-            :is_preferred_identifier => prefer
-          )
+	  debug :constraint, "Need to check #{@fact_type.default_reading.inspect} for a uniqueness constraint"
+          fact_type.check_and_add_spanning_uniqueness_constraint = proc do
+	    debug :constraint, "Checking #{@fact_type.default_reading.inspect} for a uniqueness constraint"
+            if !@fact_type.all_role.
+		detect do |role|
+                  role.all_role_ref.detect do |rr|
+                    # This RoleSequence, to be relevant, must only reference roles of this fact type
+                    rr.role_sequence.all_role_ref.all? {|rr2| rr2.role.fact_type == @fact_type} and
+                    # The RoleSequence must have at least one uniqueness constraint
+                    rr.role_sequence.all_presence_constraint.detect{|pc| pc.max_frequency == 1}
+		  end
+                end
+	      # There's no existing uniqueness constraint over the roles of this fact type. Add one
+	      pc = @constellation.PresenceConstraint(
+		:new,
+		:vocabulary => @vocabulary,
+		:name => @fact_type.entity_type ? @fact_type.entity_type.name+"PK" : '',
+		:role_sequence => (rs = @fact_type.preferred_reading.role_sequence),
+		:max_frequency => 1,
+		:is_preferred_identifier => true # (prefer || !!@fact_type.entity_type)
+	      )
+	      debug :constraint, "Made new fact type implicit PC GUID=#{pc.guid} #{pc.name} min=nil max=1 over #{rs.describe}"
+            end
+	  end
         end
 
         def has_more_adjectives(less, more)

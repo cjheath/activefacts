@@ -43,6 +43,7 @@ describe "CQL Loader with SQL output" do
       else
         lambda { vocabulary = ActiveFacts::Input::CQL.readfile(cql_file) }.should_not raise_error
       end
+      vocabulary.finalise
 
       # Build and save the actual file:
       sql_text = sql(vocabulary)
