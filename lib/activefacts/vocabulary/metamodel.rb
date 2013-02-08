@@ -159,9 +159,9 @@ module ActiveFacts
     end
 
     class ContextNote < Concept
-      has_one :concept                            # See Concept.all_context_note
       has_one :context_note_kind, :mandatory => true  # See ContextNoteKind.all_context_note
       has_one :discussion, :mandatory => true     # See Discussion.all_context_note
+      has_one :relevant_concept, :class => Concept # See Concept.all_context_note_as_relevant_concept
     end
 
     class Enforcement
@@ -369,7 +369,6 @@ module ActiveFacts
     end
 
     class ObjectifiedFactTypeNameShape < Shape
-      identified_by :fact_type_shape
       one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.objectified_fact_type_name_shape
     end
 
@@ -387,7 +386,6 @@ module ActiveFacts
     end
 
     class ReadingShape < Shape
-      identified_by :fact_type_shape
       one_to_one :fact_type_shape, :mandatory => true  # See FactTypeShape.reading_shape
       has_one :reading, :mandatory => true        # See Reading.all_reading_shape
     end

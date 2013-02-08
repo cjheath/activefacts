@@ -28,7 +28,7 @@ module ActiveFacts
               :context_note_kind => @context_kind,
               :discussion => @discussion
             )
-          context_note.concept = target
+          context_note.relevant_concept = target
           if @agreed_date || @agreed_agents
             agreement = constellation.Agreement(context_note)
             agreement.date = @agreed_date if @agreed_date
