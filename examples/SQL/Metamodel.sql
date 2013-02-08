@@ -142,12 +142,12 @@ CREATE TABLE ContextNote (
 	AgreementDate                           datetime NULL,
 	-- Context Note is a kind of Concept and Concept has Guid,
 	ConceptGuid                             Guid NOT NULL,
-	-- maybe Concept has Context Note and Concept has Guid,
-	ConceptGuid                             Guid NULL,
 	-- Context Note has Context Note Kind,
 	ContextNoteKind                         varchar NOT NULL CHECK(ContextNoteKind = 'as_opposed_to' OR ContextNoteKind = 'because' OR ContextNoteKind = 'so_that' OR ContextNoteKind = 'to_avoid'),
 	-- Context Note has Discussion,
 	Discussion                              varchar NOT NULL,
+	-- maybe Context Note applies to relevant-Concept and Concept has Guid,
+	RelevantConceptGuid                     Guid NULL,
 	PRIMARY KEY(ConceptGuid)
 )
 GO

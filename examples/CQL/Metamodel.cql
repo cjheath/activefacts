@@ -59,12 +59,12 @@ Name is of Constraint,
 	Constraint is called at most one Name;
 
 Context Note is a kind of Concept [partitioned];
-Concept has Context Note,
-	Context Note applies to at most one Concept;
 Context Note has one Context Note Kind,
 	Context Note Kind is of Context Note;
 Context Note has one Discussion,
 	Discussion is for Context Note;
+Context Note applies to at most one relevant-Concept,
+	Concept has Context Note;
 
 Enforcement is identified by Constraint where
 	Constraint requires at most one Enforcement,

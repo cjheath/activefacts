@@ -158,9 +158,9 @@ module ::Metamodel
   end
 
   class ContextNote < Concept
-    has_one :concept                            # See Concept.all_context_note
     has_one :context_note_kind, :mandatory => true  # See ContextNoteKind.all_context_note
     has_one :discussion, :mandatory => true     # See Discussion.all_context_note
+    has_one :relevant_concept, :class => Concept  # See Concept.all_context_note_as_relevant_concept
   end
 
   class Enforcement
