@@ -2,6 +2,7 @@
 module Country
   extend ActiveSupport::Concern
   included do
+	  set_primary_key :country_id
 
     # Diplomat represents Country
     has_many :diplomats, :foreign_key => :represented_country_id, :dependent => :destroy
@@ -26,6 +27,7 @@ end
 module Diplomat
   extend ActiveSupport::Concern
   included do
+	  set_primary_key :diplomat_id
 
     # Diplomat represents Country
     belongs_to :represented_country, :class_name => :country
@@ -42,6 +44,7 @@ end
 module Fluency
   extend ActiveSupport::Concern
   included do
+	  set_primary_key :diplomat_id
 
     # Diplomat speaks Language
     belongs_to :diplomat
@@ -54,6 +57,7 @@ end
 module Language
   extend ActiveSupport::Concern
   included do
+	  set_primary_key :language_id
 
     # Language is spoken in Country
     has_many :language_uses, :foreign_key => :language_id, :dependent => :destroy
@@ -68,6 +72,7 @@ end
 module LanguageUse
   extend ActiveSupport::Concern
   included do
+	  set_primary_key :language_id
 
     # Language is spoken in Country
     belongs_to :country
@@ -80,6 +85,7 @@ end
 module Representation
   extend ActiveSupport::Concern
   included do
+	  set_primary_key :represented_country_id
 
     # Ambassador is from Country to Country
     belongs_to :represented_country, :class_name => :country

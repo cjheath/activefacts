@@ -89,12 +89,12 @@ module ActiveFacts
 	  [rails_type, length]
 	end
 
-	def pluralise name
+	def rails_plural_name name
 	  # Crunch spaces and convert to a plural form in snake_case
 	  ActiveSupport::Inflector.tableize(name.gsub(/\s+/, ''))
 	end
 
-	def columnise name
+	def rails_singular_name name
 	  # Crunch spaces and convert to snake_case
 	  ActiveSupport::Inflector.underscore(name.gsub(/\s+/, ''))
 	end
@@ -113,7 +113,7 @@ module ActiveFacts
 	  puts "ActiveRecord::Schema.define(:version => #{Time.now.strftime('%Y%m%d%H%M%S')}) do"
 
 	  @vocabulary.tables.each do |table|
-	    ar_table_name = pluralise(table.name)
+	    ar_table_name = rails_plural_name(table.name)
 
 	    pk = table.identifier_columns
 	    identity_column = pk[0] if pk.size == 1 && pk[0].is_auto_assigned
@@ -139,7 +139,7 @@ module ActiveFacts
 
 	    identity =
 	      if move_pk_to_create_table_call
-		":primary_key => :#{columnise(pk[0].name('_'))}"
+		":primary_key => :#{rails_singular_name(pk[0].name('_'))}"
 	      else
 		":id => #{needs_rails_id_field}"
 	      end
@@ -166,7 +166,7 @@ module ActiveFacts
 		end.
 		map do |column|
 	      next [] if move_pk_to_create_table_call and column == pk[0]
-	      name = columnise(column.name('_'))
+	      name = rails_singular_name(column.name('_'))
 	      type, params, constraints = column.type
 	      length = params[:length]
 	      length &&= length.to_i
@@ -192,14 +192,14 @@ module ActiveFacts
 
 	    unless @exclude_fks
 	      table.foreign_keys.each do |fk|
-		from_columns = fk.from_columns.map{|column| columnise(column.name('_'))}
-		to_columns = fk.to_columns.map{|column| columnise(column.name('_'))}
+		from_columns = fk.from_columns.map{|column| rails_singular_name(column.name('_'))}
+		to_columns = fk.to_columns.map{|column| rails_singular_name(column.name('_'))}
 		foreign_keys <<
 		  if (from_columns.length == 1)
-		    "  add_foreign_key :#{pluralise(fk.from.name)}, :#{pluralise(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :dependent => :cascade"
+		    "  add_foreign_key :#{rails_plural_name(fk.from.name)}, :#{rails_plural_name(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :dependent => :cascade"
 		  else
 		    # This probably isn't going to work without Dr Nic's CPK gem:
-		    "  add_foreign_key :#{pluralise(fk.to.name)}, :#{pluralise(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}], :dependent => :cascade"
+		    "  add_foreign_key :#{rails_plural_name(fk.to.name)}, :#{rails_plural_name(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}], :dependent => :cascade"
 		  end
 	      end
 	    end
@@ -208,7 +208,7 @@ module ActiveFacts
 	    index_text = []
 	    indices.each do |index|
 	      abbreviated_column_names = index.abbreviated_column_names('_')*""
-	      column_names = index.column_names('_').map{|c| columnise(c) }
+	      column_names = index.column_names('_').map{|c| rails_singular_name(c) }
 	      index_name = "index_#{ar_table_name+'_on_'+column_names*'_'}"
 	      index_name = index_name[0, 60] + (dup_id += 1).to_s if index_name.length > 63
 

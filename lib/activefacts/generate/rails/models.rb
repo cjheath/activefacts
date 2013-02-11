@@ -104,7 +104,9 @@ module ActiveFacts
 	  puts %Q{module #{rails_class_name(table.name)}
   extend ActiveSupport::Concern
   included do
+	  set_primary_key :#{rails_singular_name(table.identifier_columns[0].name)}
 #{
+
 	  # belongs_to Associations
 	  (
 	    table.foreign_keys.map do |fk|
