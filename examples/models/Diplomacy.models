@@ -1,0 +1,93 @@
+
+module Country
+  extend ActiveSupport::Concern
+  included do
+
+    # Diplomat represents Country
+    has_many :diplomats, :foreign_key => :represented_country_name, :dependent => :destroy
+
+    # Diplomat serves in Country
+    has_many :diplomats, :foreign_key => :served_country_name, :dependent => :destroy
+
+    # Language is spoken in Country
+    has_many :language_uses, :foreign_key => :country_name, :dependent => :destroy
+    has_many :languages, :through => :language_uses
+
+    # Ambassador is from Country to Country
+    has_many :representations, :foreign_key => :represented_country_name, :dependent => :destroy
+    has_many :countries, :through => :representations
+
+    # Ambassador is from Country to Country
+    has_many :representations, :foreign_key => :country_name, :dependent => :destroy
+    has_many :countries, :through => :representations
+  end
+end
+
+module Diplomat
+  extend ActiveSupport::Concern
+  included do
+
+    # Diplomat represents Country
+    belongs_to :represented_country, :class_name => :country
+
+    # Diplomat serves in Country
+    belongs_to :served_country, :class_name => :country
+
+    # Diplomat speaks Language
+    has_many :fluencies, :foreign_key => :diplomat_name, :dependent => :destroy
+    has_many :languages, :through => :fluencies
+  end
+end
+
+module Fluency
+  extend ActiveSupport::Concern
+  included do
+
+    # Diplomat speaks Language
+    belongs_to :diplomat
+
+    # Diplomat speaks Language
+    belongs_to :language
+  end
+end
+
+module Language
+  extend ActiveSupport::Concern
+  included do
+
+    # Language is spoken in Country
+    has_many :language_uses, :foreign_key => :language_name, :dependent => :destroy
+    has_many :countries, :through => :language_uses
+
+    # Diplomat speaks Language
+    has_many :fluencies, :foreign_key => :language_name, :dependent => :destroy
+    has_many :diplomats, :through => :fluencies
+  end
+end
+
+module LanguageUse
+  extend ActiveSupport::Concern
+  included do
+
+    # Language is spoken in Country
+    belongs_to :country
+
+    # Language is spoken in Country
+    belongs_to :language
+  end
+end
+
+module Representation
+  extend ActiveSupport::Concern
+  included do
+
+    # Ambassador is from Country to Country
+    belongs_to :represented_country, :class_name => :country
+
+    # Ambassador is from Country to Country
+    belongs_to :represented_country, :class_name => :country
+
+    # Ambassador is from Country to Country
+    belongs_to :diplomat
+  end
+end
