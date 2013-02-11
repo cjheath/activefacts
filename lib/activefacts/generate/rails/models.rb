@@ -123,7 +123,7 @@ module ActiveFacts
 		end
 	      end
 	      if role_name and (role_name = rails_singular_name(role_name)) != target_name
-		class_name = ", :class_name => :#{target_name}"
+		class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
 		association_name = rails_singular_name role_name
 	      end
 	      %Q{
