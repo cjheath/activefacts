@@ -1,0 +1,66 @@
+
+module Booking
+  extend ActiveSupport::Concern
+  included do
+
+    # Person booked Showing for Count
+    belongs_to :person
+
+    # Booking has allocated-Seat
+    has_many :seat_allocations, :foreign_key => :booking_id, :dependent => :destroy
+    has_many :seats, :through => :seat_allocations
+  end
+end
+
+module Cinema
+  extend ActiveSupport::Concern
+  included do
+
+    # Cinema has Seat
+    has_many :seats, :foreign_key => :cinema_id, :dependent => :destroy
+
+    # has_many :showings, but that is fully absorbed here: ["Booking"]
+  end
+end
+
+module Film
+  extend ActiveSupport::Concern
+  included do
+
+    # has_many :showings, but that is fully absorbed here: ["Booking"]
+  end
+end
+
+module Person
+  extend ActiveSupport::Concern
+  included do
+
+    # Person booked Showing for Count
+    has_many :bookings, :foreign_key => :person_id, :dependent => :destroy
+  end
+end
+
+module Seat
+  extend ActiveSupport::Concern
+  included do
+
+    # Cinema has Seat
+    belongs_to :cinema
+
+    # Booking has allocated-Seat
+    has_many :seat_allocations, :foreign_key => :allocated_seat_id, :dependent => :destroy
+    has_many :bookings, :through => :seat_allocations
+  end
+end
+
+module SeatAllocation
+  extend ActiveSupport::Concern
+  included do
+
+    # Booking has allocated-Seat
+    belongs_to :booking
+
+    # Booking has allocated-Seat
+    belongs_to :allocated_seat, :class_name => :seat
+  end
+end

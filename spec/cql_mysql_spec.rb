@@ -33,6 +33,8 @@ describe "CQL Loader with SQL output" do
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql}, 'spec/actual/\1.my.sql')
     expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/MySQL/\1.sql')
 
+    next unless ENV["AFTESTS"] || File.exists?(expected_file)
+
     it "should load #{cql_file} and dump MySQL matching #{expected_file}" do
       broken = cql_failures[File.basename(cql_file, ".cql")]
       vocabulary = nil
@@ -47,6 +49,7 @@ describe "CQL Loader with SQL output" do
 
       # Build and save the actual file:
       sql_text = sql(vocabulary)
+      Dir.mkdir "spec/actual" rescue nil
       File.open(actual_file, "w") { |f| f.write sql_text }
 
       pending("expected output file #{expected_file} not found") unless File.exists? expected_file

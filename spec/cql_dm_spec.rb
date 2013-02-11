@@ -64,6 +64,8 @@ describe "CQL Loader with DataMapper output" do
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'spec/actual/\1.dm.rb')
     base = File.basename(cql_file, ".cql")
 
+    next unless ENV["AFTESTS"] || File.exists?(expected_file)
+
     it "should load #{cql_file} and dump DataMapper models matching #{expected_file}" do
       vocabulary = nil
       broken = cql_failures[base]
@@ -81,6 +83,7 @@ describe "CQL Loader with DataMapper output" do
       lambda do
         begin
           dm_text = dm(vocabulary)
+	  Dir.mkdir "spec/actual" rescue nil
           File.open(actual_file, "w") { |f| f.write dm_text }
         rescue
           raise unless mapping_failures[base]

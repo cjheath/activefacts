@@ -8,6 +8,7 @@ require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/support'
 require 'activefacts/input/cql'
+require 'activefacts/generate/transform/surrogate'
 require 'activefacts/generate/rails/models'
 
 describe "CQL Loader with Rails models output" do
@@ -22,6 +23,7 @@ describe "CQL Loader with Rails models output" do
   # Generate and return the Rails models for the given vocabulary
   def models(vocabulary)
     output = StringIO.new
+
     @dumper = ActiveFacts::Generate::Rails::Models.new(vocabulary.constellation)
     @dumper.generate(output)
     output.rewind
@@ -32,6 +34,8 @@ describe "CQL Loader with Rails models output" do
   Dir["examples/CQL/#{pattern}.cql"].each do |cql_file|
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql}, 'spec/actual/\1.models')
     expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/models/\1.models')
+
+    next unless ENV["AFTESTS"] || File.exists?(expected_file)
 
     it "should load #{cql_file} and dump Rails models matching #{expected_file}" do
       vocabulary = nil
@@ -45,8 +49,12 @@ describe "CQL Loader with Rails models output" do
       end
       vocabulary.finalise
 
+      transformer = ActiveFacts::Generate::Transform::Surrogate.new(vocabulary)
+      transformer.generate(nil)
+
       # Build and save the actual file:
       models_text = models(vocabulary)
+      Dir.mkdir "spec/actual" rescue nil
       File.open(actual_file, "w") { |f| f.write models_text }
 
       pending("expected output file #{expected_file} not found") unless File.exists? expected_file
@@ -58,9 +66,6 @@ describe "CQL Loader with Rails models output" do
           models_text.should_not differ_from(expected_text)
         }
       else
-        # Discard index names:
-        models_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX <Name is hidden> ON ')
-        expected_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX <Name is hidden> ON ')
         models_text.should_not differ_from(expected_text)
         File.delete(actual_file)  # It succeeded, we don't need the file.
       end

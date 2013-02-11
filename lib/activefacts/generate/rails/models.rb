@@ -161,7 +161,7 @@ module ActiveFacts
 		  if ref.from.identifier_columns.length > 1
 		    ref.from.identifier_columns.map do |ic|
 		      next nil if ic.references[0] == ref   # Skip the back-reference
-		      %Q{    has_many :#{rails_plural_name(ic.references[0].to.name)}, :through => :#{association_name}}
+		      %Q{    has_many :#{rails_plural_name(ic.references[0].to.name)}, :through => :#{association_name}} # \# via #{ic.name}}
 		    end
 		  else
 		    []

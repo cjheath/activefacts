@@ -1,0 +1,161 @@
+{
+  "types": {
+    "Ambassador": {
+      "is_main": false,
+      "functions": [
+        {
+          "title": "as Diplomat",
+          "type": "Diplomat"
+        },
+        {
+          "title": "all Representation",
+          "type": "Representation",
+          "where": "this Ambassador is from some Represented Country to some Country",
+          "is_list": true
+        }
+      ]
+    },
+    "Country": {
+      "is_main": true,
+      "functions": [
+        {
+          "title": "CountryName",
+          "type": "CountryName",
+          "where": "this Country has one CountryName"
+        },
+        {
+          "title": "all Diplomat as Represented Country",
+          "type": "Diplomat",
+          "where": "some Diplomat represents this Represented Country",
+          "is_list": true
+        },
+        {
+          "title": "all Diplomat as Served Country",
+          "type": "Diplomat",
+          "where": "some Diplomat serves in this Served Country",
+          "is_list": true
+        },
+        {
+          "title": "all Language",
+          "type": "Language",
+          "where": "some Language is spoken in this Country",
+          "is_list": true
+        },
+        {
+          "title": "all Representation",
+          "type": "Representation",
+          "where": "some Ambassador is from this Represented Country to some Country",
+          "is_list": true
+        },
+        {
+          "title": "all Representation",
+          "type": "Representation",
+          "where": "some Ambassador is from some Represented Country to this Country",
+          "is_list": true
+        }
+      ]
+    },
+    "CountryName": {
+      "is_main": false,
+      "functions": [
+        {
+          "title": "Country",
+          "type": "Country",
+          "where": "one Country has this CountryName"
+        }
+      ]
+    },
+    "Diplomat": {
+      "is_main": true,
+      "functions": [
+        {
+          "title": "as Ambassador",
+          "type": "Ambassador"
+        },
+        {
+          "title": "DiplomatName",
+          "type": "DiplomatName",
+          "where": "this Diplomat has one DiplomatName"
+        },
+        {
+          "title": "Represented Country",
+          "type": "Country",
+          "where": "this Diplomat represents one Represented Country"
+        },
+        {
+          "title": "Served Country",
+          "type": "Country",
+          "where": "this Diplomat serves in one Served Country"
+        },
+        {
+          "title": "all Language",
+          "type": "Language",
+          "where": "this Diplomat speaks some Language",
+          "is_list": true
+        }
+      ]
+    },
+    "DiplomatName": {
+      "is_main": false,
+      "functions": [
+        {
+          "title": "Diplomat",
+          "type": "Diplomat",
+          "where": "one Diplomat has this DiplomatName"
+        }
+      ]
+    },
+    "Language": {
+      "is_main": true,
+      "functions": [
+        {
+          "title": "LanguageName",
+          "type": "LanguageName",
+          "where": "this Language has one LanguageName"
+        },
+        {
+          "title": "all Country",
+          "type": "Country",
+          "where": "this Language is spoken in some Country",
+          "is_list": true
+        },
+        {
+          "title": "all Diplomat",
+          "type": "Diplomat",
+          "where": "some Diplomat speaks this Language",
+          "is_list": true
+        }
+      ]
+    },
+    "LanguageName": {
+      "is_main": false,
+      "functions": [
+        {
+          "title": "Language",
+          "type": "Language",
+          "where": "one Language has this LanguageName"
+        }
+      ]
+    },
+    "Representation": {
+      "is_main": true,
+      "functions": [
+        {
+          "title": "involving Ambassador",
+          "type": "Ambassador",
+          "where": "this Ambassador is from some Represented Country to some Country"
+        },
+        {
+          "title": "involving Represented Country",
+          "type": "Country",
+          "where": "some Ambassador is from this Represented Country to some Country"
+        },
+        {
+          "title": "involving Country",
+          "type": "Country",
+          "where": "some Ambassador is from some Represented Country to this Country"
+        }
+      ]
+    }
+  }
+}

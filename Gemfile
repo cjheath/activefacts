@@ -8,6 +8,7 @@ gem 'rake'
 
 group :development do
   gem 'debugger', :platforms => [:mri_19]
+  gem 'activesupport'
   gem 'dm-core'
   gem 'dm-constraints'
   gem 'dm-migrations'

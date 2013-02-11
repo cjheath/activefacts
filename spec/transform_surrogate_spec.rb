@@ -20,6 +20,8 @@ describe "CQL Loader with Surrogate transformation" do
     expected_file = cql_file.sub(%r{/CQL/(.*).cql\Z}, '/transform-surrogate/\1.transform-surrogate')
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'spec/actual/\1.transform-surrogate')
 
+    next unless ENV["AFTESTS"] || File.exists?(expected_file)
+
     it "should load #{cql_file} and make transformations like #{expected_file}" do
       vocabulary = nil
       broken = cql_failures[File.basename(cql_file, ".cql")]
@@ -44,6 +46,7 @@ describe "CQL Loader with Surrogate transformation" do
       # Save the output from the StringIO:
       output.rewind
       transformed_text = output.read
+      Dir.mkdir "spec/actual" rescue nil
       File.open(actual_file, "w") { |f| f.write transformed_text }
 
       pending("expected output file #{expected_file} not found") unless File.exists? expected_file

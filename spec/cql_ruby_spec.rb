@@ -38,6 +38,8 @@ describe "CQL Loader with Ruby output" do
     expected_file = cql_file.sub(%r{/CQL/(.*).cql\Z}, '/ruby/\1.rb')
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'spec/actual/\1.rb')
 
+    next unless ENV["AFTESTS"] || File.exists?(expected_file)
+
     it "should load #{cql_file} and dump Ruby matching #{expected_file}" do
       vocabulary = nil
       broken = cql_failures[File.basename(cql_file, ".cql")]
@@ -52,6 +54,7 @@ describe "CQL Loader with Ruby output" do
 
       # Build and save the actual file:
       ruby_text = ruby(vocabulary)
+      Dir.mkdir "spec/actual" rescue nil
       File.open(actual_file, "w") { |f| f.write ruby_text }
 
       pending("expected output file #{expected_file} not found") unless File.exists? expected_file

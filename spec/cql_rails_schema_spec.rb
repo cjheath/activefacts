@@ -15,12 +15,12 @@ describe "CQL Loader with Rails schema.rb output" do
     "Airline" => "Contains unsupported queries",
     "CompanyQuery" => "Contains unsupported queries",
   }
-  cql_schemarb_failures = {
+  cql_schema_rb_failures = {
     "OrienteeringER" => "Invalid model, it just works differently in CQL"
   }
 
   # Generate and return the Rails schema.rb for the given vocabulary
-  def schemarb(vocabulary)
+  def schema_rb(vocabulary)
     output = StringIO.new
     @dumper = ActiveFacts::Generate::Rails::SchemaRb.new(vocabulary.constellation)
     @dumper.generate(output)
@@ -30,8 +30,10 @@ describe "CQL Loader with Rails schema.rb output" do
 
   pattern = ENV["AFTESTS"] || "*"
   Dir["examples/CQL/#{pattern}.cql"].each do |cql_file|
-    actual_file = cql_file.sub(%r{examples/CQL/(.*).cql}, 'spec/actual/\1.schemarb')
-    expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/schemarb/\1.schemarb')
+    actual_file = cql_file.sub(%r{examples/CQL/(.*).cql}, 'spec/actual/\1.schema.rb')
+    expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/schema_rb/\1.schema.rb')
+
+    next unless ENV["AFTESTS"] || File.exists?(expected_file)
 
     it "should load #{cql_file} and dump Rails schema.rb matching #{expected_file}" do
       vocabulary = nil
@@ -46,23 +48,23 @@ describe "CQL Loader with Rails schema.rb output" do
       vocabulary.finalise
 
       # Build and save the actual file:
-      schemarb_text = schemarb(vocabulary)
-      File.open(actual_file, "w") { |f| f.write schemarb_text }
+      schema_rb_text = schema_rb(vocabulary)
+      Dir.mkdir "spec/actual" rescue nil
+      File.open(actual_file, "w") { |f| f.write schema_rb_text }
 
-      schemarb_text.sub!(/(Schema.define\(:version => )[0-9]*/, '\1')
       pending("expected output file #{expected_file} not found") unless File.exists? expected_file
 
-      expected_text = File.open(expected_file) {|f| f.read }.sub(/(Schema.define\(:version => )[0-9]*/, '\1')
-      broken = cql_schemarb_failures[File.basename(cql_file, ".cql")]
+      expected_text = File.open(expected_file) {|f| f.read }
+      broken = cql_schema_rb_failures[File.basename(cql_file, ".cql")]
       if broken
         pending(broken) {
-          schemarb_text.should_not differ_from(expected_text)
+          schema_rb_text.should_not differ_from(expected_text)
         }
       else
-        # Discard index names:
-        schemarb_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX <Name is hidden> ON ')
-        expected_text.gsub!(/ INDEX (\[[^\]]*\]|`[^`]*`|[^ ]*) ON /, ' INDEX <Name is hidden> ON ')
-        schemarb_text.should_not differ_from(expected_text)
+        # Discard version timestamps:
+        schema_rb_text.sub!(/(Schema.define\(:version => )[0-9]*/, '\1')
+        expected_text.sub!(/(Schema.define\(:version => )[0-9]*/, '\1')
+        schema_rb_text.should_not differ_from(expected_text)
         File.delete(actual_file)  # It succeeded, we don't need the file.
       end
     end

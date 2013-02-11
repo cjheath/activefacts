@@ -117,6 +117,24 @@ module ActiveFacts
 #	      role.object_type.name
 	    end
 
+	    # For binary fact types, collect the count of the times the unadorned counterpart role name occurs, so we can adorn it
+	    plural_counterpart_counts = roles.inject(Hash.new{0}) do |h, role|
+	      next h unless role.fact_type.all_role.size == 2
+	      uc = role.all_role_ref.detect do |rr|
+		  rs = rr.role_sequence
+		  next false if rs.all_role_ref.size != 1   # Looking for a UC over just this one role
+		  rs.all_presence_constraint.detect do |pc|
+		      next false unless pc.max_frequency == 1   # It's a uniqueness constraint
+		      true
+		    end
+		end
+	      next h if uc	# Not a plural role
+
+	      counterpart_role = (role.fact_type.all_role.to_a - [role])[0]
+	      h[role_name(counterpart_role)] += 1
+	      h
+	    end
+
 	    roles.each do |role|
 	      type_name = nil
 	      counterpart_name = nil
@@ -148,6 +166,9 @@ module ActiveFacts
 		      end
 		  end
 		plural = !uc
+		if plural_counterpart_counts[counterpart_name] > 1
+		  counterpart_name += " as " + role_name(role)
+		end
 	      end
 
 	      node = {
