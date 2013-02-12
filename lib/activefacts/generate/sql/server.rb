@@ -84,7 +84,7 @@ module ActiveFacts
                 when length <= 8
                   'tinyint'
                 when length <= 16
-                  'shortint'
+                  'smallint'
                 when length <= 32
                   'int'
                 else
@@ -112,6 +112,8 @@ module ActiveFacts
             when /^Auto ?Time ?Stamp$/
               'timestamp'
 
+            when /^Guid$/
+	      'uniqueidentifier'
             when /^Money$/
               'decimal'
             when /^Picture ?Raw ?Data$/, /^Image$/
