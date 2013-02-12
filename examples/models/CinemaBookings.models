@@ -2,7 +2,7 @@
 module Booking
   extend ActiveSupport::Concern
   included do
-	  set_primary_key :booking_id
+    self.primary_key = 'booking_id'
 
     # Person booked Showing for Count
     belongs_to :person
@@ -16,28 +16,25 @@ end
 module Cinema
   extend ActiveSupport::Concern
   included do
-	  set_primary_key :cinema_id
+    self.primary_key = 'cinema_id'
 
     # Cinema has Seat
     has_many :seats, :foreign_key => :cinema_id, :dependent => :destroy
-
-    # has_many :showings, but that is fully absorbed here: ["Booking"]
   end
 end
 
 module Film
   extend ActiveSupport::Concern
   included do
-	  set_primary_key :film_id
+    self.primary_key = 'film_id'
 
-    # has_many :showings, but that is fully absorbed here: ["Booking"]
   end
 end
 
 module Person
   extend ActiveSupport::Concern
   included do
-	  set_primary_key :person_id
+    self.primary_key = 'person_id'
 
     # Person booked Showing for Count
     has_many :bookings, :foreign_key => :person_id, :dependent => :destroy
@@ -47,7 +44,7 @@ end
 module Seat
   extend ActiveSupport::Concern
   included do
-	  set_primary_key :seat_id
+    self.primary_key = 'seat_id'
 
     # Cinema has Seat
     belongs_to :cinema
@@ -61,12 +58,12 @@ end
 module SeatAllocation
   extend ActiveSupport::Concern
   included do
-	  set_primary_key :booking_id
+    self.primary_key = 'booking_id'
 
     # Booking has allocated-Seat
     belongs_to :booking
 
     # Booking has allocated-Seat
-    belongs_to :allocated_seat, :class_name => :seat
+    belongs_to :allocated_seat, :class_name => 'Seat'
   end
 end

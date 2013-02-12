@@ -248,7 +248,7 @@ module ActiveFacts
             if (c.enforcement)
               # REVISIT: Deontic constraint
             end
-            if (c.all_context_note.size > 0)
+            if (c.all_context_note_as_relevant_concept.size > 0)
               # REVISIT: Context Notes
             end
 

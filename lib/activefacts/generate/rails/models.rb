@@ -68,6 +68,8 @@ module ActiveFacts
 	  return if @helping
 	  @out = out
 
+	  # Populate all foreignkeys first:
+	  @vocabulary.tables.each { |table| table.foreign_keys }
 	  ok = true
 	  @vocabulary.tables.each do |table|
 	    ok &= generate_table(table)
@@ -104,16 +106,17 @@ module ActiveFacts
 	  puts %Q{module #{rails_class_name(table.name)}
   extend ActiveSupport::Concern
   included do
-	  set_primary_key :#{rails_singular_name(table.identifier_columns[0].name)}
+    self.primary_key = '#{rails_singular_name(table.identifier_columns[0].name)}'
 #{
 
 	  # belongs_to Associations
 	  (
 	    table.foreign_keys.map do |fk|
-	      from_columns = fk.from_columns.map{|column| rails_singular_name(column.name('_'))}
-	      to_columns = fk.to_columns.map{|column| rails_singular_name(column.name('_'))}
+	      from_column_names = fk.from_columns.map{|column| rails_singular_name(column.name('_'))}
+	      to_column_names = fk.to_columns.map{|column| rails_singular_name(column.name('_'))}
 	      fact_type = fk.reference.fact_type
-	      role = fact_type.all_role.detect { |r| r.object_type == fk.to }
+	      role = fk.from_columns[0].references[0].to_role
+
 	      association_name = target_name = rails_singular_name fk.to.name
 	      role_name = role && role.role_name
 	      unless role_name
@@ -130,7 +133,9 @@ module ActiveFacts
     \# #{fk.reference.fact_type.default_reading}
     belongs_to :#{association_name}#{class_name}}
 	    end +
-	    table.references_to.map do |ref|
+
+	    table.foreign_keys_to.sort_by{|fk| fk.describe}.map do |fk|
+	      ref = fk.reference
 	      if ref.is_simple_reference
 		if ref.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance and
 		    table.absorbed_via and

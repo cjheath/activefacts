@@ -76,7 +76,7 @@ module ActiveFacts
           o.all_role.size == 0 &&
           !o.is_independent &&
           !o.value_constraint &&
-          o.all_context_note.size == 0 &&
+          o.all_context_note_as_relevant_concept.size == 0 &&
           o.all_instance.size == 0
         # No need to dump it if the only thing it does is be a supertype; it'll be created automatically
         # return if o.all_value_type_as_supertype.size == 0
