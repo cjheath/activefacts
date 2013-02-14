@@ -22,6 +22,21 @@ module ActiveFacts
 	def value_type_end
 	end
 
+	def entity_type_dump(o)
+	  @object_types_dumped[o] = true
+	  pi = o.preferred_identifier
+
+	  supers = o.supertypes
+	  if (supers.size > 0)
+	    # Ignore identification by a supertype:
+	    pi = nil if pi && pi.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) }
+	    subtype_dump(o, supers, pi)
+	  else
+	    non_subtype_dump(o, pi)
+	  end
+	  @constraints_used[pi] = true
+	end
+
 	# Dump the roles for an object type (excluding the roles of a fact type which is objectified)
 	def roles_dump(o)
 	  o.all_role.

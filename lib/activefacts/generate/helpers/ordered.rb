@@ -192,21 +192,6 @@ module ActiveFacts
 	  end
 	end
 
-	def entity_type_dump(o)
-	  @object_types_dumped[o] = true
-	  pi = o.preferred_identifier
-
-	  supers = o.supertypes
-	  if (supers.size > 0)
-	    # Ignore identification by a supertype:
-	    pi = nil if pi && pi.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) }
-	    subtype_dump(o, supers, pi)
-	  else
-	    non_subtype_dump(o, pi)
-	  end
-	  @constraints_used[pi] = true
-	end
-
 	def identified_by(o, pi)
 	  # Different adjectives might be used for different readings.
 	  # Here, we must find the role_ref containing the adjectives that we need for each identifier,

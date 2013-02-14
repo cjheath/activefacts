@@ -26,35 +26,7 @@ module ActiveFacts
       end
 
       def unit_dump unit
-        if !unit.ephemera_url
-          if unit.coefficient
-            # REVISIT: Use a smarter algorithm to switch to exponential form when there'd be lots of zeroes.
-            print unit.coefficient.numerator.to_s('F')
-            if d = unit.coefficient.denominator and d != 1
-              print "/#{d}"
-            end
-            print ' '
-          else
-            print '1 '
-          end
-        end
-
-        print(unit.
-          all_derivation_as_derived_unit.
-          # REVISIT: Sort base units
-          # REVISIT: convert negative powers to division?
-          map do |der|
-            base = der.base_unit
-            "#{base.name}#{der.exponent and der.exponent != 1 ? "^#{der.exponent}" : ''} "
-          end*''
-        )
-        if o = unit.offset and o != 0
-          print "+ #{o.to_s('F')} "
-        end
-        print "converts to #{unit.name}#{unit.plural_name ? '/'+unit.plural_name : ''}"
-        print " approximately" if unit.coefficient and !unit.coefficient.is_precise
-        print " ephemera #{unit.ephemera_url}" if unit.ephemera_url
-        puts ";"
+	puts unit.as_cql
       end
 
       def units_end
@@ -104,24 +76,22 @@ module ActiveFacts
         #  o.all_role.size != 0
 =end
 
-        parameters =
-          [ o.length != 0 || o.scale != 0 ? o.length : nil,
-            o.scale != 0 ? o.scale : nil
-          ].compact
-        parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : ""
+	puts o.as_cql
+      end
 
-        puts "#{o.name
-          } #{
-            (o.is_independent ? '[independent] ' : '')
-          }is written as #{
-            (o.supertype || o).name
-          }#{
-            parameters
-          }#{
-            o.unit && " "+o.unit.name
-          }#{
-            o.value_constraint && " "+o.value_constraint.describe
-          };"
+      def entity_type_dump(o)
+	@object_types_dumped[o] = true
+	pi = o.preferred_identifier
+
+	supers = o.supertypes
+	if (supers.size > 0)
+	  # Ignore identification by a supertype:
+	  pi = nil if pi && pi.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) }
+	  subtype_dump(o, supers, pi)
+	else
+	  non_subtype_dump(o, pi)
+	end
+	@constraints_used[pi] = true
       end
 
       def append_ring_to_reading(reading, ring)
@@ -558,18 +528,18 @@ module ActiveFacts
       end
 
       def constraint_dump(c)
-          case c
-          when ActiveFacts::Metamodel::PresenceConstraint
-            dump_presence_constraint(c)
-          when ActiveFacts::Metamodel::RingConstraint
-            dump_ring_constraint(c)
-          when ActiveFacts::Metamodel::SetComparisonConstraint # includes SetExclusionConstraint, SetEqualityConstraint
-            dump_set_comparison_constraint(c)
-          when ActiveFacts::Metamodel::SubsetConstraint
-            dump_subset_constraint(c)
-          else
-            "#{c.class.basename} #{c.name}: unhandled constraint type"
-          end
+	case c
+	when ActiveFacts::Metamodel::PresenceConstraint
+	  dump_presence_constraint(c)
+	when ActiveFacts::Metamodel::RingConstraint
+	  dump_ring_constraint(c)
+	when ActiveFacts::Metamodel::SetComparisonConstraint # includes SetExclusionConstraint, SetEqualityConstraint
+	  dump_set_comparison_constraint(c)
+	when ActiveFacts::Metamodel::SubsetConstraint
+	  dump_subset_constraint(c)
+	else
+	  "#{c.class.basename} #{c.name}: unhandled constraint type"
+	end
       end
 
       # Find the common supertype of these object_types.
@@ -654,6 +624,76 @@ module ActiveFacts
         verbaliser.expand_reading(reading, frequency_constraints)
       end
 
+    end
+  end
+
+  module Metamodel
+    class ValueType
+      def as_cql
+        parameters =
+          [ length != 0 || scale != 0 ? length : nil,
+            scale != 0 ? scale : nil
+          ].compact
+        parameters = parameters.length > 0 ? "("+parameters.join(",")+")" : ""
+
+        "#{name
+          } #{
+            (is_independent ? '[independent] ' : '')
+          }is written as #{
+            (supertype || self).name
+          }#{
+            parameters
+          }#{
+            unit && " "+unit.name
+          }#{
+            value_constraint && " "+value_constraint.describe
+          };"
+      end
+    end
+
+    class Unit
+      def as_cql
+        if !ephemera_url
+          if coefficient
+            # REVISIT: Use a smarter algorithm to switch to exponential form when there'd be lots of zeroes.
+            coefficient.numerator.to_s('F') +
+
+            if d = coefficient.denominator and d != 1
+              "/#{d}"
+	    else
+	      ''
+            end +
+
+            ' '
+          else
+            '1 '
+          end
+	else
+	  ''
+        end +
+
+	all_derivation_as_derived_unit.
+          # REVISIT: Sort base units
+          # REVISIT: convert negative powers to division?
+          map do |der|
+            base = der.base_unit
+            "#{base.name}#{der.exponent and der.exponent != 1 ? "^#{der.exponent}" : ''} "
+          end*'' +
+
+        if o = offset and o != 0
+          "+ #{o.to_s('F')} "
+	else
+	  ''
+        end +
+
+        "converts to #{name}#{plural_name ? '/'+plural_name : ''}" +
+
+	(coefficient && !coefficient.is_precise ?  ' approximately' : '') +
+
+	(ephemera_url ? " ephemera #{ephemera_url}" : '') +
+
+        ';'
+      end
     end
   end
 end
