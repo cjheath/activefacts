@@ -6,7 +6,7 @@ vocabulary Metamodel;
 Adjective is written as String(64);
 Agent Name is written as String;
 Aggregate Code is written as String(32);
-Assimilation is written as String restricted to {'partitioned', 'separate'};
+Assimilation is written as String restricted to {'absorbed', 'partitioned', 'separate'};
 Context Note Kind is written as String restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
 Date is written as Date;
 Denominator is written as Unsigned Integer(32);
@@ -84,9 +84,9 @@ Instance is a kind of Concept [partitioned];
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
 
-Position is identified by X and Y where
-	Position is at one X,
-	Position is at one Y;
+Location is identified by X and Y where
+	Location is at one X,
+	Location is at one Y;
 
 Presence Constraint is a kind of Constraint;
 Presence Constraint has at most one max-Frequency restricted to {1..};
@@ -141,7 +141,7 @@ Set Constraint is a kind of Constraint;
 Shape is identified by Guid where
 	Shape has one Guid,
 	Guid is of at most one Shape;
-Shape is at at most one Position;
+Shape is at at most one Location;
 Shape is expanded;
 
 Subset Constraint is a kind of Set Constraint;
@@ -335,25 +335,34 @@ Value Range is identified by minimum-Bound and maximum-Bound where
 	Value Range has at most one minimum-Bound,
 	Value Range has at most one maximum-Bound;
 
-Value Type is a kind of Object Type;
+Allowed Range is where
+	Value Constraint allows at least one Value Range;
+
+Domain Object Type is a kind of Object Type;
+
+Entity Type is a kind of Domain Object Type;
+Entity Type nests at most one Fact Type,
+	Fact Type is nested as at most one Entity Type;
+Entity Type is implied by objectification;
+
+Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
+	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
+	Supertype is supertype of Subtype;
+Assimilation applies to Type Inheritance,
+	Type Inheritance uses at most one Assimilation;
+Type Inheritance provides identification;
+
+Value Type is a kind of Domain Object Type;
 Value Type has at most one Length,
 	Length is of Value Type;
 Value Type has at most one Scale,
 	Scale is of Value Type;
+Value Type is auto-assigned at at most one Transaction Timing;
 Value Type is of at most one Unit;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
-Value Type has at most one auto-- assigned Transaction Timing;
 Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic, transitive],
 	Supertype is supertype of Value Type;
-
-Allowed Range is where
-	Value Constraint allows at least one Value Range;
-
-Entity Type is a kind of Object Type;
-Entity Type nests at most one Fact Type,
-	Fact Type is nested as at most one Entity Type;
-Entity Type is implied by objectification;
 
 Facet is where
 	Value Type has facet called Name,
@@ -364,13 +373,6 @@ Facet Value is where
 	Value for Facet applies to Value Type;
 
 Implicit Boolean Value Type is a kind of Value Type;
-
-Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
-	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
-	Supertype is supertype of Subtype;
-Assimilation applies to Type Inheritance,
-	Type Inheritance uses at most one Assimilation;
-Type Inheritance provides identification;
 
 /*
  * Constraints:
@@ -390,7 +392,7 @@ for each Constraint exactly one of these holds:
 	Constraint is a Presence Constraint,
 	Constraint is a Set Constraint,
 	Constraint is a Ring Constraint;
-either Object Type is an Entity Type or Object Type is a Value Type but not both;
+either Domain Object Type is a Value Type or Domain Object Type is an Entity Type but not both;
 for each Role Sequence exactly one of these holds:
 	Role Sequence is for Reading,
 	Presence Constraint covers Role Sequence,
@@ -430,9 +432,9 @@ Step involves incidental Play
 Value Type has Scale
 	only if Value Type has Length;
 either Agreement was reached by Agent or Agreement was on Date;
-each combination Diagram, Position occurs at most one time in
+each combination Diagram, Location occurs at most one time in
 	Shape is in Diagram,
-	Shape is at Position;
+	Shape is at Location;
 each combination Entity Type(1), Type Inheritance occurs at most one time in
 	Entity Type(1) is subtype of super Entity Type(2),
 	Type Inheritance provides identification;

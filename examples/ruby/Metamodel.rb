@@ -16,7 +16,7 @@ module ::Metamodel
 
   class Assimilation < String
     value_type 
-    restrict 'partitioned', 'separate'
+    restrict 'absorbed', 'partitioned', 'separate'
   end
 
   class ContextNoteKind < String
@@ -188,10 +188,10 @@ module ::Metamodel
     has_one :value                              # See Value.all_instance
   end
 
-  class Position
+  class Location
     identified_by :x, :y
-    has_one :x, :mandatory => true              # See X.all_position
-    has_one :y, :mandatory => true              # See Y.all_position
+    has_one :x, :mandatory => true              # See X.all_location
+    has_one :y, :mandatory => true              # See Y.all_location
   end
 
   class PresenceConstraint < Constraint
@@ -250,7 +250,7 @@ module ::Metamodel
     has_one :diagram, :mandatory => true        # See Diagram.all_shape
     one_to_one :guid, :mandatory => true        # See Guid.shape
     maybe :is_expanded
-    has_one :position                           # See Position.all_shape
+    has_one :location                           # See Location.all_shape
   end
 
   class SubsetConstraint < SetConstraint
@@ -452,24 +452,35 @@ module ::Metamodel
     has_one :minimum_bound, :class => Bound     # See Bound.all_value_range_as_minimum_bound
   end
 
-  class ValueType < ObjectType
-    has_one :auto_assigned_transaction_timing, :class => TransactionTiming  # See TransactionTiming.all_value_type_as_auto_assigned_transaction_timing
-    has_one :length                             # See Length.all_value_type
-    has_one :scale                              # See Scale.all_value_type
-    has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
-    has_one :unit                               # See Unit.all_value_type
-    one_to_one :value_constraint                # See ValueConstraint.value_type
-  end
-
   class AllowedRange
     identified_by :value_constraint, :value_range
     has_one :value_constraint, :mandatory => true  # See ValueConstraint.all_allowed_range
     has_one :value_range, :mandatory => true    # See ValueRange.all_allowed_range
   end
 
-  class EntityType < ObjectType
+  class DomainObjectType < ObjectType
+  end
+
+  class EntityType < DomainObjectType
     one_to_one :fact_type                       # See FactType.entity_type
     maybe :is_implied_by_objectification
+  end
+
+  class TypeInheritance < FactType
+    identified_by :subtype, :supertype
+    has_one :subtype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_subtype
+    has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
+    has_one :assimilation                       # See Assimilation.all_type_inheritance
+    maybe :provides_identification
+  end
+
+  class ValueType < DomainObjectType
+    has_one :length                             # See Length.all_value_type
+    has_one :scale                              # See Scale.all_value_type
+    has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
+    has_one :transaction_timing                 # See TransactionTiming.all_value_type
+    has_one :unit                               # See Unit.all_value_type
+    one_to_one :value_constraint                # See ValueConstraint.value_type
   end
 
   class Facet
@@ -486,14 +497,6 @@ module ::Metamodel
   end
 
   class ImplicitBooleanValueType < ValueType
-  end
-
-  class TypeInheritance < FactType
-    identified_by :subtype, :supertype
-    has_one :subtype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_subtype
-    has_one :supertype, :class => EntityType, :mandatory => true  # See EntityType.all_type_inheritance_as_supertype
-    has_one :assimilation                       # See Assimilation.all_type_inheritance
-    maybe :provides_identification
   end
 
 end

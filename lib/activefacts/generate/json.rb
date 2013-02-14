@@ -53,12 +53,12 @@ module ActiveFacts
             j = {
               :uuid => uuids[o],
               :name => o.name,
-              :shapes => o.all_object_type_shape.sort_by{|s| [s.position.x, s.position.y]}.map do |shape|
+              :shapes => o.all_object_type_shape.sort_by{|s| [s.location.x, s.location.y]}.map do |shape|
                 x = { :diagram => uuids[shape.diagram],
                   :is_expanded => shape.is_expanded,
                   :uuid => uuid_from_id(shape),
-                  :x => shape.position.x,
-                  :y => shape.position.y
+                  :x => shape.location.x,
+                  :y => shape.location.y
                 }
                 x[:is_expanded] = true if ref_mode && shape.is_expanded  # Don't show the reference mode
                 x
@@ -144,12 +144,12 @@ module ActiveFacts
             end
 
             # Emit shapes
-            j[:shapes] = f.all_fact_type_shape.sort_by{|s| [s.position.x, s.position.y]}.map do |shape|
+            j[:shapes] = f.all_fact_type_shape.sort_by{|s| [s.location.x, s.location.y]}.map do |shape|
               sj = {
                 :diagram => uuids[shape.diagram],
                 :uuid => uuid_from_id(shape),
-                :x => shape.position.x,
-                :y => shape.position.y
+                :x => shape.location.x,
+                :y => shape.location.y
               }
 
               # Add the role_order, if specified
@@ -167,9 +167,9 @@ module ActiveFacts
 
               # REVISIT: Place the ReadingShape
 
-              # Emit the position of the name, if objectified
+              # Emit the location of the name, if objectified
               if n = shape.objectified_fact_type_name_shape
-                sj[:name_shape] = {:x => n.position.x, :y => n.position.y}
+                sj[:name_shape] = {:x => n.location.x, :y => n.location.y}
               end
               sj
             end
@@ -209,11 +209,11 @@ module ActiveFacts
               flatten.uniq.each do |ring|
                 (j[:constraints] ||= []) << {
                     :uuid => (uuids[ring] ||= uuid_from_id(ring)),
-                    :shapes => ring.all_constraint_shape.sort_by{|s| [s.position.x, s.position.y]}.map do |shape|
+                    :shapes => ring.all_constraint_shape.sort_by{|s| [s.location.x, s.location.y]}.map do |shape|
                       { :diagram => uuids[shape.diagram],
                         :uuid => uuid_from_id(shape),
-                        :x => shape.position.x,
-                        :y => shape.position.y
+                        :x => shape.location.x,
+                        :y => shape.location.y
                       }
                     end,
                     :ringKind => ring.ring_type,
@@ -236,11 +236,11 @@ module ActiveFacts
             j = {
               :uuid => uuid,
               :type => c.class.basename,
-              :shapes => c.all_constraint_shape.sort_by{|s| [s.position.x, s.position.y]}.map do |shape|
+              :shapes => c.all_constraint_shape.sort_by{|s| [s.location.x, s.location.y]}.map do |shape|
                 { :diagram => uuids[shape.diagram],
                   :uuid => uuid_from_id(shape),
-                  :x => shape.position.x,
-                  :y => shape.position.y
+                  :x => shape.location.x,
+                  :y => shape.location.y
                 }
               end
             }

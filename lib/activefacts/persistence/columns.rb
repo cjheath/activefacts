@@ -231,7 +231,7 @@ module ActiveFacts
 
     # The ValueType class is defined in the metamodel; full documentation is not generated.
     # This section shows the features relevant to relational Persistence.
-    class ValueType < ObjectType
+    class ValueType < DomainObjectType
       # The identifier_columns for a ValueType can only ever be the self-value role that was injected
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
@@ -293,7 +293,7 @@ module ActiveFacts
 
     # The EntityType class is defined in the metamodel; full documentation is not generated.
     # This section shows the features relevant to relational Persistence.
-    class EntityType < ObjectType
+    class EntityType < DomainObjectType
       # The identifier_columns for an EntityType are the columns that result from the identifying roles
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do

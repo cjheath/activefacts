@@ -96,7 +96,7 @@ CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceG
 	  AND	SubsetConstraintSupersetRoleSequenceGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
+CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
 GO
 
 CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal (ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
@@ -105,7 +105,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValue
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -205,7 +205,7 @@ CREATE TABLE FactType (
 	-- maybe Entity Type nests Fact Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	EntityTypeVocabularyName                varchar(64) NULL,
 	-- maybe Type Inheritance is a kind of Fact Type and maybe Assimilation applies to Type Inheritance,
-	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
+	TypeInheritanceAssimilation             varchar NULL CHECK(TypeInheritanceAssimilation = 'absorbed' OR TypeInheritanceAssimilation = 'partitioned' OR TypeInheritanceAssimilation = 'separate'),
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance provides identification,
 	TypeInheritanceProvidesIdentification   bit NULL,
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type is called Name,
@@ -226,7 +226,7 @@ CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocab
 	  AND	EntityTypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeVocabularyNameEntityTypeName ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
+CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
@@ -236,7 +236,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_TypeInheritanceInFactTypeByTypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdent ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
+CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
@@ -247,7 +247,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX TypeInheritanceUQ ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
 GO
 
 CREATE TABLE Instance (
@@ -285,7 +285,7 @@ GO
 CREATE TABLE ObjectType (
 	-- Object Type is a kind of Concept and Concept has Guid,
 	ConceptGuid                             uniqueidentifier NOT NULL,
-	-- maybe Entity Type is a kind of Object Type and Entity Type is implied by objectification,
+	-- maybe Domain Object Type is a kind of Object Type and maybe Entity Type is a kind of Domain Object Type and Entity Type is implied by objectification,
 	EntityTypeIsImpliedByObjectification    bit NULL,
 	-- Object Type is independent,
 	IsIndependent                           bit NULL,
@@ -293,19 +293,19 @@ CREATE TABLE ObjectType (
 	Name                                    varchar(64) NOT NULL,
 	-- maybe Object Type uses Pronoun,
 	Pronoun                                 varchar(20) NULL CHECK(Pronoun = 'feminine' OR Pronoun = 'masculine' OR Pronoun = 'neuter' OR Pronoun = 'personal'),
-	-- maybe Value Type is a kind of Object Type and maybe Value Type has auto-- assigned Transaction Timing,
-	ValueTypeAutoAssignedTransactionTiming  varchar NULL CHECK(ValueTypeAutoAssignedTransactionTiming = 'assert' OR ValueTypeAutoAssignedTransactionTiming = 'commit'),
-	-- maybe Value Type is a kind of Object Type and maybe Value Type has Length,
+	-- maybe Domain Object Type is a kind of Object Type and maybe Value Type is a kind of Domain Object Type and maybe Value Type has Length,
 	ValueTypeLength                         int NULL,
-	-- maybe Value Type is a kind of Object Type and maybe Value Type has Scale,
+	-- maybe Domain Object Type is a kind of Object Type and maybe Value Type is a kind of Domain Object Type and maybe Value Type has Scale,
 	ValueTypeScale                          int NULL,
-	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type and Object Type is called Name,
+	-- maybe Domain Object Type is a kind of Object Type and maybe Value Type is a kind of Domain Object Type and maybe Value Type is subtype of super-Value Type and Object Type is called Name,
 	ValueTypeSupertypeName                  varchar(64) NULL,
-	-- maybe Value Type is a kind of Object Type and maybe Value Type is subtype of super-Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	-- maybe Domain Object Type is a kind of Object Type and maybe Value Type is a kind of Domain Object Type and maybe Value Type is subtype of super-Value Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	ValueTypeSupertypeVocabularyName        varchar(64) NULL,
-	-- maybe Value Type is a kind of Object Type and maybe Value Type is of Unit and Unit is a kind of Concept and Concept has Guid,
+	-- maybe Domain Object Type is a kind of Object Type and maybe Value Type is a kind of Domain Object Type and maybe Value Type is auto-assigned at Transaction Timing,
+	ValueTypeTransactionTiming              varchar NULL CHECK(ValueTypeTransactionTiming = 'assert' OR ValueTypeTransactionTiming = 'commit'),
+	-- maybe Domain Object Type is a kind of Object Type and maybe Value Type is a kind of Domain Object Type and maybe Value Type is of Unit and Unit is a kind of Concept and Concept has Guid,
 	ValueTypeUnitGuid                       uniqueidentifier NULL,
-	-- maybe Value Type is a kind of Object Type and maybe Value Type has Value Constraint and Constraint is a kind of Concept and Concept has Guid,
+	-- maybe Domain Object Type is a kind of Object Type and maybe Value Type is a kind of Domain Object Type and maybe Value Type has Value Constraint and Constraint is a kind of Concept and Concept has Guid,
 	ValueTypeValueConstraintGuid            uniqueidentifier NULL,
 	-- Object Type belongs to Vocabulary and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NOT NULL,
@@ -314,6 +314,20 @@ CREATE TABLE ObjectType (
 	FOREIGN KEY (ValueTypeValueConstraintGuid) REFERENCES [Constraint] (ConceptGuid),
 	FOREIGN KEY (ValueTypeSupertypeVocabularyName, ValueTypeSupertypeName) REFERENCES ObjectType (VocabularyName, Name)
 )
+GO
+
+CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionTimingValueTypeUn (ValueTypeLength, ValueTypeScale, ValueTypeSupertypeVocabularyName, ValueTypeTransactionTiming, ValueTypeUnitGuid, ValueTypeValueConstraintGuid, ValueTypeSupertypeName) WITH SCHEMABINDING AS
+	SELECT ValueTypeLength, ValueTypeScale, ValueTypeSupertypeVocabularyName, ValueTypeTransactionTiming, ValueTypeUnitGuid, ValueTypeValueConstraintGuid, ValueTypeSupertypeName FROM dbo.ObjectType
+	WHERE	ValueTypeLength IS NOT NULL
+	  AND	ValueTypeScale IS NOT NULL
+	  AND	ValueTypeSupertypeVocabularyName IS NOT NULL
+	  AND	ValueTypeTransactionTiming IS NOT NULL
+	  AND	ValueTypeUnitGuid IS NOT NULL
+	  AND	ValueTypeValueConstraintGuid IS NOT NULL
+	  AND	ValueTypeSupertypeName IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionTimingValueTy ON dbo.ValueTypeInObjectType_ValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionTimingValueTypeUn(ValueTypeLength, ValueTypeScale, ValueTypeSupertypeVocabularyName, ValueTypeTransactionTiming, ValueTypeUnitGuid, ValueTypeValueConstraintGuid, ValueTypeSupertypeName)
 GO
 
 CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeValueConstraintGuid (ValueTypeValueConstraintGuid) WITH SCHEMABINDING AS
@@ -531,6 +545,10 @@ CREATE TABLE Shape (
 	Guid                                    uniqueidentifier NOT NULL,
 	-- Shape is expanded,
 	IsExpanded                              bit NULL,
+	-- maybe Shape is at Location and Location is at X,
+	LocationX                               int NULL,
+	-- maybe Shape is at Location and Location is at Y,
+	LocationY                               int NULL,
 	-- maybe Model Note Shape is a kind of Shape and Model Note Shape is for Context Note and Context Note is a kind of Concept and Concept has Guid,
 	ModelNoteShapeContextNoteGuid           uniqueidentifier NULL,
 	-- maybe Object Type Shape is a kind of Shape and Object Type Shape has expanded reference mode,
@@ -541,10 +559,6 @@ CREATE TABLE Shape (
 	ObjectTypeShapeObjectTypeVocabularyName varchar(64) NULL,
 	-- maybe Objectified Fact Type Name Shape is a kind of Shape and Objectified Fact Type Name Shape is for Fact Type Shape and Shape has Guid,
 	ObjectifiedFactTypeNameShapeFactTypeShapeGuid uniqueidentifier NULL,
-	-- maybe Shape is at Position and Position is at X,
-	PositionX                               int NULL,
-	-- maybe Shape is at Position and Position is at Y,
-	PositionY                               int NULL,
 	-- maybe Reading Shape is a kind of Shape and Fact Type Shape has Reading Shape and Shape has Guid,
 	ReadingShapeFactTypeShapeGuid           uniqueidentifier NULL,
 	-- maybe Reading Shape is a kind of Shape and Reading Shape is for Reading and Fact Type has Reading and Fact Type is a kind of Concept and Concept has Guid,
@@ -578,13 +592,13 @@ CREATE TABLE Shape (
 )
 GO
 
-CREATE VIEW dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY (DiagramVocabularyName, DiagramName, PositionX, PositionY) WITH SCHEMABINDING AS
-	SELECT DiagramVocabularyName, DiagramName, PositionX, PositionY FROM dbo.Shape
-	WHERE	PositionX IS NOT NULL
-	  AND	PositionY IS NOT NULL
+CREATE VIEW dbo.Shape_DiagramVocabularyNameDiagramNameLocationXLocationY (DiagramVocabularyName, DiagramName, LocationX, LocationY) WITH SCHEMABINDING AS
+	SELECT DiagramVocabularyName, DiagramName, LocationX, LocationY FROM dbo.Shape
+	WHERE	LocationX IS NOT NULL
+	  AND	LocationY IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameDiagramNamePositionXPositionY ON dbo.Shape_DiagramVocabularyNameDiagramNamePositionXPositionY(DiagramVocabularyName, DiagramName, PositionX, PositionY)
+CREATE UNIQUE CLUSTERED INDEX IX_ShapeByDiagramVocabularyNameDiagramNameLocationXLocationY ON dbo.Shape_DiagramVocabularyNameDiagramNameLocationXLocationY(DiagramVocabularyName, DiagramName, LocationX, LocationY)
 GO
 
 CREATE VIEW dbo.ObjectifiedFactTypeNameShapeInShape_ObjectifiedFactTypeNameShapeFactTypeShapeGuid (ObjectifiedFactTypeNameShapeFactTypeShapeGuid) WITH SCHEMABINDING AS
