@@ -62,8 +62,8 @@ describe "CQL Loader with Rails schema.rb output" do
         }
       else
         # Discard version timestamps:
-        schema_rb_text.sub!(/(Schema.define\(:version => )[0-9]*/, '\1')
-        expected_text.sub!(/(Schema.define\(:version => )[0-9]*/, '\1')
+        schema_rb_text.gsub!(/(Schema.define\(:version => |# schema.rb auto-generated using ActiveFacts for .* on )[-0-9]*/, '\1')
+        expected_text.gsub!(/(Schema.define\(:version => |# schema.rb auto-generated using ActiveFacts for .* on )[-0-9]*/, '\1')
         schema_rb_text.should_not differ_from(expected_text)
         File.delete(actual_file)  # It succeeded, we don't need the file.
       end

@@ -54,7 +54,7 @@ module ActiveFacts
               :uuid => uuids[o],
               :name => o.name,
               :shapes => o.all_object_type_shape.sort_by{|s| [s.location.x, s.location.y]}.map do |shape|
-                x = { :diagram => uuids[shape.diagram],
+                x = { :diagram => uuids[shape.orm_diagram],
                   :is_expanded => shape.is_expanded,
                   :uuid => uuid_from_id(shape),
                   :x => shape.location.x,
@@ -146,7 +146,7 @@ module ActiveFacts
             # Emit shapes
             j[:shapes] = f.all_fact_type_shape.sort_by{|s| [s.location.x, s.location.y]}.map do |shape|
               sj = {
-                :diagram => uuids[shape.diagram],
+                :diagram => uuids[shape.orm_diagram],
                 :uuid => uuid_from_id(shape),
                 :x => shape.location.x,
                 :y => shape.location.y
@@ -155,7 +155,7 @@ module ActiveFacts
               # Add the role_order, if specified
               if shape.all_role_display.size > 0
                 if shape.all_role_display.size != roles.size
-                  raise "Invalid RoleDisplay for #{f.default_reading} in #{shape.diagram.name} diagram"
+                  raise "Invalid RoleDisplay for #{f.default_reading} in #{shape.orm_diagram.name} diagram"
                 end
                 ro = role_order(
                   uuids,
@@ -210,7 +210,7 @@ module ActiveFacts
                 (j[:constraints] ||= []) << {
                     :uuid => (uuids[ring] ||= uuid_from_id(ring)),
                     :shapes => ring.all_constraint_shape.sort_by{|s| [s.location.x, s.location.y]}.map do |shape|
-                      { :diagram => uuids[shape.diagram],
+                      { :diagram => uuids[shape.orm_diagram],
                         :uuid => uuid_from_id(shape),
                         :x => shape.location.x,
                         :y => shape.location.y
@@ -237,7 +237,7 @@ module ActiveFacts
               :uuid => uuid,
               :type => c.class.basename,
               :shapes => c.all_constraint_shape.sort_by{|s| [s.location.x, s.location.y]}.map do |shape|
-                { :diagram => uuids[shape.diagram],
+                { :diagram => uuids[shape.orm_diagram],
                   :uuid => uuid_from_id(shape),
                   :x => shape.location.x,
                   :y => shape.location.y

@@ -1353,7 +1353,7 @@ module ActiveFacts
         debug :orm, "Reading diagrams" do
           x_diagrams.each do |x|
             name = (x["Name"] || '').strip
-            diagram = @constellation.Diagram(@vocabulary, name)
+            diagram = @constellation.ORMDiagram(@vocabulary, name)
             debug :diagram, "Starting to read diagram #{name}"
             shapes = x.xpath("ormDiagram:Shapes/*")
             debug :orm, "Reading shapes" do
@@ -1372,14 +1372,14 @@ module ActiveFacts
                   # REVISIT: The offset might depend on the constraint type. This is right for subset and other round ones.
                   location = convert_location(bounds, Gravity::C)
                   shape = @constellation.ConstraintShape(
-                      :guid => id_of(x_shape), :diagram => diagram, :location => location, :is_expanded => is_expanded,
+                      :guid => id_of(x_shape), :orm_diagram => diagram, :location => location, :is_expanded => is_expanded,
                       :constraint => subject
                     )
                 when 'RingConstraintShape'
                   # REVISIT: The offset might depend on the ring constraint type. This is right for basic round ones.
                   location = convert_location(bounds, Gravity::C)
                   shape = @constellation.RingConstraintShape(
-                      :guid => id_of(x_shape), :diagram => diagram, :location => location, :is_expanded => is_expanded,
+                      :guid => id_of(x_shape), :orm_diagram => diagram, :location => location, :is_expanded => is_expanded,
                       :constraint => subject
                     )
                   shape.fact_type = subject.role.fact_type
@@ -1389,7 +1389,7 @@ module ActiveFacts
                   location = convert_location(bounds, Gravity::C)
                   # $stderr.puts "#{subject.name}: bounds=#{bounds} -> location = (#{location.x}, #{location.y})"
                   shape = @constellation.ObjectTypeShape(
-                      :guid => id_of(x_shape), :diagram => diagram, :location => location, :is_expanded => is_expanded,
+                      :guid => id_of(x_shape), :orm_diagram => diagram, :location => location, :is_expanded => is_expanded,
                       :object_type => subject,
                       :location => location
                     )
@@ -1433,7 +1433,7 @@ module ActiveFacts
         debug :orm, "fact type at #{location.x},#{location.y} has display_role_names_setting=#{display_role_names_setting.inspect}, rotation_setting=#{rotation_setting.inspect}"
         shape = @constellation.FactTypeShape(
             :guid => id_of(x_shape),
-            :diagram => diagram,
+            :orm_diagram => diagram,
             :location => location,
             :is_expanded => is_expanded,
             :display_role_names_setting => display_role_names_setting,
@@ -1460,20 +1460,20 @@ module ActiveFacts
           location = convert_location(xr_shape['AbsoluteBounds'])
           case xr_shape.name
           when 'ObjectifiedFactTypeNameShape'
-            @constellation.ObjectifiedFactTypeNameShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :diagram => diagram, :location => location, :is_expanded => false)
+            @constellation.ObjectifiedFactTypeNameShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :orm_diagram => diagram, :location => location, :is_expanded => false)
           when 'ReadingShape'
 	    begin
-            @constellation.ReadingShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :diagram => diagram, :location => location, :is_expanded => false, :reading => fact_type.preferred_reading)
+            @constellation.ReadingShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :orm_diagram => diagram, :location => location, :is_expanded => false, :reading => fact_type.preferred_reading)
 	    rescue =>e
 	      debugger
-	      @constellation.ReadingShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :diagram => diagram, :location => location, :is_expanded => false, :reading => fact_type.preferred_reading)
+	      @constellation.ReadingShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :orm_diagram => diagram, :location => location, :is_expanded => false, :reading => fact_type.preferred_reading)
 	    end
           when 'RoleNameShape'
             role = @by_id[xr_shape.xpath("ormDiagram:Subject")[0]['ref']]
             role_display = role_display_for_role(shape, x_role_display, role)
             debug :orm, "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name}"
             @constellation.RoleNameShape(
-              :guid => id_of(xr_shape), :diagram => diagram, :location => location, :is_expanded => false,
+              :guid => id_of(xr_shape), :orm_diagram => diagram, :location => location, :is_expanded => false,
               :role_display => role_display
             )
           when 'ValueConstraintShape'
@@ -1484,7 +1484,7 @@ module ActiveFacts
             role_display = role_display_for_role(shape, x_role_display, constraint.role)
             debug :orm, "ValueConstraintShape is on #{role_display.ordinal}'th role (by #{x_role_display.size > 0 ? 'role_display' : 'fact roles'})"
             @constellation.ValueConstraintShape(
-              :guid => id_of(xr_shape), :diagram => diagram, :location => location, :is_expanded => false,
+              :guid => id_of(xr_shape), :orm_diagram => diagram, :location => location, :is_expanded => false,
               :constraint => constraint,
               :object_type_shape => nil,  # This constraint is relative to a Fact Type, so must be on a role
               :role_display => role_display

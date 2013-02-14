@@ -63,7 +63,7 @@ Context Note has one Context Note Kind,
 	Context Note Kind is of Context Note;
 Context Note has one Discussion,
 	Discussion is for Context Note;
-Context Note applies to at most one relevant-Concept,
+Context Note applies to at most one relevant-Concept [acyclic, stronglyintransitive],
 	Concept has Context Note;
 
 Enforcement is identified by Constraint where
@@ -155,8 +155,9 @@ Name is of at most one Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
 Unit has at most one Offset;
+Unit has plural-Name;  // Avoid ambiguity; this is a new fact type
 Unit has at most one plural-Name,
-	plural-Name id of at most one Unit;
+	plural-Name is of at most one Unit;
 Unit is fundamental;
 
 Value is identified by Literal and Value is a string and Unit where
@@ -226,8 +227,6 @@ Diagram is identified by Vocabulary and Name where
 	Vocabulary contains Diagram,
 	Diagram is called one Name,
 	Name is of Diagram;
-Shape is in one Diagram,
-	Diagram includes Shape;
 
 Fact Type Shape is a kind of Shape;
 Fact Type Shape has at most one Display Role Names Setting;
@@ -237,6 +236,10 @@ Fact Type Shape has at most one Rotation Setting;
 
 Model Note Shape is a kind of Shape;
 Model Note Shape is for one Context Note;
+
+ORM Diagram is a kind of Diagram;
+Shape is in one ORM Diagram,
+	ORM Diagram includes Shape;
 
 Object Type is a kind of Concept identified by Vocabulary and Name [partitioned] where
 	Object Type belongs to one Vocabulary,
@@ -432,12 +435,12 @@ Step involves incidental Play
 Value Type has Scale
 	only if Value Type has Length;
 either Agreement was reached by Agent or Agreement was on Date;
-each combination Diagram, Location occurs at most one time in
-	Shape is in Diagram,
-	Shape is at Location;
 each combination Entity Type(1), Type Inheritance occurs at most one time in
 	Entity Type(1) is subtype of super Entity Type(2),
 	Type Inheritance provides identification;
+each combination ORM Diagram, Location occurs at most one time in
+	Shape is in ORM Diagram,
+	Shape is at Location;
 each Presence Constraint occurs at least one time in
 	Presence Constraint has min Frequency(2),
 	Presence Constraint has max Frequency(1),

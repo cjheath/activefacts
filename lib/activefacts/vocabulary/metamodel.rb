@@ -248,10 +248,10 @@ module ActiveFacts
 
     class Shape
       identified_by :guid
-      has_one :diagram, :mandatory => true        # See Diagram.all_shape
       one_to_one :guid, :mandatory => true        # See Guid.shape
       maybe :is_expanded
       has_one :location                           # See Location.all_shape
+      has_one :orm_diagram, :class => "ORMDiagram", :mandatory => true    # See ORMDiagram.all_shape
     end
 
     class SubsetConstraint < SetConstraint
@@ -353,6 +353,9 @@ module ActiveFacts
 
     class ModelNoteShape < Shape
       has_one :context_note, :mandatory => true   # See ContextNote.all_model_note_shape
+    end
+
+    class ORMDiagram < Diagram
     end
 
     class ObjectType < Concept
