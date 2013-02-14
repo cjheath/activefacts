@@ -420,8 +420,9 @@ module ActiveFacts
       end
 
       class RingConstraint < Constraint
-        Types = %w{acyclic intransitive symmetric asymmetric transitive antisymmetric irreflexive reflexive}
+        Types = %w{acyclic intransitive stronglyintransitive symmetric asymmetric transitive antisymmetric irreflexive reflexive}
         Pairs = {
+          :stronglyintransitive => [:acyclic, :asymmetric, :symmetric],
           :intransitive => [:acyclic, :asymmetric, :symmetric],
           :transitive => [:acyclic],
           :acyclic => [:transitive],

@@ -125,7 +125,7 @@ module ActiveFacts
       end
 
       def append_ring_to_reading(reading, ring)
-        reading << " [#{(ring.ring_type.scan(/[A-Z][a-z]*/)*", ").downcase}]"
+        reading << " [#{(ring.ring_type.scan(/StronglyIntransitive|[A-Z][a-z]*/)*", ").downcase}]"
       end
 
       def mapping_pragma(entity_type, ignore_independence = false)
