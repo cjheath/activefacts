@@ -1460,15 +1460,20 @@ module ActiveFacts
           position = convert_position(xr_shape['AbsoluteBounds'])
           case xr_shape.name
           when 'ObjectifiedFactTypeNameShape'
-            @constellation.ObjectifiedFactTypeNameShape(shape, :guid => id_of(xr_shape), :diagram => diagram, :position => position, :is_expanded => false)
+            @constellation.ObjectifiedFactTypeNameShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :diagram => diagram, :position => position, :is_expanded => false)
           when 'ReadingShape'
-            @constellation.ReadingShape(shape, :guid => id_of(xr_shape), :fact_type_shape=>shape, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
+	    begin
+            @constellation.ReadingShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
+	    rescue =>e
+	      debugger
+	      @constellation.ReadingShape(:guid => id_of(xr_shape), :fact_type_shape => shape, :diagram => diagram, :position => position, :is_expanded => false, :reading => fact_type.preferred_reading)
+	    end
           when 'RoleNameShape'
             role = @by_id[xr_shape.xpath("ormDiagram:Subject")[0]['ref']]
             role_display = role_display_for_role(shape, x_role_display, role)
             debug :orm, "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name}"
             @constellation.RoleNameShape(
-              id_of(xr_shape), :diagram => diagram, :position => position, :is_expanded => false,
+              :guid => id_of(xr_shape), :diagram => diagram, :position => position, :is_expanded => false,
               :role_display => role_display
             )
           when 'ValueConstraintShape'
@@ -1479,7 +1484,7 @@ module ActiveFacts
             role_display = role_display_for_role(shape, x_role_display, constraint.role)
             debug :orm, "ValueConstraintShape is on #{role_display.ordinal}'th role (by #{x_role_display.size > 0 ? 'role_display' : 'fact roles'})"
             @constellation.ValueConstraintShape(
-              id_of(xr_shape), :diagram => diagram, :position => position, :is_expanded => false,
+              :guid => id_of(xr_shape), :diagram => diagram, :position => position, :is_expanded => false,
               :constraint => constraint,
               :object_type_shape => nil,  # This constraint is relative to a Fact Type, so must be on a role
               :role_display => role_display
