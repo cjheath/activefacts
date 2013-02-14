@@ -99,7 +99,7 @@ CREATE TABLE ReceivedItem (
 	TransferRequestID                       int NULL,
 	PRIMARY KEY(ReceivedItemID),
 	FOREIGN KEY (ProductID) REFERENCES Product (ProductID),
-	FOREIGN KEY (PurchaseOrderItemProductID, PurchaseOrderItemPurchaseOrderID) REFERENCES PurchaseOrderItem (ProductID, PurchaseOrderID)
+	FOREIGN KEY (PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID) REFERENCES PurchaseOrderItem (PurchaseOrderID, ProductID)
 )
 GO
 
@@ -160,11 +160,11 @@ ALTER TABLE Bin
 GO
 
 ALTER TABLE DirectOrderMatch
-	ADD FOREIGN KEY (PurchaseOrderItemProductID, PurchaseOrderItemPurchaseOrderID) REFERENCES PurchaseOrderItem (ProductID, PurchaseOrderID)
+	ADD FOREIGN KEY (PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID) REFERENCES PurchaseOrderItem (PurchaseOrderID, ProductID)
 GO
 
 ALTER TABLE DirectOrderMatch
-	ADD FOREIGN KEY (SalesOrderItemProductID, SalesOrderItemSalesOrderID) REFERENCES SalesOrderItem (ProductID, SalesOrderID)
+	ADD FOREIGN KEY (SalesOrderItemSalesOrderID, SalesOrderItemProductID) REFERENCES SalesOrderItem (SalesOrderID, ProductID)
 GO
 
 ALTER TABLE DispatchItem
@@ -172,7 +172,7 @@ ALTER TABLE DispatchItem
 GO
 
 ALTER TABLE DispatchItem
-	ADD FOREIGN KEY (SalesOrderItemProductID, SalesOrderItemSalesOrderID) REFERENCES SalesOrderItem (ProductID, SalesOrderID)
+	ADD FOREIGN KEY (SalesOrderItemSalesOrderID, SalesOrderItemProductID) REFERENCES SalesOrderItem (SalesOrderID, ProductID)
 GO
 
 ALTER TABLE DispatchItem

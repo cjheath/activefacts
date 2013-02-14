@@ -427,7 +427,7 @@ ALTER TABLE Claim
 GO
 
 ALTER TABLE Claim
-	ADD FOREIGN KEY (PolicyPProductCode, PolicyPSerial, PolicyPStateCode, PolicyPYearNr) REFERENCES Policy (PProductCode, PSerial, PStateCode, PYearNr)
+	ADD FOREIGN KEY (PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial) REFERENCES Policy (PYearNr, PProductCode, PStateCode, PSerial)
 GO
 
 ALTER TABLE ContractorAppointment
@@ -439,7 +439,7 @@ ALTER TABLE Cover
 GO
 
 ALTER TABLE Cover
-	ADD FOREIGN KEY (PolicyPProductCode, PolicyPSerial, PolicyPStateCode, PolicyPYearNr) REFERENCES Policy (PProductCode, PSerial, PStateCode, PYearNr)
+	ADD FOREIGN KEY (PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial) REFERENCES Policy (PYearNr, PProductCode, PStateCode, PSerial)
 GO
 
 ALTER TABLE Policy

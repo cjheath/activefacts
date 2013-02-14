@@ -140,7 +140,7 @@ CREATE TABLE PunchPlacement (
 	-- Punch Placement is where Punch is placed at Event Control and Punch has Punch ID,
 	PunchID                                 int NOT NULL,
 	PRIMARY KEY(PunchID, EventControlEventID, EventControlNumber),
-	FOREIGN KEY (EventControlNumber, EventControlEventID) REFERENCES EventControl (ControlNumber, EventID),
+	FOREIGN KEY (EventControlEventID, EventControlNumber) REFERENCES EventControl (EventID, ControlNumber),
 	FOREIGN KEY (PunchID) REFERENCES Punch (PunchID)
 )
 GO

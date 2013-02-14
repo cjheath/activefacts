@@ -3,13 +3,13 @@ CREATE TABLE Attendance (
 	AttendeeFamilyName                      varchar(48) NULL,
 	-- Attendance is where Person attended Meeting and Person has given-Name,
 	AttendeeGivenName                       varchar(48) NOT NULL,
-	-- Attendance is where Person attended Meeting and Company held Meeting and Company is called Company Name,
+	-- Attendance is where Person attended Meeting and Meeting is held by Company and Company is called Company Name,
 	MeetingCompanyName                      varchar(48) NOT NULL,
 	-- Attendance is where Person attended Meeting and Meeting is held on Date,
 	MeetingDate                             datetime NOT NULL,
 	-- Attendance is where Person attended Meeting and Meeting is board meeting,
 	MeetingIsBoardMeeting                   bit NULL,
-	UNIQUE(AttendeeGivenName, AttendeeFamilyName, MeetingDate, MeetingIsBoardMeeting, MeetingCompanyName)
+	UNIQUE(AttendeeGivenName, AttendeeFamilyName, MeetingCompanyName, MeetingDate, MeetingIsBoardMeeting)
 )
 GO
 
@@ -37,13 +37,13 @@ CREATE TABLE Directorship (
 GO
 
 CREATE TABLE Meeting (
-	-- Company held Meeting and Company is called Company Name,
+	-- Meeting is held by Company and Company is called Company Name,
 	CompanyName                             varchar(48) NOT NULL,
 	-- Meeting is held on Date,
 	Date                                    datetime NOT NULL,
 	-- Meeting is board meeting,
 	IsBoardMeeting                          bit NULL,
-	UNIQUE(Date, IsBoardMeeting, CompanyName),
+	UNIQUE(CompanyName, Date, IsBoardMeeting),
 	FOREIGN KEY (CompanyName) REFERENCES Company (CompanyName)
 )
 GO
@@ -73,7 +73,7 @@ CREATE VIEW dbo.EmployeeInPerson_Nr (EmployeeNr) WITH SCHEMABINDING AS
 	WHERE	EmployeeNr IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX NumberIdentifiesEmployee ON dbo.EmployeeInPerson_Nr(EmployeeNr)
+CREATE UNIQUE CLUSTERED INDEX PK_EmployeeInPerson ON dbo.EmployeeInPerson_Nr(EmployeeNr)
 GO
 
 ALTER TABLE Attendance
@@ -81,11 +81,11 @@ ALTER TABLE Attendance
 GO
 
 ALTER TABLE Attendance
-	ADD FOREIGN KEY (AttendeeFamilyName, AttendeeGivenName) REFERENCES Person (FamilyName, GivenName)
+	ADD FOREIGN KEY (AttendeeGivenName, AttendeeFamilyName) REFERENCES Person (GivenName, FamilyName)
 GO
 
 ALTER TABLE Directorship
-	ADD FOREIGN KEY (DirectorFamilyName, DirectorGivenName) REFERENCES Person (FamilyName, GivenName)
+	ADD FOREIGN KEY (DirectorGivenName, DirectorFamilyName) REFERENCES Person (GivenName, FamilyName)
 GO
 
 ALTER TABLE Person

@@ -68,8 +68,8 @@ CREATE TABLE SeatAllocation (
 	-- SeatAllocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Count and Showing is where Cinema shows Film on DateTime and Film has FilmID,
 	BookingShowingFilmID                    int NOT NULL,
 	UNIQUE(BookingPersonID, BookingShowingCinemaID, BookingShowingFilmID, BookingShowingDateTimeValue, AllocatedSeatCinemaID, AllocatedSeatRow, AllocatedSeatNumber),
-	FOREIGN KEY (BookingPersonID, BookingShowingCinemaID, BookingShowingDateTimeValue, BookingShowingFilmID) REFERENCES Booking (PersonID, ShowingCinemaID, ShowingDateTimeValue, ShowingFilmID),
-	FOREIGN KEY (AllocatedSeatCinemaID, AllocatedSeatNumber, AllocatedSeatRow) REFERENCES Seat (CinemaID, Number, Row)
+	FOREIGN KEY (BookingPersonID, BookingShowingCinemaID, BookingShowingFilmID, BookingShowingDateTimeValue) REFERENCES Booking (PersonID, ShowingCinemaID, ShowingFilmID, ShowingDateTimeValue),
+	FOREIGN KEY (AllocatedSeatCinemaID, AllocatedSeatRow, AllocatedSeatNumber) REFERENCES Seat (CinemaID, Row, Number)
 )
 GO
 

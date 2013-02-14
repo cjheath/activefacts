@@ -91,37 +91,18 @@ module ActiveFacts
 		  end
 		end
 
-		debug :fk, "Looking at absorption depth of #{absorption_path.size} in #{to.name} for to_columns for #{from_columns.map(&:name)*", "}:"
-		to_supertypes = to.supertypes_transitive
-		to_columns = from_columns.map do |from_column|
-		  debug :fk, "\tLooking for counterpart of #{from_column.name}: #{from_column.comment}" do
-		    target_path = absorption_path + from_column.references[fk_ref_path.size..-1]
-		    debug :fk, "\tcounterpart MUST MATCH #{target_path.map(&:reading)*" and "}"
-		    c = to.columns.detect do |column|
-		      debug :fk, "Considering #{column.references.map(&:reading) * " and "}"
-		      debug :fk, "exact match: #{column.name}: #{column.comment}" if column.references == target_path
-		      # Column may be inherited into "to", in which case target_path is too long.
-		      cr = column.references
-		      allowed_type = fk_ref_path.last.to
-		      #debug :fk, "Check for absorption, need #{allowed_type.name}" if cr != target_path
-		      cr == target_path or
-			cr == target_path[-cr.size..-1] &&
-			!target_path[0...-cr.size].detect do |ref|
-			  ft = ref.fact_type
-			  next true if allowed_type.absorbed_via != ref   # Problems if it doesn't match
-			  allowed_type = ref.from
-			  false
-			end
-		    end
-		    raise "REVISIT: Failed to find conterpart column for #{from_column.name}" unless c
-		    c
+		# Put the column pairs in the correct order. They MUST be in the order they appear in the primary key
+		to_columns = fk_ref_path[-1].to.identifier_columns
+		if fk_ref_path[-1].to != to
+		  # fk_ref_path[-1].to is an absorbed subtype of "to"; we need the absorbed identifier_columns
+		  to_columns.map! do |col|
+		    ref_size = col.references.size
+		    to.columns.detect { |c| c.references[-ref_size..-1] == col.references }
 		  end
 		end
-		debug :fk, "to_columns in #{to.name}: #{to_columns.map { |column| column ? column.name : "OOPS!" }*", "}"
 
-		# Put the column pairs in a defined order, sorting key pairs by to-name:
 		froms, tos = from_columns.zip(to_columns).sort_by { |pair|
-		  pair[1].name(nil)
+		  to_columns.index(pair[1])
 		}.transpose
 
 		fk = ActiveFacts::Persistence::ForeignKey.new(self, to, fk_ref_path[-1], froms, tos)

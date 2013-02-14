@@ -21,10 +21,10 @@ CREATE TABLE Person (
 GO
 
 ALTER TABLE Marriage
-	ADD FOREIGN KEY (HusbandFamilyName, HusbandGivenName) REFERENCES Person (FamilyName, GivenName)
+	ADD FOREIGN KEY (HusbandGivenName, HusbandFamilyName) REFERENCES Person (GivenName, FamilyName)
 GO
 
 ALTER TABLE Marriage
-	ADD FOREIGN KEY (WifeFamilyName, WifeGivenName) REFERENCES Person (FamilyName, GivenName)
+	ADD FOREIGN KEY (WifeGivenName, WifeFamilyName) REFERENCES Person (GivenName, FamilyName)
 GO
 

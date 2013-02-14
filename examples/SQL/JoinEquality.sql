@@ -33,7 +33,7 @@ CREATE TABLE Ticket (
 	SeatVenueId                             int NOT NULL,
 	PRIMARY KEY(EventId, SeatVenueId, SeatReserve, SeatRow, SeatNumber),
 	FOREIGN KEY (EventId) REFERENCES Event (EventId),
-	FOREIGN KEY (SeatNumber, SeatReserve, SeatRow, SeatVenueId) REFERENCES Seat (Number, Reserve, Row, VenueId)
+	FOREIGN KEY (SeatVenueId, SeatReserve, SeatRow, SeatNumber) REFERENCES Seat (VenueId, Reserve, Row, Number)
 )
 GO
 

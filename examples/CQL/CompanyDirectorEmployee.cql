@@ -15,11 +15,11 @@ Company is identified by its Name where
 	Company is called Company Name;
 Company is listed;
 
-Meeting is independent identified by Date and Meeting is board meeting and Company where
-	Meeting is held on one Date,
-	Meeting is board meeting,
+Meeting is independent identified by Company and Date and Meeting is board meeting where
+	Meeting is held by one Company,
 	Company held Meeting,
-	Meeting is held by one Company;
+	Meeting is held on one Date,
+	Meeting is board meeting;
 
 Person is identified by given-Name and family-Name where
 	Person has one given-Name,

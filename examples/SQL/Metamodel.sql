@@ -312,7 +312,7 @@ CREATE TABLE ObjectType (
 	PRIMARY KEY(VocabularyName, Name),
 	UNIQUE(ConceptGuid),
 	FOREIGN KEY (ValueTypeValueConstraintGuid) REFERENCES [Constraint] (ConceptGuid),
-	FOREIGN KEY (ValueTypeSupertypeName, ValueTypeSupertypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+	FOREIGN KEY (ValueTypeSupertypeVocabularyName, ValueTypeSupertypeName) REFERENCES ObjectType (VocabularyName, Name)
 )
 GO
 
@@ -405,7 +405,7 @@ CREATE TABLE Role (
 	UNIQUE(ConceptGuid),
 	FOREIGN KEY (ImplicitFactTypeGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (FactTypeGuid) REFERENCES FactType (ConceptGuid),
-	FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name)
 )
 GO
 
@@ -454,7 +454,7 @@ CREATE TABLE RoleRef (
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceGuid, Ordinal),
 	UNIQUE(RoleFactTypeGuid, RoleOrdinal, RoleSequenceGuid),
-	FOREIGN KEY (PlayRoleFactTypeGuid, PlayRoleOrdinal, PlayVariableOrdinal, PlayVariableQueryGuid) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableOrdinal, VariableQueryGuid),
+	FOREIGN KEY (PlayVariableQueryGuid, PlayVariableOrdinal, PlayRoleFactTypeGuid, PlayRoleOrdinal) REFERENCES Play (VariableQueryGuid, VariableOrdinal, RoleFactTypeGuid, RoleOrdinal),
 	FOREIGN KEY (RoleFactTypeGuid, RoleOrdinal) REFERENCES Role (FactTypeGuid, Ordinal)
 )
 GO
@@ -495,7 +495,7 @@ CREATE TABLE RoleValue (
 	PRIMARY KEY(FactGuid, RoleFactTypeGuid, RoleOrdinal),
 	FOREIGN KEY (FactGuid) REFERENCES Fact (ConceptGuid),
 	FOREIGN KEY (InstanceGuid) REFERENCES Instance (ConceptGuid),
-	FOREIGN KEY (PopulationName, PopulationVocabularyName) REFERENCES Population (Name, VocabularyName),
+	FOREIGN KEY (PopulationVocabularyName, PopulationName) REFERENCES Population (VocabularyName, Name),
 	FOREIGN KEY (RoleFactTypeGuid, RoleOrdinal) REFERENCES Role (FactTypeGuid, Ordinal)
 )
 GO
@@ -568,7 +568,7 @@ CREATE TABLE Shape (
 	FOREIGN KEY (ModelNoteShapeContextNoteGuid) REFERENCES ContextNote (ConceptGuid),
 	FOREIGN KEY (RingConstraintShapeFactTypeGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (FactTypeShapeFactTypeGuid) REFERENCES FactType (ConceptGuid),
-	FOREIGN KEY (ObjectTypeShapeObjectTypeName, ObjectTypeShapeObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName),
+	FOREIGN KEY (ObjectTypeShapeObjectTypeVocabularyName, ObjectTypeShapeObjectTypeName) REFERENCES ObjectType (VocabularyName, Name),
 	FOREIGN KEY (ReadingShapeReadingFactTypeGuid, ReadingShapeReadingOrdinal) REFERENCES Reading (FactTypeGuid, Ordinal),
 	FOREIGN KEY (ValueConstraintShapeRoleDisplayFactTypeShapeGuid, ValueConstraintShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeGuid, Ordinal),
 	FOREIGN KEY (RoleNameShapeRoleDisplayFactTypeShapeGuid, RoleNameShapeRoleDisplayOrdinal) REFERENCES RoleDisplay (FactTypeShapeGuid, Ordinal),
@@ -649,8 +649,8 @@ CREATE TABLE Step (
 	UNIQUE(InputPlayVariableQueryGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, OutputPlayVariableQueryGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal),
 	FOREIGN KEY (AlternativeSetGuid) REFERENCES AlternativeSet (Guid),
 	FOREIGN KEY (FactTypeGuid) REFERENCES FactType (ConceptGuid),
-	FOREIGN KEY (InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, InputPlayVariableOrdinal, InputPlayVariableQueryGuid) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableOrdinal, VariableQueryGuid),
-	FOREIGN KEY (OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal, OutputPlayVariableOrdinal, OutputPlayVariableQueryGuid) REFERENCES Play (RoleFactTypeGuid, RoleOrdinal, VariableOrdinal, VariableQueryGuid)
+	FOREIGN KEY (InputPlayVariableQueryGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal) REFERENCES Play (VariableQueryGuid, VariableOrdinal, RoleFactTypeGuid, RoleOrdinal),
+	FOREIGN KEY (OutputPlayVariableQueryGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal) REFERENCES Play (VariableQueryGuid, VariableOrdinal, RoleFactTypeGuid, RoleOrdinal)
 )
 GO
 
@@ -713,7 +713,7 @@ CREATE TABLE Variable (
 	-- maybe Variable is bound to Value and maybe Value is in Unit and Unit is a kind of Concept and Concept has Guid,
 	ValueUnitGuid                           uniqueidentifier NULL,
 	PRIMARY KEY(QueryGuid, Ordinal),
-	FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName),
+	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name),
 	FOREIGN KEY (QueryGuid) REFERENCES Query (ConceptGuid),
 	FOREIGN KEY (ProjectionFactTypeGuid, ProjectionOrdinal) REFERENCES Role (FactTypeGuid, Ordinal)
 )
@@ -729,11 +729,11 @@ CREATE UNIQUE CLUSTERED INDEX IX_VariableByProjectionFactTypeGuidProjectionOrdin
 GO
 
 ALTER TABLE Aggregation
-	ADD FOREIGN KEY (AggregatedVariableOrdinal, AggregatedVariableQueryGuid) REFERENCES Variable (Ordinal, QueryGuid)
+	ADD FOREIGN KEY (AggregatedVariableQueryGuid, AggregatedVariableOrdinal) REFERENCES Variable (QueryGuid, Ordinal)
 GO
 
 ALTER TABLE Aggregation
-	ADD FOREIGN KEY (VariableOrdinal, VariableQueryGuid) REFERENCES Variable (Ordinal, QueryGuid)
+	ADD FOREIGN KEY (VariableQueryGuid, VariableOrdinal) REFERENCES Variable (QueryGuid, Ordinal)
 GO
 
 ALTER TABLE AllowedRange
@@ -781,7 +781,7 @@ ALTER TABLE Derivation
 GO
 
 ALTER TABLE FacetValue
-	ADD FOREIGN KEY (ValueTypeName, ValueTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+	ADD FOREIGN KEY (ValueTypeVocabularyName, ValueTypeName) REFERENCES ObjectType (VocabularyName, Name)
 GO
 
 ALTER TABLE Fact
@@ -789,27 +789,27 @@ ALTER TABLE Fact
 GO
 
 ALTER TABLE Fact
-	ADD FOREIGN KEY (PopulationName, PopulationVocabularyName) REFERENCES Population (Name, VocabularyName)
+	ADD FOREIGN KEY (PopulationVocabularyName, PopulationName) REFERENCES Population (VocabularyName, Name)
 GO
 
 ALTER TABLE FactType
-	ADD FOREIGN KEY (EntityTypeName, EntityTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+	ADD FOREIGN KEY (EntityTypeVocabularyName, EntityTypeName) REFERENCES ObjectType (VocabularyName, Name)
 GO
 
 ALTER TABLE FactType
-	ADD FOREIGN KEY (TypeInheritanceSubtypeName, TypeInheritanceSubtypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+	ADD FOREIGN KEY (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName) REFERENCES ObjectType (VocabularyName, Name)
 GO
 
 ALTER TABLE FactType
-	ADD FOREIGN KEY (TypeInheritanceSupertypeName, TypeInheritanceSupertypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+	ADD FOREIGN KEY (TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) REFERENCES ObjectType (VocabularyName, Name)
 GO
 
 ALTER TABLE Instance
-	ADD FOREIGN KEY (ObjectTypeName, ObjectTypeVocabularyName) REFERENCES ObjectType (Name, VocabularyName)
+	ADD FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name)
 GO
 
 ALTER TABLE Instance
-	ADD FOREIGN KEY (PopulationName, PopulationVocabularyName) REFERENCES Population (Name, VocabularyName)
+	ADD FOREIGN KEY (PopulationVocabularyName, PopulationName) REFERENCES Population (VocabularyName, Name)
 GO
 
 ALTER TABLE ObjectType
@@ -821,11 +821,11 @@ ALTER TABLE Play
 GO
 
 ALTER TABLE Play
-	ADD FOREIGN KEY (StepInputPlayRoleFactTypeGuid, StepInputPlayRoleOrdinal, StepInputPlayVariableOrdinal, StepInputPlayVariableQueryGuid, StepOutputPlayRoleFactTypeGuid, StepOutputPlayRoleOrdinal, StepOutputPlayVariableOrdinal, StepOutputPlayVariableQueryGuid) REFERENCES Step (InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, InputPlayVariableOrdinal, InputPlayVariableQueryGuid, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal, OutputPlayVariableOrdinal, OutputPlayVariableQueryGuid)
+	ADD FOREIGN KEY (StepInputPlayVariableQueryGuid, StepInputPlayVariableOrdinal, StepInputPlayRoleFactTypeGuid, StepInputPlayRoleOrdinal, StepOutputPlayVariableQueryGuid, StepOutputPlayVariableOrdinal, StepOutputPlayRoleFactTypeGuid, StepOutputPlayRoleOrdinal) REFERENCES Step (InputPlayVariableQueryGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeGuid, InputPlayRoleOrdinal, OutputPlayVariableQueryGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeGuid, OutputPlayRoleOrdinal)
 GO
 
 ALTER TABLE Play
-	ADD FOREIGN KEY (VariableOrdinal, VariableQueryGuid) REFERENCES Variable (Ordinal, QueryGuid)
+	ADD FOREIGN KEY (VariableQueryGuid, VariableOrdinal) REFERENCES Variable (QueryGuid, Ordinal)
 GO
 
 ALTER TABLE Reading

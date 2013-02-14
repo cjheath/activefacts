@@ -65,7 +65,7 @@ CREATE TABLE Topic (
 GO
 
 ALTER TABLE Comment
-	ADD FOREIGN KEY (ParagraphOrdinal, ParagraphPostId) REFERENCES Paragraph (Ordinal, PostId)
+	ADD FOREIGN KEY (ParagraphPostId, ParagraphOrdinal) REFERENCES Paragraph (PostId, Ordinal)
 GO
 
 ALTER TABLE Paragraph

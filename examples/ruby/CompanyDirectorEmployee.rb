@@ -25,7 +25,7 @@ module ::CompanyDirectorEmployee
   end
 
   class Meeting
-    identified_by :date, :is_board_meeting, :company
+    identified_by :company, :date, :is_board_meeting
     has_one :company, :mandatory => true        # See Company.all_meeting
     has_one :date, :mandatory => true           # See Date.all_meeting
     maybe :is_board_meeting
