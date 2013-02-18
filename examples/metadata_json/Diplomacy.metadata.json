@@ -2,6 +2,7 @@
   "types": {
     "Ambassador": {
       "is_main": false,
+      "id": "0E0B637E-182A-45CD-B73E-C02D1EC9B971",
       "functions": [
         {
           "title": "as Diplomat",
@@ -11,62 +12,73 @@
           "title": "all Representation",
           "type": "Representation",
           "where": "this Ambassador is from some Represented Country to some Country",
+          "role_id": "7605F9A0-F2C0-4A9A-9EF4-4BBE08FBA355",
           "is_list": true
         }
       ]
     },
     "Country": {
       "is_main": true,
+      "id": "D30F2093-D984-42D3-9875-45A4A7F0E67E",
       "functions": [
-        {
-          "title": "CountryName",
-          "type": "CountryName",
-          "where": "this Country has one CountryName"
-        },
-        {
-          "title": "all Diplomat as Represented Country",
-          "type": "Diplomat",
-          "where": "some Diplomat represents this Represented Country",
-          "is_list": true
-        },
-        {
-          "title": "all Diplomat as Served Country",
-          "type": "Diplomat",
-          "where": "some Diplomat serves in this Served Country",
-          "is_list": true
-        },
-        {
-          "title": "all Language",
-          "type": "Language",
-          "where": "some Language is spoken in this Country",
-          "is_list": true
-        },
         {
           "title": "all Representation",
           "type": "Representation",
           "where": "some Ambassador is from this Represented Country to some Country",
+          "role_id": "89507856-42BF-4065-9DC1-9ED1054A0F23",
           "is_list": true
         },
         {
           "title": "all Representation",
           "type": "Representation",
           "where": "some Ambassador is from some Represented Country to this Country",
+          "role_id": "0557BE5A-BEF9-43AC-8174-304E04AB0157",
+          "is_list": true
+        },
+        {
+          "title": "CountryName",
+          "type": "CountryName",
+          "where": "this Country has one CountryName",
+          "role_id": "09A47183-97C9-4C5D-A491-B77B115B9A57"
+        },
+        {
+          "title": "all Diplomat as Represented Country",
+          "type": "Diplomat",
+          "where": "some Diplomat represents this Represented Country",
+          "role_id": "B7CF075C-B9EE-45DA-8CA9-8378AE8725A1",
+          "is_list": true
+        },
+        {
+          "title": "all Diplomat as Served Country",
+          "type": "Diplomat",
+          "where": "some Diplomat serves in this Served Country",
+          "role_id": "D7FF7D56-CDE2-43D1-A923-545529150B9C",
+          "is_list": true
+        },
+        {
+          "title": "all Language",
+          "type": "Language",
+          "where": "some Language is spoken in this Country",
+          "role_id": "305FFA83-34EC-4221-8380-2A4919235A99",
           "is_list": true
         }
       ]
     },
     "CountryName": {
       "is_main": false,
+      "id": "FC4E49D3-C0B9-45ED-BD99-C9514E5F48DB",
       "functions": [
         {
           "title": "Country",
           "type": "Country",
-          "where": "one Country has this CountryName"
+          "where": "one Country has this CountryName",
+          "role_id": "D078B13E-7F88-4C14-AA0C-EE57353A0EA4"
         }
       ]
     },
     "Diplomat": {
       "is_main": true,
+      "id": "F480F9D3-31A0-406C-9A94-9A7E4C4A222F",
       "functions": [
         {
           "title": "as Ambassador",
@@ -75,70 +87,83 @@
         {
           "title": "DiplomatName",
           "type": "DiplomatName",
-          "where": "this Diplomat has one DiplomatName"
+          "where": "this Diplomat has one DiplomatName",
+          "role_id": "3F59C20F-D781-4252-89E0-485760046A98"
         },
         {
           "title": "Represented Country",
           "type": "Country",
-          "where": "this Diplomat represents one Represented Country"
+          "where": "this Diplomat represents one Represented Country",
+          "role_id": "2A155BF9-8598-4298-92B7-3029D0198CF8"
         },
         {
           "title": "Served Country",
           "type": "Country",
-          "where": "this Diplomat serves in one Served Country"
+          "where": "this Diplomat serves in one Served Country",
+          "role_id": "390B5ACC-9FD4-42F5-B885-528B2457D977"
         },
         {
           "title": "all Language",
           "type": "Language",
           "where": "this Diplomat speaks some Language",
+          "role_id": "3DCA6D76-14D5-44C8-8D77-22E55AE2DEB2",
           "is_list": true
         }
       ]
     },
     "DiplomatName": {
       "is_main": false,
+      "id": "1CB6DEBB-AECD-4559-B553-C7F379CAC561",
       "functions": [
         {
           "title": "Diplomat",
           "type": "Diplomat",
-          "where": "one Diplomat has this DiplomatName"
+          "where": "one Diplomat has this DiplomatName",
+          "role_id": "0B00E230-08DC-4973-BF61-FFF7DAECAA1D"
         }
       ]
     },
     "Language": {
       "is_main": true,
+      "id": "D5B2E000-C821-4359-B0F2-55F46FEBF212",
       "functions": [
+        {
+          "title": "all Diplomat",
+          "type": "Diplomat",
+          "where": "some Diplomat speaks this Language",
+          "role_id": "1EADD61D-85F5-4FD4-B6E0-CA6BF16918E9",
+          "is_list": true
+        },
         {
           "title": "LanguageName",
           "type": "LanguageName",
-          "where": "this Language has one LanguageName"
+          "where": "this Language has one LanguageName",
+          "role_id": "09EAD705-1688-4D02-A6C6-66152D1BFA08"
         },
         {
           "title": "all Country",
           "type": "Country",
           "where": "this Language is spoken in some Country",
-          "is_list": true
-        },
-        {
-          "title": "all Diplomat",
-          "type": "Diplomat",
-          "where": "some Diplomat speaks this Language",
+          "role_id": "1ACC3A87-DA17-45B2-9741-FCC86A69AFDC",
           "is_list": true
         }
       ]
     },
     "LanguageName": {
       "is_main": false,
+      "id": "E6B66595-3058-437B-B248-2E56D2D12FDA",
       "functions": [
         {
           "title": "Language",
           "type": "Language",
-          "where": "one Language has this LanguageName"
+          "where": "one Language has this LanguageName",
+          "role_id": "6789F8B6-FDDC-4E5F-B41A-FFDAFA6C9284"
         }
       ]
     },
     "Representation": {
       "is_main": true,
+      "id": "DFDEEBB0-0735-4AE4-B616-E7C7FBE330E0",
       "functions": [
         {
           "title": "involving Ambassador",
