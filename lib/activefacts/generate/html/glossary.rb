@@ -43,23 +43,51 @@ module ActiveFacts
 	  File.open(File.dirname(__FILE__)+"/../../../../css/orm2.css") do |f|
 	    puts "<style media='screen' type='text/css'>"
 	    puts f.read
-	    puts "</style>"
-
 	    puts %Q{
-	      <style media='print' type='text/css'>
-              .keyword { color: #0000CC; font-style: italic; display: inline; }
-              .vocabulary, .object_type { color: #8A0092; font-weight: bold; }
-              .copula { color: #0E5400; }
-              .value { color: #FF990E; display: inline; }
-              .glossary-toc { display: none; }
-              .glossary-facttype, .glossary-reading { display: inline; }
-	      </style>
-	    }
-
+	      .glossary-facttype, .glossary-constraints { display: block; }
+	      .glossary-doc.hide-alternates .glossary-alternates { display: none; }
+	      .glossary-doc.hide-constraints .glossary-constraints { display: none; }
+	      .glossary-doc.hide-examples .glossary-example { display: none; }
+	    }.gsub(/^\s+/, '')
+	    puts "</style>"
 	  end
+
+	  puts %Q{
+	    <style media='print' type='text/css'>
+	    .keyword { color: #0000CC; font-style: italic; display: inline; }
+	    .vocabulary, .object_type { color: #8A0092; font-weight: bold; }
+	    .copula { color: #0E5400; }
+	    .value { color: #FF990E; display: inline; }
+	    .glossary-toc { display: none; }
+	    .glossary-facttype, .glossary-reading { display: inline; }
+	    </style>
+	  }.gsub(/^\s+/, '')
         end
 
         def vocabulary_end
+	  puts %Q{
+	  <script type="text/javascript">
+	  function toggle_class(e, c) {
+	    if (!e) return;
+	    var n = e.className;
+	    var i = n.indexOf(c);
+	    if (i == -1) {
+	      e.className = n+' '+c;
+	    } else {
+	      e.className = n.slice(0, i)+n.slice(i+c.length);
+	    }
+	  }
+	  function toggle_constraints() {
+	    toggle_class(document.getElementById('glossary-doc'), 'hide-constraints');
+	  }
+	  function toggle_alternates() {
+	    toggle_class(document.getElementById('glossary-doc'), 'hide-alternates');
+	  }
+	  function toggle_examples() {
+	    toggle_class(document.getElementById('glossary-doc'), 'hide-examples');
+	  }
+	  </script>
+	  }.gsub(/^\s+/, '')
         end
 
         def object_types_dump
@@ -69,6 +97,12 @@ module ActiveFacts
 	      sort_by{|o| o.name.gsub(/ /,'').downcase}
 
 	  # Put out a table of contents first:
+	  puts '<div class="glossary-sidebar">'
+	  puts '<div class="glossary-controls">'
+	  puts '  <input type="button" onclick="toggle_constraints()" value="Constraints" class="glossary-toggle-constraint">'
+	  puts '  <input type="button" onclick="toggle_alternates()" value="Alternates" class="glossary-toggle-alternates">'
+	  puts '  <input type="button" onclick="toggle_examples()" value="Examples" class="glossary-toggle-examples">'
+	  puts '</div>'
 	  puts '<ol class="glossary-toc">'
 	  all_object_type.
 	  reject do |o|
@@ -80,8 +114,9 @@ module ActiveFacts
 	      puts "<li>#{termref(o.name)}</li>"
 	    end
 	  puts '</ol>'
+	  puts '</div>'
 
-	  puts '<div class="glossary-doc">'
+	  puts '<div class="glossary-doc" id="glossary-doc">'
 	    puts "<h1>#{@vocabulary.name}</h1>"
 	    puts '<dl>'
 	    all_object_type.
@@ -166,20 +201,26 @@ module ActiveFacts
 	      puts div(
 		"#{termref(sub.name)} #{span('is written as', 'keyword')} #{termref(o.name)}",
 		'glossary-facttype'
-	      )+'</br>'
+	      )
 	    end
 	end
 
 	def values(o)
-	  o.all_instance.each do |i|
+	  o.all_instance.
+	  sort_by{|i|
+	    [i.population.name, i.value.literal]
+	  }.
+	  each do |i|
 	    v = i.value
 	    puts div(
-	      (i.population.name.empty? ? '' : i.population.name+': ') +
-	      termref(o.name) + ' ' +
-	      div(
-              # v.is_a_string ? v.literal.inspect : v.literal,
-		v.literal.inspect,
-		'value')
+		(i.population.name.empty? ? '' : i.population.name+': ') +
+		termref(o.name) + ' ' +
+		div(
+		# v.is_a_string ? v.literal.inspect : v.literal,
+		  v.literal.inspect,
+		  'value'
+		),
+		'glossary-example'
 	      )
 	  end
 	end
@@ -193,8 +234,12 @@ module ActiveFacts
               reject do |ft|
 		ft.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
 	      end.
-              map { |ft| "    #{fact_type_with_constraints(ft, o)}" }.
-              sort * "\n"
+              map { |ft| [ft, "    #{fact_type_with_constraints(ft, o)}"] }.
+              sort_by{|ft, text|
+		[ ft.is_a?(ActiveFacts::Metamodel::TypeInheritance) ? 0 : 1, text]
+	      }.
+	      map{|ft, text| text}.
+	      join "\n"
           )
         end
 
@@ -222,32 +267,33 @@ module ActiveFacts
           )
         end
 
+        def fact_type_block(ft, include_alternates = true, wrt = nil, include_rolenames = true)
+	  div(fact_type(ft, include_alternates, wrt, include_rolenames), 'glossary-facttype')
+	end
+
         def fact_type(ft, include_alternates = true, wrt = nil, include_rolenames = true)
           role = ft.all_role.detect{|r| r.object_type == wrt}
           preferred_reading = ft.reading_preferably_starting_with_role(role)
           alternate_readings = ft.all_reading.reject{|r| r == preferred_reading}
 
 	  div(
+	    expand_reading(preferred_reading, include_rolenames),
+	    'glossary-reading'
+	  )+
+	  (if include_alternates and alternate_readings.size > 0
 	    div(
-	      expand_reading(preferred_reading, include_rolenames),
-	      'glossary-reading'
-	    )+
-	    (if include_alternates and alternate_readings.size > 0
-              div(
-		"(alternatively: " +
-		alternate_readings.map do |reading|
-		  div(
-		    expand_reading(reading, include_rolenames),
-		    'glossary-reading'
-		  )
-		end*",\n"+')',
-		'glossary-alternates'
-	      )
-	    else
-	      ''
-	    end
-	    ),
-	    'glossary-facttype'
+	      "(alternatively: " +
+	      alternate_readings.map do |reading|
+		div(
+		  expand_reading(reading, include_rolenames),
+		  'glossary-reading'
+		)
+	      end*",\n"+')',
+	      'glossary-alternates'
+	    )
+	  else
+	    ''
+	  end
 	  )
         end
 
@@ -255,11 +301,12 @@ module ActiveFacts
 	  if ft.entity_type
 	    div(
 	      termref(ft.entity_type.name) +
-	      div(' is where ', 'keyword') +
-	      fact_type(ft, true, wrt)
+		div(' is where ', 'keyword') +
+		fact_type(ft, true, wrt),
+	      'glossary-objectification'
 	    )
 	  else
-	    fact_type(ft, true, wrt)
+	    fact_type_block(ft, true, wrt)
 	  end +
             %Q{\n<ul class="glossary-constraints">\n}+
 	    (unless ft.is_a?(ActiveFacts::Metamodel::TypeInheritance)
@@ -281,7 +328,7 @@ module ActiveFacts
             element(
               reading.expand_with_final_presence_constraint { |*a| role_ref(*a) },
               {:class => 'copula'}
-            )+"<br/>\n"
+            )+"\n"
           end.compact*''
         end
 
@@ -297,7 +344,7 @@ module ActiveFacts
 
           o.fact_type.all_role_in_order.each do |r|
             n = r.object_type.name
-            puts "#{termref(o.name)} involves #{span('exactly one', 'keyword')} #{termref(r.role_name || n, n)}<br/>"
+            puts "#{termref(o.name)} involves #{span('exactly one', 'keyword')} #{termref(r.role_name || n, n)}"
           end
           relevant_facts_and_constraints(o)
           puts "  </dd>"
@@ -358,12 +405,13 @@ module ActiveFacts
 
 	    next unless v
 	    puts div(
-	      (i.population.name.empty? ? '' : i.population.name+': ') +
-	      termref(o.name) + ' ' +
-	      div(
-              # v.is_a_string ? v.literal.inspect : v.literal,
-		v.literal.inspect,
-		'value')
+		(i.population.name.empty? ? '' : i.population.name+': ') +
+		termref(o.name) + ' ' +
+		div(
+		# v.is_a_string ? v.literal.inspect : v.literal,
+		  v.literal.inspect,
+		  'value'),
+		'glossary-example'
 	      )
 	  end
 	end
