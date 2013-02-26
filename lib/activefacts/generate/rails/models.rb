@@ -90,7 +90,7 @@ module ActiveFacts
 	      end
 	    end rescue nil  # Handle File.open failure
 	    @individual_file = @out = File.open(pathname, 'w')
-	    puts "#{HEADER}. Generated at #{Time.now.strftime('%Y%m%d%H%M%S')}"
+	    puts "#{HEADER}"
 	  end
 	  true
 	end
