@@ -41,6 +41,14 @@ CREATE TABLE StateOrProvince (
 GO
 
 ALTER TABLE Address
+	ADD FOREIGN KEY (LegislativeDistrictStateOrProvinceId) REFERENCES StateOrProvince (StateOrProvinceId)
+GO
+
+ALTER TABLE Address
 	ADD FOREIGN KEY (StateOrProvinceId) REFERENCES StateOrProvince (StateOrProvinceId)
+GO
+
+ALTER TABLE Politician
+	ADD FOREIGN KEY (LegislativeDistrictStateOrProvinceId) REFERENCES StateOrProvince (StateOrProvinceId)
 GO
 

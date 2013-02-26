@@ -74,6 +74,14 @@ CREATE TABLE SeatAllocation (
 GO
 
 ALTER TABLE Booking
+	ADD FOREIGN KEY (ShowingCinemaID) REFERENCES Cinema (CinemaID)
+GO
+
+ALTER TABLE Booking
+	ADD FOREIGN KEY (ShowingFilmID) REFERENCES Film (FilmID)
+GO
+
+ALTER TABLE Booking
 	ADD FOREIGN KEY (PersonID) REFERENCES Person (PersonID)
 GO
 

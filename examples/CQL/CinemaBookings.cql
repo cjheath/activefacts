@@ -50,3 +50,24 @@ Booking is where
 SeatAllocation is where
 	Booking has allocated-Seat;
 
+/* This constraint compiles cleanly, but breaks the verbaliser on output */
+/* The parser doesn't like "... has some allocated Seat" without the hyphen - fix? */
+some Booking
+    (in which some Person booked some Count seats for some Showing
+	(in which some Film is showing on some DateTime at some Cinema))
+    has allocated Seat
+    only if that Seat is in that Cinema;
+
+/* This constraint doesn't compile, but should (and could, if the "in involved in" readings were available):
+Booking has allocated Seat only if
+    Booking is involved in some Showing that involves some Cinema that has that Seat;
+*/
+
+/* This constraint compiles cleanly and re-verbalises, but requires additional fact types
+Booking is confirmed;
+Showing is late;
+Booking has allocated Seat only if
+    Seat is in Cinema
+    and Booking (in which Person booked Showing for Count) is confirmed
+    and Showing (in which Cinema shows Film on DateTime) is late;
+*/

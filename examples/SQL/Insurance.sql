@@ -32,7 +32,7 @@ CREATE VIEW dbo.VehicleInAsset_VIN (VehicleVIN) WITH SCHEMABINDING AS
 	WHERE	VehicleVIN IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX PK_VehicleInAsset ON dbo.VehicleInAsset_VIN(VehicleVIN)
+CREATE UNIQUE CLUSTERED INDEX VehiclePK ON dbo.VehicleInAsset_VIN(VehicleVIN)
 GO
 
 CREATE TABLE Claim (
@@ -390,7 +390,8 @@ CREATE TABLE VehicleIncident (
 	WeatherDescription                      varchar(1024) NULL,
 	PRIMARY KEY(IncidentID),
 	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID),
-	FOREIGN KEY (LossTypeCode) REFERENCES LossType (LossTypeCode)
+	FOREIGN KEY (LossTypeCode) REFERENCES LossType (LossTypeCode),
+	FOREIGN KEY (DrivingPersonID) REFERENCES Party (PartyID)
 )
 GO
 
@@ -410,7 +411,8 @@ CREATE TABLE Witness (
 	-- Witness is called Name,
 	Name                                    varchar(256) NOT NULL,
 	PRIMARY KEY(IncidentID, Name),
-	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID)
+	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID),
+	FOREIGN KEY (AddressStateCode) REFERENCES State (StateCode)
 )
 GO
 
@@ -430,6 +432,10 @@ ALTER TABLE Claim
 	ADD FOREIGN KEY (PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial) REFERENCES Policy (PYearNr, PProductCode, PStateCode, PSerial)
 GO
 
+ALTER TABLE Claim
+	ADD FOREIGN KEY (IncidentAddressStateCode) REFERENCES State (StateCode)
+GO
+
 ALTER TABLE ContractorAppointment
 	ADD FOREIGN KEY (ContractorID) REFERENCES Party (PartyID)
 GO
@@ -442,12 +448,24 @@ ALTER TABLE Cover
 	ADD FOREIGN KEY (PolicyPYearNr, PolicyPProductCode, PolicyPStateCode, PolicyPSerial) REFERENCES Policy (PYearNr, PProductCode, PStateCode, PSerial)
 GO
 
+ALTER TABLE Party
+	ADD FOREIGN KEY (PersonAddressStateCode) REFERENCES State (StateCode)
+GO
+
+ALTER TABLE Party
+	ADD FOREIGN KEY (PostalAddressStateCode) REFERENCES State (StateCode)
+GO
+
 ALTER TABLE Policy
 	ADD FOREIGN KEY (PProductCode) REFERENCES Product (ProductCode)
 GO
 
 ALTER TABLE Policy
 	ADD FOREIGN KEY (PStateCode) REFERENCES State (StateCode)
+GO
+
+ALTER TABLE PropertyDamage
+	ADD FOREIGN KEY (AddressStateCode) REFERENCES State (StateCode)
 GO
 
 ALTER TABLE ThirdParty

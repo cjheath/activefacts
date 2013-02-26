@@ -739,7 +739,8 @@ CREATE TABLE Variable (
 	PRIMARY KEY(QueryGuid, Ordinal),
 	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name),
 	FOREIGN KEY (QueryGuid) REFERENCES Query (ConceptGuid),
-	FOREIGN KEY (ProjectionFactTypeGuid, ProjectionOrdinal) REFERENCES Role (FactTypeGuid, Ordinal)
+	FOREIGN KEY (ProjectionFactTypeGuid, ProjectionOrdinal) REFERENCES Role (FactTypeGuid, Ordinal),
+	FOREIGN KEY (ValueUnitGuid) REFERENCES Unit (ConceptGuid)
 )
 GO
 
@@ -762,6 +763,14 @@ GO
 
 ALTER TABLE AllowedRange
 	ADD FOREIGN KEY (ValueConstraintGuid) REFERENCES [Constraint] (ConceptGuid)
+GO
+
+ALTER TABLE AllowedRange
+	ADD FOREIGN KEY (ValueRangeMaximumBoundValueUnitGuid) REFERENCES Unit (ConceptGuid)
+GO
+
+ALTER TABLE AllowedRange
+	ADD FOREIGN KEY (ValueRangeMinimumBoundValueUnitGuid) REFERENCES Unit (ConceptGuid)
 GO
 
 ALTER TABLE [Constraint]
@@ -805,7 +814,15 @@ ALTER TABLE Derivation
 GO
 
 ALTER TABLE FacetValue
+	ADD FOREIGN KEY (FacetValueTypeVocabularyName, FacetValueTypeName) REFERENCES ObjectType (VocabularyName, Name)
+GO
+
+ALTER TABLE FacetValue
 	ADD FOREIGN KEY (ValueTypeVocabularyName, ValueTypeName) REFERENCES ObjectType (VocabularyName, Name)
+GO
+
+ALTER TABLE FacetValue
+	ADD FOREIGN KEY (ValueUnitGuid) REFERENCES Unit (ConceptGuid)
 GO
 
 ALTER TABLE Fact
@@ -834,6 +851,10 @@ GO
 
 ALTER TABLE Instance
 	ADD FOREIGN KEY (PopulationVocabularyName, PopulationName) REFERENCES Population (VocabularyName, Name)
+GO
+
+ALTER TABLE Instance
+	ADD FOREIGN KEY (ValueUnitGuid) REFERENCES Unit (ConceptGuid)
 GO
 
 ALTER TABLE ObjectType

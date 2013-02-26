@@ -48,7 +48,7 @@ module ActiveFacts
               # next array if ref.to.absorbed_via != ref.fact_type
             end
             array << [ref]
-          elsif ref.is_absorbing
+          elsif ref.is_absorbing or (ref.to && !ref.to.is_table)
             ref.to.all_absorbed_foreign_key_reference_path.each{|aref|
               array << aref.insert(0, ref)
             }

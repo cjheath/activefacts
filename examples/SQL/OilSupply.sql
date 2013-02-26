@@ -31,7 +31,8 @@ CREATE TABLE ProductionForecast (
 	SupplyPeriodMonthNr                     int NOT NULL CHECK((SupplyPeriodMonthNr >= 1 AND SupplyPeriodMonthNr <= 12)),
 	-- Production Forecast is where Refinery forecasts production of Product in Supply Period and Supply Period is in Year and Year has Year Nr,
 	SupplyPeriodYearNr                      int NOT NULL,
-	PRIMARY KEY(RefineryName, ProductName, SupplyPeriodYearNr, SupplyPeriodMonthNr)
+	PRIMARY KEY(RefineryName, ProductName, SupplyPeriodYearNr, SupplyPeriodMonthNr),
+	FOREIGN KEY (SupplyPeriodMonthNr) REFERENCES Month (MonthNr)
 )
 GO
 
@@ -46,7 +47,8 @@ CREATE TABLE RegionalDemand (
 	SupplyPeriodMonthNr                     int NOT NULL CHECK((SupplyPeriodMonthNr >= 1 AND SupplyPeriodMonthNr <= 12)),
 	-- Regional Demand is where Region will need Product in Supply Period and Supply Period is in Year and Year has Year Nr,
 	SupplyPeriodYearNr                      int NOT NULL,
-	PRIMARY KEY(RegionName, ProductName, SupplyPeriodYearNr, SupplyPeriodMonthNr)
+	PRIMARY KEY(RegionName, ProductName, SupplyPeriodYearNr, SupplyPeriodMonthNr),
+	FOREIGN KEY (SupplyPeriodMonthNr) REFERENCES Month (MonthNr)
 )
 GO
 
