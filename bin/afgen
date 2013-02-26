@@ -55,7 +55,7 @@ begin
 
   exit 0 unless vocabulary
 
-  vocabulary.finalise
+  vocabulary.finalise unless vocabulary == true
 
   # Generate the output:
   generators.each do |generator, options|
