@@ -340,7 +340,7 @@ module ActiveFacts
         def objectified_fact_type_dump(o)
           puts "  <dt>" +
             "#{termdef(o.name)}" +
-            " (#{span('in which', 'keyword')} #{fact_type(o.fact_type, false, nil, nil)})" +
+            # " (#{span('in which', 'keyword')} #{fact_type(o.fact_type, false, nil, nil)})" +
             "</dt>"
           # REVISIT: Handle separate identification
 
@@ -349,7 +349,7 @@ module ActiveFacts
 
           o.fact_type.all_role_in_order.each do |r|
             n = r.object_type.name
-            puts "#{termref(o.name)} involves #{span('exactly one', 'keyword')} #{termref(r.role_name || n, n)}"
+            puts div("#{termref(o.name)} involves #{span('one', 'keyword')} #{termref(r.role_name || n, n)}", "glossary-facttype")
           end
           relevant_facts_and_constraints(o)
           puts "  </dd>"
