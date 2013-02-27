@@ -76,7 +76,8 @@ module ActiveFacts
 	    } else {
 	      e.className = n.slice(0, i)+n.slice(i+c.length);
 	    }
-	    document.location = document.location; // Re-scroll to the current fragment
+	    if (document.location.toString().indexOf('#') >= 0)
+	      document.location = document.location; // Re-scroll to the current fragment
 	  }
 	  function toggle_constraints() {
 	    toggle_class(document.getElementById('glossary-doc'), 'hide-constraints');
@@ -326,10 +327,13 @@ module ActiveFacts
                 reading.role_sequence.all_role_ref_in_order[reading.role_numbers[-1]].role == residual_role
               }
             next nil unless reading
-            element(
-              reading.expand_with_final_presence_constraint { |*a| role_ref(*a) },
-              {:class => 'copula'}
-            )+"\n"
+	    div(
+	      element(
+		reading.expand_with_final_presence_constraint { |*a| role_ref(*a) },
+		{:class => 'copula'}
+	      ),
+	      'glossary-constraint'
+	    )+"\n"
           end.compact*''
         end
 
