@@ -194,7 +194,7 @@ module ActiveFacts
         #  a. ObjectTypes labelled is_independent are tables (See the is_table methods above)
         #  b. Entity types having no references to them must be tables
         #  c. subtypes are not tables unless marked with assimilation = separate or partitioned
-        #  d. ValueTypes are never tables unless they can have references (to other ValueTypes)
+        #  d. ValueTypes are never tables unless they independent or can have references (to other ValueTypes)
         #  e. An EntityType having an identifying AutoInc field must be a table unless it has exactly one reference
         #  f. An EntityType whose only reference is through its single preferred_identifier role gets absorbed
         #  g. An EntityType that must has references other than its PI must be a table (unless it has exactly one reference to it)

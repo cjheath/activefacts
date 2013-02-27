@@ -300,7 +300,6 @@ module ActiveFacts
           end
 
         when :subtype    # This object is a supertype, which can absorb the subtype unless that's independent
-          raise hell unless role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
           if role.fact_type.assimilation
             ActiveFacts::Persistence::Reference.new(self, role).tabulate
             # If partitioned, the supertype is absorbed into *each* subtype; a reference to the supertype needs to know which

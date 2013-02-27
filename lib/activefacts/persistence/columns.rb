@@ -236,21 +236,24 @@ module ActiveFacts
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
           raise "Illegal call to identifier_columns for absorbed ValueType #{name}" unless is_table
-	  injected_surrogate_role = all_role.detect do |role|
-	      next if role.fact_type.all_role.size != 2
-	      counterpart_role = (role.fact_type.all_role.to_a-[role])[0]
-	      counterpart_role.all_role_ref.detect do |rr|
-		  rr.role_sequence.all_presence_constraint.detect do |pc|
-		      pc.role_sequence.all_role_ref.size == 1 && pc.max_frequency == 1 && pc.is_preferred_identifier
-		    end
-		end
-	    end
-	  if injected_surrogate_role
-	    columns.select{|column| column.references[0].from_role == injected_surrogate_role }
+	  if isr = injected_surrogate_role
+	    columns.select{|column| column.references[0].from_role == isr }
 	  else
 	    columns.select{|column| column.references[0] == self_value_reference}
 	  end
         end
+      end
+
+      def injected_surrogate_role
+	all_role.detect do |role|
+	  next if role.fact_type.all_role.size != 2
+	  counterpart_role = (role.fact_type.all_role.to_a-[role])[0]
+	  counterpart_role.all_role_ref.detect do |rr|
+	      rr.role_sequence.all_presence_constraint.detect do |pc|
+		  pc.role_sequence.all_role_ref.size == 1 && pc.max_frequency == 1 && pc.is_preferred_identifier
+		end
+	    end
+	end
       end
 
       # When creating a foreign key to this ValueType, what columns must we include?
@@ -258,7 +261,12 @@ module ActiveFacts
       def reference_columns(excluded_supertypes)  #:nodoc:
         debug :columns, "Reference Columns for #{name}" do
           if is_table
-            [ActiveFacts::Persistence::Column.new(self_value_reference)]
+	    if isr = injected_surrogate_role
+	      ref_from = references_from.detect{|ref| ref.from_role == isr}
+	      [ActiveFacts::Persistence::Column.new(ref_from)]
+	    else
+	      [ActiveFacts::Persistence::Column.new(self_value_reference)]
+	    end
           else
             [ActiveFacts::Persistence::Column.new]
           end
