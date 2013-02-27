@@ -76,6 +76,7 @@ module ActiveFacts
 	    } else {
 	      e.className = n.slice(0, i)+n.slice(i+c.length);
 	    }
+	    document.location = document.location; // Re-scroll to the current fragment
 	  }
 	  function toggle_constraints() {
 	    toggle_class(document.getElementById('glossary-doc'), 'hide-constraints');
