@@ -57,7 +57,7 @@ module ::CinemaBookings
 
   class Person
     identified_by :person_id
-    has_one :login_name, :class => Name, :mandatory => true  # See Name.all_person_as_login_name
+    one_to_one :login_name, :class => Name, :mandatory => true  # See Name.person_as_login_name
     one_to_one :person_id, :class => PersonID, :mandatory => true  # See PersonID.person
   end
 

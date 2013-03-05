@@ -8,6 +8,7 @@ require 'stringio'
 require 'activefacts/vocabulary'
 require 'activefacts/support'
 require 'activefacts/input/cql'
+require 'activefacts/generate/transform/surrogate'
 require 'activefacts/generate/rails/schema'
 
 describe "CQL Loader with Rails schema.rb output" do
@@ -46,6 +47,9 @@ describe "CQL Loader with Rails schema.rb output" do
         vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
       end
       vocabulary.finalise
+
+      transformer = ActiveFacts::Generate::Transform::Surrogate.new(vocabulary)
+      transformer.generate(nil)
 
       # Build and save the actual file:
       schema_rb_text = schema_rb(vocabulary)

@@ -20,7 +20,7 @@ class Comment
   property :content_text, Text, :required => true	# Content provides text of Comment and Content has Text
   property :paragraph_ordinal, Integer, :required => true	# Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph
   property :paragraph_post_id, Integer, :required => true	# Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph and Post has Post Id
-  belongs_to :paragraph, :child_key => [:paragraph_ordinal, :paragraph_post_id], :parent_key => [:ordinal, :post_id]	# Paragraph has Comment
+  belongs_to :paragraph, :child_key => [:paragraph_post_id, :paragraph_ordinal], :parent_key => [:post_id, :ordinal]	# Paragraph has Comment
 end
 
 class Paragraph
@@ -31,7 +31,7 @@ class Paragraph
   property :ordinal, Integer, :key => true	# Paragraph is where Post includes Ordinal paragraph
   property :post_id, Integer, :key => true	# Paragraph is where Post includes Ordinal paragraph and Post has Post Id
   belongs_to :post	# Post is involved in Paragraph
-  has n, :comment, :child_key => [:paragraph_ordinal, :paragraph_post_id], :parent_key => [:ordinal, :post_id]	# Comment is involved in Paragraph
+  has n, :comment, :child_key => [:paragraph_post_id, :paragraph_ordinal], :parent_key => [:post_id, :ordinal]	# Comment is involved in Paragraph
 end
 
 class Post

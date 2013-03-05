@@ -69,15 +69,38 @@ module ActiveFacts
       end
 
       def to_s  #:nodoc:
-        name = @uniqueness_constraint.name
+	if @uniqueness_constraint
+	  name = @uniqueness_constraint.name
+	  preferred = @uniqueness_constraint.is_preferred_identifier ? " (preferred)" : ""
+	else
+	  name = "#{@on.name}IsUnique"
+	  preferred = !@on.injected_surrogate_role ? " (preferred)" : ""
+	end
         colnames = @columns.map(&:name)*", "
-        preferred = @uniqueness_constraint.is_preferred_identifier ? " (preferred)" : ""
         "Index #{name} on #{@on.name} over #{@over.name}(#{colnames})#{preferred}"
       end
     end
   end
 
   module Metamodel    #:nodoc:
+    class EntityType
+      def self_index
+	nil
+      end
+    end
+
+    class ValueType
+      def self_index
+	ActiveFacts::Persistence::Index.new(
+	  nil,	  # The implied uniqueness constraint is not created
+	  self,	  # ValueType being indexed
+	  self,	  # Absorbed object being indexed
+	  columns.select{|c| c.references[0].is_self_value},
+	  injected_surrogate_role ? false : true
+	)
+      end
+    end
+
     class ObjectType
       # An array of each Index for this table
       def indices
@@ -179,6 +202,8 @@ module ActiveFacts
             index.columns.map(&:name)+['', index.over.name]
           end
         end
+	si = self_index
+	@indices.unshift(si) if si
 	@indices
       end
 

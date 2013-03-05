@@ -25,7 +25,7 @@ Film has at most one Name;
 
 Person is identified by its ID;
 Person has one login-Name,
-	Name is of Person;
+	Name is of at most one Person;
 
 Seat is identified by Cinema and Row and Number where
 	Cinema has Seat,

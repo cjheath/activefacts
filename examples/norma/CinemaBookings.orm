@@ -189,7 +189,7 @@
 			</orm:Fact>
 			<orm:Fact id="_AB330148-F92C-4898-AF6A-CB6B569C928F" _Name="PersonHasLoginName">
 				<orm:FactRoles>
-					<orm:Role id="_0B78806C-7742-4246-8504-2C74B5FA3740" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+					<orm:Role id="_0B78806C-7742-4246-8504-2C74B5FA3740" _IsMandatory="true" _Multiplicity="ZeroToOne" Name="">
 						<orm:RolePlayer ref="_5DBD7894-8881-467C-B40D-DC8A7AD5BC45" />
 					</orm:Role>
 					<orm:Role id="_EE2F2DA5-B72A-4955-BC4D-2F503C2C3DD5" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
@@ -230,6 +230,7 @@
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_4FD7036D-DD46-41B9-B106-88421F84AB33" />
 					<orm:MandatoryConstraint ref="_7DD4152D-490C-48A9-AD23-B0D734A37D4C" />
+					<orm:UniquenessConstraint ref="_1094550B-7876-4D86-B241-4C42E8169E21" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_D80F0152-007B-4E72-8613-E6D2898CEE5C" _Name="CinemaHasCinemaID">
@@ -1484,6 +1485,11 @@
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_879AB0C3-236A-42AB-A7B2-795E9634FE88" />
 			</orm:MandatoryConstraint>
+			<orm:UniquenessConstraint id="_1094550B-7876-4D86-B241-4C42E8169E21" Name="InternalUniquenessConstraint30" IsInternal="true">
+				<orm:RoleSequence>
+					<orm:Role id="_11DE789B-49E6-4DF3-90D0-3A8D1E10FAEF" ref="_EE2F2DA5-B72A-4955-BC4D-2F503C2C3DD5" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
 			<orm:SubsetConstraint id="_C9432989-CA3B-4D77-953B-411E3DA7D744" Name="SubsetConstraint1">
 				<orm:RoleSequences>
 					<orm:RoleSequence id="_B3934689-E779-4AA0-B37E-531CB99806B3">

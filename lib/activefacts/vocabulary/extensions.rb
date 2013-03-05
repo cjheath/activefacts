@@ -100,7 +100,6 @@ module ActiveFacts
         } ? true : false
       end
 
-      # Return the RoleRef to this role from its fact type's preferred_reading
       def preferred_reference
         fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == self }
       end
@@ -118,19 +117,6 @@ module ActiveFacts
           end
       end
 
-      def role_method
-        if fact_type.all_role.size == 1
-          # The object of an objectified unary has no boolean; the existence of the object is the fact
-          return nil if fact_type.entity_type
-          return preferred_role_name(role)
-        end
-        if fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-          # No method is available to indicate that the object is the specified subtype
-          # In future, this might be implemented using the type discriminator
-          return nil
-        end
-      end
-
     end
 
     class RoleRef
@@ -138,8 +124,8 @@ module ActiveFacts
         role_name
       end
 
-      def preferred_role_ref
-        role.fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == role}
+      def preferred_reference
+        role.preferred_reference
       end
 
       def role_name(separator = "-")
@@ -197,6 +183,19 @@ module ActiveFacts
     end
 
     class EntityType
+      def identification_is_inherited
+	preferred_identifier and
+	  preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) }
+      end
+
+      def assimilation
+	if rr = identification_is_inherited
+	  rr.role.fact_type.assimilation
+	else
+	  nil
+	end
+      end
+
       def preferred_identifier
         return @preferred_identifier if @preferred_identifier
         if fact_type
@@ -918,7 +917,7 @@ module ActiveFacts
               "its #{identifying_instance.verbalise(context)}"
           else
             identifying_role_refs.map do |rr|
-              rr = rr.preferred_role_ref
+              rr = rr.preferred_reference
               [ (l = rr.leading_adjective) ? l+"-" : nil,
                 rr.role.role_name || rr.role.object_type.name,
                 (t = rr.trailing_adjective) ? l+"-" : nil

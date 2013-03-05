@@ -10,20 +10,20 @@ module ::ServiceDirector
     value_type :length => 32
   end
 
-  class DDMMYYYY < Date
-    value_type 
-  end
-
   class DataStoreName < String
     value_type :length => 15
   end
 
-  class EmailAddress < String
-    value_type :length => 50
+  class Date < String
+    value_type 
   end
 
-  class HHMMSS < Time
+  class DateTime < String
     value_type 
+  end
+
+  class EmailAddress < String
+    value_type :length => 50
   end
 
   class HostSystemName < String
@@ -32,10 +32,6 @@ module ::ServiceDirector
 
   class IP < String
     value_type :length => 16
-  end
-
-  class MDYHMS < AutoTimeStamp
-    value_type 
   end
 
   class MessageData < Blob
@@ -118,6 +114,10 @@ module ::ServiceDirector
     value_type 
   end
 
+  class Time < String
+    value_type 
+  end
+
   class TransactionNr < UnsignedInteger
     value_type :length => 32
   end
@@ -147,7 +147,7 @@ module ::ServiceDirector
     one_to_one :credential_nr, :mandatory => true  # See CredentialNr.credential
     has_one :data_store                         # See DataStore.all_credential
     has_one :data_store_service                 # See DataStoreService.all_credential
-    has_one :expiration_date_yymmdd, :class => "DateYYMMDD"  # See DateYYMMDD.all_credential_as_expiration_date_yymmdd
+    has_one :expiration_date, :class => Date    # See Date.all_credential_as_expiration_date
     has_one :password, :mandatory => true       # See Password.all_credential
     has_one :user_name, :mandatory => true      # See UserName.all_credential
     has_one :vendor                             # See Vendor.all_credential
@@ -166,16 +166,6 @@ module ::ServiceDirector
     has_one :primary_host_system, :class => "HostSystem", :mandatory => true  # See HostSystem.all_data_store_as_primary_host_system
     has_one :revision_version, :class => Version, :mandatory => true  # See Version.all_data_store_as_revision_version
     has_one :secondary_host_system, :class => "HostSystem", :mandatory => true  # See HostSystem.all_data_store_as_secondary_host_system
-  end
-
-  class DateTimeYMDHMS
-    identified_by :mdyhms
-    one_to_one :mdyhms, :class => MDYHMS, :mandatory => true  # See MDYHMS.date_time_ymdhms
-  end
-
-  class DateYYMMDD
-    identified_by :ddmmyyyy
-    one_to_one :ddmmyyyy, :class => DDMMYYYY, :mandatory => true  # See DDMMYYYY.date_yymmdd
   end
 
   class Duration
@@ -249,7 +239,7 @@ module ::ServiceDirector
     has_one :monitor, :counterpart => :all_exclusion_recurring_schedule  # See Monitor.all_all_exclusion_recurring_schedule
     one_to_one :recurring_schedule_id, :mandatory => true  # See RecurringScheduleId.recurring_schedule
     maybe :saturday
-    has_one :start_time_hms, :class => "TimeHMS", :mandatory => true  # See TimeHMS.all_recurring_schedule_as_start_time_hms
+    has_one :start_time, :class => Time, :mandatory => true  # See Time.all_recurring_schedule_as_start_time
     maybe :sunday
     maybe :thursday
     maybe :tuesday
@@ -260,7 +250,7 @@ module ::ServiceDirector
     identified_by :satellite_message_id
     has_one :data_store, :mandatory => true     # See DataStore.all_satellite_message
     has_one :group_transaction, :class => "Transaction"  # See Transaction.all_satellite_message_as_group_transaction
-    has_one :insertion_date_time_ymdhms, :class => DateTimeYMDHMS, :mandatory => true  # See DateTimeYMDHMS.all_satellite_message_as_insertion_date_time_ymdhms
+    has_one :insertion_date_time, :class => DateTime, :mandatory => true  # See DateTime.all_satellite_message_as_insertion_date_time
     has_one :message_data                       # See MessageData.all_satellite_message
     has_one :message_header                     # See MessageHeader.all_satellite_message
     has_one :provider_type                      # See ProviderType.all_satellite_message
@@ -270,9 +260,9 @@ module ::ServiceDirector
 
   class Subscription
     identified_by :subscription_nr
-    has_one :beginning_date_yymmdd, :class => DateYYMMDD, :mandatory => true  # See DateYYMMDD.all_subscription_as_beginning_date_yymmdd
+    has_one :beginning_date, :class => Date, :mandatory => true  # See Date.all_subscription_as_beginning_date
     one_to_one :company, :counterpart => :driver_tech_subscription  # See Company.driver_tech_subscription
-    has_one :ending_date_yymmdd, :class => DateYYMMDD  # See DateYYMMDD.all_subscription_as_ending_date_yymmdd
+    has_one :ending_date, :class => Date        # See Date.all_subscription_as_ending_date
     maybe :is_enabled
     one_to_one :subscription_nr, :mandatory => true  # See SubscriptionNr.subscription
   end
@@ -290,11 +280,6 @@ module ::ServiceDirector
     has_one :operating_port, :class => Port, :mandatory => true  # See Port.all_switch_as_operating_port
     has_one :revision_version, :class => Version, :mandatory => true  # See Version.all_switch_as_revision_version
     one_to_one :switch_id, :mandatory => true   # See SwitchId.switch
-  end
-
-  class TimeHMS
-    identified_by :hhmmss
-    one_to_one :hhmmss, :class => HHMMSS, :mandatory => true  # See HHMMSS.time_hms
   end
 
   class Transaction

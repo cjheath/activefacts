@@ -18,10 +18,6 @@ Occurrence is where
 /*
  * Fact Types
  */
-Month is in at most one Season;
+Month is in at most one Season,
+	Season contains at least one Month;
 
-/*
- * Constraints:
- */
-each Season occurs at least one time in
-	Month is in Season;

@@ -520,6 +520,9 @@ module ActiveFacts
       def choose_step(next_node)
         next_steps = @steps_by_variable[next_node]
 
+        # We need to emit each objectification before mentioning an object that plays a role in one, if possible
+        # so that we don't wind up with an objectification as the only way to mention its name.
+
         # If we don't have a next_node against which we can contract,
         # so just use any step involving this node, or just any step.
         if next_steps

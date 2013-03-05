@@ -207,6 +207,8 @@ module ActiveFacts
 	    indices = table.indices
 	    index_text = []
 	    indices.each do |index|
+	      next if move_pk_to_create_table_call and index.is_primary	  # We've handled this already
+
 	      abbreviated_column_names = index.abbreviated_column_names('_')*""
 	      column_names = index.column_names('_').map{|c| rails_singular_name(c) }
 	      index_name = "index_#{ar_table_name+'_on_'+column_names*'_'}"

@@ -35,7 +35,7 @@ module ActiveFacts
         end
 
         # Only a table if it has references (to another ValueType)
-        if !references_from.empty?
+        if !references_from.empty? && !is_auto_assigned
           debug :absorption, "#{name} is a table because it has #{references_from.size} references to it"
           @is_table = true
         else
@@ -181,7 +181,7 @@ module ActiveFacts
       end
 
       def self.relational_transform &block
-        # Add this block to the additional transformations which wil be applied
+        # Add this block to the additional transformations which will be applied
         # to the relational schema after the initial absorption.
         # For example, to perform injection of surrogate keys to replace composite keys...
         @@relational_transforms << block
@@ -332,8 +332,13 @@ module ActiveFacts
           # unless it should absorb something else (another ValueType is all it could be):
           all_object_type.each do |object_type|
             if (!object_type.is_table and object_type.references_to.size == 0 and object_type.references_from.size > 0)
-              debug :absorption, "Making #{object_type.name} a table; it has nowhere else to go and needs to absorb things"
-              object_type.probably_table
+	      if !object_type.references_from.detect{|r| !r.is_one_to_one || !r.to.is_table}
+		debug :absorption, "Flipping references from #{object_type.name}; they're all to tables"
+		object_type.references_from.map(&:flip)
+	      else
+		debug :absorption, "Making #{object_type.name} a table; it has nowhere else to go and needs to absorb things"
+		object_type.probably_table
+	      end
             end
           end
 

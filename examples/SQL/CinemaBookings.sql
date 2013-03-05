@@ -34,7 +34,8 @@ CREATE TABLE Person (
 	LoginName                               varchar NOT NULL,
 	-- Person has PersonID,
 	PersonID                                int IDENTITY NOT NULL,
-	PRIMARY KEY(PersonID)
+	PRIMARY KEY(PersonID),
+	UNIQUE(LoginName)
 )
 GO
 

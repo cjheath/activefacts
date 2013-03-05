@@ -95,6 +95,16 @@ module ActiveFacts
 	  true
 	end
 
+	# Crunch consecutive type inheritance to the last one.
+	def crunch_successive_subclassing references
+	  references.inject([]) do |a, r|
+	    if a[-1] && a[-1].fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) && r.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+	      a.pop
+	    end
+	    a << r
+	  end
+	end
+
 	def generate_table table
 	  old_out = @out
 	  filename = rails_singular_name(table.name)+'.rb'
@@ -112,30 +122,23 @@ module ActiveFacts
 	  # belongs_to Associations
 	  (
 	    table.foreign_keys.map do |fk|
-	      from_column_names = fk.from_columns.map{|column| rails_singular_name(column.name('_'))}
-	      to_column_names = fk.to_columns.map{|column| rails_singular_name(column.name('_'))}
-	      fact_type = fk.reference.fact_type
-	      role = fk.from_columns[0].references[0].to_role
+	      references = crunch_successive_subclassing(fk.references)
+	      association_name = rails_singular_name(references.map(&:to_names).flatten.join('_'))
 
-	      association_name = target_name = rails_singular_name fk.to.name
-	      role_name = role && role.role_name
-	      unless role_name
-		role_ref = fact_type.preferred_reading.role_sequence.all_role_ref.detect{|rr| rr.role == role}
-		if role_ref
-		  role_name = [role_ref.leading_adjective, role.object_type.name, role_ref.trailing_adjective].compact*' '
-		end
-	      end
-	      if role_name and (role_name = rails_singular_name(role_name)) != target_name
+	      if association_name != rails_singular_name(fk.to.name)
+	      #if association_name != rails_singular_name(references[-1].to_names.join('_'))
+		# A different class_name is implied, emit an explicit one:
 		class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
-		association_name = rails_singular_name role_name
 	      end
 	      %Q{
-    \# #{fk.reference.fact_type.default_reading}
+    \# #{fk.references.map{|r| r.fact_type.default_reading}*' and '}
     belongs_to :#{association_name}#{class_name}}
 	    end +
 
 	    table.foreign_keys_to.sort_by{|fk| fk.describe}.map do |fk|
-	      ref = fk.reference
+	      ref = fk.references[-1]
+
+	      # REVISIT: Need to check that this is appropriate here:
 	      if ref.is_simple_reference
 		if ref.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance and
 		    table.absorbed_via and
@@ -144,12 +147,23 @@ module ActiveFacts
 		  next nil
 		end
 
-		unless ref.from.is_table
-		  # If the reference is not a table, it has been absorbed in one or more places
-		  # We need a has_many from *each* such place.
-		  next %Q{
-    \# has_#{ref.is_one_to_one ? 'one' : 'many'} :#{rails_plural_name(ref.from.name)}, but that is fully absorbed here: #{ref.from.references_to.map{|r| r.from.name}.inspect}}
-		end
+#	        debugger if fk.references.size > 1
+=begin
+                from_ref = fk.references[0]
+                if !from_ref.to.is_table or !ref.from.is_table	# There's absorption on one end at least
+                  $stdout.puts("fk origin #{fk.references[0].to.name} is absorbed into #{fk.from.name}") if !from_ref.to.is_table && fk.references[0].to != fk.from
+                  $stdout.puts("fk target #{fk.references[-1].to.name} is absorbed into #{fk.to.name}") if !ref.from.is_table && fk.references[-1].to != fk.to
+                  debugger
+                  p fk
+                end
+=end
+
+#		unless ref.from.is_table
+#		  # If the reference is not a table, it has been absorbed in one or more places
+#		  # We need a has_many from *each* such place.
+#		  next %Q{
+#    \# has_#{ref.is_one_to_one ? 'one' : 'many'} :#{rails_plural_name(ref.from.name)}, but that is fully absorbed here: #{ref.from.references_to.map{|r| r.from.name}.inspect}}
+#		end
 
 		# Get the referencing (FK) column name.
 		# REVISIT: Where this name is the same as the name of the primary key column, we don't need to output it

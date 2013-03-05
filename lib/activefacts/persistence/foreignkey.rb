@@ -14,7 +14,7 @@ module ActiveFacts
       def to; @to; end
 
       # What reference created the FK?
-      def reference; @fk_ref; end
+      def references; @references; end
 
       # What columns in the *from* table form the FK
       def from_columns; @from_columns; end
@@ -22,9 +22,9 @@ module ActiveFacts
       # What columns in the *to* table form the identifier
       def to_columns; @to_columns; end
 
-      def initialize(from, to, fk_ref, from_columns, to_columns) #:nodoc:
-        @from, @to, @fk_ref, @from_columns, @to_columns =
-          from, to, fk_ref, from_columns, to_columns
+      def initialize(from, to, references, from_columns, to_columns) #:nodoc:
+        @from, @to, @references, @from_columns, @to_columns =
+          from, to, references, from_columns, to_columns
       end
 
       def describe
@@ -105,7 +105,7 @@ module ActiveFacts
 		  to_columns.index(pair[1])
 		}.transpose
 
-		fk = ActiveFacts::Persistence::ForeignKey.new(self, to, fk_ref_path[-1], froms, tos)
+		fk = ActiveFacts::Persistence::ForeignKey.new(self, to, fk_ref_path, froms, tos)
 		to.foreign_keys_to << fk
 		fk
 	      end

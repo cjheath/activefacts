@@ -16,7 +16,9 @@ module ActiveFacts
 	  constellation.ValueType(:vocabulary => vocabulary, :name => type_name, :guid => :new)
 
 	# Create a subtype to identify this entity type:
-	my_id = constellation.ValueType(:vocabulary => vocabulary, :name => self.name + ' '+suffix, :guid => :new, :supertype => auto_counter)
+	vt_name = self.name + ' '+suffix
+	my_id = constellation.ValueType[[[vocabulary.name], vt_name]] ||
+	  constellation.ValueType(:vocabulary => vocabulary, :name => vt_name, :guid => :new, :supertype => auto_counter)
 
 	# Create a fact type
 	identifying_fact_type = constellation.FactType(:guid => :new)
@@ -63,11 +65,11 @@ module ActiveFacts
     class ValueType
       def needs_surrogate
 	supertype_names = supertypes_transitive.map(&:name)
-	!(supertype_names.include?('Auto Counter') or supertype_names.include?('Guid'))
+	!(supertype_names.include?('Auto Counter') or supertype_names.include?('Guid') or supertype_names.include?('ID'))
       end
 
       def inject_surrogate
-	debug :transform_surrogate, "Adding surrogate ID to Value Type"
+	debug :transform_surrogate, "Adding surrogate ID to Value Type #{name}"
 	add_surrogate('Auto Counter', 'ID')
       end
     end
@@ -142,7 +144,7 @@ module ActiveFacts
 
 	  identifying_type = irf[0].to
 	  if identifying_type.needs_surrogate
-	    debug :transform_surrogate, "#{self.name} needs a surrogate because #{irf[0].to.name} is not an AutoCounter"
+	    debug :transform_surrogate, "#{self.name} needs a surrogate because #{irf[0].to.name} is not an AutoCounter, but #{identifying_type.supertypes_transitive.map(&:name).inspect}"
 	    return true
 	  end
 
