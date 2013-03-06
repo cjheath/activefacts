@@ -127,12 +127,14 @@ module ActiveFacts
 
 	  irf.flatten!
 
-	  # Multi-part identifiers are only allowed if each part is a foreign key (i.e. it's a join table):
+	  # Multi-part identifiers are only allowed if each part is a foreign key (i.e. it's a join table) and the object is not the target of a foreign key:
 	  if irf.size >= 2
 	    if pk_fks.include?(nil)
 	      debug :transform_surrogate, "#{self.name} needs a surrogate because its multi-part key contains a non-table"
 	      return true
-	    # REVISIT: elsif pk_fks.detect{ a table with a multi-part key }
+	    elsif references_to.size != 0
+	      debug :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect} but is also an FK target"
+	      return true
 	    else
 	      debug :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect}"
 	      return false
