@@ -174,6 +174,11 @@ module ActiveFacts
         tabulate
       end
 
+      # Create a (non-tabulated) flipped version of this Reference. Careful not to tabulate it!
+      def mirror
+	Reference.new(@to, @to_role)
+      end
+
       def tabulate        #:nodoc:
         # Add to @to and @from's reference lists
         @from.references_from << self

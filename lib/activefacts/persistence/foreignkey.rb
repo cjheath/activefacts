@@ -76,31 +76,33 @@ module ActiveFacts
 		}
 		debug :fk, "from_columns = #{from_columns.map { |column| column.name }*", "}"
 
-		absorption_path = []
+		# Figure out absorption on the target end:
 		to = fk_ref_path.last.to
-		# REVISIT: There should be a better way to find where it's absorbed (especially since this fails for absorbed subtypes having their own identification!)
-		while (r = to.absorbed_via)
-		  absorption_path << r
-		  to = r.to == to ? r.from : r.to
+		if to.absorbed_via
+		  debug :fk, "Reference target #{fk_ref_path.last.to.name} is absorbed via:" do
+		    while (r = to.absorbed_via)
+		      m = r.mirror
+		      debug :fk, "#{m.reading}"
+		      fk_ref_path << m
+		      to = m.from == to ? m.to : m.from
+		    end
+		    debug :fk, "Absorption ends at #{to.name}"
+		  end
 		end
+
+		# REVISIT: This test may no longer be necessary
 		raise "REVISIT: #{fk_ref_path.inspect} is bad" unless to and to.columns
 
-		unless absorption_path.empty?
-		  debug :fk, "Reference target #{fk_ref_path.last.to.name} is absorbed into #{to.name} via:" do
-		    debug :fk, "#{absorption_path.map(&:reading)*" and "}"
-		  end
-		end
+		# REVISIT: This fails for absorbed subtypes having their own identification.
+		# Check the CompanyDirectorEmployee model for example, EmployeeManagerNr -> Person (should reference EmployeeNr)
+		# Need to use the absorbed identifier_columns of the subtype,
+		# not the columns of the supertype that absorbs it.
+		# But in general, that isn't going to work because in most DBMS
+		# there's no suitable uniquen index on the subtype's identifier_columns
+
+		to_columns = fk_ref_path[-1].to.identifier_columns
 
 		# Put the column pairs in the correct order. They MUST be in the order they appear in the primary key
-		to_columns = fk_ref_path[-1].to.identifier_columns
-		if fk_ref_path[-1].to != to
-		  # fk_ref_path[-1].to is an absorbed subtype of "to"; we need the absorbed identifier_columns
-		  to_columns.map! do |col|
-		    ref_size = col.references.size
-		    to.columns.detect { |c| c.references[-ref_size..-1] == col.references }
-		  end
-		end
-
 		froms, tos = from_columns.zip(to_columns).sort_by { |pair|
 		  to_columns.index(pair[1])
 		}.transpose
