@@ -12,17 +12,17 @@ Fact: Concept.Guid[*], Fact.Type.Guid, Population.ID
 Fact Type: Concept.Guid[*], Entity.Type.Object.Type.ID[1], Type.Inheritance.Assimilation, Type.Inheritance.Provides.Identification[2], Type.Inheritance.Subtype.Object.Type.ID[23], Type.Inheritance.Supertype.Object.Type.ID[3]
 Instance: Concept.Guid[*], Fact.Guid[1], Object.Type.ID, Population.ID, Value.Is.A.String, Value.Literal, Value.Unit.Guid
 Object Type: Concept.Guid[1], Entity.Type.Is.Implied.By.Objectification, Is.Independent, Name[4], Object.Type.ID[*], Pronoun, Value.Type.Length[2], Value.Type.Scale[2], Value.Type.Supertype.Object.Type.ID[2], Value.Type.Transaction.Timing[2], Value.Type.Unit.Guid[2], Value.Type.Value.Constraint.Guid[23], Vocabulary.Name[4]
-Play: Role.ID[*], Step.Input.Play.Role.ID, Step.Input.Play.Variable.ID, Step.Output.Play.Role.ID, Step.Output.Play.Variable.ID, Variable.ID[*]
+Play: Play.ID[*], Role.ID[1], Step.ID, Variable.ID[1]
 Population: Concept.Guid[1], Name[2], Population.ID[*], Vocabulary.Name[2]
 Query: Concept.Guid[*]
 Reading: Fact.Type.Guid[1], Ordinal[1], Reading.ID[*], Role.Sequence.Guid, Text
 Role: Concept.Guid[1], Fact.Type.Guid[2], Implicit.Fact.Type.Guid[3], Object.Type.ID, Ordinal[2], Role.ID[*], Role.Name
 Role Display: Fact.Type.Shape.Guid[1], Ordinal[1], Role.Display.ID[*], Role.ID
-Role Ref: Leading.Adjective, Ordinal[3], Play.Role.ID[1], Play.Variable.ID[1], Role.ID[2], Role.Ref.ID[*], Role.Sequence.Guid[23], Trailing.Adjective
+Role Ref: Leading.Adjective, Ordinal[3], Play.ID[1], Role.ID[2], Role.Ref.ID[*], Role.Sequence.Guid[23], Trailing.Adjective
 Role Sequence: Guid[*], Has.Unused.Dependency.To.Force.Table.In.Norma
 Role Value: Fact.Guid[*], Instance.Guid, Population.ID, Role.ID[*]
 Set Comparison Roles: Ordinal[1], Role.Sequence.Guid[2], Set.Comparison.Constraint.Guid[12], Set.Comparison.Roles.ID[*]
 Shape: Constraint.Shape.Constraint.Guid, Fact.Type.Shape.Display.Role.Names.Setting, Fact.Type.Shape.Fact.Type.Guid, Fact.Type.Shape.Rotation.Setting, Guid[*], Is.Expanded, Location.X[1], Location.Y[1], Model.Note.Shape.Context.Note.Guid, ORM.Diagram.ID[1], Object.Type.Shape.Has.Expanded.Reference.Mode, Object.Type.Shape.Object.Type.ID, Objectified.Fact.Type.Name.Shape.Fact.Type.Shape.Guid[2], Reading.Shape.Fact.Type.Shape.Guid[3], Reading.Shape.Reading.ID, Ring.Constraint.Shape.Fact.Type.Guid, Role.Name.Shape.Role.Display.ID[4], Value.Constraint.Shape.Object.Type.Shape.Guid, Value.Constraint.Shape.Role.Display.ID[5]
-Step: Alternative.Set.Guid, Fact.Type.Guid, Input.Play.Role.ID[*], Input.Play.Variable.ID[*], Is.Disallowed, Is.Optional, Output.Play.Role.ID[*], Output.Play.Variable.ID[*]
+Step: Alternative.Set.Guid, Fact.Type.Guid, Input.Play.ID[1], Is.Disallowed, Is.Optional, Output.Play.ID[1], Step.ID[*]
 Unit: Coefficient.Denominator, Coefficient.Is.Precise, Coefficient.Numerator, Concept.Guid[*], Ephemera.URL, Is.Fundamental, Name[13], Offset, Plural.Name[2], Vocabulary.Name[3]
 Variable: Object.Type.ID, Ordinal[2], Projection.ID[1], Query.Guid[2], Role.Name, Subscript, Value.Is.A.String, Value.Literal, Value.Unit.Guid, Variable.ID[*]

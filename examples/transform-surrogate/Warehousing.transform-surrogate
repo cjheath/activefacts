@@ -1,12 +1,12 @@
 Bin: Bin.ID[*], Product.ID, Quantity, Warehouse.ID
-Direct Order Match: Purchase.Order.Item.Product.ID[*], Purchase.Order.Item.Purchase.Order.ID[*], Sales.Order.Item.Product.ID[*], Sales.Order.Item.Sales.Order.ID[*]
-Dispatch Item: Dispatch.ID, Dispatch.Item.ID[*], Product.ID, Quantity, Sales.Order.Item.Product.ID, Sales.Order.Item.Sales.Order.ID, Transfer.Request.ID
+Direct Order Match: Purchase.Order.Item.ID[*], Sales.Order.Item.ID[*]
+Dispatch Item: Dispatch.ID, Dispatch.Item.ID[*], Product.ID, Quantity, Sales.Order.Item.ID, Transfer.Request.ID
 Party: Party.ID[*]
 Product: Product.ID[*]
 Purchase Order: Purchase.Order.ID[*], Supplier.ID, Warehouse.ID
-Purchase Order Item: Product.ID[*], Purchase.Order.ID[*], Quantity
-Received Item: Product.ID, Purchase.Order.Item.Product.ID, Purchase.Order.Item.Purchase.Order.ID, Quantity, Receipt.ID, Received.Item.ID[*], Transfer.Request.ID
+Purchase Order Item: Product.ID[1], Purchase.Order.ID[1], Purchase.Order.Item.ID[*], Quantity
+Received Item: Product.ID, Purchase.Order.Item.ID, Quantity, Receipt.ID, Received.Item.ID[*], Transfer.Request.ID
 Sales Order: Customer.ID, Sales.Order.ID[*], Warehouse.ID
-Sales Order Item: Product.ID[*], Quantity, Sales.Order.ID[*]
+Sales Order Item: Product.ID[1], Quantity, Sales.Order.ID[1], Sales.Order.Item.ID[*]
 Transfer Request: From.Warehouse.ID, Product.ID, Quantity, To.Warehouse.ID, Transfer.Request.ID[*]
 Warehouse: Warehouse.ID[*]

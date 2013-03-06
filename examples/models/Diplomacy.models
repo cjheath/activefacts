@@ -38,11 +38,7 @@ module Diplomat
     # Diplomat speaks Language
     has_many :fluencies, :foreign_key => :diplomat_id, :dependent => :destroy
     has_many :languages, :through => :fluencies
-
-    # Ambassador is from Country to Country
-    has_many :representations, :foreign_key => :ambassador_id, :dependent => :destroy
-    has_many :countries, :through => :representations
-    has_many :countries, :through => :representations
+    # REVISIT: Skipped absorbed reference(s) from has_many :diplomats
   end
 end
 
@@ -98,7 +94,7 @@ module Representation
     # Ambassador is from Country to Country
     belongs_to :represented_country, :class_name => 'Country'
 
-    # Ambassador is from Country to Country
-    belongs_to :ambassador, :class_name => 'Diplomat'
+    # Ambassador is from Country to Country and Ambassador is a kind of Diplomat
+    belongs_to :ambassador_ambassador, :class_name => 'Diplomat'
   end
 end
