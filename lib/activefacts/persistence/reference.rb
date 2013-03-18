@@ -39,9 +39,11 @@ module ActiveFacts
       attr_reader :from, :to            # A "from" instance is related to one "to" instance
       attr_reader :from_role, :to_role  # For objectified facts, one role will be nil (a phantom)
       attr_reader :fact_type
+      attr_accessor :fk_jump		# True if this reference links a table to another in an FK (between absorbed references)
 
       # A Reference is created from a object_type in regard to a role it plays
       def initialize(from, role)
+	@fk_jump = false
         @from = from
         return unless role              # All done if it's a self-value reference for a ValueType
         @fact_type = role.fact_type
@@ -134,14 +136,14 @@ module ActiveFacts
       # Return the array of names for the (perhaps implicit) *from_role* of this Reference
       def from_names
         case
+        when @from && !@from_role           # @from is an objectified fact type so @from_role is a phantom
+          @from.name.camelwords
         when is_unary
           if @from && @from.fact_type
             @from.name.camelwords
-          else
+	  else
             @from_role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.camelwords
           end
-        when @from && !@from_role           # @from is an objectified fact type so @from_role is a phantom
-          @from.name.camelwords
         when !@from_role                  # Self-value role of an independent ValueType
           @from.name.camelwords + ["Value"]
         when @from_role.role_name         # Named role
@@ -197,7 +199,8 @@ module ActiveFacts
       end
 
       def to_s              #:nodoc:
-        "reference from #{@from.name}#{@to ? " to #{@to.name}" : ""}" + (@fact_type ? " in '#{@fact_type.default_reading}'" : "")
+	ref_type = fk_jump ? "jumping to" : (is_absorbing ? "absorbing" : "to")
+        "reference from #{@from.name}#{@to ? " #{ref_type} #{@to.name}" : ""}" + (@fact_type ? " in '#{@fact_type.default_reading}'" : "")
       end
 
       # The reading for the fact type underlying this Reference

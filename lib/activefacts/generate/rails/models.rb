@@ -50,16 +50,26 @@ module ActiveFacts
 	end
 
 	def rails_plural_name name
-	  # Crunch spaces and convert to a plural form in snake_case
-	  ActiveSupport::Inflector.tableize(name.gsub(/\s+/, '_'))
+	  # Crunch spaces and pluralise the first part, all in snake_case
+	  name.pop if name.is_a?(Array) and name.last == []
+	  name = name[0]*'_' if name.is_a?(Array) and name.size == 1
+	  if name.is_a?(Array)
+	    name = ActiveSupport::Inflector.tableize((name[0]*'_').gsub(/\s+/, '_')) +
+	      '_' +
+	      ActiveSupport::Inflector.underscore((name[1..-1].flatten*'_').gsub(/\s+/, '_'))
+	  else
+	    ActiveSupport::Inflector.tableize(name.gsub(/\s+/, '_'))
+	  end
 	end
 
 	def rails_singular_name name
 	  # Crunch spaces and convert to snake_case
+	  name = name.flatten*'_' if name.is_a?(Array)
 	  ActiveSupport::Inflector.underscore(name.gsub(/\s+/, '_'))
 	end
 
 	def rails_class_name name
+	  name = name*'_' if name.is_a?(Array)
 	  ActiveSupport::Inflector.classify(name.gsub(/\s+/, ''))
 	end
 
@@ -105,6 +115,71 @@ module ActiveFacts
 	  end
 	end
 
+	def model_body table
+	  %Q{module #{rails_class_name(table.name)}
+  extend ActiveSupport::Concern
+  included do} +
+	    (table.identifier_columns.length == 1 ? %Q{
+    self.primary_key = '#{rails_singular_name(table.identifier_columns[0].name)}'
+} : ''
+	    ) +
+
+	    (
+	      # belongs_to Associations
+	      table.foreign_keys.map do |fk|
+		references = crunch_successive_subclassing(fk.references)
+		association_name = rails_singular_name(fk.to_name.join('_'))
+
+		if association_name != rails_singular_name(fk.to.name)
+		  # A different class_name is implied, emit an explicit one:
+		  class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
+		end
+		%Q{
+    \# #{fk.verbalised_path}
+    belongs_to :#{association_name}#{class_name}}
+	      end +
+
+	      # has_one/has_many Associations
+	      table.foreign_keys_to.sort_by{|fk| fk.describe}.map do |fk|
+		# Get the jump reference
+		ref = fk.jump_reference
+
+		# Get the referencing (FK) column name.
+		from_column = fk.from_columns
+		if from_column.size > 1
+		  raise "Can't emit Rails associations for multi-part foreign key with #{fk.references.inspect}. Did you mean to use --transform/surrogate"
+		end
+		from_column = from_column[0]
+
+		[
+		  "\n    \# #{fk.verbalised_path}" +
+		  "\n" +
+		  if ref.is_one_to_one
+		    %Q{    has_one :#{association_name = rails_singular_name(fk.from_name)}}
+		  else
+		    %Q{    has_many :#{association_name = rails_plural_name(fk.from_name)}}
+		  end +
+		    %Q{, :class_name => '#{rails_class_name(fk.from.name)}', :foreign_key => :#{rails_singular_name(from_column.name)}, :dependent => :destroy}
+		] +
+		  # If ref.from is a join table, we can emit a has_many :through for each other key
+		  if ref.from.identifier_columns.length > 1
+		    ref.from.identifier_columns.map do |ic|
+		      next nil if ic.references[0] == ref or	# Skip the back-reference
+			ic.references[0].is_unary		# or use rails_plural_name(ic.references[0].to_names) ?
+		      # This far association name needs to be augmented for its role name
+		      far_association_name = rails_plural_name(ic.references[0].to.name)
+		      %Q{    has_many :#{far_association_name}, :through => :#{association_name}} # \# via #{ic.name}}
+		    end
+		  else
+		    []
+		  end
+	      end.flatten.compact
+	    ) * "\n" + %Q{
+  end
+end
+}
+	end
+
 	def generate_table table
 	  old_out = @out
 	  filename = rails_singular_name(table.name)+'.rb'
@@ -113,92 +188,7 @@ module ActiveFacts
 
 	  puts "\n"
 	  puts "module #{@concern}" if @concern
-	  puts %Q{module #{rails_class_name(table.name)}
-  extend ActiveSupport::Concern
-  included do
-    self.primary_key = '#{rails_singular_name(table.identifier_columns[0].name)}'
-#{
-
-	  # belongs_to Associations
-	  (
-	    table.foreign_keys.map do |fk|
-	      references = crunch_successive_subclassing(fk.references)
-	      association_name = rails_singular_name(references.map(&:to_names).flatten.join('_'))
-
-	      if association_name != rails_singular_name(fk.to.name)
-	      #if association_name != rails_singular_name(references[-1].to_names.join('_'))
-		# A different class_name is implied, emit an explicit one:
-		class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
-	      end
-	      %Q{
-    \# #{fk.references.map{|r| r.fact_type.default_reading}*' and '}
-    belongs_to :#{association_name}#{class_name}}
-	    end +
-
-	    table.foreign_keys_to.sort_by{|fk| fk.describe}.map do |fk|
-	      ref = fk.references[-1]
-
-	      # REVISIT: Need to check that this is appropriate here:
-	      if ref.is_simple_reference
-		if ref.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance and
-		    table.absorbed_via and
-		    absorbed_via.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-		  # Ignore references to secondary supertypes, when absorption is through primary
-		  next nil
-		end
-
-#	        debugger if fk.references.size > 1
-=begin
-                from_ref = fk.references[0]
-                if !from_ref.to.is_table or !ref.from.is_table	# There's absorption on one end at least
-                  $stdout.puts("fk origin #{fk.references[0].to.name} is absorbed into #{fk.from.name}") if !from_ref.to.is_table && fk.references[0].to != fk.from
-                  $stdout.puts("fk target #{fk.references[-1].to.name} is absorbed into #{fk.to.name}") if !ref.from.is_table && fk.references[-1].to != fk.to
-                  debugger
-                  p fk
-                end
-=end
-
-#		unless ref.from.is_table
-#		  # If the reference is not a table, it has been absorbed in one or more places
-#		  # We need a has_many from *each* such place.
-#		  next %Q{
-#    \# has_#{ref.is_one_to_one ? 'one' : 'many'} :#{rails_plural_name(ref.from.name)}, but that is fully absorbed here: #{ref.from.references_to.map{|r| r.from.name}.inspect}}
-#		end
-
-		# Get the referencing (FK) column name.
-		# REVISIT: Where this name is the same as the name of the primary key column, we don't need to output it
-		# :class_name is never required.
-		from_column = ref.from.columns.detect{|c| c.references[0] == ref}
-		[
-		  "\n    \# #{ref.fact_type.default_reading}\n"+
-		  if ref.is_one_to_one
-		    %Q{    has_one :#{association_name = rails_singular_name(ref.from.name)}}
-		  else
-		    %Q{    has_many :#{association_name = rails_plural_name(ref.from.name)}}
-		  end +
-		    %Q{, :foreign_key => :#{rails_singular_name(from_column.name)}, :dependent => :destroy}
-		] +
-		  # If ref.from is a join table, we can emit a has_many :through for each other key
-		  if ref.from.identifier_columns.length > 1
-		    ref.from.identifier_columns.map do |ic|
-		      next nil if ic.references[0] == ref   # Skip the back-reference
-		      %Q{    has_many :#{rails_plural_name(ic.references[0].to.name)}, :through => :#{association_name}} # \# via #{ic.name}}
-		    end
-		  else
-		    []
-		  end
-
-	      elsif ref.is_absorbing
-		%Q{    # REVISIT: Skipped absorbed reference(s) from has_many :#{rails_plural_name(ref.from.name)}}
-	      else
-		nil
-	      end
-	    end.flatten.compact
-	  ) * "\n"
-}
-  end
-end
-}.gsub(/^/, @concern ? '  ' : '')
+	  puts model_body(table).gsub(/^/, @concern ? '  ' : '')
 	  puts 'end' if @concern
 
 	  true	  # We succeeded

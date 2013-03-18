@@ -30,6 +30,63 @@ module ActiveFacts
       def describe
 	"foreign key from #{from.name}(#{from_columns.map{|c| c.name}*', '}) to #{to.name}(#{to_columns.map{|c| c.name}*', '})"
       end
+
+      def verbalised_path
+	# REVISIT: This should be a proper join path verbalisation:
+	references.map do |r|
+	  (r.fact_type.entity_type ? r.fact_type.entity_type.name + ' (in which ' : '') +
+	    r.fact_type.default_reading +
+	    (r.fact_type.entity_type ? ')' : '')
+	end * ' and '
+      end
+
+      # Which references are absorbed into the "from" table?
+      def precursor_references
+	fk_jump = @references.detect(&:fk_jump)
+	jump_index = @references.index(fk_jump)
+	@references[0, jump_index]
+      end
+
+      # Which references are absorbed into the "to" table?
+      def following_references
+	fk_jump = @references.detect(&:fk_jump)
+	jump_index = @references.index(fk_jump)
+	fk_jump != @references.last ? @references[jump_index+1..-1] : []
+      end
+
+      def jump_reference
+	@references.detect(&:fk_jump)
+      end
+
+      def to_name
+	p = precursor_references
+	f = following_references
+	j = jump_reference
+
+	@references.last.to_names +
+	  (p.empty? && f.empty? ? [] : ['via'] + p.map{|r| r.to_names}.flatten + f.map{|r| r.from_names}.flatten)
+      end
+
+      # The from_name is the role name of the table with the FK, viewed from the other end
+      # When there are no precursor_references or following_references, it's the jump_reference.from_names
+      # REVISIT: I'm still working out what to do with precursor_references and following_references
+      def from_name
+	p = precursor_references
+	f = following_references
+	j = jump_reference
+
+	# pluralise unless j.is_one_to_one
+
+	# REVISIT: references[0].from_names is where the FK lives; but the object of interest may be an absorbed subclass which we should use here instead:
+	# REVISIT: Should crunch superclasses in subtype traversals
+	# REVISIT: Need to add "_as_rolename" where rolename is not to.name
+
+	[
+	  @references[0].from_names,
+	  (p.empty? && f.empty? ? [] : ['via'] + p.map{|r| r.to_names}.flatten + f.map{|r| r.from_names}.flatten)
+	]
+      end
+
     end
   end
 
@@ -47,6 +104,7 @@ module ActiveFacts
               # REVISIT: Disabled, as this should never happen.
               # next array if ref.to.absorbed_via != ref.fact_type
             end
+	    ref.fk_jump = true
             array << [ref]
           elsif ref.is_absorbing or (ref.to && !ref.to.is_table)
             ref.to.all_absorbed_foreign_key_reference_path.each{|aref|

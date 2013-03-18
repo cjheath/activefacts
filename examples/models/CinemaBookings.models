@@ -4,17 +4,17 @@ module Booking
   included do
     self.primary_key = 'booking_id'
 
-    # Person booked Showing for Count and Cinema shows Film on DateTime
-    belongs_to :showing_cinema, :class_name => 'Cinema'
+    # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
+    belongs_to :cinema_via_showing, :class_name => 'Cinema'
 
-    # Person booked Showing for Count and Cinema shows Film on DateTime
-    belongs_to :showing_film, :class_name => 'Film'
+    # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
+    belongs_to :film_via_showing, :class_name => 'Film'
 
-    # Person booked Showing for Count
+    # Booking (in which Person booked Showing for Count)
     belongs_to :person
 
-    # Booking has allocated-Seat
-    has_many :seat_allocations, :foreign_key => :booking_id, :dependent => :destroy
+    # SeatAllocation (in which Booking has allocated-Seat)
+    has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :booking_id, :dependent => :destroy
     has_many :seats, :through => :seat_allocations
   end
 end
@@ -24,13 +24,13 @@ module Cinema
   included do
     self.primary_key = 'cinema_id'
 
-    # Cinema shows Film on DateTime
-    has_many :showings, :foreign_key => :cinema_id, :dependent => :destroy
-    has_many :films, :through => :showings
-    has_many :date_times, :through => :showings
+    # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
+    has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_cinema_id, :dependent => :destroy
+    has_many :films, :through => :bookings_via_showing
+    has_many :date_times, :through => :bookings_via_showing
 
     # Cinema has Seat
-    has_many :seats, :foreign_key => :cinema_id, :dependent => :destroy
+    has_many :seats, :class_name => 'Seat', :foreign_key => :cinema_id, :dependent => :destroy
   end
 end
 
@@ -39,10 +39,10 @@ module Film
   included do
     self.primary_key = 'film_id'
 
-    # Cinema shows Film on DateTime
-    has_many :showings, :foreign_key => :film_id, :dependent => :destroy
-    has_many :cinemas, :through => :showings
-    has_many :date_times, :through => :showings
+    # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
+    has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_film_id, :dependent => :destroy
+    has_many :cinemas, :through => :bookings_via_showing
+    has_many :date_times, :through => :bookings_via_showing
   end
 end
 
@@ -51,8 +51,8 @@ module Person
   included do
     self.primary_key = 'person_id'
 
-    # Person booked Showing for Count
-    has_many :bookings, :foreign_key => :person_id, :dependent => :destroy
+    # Booking (in which Person booked Showing for Count)
+    has_many :bookings, :class_name => 'Booking', :foreign_key => :person_id, :dependent => :destroy
   end
 end
 
@@ -64,8 +64,8 @@ module Seat
     # Cinema has Seat
     belongs_to :cinema
 
-    # Booking has allocated-Seat
-    has_many :seat_allocations, :foreign_key => :allocated_seat_id, :dependent => :destroy
+    # SeatAllocation (in which Booking has allocated-Seat)
+    has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :allocated_seat_id, :dependent => :destroy
     has_many :bookings, :through => :seat_allocations
   end
 end
@@ -73,12 +73,10 @@ end
 module SeatAllocation
   extend ActiveSupport::Concern
   included do
-    self.primary_key = 'booking_id'
-
-    # Booking has allocated-Seat
+    # SeatAllocation (in which Booking has allocated-Seat)
     belongs_to :booking
 
-    # Booking has allocated-Seat
+    # SeatAllocation (in which Booking has allocated-Seat)
     belongs_to :allocated_seat, :class_name => 'Seat'
   end
 end
