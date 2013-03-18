@@ -220,7 +220,10 @@ module ActiveFacts
         nodes = []
         begin
           node = parse(InputProxy.new(input, context, self), :index => @index)
-          return nil unless node
+	  unless node 
+	    raise failure_reason unless @index == input.size
+	    return nil	# No input, or no more input
+	  end
           if @block
             @block.call(node)
           else

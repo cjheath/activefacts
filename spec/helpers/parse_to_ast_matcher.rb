@@ -52,9 +52,13 @@ end
 
 RSpec::Matchers.define :fail_to_parse do |*error_regexp|
   match do |actual|
-    @parser = TestParser.new
-    @actual = actual
-    @result = @parser.parse_all(actual, :definition)
+    begin
+      @parser = TestParser.new
+      @actual = actual
+      @result = @parser.parse_all(actual, :definition)
+    rescue => e
+      @exception = e.message
+    end
     @result.should be_nil
     if @re = error_regexp[0]
       @parser.failure_reason.should =~ @re
