@@ -30,10 +30,10 @@ module Diplomat
     self.primary_key = 'diplomat_id'
 
     # Diplomat represents Country
-    belongs_to :represented_country, :class_name => 'Country'
+    belongs_to :represented_country, :class_name => 'Country', :foreign_key => :represented_country_id
 
     # Diplomat serves in Country
-    belongs_to :served_country, :class_name => 'Country'
+    belongs_to :served_country, :class_name => 'Country', :foreign_key => :served_country_id
 
     # Fluency (in which Diplomat speaks Language)
     has_many :fluencies, :class_name => 'Fluency', :foreign_key => :diplomat_id, :dependent => :destroy
@@ -50,10 +50,10 @@ module Fluency
   extend ActiveSupport::Concern
   included do
     # Fluency (in which Diplomat speaks Language)
-    belongs_to :diplomat
+    belongs_to :diplomat, :foreign_key => :diplomat_id
 
     # Fluency (in which Diplomat speaks Language)
-    belongs_to :language
+    belongs_to :language, :foreign_key => :language_id
   end
 end
 
@@ -76,10 +76,10 @@ module LanguageUse
   extend ActiveSupport::Concern
   included do
     # LanguageUse (in which Language is spoken in Country)
-    belongs_to :country
+    belongs_to :country, :foreign_key => :country_id
 
     # LanguageUse (in which Language is spoken in Country)
-    belongs_to :language
+    belongs_to :language, :foreign_key => :language_id
   end
 end
 
@@ -87,12 +87,12 @@ module Representation
   extend ActiveSupport::Concern
   included do
     # Representation (in which Ambassador is from Country to Country)
-    belongs_to :country
+    belongs_to :country, :foreign_key => :country_id
 
     # Representation (in which Ambassador is from Country to Country)
-    belongs_to :represented_country, :class_name => 'Country'
+    belongs_to :represented_country, :class_name => 'Country', :foreign_key => :represented_country_id
 
     # Representation (in which Ambassador is from Country to Country) and Ambassador is a kind of Diplomat
-    belongs_to :diplomat_via_ambassador, :class_name => 'Diplomat'
+    belongs_to :diplomat_via_ambassador, :class_name => 'Diplomat', :foreign_key => :ambassador_id
   end
 end

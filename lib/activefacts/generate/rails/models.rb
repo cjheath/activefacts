@@ -134,9 +134,14 @@ module ActiveFacts
 		  # A different class_name is implied, emit an explicit one:
 		  class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
 		end
+		foreign_key = ""
+		if true
+		  from_column = fk.from_columns
+		  foreign_key = ", :foreign_key => :#{rails_singular_name(fk.from_columns[0].name)}"
+		end
 		%Q{
     \# #{fk.verbalised_path}
-    belongs_to :#{association_name}#{class_name}}
+    belongs_to :#{association_name}#{class_name}#{foreign_key}}
 	      end +
 
 	      # has_one/has_many Associations
