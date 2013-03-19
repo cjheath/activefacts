@@ -11,7 +11,7 @@ module Booking
     belongs_to :film_via_showing, :class_name => 'Film', :foreign_key => :showing_film_id
 
     # Booking (in which Person booked Showing for Count)
-    belongs_to :person, :foreign_key => :person_id
+    belongs_to :person
 
     # SeatAllocation (in which Booking has allocated-Seat)
     has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :booking_id, :dependent => :destroy
@@ -62,7 +62,7 @@ module Seat
     self.primary_key = 'seat_id'
 
     # Cinema has Seat
-    belongs_to :cinema, :foreign_key => :cinema_id
+    belongs_to :cinema
 
     # SeatAllocation (in which Booking has allocated-Seat)
     has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :allocated_seat_id, :dependent => :destroy
@@ -74,7 +74,7 @@ module SeatAllocation
   extend ActiveSupport::Concern
   included do
     # SeatAllocation (in which Booking has allocated-Seat)
-    belongs_to :booking, :foreign_key => :booking_id
+    belongs_to :booking
 
     # SeatAllocation (in which Booking has allocated-Seat)
     belongs_to :allocated_seat, :class_name => 'Seat', :foreign_key => :allocated_seat_id

@@ -8,7 +8,7 @@ module Aggregation
     belongs_to :aggregated_variable, :class_name => 'Variable', :foreign_key => :aggregated_variable_id
 
     # Aggregation (in which Variable is bound to Aggregate over aggregated-Variable)
-    belongs_to :variable, :foreign_key => :variable_id
+    belongs_to :variable
   end
 end
 
@@ -81,7 +81,7 @@ module ContextAccordingTo
     self.primary_key = 'context_according_to_id'
 
     # Context According To (in which Context Note is according to Agent)
-    belongs_to :context_note, :foreign_key => :context_note_guid
+    belongs_to :context_note
   end
 end
 
@@ -154,10 +154,10 @@ module Fact
     self.primary_key = 'concept_guid'
 
     # Fact is of Fact Type
-    belongs_to :fact_type, :foreign_key => :fact_type_guid
+    belongs_to :fact_type
 
     # Population includes Fact
-    belongs_to :population, :foreign_key => :population_id
+    belongs_to :population
 
     # Instance objectifies Fact
     has_one :instance, :class_name => 'Instance', :foreign_key => :fact_guid, :dependent => :destroy
@@ -211,13 +211,13 @@ module Instance
     self.primary_key = 'concept_guid'
 
     # Instance objectifies Fact
-    belongs_to :fact, :foreign_key => :fact_guid
+    belongs_to :fact
 
     # Instance is of Object Type
-    belongs_to :object_type, :foreign_key => :object_type_id
+    belongs_to :object_type
 
     # Population includes Instance
-    belongs_to :population, :foreign_key => :population_id
+    belongs_to :population
 
     # Instance has Value and Value is in Unit
     belongs_to :unit_via_value, :class_name => 'Unit', :foreign_key => :value_unit_guid
@@ -284,13 +284,13 @@ module Play
     self.primary_key = 'play_id'
 
     # Play (in which Variable is restricted by Role)
-    belongs_to :role, :foreign_key => :role_id
+    belongs_to :role
 
     # Step involves incidental-Play
-    belongs_to :step, :foreign_key => :step_id
+    belongs_to :step
 
     # Play (in which Variable is restricted by Role)
-    belongs_to :variable, :foreign_key => :variable_id
+    belongs_to :variable
 
     # Play projects Role Ref
     has_one :role_ref, :class_name => 'RoleRef', :foreign_key => :play_id, :dependent => :destroy
@@ -337,10 +337,10 @@ module Reading
     self.primary_key = 'reading_id'
 
     # Fact Type has Reading
-    belongs_to :fact_type, :foreign_key => :fact_type_guid
+    belongs_to :fact_type
 
     # Reading is in Role Sequence
-    belongs_to :role_sequence, :foreign_key => :role_sequence_guid
+    belongs_to :role_sequence
 
     # Reading Shape is a kind of Shape and Reading Shape is for Reading
     has_many :shapes_via_reading_shape, :class_name => 'Shape', :foreign_key => :reading_shape_reading_id, :dependent => :destroy
@@ -356,10 +356,10 @@ module Role
     belongs_to :fact_type_via_implicit_fact_type, :class_name => 'FactType', :foreign_key => :implicit_fact_type_guid
 
     # Role belongs to Fact Type
-    belongs_to :fact_type, :foreign_key => :fact_type_guid
+    belongs_to :fact_type
 
     # Object Type plays Role
-    belongs_to :object_type, :foreign_key => :object_type_id
+    belongs_to :object_type
 
     # Ring Constraint is a kind of Constraint and Ring Constraint has other-Role
     has_many :constraints_via_ring_constraint, :class_name => 'Constraint', :foreign_key => :ring_constraint_other_role_id, :dependent => :destroy
@@ -394,7 +394,7 @@ module RoleDisplay
     self.primary_key = 'role_display_id'
 
     # Role Display (in which Fact Type Shape displays Role in Ordinal position)
-    belongs_to :role, :foreign_key => :role_id
+    belongs_to :role
 
     # Role Display (in which Fact Type Shape displays Role in Ordinal position) and Fact Type Shape is a kind of Shape
     belongs_to :shape_via_fact_type_shape, :class_name => 'Shape', :foreign_key => :fact_type_shape_guid
@@ -413,13 +413,13 @@ module RoleRef
     self.primary_key = 'role_ref_id'
 
     # Play projects Role Ref
-    belongs_to :play, :foreign_key => :play_id
+    belongs_to :play
 
     # Role Ref (in which Role Sequence in Ordinal position includes Role)
-    belongs_to :role, :foreign_key => :role_id
+    belongs_to :role
 
     # Role Ref (in which Role Sequence in Ordinal position includes Role)
-    belongs_to :role_sequence, :foreign_key => :role_sequence_guid
+    belongs_to :role_sequence
   end
 end
 
@@ -452,16 +452,16 @@ module RoleValue
   extend ActiveSupport::Concern
   included do
     # Role Value fulfils Fact
-    belongs_to :fact, :foreign_key => :fact_guid
+    belongs_to :fact
 
     # Instance plays Role Value
-    belongs_to :instance, :foreign_key => :instance_guid
+    belongs_to :instance
 
     # Population includes Role Value
-    belongs_to :population, :foreign_key => :population_id
+    belongs_to :population
 
     # Role Value is of Role
-    belongs_to :role, :foreign_key => :role_id
+    belongs_to :role
   end
 end
 
@@ -474,7 +474,7 @@ module SetComparisonRole
     belongs_to :constraint_via_set_comparison_constraint_set_constraint, :class_name => 'Constraint', :foreign_key => :set_comparison_constraint_guid
 
     # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence)
-    belongs_to :role_sequence, :foreign_key => :role_sequence_guid
+    belongs_to :role_sequence
   end
 end
 
@@ -539,10 +539,10 @@ module Step
     self.primary_key = 'step_id'
 
     # Step falls under Alternative Set
-    belongs_to :alternative_set, :foreign_key => :alternative_set_guid
+    belongs_to :alternative_set
 
     # Step specifies Fact Type
-    belongs_to :fact_type, :foreign_key => :fact_type_guid
+    belongs_to :fact_type
 
     # Step has input-Play
     belongs_to :input_play, :class_name => 'Play', :foreign_key => :input_play_id
@@ -599,10 +599,10 @@ module Variable
     self.primary_key = 'variable_id'
 
     # Variable is for Object Type
-    belongs_to :object_type, :foreign_key => :object_type_id
+    belongs_to :object_type
 
     # Query includes Variable
-    belongs_to :query, :foreign_key => :query_guid
+    belongs_to :query
 
     # Variable projects Role
     belongs_to :projection, :class_name => 'Role', :foreign_key => :projection_id

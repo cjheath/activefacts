@@ -130,12 +130,10 @@ module ActiveFacts
 		references = crunch_successive_subclassing(fk.references)
 		association_name = rails_singular_name(fk.to_name.join('_'))
 
+		foreign_key = ""
 		if association_name != rails_singular_name(fk.to.name)
 		  # A different class_name is implied, emit an explicit one:
 		  class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
-		end
-		foreign_key = ""
-		if true
 		  from_column = fk.from_columns
 		  foreign_key = ", :foreign_key => :#{rails_singular_name(fk.from_columns[0].name)}"
 		end

@@ -50,10 +50,10 @@ module Fluency
   extend ActiveSupport::Concern
   included do
     # Fluency (in which Diplomat speaks Language)
-    belongs_to :diplomat, :foreign_key => :diplomat_id
+    belongs_to :diplomat
 
     # Fluency (in which Diplomat speaks Language)
-    belongs_to :language, :foreign_key => :language_id
+    belongs_to :language
   end
 end
 
@@ -76,10 +76,10 @@ module LanguageUse
   extend ActiveSupport::Concern
   included do
     # LanguageUse (in which Language is spoken in Country)
-    belongs_to :country, :foreign_key => :country_id
+    belongs_to :country
 
     # LanguageUse (in which Language is spoken in Country)
-    belongs_to :language, :foreign_key => :language_id
+    belongs_to :language
   end
 end
 
@@ -87,7 +87,7 @@ module Representation
   extend ActiveSupport::Concern
   included do
     # Representation (in which Ambassador is from Country to Country)
-    belongs_to :country, :foreign_key => :country_id
+    belongs_to :country
 
     # Representation (in which Ambassador is from Country to Country)
     belongs_to :represented_country, :class_name => 'Country', :foreign_key => :represented_country_id
