@@ -18,7 +18,7 @@ class Seat
   property :row, String, :length => 2, :key => true	# Seat is in Row
   property :venue_id, Integer, :key => true	# Seat is at Venue and Venue has Venue Id
   belongs_to :venue	# Seat is at Venue
-  has n, :ticket, :child_key => [:seat_number, :seat_reserve, :seat_row, :seat_venue_id], :parent_key => [:number, :reserve, :row, :venue_id]	# Ticket is for Seat
+  has n, :ticket, :child_key => [:seat_venue_id, :seat_reserve, :seat_row, :seat_number], :parent_key => [:venue_id, :reserve, :row, :number]	# Ticket is for Seat
 end
 
 class Ticket
@@ -30,7 +30,7 @@ class Ticket
   property :seat_reserve, String, :length => 20, :key => true	# Ticket is for Seat and Seat is in Reserve
   property :seat_row, String, :length => 2, :key => true	# Ticket is for Seat and Seat is in Row
   property :seat_venue_id, Integer, :key => true	# Ticket is for Seat and Seat is at Venue and Venue has Venue Id
-  belongs_to :seat, :child_key => [:seat_number, :seat_reserve, :seat_row, :seat_venue_id], :parent_key => [:number, :reserve, :row, :venue_id]	# Ticket is for Seat
+  belongs_to :seat, :child_key => [:seat_venue_id, :seat_reserve, :seat_row, :seat_number], :parent_key => [:venue_id, :reserve, :row, :number]	# Ticket is for Seat
 end
 
 class Venue

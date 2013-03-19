@@ -15,12 +15,12 @@ class Comment
 
   property :author_id, Integer, :required => true	# Author wrote Comment and Author has Author Id
   belongs_to :author	# Author wrote Comment
-  property :comment_id, Serial	# Comment has Comment Id
-  property :content_style, String, :length => 20	# Content provides text of Comment and maybe Content is of Style
-  property :content_text, Text, :required => true	# Content provides text of Comment and Content has Text
   property :paragraph_ordinal, Integer, :required => true	# Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph
   property :paragraph_post_id, Integer, :required => true	# Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph and Post has Post Id
   belongs_to :paragraph, :child_key => [:paragraph_post_id, :paragraph_ordinal], :parent_key => [:post_id, :ordinal]	# Paragraph has Comment
+  property :comment_id, Serial	# Comment has Comment Id
+  property :content_style, String, :length => 20	# Content provides text of Comment and maybe Content is of Style
+  property :content_text, Text, :required => true	# Content provides text of Comment and Content has Text
 end
 
 class Paragraph
@@ -39,9 +39,9 @@ class Post
 
   property :author_id, Integer, :required => true	# Post was written by Author and Author has Author Id
   belongs_to :author	# Post was written by Author
-  property :post_id, Serial	# Post has Post Id
   property :topic_id, Integer, :required => true	# Post belongs to Topic and Topic has Topic Id
   belongs_to :topic	# Post belongs to Topic
+  property :post_id, Serial	# Post has Post Id
   has n, :paragraph	# Post includes Ordinal paragraph
 end
 
