@@ -10,6 +10,8 @@ require 'activefacts/persistence'
 module ActiveFacts
   module Metamodel
     class ObjectType
+      attr_reader :injected_surrogate_role
+
       def add_surrogate type_name = 'Auto Counter', suffix = 'ID'
 	# Find or assert the surrogate value type
 	auto_counter = constellation.ValueType[[[vocabulary.name], type_name]] ||
@@ -23,6 +25,7 @@ module ActiveFacts
 	# Create a fact type
 	identifying_fact_type = constellation.FactType(:guid => :new)
 	my_role = constellation.Role(:guid => :new, :fact_type => identifying_fact_type, :ordinal => 0, :object_type => self)
+	@injected_surrogate_role = my_role
 	id_role = constellation.Role(:guid => :new, :fact_type => identifying_fact_type, :ordinal => 1, :object_type => my_id)
 
 	# Create a reading (which needs a RoleSequence)
@@ -86,7 +89,7 @@ module ActiveFacts
 
 	rrs.map do |rr|
 	  r = references_from.detect{|ref| rr.role == ref.to_role }
-	  raise "fail in identifying_refs_from for #{name}" unless r
+	  raise "failed to find #{name} identifying reference for #{rr.role.object_type.name} in #{references_from.inspect}" unless r
 	  r
 	end
       end
