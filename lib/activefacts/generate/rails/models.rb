@@ -9,6 +9,7 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/persistence'
+require 'activefacts/generate/helpers/rails'
 require 'active_support'
 
 module ActiveFacts
@@ -18,6 +19,7 @@ module ActiveFacts
       # Invoke as
       #   afgen --rails/schema[=options] <file>.cql
       class Models
+	include Helpers
 
 	HEADER = "# Auto-generated from CQL, edits will be lost"
 
@@ -47,30 +49,6 @@ module ActiveFacts
 
 	def puts s
 	  @out.puts s
-	end
-
-	def rails_plural_name name
-	  # Crunch spaces and pluralise the first part, all in snake_case
-	  name.pop if name.is_a?(Array) and name.last == []
-	  name = name[0]*'_' if name.is_a?(Array) and name.size == 1
-	  if name.is_a?(Array)
-	    name = ActiveSupport::Inflector.tableize((name[0]*'_').gsub(/\s+/, '_')) +
-	      '_' +
-	      ActiveSupport::Inflector.underscore((name[1..-1].flatten*'_').gsub(/\s+/, '_'))
-	  else
-	    ActiveSupport::Inflector.tableize(name.gsub(/\s+/, '_'))
-	  end
-	end
-
-	def rails_singular_name name
-	  # Crunch spaces and convert to snake_case
-	  name = name.flatten*'_' if name.is_a?(Array)
-	  ActiveSupport::Inflector.underscore(name.gsub(/\s+/, '_'))
-	end
-
-	def rails_class_name name
-	  name = name*'_' if name.is_a?(Array)
-	  ActiveSupport::Inflector.classify(name.gsub(/\s+/, ''))
 	end
 
       public
@@ -105,14 +83,59 @@ module ActiveFacts
 	  true
 	end
 
-	# Crunch consecutive type inheritance to the last one.
-	def crunch_successive_subclassing references
-	  references.inject([]) do |a, r|
-	    if a[-1] && a[-1].fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) && r.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-	      a.pop
+	def to_associations table
+	  # belongs_to Associations
+	  table.foreign_keys.map do |fk|
+	    association_name = fk.rails_from_association_name
+
+	    foreign_key = ""
+	    if association_name != rails_singular_name(fk.to.name)
+	      # A different class_name is implied, emit an explicit one:
+	      class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
+	      from_column = fk.from_columns
+	      foreign_key = ", :foreign_key => :#{rails_singular_name(fk.from_columns[0].name)}"
 	    end
-	    a << r
+
+	    %Q{
+    \# #{fk.verbalised_path}
+    belongs_to :#{association_name}#{class_name}#{foreign_key}}
 	  end
+	end
+
+	def from_associations table
+	  # has_one/has_many Associations
+	  table.foreign_keys_to.sort_by{|fk| fk.describe}.map do |fk|
+	    # Get the jump reference
+
+	    if fk.from_columns.size > 1
+	      raise "Can't emit Rails associations for multi-part foreign key with #{fk.references.inspect}. Did you mean to use --transform/surrogate"
+	    end
+
+	    association_type, association_name = *fk.rails_to_association
+
+	    ref = fk.jump_reference
+	    [
+	      "\n    \# #{fk.verbalised_path}" +
+	      "\n" +
+		%Q{    #{association_type} :#{association_name}} +
+		%Q{, :class_name => '#{rails_class_name(fk.from.name)}'} +
+		%Q{, :foreign_key => :#{rails_singular_name(fk.from_columns[0].name)}} +
+		%Q{, :dependent => :destroy}
+	    ] +
+	      # If ref.from is a join table, we can emit a has_many :through for each other key
+	      # REVISIT Could alternately do this for all belongs_to's in ref.from
+	      if ref.from.identifier_columns.length > 1
+		ref.from.identifier_columns.map do |ic|
+		  next nil if ic.references[0] == ref or	# Skip the back-reference
+		    ic.references[0].is_unary		# or use rails_plural_name(ic.references[0].to_names) ?
+		  # This far association name needs to be augmented for its role name
+		  far_association_name = rails_plural_name(ic.references[0].to.name)
+		  %Q{    has_many :#{far_association_name}, :through => :#{association_name}} # \# via #{ic.name}}
+		end
+	      else
+		[]
+	      end
+	  end.flatten.compact
 	end
 
 	def model_body table
@@ -125,59 +148,10 @@ module ActiveFacts
 	    ) +
 
 	    (
-	      # belongs_to Associations
-	      table.foreign_keys.map do |fk|
-		references = crunch_successive_subclassing(fk.references)
-		association_name = rails_singular_name(fk.to_name.join('_'))
-
-		foreign_key = ""
-		if association_name != rails_singular_name(fk.to.name)
-		  # A different class_name is implied, emit an explicit one:
-		  class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
-		  from_column = fk.from_columns
-		  foreign_key = ", :foreign_key => :#{rails_singular_name(fk.from_columns[0].name)}"
-		end
-		%Q{
-    \# #{fk.verbalised_path}
-    belongs_to :#{association_name}#{class_name}#{foreign_key}}
-	      end +
-
-	      # has_one/has_many Associations
-	      table.foreign_keys_to.sort_by{|fk| fk.describe}.map do |fk|
-		# Get the jump reference
-		ref = fk.jump_reference
-
-		# Get the referencing (FK) column name.
-		from_column = fk.from_columns
-		if from_column.size > 1
-		  raise "Can't emit Rails associations for multi-part foreign key with #{fk.references.inspect}. Did you mean to use --transform/surrogate"
-		end
-		from_column = from_column[0]
-
-		[
-		  "\n    \# #{fk.verbalised_path}" +
-		  "\n" +
-		  if ref.is_one_to_one
-		    %Q{    has_one :#{association_name = rails_singular_name(fk.from_name)}}
-		  else
-		    %Q{    has_many :#{association_name = rails_plural_name(fk.from_name)}}
-		  end +
-		    %Q{, :class_name => '#{rails_class_name(fk.from.name)}', :foreign_key => :#{rails_singular_name(from_column.name)}, :dependent => :destroy}
-		] +
-		  # If ref.from is a join table, we can emit a has_many :through for each other key
-		  if ref.from.identifier_columns.length > 1
-		    ref.from.identifier_columns.map do |ic|
-		      next nil if ic.references[0] == ref or	# Skip the back-reference
-			ic.references[0].is_unary		# or use rails_plural_name(ic.references[0].to_names) ?
-		      # This far association name needs to be augmented for its role name
-		      far_association_name = rails_plural_name(ic.references[0].to.name)
-		      %Q{    has_many :#{far_association_name}, :through => :#{association_name}} # \# via #{ic.name}}
-		    end
-		  else
-		    []
-		  end
-	      end.flatten.compact
-	    ) * "\n" + %Q{
+	      to_associations(table) +
+	      from_associations(table)
+	    ) * "\n" +
+	    %Q{
   end
 end
 }
