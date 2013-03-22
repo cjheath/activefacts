@@ -174,6 +174,15 @@ module ActiveFacts
     end
   end
 
+  module Persistence
+    class Column
+      def is_injected_surrogate
+	references.size == 1 and
+	  references[0].from_role == references[0].from.injected_surrogate_role
+      end
+    end
+  end
+
   module Generate #:nodoc:
     module Transform #:nodoc:
       class Surrogate

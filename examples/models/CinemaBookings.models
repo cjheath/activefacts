@@ -16,6 +16,12 @@ module Booking
     # SeatAllocation (in which Booking has allocated-Seat)
     has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :booking_id, :dependent => :destroy
     has_many :seats, :through => :seat_allocations
+
+    validates_presence_of :count
+    validates_presence_of :person_id
+    validates_presence_of :showing_cinema_id
+    validates_presence_of :showing_film_id
+    validates_presence_of :showing_date_time_value
   end
 end
 
@@ -31,6 +37,8 @@ module Cinema
 
     # Cinema has Seat
     has_many :seats, :class_name => 'Seat', :foreign_key => :cinema_id, :dependent => :destroy
+
+    validates_presence_of :cinema_id
   end
 end
 
@@ -43,6 +51,8 @@ module Film
     has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_film_id, :dependent => :destroy
     has_many :cinemas, :through => :bookings_via_showing
     has_many :date_times, :through => :bookings_via_showing
+
+    validates_presence_of :film_id
   end
 end
 
@@ -53,6 +63,9 @@ module Person
 
     # Booking (in which Person booked Showing for Count)
     has_many :bookings, :class_name => 'Booking', :foreign_key => :person_id, :dependent => :destroy
+
+    validates_presence_of :person_id
+    validates_presence_of :login_name
   end
 end
 
@@ -67,6 +80,9 @@ module Seat
     # SeatAllocation (in which Booking has allocated-Seat)
     has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :allocated_seat_id, :dependent => :destroy
     has_many :bookings, :through => :seat_allocations
+
+    validates_presence_of :number
+    validates_presence_of :row
   end
 end
 
@@ -78,5 +94,8 @@ module SeatAllocation
 
     # SeatAllocation (in which Booking has allocated-Seat)
     belongs_to :allocated_seat, :class_name => 'Seat', :foreign_key => :allocated_seat_id
+
+    validates_presence_of :booking_id
+    validates_presence_of :allocated_seat_id
   end
 end

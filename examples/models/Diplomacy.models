@@ -21,6 +21,8 @@ module Country
     # Representation (in which Ambassador is from Country to Country)
     has_many :representations, :class_name => 'Representation', :foreign_key => :represented_country_id, :dependent => :destroy
     has_many :countries, :through => :representations
+
+    validates_presence_of :country_name
   end
 end
 
@@ -43,6 +45,10 @@ module Diplomat
     has_many :representations_via_ambassador, :class_name => 'Representation', :foreign_key => :ambassador_id, :dependent => :destroy
     has_many :countries, :through => :representations_via_ambassador
     has_many :countries, :through => :representations_via_ambassador
+
+    validates_presence_of :diplomat_name
+    validates_presence_of :represented_country_id
+    validates_presence_of :served_country_id
   end
 end
 
@@ -54,6 +60,9 @@ module Fluency
 
     # Fluency (in which Diplomat speaks Language)
     belongs_to :language
+
+    validates_presence_of :diplomat_id
+    validates_presence_of :language_id
   end
 end
 
@@ -69,6 +78,8 @@ module Language
     # LanguageUse (in which Language is spoken in Country)
     has_many :language_uses, :class_name => 'LanguageUse', :foreign_key => :language_id, :dependent => :destroy
     has_many :countries, :through => :language_uses
+
+    validates_presence_of :language_name
   end
 end
 
@@ -80,6 +91,9 @@ module LanguageUse
 
     # LanguageUse (in which Language is spoken in Country)
     belongs_to :language
+
+    validates_presence_of :language_id
+    validates_presence_of :country_id
   end
 end
 
@@ -94,5 +108,9 @@ module Representation
 
     # Representation (in which Ambassador is from Country to Country) and Ambassador is a kind of Diplomat
     belongs_to :diplomat_via_ambassador, :class_name => 'Diplomat', :foreign_key => :ambassador_id
+
+    validates_presence_of :represented_country_id
+    validates_presence_of :country_id
+    validates_presence_of :ambassador_id
   end
 end

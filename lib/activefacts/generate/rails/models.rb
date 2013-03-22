@@ -138,6 +138,19 @@ module ActiveFacts
 	  end.flatten.compact
 	end
 
+	def column_constraints table
+	  ccs =
+	    table.columns.map do |column|
+	      name = rails_singular_name(column.name('_'))
+	      column.is_mandatory &&
+		!column.is_injected_surrogate ? [
+		"    validates_presence_of :#{name}"
+	      ] : []
+	    end.flatten
+	  ccs.unshift("") unless ccs.empty?
+	  ccs
+	end
+
 	def model_body table
 	  %Q{module #{rails_class_name(table.name)}
   extend ActiveSupport::Concern
@@ -149,7 +162,8 @@ module ActiveFacts
 
 	    (
 	      to_associations(table) +
-	      from_associations(table)
+	      from_associations(table) +
+	      column_constraints(table)
 	    ) * "\n" +
 	    %Q{
   end

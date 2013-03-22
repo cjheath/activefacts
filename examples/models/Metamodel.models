@@ -9,6 +9,10 @@ module Aggregation
 
     # Aggregation (in which Variable is bound to Aggregate over aggregated-Variable)
     belongs_to :variable
+
+    validates_presence_of :aggregate_code
+    validates_presence_of :variable_id
+    validates_presence_of :aggregated_variable_id
   end
 end
 
@@ -25,6 +29,8 @@ module AllowedRange
 
     # Allowed Range (in which Value Constraint allows Value Range) and Value Range has minimum-Bound and Bound has Value and Value is in Unit
     belongs_to :unit_via_value_range_minimum_bound_value, :class_name => 'Unit', :foreign_key => :value_range_minimum_bound_value_unit_guid
+
+    validates_presence_of :value_constraint_guid
   end
 end
 
@@ -35,6 +41,8 @@ module AlternativeSet
 
     # Step falls under Alternative Set
     has_many :steps, :class_name => 'Step', :foreign_key => :alternative_set_guid, :dependent => :destroy
+
+    validates_presence_of :guid
   end
 end
 
@@ -72,6 +80,8 @@ module Constraint
 
     # Constraint Shape is a kind of Shape and Constraint Shape is for Constraint
     has_many :shapes_via_constraint_shape, :class_name => 'Shape', :foreign_key => :constraint_shape_constraint_guid, :dependent => :destroy
+
+    validates_presence_of :concept_guid
   end
 end
 
@@ -82,6 +92,9 @@ module ContextAccordingTo
 
     # Context According To (in which Context Note is according to Agent)
     belongs_to :context_note
+
+    validates_presence_of :agent_name
+    validates_presence_of :context_note_guid
   end
 end
 
@@ -92,6 +105,9 @@ module ContextAgreedBy
 
     # Context Agreed By (in which Agreement was reached by Agent) and Context Note was added by Agreement
     belongs_to :context_note_via_agreement, :class_name => 'ContextNote', :foreign_key => :agreement_guid
+
+    validates_presence_of :agent_name
+    validates_presence_of :agreement_guid
   end
 end
 
@@ -108,6 +124,10 @@ module ContextNote
 
     # Model Note Shape is a kind of Shape and Model Note Shape is for Context Note
     has_many :shapes_via_model_note_shape, :class_name => 'Shape', :foreign_key => :model_note_shape_context_note_guid, :dependent => :destroy
+
+    validates_presence_of :concept_guid
+    validates_presence_of :context_note_kind
+    validates_presence_of :discussion
   end
 end
 
@@ -119,6 +139,9 @@ module Derivation
 
     # Derivation (in which Unit is derived from base-Unit)
     belongs_to :derived_unit, :class_name => 'Unit', :foreign_key => :derived_unit_guid
+
+    validates_presence_of :derived_unit_guid
+    validates_presence_of :base_unit_guid
   end
 end
 
@@ -129,6 +152,9 @@ module Diagram
 
     # Shape is in ORM Diagram and ORM Diagram is a kind of Diagram
     has_many :shapes_via_orm_diagram, :class_name => 'Shape', :foreign_key => :orm_diagram_id, :dependent => :destroy
+
+    validates_presence_of :name
+    validates_presence_of :vocabulary_name
   end
 end
 
@@ -145,6 +171,11 @@ module FacetValue
 
     # Facet Value (in which Value Type defines Facet as having Value) and Value is in Unit
     belongs_to :unit_via_value, :class_name => 'Unit', :foreign_key => :value_unit_guid
+
+    validates_presence_of :facet_value_type_object_type_id
+    validates_presence_of :facet_name
+    validates_presence_of :value_literal
+    validates_presence_of :value_type_object_type_id
   end
 end
 
@@ -165,6 +196,10 @@ module Fact
     # Role Value fulfils Fact
     has_many :role_values, :class_name => 'RoleValue', :foreign_key => :fact_guid, :dependent => :destroy
     has_many :roles, :through => :role_values
+
+    validates_presence_of :concept_guid
+    validates_presence_of :fact_type_guid
+    validates_presence_of :population_id
   end
 end
 
@@ -202,6 +237,8 @@ module FactType
 
     # Step specifies Fact Type
     has_many :steps, :class_name => 'Step', :foreign_key => :fact_type_guid, :dependent => :destroy
+
+    validates_presence_of :concept_guid
   end
 end
 
@@ -226,6 +263,10 @@ module Instance
     has_many :role_values, :class_name => 'RoleValue', :foreign_key => :instance_guid, :dependent => :destroy
     has_many :facts, :through => :role_values
     has_many :roles, :through => :role_values
+
+    validates_presence_of :concept_guid
+    validates_presence_of :object_type_id
+    validates_presence_of :population_id
   end
 end
 
@@ -275,6 +316,10 @@ module ObjectType
 
     # Variable is for Object Type
     has_many :variables, :class_name => 'Variable', :foreign_key => :object_type_id, :dependent => :destroy
+
+    validates_presence_of :concept_guid
+    validates_presence_of :name
+    validates_presence_of :vocabulary_name
   end
 end
 
@@ -300,6 +345,9 @@ module Play
 
     # Step has output-Play
     has_many :steps, :class_name => 'Step', :foreign_key => :output_play_id, :dependent => :destroy
+
+    validates_presence_of :role_id
+    validates_presence_of :variable_id
   end
 end
 
@@ -318,6 +366,9 @@ module Population
     has_many :role_values, :class_name => 'RoleValue', :foreign_key => :population_id, :dependent => :destroy
     has_many :facts, :through => :role_values
     has_many :roles, :through => :role_values
+
+    validates_presence_of :concept_guid
+    validates_presence_of :name
   end
 end
 
@@ -328,6 +379,8 @@ module Query
 
     # Query includes Variable
     has_many :variables, :class_name => 'Variable', :foreign_key => :query_guid, :dependent => :destroy
+
+    validates_presence_of :concept_guid
   end
 end
 
@@ -344,6 +397,11 @@ module Reading
 
     # Reading Shape is a kind of Shape and Reading Shape is for Reading
     has_many :shapes_via_reading_shape, :class_name => 'Shape', :foreign_key => :reading_shape_reading_id, :dependent => :destroy
+
+    validates_presence_of :fact_type_guid
+    validates_presence_of :ordinal
+    validates_presence_of :role_sequence_guid
+    validates_presence_of :text
   end
 end
 
@@ -385,6 +443,11 @@ module Role
 
     # Variable projects Role
     has_one :variable, :class_name => 'Variable', :foreign_key => :projection_id, :dependent => :destroy
+
+    validates_presence_of :concept_guid
+    validates_presence_of :fact_type_guid
+    validates_presence_of :object_type_id
+    validates_presence_of :ordinal
   end
 end
 
@@ -404,6 +467,10 @@ module RoleDisplay
 
     # Constraint Shape is a kind of Shape and Value Constraint Shape is a kind of Constraint Shape and Role Display has Value Constraint Shape
     has_one :shape_via_constraint_shape_value_constraint_shape, :class_name => 'Shape', :foreign_key => :value_constraint_shape_role_display_id, :dependent => :destroy
+
+    validates_presence_of :fact_type_shape_guid
+    validates_presence_of :ordinal
+    validates_presence_of :role_id
   end
 end
 
@@ -420,6 +487,10 @@ module RoleRef
 
     # Role Ref (in which Role Sequence in Ordinal position includes Role)
     belongs_to :role_sequence
+
+    validates_presence_of :ordinal
+    validates_presence_of :role_id
+    validates_presence_of :role_sequence_guid
   end
 end
 
@@ -445,6 +516,8 @@ module RoleSequence
 
     # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence)
     has_many :set_comparison_roles, :class_name => 'SetComparisonRole', :foreign_key => :role_sequence_guid, :dependent => :destroy
+
+    validates_presence_of :guid
   end
 end
 
@@ -462,6 +535,11 @@ module RoleValue
 
     # Role Value is of Role
     belongs_to :role
+
+    validates_presence_of :fact_guid
+    validates_presence_of :role_id
+    validates_presence_of :instance_guid
+    validates_presence_of :population_id
   end
 end
 
@@ -475,6 +553,10 @@ module SetComparisonRole
 
     # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence)
     belongs_to :role_sequence
+
+    validates_presence_of :ordinal
+    validates_presence_of :role_sequence_guid
+    validates_presence_of :set_comparison_constraint_guid
   end
 end
 
@@ -530,6 +612,9 @@ module Shape
 
     # Constraint Shape is a kind of Shape and Value Constraint Shape is a kind of Constraint Shape and Value Constraint Shape is for Object Type Shape and Object Type Shape is a kind of Shape
     has_many :shapes_via_constraint_shape_value_constraint_shape_object_type_shape, :class_name => 'Shape', :foreign_key => :value_constraint_shape_object_type_shape_guid, :dependent => :destroy
+
+    validates_presence_of :guid
+    validates_presence_of :orm_diagram_id
   end
 end
 
@@ -552,6 +637,9 @@ module Step
 
     # Step involves incidental-Play
     has_many :incidental_plays, :class_name => 'Play', :foreign_key => :step_id, :dependent => :destroy
+
+    validates_presence_of :fact_type_guid
+    validates_presence_of :input_play_id
   end
 end
 
@@ -590,6 +678,10 @@ module Unit
     # Variable is bound to Value and Value is in Unit
     has_many :variables_via_value, :class_name => 'Variable', :foreign_key => :value_unit_guid, :dependent => :destroy
     has_many :literals, :through => :variables_via_value
+
+    validates_presence_of :concept_guid
+    validates_presence_of :name
+    validates_presence_of :vocabulary_name
   end
 end
 
@@ -618,5 +710,9 @@ module Variable
 
     # Play (in which Variable is restricted by Role)
     has_many :plays, :class_name => 'Play', :foreign_key => :variable_id, :dependent => :destroy
+
+    validates_presence_of :object_type_id
+    validates_presence_of :ordinal
+    validates_presence_of :query_guid
   end
 end
