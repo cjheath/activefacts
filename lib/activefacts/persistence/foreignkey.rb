@@ -139,7 +139,7 @@ module ActiveFacts
 		if to.absorbed_via
 		  debug :fk, "Reference target #{fk_ref_path.last.to.name} is absorbed via:" do
 		    while (r = to.absorbed_via)
-		      m = r.mirror
+		      m = r.reversed
 		      debug :fk, "#{m.reading}"
 		      fk_ref_path << m
 		      to = m.from == to ? m.to : m.from

@@ -163,7 +163,12 @@ module ActiveFacts
         raise "Illegal flip of #{self}" unless @to and is_one_to_one
 
         detabulate
+	mirror
+        tabulate
+      end
 
+      # Create a (non-tabulated) flipped version of this Reference. Careful not to tabulate it!
+      def mirror
         if @to.absorbed_via == self
           @to.absorbed_via = nil
           @from.absorbed_via = self
@@ -172,13 +177,11 @@ module ActiveFacts
         # Flip the reference
         @to, @from = @from, @to
         @to_role, @from_role = @from_role, @to_role
-
-        tabulate
+	self
       end
 
-      # Create a (non-tabulated) flipped version of this Reference. Careful not to tabulate it!
-      def mirror
-	Reference.new(@to, @to_role)
+      def reversed
+	clone.mirror
       end
 
       def tabulate        #:nodoc:
