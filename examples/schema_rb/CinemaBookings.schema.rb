@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for CinemaBookings on 2013-03-05
+# schema.rb auto-generated using ActiveFacts for CinemaBookings on 2013-03-25
 #
 
-ActiveRecord::Schema.define(:version => 20130305113028) do
+ActiveRecord::Schema.define(:version => 20130325151020) do
   create_table "bookings", :primary_key => :booking_id, :force => true do |t|
     t.integer	"person_id", :null => false
     t.integer	"count", :null => false
@@ -45,10 +45,12 @@ ActiveRecord::Schema.define(:version => 20130305113028) do
 
   add_index "seat_allocations", ["booking_id", "allocated_seat_id"], :name => :index_seat_allocations_on_booking_id_allocated_seat_id, :unique => true
 
-  add_foreign_key :bookings, :cinemas, :column => :showing_cinema_id, :primary_key => :cinema_id, :dependent => :cascade
-  add_foreign_key :bookings, :films, :column => :showing_film_id, :primary_key => :film_id, :dependent => :cascade
-  add_foreign_key :bookings, :people, :column => :person_id, :primary_key => :person_id, :dependent => :cascade
-  add_foreign_key :seats, :cinemas, :column => :cinema_id, :primary_key => :cinema_id, :dependent => :cascade
-  add_foreign_key :seat_allocations, :bookings, :column => :booking_id, :primary_key => :booking_id, :dependent => :cascade
-  add_foreign_key :seat_allocations, :seats, :column => :allocated_seat_id, :primary_key => :seat_id, :dependent => :cascade
+  unless ENV["EXCLUDE_FKS"]
+    add_foreign_key :bookings, :cinemas, :column => :showing_cinema_id, :primary_key => :cinema_id, :dependent => :cascade
+    add_foreign_key :bookings, :films, :column => :showing_film_id, :primary_key => :film_id, :dependent => :cascade
+    add_foreign_key :bookings, :people, :column => :person_id, :primary_key => :person_id, :dependent => :cascade
+    add_foreign_key :seats, :cinemas, :column => :cinema_id, :primary_key => :cinema_id, :dependent => :cascade
+    add_foreign_key :seat_allocations, :bookings, :column => :booking_id, :primary_key => :booking_id, :dependent => :cascade
+    add_foreign_key :seat_allocations, :seats, :column => :allocated_seat_id, :primary_key => :seat_id, :dependent => :cascade
+  end
 end

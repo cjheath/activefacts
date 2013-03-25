@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for Warehousing on 2013-03-06
+# schema.rb auto-generated using ActiveFacts for Warehousing on 2013-03-25
 #
 
-ActiveRecord::Schema.define(:version => 20130306135904) do
+ActiveRecord::Schema.define(:version => 20130325151041) do
   create_table "bins", :primary_key => :bin_id, :force => true do |t|
     t.integer	"product_id"
     t.integer	"warehouse_id"
@@ -86,25 +86,27 @@ ActiveRecord::Schema.define(:version => 20130306135904) do
   end
 
 
-  add_foreign_key :bins, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
-  add_foreign_key :bins, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
-  add_foreign_key :direct_order_matches, :purchase_order_items, :column => :purchase_order_item_id, :primary_key => :purchase_order_item_id, :dependent => :cascade
-  add_foreign_key :direct_order_matches, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :dependent => :cascade
-  add_foreign_key :dispatch_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
-  add_foreign_key :dispatch_items, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :dependent => :cascade
-  add_foreign_key :dispatch_items, :transfer_requests, :column => :transfer_request_id, :primary_key => :transfer_request_id, :dependent => :cascade
-  add_foreign_key :purchase_orders, :parties, :column => :supplier_id, :primary_key => :party_id, :dependent => :cascade
-  add_foreign_key :purchase_orders, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
-  add_foreign_key :purchase_order_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
-  add_foreign_key :purchase_order_items, :purchase_orders, :column => :purchase_order_id, :primary_key => :purchase_order_id, :dependent => :cascade
-  add_foreign_key :received_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
-  add_foreign_key :received_items, :purchase_order_items, :column => :purchase_order_item_id, :primary_key => :purchase_order_item_id, :dependent => :cascade
-  add_foreign_key :received_items, :transfer_requests, :column => :transfer_request_id, :primary_key => :transfer_request_id, :dependent => :cascade
-  add_foreign_key :sales_orders, :parties, :column => :customer_id, :primary_key => :party_id, :dependent => :cascade
-  add_foreign_key :sales_orders, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
-  add_foreign_key :sales_order_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
-  add_foreign_key :sales_order_items, :sales_orders, :column => :sales_order_id, :primary_key => :sales_order_id, :dependent => :cascade
-  add_foreign_key :transfer_requests, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
-  add_foreign_key :transfer_requests, :warehouses, :column => :from_warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
-  add_foreign_key :transfer_requests, :warehouses, :column => :to_warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
+  unless ENV["EXCLUDE_FKS"]
+    add_foreign_key :bins, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
+    add_foreign_key :bins, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
+    add_foreign_key :direct_order_matches, :purchase_order_items, :column => :purchase_order_item_id, :primary_key => :purchase_order_item_id, :dependent => :cascade
+    add_foreign_key :direct_order_matches, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :dependent => :cascade
+    add_foreign_key :dispatch_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
+    add_foreign_key :dispatch_items, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :dependent => :cascade
+    add_foreign_key :dispatch_items, :transfer_requests, :column => :transfer_request_id, :primary_key => :transfer_request_id, :dependent => :cascade
+    add_foreign_key :purchase_orders, :parties, :column => :supplier_id, :primary_key => :party_id, :dependent => :cascade
+    add_foreign_key :purchase_orders, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
+    add_foreign_key :purchase_order_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
+    add_foreign_key :purchase_order_items, :purchase_orders, :column => :purchase_order_id, :primary_key => :purchase_order_id, :dependent => :cascade
+    add_foreign_key :received_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
+    add_foreign_key :received_items, :purchase_order_items, :column => :purchase_order_item_id, :primary_key => :purchase_order_item_id, :dependent => :cascade
+    add_foreign_key :received_items, :transfer_requests, :column => :transfer_request_id, :primary_key => :transfer_request_id, :dependent => :cascade
+    add_foreign_key :sales_orders, :parties, :column => :customer_id, :primary_key => :party_id, :dependent => :cascade
+    add_foreign_key :sales_orders, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
+    add_foreign_key :sales_order_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
+    add_foreign_key :sales_order_items, :sales_orders, :column => :sales_order_id, :primary_key => :sales_order_id, :dependent => :cascade
+    add_foreign_key :transfer_requests, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
+    add_foreign_key :transfer_requests, :warehouses, :column => :from_warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
+    add_foreign_key :transfer_requests, :warehouses, :column => :to_warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
+  end
 end

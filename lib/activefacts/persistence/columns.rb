@@ -141,9 +141,13 @@ module ActiveFacts
 	  !@references.detect{|ref| !ref.is_mandatory}
       end
 
-      # Is this column an auto-assigned value type?
+      # This column is auto-assigned if it's an auto-assigned value type and is not a foreign key
       def is_auto_assigned
-        (to = references[-1].to) && to.is_auto_assigned
+	last_table_ref = references.reverse.detect{|r| r.from && r.from.is_table}
+        (to = references[-1].to) &&
+	  to.is_auto_assigned &&
+	  references[0].from.identifier_columns.size == 1 &&
+	  references[0].from == last_table_ref.from
       end
 
       # What's the underlying SQL data type of this column?

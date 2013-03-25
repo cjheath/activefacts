@@ -377,7 +377,7 @@ CREATE TABLE VehicleIncident (
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was unlicenced for unlicensed-Reason,
 	DrivingUnlicensedReason                 varchar NULL,
 	-- Vehicle Incident is a kind of Incident and Claim has Claim ID,
-	IncidentID                              int IDENTITY NOT NULL,
+	IncidentID                              int NOT NULL,
 	-- maybe Vehicle Incident resulted from Loss Type and Loss Type has Loss Type Code,
 	LossTypeCode                            char NULL,
 	-- maybe Vehicle Incident involved previous_damage-Description,

@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for Metamodel on 2013-03-06
+# schema.rb auto-generated using ActiveFacts for Metamodel on 2013-03-25
 #
 
-ActiveRecord::Schema.define(:version => 20130306123353) do
+ActiveRecord::Schema.define(:version => 20130325151031) do
   create_table "aggregations", :primary_key => :aggregation_id, :force => true do |t|
     t.integer	"aggregated_variable_id", :null => false
     t.integer	"variable_id", :null => false
@@ -327,73 +327,75 @@ ActiveRecord::Schema.define(:version => 20130306123353) do
   add_index "variables", ["projection_id"], :name => :index_variables_on_projection_id
   add_index "variables", ["query_guid", "ordinal"], :name => :index_variables_on_query_guid_ordinal, :unique => true
 
-  add_foreign_key :aggregations, :variables, :column => :aggregated_variable_id, :primary_key => :variable_id, :dependent => :cascade
-  add_foreign_key :aggregations, :variables, :column => :variable_id, :primary_key => :variable_id, :dependent => :cascade
-  add_foreign_key :allowed_ranges, :constraints, :column => :value_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :allowed_ranges, :units, :column => :value_range_maximum_bound_value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :allowed_ranges, :units, :column => :value_range_minimum_bound_value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :constraints, :roles, :column => :ring_constraint_other_role_id, :primary_key => :role_id, :dependent => :cascade
-  add_foreign_key :constraints, :roles, :column => :ring_constraint_role_id, :primary_key => :role_id, :dependent => :cascade
-  add_foreign_key :constraints, :roles, :column => :value_constraint_role_id, :primary_key => :role_id, :dependent => :cascade
-  add_foreign_key :constraints, :role_sequences, :column => :presence_constraint_role_sequence_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :constraints, :role_sequences, :column => :subset_constraint_subset_role_sequence_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :constraints, :role_sequences, :column => :subset_constraint_superset_role_sequence_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :context_according_tos, :context_notes, :column => :context_note_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :context_agreed_bies, :context_notes, :column => :agreement_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :derivations, :units, :column => :base_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :derivations, :units, :column => :derived_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :facet_values, :object_types, :column => :facet_value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :facet_values, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :facet_values, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :facts, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :facts, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
-  add_foreign_key :fact_types, :object_types, :column => :entity_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :fact_types, :object_types, :column => :type_inheritance_subtype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :fact_types, :object_types, :column => :type_inheritance_supertype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :instances, :facts, :column => :fact_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :instances, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :instances, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
-  add_foreign_key :instances, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :object_types, :constraints, :column => :value_type_value_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :object_types, :object_types, :column => :value_type_supertype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :object_types, :units, :column => :value_type_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :plays, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
-  add_foreign_key :plays, :steps, :column => :step_id, :primary_key => :step_id, :dependent => :cascade
-  add_foreign_key :plays, :variables, :column => :variable_id, :primary_key => :variable_id, :dependent => :cascade
-  add_foreign_key :readings, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :readings, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :roles, :fact_types, :column => :implicit_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :roles, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :roles, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :role_displays, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
-  add_foreign_key :role_displays, :shapes, :column => :fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :role_refs, :plays, :column => :play_id, :primary_key => :play_id, :dependent => :cascade
-  add_foreign_key :role_refs, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
-  add_foreign_key :role_refs, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :role_values, :facts, :column => :fact_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :role_values, :instances, :column => :instance_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :role_values, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
-  add_foreign_key :role_values, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
-  add_foreign_key :set_comparison_roles, :constraints, :column => :set_comparison_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :set_comparison_roles, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :shapes, :constraints, :column => :constraint_shape_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :shapes, :context_notes, :column => :model_note_shape_context_note_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :shapes, :diagrams, :column => :orm_diagram_id, :primary_key => :diagram_id, :dependent => :cascade
-  add_foreign_key :shapes, :fact_types, :column => :ring_constraint_shape_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :shapes, :fact_types, :column => :fact_type_shape_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :shapes, :object_types, :column => :object_type_shape_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :shapes, :readings, :column => :reading_shape_reading_id, :primary_key => :reading_id, :dependent => :cascade
-  add_foreign_key :shapes, :role_displays, :column => :value_constraint_shape_role_display_id, :primary_key => :role_display_id, :dependent => :cascade
-  add_foreign_key :shapes, :role_displays, :column => :role_name_shape_role_display_id, :primary_key => :role_display_id, :dependent => :cascade
-  add_foreign_key :shapes, :shapes, :column => :value_constraint_shape_object_type_shape_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :shapes, :shapes, :column => :objectified_fact_type_name_shape_fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :shapes, :shapes, :column => :reading_shape_fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :steps, :alternative_sets, :column => :alternative_set_guid, :primary_key => :guid, :dependent => :cascade
-  add_foreign_key :steps, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :steps, :plays, :column => :input_play_id, :primary_key => :play_id, :dependent => :cascade
-  add_foreign_key :steps, :plays, :column => :output_play_id, :primary_key => :play_id, :dependent => :cascade
-  add_foreign_key :variables, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-  add_foreign_key :variables, :queries, :column => :query_guid, :primary_key => :concept_guid, :dependent => :cascade
-  add_foreign_key :variables, :roles, :column => :projection_id, :primary_key => :role_id, :dependent => :cascade
-  add_foreign_key :variables, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+  unless ENV["EXCLUDE_FKS"]
+    add_foreign_key :aggregations, :variables, :column => :aggregated_variable_id, :primary_key => :variable_id, :dependent => :cascade
+    add_foreign_key :aggregations, :variables, :column => :variable_id, :primary_key => :variable_id, :dependent => :cascade
+    add_foreign_key :allowed_ranges, :constraints, :column => :value_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :allowed_ranges, :units, :column => :value_range_maximum_bound_value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :allowed_ranges, :units, :column => :value_range_minimum_bound_value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :constraints, :roles, :column => :ring_constraint_other_role_id, :primary_key => :role_id, :dependent => :cascade
+    add_foreign_key :constraints, :roles, :column => :ring_constraint_role_id, :primary_key => :role_id, :dependent => :cascade
+    add_foreign_key :constraints, :roles, :column => :value_constraint_role_id, :primary_key => :role_id, :dependent => :cascade
+    add_foreign_key :constraints, :role_sequences, :column => :presence_constraint_role_sequence_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :constraints, :role_sequences, :column => :subset_constraint_subset_role_sequence_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :constraints, :role_sequences, :column => :subset_constraint_superset_role_sequence_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :context_according_tos, :context_notes, :column => :context_note_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :context_agreed_bies, :context_notes, :column => :agreement_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :derivations, :units, :column => :base_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :derivations, :units, :column => :derived_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :facet_values, :object_types, :column => :facet_value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :facet_values, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :facet_values, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :facts, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :facts, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
+    add_foreign_key :fact_types, :object_types, :column => :entity_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :fact_types, :object_types, :column => :type_inheritance_subtype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :fact_types, :object_types, :column => :type_inheritance_supertype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :instances, :facts, :column => :fact_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :instances, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :instances, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
+    add_foreign_key :instances, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :object_types, :constraints, :column => :value_type_value_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :object_types, :object_types, :column => :value_type_supertype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :object_types, :units, :column => :value_type_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :plays, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
+    add_foreign_key :plays, :steps, :column => :step_id, :primary_key => :step_id, :dependent => :cascade
+    add_foreign_key :plays, :variables, :column => :variable_id, :primary_key => :variable_id, :dependent => :cascade
+    add_foreign_key :readings, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :readings, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :roles, :fact_types, :column => :implicit_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :roles, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :roles, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :role_displays, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
+    add_foreign_key :role_displays, :shapes, :column => :fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :role_refs, :plays, :column => :play_id, :primary_key => :play_id, :dependent => :cascade
+    add_foreign_key :role_refs, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
+    add_foreign_key :role_refs, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :role_values, :facts, :column => :fact_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :role_values, :instances, :column => :instance_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :role_values, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
+    add_foreign_key :role_values, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
+    add_foreign_key :set_comparison_roles, :constraints, :column => :set_comparison_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :set_comparison_roles, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :shapes, :constraints, :column => :constraint_shape_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :shapes, :context_notes, :column => :model_note_shape_context_note_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :shapes, :diagrams, :column => :orm_diagram_id, :primary_key => :diagram_id, :dependent => :cascade
+    add_foreign_key :shapes, :fact_types, :column => :ring_constraint_shape_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :shapes, :fact_types, :column => :fact_type_shape_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :shapes, :object_types, :column => :object_type_shape_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :shapes, :readings, :column => :reading_shape_reading_id, :primary_key => :reading_id, :dependent => :cascade
+    add_foreign_key :shapes, :role_displays, :column => :value_constraint_shape_role_display_id, :primary_key => :role_display_id, :dependent => :cascade
+    add_foreign_key :shapes, :role_displays, :column => :role_name_shape_role_display_id, :primary_key => :role_display_id, :dependent => :cascade
+    add_foreign_key :shapes, :shapes, :column => :value_constraint_shape_object_type_shape_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :shapes, :shapes, :column => :objectified_fact_type_name_shape_fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :shapes, :shapes, :column => :reading_shape_fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :steps, :alternative_sets, :column => :alternative_set_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :steps, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :steps, :plays, :column => :input_play_id, :primary_key => :play_id, :dependent => :cascade
+    add_foreign_key :steps, :plays, :column => :output_play_id, :primary_key => :play_id, :dependent => :cascade
+    add_foreign_key :variables, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :variables, :queries, :column => :query_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :variables, :roles, :column => :projection_id, :primary_key => :role_id, :dependent => :cascade
+    add_foreign_key :variables, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+  end
 end

@@ -165,7 +165,7 @@ module ActiveFacts
             puts "CREATE TABLE #{escape table.name.gsub(' ','')} ("
 
             pk = table.identifier_columns
-            identity_column = pk[0] if pk.size == 1 && pk[0].is_auto_assigned
+            identity_column = pk[0] if pk[0].is_auto_assigned
 
             fk_refs = table.references_from.select{|ref| ref.is_simple_reference }
             fk_columns = table.columns.select do |column|

@@ -33,6 +33,8 @@ module ActiveFacts
 	  options.delete_if { |option| @output = $1 if option =~ /^output=(.*)/ }
 	  @concern = nil
 	  options.delete_if { |option| @concern = $1 if option =~ /^concern=(.*)/ }
+	  @validations = true
+	  options.delete_if { |option| @validations = eval($1) if option =~ /^validation=(.*)/ }
 	end
 
 	def help
@@ -40,6 +42,7 @@ module ActiveFacts
 	  warn %Q{Options for --rails/schema:
 	output=dir		Overwrite model files into this output directory
 	concern=name		Namespace for the concerns
+	validation=false	Disable generation of validations
 }
 	end
 
@@ -139,11 +142,13 @@ module ActiveFacts
 	end
 
 	def column_constraints table
+	  return [] unless @validations
 	  ccs =
 	    table.columns.map do |column|
 	      name = rails_singular_name(column.name('_'))
 	      column.is_mandatory &&
-		!column.is_injected_surrogate ? [
+		!column.is_injected_surrogate &&
+		!column.is_auto_assigned ? [
 		"    validates_presence_of :#{name}"
 	      ] : []
 	    end.flatten

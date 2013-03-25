@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for Diplomacy on 2013-03-05
+# schema.rb auto-generated using ActiveFacts for Diplomacy on 2013-03-25
 #
 
-ActiveRecord::Schema.define(:version => 20130305115718) do
+ActiveRecord::Schema.define(:version => 20130325151021) do
   create_table "countries", :primary_key => :country_id, :force => true do |t|
     t.string	"country_name", :null => false
   end
@@ -45,13 +45,15 @@ ActiveRecord::Schema.define(:version => 20130305115718) do
 
   add_index "representations", ["represented_country_id", "country_id"], :name => :index_representations_on_represented_country_id_country_id, :unique => true
 
-  add_foreign_key :diplomats, :countries, :column => :represented_country_id, :primary_key => :country_id, :dependent => :cascade
-  add_foreign_key :diplomats, :countries, :column => :served_country_id, :primary_key => :country_id, :dependent => :cascade
-  add_foreign_key :fluencies, :diplomats, :column => :diplomat_id, :primary_key => :diplomat_id, :dependent => :cascade
-  add_foreign_key :fluencies, :languages, :column => :language_id, :primary_key => :language_id, :dependent => :cascade
-  add_foreign_key :language_uses, :countries, :column => :country_id, :primary_key => :country_id, :dependent => :cascade
-  add_foreign_key :language_uses, :languages, :column => :language_id, :primary_key => :language_id, :dependent => :cascade
-  add_foreign_key :representations, :countries, :column => :country_id, :primary_key => :country_id, :dependent => :cascade
-  add_foreign_key :representations, :countries, :column => :represented_country_id, :primary_key => :country_id, :dependent => :cascade
-  add_foreign_key :representations, :diplomats, :column => :ambassador_id, :primary_key => :diplomat_id, :dependent => :cascade
+  unless ENV["EXCLUDE_FKS"]
+    add_foreign_key :diplomats, :countries, :column => :represented_country_id, :primary_key => :country_id, :dependent => :cascade
+    add_foreign_key :diplomats, :countries, :column => :served_country_id, :primary_key => :country_id, :dependent => :cascade
+    add_foreign_key :fluencies, :diplomats, :column => :diplomat_id, :primary_key => :diplomat_id, :dependent => :cascade
+    add_foreign_key :fluencies, :languages, :column => :language_id, :primary_key => :language_id, :dependent => :cascade
+    add_foreign_key :language_uses, :countries, :column => :country_id, :primary_key => :country_id, :dependent => :cascade
+    add_foreign_key :language_uses, :languages, :column => :language_id, :primary_key => :language_id, :dependent => :cascade
+    add_foreign_key :representations, :countries, :column => :country_id, :primary_key => :country_id, :dependent => :cascade
+    add_foreign_key :representations, :countries, :column => :represented_country_id, :primary_key => :country_id, :dependent => :cascade
+    add_foreign_key :representations, :diplomats, :column => :ambassador_id, :primary_key => :diplomat_id, :dependent => :cascade
+  end
 end

@@ -116,7 +116,7 @@ module ActiveFacts
 	    ar_table_name = rails_plural_name(table.name)
 
 	    pk = table.identifier_columns
-	    identity_column = pk[0] if pk.size == 1 && pk[0].is_auto_assigned
+	    identity_column = pk[0] if pk[0].is_auto_assigned
 
 	    fk_refs = table.references_from.select{|ref| ref.is_simple_reference }
 	    fk_columns = table.columns.select do |column|
@@ -196,10 +196,10 @@ module ActiveFacts
 		to_columns = fk.to_columns.map{|column| rails_singular_name(column.name('_'))}
 		foreign_keys <<
 		  if (from_columns.length == 1)
-		    "  add_foreign_key :#{rails_plural_name(fk.from.name)}, :#{rails_plural_name(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :dependent => :cascade"
+		    "    add_foreign_key :#{rails_plural_name(fk.from.name)}, :#{rails_plural_name(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :dependent => :cascade"
 		  else
 		    # This probably isn't going to work without Dr Nic's CPK gem:
-		    "  add_foreign_key :#{rails_plural_name(fk.to.name)}, :#{rails_plural_name(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}], :dependent => :cascade"
+		    "    add_foreign_key :#{rails_plural_name(fk.to.name)}, :#{rails_plural_name(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}], :dependent => :cascade"
 		  end
 	      end
 	    end
@@ -228,7 +228,11 @@ module ActiveFacts
 	    puts "\n" unless index_text.empty?
 	  end
 
-	  puts foreign_keys.join("\n")
+	  unless @exclude_fks
+	    puts '  unless ENV["EXCLUDE_FKS"]'
+	    puts foreign_keys.join("\n")
+	    puts '  end'
+	  end
 	  puts "end"
 	end
 

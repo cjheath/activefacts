@@ -37,8 +37,6 @@ module Cinema
 
     # Cinema has Seat
     has_many :seats, :class_name => 'Seat', :foreign_key => :cinema_id, :dependent => :destroy
-
-    validates_presence_of :cinema_id
   end
 end
 
@@ -51,8 +49,6 @@ module Film
     has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_film_id, :dependent => :destroy
     has_many :cinemas, :through => :bookings_via_showing
     has_many :date_times, :through => :bookings_via_showing
-
-    validates_presence_of :film_id
   end
 end
 
@@ -64,7 +60,6 @@ module Person
     # Booking (in which Person booked Showing for Count)
     has_many :bookings, :class_name => 'Booking', :foreign_key => :person_id, :dependent => :destroy
 
-    validates_presence_of :person_id
     validates_presence_of :login_name
   end
 end
