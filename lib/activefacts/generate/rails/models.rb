@@ -58,6 +58,7 @@ module ActiveFacts
 	def generate(out = $>)      #:nodoc:
 	  return if @helping
 	  @out = out
+	  list_extant_files if @output
 
 	  # Populate all foreignkeys first:
 	  @vocabulary.tables.each { |table| table.foreign_keys }
@@ -66,20 +67,51 @@ module ActiveFacts
 	    ok &= generate_table(table)
 	  end
 	  $stderr.puts "\# #{@vocabulary.name} generated with errors" unless ok
+	  delete_old_generated_files if @output
 	  ok
+	end
+
+	def list_extant_files
+	  @preexisting_files = Dir[@output+'/*.rb']
+	end
+
+	def delete_old_generated_files
+	  remaining = []
+	  cleaned = 0
+	  @preexisting_files.each do |pathname|
+	    if generated_file_exists(pathname) == true
+	      File.unlink(pathname) 
+	      cleaned += 1
+	    else
+	      remaining << pathname
+	    end
+	  end
+	  $stderr.puts "Cleaned up #{cleaned} old generated files" if @preexisting_files.size > 0
+	  $stderr.puts "Remaining non-generated files:\n\t#{remaining*"\n\t"}" if remaining.size > 0
+	end
+
+	def generated_file_exists pathname
+	  File.open(pathname, 'r') do |existing|
+	    first_lines = existing.read(1024)	  # Make it possible to pass over a magic charset comment
+	    if first_lines.length == 0 or first_lines =~ %r{^#{HEADER}}
+	      return true
+	    end
+	  end
+	  return false	  # File exists, but is not generated
+	rescue Errno::ENOENT
+	  return nil	  # File does not exist
 	end
 
 	def create_if_ok filename
 	  # Create a file in the output directory, being careful not to overwrite carelessly
 	  if @output
 	    pathname = (@output+'/'+filename).gsub(%r{//+}, '/')
-	    File.open(pathname, 'r') do |existing|
-	      first_lines = existing.read(1024)	  # Make it possible to pass over a magic charset comment
-	      if first_lines.length > 1 and first_lines !~ %r{^#{HEADER}}
-		$stderr.puts "not overwriting non-generated file #{pathname}"
-		return false
-	      end
-	    end rescue nil  # Handle File.open failure
+	    @preexisting_files.reject!{|f| f == pathname }    # Don't clean up this file
+	    if generated_file_exists(pathname) == false
+	      $stderr.puts "not overwriting non-generated file #{pathname}"
+	      @individual_file = nil
+	      return
+	    end
 	    @individual_file = @out = File.open(pathname, 'w')
 	    puts "#{HEADER}"
 	  end
@@ -147,7 +179,6 @@ module ActiveFacts
 	    table.columns.map do |column|
 	      name = rails_singular_name(column.name('_'))
 	      column.is_mandatory &&
-		!column.is_injected_surrogate &&
 		!column.is_auto_assigned ? [
 		"    validates_presence_of :#{name}"
 	      ] : []
