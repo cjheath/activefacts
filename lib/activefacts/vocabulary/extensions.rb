@@ -16,6 +16,32 @@ module ActiveFacts
 	  end
 	end
       end
+
+      # This name does not yet exist (at least not as we expect it to).
+      # If it in fact does exist (but as the wrong type), complain.
+      # If it doesn't exist, but its name would cause existing fact type
+      # readings to be re-interpreted to a different meaning, complain.
+      # Otherwise return nil.
+      def check_valid_object_type_name name
+        if ot = @constellation.ObjectType[[identifying_role_values, name]]
+	  raise "Cannot redefine #{ot.class.basename} #{name}"
+	end
+
+	# Raise an exception if adding this name to the vocabulary would create anomalies
+	nil
+      end
+
+      # If this entity type exists, ok, otherwise check it's ok to add it
+      def valid_entity_type_name name
+        @constellation.EntityType[[identifying_role_values, name]] or
+	  check_valid_object_type_name name
+      end
+
+      # If this entity type exists, ok, otherwise check it's ok to add it
+      def valid_value_type_name name
+        @constellation.ValueType[[identifying_role_values, name]] or
+	  check_valid_object_type_name name
+      end
     end
 
     class FactType

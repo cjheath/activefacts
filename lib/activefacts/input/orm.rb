@@ -159,6 +159,7 @@ module ActiveFacts
           entity_types <<
             @by_id[id] =
               entity_type =
+		@vocabulary.valid_entity_type_name(name) ||
 		@constellation.EntityType(@vocabulary, name, :guid => id_of(x))
             independent = x['IsIndependent']
             entity_type.is_independent = true if independent && independent == 'true'
@@ -221,21 +222,22 @@ module ActiveFacts
           raise "Supertype of #{name} is post-defined but recursiving processing failed" unless supertype
           raise "Supertype #{supertype_name} of #{name} is not a value type" unless supertype.kind_of? ActiveFacts::Metamodel::ValueType
           value_super_type =
-	      @constellation.ValueType(@vocabulary, supertype_name, :guid => id_of(x_supertype))
+	    @vocabulary.valid_value_type_name(supertype_name) ||
+	    @constellation.ValueType(@vocabulary, supertype_name, :guid => id_of(x_supertype))
         else
           # REVISIT: Need to handle standard types better here:
           value_super_type =
 	    if type_name != name
-	      @constellation.ValueType[[@vocabulary.identifying_role_values, type_name]] ||
-		  @constellation.ValueType(@vocabulary.identifying_role_values, type_name, :guid => :new)
+	      @vocabulary.valid_value_type_name(type_name) ||
+		@constellation.ValueType(@vocabulary.identifying_role_values, type_name, :guid => :new)
 	    else
 	      nil
 	    end
         end
 
         @by_id[id] =
-          vt = @constellation.ValueType[[@vocabulary.identifying_role_values, name]] ||
-	      @constellation.ValueType(@vocabulary.identifying_role_values, name, :guid => id_of(x))
+	  vt = @vocabulary.valid_value_type_name(name) ||
+	    @constellation.ValueType(@vocabulary.identifying_role_values, name, :guid => id_of(x))
         vt.supertype = value_super_type
         vt.length = length if length
         vt.scale = scale if scale && scale != 0
@@ -390,7 +392,7 @@ module ActiveFacts
             debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.guid}"
             @nested_types <<
               @by_id[id] =
-              nested_type = @constellation.EntityType[[@vocabulary, name]] ||
+		nested_type = @vocabulary.valid_entity_type_name(name) ||
 		  @constellation.EntityType(@vocabulary, name, :guid => id_of(x))
             independent = x['IsIndependent']
             nested_type.is_independent = true if independent && independent == 'true' && !is_implied

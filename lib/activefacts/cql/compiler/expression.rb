@@ -87,7 +87,7 @@ module ActiveFacts
         def result_value_type(context, name)
           vocabulary = context.vocabulary
           constellation = vocabulary.constellation
-          constellation.ValueType[[vocabulary.identifying_role_values, name]] ||
+	  vocabulary.valid_value_type_name(name) ||
 	    constellation.ValueType(vocabulary, name, :guid => :new)
         end
 

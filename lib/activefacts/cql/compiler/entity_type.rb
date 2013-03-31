@@ -28,8 +28,8 @@ module ActiveFacts
         end
 
         def compile
-          @entity_type = @constellation.EntityType[[@vocabulary.identifying_role_values, @name]] ||
-	      @constellation.EntityType(@vocabulary, @name, :guid => :new)
+          @entity_type = @vocabulary.valid_entity_type_name(@name) ||
+	    @constellation.EntityType(@vocabulary, @name, :guid => :new)
           @entity_type.is_independent = true if (@pragmas.include? 'independent')
 
           # REVISIT: CQL needs a way to indicate whether subtype migration can occur.
@@ -217,9 +217,10 @@ module ActiveFacts
 
         def add_supertype(supertype_name, not_identifying)
           debug :supertype, "Adding #{not_identifying ? '' : 'identifying '}supertype #{supertype_name} to #{@entity_type.name}" do
-            supertype = @constellation.EntityType(@vocabulary, supertype_name)
+            supertype = @vocabulary.valid_entity_type_name(supertype_name) ||
+	      @constellation.EntityType(@vocabulary, supertype_name, :guid => :new) # Should always already exist
 
-            # Did we already know about this supertype?
+            # Did we already know about this supertyping?
             return if @entity_type.all_type_inheritance_as_subtype.detect{|ti| ti.supertype == supertype}
 
             # By default, the first supertype identifies this entity type
@@ -282,10 +283,11 @@ module ActiveFacts
           vt_name = "#{name}#{mode}"
           vt = nil
           debug :entity, "Preparing value type #{vt_name} for reference mode" do
-            # Find or Create an appropriate ValueType called '#{vt_name}', of the supertype '#{mode}'
-            unless vt = @constellation.ObjectType[[@vocabulary.identifying_role_values, vt_name]] or
-                   vt = @constellation.ObjectType[[@vocabulary.identifying_role_values, vt_name = "#{name} #{mode}"]]
-              base_vt = @constellation.ValueType[[@vocabulary.identifying_role_values, mode]] ||
+            # Find an existing ValueType called 'vt_name' or 'name vtname'
+	    # or find/create the supertype '#{mode}' and the subtype
+            unless vt = @vocabulary.valid_value_type_name(vt_name) or
+		   vt = @vocabulary.valid_value_type_name(vt_name = "#{name} #{mode}")
+              base_vt = @vocabulary.valid_value_type_name(mode) ||
 		  @constellation.ValueType(@vocabulary, mode, :guid => :new)
               vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt, :guid => :new)
               if parameters
