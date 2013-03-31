@@ -61,7 +61,11 @@ module ActiveFacts
 
       def key_fields(ref, reverse = false)
         # Compute and return child_key and parent_key if necessary
-        fk = ref.from.foreign_keys.detect{|k| k.references[-1] == ref}
+        fk = ref.from.foreign_keys.detect{|k| k.jump_reference == ref}
+	unless fk
+	  debugger
+	  raise "foreign key not found for #{ref}"
+	end
         child_key = fk.from_columns.map{|c| column_name(c)}
         parent_key = fk.to_columns.map{|c| column_name(c)}
         if child_key != parent_key
