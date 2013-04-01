@@ -28,6 +28,26 @@ module ActiveFacts
 	end
 
 	# Raise an exception if adding this name to the vocabulary would create anomalies
+	anomaly = constellation.Reading.detect do |r_key, reading|
+	    expanded = reading.expand do |role_ref, *words|
+		words.map! do |w|
+		  case
+		  when w == nil
+		    w
+		  when w[0...name.size] == name
+		    '_ok_'+w
+		  when w[-name.size..-1] == name
+		    w[-1]+'_ok_'
+		  else
+		    w
+		  end
+		end
+
+		words
+	      end
+	    expanded =~ %r{\b#{name}\b}
+	  end
+	raise "Adding new term '#{name}' would create anomalous re-interpretation of '#{anomaly.expand}'" if anomaly
 	nil
       end
 
