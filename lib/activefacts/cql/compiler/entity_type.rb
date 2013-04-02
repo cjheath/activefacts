@@ -285,8 +285,8 @@ module ActiveFacts
           debug :entity, "Preparing value type #{vt_name} for reference mode" do
             # Find an existing ValueType called 'vt_name' or 'name vtname'
 	    # or find/create the supertype '#{mode}' and the subtype
-            unless vt = @vocabulary.valid_value_type_name(vt_name) or
-		   vt = @vocabulary.valid_value_type_name(vt_name = "#{name} #{mode}")
+            unless vt = @vocabulary.valid_object_type_name(vt_name) or
+		   vt = @vocabulary.valid_object_type_name(vt_name = "#{name} #{mode}")
               base_vt = @vocabulary.valid_value_type_name(mode) ||
 		  @constellation.ValueType(@vocabulary, mode, :guid => :new)
               vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt, :guid => :new)
