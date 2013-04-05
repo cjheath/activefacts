@@ -9,6 +9,8 @@ CREATE TABLE Party (
 	PersonAttendingDoctorId                 int NULL,
 	-- maybe Person is a kind of Party and Death is where Person died and maybe Death occurred on death-Event Date and Event Date has ymd,
 	PersonDeathEventDateYmd                 datetime NULL,
+	-- maybe Person is a kind of Party and Death is where Person died,
+	PersonDied                              bit NULL,
 	-- maybe Person is a kind of Party and Birth is where Person was born on Event Date and Birth is where Person was born on Event Date and Event Date has ymd,
 	PersonEventDateYmd                      datetime NULL,
 	PRIMARY KEY(PartyId),

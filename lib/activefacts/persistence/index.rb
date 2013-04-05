@@ -96,7 +96,7 @@ module ActiveFacts
 	  self,	  # ValueType being indexed
 	  self,	  # Absorbed object being indexed
 	  columns.select{|c| c.references[0].is_self_value},
-	  injected_surrogate_role ? false : true
+	  respond_to?(:injected_surrogate_role) && injected_surrogate_role ? false : true
 	)
       end
     end

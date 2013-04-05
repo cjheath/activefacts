@@ -380,6 +380,8 @@ CREATE TABLE VehicleIncident (
 	IncidentID                              int NOT NULL,
 	-- maybe Vehicle Incident resulted from Loss Type and Loss Type has Loss Type Code,
 	LossTypeCode                            char NULL,
+	-- Driving is where Vehicle Incident occurred while being driven,
+	OccurredWhileBeingDriven                bit NULL,
 	-- maybe Vehicle Incident involved previous_damage-Description,
 	PreviousDamageDescription               varchar(1024) NULL,
 	-- maybe Vehicle Incident was caused by Reason,

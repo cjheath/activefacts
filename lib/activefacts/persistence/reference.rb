@@ -113,10 +113,10 @@ module ActiveFacts
       end
 
       # Return the array of names for the (perhaps implicit) *to_role* of this Reference
-      def to_names
+      def to_names(is_prefix = true)
         case
         when is_unary
-          if @to && @to.fact_type
+          if @to && @to.fact_type && is_prefix
             @to.name.camelwords
           else
             @to_role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.camelwords

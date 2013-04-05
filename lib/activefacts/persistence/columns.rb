@@ -82,7 +82,7 @@ module ActiveFacts
               next a
             end
 
-            names = ref.to_names
+            names = ref.to_names(ref != refs.last)
 
             # When traversing type inheritances, keep the subtype name, not the supertype names as well:
             if a.size > 0 && ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
@@ -192,9 +192,10 @@ module ActiveFacts
       def columns(excluded_supertypes)  #:nodoc:
         kind = ""
         cols = 
-          if is_unary && !(@to && @to.fact_type)
+          if is_unary
             kind = "unary "
-            [Column.new()]
+            [Column.new()] +
+	      ((@to && @to.fact_type) ?  @to.all_columns(excluded_supertypes) : [])
           elsif is_self_value
             kind = "self-role "
             [Column.new()]
@@ -253,7 +254,7 @@ module ActiveFacts
       def reference_columns(excluded_supertypes)  #:nodoc:
         debug :columns, "Reference Columns for #{name}" do
           if is_table
-	    if isr = injected_surrogate_role
+	    if respond_to?(:injected_surrogate_role) and isr = injected_surrogate_role
 	      ref_from = references_from.detect{|ref| ref.from_role == isr}
 	      [ActiveFacts::Persistence::Column.new(ref_from)]
 	    else

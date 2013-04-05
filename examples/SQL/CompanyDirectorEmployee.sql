@@ -64,7 +64,8 @@ CREATE TABLE Person (
 	-- maybe Employee is a kind of Person and maybe Manager is a kind of Employee and Manager is ceo,
 	ManagerIsCeo                            bit NULL,
 	UNIQUE(GivenName, FamilyName),
-	FOREIGN KEY (EmployeeCompanyName) REFERENCES Company (CompanyName)
+	FOREIGN KEY (EmployeeCompanyName) REFERENCES Company (CompanyName),
+	FOREIGN KEY (EmployeeManagerNr) REFERENCES Person (GivenName)
 )
 GO
 
@@ -86,9 +87,5 @@ GO
 
 ALTER TABLE Directorship
 	ADD FOREIGN KEY (DirectorGivenName, DirectorFamilyName) REFERENCES Person (GivenName, FamilyName)
-GO
-
-ALTER TABLE Person
-	ADD FOREIGN KEY (EmployeeManagerNr) REFERENCES Person (EmployeeNr)
 GO
 
