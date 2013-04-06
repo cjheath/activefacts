@@ -241,7 +241,7 @@ module ActiveFacts
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
           raise "Illegal call to identifier_columns for absorbed ValueType #{name}" unless is_table
-	  if isr = @injected_surrogate_role
+	  if isr = injected_surrogate_role
 	    columns.select{|column| column.references[0].from_role == isr }
 	  else
 	    columns.select{|column| column.references[0] == self_value_reference}
@@ -254,7 +254,7 @@ module ActiveFacts
       def reference_columns(excluded_supertypes)  #:nodoc:
         debug :columns, "Reference Columns for #{name}" do
           if is_table
-	    if respond_to?(:injected_surrogate_role) and isr = injected_surrogate_role
+	    if isr = injected_surrogate_role
 	      ref_from = references_from.detect{|ref| ref.from_role == isr}
 	      [ActiveFacts::Persistence::Column.new(ref_from)]
 	    else

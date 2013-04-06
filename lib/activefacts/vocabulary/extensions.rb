@@ -216,6 +216,11 @@ module ActiveFacts
       end
     end
 
+    class ObjectType
+      # Placeholder for the surrogate transform
+      attr_reader :injected_surrogate_role
+    end
+
     class ValueType
       def supertypes_transitive
         [self] + (supertype ? supertype.supertypes_transitive : [])

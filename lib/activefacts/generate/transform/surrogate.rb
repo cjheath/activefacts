@@ -10,7 +10,6 @@ require 'activefacts/persistence'
 module ActiveFacts
   module Metamodel
     class ObjectType
-      attr_reader :injected_surrogate_role
 
       def add_surrogate type_name = 'Auto Counter', suffix = 'ID'
 	# Find or assert the surrogate value type
