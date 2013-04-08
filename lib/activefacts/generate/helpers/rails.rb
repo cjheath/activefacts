@@ -23,7 +23,7 @@ module ActiveFacts
 
 	def rails_class_name name
 	  name = name*'_' if name.is_a?(Array)
-	  ActiveSupport::Inflector.classify(name.gsub(/\s+/, ''))
+	  ActiveSupport::Inflector.camelize(name.gsub(/\s+/, '_'))
 	end
 
       end
