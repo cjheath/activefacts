@@ -107,9 +107,11 @@ module ActiveFacts
 	    ref.fk_jump = true
             array << [ref]
           elsif ref.is_absorbing or (ref.to && !ref.to.is_table)
-            ref.to.all_absorbed_foreign_key_reference_path.each{|aref|
-              array << aref.insert(0, ref)
-            }
+	    debug :fk, "getting fks absorbed into #{name} via #{ref}" do
+	      ref.to.all_absorbed_foreign_key_reference_path.each do |aref|
+		array << aref.insert(0, ref)
+	      end
+	    end
           end
           array
         end
@@ -172,6 +174,7 @@ module ActiveFacts
 	    end.
 	    sort_by do |fk|
 	      # Put the foreign keys in a defined order:
+#	      debugger if !fk.to_columns || fk.to_columns.include?(nil) || !fk.from_columns || fk.from_columns.include?(nil)
 	      [ fk.to.name,
 		fk.to_columns.map{|col| col.name(nil).sort},
 		fk.from_columns.map{|col| col.name(nil).sort}
