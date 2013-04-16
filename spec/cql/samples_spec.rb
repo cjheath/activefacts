@@ -107,7 +107,7 @@ describe "Sample data" do
     if v.to_s !~ /[^-+0-9.]/ and (n = eval(v.to_s) rescue nil)
       n
     else
-      "'"+v.to_s.gsub(/'/,'\\\'')+"'"
+      v.to_s
     end
   end
 

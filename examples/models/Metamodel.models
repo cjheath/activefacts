@@ -76,7 +76,7 @@ module Constraint
     has_one :object_type_via_domain_object_type_value_type_value_constraint, :class_name => 'ObjectType', :foreign_key => :value_type_value_constraint_guid, :dependent => :destroy
 
     # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence) and Set Comparison Constraint is a kind of Set Constraint and Set Constraint is a kind of Constraint
-    has_many :set_comparison_roles_via_set_comparison_constraint_set_constraint, :class_name => 'SetComparisonRole', :foreign_key => :set_comparison_constraint_guid, :dependent => :destroy
+    has_many :set_comparison_roles_via_set_comparison_constraint_set_constraint, :class_name => 'SetComparisonRoles', :foreign_key => :set_comparison_constraint_guid, :dependent => :destroy
 
     # Constraint Shape is a kind of Shape and Constraint Shape is for Constraint
     has_many :shapes_via_constraint_shape, :class_name => 'Shape', :foreign_key => :constraint_shape_constraint_guid, :dependent => :destroy
@@ -515,7 +515,7 @@ module RoleSequence
     has_many :role_refs, :class_name => 'RoleRef', :foreign_key => :role_sequence_guid, :dependent => :destroy
 
     # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence)
-    has_many :set_comparison_roles, :class_name => 'SetComparisonRole', :foreign_key => :role_sequence_guid, :dependent => :destroy
+    has_many :set_comparison_roles, :class_name => 'SetComparisonRoles', :foreign_key => :role_sequence_guid, :dependent => :destroy
 
     validates_presence_of :guid
   end
@@ -543,7 +543,7 @@ module RoleValue
   end
 end
 
-module SetComparisonRole
+module SetComparisonRoles
   extend ActiveSupport::Concern
   included do
     self.primary_key = 'set_comparison_roles_id'

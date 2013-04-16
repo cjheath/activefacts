@@ -157,7 +157,9 @@ module ActiveFacts
 
             fact_type = create_identifying_fact_type(context, clauses)
             fact_types << fact_type if fact_type
-            objectify_existing_fact_type(fact_type) unless fact_type.all_role.detect{|r| r.object_type == @entity_type}
+	    unless fact_type.all_role.detect{|r| r.object_type == @entity_type}
+	      objectify_existing_fact_type(fact_type)
+	    end
           end
           fact_types
         end
@@ -196,7 +198,10 @@ module ActiveFacts
 
         def objectify_existing_fact_type fact_type
           raise "#{@name} cannot objectify fact type '#{fact_type.entity_type.name}' that's already objectified" if fact_type.entity_type
-          raise "#{@name} must only objectify one fact type" if @fact_type
+	  if @fact_type
+	    raise "#{@name} cannot objectify '#{fact_type.default_reading}', it already objectifies '#{@fact_type.default_reading}'"
+	  end
+
           if fact_type.internal_presence_constraints.select{|pc| pc.max_frequency == 1}.size == 0
             # If there's no existing uniqueness constraint over this fact type, make a spanning one.
             pc = @constellation.PresenceConstraint(

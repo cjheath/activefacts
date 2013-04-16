@@ -613,8 +613,19 @@ module ActiveFacts
 
     class Value
       def to_s
-        (is_a_string ? literal.inspect.gsub(/\A"|"\Z/,"'") : literal) + (unit ? " " + unit.name : "")
+        if is_a_string
+	  "'"+
+	  literal.
+	    inspect.		# Use Ruby's inspect to generate necessary escapes
+	    gsub(/\A"|"\Z/,'').	# Remove surrounding quotes
+	    gsub(/'/, "\\'") +	# Escape any single quotes
+	  "'"
+	else
+	  literal
+	end +
+	(unit ? " " + unit.name : "")
       end
+
       def inspect
         to_s
       end

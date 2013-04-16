@@ -449,22 +449,26 @@ module ActiveFacts
           raise "Need to change this call to expand_reading_text to pass a role->variable hash"
         end
         rrs = role_sequence.all_role_ref_in_order
+	variable_by_role = {}
+	if step
+	  plays = ([step.input_play, step.output_play]+step.all_incidental_play.to_a).compact
+	  variable_by_role = plays.inject({}) { |h, play| h[play.role] = play.variable; h }
+	end
         debug :subscript, "expanding '#{text}' with #{role_sequence.describe}" do
           text.gsub(/\{(\d)\}/) do
             role_ref = rrs[$1.to_i]
             # REVISIT: We may need to use the step's role_refs to expand the role players here, not the reading's one (extra adjectives?)
-            # REVISIT: There's no way to get literals to be emitted here (value step or query result?)
-
             player = player_by_role[role_ref.role]
+	    variable = variable_by_role[role_ref.role]
 
-            play_name = player && player.variables_by_query.values.map{|jn| jn.role_name}.compact[0]
-            subscripted_player(role_ref, player && player.subscript, play_name) +
+            play_name = variable && variable.role_name
+            subscripted_player(role_ref, player && player.subscript, play_name, variable && variable.value) +
               objectification_verbalisation(role_ref.role.object_type)
           end
         end
       end
 
-      def subscripted_player role_ref, subscript = nil, play_name = nil
+      def subscripted_player role_ref, subscript = nil, play_name = nil, value = nil
         prr = @player_by_role_ref[role_ref]
         subscript ||= prr.subscript if prr
         debug :subscript, "Need to apply subscript #{subscript} to #{role_ref.role.object_type.name}" if subscript
@@ -476,6 +480,7 @@ module ActiveFacts
             role_ref.trailing_adjective
           ].compact*' '
         ) +
+	  (value ? ' '+value.inspect : '') +
           (subscript ? "(#{subscript})" : '')
       end
 

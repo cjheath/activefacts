@@ -264,7 +264,7 @@ module ActiveFacts
           else
             debug :instance, "Making ValueType #{object_type.name} #{literal.inspect} #{@population.name.size>0 ? " in "+@population.name.inspect : ''}" do
 
-              is_a_string = String === literal
+              is_a_string = literal.literal.is_a?(String)
               instance = @constellation.Instance.detect do |key, i|
                   # REVISIT: And same unit
                   i.population == @population &&

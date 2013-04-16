@@ -270,7 +270,10 @@ module ActiveFacts
               map do |clauses_list, bindings|
             # Does this clauses_list involve a query?
             if clauses_list.size > 1 or
-              clauses_list.detect{|clause| clause.refs.detect{|ref| ref.nested_clauses } }
+              clauses_list.detect do |clause|
+		clause.refs.detect{|ref| ref.nested_clauses } or
+		clause.includes_literals
+	      end
 
               debug :query, "Building query for #{clauses_list.inspect}" do
                 debug :query, "Constrained bindings are #{@common_bindings.inspect}"

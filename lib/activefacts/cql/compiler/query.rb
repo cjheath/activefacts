@@ -10,12 +10,13 @@ module ActiveFacts
               each do |binding|
                 debug :query, "Creating variable #{query.all_variable.size} for #{binding.inspect}"
                 binding.variable = @constellation.Variable(query, query.all_variable.size, :object_type => binding.player)
-                if literal = binding.refs.detect{|r| r.literal}
-                  if literal.kind_of?(ActiveFacts::CQL::Compiler::Reference)
-                    literal = literal.literal
-                  end
+		if literal = binding.refs.detect{|r| r.literal}
+		  if literal.kind_of?(ActiveFacts::CQL::Compiler::Reference)
+		    # REVISIT: Fix this crappy ad-hoc polymorphism hack
+		    literal = literal.literal
+		  end
                   unit = @constellation.Unit.detect{|k, v| [v.name, v.plural_name].include? literal.unit} if literal.unit
-                  binding.variable.value = [literal.literal.to_s, literal.is_a?(String), unit]
+                  binding.variable.value = [literal.literal.to_s, literal.literal.is_a?(String), unit]
                 end
               end
             query
