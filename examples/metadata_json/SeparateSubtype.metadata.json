@@ -1,0 +1,157 @@
+{
+  "types": {
+    "Claim": {
+      "is_main": true,
+      "id": "6E4019BD-8054-40CD-833D-8512F2F0405A",
+      "functions": [
+        {
+          "title": "Incident",
+          "type": "Incident",
+          "where": "this Claim concerns one Incident",
+          "role_id": "C40A0280-B67D-4EEA-A9F9-47C026AC28A7"
+        },
+        {
+          "title": "Claim ID",
+          "type": "Claim ID",
+          "where": "this Claim has one Claim ID",
+          "role_id": "878FC2CB-4C3B-44EA-A70F-25ECABB5076B"
+        }
+      ]
+    },
+    "Claim ID": {
+      "is_main": false,
+      "id": "9053B849-161D-43B6-B077-2FF669A15714",
+      "functions": [
+        {
+          "title": "Claim",
+          "type": "Claim",
+          "where": "one Claim has this Claim ID",
+          "role_id": "5C549E52-EDEE-445F-B1E8-025129D5E1AB"
+        }
+      ]
+    },
+    "Date Time": {
+      "is_main": false,
+      "id": "0BF8578B-D8C5-475B-A888-CC14CE2BC714",
+      "functions": [
+        {
+          "title": "all Incident",
+          "type": "Incident",
+          "where": "some Incident occurred on this Date Time",
+          "role_id": "53088D38-2103-44D0-A9E3-DF5E0C8D4849",
+          "is_list": true
+        }
+      ]
+    },
+    "Driver": {
+      "is_main": false,
+      "id": "6E2EBA40-F041-4420-A003-3303E36B6012",
+      "functions": [
+        {
+          "title": "as Person",
+          "type": "Person"
+        },
+        {
+          "title": "all Vehicle Incident",
+          "type": "Vehicle Incident",
+          "where": "some Vehicle Incident occured while this Driver was in charge",
+          "role_id": "D765493D-0A9B-4795-884F-B117ED23677D",
+          "is_list": true
+        }
+      ]
+    },
+    "Incident": {
+      "is_main": false,
+      "id": "9A36B0C9-94E8-425A-A984-BEA72A9B4AA4",
+      "functions": [
+        {
+          "title": "as Vehicle Incident",
+          "type": "Vehicle Incident"
+        },
+        {
+          "title": "Claim",
+          "type": "Claim",
+          "where": "one Claim concerns this Incident",
+          "role_id": "DD3E0200-C230-4268-8D17-1154286FD0AC"
+        },
+        {
+          "title": "Date Time",
+          "type": "Date Time",
+          "where": "this Incident occurred on one Date Time",
+          "role_id": "41C3F183-9BA7-4AC6-8527-C39889C6E245"
+        },
+        {
+          "title": "Witness",
+          "type": "Witness",
+          "where": "one Witness saw this Incident",
+          "role_id": "3BB15FA5-5DB2-43EE-A4F4-C1654480FEEF"
+        }
+      ]
+    },
+    "Person": {
+      "is_main": true,
+      "id": "F5E44F41-2BF1-4B4C-844E-08EBE84DD4DC",
+      "functions": [
+        {
+          "title": "as Driver",
+          "type": "Driver"
+        },
+        {
+          "title": "as Witness",
+          "type": "Witness"
+        },
+        {
+          "title": "Person Name",
+          "type": "Person Name",
+          "where": "this Person has one Person Name",
+          "role_id": "88C171A2-25CD-4774-B73C-72672ACDBB8E"
+        }
+      ]
+    },
+    "Person Name": {
+      "is_main": false,
+      "id": "A4F489BB-5A6B-4403-AB4B-0565A96059DF",
+      "functions": [
+        {
+          "title": "Person",
+          "type": "Person",
+          "where": "one Person has this Person Name",
+          "role_id": "9AA7879D-4E16-43E4-883B-B8554FFD3DF0"
+        }
+      ]
+    },
+    "Vehicle Incident": {
+      "is_main": true,
+      "id": "A81218A6-64BE-4AE8-8FB5-2FE338A736EB",
+      "functions": [
+        {
+          "title": "as Incident",
+          "type": "Incident"
+        },
+        {
+          "title": "Driver",
+          "type": "Driver",
+          "where": "this Vehicle Incident occured while one Driver was in charge",
+          "role_id": "76B4D681-B173-4DB7-BCA7-6A770C63F41E"
+        }
+      ]
+    },
+    "Witness": {
+      "is_main": false,
+      "id": "20C43F9B-7787-447B-A326-FA6B726D1E0F",
+      "functions": [
+        {
+          "title": "as Person",
+          "type": "Person"
+        },
+        {
+          "title": "all Incident",
+          "type": "Incident",
+          "where": "this Witness saw some Incident",
+          "role_id": "0FC66FDA-FD01-4731-BAC8-78A6BA2C14D5",
+          "is_list": true
+        }
+      ]
+    }
+  }
+}
