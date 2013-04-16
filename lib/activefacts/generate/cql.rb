@@ -344,7 +344,7 @@ module ActiveFacts
 
         print(fact_readings_with_constraints(verbaliser, fact_type)*",\n\t")
         if (pr.role_sequence.all_role_ref.to_a[0].play)
-          print ":\n\t"+verbaliser.verbalise_over_role_sequence(pr.role_sequence)
+          print " where\n\t"+verbaliser.verbalise_over_role_sequence(pr.role_sequence)
         end
         puts(';')
       end
