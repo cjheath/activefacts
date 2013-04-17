@@ -171,7 +171,7 @@ module ActiveFacts
 
           # See if any fact type already exists (this ET cannot be a player, but might objectify it)
           existing_clauses = clauses.select{ |clause| clause.match_existing_fact_type context }
-	  if negation = existing_clauses.detect{|c| s = c.side_effects and s.negated }
+	  if negation = existing_clauses.detect{|c| c.certainty == false }
 	    raise "#{@name} cannot be identified by negated fact type #{negation.inspect}"
 	  end
           any_matched = existing_clauses.size > 0
@@ -247,14 +247,14 @@ module ActiveFacts
             rs = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs, 0, :role => sub_role)
             @constellation.RoleRef(rs, 1, :role => super_role)
-            @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a kind of {1}")
+            @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a kind of {1}", :is_negative => false)
 
             rs2 = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs2, 0, :role => super_role)
             @constellation.RoleRef(rs2, 1, :role => sub_role)
             # Decide in which order to include is a/is an. Provide both, but in order.
             n = 'aeiouh'.include?(sub_role.object_type.name.downcase[0]) ? 'n' : ''
-            @constellation.Reading(inheritance_fact, 2, :role_sequence => rs2, :text => "{0} is a#{n} {1}")
+            @constellation.Reading(inheritance_fact, 2, :role_sequence => rs2, :text => "{0} is a#{n} {1}", :is_negative => false)
 
             if is_identifying_supertype
               inheritance_fact.provides_identification = true
@@ -357,7 +357,7 @@ module ActiveFacts
             @constellation.RoleRef(rs01, 1, :role => identifying_role)
           end
           if rs01.all_reading.empty?
-            @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs01, :text => "{0} has {1}")
+            @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs01, :text => "{0} has {1}", :is_negative => false)
             debug :mode, "Creating new forward reading '#{entity_role.object_type.name} has #{identifying_type.name}'"
           else
             debug :mode, "Using existing forward reading"
@@ -371,7 +371,7 @@ module ActiveFacts
             @constellation.RoleRef(rs10, 1, :role => entity_role)
           end
           if rs10.all_reading.empty?
-            @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs10, :text => "{0} is of {1}")
+            @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs10, :text => "{0} is of {1}", :is_negative => false)
             debug :mode, "Creating new reverse reading '#{identifying_type.name} is of #{entity_role.object_type.name}'"
           else
             debug :mode, "Using existing reverse reading"

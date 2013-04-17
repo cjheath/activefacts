@@ -600,6 +600,7 @@ module ActiveFacts
         end
 
         expanded = verbaliser.expand_reading(reading, frequency_constraints, define_role_names, value_constraints)
+	expanded = "it is not the case that "+expanded if (reading.is_negative)
 
         if (ft_rings = @ring_constraints_by_fact[reading.fact_type]) &&
            (ring = ft_rings.detect{|rc| !@constraints_used[rc]})
@@ -621,7 +622,9 @@ module ActiveFacts
           end
         frequency_constraints = [] unless frequency_constraints.detect{|fc| fc[0] != "some" }
 
-        verbaliser.expand_reading(reading, frequency_constraints)
+	expanded = verbaliser.expand_reading(reading, frequency_constraints)
+	expanded = "it is not the case that "+expanded if (reading.is_negative)
+	expanded
       end
 
     end

@@ -46,10 +46,55 @@ module AlternativeSet
   end
 end
 
+module Concept
+  extend ActiveSupport::Concern
+  included do
+    self.primary_key = 'guid'
+
+    # Constraint is a kind of Concept
+    has_one :constraint, :class_name => 'Constraint', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Context Note is a kind of Concept
+    has_one :context_note, :class_name => 'ContextNote', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Context Note applies to relevant-Concept
+    has_many :context_notes, :class_name => 'ContextNote', :foreign_key => :relevant_concept_guid, :dependent => :destroy
+
+    # Fact Type is a kind of Concept
+    has_one :fact_type, :class_name => 'FactType', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Fact is a kind of Concept
+    has_one :fact, :class_name => 'Fact', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Instance is a kind of Concept
+    has_one :instance, :class_name => 'Instance', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Object Type is a kind of Concept
+    has_one :object_type, :class_name => 'ObjectType', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Population is a kind of Concept
+    has_one :population, :class_name => 'Population', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Query is a kind of Concept
+    has_one :query, :class_name => 'Query', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Role is a kind of Concept
+    has_one :role, :class_name => 'Role', :foreign_key => :concept_guid, :dependent => :destroy
+
+    # Unit is a kind of Concept
+    has_one :unit, :class_name => 'Unit', :foreign_key => :concept_guid, :dependent => :destroy
+
+    validates_presence_of :guid
+  end
+end
+
 module Constraint
   extend ActiveSupport::Concern
   included do
     self.primary_key = 'concept_guid'
+
+    # Constraint is a kind of Concept
+    belongs_to :concept
 
     # Ring Constraint is a kind of Constraint and Ring Constraint has other-Role
     belongs_to :other_role_via_ring_constraint, :class_name => 'Role', :foreign_key => :ring_constraint_other_role_id
@@ -115,6 +160,12 @@ module ContextNote
   extend ActiveSupport::Concern
   included do
     self.primary_key = 'concept_guid'
+
+    # Context Note is a kind of Concept
+    belongs_to :concept
+
+    # Context Note applies to relevant-Concept
+    belongs_to :relevant_concept, :class_name => 'Concept', :foreign_key => :relevant_concept_guid
 
     # Context According To (in which Context Note is according to Agent)
     has_many :context_according_tos, :class_name => 'ContextAccordingTo', :foreign_key => :context_note_guid, :dependent => :destroy
@@ -184,6 +235,9 @@ module Fact
   included do
     self.primary_key = 'concept_guid'
 
+    # Fact is a kind of Concept
+    belongs_to :concept
+
     # Fact is of Fact Type
     belongs_to :fact_type
 
@@ -207,6 +261,9 @@ module FactType
   extend ActiveSupport::Concern
   included do
     self.primary_key = 'concept_guid'
+
+    # Fact Type is a kind of Concept
+    belongs_to :concept
 
     # Entity Type nests Fact Type and Entity Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
     belongs_to :object_type_via_entity_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :entity_type_object_type_id
@@ -247,6 +304,9 @@ module Instance
   included do
     self.primary_key = 'concept_guid'
 
+    # Instance is a kind of Concept
+    belongs_to :concept
+
     # Instance objectifies Fact
     belongs_to :fact
 
@@ -274,6 +334,9 @@ module ObjectType
   extend ActiveSupport::Concern
   included do
     self.primary_key = 'object_type_id'
+
+    # Object Type is a kind of Concept
+    belongs_to :concept
 
     # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type has Value Constraint and Value Constraint is a kind of Constraint
     belongs_to :constraint_via_domain_object_type_value_type_value_constraint, :class_name => 'Constraint', :foreign_key => :value_type_value_constraint_guid
@@ -356,6 +419,9 @@ module Population
   included do
     self.primary_key = 'population_id'
 
+    # Population is a kind of Concept
+    belongs_to :concept
+
     # Population includes Fact
     has_many :facts, :class_name => 'Fact', :foreign_key => :population_id, :dependent => :destroy
 
@@ -376,6 +442,9 @@ module Query
   extend ActiveSupport::Concern
   included do
     self.primary_key = 'concept_guid'
+
+    # Query is a kind of Concept
+    belongs_to :concept
 
     # Query includes Variable
     has_many :variables, :class_name => 'Variable', :foreign_key => :query_guid, :dependent => :destroy
@@ -409,6 +478,9 @@ module Role
   extend ActiveSupport::Concern
   included do
     self.primary_key = 'role_id'
+
+    # Role is a kind of Concept
+    belongs_to :concept
 
     # Implicit Fact Type is implied by Role and Implicit Fact Type is a kind of Fact Type
     belongs_to :fact_type_via_implicit_fact_type, :class_name => 'FactType', :foreign_key => :implicit_fact_type_guid
@@ -647,6 +719,9 @@ module Unit
   extend ActiveSupport::Concern
   included do
     self.primary_key = 'concept_guid'
+
+    # Unit is a kind of Concept
+    belongs_to :concept
 
     # Allowed Range (in which Value Constraint allows Value Range) and Value Range has maximum-Bound and Bound has Value and Value is in Unit
     has_many :allowed_ranges_via_value_range_maximum_bound_value, :class_name => 'AllowedRange', :foreign_key => :value_range_maximum_bound_value_unit_guid, :dependent => :destroy

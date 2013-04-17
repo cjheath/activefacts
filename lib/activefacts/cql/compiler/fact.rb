@@ -17,7 +17,7 @@ module ActiveFacts
           @context.left_contraction_allowed = true
           @clauses.each do |clause|
 	    ft = clause.match_existing_fact_type @context
-	    if s = clause.side_effects and s.negated
+	    if clause.certainty == false
 	      raise "Negated fact #{clause.inspect} is not supported"
 	    end
 	  end

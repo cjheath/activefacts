@@ -17,6 +17,7 @@ Ephemera URL is written as String;
 Exponent is written as Signed Integer(16);
 Frequency is written as Unsigned Integer(32);
 Guid is written as Guid;
+Implication Rule Name is written as String;
 Length is written as Unsigned Integer(32);
 Literal is written as String;
 Name is written as String(64);
@@ -78,6 +79,9 @@ Fact is a kind of Concept [partitioned];
 Fact Type is a kind of Concept [partitioned];
 Fact is of one Fact Type;
 
+Implication Rule is identified by its Name;
+Concept is implied by at most one Implication Rule;
+
 Implicit Fact Type is a kind of Fact Type;
 
 Instance is a kind of Concept [partitioned];
@@ -102,6 +106,7 @@ Reading is identified by Fact Type and Ordinal where
 	Reading is in one Ordinal position,
 	Ordinal reading for fact type is Reading;
 Reading has one Text;
+Reading is negative;
 
 Ring Constraint is a kind of Constraint;
 Ring Constraint is of one Ring Type;

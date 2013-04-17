@@ -116,6 +116,7 @@ module ActiveFacts
             @fact_type.create_implicit_fact_type_for_unary if @fact_type.all_role.size == 1 && !@name
             @existing_clauses = [first_clause]
           elsif (n = @clauses.size - @existing_clauses.size) > 0
+	    raise "Cannot extend a negated fact type" if @existing_clauses.detect {|clause| clause.certainty == false }
             debug :binding, "Extending existing fact type with #{n} new readings"
           end
 

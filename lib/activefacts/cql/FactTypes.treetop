@@ -89,14 +89,14 @@ module ActiveFacts
       end
 
       rule qualified_clauses
-        s q:qualifier? s contracted_clauses s p:post_qualifiers? s c:context_note?
+        s certainty s contracted_clauses s p:post_qualifiers? s c:context_note?
         {
 	  def ast(conjunction = nil)
 	    r = contracted_clauses.ast	# An array of clause asts
 	    r[0].conjunction = conjunction
 	    # pre-qualifiers apply to the first clause, post_qualifiers and context_note to the last
 	    # REVISIT: This may be incorrect where the last is a nested clause
-	    r[0].qualifiers << q.text_value unless q.empty?
+	    r[0].certainty = certainty.value
 	    r[-1].qualifiers += p.list unless p.empty?
 	    r[-1].context_note = c.ast unless c.empty?
 	    r
@@ -104,8 +104,14 @@ module ActiveFacts
         }
       end
 
-      rule qualifier
-        maybe / definitely
+      rule certainty
+	negative_prefix { def value; false; end }
+	/
+        maybe { def value; nil; end }
+	/
+	definitely { def value; true; end }
+	/
+	'' { def value; true; end }
       end
 
       rule post_qualifiers
@@ -173,7 +179,7 @@ module ActiveFacts
       end
 
       rule reading_contraction
-	role p:post_qualifiers? conjunction:(that/who) s q:qualifier? s contracted_clauses s
+	role p:post_qualifiers? conjunction:(that/who) s certainty s contracted_clauses s
 	{
 	  def ast
 	    # contracted_clauses.ast will return an array of Clauses, but the first clause is special. We must:
@@ -182,7 +188,7 @@ module ActiveFacts
 	    clauses_ast = contracted_clauses.ast
 	    clauses_ast[0].conjunction = conjunction.text_value
 	    clauses_ast[0].phrases.unshift(role.ast)
-	    clauses_ast[0].qualifiers << q.text_value unless q.empty?  # Add maybe/definitely
+	    clauses_ast[0].certainty = certainty.value
 
 	    # A contraction returns an array containing:
 	    # * a role AST
@@ -194,11 +200,11 @@ module ActiveFacts
       end
 
       rule condition_contraction
-	role pq:post_qualifiers? q:qualifier? s comparator s e2:expression
+	role pq:post_qualifiers? certainty s comparator s e2:expression
 	  !phrase	  # The contracted_clauses must not continue here!
 	{
 	  def ast
-	    c = Compiler::Comparison.new(comparator.text_value, role.ast, e2.ast, q.empty? ? [] : [q.text_value])
+	    c = Compiler::Comparison.new(comparator.text_value, role.ast, e2.ast, certainty.value)
 	    c.conjunction = comparator.text_value
 	    [ role.ast, pq.empty? ? [] : pq.list, c ]
 	  end
@@ -206,22 +212,22 @@ module ActiveFacts
       end
 
       rule comparison
-	e1:expression s q:qualifier? s comparator s contraction p:post_qualifiers?
+	e1:expression s certainty s comparator s contraction p:post_qualifiers?
 	{
 	  def ast
 	    role, qualifiers, *clauses_ast = *contraction.ast
 	    clauses_ast[0].qualifiers += p.list unless p.empty?	# apply post_qualifiers to the contracted clause
 	    # clauses_ast[0].conjunction = 'and' # AND is implicit for a contraction
-	    c = Compiler::Comparison.new(comparator.text_value, e1.ast, role)
-	    c.qualifiers << q.text_value unless q.empty?
+	    c = Compiler::Comparison.new(comparator.text_value, e1.ast, role, certainty.value)
 	    [c] + clauses_ast
 	  end
 	}
         /
-	q:qualifier? e1:expression s comparator s e2:expression # comparisons have no post-qualifiers: p:post_qualifiers?
+	certainty e1:expression s comparator s e2:expression # comparisons have no post-qualifiers: p:post_qualifiers?
         {
 	  def ast
-	    [Compiler::Comparison.new(comparator.text_value, e1.ast, e2.ast, q.empty? ? [] : [q.text_value])]
+	    c = Compiler::Comparison.new(comparator.text_value, e1.ast, e2.ast, certainty.value)
+	    [c]
 	  end
         }
       end

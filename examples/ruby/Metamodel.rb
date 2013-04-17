@@ -61,6 +61,10 @@ module ::Metamodel
     value_type 
   end
 
+  class ImplicationRuleName < String
+    value_type 
+  end
+
   class Length < UnsignedInteger
     value_type :length => 32
   end
@@ -150,6 +154,7 @@ module ::Metamodel
   class Concept
     identified_by :guid
     one_to_one :guid, :mandatory => true        # See Guid.concept
+    has_one :implication_rule                   # See ImplicationRule.all_concept
   end
 
   class Constraint < Concept
@@ -176,6 +181,11 @@ module ::Metamodel
   end
 
   class FactType < Concept
+  end
+
+  class ImplicationRule
+    identified_by :implication_rule_name
+    one_to_one :implication_rule_name, :mandatory => true  # See ImplicationRuleName.implication_rule
   end
 
   class ImplicitFactType < FactType
@@ -208,6 +218,7 @@ module ::Metamodel
   class Reading
     identified_by :fact_type, :ordinal
     has_one :fact_type, :mandatory => true      # See FactType.all_reading
+    maybe :is_negative
     has_one :ordinal, :mandatory => true        # See Ordinal.all_reading
     has_one :role_sequence, :mandatory => true  # See RoleSequence.all_reading
     has_one :text, :mandatory => true           # See Text.all_reading

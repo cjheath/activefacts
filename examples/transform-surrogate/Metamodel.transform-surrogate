@@ -1,6 +1,7 @@
 Aggregation: Aggregate.Code[1], Aggregated.Variable.ID[1], Aggregation.ID[*], Variable.ID
 Allowed Range: Allowed.Range.ID[*], Value.Constraint.Guid[1], Value.Range.Maximum.Bound.Is.Inclusive[1], Value.Range.Maximum.Bound.Value.Is.A.String[1], Value.Range.Maximum.Bound.Value.Literal[1], Value.Range.Maximum.Bound.Value.Unit.Guid[1], Value.Range.Minimum.Bound.Is.Inclusive[1], Value.Range.Minimum.Bound.Value.Is.A.String[1], Value.Range.Minimum.Bound.Value.Literal[1], Value.Range.Minimum.Bound.Value.Unit.Guid[1]
 Alternative Set: Guid[*], Members.Are.Exclusive
+Concept: Guid[*], Implication.Rule.Name
 Constraint: Concept.Guid[*], Enforcement.Agent.Name, Enforcement.Code, Name[3], Presence.Constraint.Is.Mandatory, Presence.Constraint.Is.Preferred.Identifier, Presence.Constraint.Max.Frequency, Presence.Constraint.Min.Frequency, Presence.Constraint.Role.Sequence.Guid, Ring.Constraint.Other.Role.ID, Ring.Constraint.Ring.Type, Ring.Constraint.Role.ID, Set.Exclusion.Constraint.Is.Mandatory, Subset.Constraint.Subset.Role.Sequence.Guid[1], Subset.Constraint.Superset.Role.Sequence.Guid[1], Value.Constraint.Role.ID[2], Vocabulary.Name[3]
 Context According To: Agent.Name[1], Context.According.To.ID[*], Context.Note.Guid[1], Date
 Context Agreed By: Agent.Name[1], Agreement.Guid[1], Context.Agreed.By.ID[*]
@@ -15,7 +16,7 @@ Object Type: Concept.Guid[1], Entity.Type.Is.Implied.By.Objectification, Is.Inde
 Play: Play.ID[*], Role.ID[1], Step.ID, Variable.ID[1]
 Population: Concept.Guid[1], Name[2], Population.ID[*], Vocabulary.Name[2]
 Query: Concept.Guid[*]
-Reading: Fact.Type.Guid[1], Ordinal[1], Reading.ID[*], Role.Sequence.Guid, Text
+Reading: Fact.Type.Guid[1], Is.Negative, Ordinal[1], Reading.ID[*], Role.Sequence.Guid, Text
 Role: Concept.Guid[1], Fact.Type.Guid[2], Implicit.Fact.Type.Guid[3], Object.Type.ID, Ordinal[2], Role.ID[*], Role.Name
 Role Display: Fact.Type.Shape.Guid[1], Ordinal[1], Role.Display.ID[*], Role.ID
 Role Ref: Leading.Adjective, Ordinal[3], Play.ID[1], Role.ID[2], Role.Ref.ID[*], Role.Sequence.Guid[23], Trailing.Adjective

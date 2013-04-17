@@ -45,6 +45,15 @@ CREATE TABLE AlternativeSet (
 )
 GO
 
+CREATE TABLE Concept (
+	-- Concept has Guid,
+	Guid                                    uniqueidentifier NOT NULL,
+	-- maybe Concept is implied by Implication Rule and Implication Rule has Implication Rule Name,
+	ImplicationRuleName                     varchar NULL,
+	PRIMARY KEY(Guid)
+)
+GO
+
 CREATE TABLE [Constraint] (
 	-- Constraint is a kind of Concept and Concept has Guid,
 	ConceptGuid                             uniqueidentifier NOT NULL,
@@ -86,7 +95,8 @@ CREATE TABLE [Constraint] (
 	ValueConstraintRoleOrdinal              smallint NULL,
 	-- maybe Vocabulary contains Constraint and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NULL,
-	PRIMARY KEY(ConceptGuid)
+	PRIMARY KEY(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 )
 GO
 
@@ -96,7 +106,7 @@ CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceG
 	  AND	SubsetConstraintSupersetRoleSequenceGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
+CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConstraintBySubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
 GO
 
 CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal (ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
@@ -105,7 +115,7 @@ CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValue
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeGuid, ValueConstraintRoleOrdinal)
 GO
 
 CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
@@ -148,7 +158,9 @@ CREATE TABLE ContextNote (
 	Discussion                              varchar NOT NULL,
 	-- maybe Context Note applies to relevant-Concept and Concept has Guid,
 	RelevantConceptGuid                     uniqueidentifier NULL,
-	PRIMARY KEY(ConceptGuid)
+	PRIMARY KEY(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid),
+	FOREIGN KEY (RelevantConceptGuid) REFERENCES Concept (Guid)
 )
 GO
 
@@ -202,7 +214,8 @@ CREATE TABLE Fact (
 	PopulationName                          varchar(64) NOT NULL,
 	-- Population includes Fact and maybe Vocabulary includes Population and Vocabulary is called Name,
 	PopulationVocabularyName                varchar(64) NULL,
-	PRIMARY KEY(ConceptGuid)
+	PRIMARY KEY(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 )
 GO
 
@@ -225,7 +238,8 @@ CREATE TABLE FactType (
 	TypeInheritanceSupertypeName            varchar(64) NULL,
 	-- maybe Type Inheritance is a kind of Fact Type and Type Inheritance is where Entity Type is subtype of super-Entity Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
 	TypeInheritanceSupertypeVocabularyName  varchar(64) NULL,
-	PRIMARY KEY(ConceptGuid)
+	PRIMARY KEY(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 )
 GO
 
@@ -235,7 +249,7 @@ CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocab
 	  AND	EntityTypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeVocabularyNameEntityTypeName ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
+CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
@@ -245,7 +259,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_TypeInheritanceInFactTypeByTypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdent ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
+CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
@@ -256,7 +270,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX TypeInheritanceUQ ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
 GO
 
 CREATE TABLE Instance (
@@ -279,6 +293,7 @@ CREATE TABLE Instance (
 	-- maybe Instance has Value and maybe Value is in Unit and Unit is a kind of Concept and Concept has Guid,
 	ValueUnitGuid                           uniqueidentifier NULL,
 	PRIMARY KEY(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid),
 	FOREIGN KEY (FactGuid) REFERENCES Fact (ConceptGuid)
 )
 GO
@@ -320,6 +335,7 @@ CREATE TABLE ObjectType (
 	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(VocabularyName, Name),
 	UNIQUE(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid),
 	FOREIGN KEY (ValueTypeValueConstraintGuid) REFERENCES [Constraint] (ConceptGuid),
 	FOREIGN KEY (ValueTypeSupertypeVocabularyName, ValueTypeSupertypeName) REFERENCES ObjectType (VocabularyName, Name)
 )
@@ -336,7 +352,7 @@ CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeLengthValueTypeScaleValueTypeSupe
 	  AND	ValueTypeSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX DomainObjectTypeMustHaveSupertypeObjectType ON dbo.ValueTypeInObjectType_ValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionTimingValueTypeUn(ValueTypeLength, ValueTypeScale, ValueTypeSupertypeVocabularyName, ValueTypeTransactionTiming, ValueTypeUnitGuid, ValueTypeValueConstraintGuid, ValueTypeSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionTimingValueTy ON dbo.ValueTypeInObjectType_ValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionTimingValueTypeUn(ValueTypeLength, ValueTypeScale, ValueTypeSupertypeVocabularyName, ValueTypeTransactionTiming, ValueTypeUnitGuid, ValueTypeValueConstraintGuid, ValueTypeSupertypeName)
 GO
 
 CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeValueConstraintGuid (ValueTypeValueConstraintGuid) WITH SCHEMABINDING AS
@@ -384,20 +400,24 @@ CREATE TABLE Population (
 	-- maybe Vocabulary includes Population and Vocabulary is called Name,
 	VocabularyName                          varchar(64) NULL,
 	UNIQUE(VocabularyName, Name),
-	UNIQUE(ConceptGuid)
+	UNIQUE(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 )
 GO
 
 CREATE TABLE Query (
 	-- Query is a kind of Concept and Concept has Guid,
 	ConceptGuid                             uniqueidentifier NOT NULL,
-	PRIMARY KEY(ConceptGuid)
+	PRIMARY KEY(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 )
 GO
 
 CREATE TABLE Reading (
 	-- Fact Type has Reading and Fact Type is a kind of Concept and Concept has Guid,
 	FactTypeGuid                            uniqueidentifier NOT NULL,
+	-- Reading is negative,
+	IsNegative                              bit NULL,
 	-- Reading is in Ordinal position,
 	Ordinal                                 smallint NOT NULL,
 	-- Reading is in Role Sequence and Role Sequence has Guid,
@@ -426,6 +446,7 @@ CREATE TABLE Role (
 	RoleName                                varchar(64) NULL,
 	PRIMARY KEY(FactTypeGuid, Ordinal),
 	UNIQUE(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid),
 	FOREIGN KEY (ImplicitFactTypeGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (FactTypeGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name)
@@ -701,7 +722,8 @@ CREATE TABLE Unit (
 	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(ConceptGuid),
 	UNIQUE(Name),
-	UNIQUE(VocabularyName, Name)
+	UNIQUE(VocabularyName, Name),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 )
 GO
 

@@ -356,15 +356,15 @@ module ActiveFacts
             rs = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs, 0, :role => subtype_role)
             @constellation.RoleRef(rs, 1, :role => supertype_role)
-            @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a kind of {1}")
-            @constellation.Reading(inheritance_fact, 1, :role_sequence => rs, :text => "{0} is a subtype of {1}")
+            @constellation.Reading(inheritance_fact, 0, :role_sequence => rs, :text => "{0} is a kind of {1}", :is_negative => false)
+            @constellation.Reading(inheritance_fact, 1, :role_sequence => rs, :text => "{0} is a subtype of {1}", :is_negative => false)
 
             rs2 = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs2, 0, :role => supertype_role)
             @constellation.RoleRef(rs2, 1, :role => subtype_role)
             n = 'aeiouh'.include?(subtype_role.object_type.name.downcase[0]) ? 1 : 0
-            @constellation.Reading(inheritance_fact, 2+n, :role_sequence => rs2, :text => "{0} is a {1}")
-            @constellation.Reading(inheritance_fact, 3-n, :role_sequence => rs2, :text => "{0} is an {1}")
+            @constellation.Reading(inheritance_fact, 2+n, :role_sequence => rs2, :text => "{0} is a {1}", :is_negative => false)
+            @constellation.Reading(inheritance_fact, 3-n, :role_sequence => rs2, :text => "{0} is an {1}", :is_negative => false)
           }
         end
       end
@@ -505,7 +505,7 @@ module ActiveFacts
                 #  }
 
                 x_readings.each_with_index{|x, i|
-                  reading = @constellation.Reading(fact_type, fact_type.all_reading.size)
+                  reading = @constellation.Reading(fact_type, fact_type.all_reading.size, :is_negative => false)
                   reading.role_sequence = role_sequence
                   # REVISIT: The downcase here only needs to be the initial letter of each word, but be safe:
                   reading.text = extract_adjectives(x.text, role_sequence)

@@ -64,16 +64,16 @@ describe "ASTs from Derived Fact Types with expressions" do
       Person(1) is ancestor of Person(2): maybe Person(1) is parent of Person(2) [transitive];
     }.should parse_to_ast \
       %q{FactType: [{Person(1)} "is ancestor of" {Person(2)}] where
-        ["maybe", "transitive"] {Person(1)} "is parent of" {Person(2)}}
+	["transitive"] maybe {Person(1)} "is parent of" {Person(2)}}
   end
 
   it "should parse a contracted reading with qualifiers" do
     %q{
       Person(1) provides lineage of Person(2): maybe Person(2) is child of Person(1) [transitive] who is male;
     }.should parse_to_ast \
-      %q{FactType: [{Person(1)} "provides lineage of" {Person(2)}] where
-        ["maybe", "transitive"] {Person(2)} "is child of" {Person(1)} 
-        who {Person(1)} "is male"}
+       %q{FactType: [{Person(1)} "provides lineage of" {Person(2)}] where
+        ["transitive"] maybe {Person(2)} "is child of" {Person(1)}
+	who {Person(1)} "is male"}
   end
 
   it "should parse a contracted readings and comparisons with qualifiers" do
@@ -83,10 +83,10 @@ describe "ASTs from Derived Fact Types with expressions" do
           who maybe is of Age [static]
             definitely >= 21;
     }.should parse_to_ast \
-      %q{FactType: [{Person(1)} "is ancestor of adult" {Person(2)}] where
-        ["maybe", "transitive"] {Person(1)} "is parent of" {Person(2)}
-        who ["maybe", "static"] {Person(2)} "is of" {Age}
-        >= compare>=({Age} 21, [definitely])}
+       %q{FactType: [{Person(1)} "is ancestor of adult" {Person(2)}] where
+	["transitive"] maybe {Person(1)} "is parent of" {Person(2)}
+	who ["static"] maybe {Person(2)} "is of" {Age}
+	>= compare>=({Age} 21)}
   end
 
   it "should parse a comparison expression with a contracted reading" do
@@ -102,10 +102,10 @@ describe "ASTs from Derived Fact Types with expressions" do
     %q{
       Director is old: Person directs company, Person is of Age, maybe 20 <= Age definitely < 60;
     }.should parse_to_ast \
-      %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
-        {Person} "is of" {Age} ,
-        compare<=(20 {Age}, [maybe]) 
-        < compare<({Age} 60, [definitely])}
+       %q{FactType: [{Director} "is old"] where {Person} "directs company" ,
+	{Person} "is of" {Age} ,
+	compare<=(maybe 20 {Age})
+	< compare<({Age} 60)}
   end
 
   it "should parse a comparison expression with right-contracted then left-contracted comparisons"
@@ -122,18 +122,18 @@ describe "ASTs from Derived Fact Types with expressions" do
     %q{
       A is a farce: maybe A has completely- B [transitive, acyclic] < 5, B -c = 2;
     }.should parse_to_ast \
-      %q{FactType: [{A} "is a farce"] where ["acyclic", "maybe", "transitive"] {A} "has" {completely- B}
-        < compare<({completely- B} 5)
-        , compare=({B -c} 2)}
+       %q{FactType: [{A} "is a farce"] where ["acyclic", "transitive"] maybe {A} "has" {completely- B}
+	< compare<({completely- B} 5)
+	, compare=({B -c} 2)}
   end
 
   it "should parse multiple leading and trailing adjectives with contracted comparisons" do
     %q{
       A is a farce: maybe A has completely- green B [transitive, acyclic] < 9, B c -d = 2;
     }.should parse_to_ast \
-      %q{FactType: [{A} "is a farce"] where ["acyclic", "maybe", "transitive"] {A} "has" {completely- green B} 
-      < compare<({completely- green B} 9)
-      , compare=({B c -d} 2)}
+       %q{FactType: [{A} "is a farce"] where ["acyclic", "transitive"] maybe {A} "has" {completely- green B}
+	< compare<({completely- green B} 9)
+	, compare=({B c -d} 2)}
   end
 
   it "should parse a comparison clause containing units" do
@@ -168,6 +168,12 @@ describe "ASTs from Derived Fact Types with expressions" do
       Driving was negligent where
         Driving (where maybe Driver drove in Incident [acyclic] that definitely is of Claim [intransitive]) followed Intoxication [static];
     }.should parse_to_ast \
+       %q{
+	FactType: [{Driving} "was negligent"] where ["static"] {Driving}
+	(where ["acyclic"] maybe {Driver} "drove in" {Incident}
+	  that ["intransitive"] {Incident} "is of" {Claim})
+	"followed" {Intoxication}
+       }
       %q{
         FactType: [{Driving} "was negligent"] where ["static"] {Driving}
         (where ["acyclic", "maybe"] {Driver} "drove in" {Incident}

@@ -89,8 +89,16 @@ module ActiveFacts
                   irole = role.implicit_fact_type.all_role.single
                   raise "Internal error: Trying to add role of #{irole.object_type.name} to variable for #{objectification_node.object_type.name}" unless objectification_node.object_type == irole.object_type
                   objectification_role = @constellation.Play(objectification_node, role.implicit_fact_type.all_role.single)
-                  objectification_step = @constellation.Step(objectification_role, play, :fact_type => role.implicit_fact_type)
-		  objectification_step.is_disallowed = true if s = clause.side_effects and s.negated
+                  objectification_step = @constellation.Step(
+		      objectification_role,
+		      play,
+		      :fact_type => role.implicit_fact_type,
+		      :is_optional => false,
+		      :is_disallowed => clause.certainty == false
+		    )
+		  if clause.certainty == nil
+		    objectification_step.is_optional = true
+		  end
                   debug :query, "New #{objectification_step.describe}"
                   debug :query, "Associating #{incidental_roles.map(&:describe)*', '} incidental roles with #{objectification_step.describe}" if incidental_roles.size > 0
                   incidental_roles.each { |jr| jr.step = objectification_step }
@@ -139,11 +147,14 @@ module ActiveFacts
             end
             # We aren't talking about objectification here, so there must be exactly two roles.
             raise "REVISIT: Internal error constructing step for #{clause.inspect}" if plays.size != 2
-            js = @constellation.Step(plays[0], plays[1], :fact_type => clause.fact_type)
-	    if s = clause.side_effects and s.negated
-	      js.is_disallowed = true
-	    end
-            debug :query, "New Step #{js.describe}"
+            js = @constellation.Step(
+		plays[0],
+		plays[1],
+		:fact_type => clause.fact_type,
+		:is_disallowed => clause.certainty == false,
+		:is_optional => clause.certainty == nil
+	      )
+            debug :query, "New #{js.describe}"
             debug :query, "Associating #{incidental_roles.map(&:describe)*', '} incidental roles with #{js.describe}" if incidental_roles.size > 0
             incidental_roles.each { |jr| jr.step = js }
           end

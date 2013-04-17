@@ -204,6 +204,10 @@ module ActiveFacts
         id (s id)*
       end
 
+      rule negative_prefix
+	s it s is s not s the s case s that s
+      end
+
       # >>>>>>>>>>>>>>>>>>>> Internal vocabulary <<<<<<<<<<<<<<<<<<<<
       rule all 'all' !alphanumeric end
       rule ascending 'ascending' !alphanumeric end
@@ -240,6 +244,7 @@ module ActiveFacts
       rule because 'because' !alphanumeric end
       rule but 'but' !alphanumeric end 
       rule by 'by' !alphanumeric end			      # fix? Used in 'returning' for ordering
+      rule case 'case' !alphanumeric end 
       rule definitely 'definitely' !alphanumeric end
       rule ephemera 'ephemera' !alphanumeric end 
       rule false 'false' !alphanumeric end 
@@ -253,6 +258,7 @@ module ActiveFacts
       rule intransitive 'intransitive' !alphanumeric end
       rule irreflexive 'irreflexive' !alphanumeric end
       rule is 'is' !alphanumeric end 
+      rule it 'it' !alphanumeric end
       rule its 'its' !alphanumeric end
       rule masculine 'masculine' !alphanumeric end 
       rule maybe 'maybe' !alphanumeric end
@@ -272,6 +278,7 @@ module ActiveFacts
       rule static 'static' !alphanumeric end
       rule symmetric 'symmetric' !alphanumeric end
       rule that 'that' !alphanumeric end
+      rule the 'the' !alphanumeric end 
       rule then 'then' !alphanumeric end
       rule to 'to' !alphanumeric end
       rule to_avoid to s 'avoid' !alphanumeric end

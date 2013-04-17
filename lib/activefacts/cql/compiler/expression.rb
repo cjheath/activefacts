@@ -34,10 +34,10 @@ module ActiveFacts
         attr_accessor :clause     # What clause does the result participate in?
         attr_accessor :role       # Which Role of this ObjectType
         attr_accessor :role_ref   # Which RoleRef to that Role
+        attr_accessor :certainty  # nil, true, false -> maybe, definitely, not
         def nested_clauses; @nested_clauses ||= [self]; end
         def clause; self; end
         def objectification_of; @fact_type; end
-
         # Clause (in)compatibility:
         [ :phrases, :qualifiers, :context_note, :reading, :role_sequence, :fact
         ].each do |s|
@@ -47,6 +47,10 @@ module ActiveFacts
         def conjunction; nil; end
         attr_reader :fact_type
         def objectified_as; self; end   # The Reference which objectified this fact type
+
+	def initialize
+	  @certainty = true	  # Assume it's definite
+	end
 
         def operands context = nil
           raise "REVISIT: Implement operand enumeration in the operator subclass #{self.class.name}"
@@ -113,7 +117,7 @@ module ActiveFacts
           # REVISIT: We should auto-create steps from Entity Types to an identifying ValueType
           # REVISIT: We should traverse up the supertype of ValueTypes to find a DataType
           @fact_type = clause_ast.match_existing_fact_type(context, :exact_type => true)
-	  if s = clause.side_effects and s.negated
+	  if clause.certainty == false
 	    raise "Negated fact types in expressions are not yet supported: #{clause.inspect}"
 	  end
           return @fact_type if @fact_type
@@ -126,7 +130,7 @@ module ActiveFacts
           opnds.each do |opnd|
             next unless opnd.is_a?(Operation)
             opnd.match_existing_fact_type context
-	    if s = opnd.side_effects and s.negated
+	    if opnd.certainty == false
 	      raise "Negated fact types in expressions are not yet supported: #{opnd.inspect}"
 	    end
           end
@@ -150,8 +154,8 @@ module ActiveFacts
       class Comparison < Operation
         attr_accessor :operator, :e1, :e2, :qualifiers, :conjunction
 
-        def initialize operator, e1, e2, qualifiers = []
-          @operator, @e1, @e2, @qualifiers = operator, e1, e2, qualifiers
+        def initialize operator, e1, e2, certainty = true
+          @operator, @e1, @e2, @certainty, @qualifiers = operator, e1, e2, certainty, []
         end
 
         def refs
@@ -203,7 +207,21 @@ module ActiveFacts
         def inspect; to_s; end
 
         def to_s
-          "compare#{operator}(#{e1.to_s} #{e2.to_s}#{@qualifiers.empty? ? '' : ', ['+@qualifiers*', '+']'})"
+          "compare#{
+	    operator
+	  }(#{
+	    case @certainty
+	    when nil; 'maybe '
+	    when false; 'negated '
+	    # else 'definitely '
+	    end
+          }#{
+	    e1.to_s
+	  } #{
+	    e2.to_s
+	  }#{
+	    @qualifiers.empty? ? '' : ', ['+@qualifiers*', '+']'
+	  })"
         end
       end
 

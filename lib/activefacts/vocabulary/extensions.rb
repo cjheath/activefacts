@@ -73,9 +73,9 @@ module ActiveFacts
         all_reading.sort_by{|reading| reading.ordinal}
       end
 
-      def preferred_reading
-        pr = all_reading_by_ordinal[0]
-        raise "No reading for (#{all_role.map{|r| r.object_type.name}*", "})" unless pr
+      def preferred_reading negated = false
+        pr = all_reading_by_ordinal.detect{|r| !r.is_negative == !negated }
+        raise "No reading for (#{all_role.map{|r| r.object_type.name}*", "})" unless pr || negated
         pr
       end
 
@@ -111,10 +111,12 @@ module ActiveFacts
         phantom_role = @constellation.Role(implicit_fact_type, 0, :object_type => entity_type, :guid => :new)
       end
 
-      def reading_preferably_starting_with_role role
+      def reading_preferably_starting_with_role role, negated = false
         all_reading_by_ordinal.detect do |reading|
-          reading.text =~ /\{\d\}/ and reading.role_sequence.all_role_ref_in_order[$1.to_i].role == role
-        end || preferred_reading
+          reading.text =~ /\{\d\}/ and
+	    reading.role_sequence.all_role_ref_in_order[$1.to_i].role == role and
+	    reading.is_negative == !!negated
+        end || preferred_reading(negated)
       end
 
       def all_role_in_order
@@ -666,9 +668,9 @@ module ActiveFacts
     class Step
       def describe
         "Step " +
-          "#{is_optional && 'maybe '}" +
-          (is_unary_step ? " (unary) " : "from #{input_play.describe} ") +
-          "#{is_disallowed && 'not '}" +
+          "#{is_optional ? 'maybe ' : ''}" +
+          (is_unary_step ? '(unary) ' : "from #{input_play.describe} ") +
+          "#{is_disallowed ? 'not ' : ''}" +
           "to #{output_play.describe} " +
           "over " +
           (is_objectification_step ? 'objectification ' : '') +

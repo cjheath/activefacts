@@ -644,11 +644,13 @@ module ActiveFacts
           # Choose a reading that's contractable against the previous step, if possible
           reading = fact_type.all_reading_by_ordinal.
             detect do |reading|
-              reading_starts_with_node(reading, next_node)
+	      # Only contract a negative reading if we want one
+	      (!next_step.is_disallowed || !reading.is_negative == !next_step.is_disallowed) and
+		reading_starts_with_node(reading, next_node)
             end
         end
         last_is_contractable = false unless reading
-        reading ||= fact_type.preferred_reading
+        reading ||= fact_type.preferred_reading(next_step.is_disallowed) || fact_type.preferred_reading
 
         # Find which role occurs last in the reading, and which Variable is attached
         reading.text =~ /\{(\d)\}[^{]*\Z/
@@ -696,7 +698,9 @@ module ActiveFacts
 
               player_by_role =
                 next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }
+	      raise "REVISIT: Needed a negated reading here" if !next_reading.is_negative != !next_step.is_disallowed
               readings += expand_contracted_text(next_step, next_reading, player_by_role)
+	      debugger if readings =~ /\bis fun\b/
               step_completed(next_step)
             else
               next_step = choose_step(next_node) if !next_step
@@ -708,9 +712,11 @@ module ActiveFacts
                 # Objectified unaries get emitted as unaries, not as objectifications:
                 role = next_step.input_play.role
                 role = role.fact_type.implying_role if role.fact_type.is_a?(ImplicitFactType)
-                next_reading = role.fact_type.preferred_reading
+                next_reading = role.fact_type.preferred_reading(next_step.is_disallowed)
                 readings += " and " unless readings.empty?
+		readings += "it is not the case that " if !next_step.is_disallowed != !next_reading.is_negative
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
+	      debugger if readings =~ /\bis fun\b/
                 step_completed(next_step)
               elsif next_step.is_objectification_step
                 fact_type = next_step.fact_type.implying_role.fact_type
@@ -729,15 +735,20 @@ module ActiveFacts
                   # The last reading we emitted ended with the name of the objectification of this fact type, so we can contract the objectification
                   # REVISIT: Do we need to use player_by_role here (if this objectification is traversed twice and so is subscripted)
                   readings += objectification_verbalisation(fact_type.entity_type)
+	      debugger if readings =~ /\bis fun\b/
                 else
                   # This objectified fact type does not need to be made explicit.
+		  negation = next_step.is_disallowed
                   next_reading, next_node, next_step, last_is_contractable =
                     *elided_objectification(next_step, fact_type, last_is_contractable, next_node)
                   if last_is_contractable
                     readings += expand_contracted_text(next_step, next_reading, player_by_role)
+	      debugger if readings =~ /\bis fun\b/
                   else
                     readings += " and " unless readings.empty?
+		    readings += "it is not the case that " if !!negation != !!next_reading.is_negative
                     readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
+	      debugger if readings =~ /\bis fun\b/
                   end
                   # No need to continue if we just deleted the last step
                   break if @steps.empty?
@@ -748,11 +759,14 @@ module ActiveFacts
                 # Prefer a reading that starts with the player of next_node
                 next_reading = fact_type.all_reading_by_ordinal.
                   detect do |reading|
-                    reading_starts_with_node(reading, next_node)
-                  end || fact_type.preferred_reading
+		    (!next_step.is_disallowed || !reading.is_negative == !next_step.is_disallowed) and
+		      reading_starts_with_node(reading, next_node)
+                  end || fact_type.preferred_reading(next_step.is_disallowed)
                 # REVISIT: If this step and reading has role references with adjectives, we need to expand using those
                 readings += " and " unless readings.empty?
+		readings += "it is not the case that " if !next_step.is_disallowed != !next_reading.is_negative
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
+	      debugger if readings =~ /\bis fun\b/
                 step_completed(next_step)
               end
             end

@@ -62,6 +62,10 @@ module ActiveFacts
       value_type 
     end
 
+    class ImplicationRuleName < String
+      value_type 
+    end
+
     class Length < UnsignedInteger
       value_type :length => 32
     end
@@ -151,6 +155,7 @@ module ActiveFacts
     class Concept
       identified_by :guid
       one_to_one :guid, :mandatory => true        # See Guid.concept
+      has_one :implication_rule                   # See ImplicationRule.all_concept
     end
 
     class Constraint < Concept
@@ -179,7 +184,9 @@ module ActiveFacts
     class FactType < Concept
     end
 
-    class ImplicitFactType < FactType
+    class ImplicationRule
+      identified_by :implication_rule_name
+      one_to_one :implication_rule_name, :mandatory => true  # See ImplicationRuleName.implication_rule
     end
 
     class Instance < Concept
@@ -187,6 +194,9 @@ module ActiveFacts
       has_one :object_type, :mandatory => true    # See ObjectType.all_instance
       has_one :population, :mandatory => true     # See Population.all_instance
       has_one :value                              # See Value.all_instance
+    end
+
+    class ImplicitFactType < FactType
     end
 
     class Location
@@ -209,6 +219,7 @@ module ActiveFacts
     class Reading
       identified_by :fact_type, :ordinal
       has_one :fact_type, :mandatory => true      # See FactType.all_reading
+      maybe :is_negative
       has_one :ordinal, :mandatory => true        # See Ordinal.all_reading
       has_one :role_sequence, :mandatory => true  # See RoleSequence.all_reading
       has_one :text, :mandatory => true           # See Text.all_reading
@@ -251,7 +262,7 @@ module ActiveFacts
       one_to_one :guid, :mandatory => true        # See Guid.shape
       maybe :is_expanded
       has_one :location                           # See Location.all_shape
-      has_one :orm_diagram, :class => "ORMDiagram", :mandatory => true    # See ORMDiagram.all_shape
+      has_one :orm_diagram, :class => "ORMDiagram", :mandatory => true  # See ORMDiagram.all_shape
     end
 
     class SubsetConstraint < SetConstraint

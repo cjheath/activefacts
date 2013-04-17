@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for Metamodel on 2013-03-25
+# schema.rb auto-generated using ActiveFacts for Metamodel on 2013-04-17
 #
 
-ActiveRecord::Schema.define(:version => 20130325151031) do
+ActiveRecord::Schema.define(:version => 20130417151502) do
   create_table "aggregations", :primary_key => :aggregation_id, :force => true do |t|
     t.integer	"aggregated_variable_id", :null => false
     t.integer	"variable_id", :null => false
@@ -31,6 +31,13 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
   end
 
   add_index "alternative_sets", ["guid"], :name => :index_alternative_sets_on_guid, :unique => true
+
+  create_table "concepts", :id => false, :force => true do |t|
+    t.Guid	"guid", :null => false, :primary => true
+    t.string	"implication_rule_name"
+  end
+
+  add_index "concepts", ["guid"], :name => :index_concepts_on_guid, :unique => true
 
   create_table "constraints", :id => false, :force => true do |t|
     t.Guid	"concept_guid", :null => false, :primary => true
@@ -73,11 +80,11 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
   add_index "context_agreed_bies", ["agreement_guid", "agent_name"], :name => :index_context_agreed_bies_on_agreement_guid_agent_name, :unique => true
 
   create_table "context_notes", :id => false, :force => true do |t|
-    t.datetime	"agreement_date"
     t.Guid	"concept_guid", :null => false, :primary => true
+    t.Guid	"relevant_concept_guid"
+    t.datetime	"agreement_date"
     t.string	"context_note_kind", :null => false
     t.string	"discussion", :null => false
-    t.Guid	"relevant_concept_guid"
   end
 
   add_index "context_notes", ["concept_guid"], :name => :index_context_notes_on_concept_guid, :unique => true
@@ -109,16 +116,16 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
   add_index "facet_values", ["value_type_object_type_id", "facet_value_type_object_type_id", "facet_name"], :name => :index_facet_values_on_value_type_object_type_id_facet_value_3, :unique => true
 
   create_table "facts", :id => false, :force => true do |t|
+    t.Guid	"concept_guid", :null => false, :primary => true
     t.Guid	"fact_type_guid", :null => false
     t.integer	"population_id", :null => false
-    t.Guid	"concept_guid", :null => false, :primary => true
   end
 
   add_index "facts", ["concept_guid"], :name => :index_facts_on_concept_guid, :unique => true
 
   create_table "fact_types", :id => false, :force => true do |t|
-    t.integer	"entity_type_object_type_id"
     t.Guid	"concept_guid", :null => false, :primary => true
+    t.integer	"entity_type_object_type_id"
     t.string	"type_inheritance_assimilation"
     t.boolean	"type_inheritance_provides_identification"
     t.integer	"type_inheritance_subtype_object_type_id"
@@ -131,10 +138,10 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
   add_index "fact_types", ["type_inheritance_subtype_object_type_id", "type_inheritance_supertype_object_type_id"], :name => :index_fact_types_on_type_inheritance_subtype_object_type_id_5
 
   create_table "instances", :id => false, :force => true do |t|
+    t.Guid	"concept_guid", :null => false, :primary => true
     t.Guid	"fact_guid"
     t.integer	"object_type_id", :null => false
     t.integer	"population_id", :null => false
-    t.Guid	"concept_guid", :null => false, :primary => true
     t.boolean	"value_is_a_string"
     t.string	"value_literal"
     t.Guid	"value_unit_guid"
@@ -189,6 +196,7 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
   create_table "readings", :primary_key => :reading_id, :force => true do |t|
     t.Guid	"fact_type_guid", :null => false
     t.Guid	"role_sequence_guid", :null => false
+    t.boolean	"is_negative"
     t.integer	"ordinal", :null => false
     t.string	"text", :limit => 256, :null => false
   end
@@ -196,10 +204,10 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
   add_index "readings", ["fact_type_guid", "ordinal"], :name => :index_readings_on_fact_type_guid_ordinal, :unique => true
 
   create_table "roles", :primary_key => :role_id, :force => true do |t|
+    t.Guid	"concept_guid", :null => false
     t.Guid	"fact_type_guid", :null => false
     t.Guid	"implicit_fact_type_guid"
     t.integer	"object_type_id", :null => false
-    t.Guid	"concept_guid", :null => false
     t.integer	"ordinal", :null => false
     t.string	"role_name", :limit => 64
   end
@@ -295,10 +303,10 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
   add_index "steps", ["input_play_id", "output_play_id"], :name => :index_steps_on_input_play_id_output_play_id
 
   create_table "units", :id => false, :force => true do |t|
+    t.Guid	"concept_guid", :null => false, :primary => true
     t.integer	"coefficient_denominator"
     t.boolean	"coefficient_is_precise"
     t.decimal	"coefficient_numerator"
-    t.Guid	"concept_guid", :null => false, :primary => true
     t.string	"ephemera_url"
     t.boolean	"is_fundamental"
     t.string	"name", :limit => 64, :null => false
@@ -333,6 +341,7 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
     add_foreign_key :allowed_ranges, :constraints, :column => :value_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :allowed_ranges, :units, :column => :value_range_maximum_bound_value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :allowed_ranges, :units, :column => :value_range_minimum_bound_value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :constraints, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :constraints, :roles, :column => :ring_constraint_other_role_id, :primary_key => :role_id, :dependent => :cascade
     add_foreign_key :constraints, :roles, :column => :ring_constraint_role_id, :primary_key => :role_id, :dependent => :cascade
     add_foreign_key :constraints, :roles, :column => :value_constraint_role_id, :primary_key => :role_id, :dependent => :cascade
@@ -341,28 +350,37 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
     add_foreign_key :constraints, :role_sequences, :column => :subset_constraint_superset_role_sequence_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :context_according_tos, :context_notes, :column => :context_note_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :context_agreed_bies, :context_notes, :column => :agreement_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :context_notes, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :context_notes, :concepts, :column => :relevant_concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :derivations, :units, :column => :base_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :derivations, :units, :column => :derived_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :facet_values, :object_types, :column => :facet_value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :facet_values, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :facet_values, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :facts, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :facts, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :facts, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
+    add_foreign_key :fact_types, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :fact_types, :object_types, :column => :entity_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :fact_types, :object_types, :column => :type_inheritance_subtype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :fact_types, :object_types, :column => :type_inheritance_supertype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :instances, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :instances, :facts, :column => :fact_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :instances, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :instances, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
     add_foreign_key :instances, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :object_types, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :object_types, :constraints, :column => :value_type_value_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :object_types, :object_types, :column => :value_type_supertype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :object_types, :units, :column => :value_type_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :plays, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
     add_foreign_key :plays, :steps, :column => :step_id, :primary_key => :step_id, :dependent => :cascade
     add_foreign_key :plays, :variables, :column => :variable_id, :primary_key => :variable_id, :dependent => :cascade
+    add_foreign_key :populations, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :queries, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :readings, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :readings, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :roles, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :roles, :fact_types, :column => :implicit_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :roles, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :roles, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
@@ -393,6 +411,7 @@ ActiveRecord::Schema.define(:version => 20130325151031) do
     add_foreign_key :steps, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :steps, :plays, :column => :input_play_id, :primary_key => :play_id, :dependent => :cascade
     add_foreign_key :steps, :plays, :column => :output_play_id, :primary_key => :play_id, :dependent => :cascade
+    add_foreign_key :units, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :variables, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :variables, :queries, :column => :query_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :variables, :roles, :column => :projection_id, :primary_key => :role_id, :dependent => :cascade

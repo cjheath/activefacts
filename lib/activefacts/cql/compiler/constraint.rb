@@ -74,7 +74,7 @@ module ActiveFacts
             clauses_list.each do |clause| 
               fact_type = clause.match_existing_fact_type @context
               raise "Unrecognised fact type #{clause.inspect} in #{self.class}" unless fact_type
-              raise "Negated fact type #{clause.inspect} in #{self.class} is not yet supported" if s = clause.side_effects and s.negated
+              raise "Negated fact type #{clause.inspect} in #{self.class} is not yet supported" if clause.certainty == false
             end
           end
 

@@ -44,7 +44,7 @@ describe "Entity Types" do
       ["ValueType: a is written as b;", "EntityType: e [{a}] where [\"d\"];"]
     ],
     [ "e is written as b; a is identified by e where maybe d;",
-      ["ValueType: e is written as b;", "EntityType: a [{e}] where [[\"maybe\"] \"d\"];"]
+      ["ValueType: e is written as b;", "EntityType: a [{e}] where [maybe \"d\"];"]
     ],
   ]
 

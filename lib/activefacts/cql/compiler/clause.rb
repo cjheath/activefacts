@@ -5,6 +5,7 @@ module ActiveFacts
       class Clause
         attr_reader :phrases
         attr_accessor :qualifiers, :context_note
+        attr_accessor :certainty	# nil, true, false -> maybe, definitely, not
         attr_accessor :conjunction      # one of {nil, 'and', ',', 'or', 'where'}
         attr_accessor :fact_type
         attr_reader :reading, :role_sequence    # These are the Metamodel objects
@@ -15,6 +16,7 @@ module ActiveFacts
         def initialize phrases, qualifiers = [], context_note = nil
           @phrases = phrases
           refs.each { |ref| ref.clause = self }
+	  @certainty = true
           @qualifiers = qualifiers
           @context_note = context_note
         end
@@ -42,6 +44,12 @@ module ActiveFacts
         def to_s
           "#{
             @qualifiers && @qualifiers.size > 0 ? @qualifiers.sort.inspect+' ' : nil
+          }#{
+	    case @certainty
+	    when nil; 'maybe '
+	    when false; 'negated '
+	    # else 'definitely '
+	    end
           }#{
             quotes = false
             @phrases.inject(""){|s, p|
@@ -290,20 +298,35 @@ module ActiveFacts
         #     a word that matches the reading's
         #
         def clause_matches(fact_type, reading, contracted_role = nil)
-	  negated = false
+	  implicitly_negated = false
           side_effects = []    # An array of items for each role, describing any side-effects of the match.
           intervening_words = nil
           residual_adjectives = false
           phrases = [contracted_role].compact+@phrases
+
+	  # The following form of negation is, e.g., where "Person was invited to no Party",
+	  # as opposed to where "Person was not invited to that Party". Quite different meaning,
+	  # because a free Party variable is required, but the join step is still disallowed.
+	  # REVISIT: I'll create the free variable when I implement some/that binding
+	  # REVISIT: the verbaliser will need to know about a negated step to a free variable
+	  implicitly_negated = true if refs.detect{|ref| q = ref.quantifier and q.is_zero }
+
           debug :matching_fails, "Does '#{phrases.inspect}' match '#{reading.expand}'" do
             phrase_num = 0
             reading_parts = reading.text.split(/\s+/)
             reading_parts.each do |element|
+	      phrase = phrases[phrase_num]
+	      if phrase == 'not'
+		raise "Stop playing games with your double negatives: #{phrases.inspect}" if implicitly_negated
+		debug :matching, "Negation detected"
+		implicitly_negated = true
+		phrase = phrases[phrase_num += 1]
+	      end
               if element !~ /\{(\d+)\}/
                 # Just a word; it must match
-                unless phrases[phrase_num] == element
-                  debug :matching_fails, "Mismatched ordinary word #{phrases[phrase_num].inspect} (wanted #{element})"
-                  return nil
+                unless phrase == element
+		  debug :matching_fails, "Mismatched ordinary word #{phrases[phrase_num].inspect} (wanted #{element})"
+		  return nil
                 end
                 phrase_num += 1
                 next
@@ -448,10 +471,12 @@ module ActiveFacts
                   side_effects.map{|side_effect|
                     side_effect.absorbed_precursors+side_effect.absorbed_followers + (side_effect.common_supertype ? 1 : 0)
                   }.inspect
-                } side effects#{negated ? ' negated' : ''})#{residual_adjectives ? ' and residual adjectives' : ''}"
+                } side effects)#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
           # There will be one side_effects for each role player
-          ClauseMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects, negated)
+	  @certainty = !@certainty if implicitly_negated
+	  @certainty = !@certainty if reading.is_negative
+          ClauseMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects, implicitly_negated)
         end
 
         def apply_side_effects(context, side_effects)
@@ -580,7 +605,8 @@ module ActiveFacts
               existing
               #raise "Reading '#{existing.expand}' already exists, so why are we creating a duplicate?"
             end
-            constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ")
+            r = constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ", :is_negative => (certainty == false))
+	    r
           end
         end
 
@@ -651,7 +677,7 @@ module ActiveFacts
             end
             # raise "Reading '#{@reading.expand}' already exists, so why are we creating a duplicate (with #{extra_adjectives.inspect})?"
           else
-            constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_text)
+            constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_text, :is_negative => (certainty == false))
           end
           @role_sequence
         end
@@ -677,7 +703,7 @@ module ActiveFacts
             end
 
             # REVISIT: Check maybe and other qualifiers:
-            debug :constraint, "Need to make constraints for #{@qualifiers*', '}" if @qualifiers.size > 0
+            debug :constraint, "Need to make constraints for #{@qualifiers.inspect}" if @qualifiers.size > 0 or @certainty != true
           end
         end
 
@@ -722,6 +748,7 @@ module ActiveFacts
         attr_reader :fact_type
         attr_reader :role_side_effects    # One array of values per Reference matched, in order
 	attr_reader :negated
+	attr_reader :optional
 
         def initialize fact_type, clause, residual_adjectives, role_side_effects, negated = false
           @fact_type = fact_type
@@ -759,7 +786,7 @@ module ActiveFacts
               ( [side_effect.common_supertype ? "supertype step over #{side_effect.common_supertype.name}" : nil] +
                 [side_effect.absorbed_precursors > 0 ? "absorbs #{side_effect.absorbed_precursors} preceding words" : nil] +
                 [side_effect.absorbed_followers > 0 ? "absorbs #{side_effect.absorbed_followers} following words" : nil] +
-		[@negated ? 'negated' : nil]
+		[@negated ? 'implicitly negated' : nil]
               )
             end.flatten.compact*','
           actual_effects.empty? ? "no side effects" : actual_effects
@@ -990,6 +1017,18 @@ module ActiveFacts
           @enforcement = enforcement
           @context_note = context_note
         end
+
+	def is_unique
+	  @max and @max == 1
+	end
+
+	def is_mandatory
+	  @min and @min >= 1
+	end
+
+	def is_zero
+	  @min == 0 and @max == 0
+	end
 
         def inspect
           "[#{@min}..#{@max}]#{
