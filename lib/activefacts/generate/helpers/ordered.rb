@@ -280,7 +280,7 @@ module ActiveFacts
 	    roles.map(&:fact_type).uniq.select{|fact_type|
 		# The fact type hasn't already been dumped but all its role players have
 		!@fact_types_dumped[fact_type] &&
-		  !fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType) &&
+		  !fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType) &&
 		  !fact_type.all_role.detect{|r| !@object_types_dumped[r.object_type] } &&
 		  !fact_type.entity_type &&
 		  derivation_precursors_complete(fact_type)
@@ -360,7 +360,7 @@ module ActiveFacts
 	  fact_collection.keys.select{|fact_id|
 		  fact_type = fact_collection[fact_id] and
 		  !fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) and
-		  !fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType) and
+		  !fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType) and
 		  !@fact_types_dumped[fact_type] and
 		  !skip_fact_type(fact_type) and
 		  !fact_type.all_role.detect{|r| r.object_type.is_a?(ActiveFacts::Metamodel::EntityType) }
@@ -378,7 +378,7 @@ module ActiveFacts
 	  # REVISIT: Find out why some fact types are missed during entity dumping:
 	  @vocabulary.constellation.FactType.values.select{|fact_type|
 	      !fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) &&
-		!fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+		!fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
 	    }.sort_by{|fact_type|
 	      fact_type_key(fact_type)
 	    }.each{|fact_type|

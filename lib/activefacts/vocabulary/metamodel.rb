@@ -196,7 +196,7 @@ module ActiveFacts
       has_one :value                              # See Value.all_instance
     end
 
-    class ImplicitFactType < FactType
+    class LinkFactType < FactType
     end
 
     class Location
@@ -234,7 +234,7 @@ module ActiveFacts
     class Role < Concept
       identified_by :fact_type, :ordinal
       has_one :fact_type, :mandatory => true      # See FactType.all_role
-      one_to_one :implicit_fact_type, :counterpart => :implying_role  # See ImplicitFactType.implying_role
+      one_to_one :link_fact_type, :counterpart => :implying_role  # See LinkFactType.implying_role
       has_one :object_type, :mandatory => true    # See ObjectType.all_role
       has_one :ordinal, :mandatory => true        # See Ordinal.all_role
       has_one :role_name, :class => Name          # See Name.all_role_as_role_name

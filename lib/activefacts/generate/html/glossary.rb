@@ -234,7 +234,7 @@ module ActiveFacts
               map{|r| r.fact_type}.
               uniq.
               reject do |ft|
-		ft.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+		ft.is_a?(ActiveFacts::Metamodel::LinkFactType)
 	      end.
               map { |ft| [ft, "    #{fact_type_with_constraints(ft, o)}"] }.
               sort_by{|ft, text|

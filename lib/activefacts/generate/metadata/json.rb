@@ -121,7 +121,7 @@ module ActiveFacts
 	roles = all_role.reject do |role|
 	    # supertype and subtype roles get handled separately
 	    role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) ||
-	      role.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+	      role.fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
 	  end.sort_by do |role|
 	    [role.fact_type.default_reading, role.ordinal]
 	  end

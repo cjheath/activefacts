@@ -2,7 +2,7 @@
 # schema.rb auto-generated using ActiveFacts for Metamodel on 2013-04-17
 #
 
-ActiveRecord::Schema.define(:version => 20130417151502) do
+ActiveRecord::Schema.define(:version => 20130417194035) do
   create_table "aggregations", :primary_key => :aggregation_id, :force => true do |t|
     t.integer	"aggregated_variable_id", :null => false
     t.integer	"variable_id", :null => false
@@ -206,7 +206,7 @@ ActiveRecord::Schema.define(:version => 20130417151502) do
   create_table "roles", :primary_key => :role_id, :force => true do |t|
     t.Guid	"concept_guid", :null => false
     t.Guid	"fact_type_guid", :null => false
-    t.Guid	"implicit_fact_type_guid"
+    t.Guid	"link_fact_type_guid"
     t.integer	"object_type_id", :null => false
     t.integer	"ordinal", :null => false
     t.string	"role_name", :limit => 64
@@ -214,7 +214,7 @@ ActiveRecord::Schema.define(:version => 20130417151502) do
 
   add_index "roles", ["concept_guid"], :name => :index_roles_on_concept_guid, :unique => true
   add_index "roles", ["fact_type_guid", "ordinal"], :name => :index_roles_on_fact_type_guid_ordinal, :unique => true
-  add_index "roles", ["implicit_fact_type_guid"], :name => :index_roles_on_implicit_fact_type_guid
+  add_index "roles", ["link_fact_type_guid"], :name => :index_roles_on_link_fact_type_guid
 
   create_table "role_displays", :primary_key => :role_display_id, :force => true do |t|
     t.Guid	"fact_type_shape_guid", :null => false
@@ -381,7 +381,7 @@ ActiveRecord::Schema.define(:version => 20130417151502) do
     add_foreign_key :readings, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :readings, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :roles, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
-    add_foreign_key :roles, :fact_types, :column => :implicit_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :roles, :fact_types, :column => :link_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :roles, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :roles, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :role_displays, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade

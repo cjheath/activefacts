@@ -283,8 +283,8 @@ module FactType
     # Role belongs to Fact Type
     has_many :roles, :class_name => 'Role', :foreign_key => :fact_type_guid, :dependent => :destroy
 
-    # Implicit Fact Type is implied by Role and Implicit Fact Type is a kind of Fact Type
-    has_one :implying_role_via_implicit_fact_type, :class_name => 'Role', :foreign_key => :implicit_fact_type_guid, :dependent => :destroy
+    # Link Fact Type is implied by Role and Link Fact Type is a kind of Fact Type
+    has_one :implying_role_via_link_fact_type, :class_name => 'Role', :foreign_key => :link_fact_type_guid, :dependent => :destroy
 
     # Fact Type Shape is a kind of Shape and Fact Type Shape is for Fact Type
     has_many :shapes_via_fact_type_shape, :class_name => 'Shape', :foreign_key => :fact_type_shape_fact_type_guid, :dependent => :destroy
@@ -482,8 +482,8 @@ module Role
     # Role is a kind of Concept
     belongs_to :concept
 
-    # Implicit Fact Type is implied by Role and Implicit Fact Type is a kind of Fact Type
-    belongs_to :fact_type_via_implicit_fact_type, :class_name => 'FactType', :foreign_key => :implicit_fact_type_guid
+    # Link Fact Type is implied by Role and Link Fact Type is a kind of Fact Type
+    belongs_to :fact_type_via_link_fact_type, :class_name => 'FactType', :foreign_key => :link_fact_type_guid
 
     # Role belongs to Fact Type
     belongs_to :fact_type

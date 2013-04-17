@@ -84,15 +84,15 @@ module ActiveFacts
                     debug :query, "Creating JN#{query.all_variable.size} for #{clause.fact_type.entity_type.name} in objectification"
                     objectification_node = @constellation.Variable(query, query.all_variable.size, :object_type => clause.fact_type.entity_type)
                   end
-                  raise "Internal error: Trying to add role of #{role.implicit_fact_type.all_role.single.object_type.name} to variable for #{objectification_node.object_type.name}" unless objectification_node.object_type == role.implicit_fact_type.all_role.single.object_type
+                  raise "Internal error: Trying to add role of #{role.link_fact_type.all_role.single.object_type.name} to variable for #{objectification_node.object_type.name}" unless objectification_node.object_type == role.link_fact_type.all_role.single.object_type
 
-                  irole = role.implicit_fact_type.all_role.single
+                  irole = role.link_fact_type.all_role.single
                   raise "Internal error: Trying to add role of #{irole.object_type.name} to variable for #{objectification_node.object_type.name}" unless objectification_node.object_type == irole.object_type
-                  objectification_role = @constellation.Play(objectification_node, role.implicit_fact_type.all_role.single)
+                  objectification_role = @constellation.Play(objectification_node, role.link_fact_type.all_role.single)
                   objectification_step = @constellation.Step(
 		      objectification_role,
 		      play,
-		      :fact_type => role.implicit_fact_type,
+		      :fact_type => role.link_fact_type,
 		      :is_optional => false,
 		      :is_disallowed => clause.certainty == false
 		    )

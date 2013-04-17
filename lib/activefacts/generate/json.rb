@@ -98,7 +98,7 @@ module ActiveFacts
         fact_types = @vocabulary.constellation.
           FactType.values.
           reject{|ft|
-            ActiveFacts::Metamodel::ImplicitFactType === ft || ActiveFacts::Metamodel::TypeInheritance === ft
+            ActiveFacts::Metamodel::LinkFactType === ft || ActiveFacts::Metamodel::TypeInheritance === ft
           }
         puts "  fact_types: [\n#{
           fact_types.sort_by{|f| f.identifying_role_values.inspect}.map do |f|

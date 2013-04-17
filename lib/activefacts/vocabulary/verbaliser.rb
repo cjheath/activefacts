@@ -379,14 +379,14 @@ module ActiveFacts
           # This isn't needed now all Variables have at least one Play
 
           steps.map do |js|
-            if js.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+            if js.fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
               js.fact_type.implying_role.fact_type
             else
               js.fact_type
             end
           end.uniq.each do |fact_type|
           #steps.map{|js|js.fact_type}.uniq.each do |fact_type|
-            next if fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+            next if fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
 
             debug :subscript, "Residual roles in '#{fact_type.default_reading}' are" do
               prrs = fact_type.preferred_reading.role_sequence.all_role_ref
@@ -711,7 +711,7 @@ module ActiveFacts
               if next_step.is_unary_step
                 # Objectified unaries get emitted as unaries, not as objectifications:
                 role = next_step.input_play.role
-                role = role.fact_type.implying_role if role.fact_type.is_a?(ImplicitFactType)
+                role = role.fact_type.implying_role if role.fact_type.is_a?(LinkFactType)
                 next_reading = role.fact_type.preferred_reading(next_step.is_disallowed)
                 readings += " and " unless readings.empty?
 		readings += "it is not the case that " if !next_step.is_disallowed != !next_reading.is_negative

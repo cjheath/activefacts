@@ -188,7 +188,7 @@ module ActiveFacts
                   related_type.all_role.select do |role|
                     all_roles = role.fact_type.all_role
                     next if all_roles.size != players.size      # Wrong number of players
-                    next if role.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+                    next if role.fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
 
                     all_players = all_roles.map{|r| r.object_type}  # All the players of this candidate fact type
 

@@ -1,6 +1,6 @@
 module CompileHelpers
   def baseline
-    @base_facts = @constellation.FactType.values - @constellation.ImplicitFactType.values
+    @base_facts = @constellation.FactType.values - @constellation.LinkFactType.values
     @base_objects = @constellation.ObjectType.values
     @base_queries = @constellation.Query.values
     @base_steps = @constellation.Step.values
@@ -8,7 +8,7 @@ module CompileHelpers
   end
 
   def fact_types
-    @constellation.FactType.values - @constellation.ImplicitFactType.values - @base_facts
+    @constellation.FactType.values - @constellation.LinkFactType.values - @base_facts
   end
 
   def object_types

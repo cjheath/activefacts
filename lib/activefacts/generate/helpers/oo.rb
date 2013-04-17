@@ -42,7 +42,7 @@ module ActiveFacts
 	  o.all_role.
 	    select{|role|
 	      role.fact_type.all_role.size <= 2 &&
-		!role.fact_type.is_a?(ActiveFacts::Metamodel::ImplicitFactType)
+		!role.fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
 	    }.
 	    sort_by{|role|
 	      preferred_role_name(role.fact_type.all_role.select{|r2| r2 != role}[0] || role, o)

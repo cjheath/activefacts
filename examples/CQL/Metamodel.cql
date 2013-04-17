@@ -82,11 +82,11 @@ Fact is of one Fact Type;
 Implication Rule is identified by its Name;
 Concept is implied by at most one Implication Rule;
 
-Implicit Fact Type is a kind of Fact Type;
-
 Instance is a kind of Concept [partitioned];
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
+
+Link Fact Type is a kind of Fact Type;
 
 Location is identified by X and Y where
 	Location is at one X,
@@ -116,8 +116,8 @@ Role is a kind of Concept identified by Fact Type and Ordinal [partitioned] wher
 	Fact Type contains Role,
 	Role fills one Ordinal,
 	Ordinal applies to Role;
-Implicit Fact Type is implied by one Role (as Implying Role),
-	Implying Role implies at most one Implicit Fact Type;
+Link Fact Type is implied by one Role (as Implying Role),
+	Implying Role implies at most one Link Fact Type;
 Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is of Ring Constraint;  // Avoid ambiguity; this is a new fact type
