@@ -15,7 +15,12 @@ module ActiveFacts
           @context = CompilationContext.new(@vocabulary)
           @context.bind @clauses
           @context.left_contraction_allowed = true
-          @clauses.each{ |clause| clause.match_existing_fact_type @context }
+          @clauses.each do |clause|
+	    ft = clause.match_existing_fact_type @context
+	    if s = clause.side_effects and s.negated
+	      raise "Negated fact #{clause.inspect} is not supported"
+	    end
+	  end
 
           # Figure out the simple existential facts and find fact types:
           @bound_facts = []

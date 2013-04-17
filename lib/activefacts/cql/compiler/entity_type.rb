@@ -171,6 +171,9 @@ module ActiveFacts
 
           # See if any fact type already exists (this ET cannot be a player, but might objectify it)
           existing_clauses = clauses.select{ |clause| clause.match_existing_fact_type context }
+	  if negation = existing_clauses.detect{|c| s = c.side_effects and s.negated }
+	    raise "#{@name} cannot be identified by negated fact type #{negation.inspect}"
+	  end
           any_matched = existing_clauses.size > 0
 
           operation = any_matched ? 'Objectifying' : 'Creating'

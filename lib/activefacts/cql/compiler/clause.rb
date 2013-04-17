@@ -290,6 +290,7 @@ module ActiveFacts
         #     a word that matches the reading's
         #
         def clause_matches(fact_type, reading, contracted_role = nil)
+	  negated = false
           side_effects = []    # An array of items for each role, describing any side-effects of the match.
           intervening_words = nil
           residual_adjectives = false
@@ -447,10 +448,10 @@ module ActiveFacts
                   side_effects.map{|side_effect|
                     side_effect.absorbed_precursors+side_effect.absorbed_followers + (side_effect.common_supertype ? 1 : 0)
                   }.inspect
-                } side effects)#{residual_adjectives ? ' and residual adjectives' : ''}"
+                } side effects#{negated ? ' negated' : ''})#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
           # There will be one side_effects for each role player
-          ClauseMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects)
+          ClauseMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects, negated)
         end
 
         def apply_side_effects(context, side_effects)
@@ -720,18 +721,21 @@ module ActiveFacts
         attr_reader :residual_adjectives
         attr_reader :fact_type
         attr_reader :role_side_effects    # One array of values per Reference matched, in order
+	attr_reader :negated
 
-        def initialize fact_type, clause, residual_adjectives, role_side_effects
+        def initialize fact_type, clause, residual_adjectives, role_side_effects, negated = false
           @fact_type = fact_type
           @clause = clause
           @residual_adjectives = residual_adjectives
           @role_side_effects = role_side_effects
+          @negated = negated
         end
 
         def to_s
           'side-effects are [' +
             @role_side_effects.map{|r| r.to_s}*', ' +
             ']' +
+	    "#{@negated ? ' negated' : ''}" +
             "#{@residual_adjectives ? ' with residual adjectives' : ''}"
         end
 
@@ -744,7 +748,9 @@ module ActiveFacts
           @role_side_effects.each do |side_effect|
             c += side_effect.cost
           end
-          c + (@residual_adjectives ? 1 : 0)
+          c += 1 if @residual_adjectives
+	  c += 2 if @negated
+	  c
         end
 
         def describe
@@ -752,7 +758,8 @@ module ActiveFacts
             @role_side_effects.map do |side_effect|
               ( [side_effect.common_supertype ? "supertype step over #{side_effect.common_supertype.name}" : nil] +
                 [side_effect.absorbed_precursors > 0 ? "absorbs #{side_effect.absorbed_precursors} preceding words" : nil] +
-                [side_effect.absorbed_followers > 0 ? "absorbs #{side_effect.absorbed_followers} following words" : nil]
+                [side_effect.absorbed_followers > 0 ? "absorbs #{side_effect.absorbed_followers} following words" : nil] +
+		[@negated ? 'negated' : nil]
               )
             end.flatten.compact*','
           actual_effects.empty? ? "no side effects" : actual_effects

@@ -581,7 +581,7 @@ module ActiveFacts
         next_reading = nil
         next_step =
           next_steps.detect do |js|
-            next false if js.is_objectification_step
+            next false if js.is_objectification_step or js.is_disallowed
             # If we find a reading here, it can be contracted against the previous one
             next_reading =
               js.fact_type.all_reading_by_ordinal.detect do |reading|

@@ -113,6 +113,9 @@ module ActiveFacts
           # REVISIT: We should auto-create steps from Entity Types to an identifying ValueType
           # REVISIT: We should traverse up the supertype of ValueTypes to find a DataType
           @fact_type = clause_ast.match_existing_fact_type(context, :exact_type => true)
+	  if s = clause.side_effects and s.negated
+	    raise "Negated fact types in expressions are not yet supported: #{clause.inspect}"
+	  end
           return @fact_type if @fact_type
 
           @fact_type = clause_ast.make_fact_type context.vocabulary
@@ -123,6 +126,9 @@ module ActiveFacts
           opnds.each do |opnd|
             next unless opnd.is_a?(Operation)
             opnd.match_existing_fact_type context
+	    if s = opnd.side_effects and s.negated
+	      raise "Negated fact types in expressions are not yet supported: #{opnd.inspect}"
+	    end
           end
           @fact_type
         end
