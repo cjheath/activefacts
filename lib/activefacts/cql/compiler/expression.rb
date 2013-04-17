@@ -28,6 +28,7 @@ module ActiveFacts
         def trailing_adjective; nil; end
         def value_constraint; nil; end
         def literal; nil; end
+	def side_effects; nil; end
         attr_accessor :player     # What ObjectType does the Binding denote
         attr_accessor :binding    # What Binding for that ObjectType
         attr_accessor :clause     # What clause does the result participate in?

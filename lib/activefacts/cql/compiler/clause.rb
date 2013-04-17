@@ -119,7 +119,7 @@ module ActiveFacts
         #
         def match_existing_fact_type context, options = {}
           raise "Internal error, clause already matched, should not match again" if @fact_type
-          # If we fail to match, try to a left contraction (or save this for a subsequent left contraction):
+          # If we fail to match, try a left contraction (or save this for a subsequent left contraction):
           left_contract_this_onto = context.left_contractable_clause
           new_conjunction = (conjunction == nil || conjunction == ',')
           changed_conjunction = (lcc = context.left_contraction_conjunction) && lcc != conjunction
@@ -174,6 +174,7 @@ module ActiveFacts
 
               # The candidate fact types have the right number of role players of related types.
               # If any role is played by a supertype or subtype of the required type, there's an implicit subtyping steps
+	      # REVISIT: A double contraction results in player_related_types being empty here
               candidate_fact_types =
                 player_related_types[0].map do |related_type|
                   related_type.all_role.select do |role|
