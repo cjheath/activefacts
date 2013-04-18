@@ -58,6 +58,11 @@ some Booking
     has allocated Seat
     only if that Seat is in that Cinema;
 
+/*
+Person booked Showing (in which Cinema shows Film on DateTime) for Count and Booking has allocated Seat
+    only if Cinema has Seat;
+*/
+
 /* This constraint doesn't compile, but should (and could, if the "in involved in" readings were available):
 Booking has allocated Seat only if
     Booking is involved in some Showing that involves some Cinema that has that Seat;

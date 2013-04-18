@@ -658,21 +658,26 @@ module ActiveFacts
         exit_node = @variables.detect{|jn| jn.all_play.detect{|jr| jr.role == last_role_ref.role}}
         exit_step = nil
 
-        count = 0
-        while other_step =
-          @steps.
-            detect{|js|
-              next unless js.is_objectification_step
-              # REVISIT: This test is too weak: We need to ensure that the same variables are involved, not just the same object types:
-              next unless js.input_play.variable.object_type == fact_type.entity_type || js.output_play.variable.object_type == fact_type.entity_type
-              exit_step = js if js.output_play.variable == exit_node
-              true
-            }
-          debug :query, "Emitting objectified FT allows deleting #{other_step.describe}"
-          step_completed(other_step)
-#          raise "The objectification of '#{fact_type.default_reading}' should not cause the deletion of more than #{fact_type.all_role.size} other steps" if (count += 1) > fact_type.all_role.size
-        end
-        [ reading, exit_step ? exit_step.input_play.variable : exit_node, exit_step, last_is_contractable]
+	debug :query, "Stepping over an objectification to #{exit_node.object_type.name} requires eliding the other implied steps" do
+	  count = 0
+	  while other_step =
+	    @steps.
+	      detect{|js|
+		debug :query, "Considering step '#{js.fact_type.default_reading}'"
+		next unless js.is_objectification_step
+
+		# REVISIT: This test is too weak: We need to ensure that the same variables are involved, not just the same object types:
+		next unless js.input_play.variable.object_type == fact_type.entity_type || js.output_play.variable.object_type == fact_type.entity_type
+		exit_step = js if js.output_play.variable == exit_node
+		true
+	      }
+	    debug :query, "Emitting objectified FT allows deleting #{other_step.describe}"
+	    step_completed(other_step)
+  #          raise "The objectification of '#{fact_type.default_reading}' should not cause the deletion of more than #{fact_type.all_role.size} other steps" if (count += 1) > fact_type.all_role.size
+	  end
+	end
+
+	[ reading, exit_step ? exit_step.input_play.variable : exit_node, exit_step, last_is_contractable]
       end
 
       def verbalise_query query
@@ -700,7 +705,6 @@ module ActiveFacts
                 next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }
 	      raise "REVISIT: Needed a negated reading here" if !next_reading.is_negative != !next_step.is_disallowed
               readings += expand_contracted_text(next_step, next_reading, player_by_role)
-	      debugger if readings =~ /\bis fun\b/
               step_completed(next_step)
             else
               next_step = choose_step(next_node) if !next_step
@@ -712,11 +716,10 @@ module ActiveFacts
                 # Objectified unaries get emitted as unaries, not as objectifications:
                 role = next_step.input_play.role
                 role = role.fact_type.implying_role if role.fact_type.is_a?(LinkFactType)
-                next_reading = role.fact_type.preferred_reading(next_step.is_disallowed)
+		next_reading = role.fact_type.preferred_reading(next_step.is_disallowed) || role.fact_type.preferred_reading
                 readings += " and " unless readings.empty?
 		readings += "it is not the case that " if !next_step.is_disallowed != !next_reading.is_negative
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
-	      debugger if readings =~ /\bis fun\b/
                 step_completed(next_step)
               elsif next_step.is_objectification_step
                 fact_type = next_step.fact_type.implying_role.fact_type
@@ -735,7 +738,6 @@ module ActiveFacts
                   # The last reading we emitted ended with the name of the objectification of this fact type, so we can contract the objectification
                   # REVISIT: Do we need to use player_by_role here (if this objectification is traversed twice and so is subscripted)
                   readings += objectification_verbalisation(fact_type.entity_type)
-	      debugger if readings =~ /\bis fun\b/
                 else
                   # This objectified fact type does not need to be made explicit.
 		  negation = next_step.is_disallowed
@@ -743,12 +745,10 @@ module ActiveFacts
                     *elided_objectification(next_step, fact_type, last_is_contractable, next_node)
                   if last_is_contractable
                     readings += expand_contracted_text(next_step, next_reading, player_by_role)
-	      debugger if readings =~ /\bis fun\b/
                   else
                     readings += " and " unless readings.empty?
 		    readings += "it is not the case that " if !!negation != !!next_reading.is_negative
                     readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
-	      debugger if readings =~ /\bis fun\b/
                   end
                   # No need to continue if we just deleted the last step
                   break if @steps.empty?
@@ -766,17 +766,22 @@ module ActiveFacts
                 readings += " and " unless readings.empty?
 		readings += "it is not the case that " if !next_step.is_disallowed != !next_reading.is_negative
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
-	      debugger if readings =~ /\bis fun\b/
                 step_completed(next_step)
               end
             end
 
-            # Continue from this step with the node having the most steps remaining
-            input_steps = @steps_by_variable[input_node = next_step.input_play.variable] || []
-            output_steps = @steps_by_variable[output_node = next_step.output_play.variable] || []
-            next_node = input_steps.size > output_steps.size ? input_node : output_node
-            # Prepare for possible contraction following:
-            last_is_contractable = next_reading && node_contractable_against_reading(next_node, next_reading)
+	    if next_step
+	      # Continue from this step with the node having the most steps remaining
+	      input_steps = @steps_by_variable[input_node = next_step.input_play.variable] || []
+	      output_steps = @steps_by_variable[output_node = next_step.output_play.variable] || []
+	      next_node = input_steps.size > output_steps.size ? input_node : output_node
+	      # Prepare for possible contraction following:
+	      last_is_contractable = next_reading && node_contractable_against_reading(next_node, next_reading)
+	    else
+	      # This shouldn't happen, but an elided objectification that had missing steps can cause it. Survive:
+	      next_node = (steps[0].input_play || steps[0].output_play).variable
+	      last_is_contractable = false
+	    end
 
           end
         end

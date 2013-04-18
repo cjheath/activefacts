@@ -37,11 +37,12 @@ module ActiveFacts
           to_s
         end
 
-        def inspect
-          to_s
+        def inspect phrases = nil
+          to_s(phrases||@phrases)
         end
 
-        def to_s
+        def to_s phrases = nil
+	  phrases ||= @phrases
           "#{
             @qualifiers && @qualifiers.size > 0 ? @qualifiers.sort.inspect+' ' : nil
           }#{
@@ -52,7 +53,7 @@ module ActiveFacts
 	    end
           }#{
             quotes = false
-            @phrases.inject(""){|s, p|
+            phrases.inject(""){|s, p|
               if String === p
                 s + (quotes ? '' : (quotes = true; '"')) + p.to_s + ' '
 #              REVISIT: Add something here when I re-add functions
@@ -139,21 +140,64 @@ module ActiveFacts
           end
           context.left_contraction_conjunction = new_conjunction ? nil : @conjunction
 
-          contracted_role = nil
-
+	  phrases = @phrases
           vrs = []+refs
+
+	  # A left contraction is where the first player in the previous clause continues as first player of this clause
+	  contracted_left = false
+	  can_contract_right = false
+	  left_insertion = nil
+	  right_insertion = nil
+	  supposed_roles = []	# Arrange to unbind incorrect references supposed due to contraction
+	  contract_left = proc do
+	    contracted_from = left_contract_this_onto.refs[0]
+	    contraction_player = contracted_from.player
+	    contracted_role = Reference.new(contraction_player.name)
+	    supposed_roles << contracted_role
+	    left_insertion = contracted_role.inspect+' '
+	    contracted_role.player = contracted_from.player
+	    contracted_role.role_name = contracted_from.role_name
+	    contracted_role.bind(context)
+	    vrs.unshift contracted_role
+	    contracted_left = true
+	    phrases = [contracted_role]+phrases
+	    debug :matching, "Failed to match #{inspect}. Trying again using left contraction onto #{contraction_player.name}"
+	  end
+
+	  contract_right = proc do
+	    contracted_from = left_contract_this_onto.refs[-1]
+	    contraction_player = contracted_from.player
+	    contracted_role = Reference.new(contraction_player.name)
+	    supposed_roles << contracted_role
+	    right_insertion = ' '+contracted_role.inspect
+	    contracted_role.player = contracted_from.player
+	    contracted_role.role_name = contracted_from.role_name
+	    contracted_role.bind(context)
+	    vrs.push contracted_role
+	    phrases = phrases+[contracted_role]
+	    debug :matching, "Failed to match #{inspect}. Trying again using right contraction onto #{contraction_player.name}"
+	  end
+
           begin
             players = vrs.map{|vr| vr.player}
+
+	    if players.size == 0
+	      can_contract_right = left_contract_this_onto.refs.size == 2
+	      contract_left.call
+	      redo
+	    end
+
             raise "Must identify players before matching fact types" if players.include? nil
             raise "A fact type must involve at least one object type, but there are none in '#{inspect}'" if players.size == 0 && !left_contract_this_onto
 
             player_names = players.map{|p| p.name}
 
-            debug :matching, "Looking for existing #{players.size}-ary fact types matching '#{contracted_role && contracted_role.inspect+' '}#{inspect}'" do
+            debug :matching, "Looking for existing #{players.size}-ary fact types matching '#{inspect(phrases)}'" do
               debug :matching, "Players are '#{player_names.inspect}'"
 
-              # Match existing fact types in nested clauses first (not for contractions):
-              if !contracted_role
+              # Match existing fact types in nested clauses first:
+	      # (not for contractions) REVISIT: Why not?
+              if !contracted_left
                 vrs.each do |ref|
                   next if ref.is_a?(Operation)
                   next unless steps = ref.nested_clauses and !steps.empty?
@@ -180,11 +224,12 @@ module ActiveFacts
 
               debug :matching, "Players must match '#{player_related_types.map{|pa| pa.map{|p|p.name}}.inspect}'"
 
+	      start_obj = player_related_types[0] || [left_contract_this_onto.refs[-1].player]
               # The candidate fact types have the right number of role players of related types.
               # If any role is played by a supertype or subtype of the required type, there's an implicit subtyping steps
 	      # REVISIT: A double contraction results in player_related_types being empty here
               candidate_fact_types =
-                player_related_types[0].map do |related_type|
+                start_obj.map do |related_type|
                   related_type.all_role.select do |role|
                     all_roles = role.fact_type.all_role
                     next if all_roles.size != players.size      # Wrong number of players
@@ -213,11 +258,11 @@ module ActiveFacts
 
               # If there is more than one possible exact match (same adjectives) with different subyping, the implicit query is ambiguous and is not allowed
 
-              debug :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching '#{contracted_role && contracted_role.inspect+' '}#{inspect}'" do
+              debug :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching #{left_insertion}'#{inspect}'#{right_insertion}" do
                 matches = {}
                 candidate_fact_types.map do |fact_type|
                   fact_type.all_reading.map do |reading|
-                    next unless side_effects = clause_matches(fact_type, reading, contracted_role)
+                    next unless side_effects = clause_matches(fact_type, reading, phrases)
                     matches[reading] = side_effects if side_effects
                   end
                 end
@@ -252,7 +297,7 @@ module ActiveFacts
                   @side_effects = matches[@reading]
                   @fact_type = @side_effects.fact_type
                   debug :matching, "Matched '#{@fact_type.default_reading}'"
-                  @phrases.unshift(contracted_role) if contracted_role
+                  @phrases = phrases
                   apply_side_effects(context, @side_effects)
                   return @fact_type
                 end
@@ -260,21 +305,19 @@ module ActiveFacts
               end
               debug :matching, "No fact type matched, candidates were '#{candidate_fact_types.map{|ft| ft.default_reading}*"', '"}'"
             end
-            if left_contract_this_onto && !contracted_role
-              contracted_from = left_contract_this_onto.refs[0]
-              contraction_player = contracted_from.player
-              contracted_role = Reference.new(contraction_player.name)
-              contracted_role.player = contracted_from.player
-              contracted_role.role_name = contracted_from.role_name
-              contracted_role.bind(context)
-              vrs.unshift contracted_role
-
-              debug :matching, "Failed to match #{inspect}. Trying again using left contraction onto #{contraction_player.name}"
-              redo
+            if left_contract_this_onto
+	      if !contracted_left
+		contract_left.call
+		redo
+	      elsif can_contract_right
+		contract_right.call
+		can_contract_right = false
+		redo
+	      end
             end
           end until true  # Once through, unless we hit a redo
-          if contracted_role
-            contracted_role.unbind context
+          supposed_roles.each do |role|
+            role.unbind context
           end
           @fact_type = nil
         end
@@ -297,12 +340,11 @@ module ActiveFacts
         #       trailing adjectives, both marked and unmarked, are absorbed too.
         #     a word that matches the reading's
         #
-        def clause_matches(fact_type, reading, contracted_role = nil)
+        def clause_matches(fact_type, reading, phrases = @phrases)
 	  implicitly_negated = false
           side_effects = []    # An array of items for each role, describing any side-effects of the match.
           intervening_words = nil
           residual_adjectives = false
-          phrases = [contracted_role].compact+@phrases
 
 	  # The following form of negation is, e.g., where "Person was invited to no Party",
 	  # as opposed to where "Person was not invited to that Party". Quite different meaning,
