@@ -75,7 +75,6 @@ module ActiveFacts
       # Is this Reference covered by a mandatory constraint (implicitly or explicitly)
       def is_mandatory
         !@from_role ||        # All phantom roles of fact types are mandatory
-        is_unary ||           # Unary fact types become booleans, which must be true or false
         @from_role.is_mandatory
       end
 
