@@ -1,10 +1,11 @@
 
-module Moon
-  extend ActiveSupport::Concern
-  included do
-    self.primary_key = 'moon_id'
+module Concernz
+  module Moon
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'moon_id'
 
-    validates_presence_of :moon_name
-    validates_presence_of :orbit_planet_name
+      validates_presence_of :moon_name
+    end
   end
 end

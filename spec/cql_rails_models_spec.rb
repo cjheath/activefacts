@@ -24,7 +24,7 @@ describe "CQL Loader with Rails models output" do
   def models(vocabulary)
     output = StringIO.new
 
-    @dumper = ActiveFacts::Generate::Rails::Models.new(vocabulary.constellation)
+    @dumper = ActiveFacts::Generate::Rails::Models.new(vocabulary.constellation, "concern=Concernz")
     @dumper.generate(output)
     output.rewind
     output.read

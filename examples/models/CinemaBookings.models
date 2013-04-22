@@ -1,96 +1,108 @@
 
-module Booking
-  extend ActiveSupport::Concern
-  included do
-    self.primary_key = 'booking_id'
+module Concernz
+  module Booking
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'booking_id'
 
-    # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
-    belongs_to :cinema_via_showing, :class_name => 'Cinema', :foreign_key => :showing_cinema_id
+      # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
+      belongs_to :cinema_via_showing, :class_name => 'Cinema', :foreign_key => :showing_cinema_id
 
-    # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
-    belongs_to :film_via_showing, :class_name => 'Film', :foreign_key => :showing_film_id
+      # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
+      belongs_to :film_via_showing, :class_name => 'Film', :foreign_key => :showing_film_id
 
-    # Booking (in which Person booked Showing for Count)
-    belongs_to :person
+      # Booking (in which Person booked Showing for Count)
+      belongs_to :person
 
-    # SeatAllocation (in which Booking has allocated-Seat)
-    has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :booking_id, :dependent => :destroy
-    has_many :seats, :through => :seat_allocations
+      # SeatAllocation (in which Booking has allocated-Seat)
+      has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :booking_id, :dependent => :destroy
+      has_many :seats, :through => :seat_allocations
 
-    validates_presence_of :count
-    validates_presence_of :person_id
-    validates_presence_of :showing_cinema_id
-    validates_presence_of :showing_film_id
-    validates_presence_of :showing_date_time_value
+      validates_presence_of :count
+      validates_presence_of :person_id
+      validates_presence_of :showing_cinema_id
+      validates_presence_of :showing_film_id
+      validates_presence_of :showing_date_time_value
+    end
   end
 end
 
-module Cinema
-  extend ActiveSupport::Concern
-  included do
-    self.primary_key = 'cinema_id'
+module Concernz
+  module Cinema
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'cinema_id'
 
-    # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
-    has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_cinema_id, :dependent => :destroy
-    has_many :films, :through => :bookings_via_showing
-    has_many :date_times, :through => :bookings_via_showing
+      # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
+      has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_cinema_id, :dependent => :destroy
+      has_many :films, :through => :bookings_via_showing
+      has_many :date_times, :through => :bookings_via_showing
 
-    # Cinema has Seat
-    has_many :seats, :class_name => 'Seat', :foreign_key => :cinema_id, :dependent => :destroy
+      # Cinema has Seat
+      has_many :seats, :class_name => 'Seat', :foreign_key => :cinema_id, :dependent => :destroy
+    end
   end
 end
 
-module Film
-  extend ActiveSupport::Concern
-  included do
-    self.primary_key = 'film_id'
+module Concernz
+  module Film
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'film_id'
 
-    # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
-    has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_film_id, :dependent => :destroy
-    has_many :cinemas, :through => :bookings_via_showing
-    has_many :date_times, :through => :bookings_via_showing
+      # Booking (in which Person booked Showing for Count) and Showing (in which Cinema shows Film on DateTime)
+      has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_film_id, :dependent => :destroy
+      has_many :cinemas, :through => :bookings_via_showing
+      has_many :date_times, :through => :bookings_via_showing
+    end
   end
 end
 
-module Person
-  extend ActiveSupport::Concern
-  included do
-    self.primary_key = 'person_id'
+module Concernz
+  module Person
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'person_id'
 
-    # Booking (in which Person booked Showing for Count)
-    has_many :bookings, :class_name => 'Booking', :foreign_key => :person_id, :dependent => :destroy
+      # Booking (in which Person booked Showing for Count)
+      has_many :bookings, :class_name => 'Booking', :foreign_key => :person_id, :dependent => :destroy
 
-    validates_presence_of :login_name
+      validates_presence_of :login_name
+    end
   end
 end
 
-module Seat
-  extend ActiveSupport::Concern
-  included do
-    self.primary_key = 'seat_id'
+module Concernz
+  module Seat
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'seat_id'
 
-    # Cinema has Seat
-    belongs_to :cinema
+      # Cinema has Seat
+      belongs_to :cinema
 
-    # SeatAllocation (in which Booking has allocated-Seat)
-    has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :allocated_seat_id, :dependent => :destroy
-    has_many :bookings, :through => :seat_allocations
+      # SeatAllocation (in which Booking has allocated-Seat)
+      has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :allocated_seat_id, :dependent => :destroy
+      has_many :bookings, :through => :seat_allocations
 
-    validates_presence_of :number
-    validates_presence_of :row
+      validates_presence_of :number
+      validates_presence_of :row
+    end
   end
 end
 
-module SeatAllocation
-  extend ActiveSupport::Concern
-  included do
-    # SeatAllocation (in which Booking has allocated-Seat)
-    belongs_to :booking
+module Concernz
+  module SeatAllocation
+    extend ActiveSupport::Concern
+    included do
+      # SeatAllocation (in which Booking has allocated-Seat)
+      belongs_to :booking
 
-    # SeatAllocation (in which Booking has allocated-Seat)
-    belongs_to :allocated_seat, :class_name => 'Seat', :foreign_key => :allocated_seat_id
+      # SeatAllocation (in which Booking has allocated-Seat)
+      belongs_to :allocated_seat, :class_name => 'Seat', :foreign_key => :allocated_seat_id
 
-    validates_presence_of :booking_id
-    validates_presence_of :allocated_seat_id
+      validates_presence_of :booking_id
+      validates_presence_of :allocated_seat_id
+    end
   end
 end

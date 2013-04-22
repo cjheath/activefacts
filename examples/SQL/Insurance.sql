@@ -32,7 +32,7 @@ CREATE VIEW dbo.VehicleInAsset_VIN (VehicleVIN) WITH SCHEMABINDING AS
 	WHERE	VehicleVIN IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX VehiclePK ON dbo.VehicleInAsset_VIN(VehicleVIN)
+CREATE UNIQUE CLUSTERED INDEX PK_VehicleInAsset ON dbo.VehicleInAsset_VIN(VehicleVIN)
 GO
 
 CREATE TABLE Claim (
@@ -363,9 +363,9 @@ CREATE TABLE VehicleIncident (
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving resulted in breath-Test Result,
 	DrivingBreathTestResult                 varchar NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and Driving Charge is where Driving resulted in Charge and Driving Charge is where Driving resulted in Charge,
-	DrivingCharge                           varchar NOT NULL,
+	DrivingCharge                           varchar NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and Hospitalization is where Driving resulted in driver taken to Hospital and Hospitalization is where Driving resulted in driver taken to Hospital and Hospital has Hospital Name,
-	DrivingHospitalName                     varchar NOT NULL,
+	DrivingHospitalName                     varchar NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving followed Intoxication,
 	DrivingIntoxication                     varchar NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and Driving Charge is where Driving resulted in Charge and Driving Charge is a warning,
@@ -373,7 +373,7 @@ CREATE TABLE VehicleIncident (
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was without owners consent for nonconsent-Reason,
 	DrivingNonconsentReason                 varchar NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and Person was Driving and Party has Party ID,
-	DrivingPersonID                         int NOT NULL,
+	DrivingPersonID                         int NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was unlicenced for unlicensed-Reason,
 	DrivingUnlicensedReason                 varchar NULL,
 	-- Vehicle Incident is a kind of Incident and Claim has Claim ID,
