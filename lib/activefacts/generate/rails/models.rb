@@ -215,7 +215,7 @@ end
 
 	  puts "\n"
 	  puts "module #{@concern}" if @concern
-	  puts model_body(table).gsub(/^/, @concern ? '  ' : '')
+	  puts model_body(table).gsub(/^./, @concern ? '  \0' : '\0')
 	  puts 'end' if @concern
 
 	  true	  # We succeeded
