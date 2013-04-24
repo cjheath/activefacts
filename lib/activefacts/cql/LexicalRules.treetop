@@ -116,6 +116,7 @@ module ActiveFacts
       rule string_char
         ( '\\' [befntr\\']
         / '\\' [0-7] [0-7] [0-7]
+	/ '\\' [\r]* [\n] [\r]*
         / '\\0'
         / '\\x' [0-9A-Fa-f] [0-9A-Fa-f]
         / '\\u' [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f]
