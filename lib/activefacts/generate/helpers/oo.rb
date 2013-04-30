@@ -66,6 +66,8 @@ module ActiveFacts
 	  # REVISIT: TypeInheritance
 	  if fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
 	    # debug "Ignoring role #{role} in #{fact_type}, subtype fact type"
+	    # REVISIT: What about secondary subtypes?
+	    # REVISIT: What about dumping the relational mapping when using separate tables?
 	    return
 	  end
 

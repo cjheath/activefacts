@@ -7,6 +7,7 @@
 require 'activefacts'
 require 'activefacts/vocabulary'
 require 'activefacts/generate/helpers/oo'
+require 'activefacts/mapping/rails'
 
 module ActiveFacts
   module Generate
@@ -20,21 +21,23 @@ module ActiveFacts
     private
 
       def set_option(option)
-        @sql ||= false
+        @mapping = false
         case option
         when 'help', '?'
           $stderr.puts "Usage:\t\tafgen --ruby[=option,option] input_file.cql\n"+
-              "options:\tsql\tEmit data to enable mappings to SQL"
+              "\t\tmapping={sql|rails}\tEmit data to enable mappings to SQL or to Rails"
           exit 0
-        when 'sql'; @sql = true
+        when /mapping=(.*)/; @mapping = $1
         else super
         end
       end
 
       def vocabulary_start(vocabulary)
         puts "require 'activefacts/api'\n"
-        if @sql
+        if @mapping
           require 'activefacts/persistence'
+	end
+        if @mapping == 'sql'
           puts "require 'activefacts/persistence'\n"
           @tables = vocabulary.tables
         end
@@ -43,6 +46,15 @@ module ActiveFacts
 
       def vocabulary_end
         puts "end"
+      end
+
+      def emit_mapping o
+	case @mapping
+        when 'sql'
+	  puts "    table"
+	when 'rails'
+	  puts "    table :#{o.rails_name}"
+	end
       end
 
       def value_type_dump(o)
@@ -70,9 +82,7 @@ module ActiveFacts
 
         puts "  class #{name} < #{ruby_type_name}\n" +
              "    value_type #{params}\n"
-        if @sql and o.is_table
-          puts "    table"
-        end
+	emit_mapping o if o.is_table
         puts "    restrict #{o.value_constraint.all_allowed_range_sorted.map{|ar| ar.to_s}*", "}\n" if o.value_constraint
         puts "    \# REVISIT: #{o.name} is in units of #{o.unit.name}\n" if o.unit
         roles_dump(o)
@@ -86,9 +96,7 @@ module ActiveFacts
         puts "  class #{o.name.gsub(/ /,'')} < #{ primary_supertype.name.gsub(/ /,'') }"
         puts "    identified_by #{identified_by(o, pi)}" if pi
         puts "    supertypes "+secondary_supertypes.map{|st| st.name.gsub(/ /,'')}*", " if secondary_supertypes.size > 0
-        if @sql and o.is_table
-          puts "    table"
-        end
+	emit_mapping(o) if o.is_table
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)
         puts "  end\n\n"
@@ -100,9 +108,7 @@ module ActiveFacts
 
         # We want to name the absorption role only when it's absorbed along its single identifying role.
         puts "    identified_by #{identified_by(o, pi)}"
-        if @sql and o.is_table
-          puts "    table"
-        end
+	emit_mapping o if o.is_table
         fact_roles_dump(o.fact_type) if o.fact_type
         roles_dump(o)
         puts "  end\n\n"
@@ -126,7 +132,7 @@ module ActiveFacts
           "\n" +
           secondary_supertypes.map{|sst| "    supertype :#{sst.name.gsub(/ /,'_')}"}*"\n" +
           (pi ? "    identified_by #{identified_by(o, pi)}" : "")
-        puts "    table" if @sql and o.is_table
+	emit_mapping o if o.is_table
         fact_roles_dump(fact_type)
         roles_dump(o)
         puts "  end\n\n"
@@ -145,25 +151,35 @@ module ActiveFacts
       end
 
       def binary_dump(role, role_name, role_player, mandatory = nil, one_to_one = nil, readings = nil, other_role_name = nil, other_method_name = nil)
+	ruby_role_name = ":"+role_name.gsub(/ /,'_')
+
         # Find whether we need the name of the other role player, and whether it's defined yet:
-        if role_name.camelcase == role_player.name.gsub(/ /,'').sub(/^[a-z]/) {|i| i.upcase}
-          # Don't use Class name if implied by rolename
-          role_reference = nil
-        else
+	implied_role_name = role_player.name.gsub(/ /,'').sub(/^[a-z]/) {|i| i.upcase}
+        if role_name.camelcase != implied_role_name
+          # Only use Class name if it's not implied by the rolename
           role_reference = ":class => "+object_type_reference(role_player)
         end
+
         other_role_name = ":counterpart => :"+other_role_name.gsub(/ /,'_') if other_role_name
 
-        line = "    #{one_to_one ? "one_to_one" : "has_one" } " +
-                [ ":"+role_name.gsub(/ /,'_'),
-                  role_reference,
-                  mandatory ? ":mandatory => true" : nil,
-                  readings,
-                  other_role_name,
-                  (vr = role.role_value_constraint) ? ":restrict => #{vr}" : nil
-                ].compact*", "+"  "
-        line += " "*(48-line.length) if line.length < 48
-        line += "\# See #{role_player.name.gsub(/ /,'')}.#{other_method_name}" if other_method_name
+	if vr = role.role_value_constraint
+	  value_restriction = ":restrict => #{vr}"
+	end
+
+	options = [
+	    ruby_role_name,
+	    role_reference,
+	    mandatory ? ":mandatory => true" : nil,
+	    readings,
+	    other_role_name,
+	    value_restriction
+	  ].compact
+
+        line = "    #{one_to_one ? "one_to_one" : "has_one" } #{options*', '}  "
+	if other_method_name
+	  line += " "*(48-line.length) if line.length < 48
+	  line += "\# See #{role_player.name.gsub(/ /,'')}.#{other_method_name}"
+	end
         puts line
         #puts "    \# REVISIT: #{other_role_name} has values restricted to #{role.role_value_constraint}\n" if role.role_value_constraint
       end
