@@ -123,7 +123,7 @@ module ActiveFacts
 	    association_name = fk.rails_from_association_name
 
 	    foreign_key = ""
-	    if association_name != Persistence::rails_singular_name(fk.to.name)
+	    if association_name != fk.to.rails_singular_name
 	      # A different class_name is implied, emit an explicit one:
 	      class_name = ", :class_name => '#{fk.to.rails_class_name}'"
 	      from_column = fk.from_columns
@@ -208,7 +208,7 @@ end
 
 	def generate_table table
 	  old_out = @out
-	  filename = table.rails_name+'.rb'
+	  filename = table.rails_singular_name+'.rb'
 
 	  return unless create_if_ok filename
 

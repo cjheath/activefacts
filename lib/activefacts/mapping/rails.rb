@@ -110,6 +110,10 @@ module ActiveFacts
 	Persistence::rails_plural_name(name)
       end
 
+      def rails_singular_name
+	Persistence::rails_singular_name(name)
+      end
+
       def rails_class_name
 	ActiveSupport::Inflector.camelize(name.gsub(/\s+/, '_'))
       end
