@@ -704,6 +704,7 @@ module ActiveFacts
               player_by_role =
                 next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }
 	      raise "REVISIT: Needed a negated reading here" if !next_reading.is_negative != !next_step.is_disallowed
+	      raise "REVISIT: Need to emit 'maybe' here" if next_step.is_optional
               readings += expand_contracted_text(next_step, next_reading, player_by_role)
               step_completed(next_step)
             else
@@ -719,6 +720,7 @@ module ActiveFacts
 		next_reading = role.fact_type.preferred_reading(next_step.is_disallowed) || role.fact_type.preferred_reading
                 readings += " and " unless readings.empty?
 		readings += "it is not the case that " if !next_step.is_disallowed != !next_reading.is_negative
+		raise "REVISIT: Need to emit 'maybe' here" if next_step.is_optional
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
                 step_completed(next_step)
               elsif next_step.is_objectification_step
@@ -744,10 +746,12 @@ module ActiveFacts
                   next_reading, next_node, next_step, last_is_contractable =
                     *elided_objectification(next_step, fact_type, last_is_contractable, next_node)
                   if last_is_contractable
+		    raise "REVISIT: Need to emit 'maybe' here" if next_step and next_step.is_optional
                     readings += expand_contracted_text(next_step, next_reading, player_by_role)
                   else
                     readings += " and " unless readings.empty?
 		    readings += "it is not the case that " if !!negation != !!next_reading.is_negative
+		    raise "REVISIT: Need to emit 'maybe' here" if next_step and next_step.is_optional
                     readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
                   end
                   # No need to continue if we just deleted the last step
@@ -765,6 +769,7 @@ module ActiveFacts
                 # REVISIT: If this step and reading has role references with adjectives, we need to expand using those
                 readings += " and " unless readings.empty?
 		readings += "it is not the case that " if !next_step.is_disallowed != !next_reading.is_negative
+		raise "REVISIT: Need to emit 'maybe' here" if next_step and next_step.is_optional
                 readings += expand_reading_text(next_step, next_reading.text, next_reading.role_sequence, player_by_role)
                 step_completed(next_step)
               end

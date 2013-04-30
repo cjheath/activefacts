@@ -6,7 +6,7 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/persistence'
-require 'active_support'
+require 'activefacts/mapping/rails'
 
 module ActiveFacts
   module Generate
@@ -44,61 +44,6 @@ module ActiveFacts
 	  @out.puts s
 	end
 
-	# Return ActiveRecord type and (modified?) length for the passed base type
-	def normalise_type(type, length)
-	  rails_type = case type
-	    when /^Auto ?Counter$/
-	      'integer'	    # REVISIT: Need to detect surrogate ID fields and handle them correctly
-
-	    when /^Unsigned ?Integer$/,
-	      /^Integer$/,
-	      /^Signed ?Integer$/,
-	      /^Unsigned ?Small ?Integer$/,
-	      /^Signed ?Small ?Integer$/,
-	      /^Unsigned ?Tiny ?Integer$/
-	      length = nil
-	      'integer'
-
-	    when /^Decimal$/
-	      'decimal'
-
-	    when /^Fixed ?Length ?Text$/, /^Char$/
-	      'string'
-	    when /^Variable ?Length ?Text$/, /^String$/
-	      'string'
-	    when /^Large ?Length ?Text$/, /^Text$/
-	      'text'
-
-	    when /^Date ?And ?Time$/, /^Date ?Time$/
-	      'datetime'
-	    when /^Date$/
-	      'datetime'
-	    when /^Time$/
-	      'time'
-	    when /^Auto ?Time ?Stamp$/
-	      'timestamp'
-
-	    when /^Money$/
-	      'decimal'
-	    when /^Picture ?Raw ?Data$/, /^Image$/, /^Variable ?Length ?Raw ?Data$/, /^Blob$/
-	      'binary'
-	    when /^BIT$/
-	      'boolean'
-	    else type # raise "ActiveRecord type unknown for standard type #{type}"
-	    end
-	  [rails_type, length]
-	end
-
-	def rails_plural_name name
-	  # Crunch spaces and convert to a plural form in snake_case
-	  ActiveSupport::Inflector.tableize(name.gsub(/\s+/, ''))
-	end
-
-	def rails_singular_name name
-	  # Crunch spaces and convert to snake_case
-	  ActiveSupport::Inflector.underscore(name.gsub(/\s+/, ''))
-	end
-
       public
 	def generate(out = $>)      #:nodoc:
 	  return if @helping
@@ -113,7 +58,7 @@ module ActiveFacts
 	  puts "ActiveRecord::Schema.define(:version => #{Time.now.strftime('%Y%m%d%H%M%S')}) do"
 
 	  @vocabulary.tables.each do |table|
-	    ar_table_name = rails_plural_name(table.name)
+	    ar_table_name = table.rails_name
 
 	    pk = table.identifier_columns
 	    identity_column = pk[0] if pk[0].is_auto_assigned
@@ -139,7 +84,7 @@ module ActiveFacts
 
 	    identity =
 	      if move_pk_to_create_table_call
-		":primary_key => :#{rails_singular_name(pk[0].name('_'))}"
+		":primary_key => :#{pk[0].rails_name}"
 	      else
 		":id => #{needs_rails_id_field}"
 	      end
@@ -152,7 +97,7 @@ module ActiveFacts
 	    columns = table.
 		columns.
 		sort_by do |column|
-		  [
+		  [ # Emit columns alphabetically, but PK first, then FKs, then others
 		    case
 		    when column == identity_column
 		      0
@@ -161,18 +106,18 @@ module ActiveFacts
 		    else
 		      2
 		    end,
-		    column.name('_') 
+		    column.rails_name
 		  ]
 		end.
 		map do |column|
 	      next [] if move_pk_to_create_table_call and column == pk[0]
-	      name = rails_singular_name(column.name('_'))
+	      name = column.rails_name
 	      type, params, constraints = column.type
 	      length = params[:length]
 	      length &&= length.to_i
 	      scale = params[:scale]
 	      scale &&= scale.to_i
-	      type, length = normalise_type(type, length)
+	      type, length = Persistence::rails_type(type, length)
 
 	      length_name = type == 'decimal' ? 'precision' : 'limit'
 
@@ -192,14 +137,14 @@ module ActiveFacts
 
 	    unless @exclude_fks
 	      table.foreign_keys.each do |fk|
-		from_columns = fk.from_columns.map{|column| rails_singular_name(column.name('_'))}
-		to_columns = fk.to_columns.map{|column| rails_singular_name(column.name('_'))}
+		from_columns = fk.from_columns.map{|column| column.rails_name}
+		to_columns = fk.to_columns.map{|column| column.rails_name}
 		foreign_keys <<
 		  if (from_columns.length == 1)
-		    "    add_foreign_key :#{rails_plural_name(fk.from.name)}, :#{rails_plural_name(fk.to.name)}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :dependent => :cascade"
+		    "    add_foreign_key :#{fk.from.rails_name}, :#{fk.to.rails_name}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :dependent => :cascade"
 		  else
 		    # This probably isn't going to work without Dr Nic's CPK gem:
-		    "    add_foreign_key :#{rails_plural_name(fk.to.name)}, :#{rails_plural_name(fk.from.name)}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}], :dependent => :cascade"
+		    "    add_foreign_key :#{fk.to.rails_name}, :#{fk.from.rails_name}, :column => [:#{from_columns.join(':, ')}], :primary_key => [:#{to_columns.join(':, ')}], :dependent => :cascade"
 		  end
 	      end
 	    end
@@ -209,14 +154,10 @@ module ActiveFacts
 	    indices.each do |index|
 	      next if move_pk_to_create_table_call and index.is_primary	  # We've handled this already
 
-	      abbreviated_column_names = index.abbreviated_column_names('_')*""
-	      column_names = index.column_names('_').map{|c| rails_singular_name(c) }
-	      index_name = "index_#{ar_table_name+'_on_'+column_names*'_'}"
-	      index_name = index_name[0, 60] + (dup_id += 1).to_s if index_name.length > 63
+	      index_name = index.rails_name
 
 	      unique = !index.columns.detect{|column| !column.is_mandatory} and !@closed_world
-	      index_text << %Q{  add_index "#{ar_table_name}", ["#{column_names*'", "'}"], :name => :#{index_name
-	      }#{
+	      index_text << %Q{  add_index "#{ar_table_name}", ["#{index.columns.map{|c| c.rails_name}*'", "'}"], :name => :#{index_name}#{
 		unique ? ", :unique => true" : ''
 	      }}
 	    end

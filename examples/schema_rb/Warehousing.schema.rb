@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for Warehousing on 2013-03-25
+# schema.rb auto-generated using ActiveFacts for Warehousing on 2013-04-30
 #
 
-ActiveRecord::Schema.define(:version => 20130325151041) do
+ActiveRecord::Schema.define(:version => 20130430120831) do
   create_table "bins", :primary_key => :bin_id, :force => true do |t|
     t.integer	"product_id"
     t.integer	"warehouse_id"
@@ -15,7 +15,7 @@ ActiveRecord::Schema.define(:version => 20130325151041) do
     t.integer	"sales_order_item_id", :null => false
   end
 
-  add_index "direct_order_matches", ["purchase_order_item_id", "sales_order_item_id"], :name => :index_direct_order_matches_on_purchase_order_item_id_sales_o1, :unique => true
+  add_index "direct_order_matches", ["purchase_order_item_id", "sales_order_item_id"], :name => :index_direct_order_matches_on_purchase_order_item_id___aad35fa1, :unique => true
 
   create_table "dispatch_items", :primary_key => :dispatch_item_id, :force => true do |t|
     t.integer	"product_id", :null => false

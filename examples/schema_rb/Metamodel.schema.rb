@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for Metamodel on 2013-04-17
+# schema.rb auto-generated using ActiveFacts for Metamodel on 2013-04-30
 #
 
-ActiveRecord::Schema.define(:version => 20130417194035) do
+ActiveRecord::Schema.define(:version => 20130430120819) do
   create_table "aggregations", :primary_key => :aggregation_id, :force => true do |t|
     t.integer	"aggregated_variable_id", :null => false
     t.integer	"variable_id", :null => false
@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(:version => 20130417194035) do
     t.Guid	"value_range_minimum_bound_value_unit_guid"
   end
 
-  add_index "allowed_ranges", ["value_constraint_guid", "value_range_minimum_bound_value_literal", "value_range_minimum_bound_value_is_a_string", "value_range_minimum_bound_value_unit_guid", "value_range_minimum_bound_is_inclusive", "value_range_maximum_bound_value_literal", "value_range_maximum_bound_value_is_a_string", "value_range_maximum_bound_value_unit_guid", "value_range_maximum_bound_is_inclusive"], :name => :index_allowed_ranges_on_value_constraint_guid_value_range_mi1
+  add_index "allowed_ranges", ["value_constraint_guid", "value_range_minimum_bound_value_literal", "value_range_minimum_bound_value_is_a_string", "value_range_minimum_bound_value_unit_guid", "value_range_minimum_bound_is_inclusive", "value_range_maximum_bound_value_literal", "value_range_maximum_bound_value_is_a_string", "value_range_maximum_bound_value_unit_guid", "value_range_maximum_bound_is_inclusive"], :name => :index_allowed_ranges_on_value_constraint_guid_value_r__fde64ef4
 
   create_table "alternative_sets", :id => false, :force => true do |t|
     t.Guid	"guid", :null => false, :primary => true
@@ -60,7 +60,7 @@ ActiveRecord::Schema.define(:version => 20130417194035) do
   end
 
   add_index "constraints", ["concept_guid"], :name => :index_constraints_on_concept_guid, :unique => true
-  add_index "constraints", ["subset_constraint_subset_role_sequence_guid", "subset_constraint_superset_role_sequence_guid"], :name => :index_constraints_on_subset_constraint_subset_role_sequence_2
+  add_index "constraints", ["subset_constraint_subset_role_sequence_guid", "subset_constraint_superset_role_sequence_guid"], :name => :index_constraints_on_subset_constraint_subset_role_se__e3672973
   add_index "constraints", ["value_constraint_role_id"], :name => :index_constraints_on_value_constraint_role_id
   add_index "constraints", ["vocabulary_name", "name"], :name => :index_constraints_on_vocabulary_name_name
 
@@ -113,7 +113,7 @@ ActiveRecord::Schema.define(:version => 20130417194035) do
     t.Guid	"value_unit_guid"
   end
 
-  add_index "facet_values", ["value_type_object_type_id", "facet_value_type_object_type_id", "facet_name"], :name => :index_facet_values_on_value_type_object_type_id_facet_value_3, :unique => true
+  add_index "facet_values", ["value_type_object_type_id", "facet_value_type_object_type_id", "facet_name"], :name => :index_facet_values_on_value_type_object_type_id_facet__086f7d80, :unique => true
 
   create_table "facts", :id => false, :force => true do |t|
     t.Guid	"concept_guid", :null => false, :primary => true
@@ -134,8 +134,8 @@ ActiveRecord::Schema.define(:version => 20130417194035) do
 
   add_index "fact_types", ["concept_guid"], :name => :index_fact_types_on_concept_guid, :unique => true
   add_index "fact_types", ["entity_type_object_type_id"], :name => :index_fact_types_on_entity_type_object_type_id
-  add_index "fact_types", ["type_inheritance_subtype_object_type_id", "type_inheritance_provides_identification"], :name => :index_fact_types_on_type_inheritance_subtype_object_type_id_4
-  add_index "fact_types", ["type_inheritance_subtype_object_type_id", "type_inheritance_supertype_object_type_id"], :name => :index_fact_types_on_type_inheritance_subtype_object_type_id_5
+  add_index "fact_types", ["type_inheritance_subtype_object_type_id", "type_inheritance_provides_identification"], :name => :index_fact_types_on_type_inheritance_subtype_object_t__04417c92
+  add_index "fact_types", ["type_inheritance_subtype_object_type_id", "type_inheritance_supertype_object_type_id"], :name => :index_fact_types_on_type_inheritance_subtype_object_t__9c8eded7
 
   create_table "instances", :id => false, :force => true do |t|
     t.Guid	"concept_guid", :null => false, :primary => true
@@ -166,7 +166,7 @@ ActiveRecord::Schema.define(:version => 20130417194035) do
   end
 
   add_index "object_types", ["concept_guid"], :name => :index_object_types_on_concept_guid, :unique => true
-  add_index "object_types", ["value_type_length", "value_type_scale", "value_type_supertype_object_type_id", "value_type_transaction_timing", "value_type_unit_guid", "value_type_value_constraint_guid"], :name => :index_object_types_on_value_type_length_value_type_scale_val6
+  add_index "object_types", ["value_type_length", "value_type_scale", "value_type_supertype_object_type_id", "value_type_transaction_timing", "value_type_unit_guid", "value_type_value_constraint_guid"], :name => :index_object_types_on_value_type_length_value_type_sc__17c00cda
   add_index "object_types", ["value_type_value_constraint_guid"], :name => :index_object_types_on_value_type_value_constraint_guid
   add_index "object_types", ["vocabulary_name", "name"], :name => :index_object_types_on_vocabulary_name_name, :unique => true
 
@@ -259,8 +259,8 @@ ActiveRecord::Schema.define(:version => 20130417194035) do
     t.integer	"ordinal", :null => false
   end
 
-  add_index "set_comparison_roles", ["set_comparison_constraint_guid", "ordinal"], :name => :index_set_comparison_roles_on_set_comparison_constraint_guid7, :unique => true
-  add_index "set_comparison_roles", ["set_comparison_constraint_guid", "role_sequence_guid"], :name => :index_set_comparison_roles_on_set_comparison_constraint_guid8, :unique => true
+  add_index "set_comparison_roles", ["set_comparison_constraint_guid", "ordinal"], :name => :index_set_comparison_roles_on_set_comparison_constrai__d8787c6c, :unique => true
+  add_index "set_comparison_roles", ["set_comparison_constraint_guid", "role_sequence_guid"], :name => :index_set_comparison_roles_on_set_comparison_constrai__2e6a8313, :unique => true
 
   create_table "shapes", :id => false, :force => true do |t|
     t.integer	"orm_diagram_id", :null => false
@@ -286,7 +286,7 @@ ActiveRecord::Schema.define(:version => 20130417194035) do
 
   add_index "shapes", ["guid"], :name => :index_shapes_on_guid, :unique => true
   add_index "shapes", ["orm_diagram_id", "location_x", "location_y"], :name => :index_shapes_on_orm_diagram_id_location_x_location_y
-  add_index "shapes", ["objectified_fact_type_name_shape_fact_type_shape_guid"], :name => :index_shapes_on_objectified_fact_type_name_shape_fact_type_s9
+  add_index "shapes", ["objectified_fact_type_name_shape_fact_type_shape_guid"], :name => :index_shapes_on_objectified_fact_type_name_shape_fact__12ad8c9b
   add_index "shapes", ["reading_shape_fact_type_shape_guid"], :name => :index_shapes_on_reading_shape_fact_type_shape_guid
   add_index "shapes", ["role_name_shape_role_display_id"], :name => :index_shapes_on_role_name_shape_role_display_id
   add_index "shapes", ["value_constraint_shape_role_display_id"], :name => :index_shapes_on_value_constraint_shape_role_display_id

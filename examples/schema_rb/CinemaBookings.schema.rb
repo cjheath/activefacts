@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for CinemaBookings on 2013-03-25
+# schema.rb auto-generated using ActiveFacts for CinemaBookings on 2013-04-30
 #
 
-ActiveRecord::Schema.define(:version => 20130325151020) do
+ActiveRecord::Schema.define(:version => 20130430120803) do
   create_table "bookings", :primary_key => :booking_id, :force => true do |t|
     t.integer	"person_id", :null => false
     t.integer	"count", :null => false
@@ -11,7 +11,7 @@ ActiveRecord::Schema.define(:version => 20130325151020) do
     t.integer	"showing_film_id", :null => false
   end
 
-  add_index "bookings", ["person_id", "showing_cinema_id", "showing_film_id", "showing_date_time_value"], :name => :index_bookings_on_person_id_showing_cinema_id_showing_film_i1, :unique => true
+  add_index "bookings", ["person_id", "showing_cinema_id", "showing_film_id", "showing_date_time_value"], :name => :index_bookings_on_person_id_showing_cinema_id_showing__22f4afc6, :unique => true
 
   create_table "cinemas", :primary_key => :cinema_id, :force => true do |t|
 

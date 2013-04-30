@@ -9,7 +9,8 @@
 #
 require 'activefacts/vocabulary'
 require 'activefacts/persistence'
-require 'activefacts/generate/helpers/rails'
+#require 'activefacts/generate/helpers/rails'
+require 'activefacts/mapping/rails'
 require 'active_support'
 
 module ActiveFacts
@@ -19,12 +20,10 @@ module ActiveFacts
       # Invoke as
       #   afgen --rails/schema[=options] <file>.cql
       class Models
-	include Helpers
 
 	HEADER = "# Auto-generated from CQL, edits will be lost"
 
       private
-	include Persistence
 
 	def initialize(vocabulary, *options)
 	  @vocabulary = vocabulary
@@ -124,11 +123,11 @@ module ActiveFacts
 	    association_name = fk.rails_from_association_name
 
 	    foreign_key = ""
-	    if association_name != rails_singular_name(fk.to.name)
+	    if association_name != Persistence::rails_singular_name(fk.to.name)
 	      # A different class_name is implied, emit an explicit one:
-	      class_name = ", :class_name => '#{rails_class_name fk.to.name}'"
+	      class_name = ", :class_name => '#{fk.to.rails_class_name}'"
 	      from_column = fk.from_columns
-	      foreign_key = ", :foreign_key => :#{rails_singular_name(fk.from_columns[0].name)}"
+	      foreign_key = ", :foreign_key => :#{fk.from_columns[0].rails_name}"
 	    end
 
 	    %Q{
@@ -153,8 +152,8 @@ module ActiveFacts
 	      "\n    \# #{fk.verbalised_path}" +
 	      "\n" +
 		%Q{    #{association_type} :#{association_name}} +
-		%Q{, :class_name => '#{rails_class_name(fk.from.name)}'} +
-		%Q{, :foreign_key => :#{rails_singular_name(fk.from_columns[0].name)}} +
+		%Q{, :class_name => '#{fk.from.rails_class_name}'} +
+		%Q{, :foreign_key => :#{fk.from_columns[0].rails_name}} +
 		%Q{, :dependent => :destroy}
 	    ] +
 	      # If ref.from is a join table, we can emit a has_many :through for each other key
@@ -164,7 +163,7 @@ module ActiveFacts
 		  next nil if ic.references[0] == ref or	# Skip the back-reference
 		    ic.references[0].is_unary		# or use rails_plural_name(ic.references[0].to_names) ?
 		  # This far association name needs to be augmented for its role name
-		  far_association_name = rails_plural_name(ic.references[0].to.name)
+		  far_association_name = ic.references[0].to.rails_name
 		  %Q{    has_many :#{far_association_name}, :through => :#{association_name}} # \# via #{ic.name}}
 		end
 	      else
@@ -177,7 +176,7 @@ module ActiveFacts
 	  return [] unless @validations
 	  ccs =
 	    table.columns.map do |column|
-	      name = rails_singular_name(column.name('_'))
+	      name = column.rails_name
 	      column.is_mandatory &&
 		!column.is_auto_assigned ? [
 		"    validates_presence_of :#{name}"
@@ -188,11 +187,11 @@ module ActiveFacts
 	end
 
 	def model_body table
-	  %Q{module #{rails_class_name(table.name)}
+	  %Q{module #{table.rails_class_name}
   extend ActiveSupport::Concern
   included do} +
 	    (table.identifier_columns.length == 1 ? %Q{
-    self.primary_key = '#{rails_singular_name(table.identifier_columns[0].name)}'
+    self.primary_key = '#{table.identifier_columns[0].rails_name}'
 } : ''
 	    ) +
 
@@ -209,7 +208,7 @@ end
 
 	def generate_table table
 	  old_out = @out
-	  filename = rails_singular_name(table.name)+'.rb'
+	  filename = table.rails_name+'.rb'
 
 	  return unless create_if_ok filename
 
