@@ -179,7 +179,7 @@ module ActiveFacts
 	      name = column.rails_name
 	      column.is_mandatory &&
 		!column.is_auto_assigned ? [
-		"    validates_presence_of :#{name}"
+		"    validates :#{name}, :presence => true"
 	      ] : []
 	    end.flatten
 	  ccs.unshift("") unless ccs.empty?
