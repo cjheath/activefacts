@@ -18,11 +18,11 @@ module Concernz
       has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :booking_id, :dependent => :destroy
       has_many :seats, :through => :seat_allocations
 
-      validates_presence_of :count
-      validates_presence_of :person_id
-      validates_presence_of :showing_cinema_id
-      validates_presence_of :showing_film_id
-      validates_presence_of :showing_date_time_value
+      validates :count, :presence => true
+      validates :person_id, :presence => true
+      validates :showing_cinema_id, :presence => true
+      validates :showing_film_id, :presence => true
+      validates :showing_date_time_value, :presence => true
     end
   end
 end
@@ -67,7 +67,7 @@ module Concernz
       # Booking (in which Person booked Showing for Count)
       has_many :bookings, :class_name => 'Booking', :foreign_key => :person_id, :dependent => :destroy
 
-      validates_presence_of :login_name
+      validates :login_name, :presence => true
     end
   end
 end
@@ -85,8 +85,8 @@ module Concernz
       has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :allocated_seat_id, :dependent => :destroy
       has_many :bookings, :through => :seat_allocations
 
-      validates_presence_of :number
-      validates_presence_of :row
+      validates :number, :presence => true
+      validates :row, :presence => true
     end
   end
 end
@@ -101,8 +101,8 @@ module Concernz
       # SeatAllocation (in which Booking has allocated-Seat)
       belongs_to :allocated_seat, :class_name => 'Seat', :foreign_key => :allocated_seat_id
 
-      validates_presence_of :booking_id
-      validates_presence_of :allocated_seat_id
+      validates :booking_id, :presence => true
+      validates :allocated_seat_id, :presence => true
     end
   end
 end

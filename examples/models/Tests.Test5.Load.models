@@ -11,8 +11,8 @@ module Concernz
       # Person is a kind of Party and Birth (in which Person was born on Event Date) and Birth was assisted by attending-Doctor and Doctor is a kind of Person and Person is a kind of Party
       has_many :parties_via_person_birth_doctor_person, :class_name => 'Party', :foreign_key => :person_attending_doctor_id, :dependent => :destroy
 
-      validates_presence_of :party_moniker_accuracy_level
-      validates_presence_of :party_moniker_party_name
+      validates :party_moniker_accuracy_level, :presence => true
+      validates :party_moniker_party_name, :presence => true
     end
   end
 end
