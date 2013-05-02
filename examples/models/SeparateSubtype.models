@@ -26,7 +26,7 @@ module Concernz
       # Vehicle Incident occured while Driver was in charge and Driver is a kind of Person
       has_many :vehicle_incidents_via_driver, :class_name => 'VehicleIncident', :foreign_key => :driver_id, :dependent => :destroy
 
-      validates_presence_of :person_name
+      validates :person_name, :presence => true
     end
   end
 end
@@ -43,7 +43,7 @@ module Concernz
       # Vehicle Incident occured while Driver was in charge and Driver is a kind of Person
       belongs_to :person_via_driver, :class_name => 'Person', :foreign_key => :driver_id
 
-      validates_presence_of :incident_id
+      validates :incident_id, :presence => true
     end
   end
 end

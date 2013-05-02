@@ -8,7 +8,7 @@ module Concernz
       # Occurrence (in which Event occurred in Month)
       has_many :occurrences, :class_name => 'Occurrence', :foreign_key => :month_id, :dependent => :destroy
 
-      validates_presence_of :month_value
+      validates :month_value, :presence => true
     end
   end
 end
@@ -22,7 +22,7 @@ module Concernz
       # Occurrence (in which Event occurred in Month)
       belongs_to :month
 
-      validates_presence_of :month_id
+      validates :month_id, :presence => true
     end
   end
 end

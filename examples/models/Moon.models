@@ -5,7 +5,7 @@ module Concernz
     included do
       self.primary_key = 'moon_id'
 
-      validates_presence_of :moon_name
+      validates :moon_name, :presence => true
     end
   end
 end
