@@ -25,14 +25,14 @@ class EventType
   has n, :event	# Event is of Event Type
 end
 
-class Friend
+class Friendship
   include DataMapper::Resource
 
-  property :is_confirmed, Boolean	# Friend is confirmed
-  property :other_user_id, Integer, :key => true	# Friend is where User is friend of other-User and User has User ID
-  belongs_to :other_user, 'User', :child_key => [:other_user_id], :parent_key => [:user_id]	# other_User is involved in Friend
-  property :user_id, Integer, :key => true	# Friend is where User is friend of other-User and User has User ID
-  belongs_to :user	# User is involved in Friend
+  property :is_confirmed, Boolean	# Friendship is confirmed
+  property :other_user_id, Integer, :key => true	# Friendship is where User is friendly with other-User and User has User ID
+  belongs_to :other_user, 'User', :child_key => [:other_user_id], :parent_key => [:user_id]	# other_User is involved in Friendship
+  property :user_id, Integer, :key => true	# Friendship is where User is friendly with other-User and User has User ID
+  belongs_to :user	# User is involved in Friendship
 end
 
 class Participation
@@ -58,7 +58,7 @@ class Person
   property :given_name, String, :length => 128	# maybe given-Name is name of Person
   property :occupation, String, :length => 128	# maybe Occupation is of Person
   property :person_id, Serial	# Person has Person ID
-  property :preferred_picture, String, :length => 20	# maybe preferred-Picture is of Person
+  property :preferred_picture, String	# maybe preferred-Picture is of Person
   has n, :participation	# Person played Role in Event according to Source
 end
 
@@ -85,8 +85,8 @@ class User
 
   property :email, String, :length => 64	# maybe Email is of User
   property :user_id, Serial	# User has User ID
-  has n, :friend	# User is friend of other-User
-  has n, :friend_as_other_user, 'Friend', :child_key => [:other_user_id], :parent_key => [:user_id]	# User is friend of other-User
+  has n, :friendship	# User is friendly with other-User
+  has n, :friendship_as_other_user, 'Friendship', :child_key => [:other_user_id], :parent_key => [:user_id]	# User is friendly with other-User
   has n, :source	# User provided Source
 end
 

@@ -68,7 +68,7 @@ module ::Genealogy
   end
 
   class Picture < Image
-    value_type :length => 20
+    value_type 
   end
 
   class RoleID < AutoCounter
@@ -146,10 +146,10 @@ module ::Genealogy
     one_to_one :user_id, :class => UserID, :mandatory => true  # See UserID.user
   end
 
-  class Friend
+  class Friendship
     identified_by :user, :other_user
-    has_one :other_user, :class => User, :mandatory => true  # See User.all_friend_as_other_user
-    has_one :user, :mandatory => true           # See User.all_friend
+    has_one :other_user, :class => User, :mandatory => true  # See User.all_friendship_as_other_user
+    has_one :user, :mandatory => true           # See User.all_friendship
     maybe :is_confirmed
   end
 

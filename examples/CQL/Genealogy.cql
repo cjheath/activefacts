@@ -18,7 +18,7 @@ Name is written as String(128);
 Occupation is written as String(128);
 Official is written as String(64);
 Person ID is written as Auto Counter;
-Picture is written as Image(20);
+Picture is written as Image;
 Role ID is written as Auto Counter;
 Source ID is written as Auto Counter;
 Source Name is written as String(128);
@@ -63,7 +63,7 @@ preferred-Picture is of Person,
 
 Role is identified by its ID;
 Role is called one Event Role Name,
-	Event Role Name is name of one Role;
+	Event Role Name is name of at most one Role;
 
 Source is identified by its ID;
 Source has one Source Name,
@@ -75,9 +75,9 @@ Email is of User,
 User provided Source,
 	Source was provided by one User;
 
-Friend is where
-	User is friend of other-User [symmetric];
-Friend is confirmed;
+Friendship is where
+	User is friendly with other-User [symmetric];
+Friendship is confirmed;
 
 Participation is where
 	Person played Role in Event according to Source,

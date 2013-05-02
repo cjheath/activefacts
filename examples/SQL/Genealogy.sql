@@ -31,12 +31,12 @@ CREATE TABLE EventType (
 )
 GO
 
-CREATE TABLE Friend (
-	-- Friend is confirmed,
+CREATE TABLE Friendship (
+	-- Friendship is confirmed,
 	IsConfirmed                             bit NULL,
-	-- Friend is where User is friend of other-User and User has User ID,
+	-- Friendship is where User is friendly with other-User and User has User ID,
 	OtherUserID                             int NOT NULL,
-	-- Friend is where User is friend of other-User and User has User ID,
+	-- Friendship is where User is friendly with other-User and User has User ID,
 	UserID                                  int NOT NULL,
 	PRIMARY KEY(UserID, OtherUserID)
 )
@@ -72,7 +72,7 @@ CREATE TABLE Person (
 	-- Person has Person ID,
 	PersonID                                int IDENTITY NOT NULL,
 	-- maybe preferred-Picture is of Person,
-	PreferredPicture                        image(20) NULL,
+	PreferredPicture                        image NULL,
 	PRIMARY KEY(PersonID)
 )
 GO
@@ -112,11 +112,11 @@ ALTER TABLE Event
 	ADD FOREIGN KEY (EventTypeID) REFERENCES EventType (EventTypeID)
 GO
 
-ALTER TABLE Friend
+ALTER TABLE Friendship
 	ADD FOREIGN KEY (OtherUserID) REFERENCES [User] (UserID)
 GO
 
-ALTER TABLE Friend
+ALTER TABLE Friendship
 	ADD FOREIGN KEY (UserID) REFERENCES [User] (UserID)
 GO
 
