@@ -187,6 +187,14 @@ module ActiveFacts
         @@relational_transforms << block
       end
 
+      def wipe_existing_mapping
+	all_object_type.each do |object_type|
+	  object_type.clear_references
+	  object_type.is_table = nil      # Undecided; force an attempt to decide
+	  object_type.tentative = true    # Uncertain
+	end
+      end
+
       def decide_tables #:nodoc:
         # Strategy:
         # 1) Populate references for all ObjectTypes
@@ -202,6 +210,8 @@ module ActiveFacts
         #    - partitioned subtype exhaustion
         #    - subtype extension where supertype has only PI roles and no AutoInc
         # 3) any ValueType that has references from it must become a table if not already
+
+	wipe_existing_mapping
 
         populate_all_references
 

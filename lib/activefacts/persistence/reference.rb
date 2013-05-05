@@ -380,25 +380,26 @@ module ActiveFacts
       def populate_all_references #:nodoc:
         debug :references, "Populating all object_type references" do
           all_object_type.each do |object_type|
-            object_type.clear_references
-            object_type.is_table = nil      # Undecided; force an attempt to decide
-            object_type.tentative = true    # Uncertain
-          end
-          all_object_type.each do |object_type|
             debug :references, "Populating references for #{object_type.name}" do
               object_type.populate_references
             end
           end
         end
-        debug :references, "Finished object_type references" do
-          all_object_type.each do |object_type|
-            next unless object_type.references_from.size > 0
-            debug :references, "#{object_type.name}:" do
-              object_type.references_from.each do |ref|
-                debug :references, "#{ref}"
-              end
-            end
-          end
+	show_all_references
+      end
+
+      def show_all_references
+	if debug :references
+	  debug :references, "Finished object_type references" do
+	    all_object_type.each do |object_type|
+	      next unless object_type.references_from.size > 0
+	      debug :references, "#{object_type.name}:" do
+		object_type.references_from.each do |ref|
+		  debug :references, "#{ref}"
+		end
+	      end
+	    end
+	  end
         end
       end
     end
