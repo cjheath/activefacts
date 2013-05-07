@@ -178,7 +178,7 @@ module ActiveFacts
 	    table.columns.map do |column|
 	      name = column.rails_name
 	      column.is_mandatory &&
-		!column.is_auto_assigned ? [
+		!column.is_auto_assigned && !column.is_auto_timestamp ? [
 		"    validates :#{name}, :presence => true"
 	      ] : []
 	    end.flatten
@@ -223,6 +223,19 @@ end
 	  @individual_file.close if @individual_file
 	end
 
+      end
+    end
+  end
+
+  module Persistence
+    class Column
+      def is_auto_timestamp
+	case name('_')
+	when /\A(created|updated)_(at|on)\Z/i
+	  true
+	else
+	  false
+	end
       end
     end
   end
