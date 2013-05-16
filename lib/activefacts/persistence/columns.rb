@@ -136,18 +136,18 @@ module ActiveFacts
 
       # Is this column mandatory or nullable?
       def is_mandatory
-	# Uncomment the following line for CWA unaries (not nullable, just T/F)
-	# @references[-1].is_unary ||
-	  !@references.detect{|ref| !ref.is_mandatory || ref.is_unary }
+        # Uncomment the following line for CWA unaries (not nullable, just T/F)
+        # @references[-1].is_unary ||
+          !@references.detect{|ref| !ref.is_mandatory || ref.is_unary }
       end
 
       # This column is auto-assigned if it's an auto-assigned value type and is not a foreign key
       def is_auto_assigned
-	last_table_ref = references.reverse.detect{|r| r.from && r.from.is_table}
+        last_table_ref = references.reverse.detect{|r| r.from && r.from.is_table}
         (to = references[-1].to) &&
-	  to.is_auto_assigned &&
-	  references[0].from.identifier_columns.size == 1 &&
-	  references[0].from == last_table_ref.from
+          to.is_auto_assigned &&
+          references[0].from.identifier_columns.size == 1 &&
+          references[0].from == last_table_ref.from
       end
 
       # What's the underlying SQL data type of this column?
@@ -195,7 +195,7 @@ module ActiveFacts
           if is_unary
             kind = "unary "
             [Column.new()] +
-	      ((@to && @to.fact_type) ?  @to.all_columns(excluded_supertypes) : [])
+              ((@to && @to.fact_type) ?  @to.all_columns(excluded_supertypes) : [])
           elsif is_self_value
             kind = "self-role "
             [Column.new()]
@@ -241,11 +241,11 @@ module ActiveFacts
       def identifier_columns
         debug :columns, "Identifier Columns for #{name}" do
           raise "Illegal call to identifier_columns for absorbed ValueType #{name}" unless is_table
-	  if isr = injected_surrogate_role
-	    columns.select{|column| column.references[0].from_role == isr }
-	  else
-	    columns.select{|column| column.references[0] == self_value_reference}
-	  end
+          if isr = injected_surrogate_role
+            columns.select{|column| column.references[0].from_role == isr }
+          else
+            columns.select{|column| column.references[0] == self_value_reference}
+          end
         end
       end
 
@@ -254,12 +254,12 @@ module ActiveFacts
       def reference_columns(excluded_supertypes)  #:nodoc:
         debug :columns, "Reference Columns for #{name}" do
           if is_table
-	    if isr = injected_surrogate_role
-	      ref_from = references_from.detect{|ref| ref.from_role == isr}
-	      [ActiveFacts::Persistence::Column.new(ref_from)]
-	    else
-	      [ActiveFacts::Persistence::Column.new(self_value_reference)]
-	    end
+            if isr = injected_surrogate_role
+              ref_from = references_from.detect{|ref| ref.from_role == isr}
+              [ActiveFacts::Persistence::Column.new(ref_from)]
+            else
+              [ActiveFacts::Persistence::Column.new(self_value_reference)]
+            end
           else
             [ActiveFacts::Persistence::Column.new]
           end

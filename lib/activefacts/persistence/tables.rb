@@ -85,24 +85,24 @@ module ActiveFacts
           return @is_table = true
         end
 
-	# Subtypes may be partitioned or separate, in which case they're definitely tables.
-	# Otherwise, if their identification is inherited from a supertype, they're definitely absorbed.
-	# If theey have separate identification, it might absorb them.
+        # Subtypes may be partitioned or separate, in which case they're definitely tables.
+        # Otherwise, if their identification is inherited from a supertype, they're definitely absorbed.
+        # If theey have separate identification, it might absorb them.
         if (!supertypes.empty?)
           as_ti = all_supertype_inheritance.detect{|ti| ti.assimilation}
           @is_table = as_ti != nil
-	  if @is_table
-	    debug :absorption, "EntityType #{name} is #{as_ti.assimilation} from supertype #{as_ti.supertype}"
-	  else
-	    identifying_fact_type = preferred_identifier.role_sequence.all_role_ref.to_a[0].role.fact_type
-	    if identifying_fact_type.is_a?(TypeInheritance)
-	      debug :absorption, "EntityType #{name} is absorbed into supertype #{supertypes[0].name}"
-	      @is_table = false
-	    else
-	      # Possibly absorbed, we'll have to see how that pans out
-	      @tentative = true
-	    end
-	  end
+          if @is_table
+            debug :absorption, "EntityType #{name} is #{as_ti.assimilation} from supertype #{as_ti.supertype}"
+          else
+            identifying_fact_type = preferred_identifier.role_sequence.all_role_ref.to_a[0].role.fact_type
+            if identifying_fact_type.is_a?(TypeInheritance)
+              debug :absorption, "EntityType #{name} is absorbed into supertype #{supertypes[0].name}"
+              @is_table = false
+            else
+              # Possibly absorbed, we'll have to see how that pans out
+              @tentative = true
+            end
+          end
           return @is_table
         end
 
@@ -188,11 +188,11 @@ module ActiveFacts
       end
 
       def wipe_existing_mapping
-	all_object_type.each do |object_type|
-	  object_type.clear_references
-	  object_type.is_table = nil      # Undecided; force an attempt to decide
-	  object_type.tentative = true    # Uncertain
-	end
+        all_object_type.each do |object_type|
+          object_type.clear_references
+          object_type.is_table = nil      # Undecided; force an attempt to decide
+          object_type.tentative = true    # Uncertain
+        end
       end
 
       def decide_tables #:nodoc:
@@ -211,7 +211,7 @@ module ActiveFacts
         #    - subtype extension where supertype has only PI roles and no AutoInc
         # 3) any ValueType that has references from it must become a table if not already
 
-	wipe_existing_mapping
+        wipe_existing_mapping
 
         populate_all_references
 
@@ -271,17 +271,17 @@ module ActiveFacts
                   debug :absorption, "#{object_type.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
 
 =begin
-		  # This is kinda arbitrary. We need a policy for evaluating optional flips, so we can decide if they "improve" things.
-		  # The flipping that occurs below always eliminates a table by absorption, but this doesn't.
+                  # This is kinda arbitrary. We need a policy for evaluating optional flips, so we can decide if they "improve" things.
+                  # The flipping that occurs below always eliminates a table by absorption, but this doesn't.
 
                   # If all non-identifying functional roles are one-to-ones that can be flipped, do that:
                   if non_identifying_refs_from.all? { |ref| ref.role_type == :one_one && (ref.to.is_table || ref.to.tentative) }
-		    debug :absorption, "Flipping references from #{object_type.name}" do
-		      non_identifying_refs_from.each do |ref|
-			debug :absorption, "Flipping #{ref}"
-			ref.flip
-		      end
-		    end
+                    debug :absorption, "Flipping references from #{object_type.name}" do
+                      non_identifying_refs_from.each do |ref|
+                        debug :absorption, "Flipping #{ref}"
+                        ref.flip
+                      end
+                    end
                     non_identifying_refs_from = []
                   end
 =end
@@ -342,13 +342,13 @@ module ActiveFacts
           # unless it should absorb something else (another ValueType is all it could be):
           all_object_type.each do |object_type|
             if (!object_type.is_table and object_type.references_to.size == 0 and object_type.references_from.size > 0)
-	      if !object_type.references_from.detect{|r| !r.is_one_to_one || !r.to.is_table}
-		debug :absorption, "Flipping references from #{object_type.name}; they're all to tables"
-		object_type.references_from.map(&:flip)
-	      else
-		debug :absorption, "Making #{object_type.name} a table; it has nowhere else to go and needs to absorb things"
-		object_type.probably_table
-	      end
+              if !object_type.references_from.detect{|r| !r.is_one_to_one || !r.to.is_table}
+                debug :absorption, "Flipping references from #{object_type.name}; they're all to tables"
+                object_type.references_from.map(&:flip)
+              else
+                debug :absorption, "Making #{object_type.name} a table; it has nowhere else to go and needs to absorb things"
+                object_type.probably_table
+              end
             end
           end
 

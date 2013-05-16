@@ -113,7 +113,7 @@ module ActiveFacts
               'timestamp'
 
             when /^Guid$/
-	      'uniqueidentifier'
+              'uniqueidentifier'
             when /^Money$/
               'decimal'
             when /^Picture ?Raw ?Data$/, /^Image$/
