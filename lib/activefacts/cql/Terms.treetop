@@ -25,18 +25,21 @@ module ActiveFacts
         is s (independent s )? identified_by
 	/
 	subtype_prefix (independent s )? term_definition_name
-	&{|e| input.context.object_type(e[2].value, "subtype") }
+	  &{|e| input.context.object_type(e[2].value, "subtype") }
       end
 
       rule prescan
+        s each?
 	s (
           term_definition_name mapping_pragmas entity_prefix
 		&{|e| input.context.object_type(e[0].value, "entity type") }
           /
           t1:term_definition_name mapping_pragmas written_as t2:term_definition_name
                 &{|e|
-		  input.context.object_type(e[0].value, "value type")
-		  input.context.object_type(e[3].value, "value type")
+		  new_term = e[0].value
+		  input.context.object_type(new_term, "value type")
+		  base_term = e[3].value
+		  input.context.object_type(base_term, "value type")
 		}
           /
           term_definition_name s mapping_pragmas is s (independent s )? where

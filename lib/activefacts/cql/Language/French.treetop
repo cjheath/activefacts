@@ -143,7 +143,7 @@ module ActiveFacts
 	(
 	  ( chaque s					# "each"
 	    { def value; [1, nil]; end }
-	  / un s 'certain' 'e'? ) s	# "some"
+	  / un s 'certain' 'e'? ) s			# "some"
 	    { def value; nil; end }
 	  / 'que' s ce s				# "that"
 	    { def value; nil; end }
@@ -153,13 +153,13 @@ module ActiveFacts
 	    { def value; [0, 0]; end }
 	  / exactement s quantity
 	    { def value; q = quantity.value; [q, q]; end }
-	  / au moins quantity most:( et au plus q:quantity )? # At least (or at most)
+	  / au s moins s quantity most:( et s au s plus q:quantity )? # At least (or at most)
 	    { def value; [ quantity.value, most.empty? ? nil : most.q.value ]; end }
-	  / au plus quantity				# At most
+	  / au s plus s quantity			# At most
 	    { def value; [ nil, quantity.value ]; end }
 	  / entre s numeric_range s			# within numeric_range
 	    { def value; numeric_range.value; end }
-	  / soit tous soit aucun			# either all or none
+	  / soit s tous s soit s aucun			# either all or none
 	    { def value; [ -1, 1 ]; end }
 	)
 	{

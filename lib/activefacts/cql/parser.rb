@@ -48,6 +48,7 @@ module ActiveFacts
       # These methods are semantic predicates; if they return false this parse rule will fail.
       class Context
         attr_reader :term, :global_term
+        attr_reader :terms
 
         def initialize(parser)
           @parser = parser
@@ -150,7 +151,7 @@ module ActiveFacts
         # Index the name by all prefixes
         def index_name(index, name, value = true)
           added = false
-          words = name.scan(/\w+/)
+          words = name.split(/\s+/)
           words.inject("") do |n, w|
             # Index all prefixes up to the full term
             n = n.empty? ? w : "#{n} #{w}"
@@ -220,10 +221,10 @@ module ActiveFacts
         nodes = []
         begin
           node = parse(InputProxy.new(input, context, self), :index => @index)
-	  unless node 
-	    raise failure_reason unless @index == input.size
-	    return nil	# No input, or no more input
-	  end
+          unless node 
+            raise failure_reason unless @index == input.size
+            return nil  # No input, or no more input
+          end
           if @block
             @block.call(node)
           else

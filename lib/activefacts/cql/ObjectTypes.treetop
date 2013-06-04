@@ -15,15 +15,16 @@ module ActiveFacts
       end
 
       rule entity_type
+	s each?
         s term_definition_name
 	m1:mapping_pragmas
         sup:(basetype / subtype)
 	  &{|s|
 	    # There's an implicit type when we use an identification mode, register it:
-	    mode = s[3].identification_mode
+	    mode = s[5].identification_mode
 	    if mode
-	      input.context.object_type(s[1].value+mode, "identification mode type")
-	      input.context.object_type(s[1].value+' '+mode, "identification mode type")
+	      input.context.object_type(s[3].value+mode, "identification mode type")
+	      input.context.object_type(s[3].value+' '+mode, "identification mode type")
 	    end
 	    true
 	  }
@@ -115,11 +116,11 @@ module ActiveFacts
 
       # Identified by roles... also used for constraints, beware
       rule role_list 
-#	any? s
+	a:any? s
         head:term_or_unary s
 	tail:(
 	  ( and S / ',' s )
-#	  any? s
+	  any? s
 	  term_or_unary s
 	)*
         {
