@@ -5,7 +5,7 @@ module ActiveFacts
       class Clause
         attr_reader :phrases
         attr_accessor :qualifiers, :context_note
-        attr_accessor :certainty	# nil, true, false -> maybe, definitely, not
+        attr_accessor :certainty        # nil, true, false -> maybe, definitely, not
         attr_accessor :conjunction      # one of {nil, 'and', ',', 'or', 'where'}
         attr_accessor :fact_type
         attr_reader :reading, :role_sequence    # These are the Metamodel objects
@@ -16,7 +16,7 @@ module ActiveFacts
         def initialize phrases, qualifiers = [], context_note = nil
           @phrases = phrases
           refs.each { |ref| ref.clause = self }
-	  @certainty = true
+          @certainty = true
           @qualifiers = qualifiers
           @context_note = context_note
         end
@@ -42,15 +42,15 @@ module ActiveFacts
         end
 
         def to_s phrases = nil
-	  phrases ||= @phrases
+          phrases ||= @phrases
           "#{
             @qualifiers && @qualifiers.size > 0 ? @qualifiers.sort.inspect+' ' : nil
           }#{
-	    case @certainty
-	    when nil; 'maybe '
-	    when false; 'negated '
-	    # else 'definitely '
-	    end
+            case @certainty
+            when nil; 'maybe '
+            when false; 'negated '
+            # else 'definitely '
+            end
           }#{
             quotes = false
             phrases.inject(""){|s, p|
@@ -127,6 +127,7 @@ module ActiveFacts
         # no change is made to this Clause object - those will be done later.
         #
         def match_existing_fact_type context, options = {}
+          raise "Cannot match a clause that contains no object types" if refs.size == 0
           raise "Internal error, clause already matched, should not match again" if @fact_type
           # If we fail to match, try a left contraction (or save this for a subsequent left contraction):
           left_contract_this_onto = context.left_contractable_clause
@@ -140,52 +141,52 @@ module ActiveFacts
           end
           context.left_contraction_conjunction = new_conjunction ? nil : @conjunction
 
-	  phrases = @phrases
+          phrases = @phrases
           vrs = []+refs
 
-	  # A left contraction is where the first player in the previous clause continues as first player of this clause
-	  contracted_left = false
-	  can_contract_right = false
-	  left_insertion = nil
-	  right_insertion = nil
-	  supposed_roles = []	# Arrange to unbind incorrect references supposed due to contraction
-	  contract_left = proc do
-	    contracted_from = left_contract_this_onto.refs[0]
-	    contraction_player = contracted_from.player
-	    contracted_role = Reference.new(contraction_player.name)
-	    supposed_roles << contracted_role
-	    left_insertion = contracted_role.inspect+' '
-	    contracted_role.player = contracted_from.player
-	    contracted_role.role_name = contracted_from.role_name
-	    contracted_role.bind(context)
-	    vrs.unshift contracted_role
-	    contracted_left = true
-	    phrases = [contracted_role]+phrases
-	    debug :matching, "Failed to match #{inspect}. Trying again using left contraction onto #{contraction_player.name}"
-	  end
+          # A left contraction is where the first player in the previous clause continues as first player of this clause
+          contracted_left = false
+          can_contract_right = false
+          left_insertion = nil
+          right_insertion = nil
+          supposed_roles = []   # Arrange to unbind incorrect references supposed due to contraction
+          contract_left = proc do
+            contracted_from = left_contract_this_onto.refs[0]
+            contraction_player = contracted_from.player
+            contracted_role = Reference.new(contraction_player.name)
+            supposed_roles << contracted_role
+            left_insertion = contracted_role.inspect+' '
+            contracted_role.player = contracted_from.player
+            contracted_role.role_name = contracted_from.role_name
+            contracted_role.bind(context)
+            vrs.unshift contracted_role
+            contracted_left = true
+            phrases = [contracted_role]+phrases
+            debug :matching, "Failed to match #{inspect}. Trying again using left contraction onto #{contraction_player.name}"
+          end
 
-	  contract_right = proc do
-	    contracted_from = left_contract_this_onto.refs[-1]
-	    contraction_player = contracted_from.player
-	    contracted_role = Reference.new(contraction_player.name)
-	    supposed_roles << contracted_role
-	    right_insertion = ' '+contracted_role.inspect
-	    contracted_role.player = contracted_from.player
-	    contracted_role.role_name = contracted_from.role_name
-	    contracted_role.bind(context)
-	    vrs.push contracted_role
-	    phrases = phrases+[contracted_role]
-	    debug :matching, "Failed to match #{inspect}. Trying again using right contraction onto #{contraction_player.name}"
-	  end
+          contract_right = proc do
+            contracted_from = left_contract_this_onto.refs[-1]
+            contraction_player = contracted_from.player
+            contracted_role = Reference.new(contraction_player.name)
+            supposed_roles << contracted_role
+            right_insertion = ' '+contracted_role.inspect
+            contracted_role.player = contracted_from.player
+            contracted_role.role_name = contracted_from.role_name
+            contracted_role.bind(context)
+            vrs.push contracted_role
+            phrases = phrases+[contracted_role]
+            debug :matching, "Failed to match #{inspect}. Trying again using right contraction onto #{contraction_player.name}"
+          end
 
           begin
             players = vrs.map{|vr| vr.player}
 
-	    if players.size == 0
-	      can_contract_right = left_contract_this_onto.refs.size == 2
-	      contract_left.call
-	      redo
-	    end
+            if players.size == 0
+              can_contract_right = left_contract_this_onto.refs.size == 2
+              contract_left.call
+              redo
+            end
 
             raise "Must identify players before matching fact types" if players.include? nil
             raise "A fact type must involve at least one object type, but there are none in '#{inspect}'" if players.size == 0 && !left_contract_this_onto
@@ -196,7 +197,7 @@ module ActiveFacts
               debug :matching, "Players are '#{player_names.inspect}'"
 
               # Match existing fact types in nested clauses first:
-	      # (not for contractions) REVISIT: Why not?
+              # (not for contractions) REVISIT: Why not?
               if !contracted_left
                 vrs.each do |ref|
                   next if ref.is_a?(Operation)
@@ -224,10 +225,10 @@ module ActiveFacts
 
               debug :matching, "Players must match '#{player_related_types.map{|pa| pa.map{|p|p.name}}.inspect}'"
 
-	      start_obj = player_related_types[0] || [left_contract_this_onto.refs[-1].player]
+              start_obj = player_related_types[0] || [left_contract_this_onto.refs[-1].player]
               # The candidate fact types have the right number of role players of related types.
               # If any role is played by a supertype or subtype of the required type, there's an implicit subtyping steps
-	      # REVISIT: A double contraction results in player_related_types being empty here
+              # REVISIT: A double contraction results in player_related_types being empty here
               candidate_fact_types =
                 start_obj.map do |related_type|
                   related_type.all_role.select do |role|
@@ -306,14 +307,14 @@ module ActiveFacts
               debug :matching, "No fact type matched, candidates were '#{candidate_fact_types.map{|ft| ft.default_reading}*"', '"}'"
             end
             if left_contract_this_onto
-	      if !contracted_left
-		contract_left.call
-		redo
-	      elsif can_contract_right
-		contract_right.call
-		can_contract_right = false
-		redo
-	      end
+              if !contracted_left
+                contract_left.call
+                redo
+              elsif can_contract_right
+                contract_right.call
+                can_contract_right = false
+                redo
+              end
             end
           end until true  # Once through, unless we hit a redo
           supposed_roles.each do |role|
@@ -341,34 +342,34 @@ module ActiveFacts
         #     a word that matches the reading's
         #
         def clause_matches(fact_type, reading, phrases = @phrases)
-	  implicitly_negated = false
+          implicitly_negated = false
           side_effects = []    # An array of items for each role, describing any side-effects of the match.
           intervening_words = nil
           residual_adjectives = false
 
-	  # The following form of negation is, e.g., where "Person was invited to no Party",
-	  # as opposed to where "Person was not invited to that Party". Quite different meaning,
-	  # because a free Party variable is required, but the join step is still disallowed.
-	  # REVISIT: I'll create the free variable when I implement some/that binding
-	  # REVISIT: the verbaliser will need to know about a negated step to a free variable
-	  implicitly_negated = true if refs.detect{|ref| q = ref.quantifier and q.is_zero }
+          # The following form of negation is, e.g., where "Person was invited to no Party",
+          # as opposed to where "Person was not invited to that Party". Quite different meaning,
+          # because a free Party variable is required, but the join step is still disallowed.
+          # REVISIT: I'll create the free variable when I implement some/that binding
+          # REVISIT: the verbaliser will need to know about a negated step to a free variable
+          implicitly_negated = true if refs.detect{|ref| q = ref.quantifier and q.is_zero }
 
           debug :matching_fails, "Does '#{phrases.inspect}' match '#{reading.expand}'" do
             phrase_num = 0
             reading_parts = reading.text.split(/\s+/)
             reading_parts.each do |element|
-	      phrase = phrases[phrase_num]
-	      if phrase == 'not'
-		raise "Stop playing games with your double negatives: #{phrases.inspect}" if implicitly_negated
-		debug :matching, "Negation detected"
-		implicitly_negated = true
-		phrase = phrases[phrase_num += 1]
-	      end
+              phrase = phrases[phrase_num]
+              if phrase == 'not'
+                raise "Stop playing games with your double negatives: #{phrases.inspect}" if implicitly_negated
+                debug :matching, "Negation detected"
+                implicitly_negated = true
+                phrase = phrases[phrase_num += 1]
+              end
               if element !~ /\{(\d+)\}/
                 # Just a word; it must match
                 unless phrase == element
-		  debug :matching_fails, "Mismatched ordinary word #{phrases[phrase_num].inspect} (wanted #{element})"
-		  return nil
+                  debug :matching_fails, "Mismatched ordinary word #{phrases[phrase_num].inspect} (wanted #{element})"
+                  return nil
                 end
                 phrase_num += 1
                 next
@@ -516,8 +517,8 @@ module ActiveFacts
                 } side effects)#{residual_adjectives ? ' and residual adjectives' : ''}"
           end
           # There will be one side_effects for each role player
-	  @certainty = !@certainty if implicitly_negated
-	  @certainty = !@certainty if reading.is_negative
+          @certainty = !@certainty if implicitly_negated
+          @certainty = !@certainty if reading.is_negative
           ClauseMatchSideEffects.new(fact_type, self, residual_adjectives, side_effects, implicitly_negated)
         end
 
@@ -648,7 +649,7 @@ module ActiveFacts
               #raise "Reading '#{existing.expand}' already exists, so why are we creating a duplicate?"
             end
             r = constellation.Reading(@fact_type, @fact_type.all_reading.size, :role_sequence => @role_sequence, :text => reading_words*" ", :is_negative => (certainty == false))
-	    r
+            r
           end
         end
 
@@ -789,8 +790,8 @@ module ActiveFacts
         attr_reader :residual_adjectives
         attr_reader :fact_type
         attr_reader :role_side_effects    # One array of values per Reference matched, in order
-	attr_reader :negated
-	attr_reader :optional
+        attr_reader :negated
+        attr_reader :optional
 
         def initialize fact_type, clause, residual_adjectives, role_side_effects, negated = false
           @fact_type = fact_type
@@ -804,7 +805,7 @@ module ActiveFacts
           'side-effects are [' +
             @role_side_effects.map{|r| r.to_s}*', ' +
             ']' +
-	    "#{@negated ? ' negated' : ''}" +
+            "#{@negated ? ' negated' : ''}" +
             "#{@residual_adjectives ? ' with residual adjectives' : ''}"
         end
 
@@ -818,8 +819,8 @@ module ActiveFacts
             c += side_effect.cost
           end
           c += 1 if @residual_adjectives
-	  c += 2 if @negated
-	  c
+          c += 2 if @negated
+          c
         end
 
         def describe
@@ -828,7 +829,7 @@ module ActiveFacts
               ( [side_effect.common_supertype ? "supertype step over #{side_effect.common_supertype.name}" : nil] +
                 [side_effect.absorbed_precursors > 0 ? "absorbs #{side_effect.absorbed_precursors} preceding words" : nil] +
                 [side_effect.absorbed_followers > 0 ? "absorbs #{side_effect.absorbed_followers} following words" : nil] +
-		[@negated ? 'implicitly negated' : nil]
+                [@negated ? 'implicitly negated' : nil]
               )
             end.flatten.compact*','
           actual_effects.empty? ? "no side effects" : actual_effects
@@ -1060,17 +1061,17 @@ module ActiveFacts
           @context_note = context_note
         end
 
-	def is_unique
-	  @max and @max == 1
-	end
+        def is_unique
+          @max and @max == 1
+        end
 
-	def is_mandatory
-	  @min and @min >= 1
-	end
+        def is_mandatory
+          @min and @min >= 1
+        end
 
-	def is_zero
-	  @min == 0 and @max == 0
-	end
+        def is_zero
+          @min == 0 and @max == 0
+        end
 
         def inspect
           "[#{@min}..#{@max}]#{
