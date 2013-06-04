@@ -40,6 +40,11 @@ module ActiveFacts
 	{ def independent; !i.empty?; end }
       end
 
+      rule in_which	# Introduce an objectification step
+	where /	        # Old syntax
+	dans s laquel   # preferred syntax
+      end
+
       # Units conversion keyword
       rule conversion
 	converts s a:(approximately s)? to s
@@ -120,7 +125,11 @@ module ActiveFacts
       end
 
       rule a_only_if_b
-	s clauses s 'que' S 'si' S r2:clauses s c:context_note? enforcement ';'
+	s clauses s only_if r2:clauses s c:context_note? enforcement ';'
+      end
+
+      rule only_if
+	que s si s
       end
 
       rule if_b_then_a
@@ -145,7 +154,7 @@ module ActiveFacts
 	    { def value; [1, nil]; end }
 	  / un s 'certain' 'e'? ) s			# "some"
 	    { def value; nil; end }
-	  / 'que' s ce s				# "that"
+	  / ce s					# "that"
 	    { def value; nil; end }
 	  / un s					# "one"; masculine or feminine
 	    { def value; [1, 1]; end }
@@ -211,11 +220,12 @@ module ActiveFacts
       rule all 'tous' !alphanumeric end
       rule at 'a' !alphanumeric end
       rule both 'les deux' !alphanumeric end 
-      rule ce ('ce'/'cette'/'cet') !alphanumeric end	# ce is masculine, cette feminine, cet is ce before a noun
+      rule ce ('cette'/'cet'/'ce') !alphanumeric end	# ce is masculine, cette feminine, cet is ce before a noun
       rule chaque 'chaque' !alphanumeric end
       rule converts 'convertit' !alphanumeric end 
       rule de 'de' !alphanumeric end
       rule dans 'dans' !alphanumeric end
+      rule laquel 'laquel' 'le'? !alphanumeric end
       rule descending 'descendant' !alphanumeric end
       rule each chaque end
       rule either 'soit' !alphanumeric end 
@@ -232,6 +242,7 @@ module ActiveFacts
       rule plus 'plus' !alphanumeric end
       rule some 'quelques' !alphanumeric end
       rule un 'un' 'e'? !alphanumeric end	# un is masculine, une is feminine
+      rule que 'que' !alphanumeric end
 
       # >>>>>>>>>>>>>>>>>>>> External vocabulary <<<<<<<<<<<<<<<<<<<<
       rule according_to 'selon' !alphanumeric end 
@@ -264,7 +275,7 @@ module ActiveFacts
       rule its ('sa' / 'son') !alphanumeric end
       rule masculine 'masculin' !alphanumeric end 
       rule maybe 'peut-être' !alphanumeric end			# REVISIT: eventuellement = possibly?
-      rule only 'only' !alphanumeric end			# REVISIT: Used in constraints
+      rule only 'que' !alphanumeric end			# REVISIT: Used in constraints
       rule or 'ou' !alphanumeric end 
       rule ordering_prefix by s (ascending/descending)? s end
       rule otherwise 'sinon' !alphanumeric end
@@ -279,7 +290,7 @@ module ActiveFacts
       rule soit 'soit' !alphanumeric end
       rule static 'statique' !alphanumeric end
       rule symmetric 'symétrique' !alphanumeric end
-      rule that 'que' !alphanumeric end
+      rule that que end
       rule then 'puis' !alphanumeric end
       rule to 'à' !alphanumeric end
       rule to_avoid ('pour' s 'empecher' s 'de' / 'pour' s 'ne' s 'pas') !alphanumeric end

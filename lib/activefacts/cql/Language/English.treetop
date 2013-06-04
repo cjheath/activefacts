@@ -41,7 +41,6 @@ module ActiveFacts
       rule in_which	# Introduce an objectification step
 	where /	    # Old syntax
 	in s which  # preferred syntax
-	{ def independent; !i.empty?; end }
       end
 
       # Units conversion keyword
@@ -124,6 +123,10 @@ module ActiveFacts
       # Subset constraint using "A only if B" syntax
       rule a_only_if_b
 	s clauses s only s if s r2:clauses s c:context_note? enforcement ';'
+      end
+
+      rule only_if
+	only s if s
       end
 
       # Subset constraint using "if A then B" syntax
