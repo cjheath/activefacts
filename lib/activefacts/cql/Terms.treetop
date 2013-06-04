@@ -29,12 +29,13 @@ module ActiveFacts
       end
 
       rule prescan
-        s (
+	s (
           term_definition_name mapping_pragmas entity_prefix
 		&{|e| input.context.object_type(e[0].value, "entity type") }
           /
           t1:term_definition_name mapping_pragmas written_as t2:term_definition_name
-                &{|e| input.context.object_type(e[0].value, "value type")
+                &{|e|
+		  input.context.object_type(e[0].value, "value type")
 		  input.context.object_type(e[3].value, "value type")
 		}
           /
@@ -61,7 +62,7 @@ module ActiveFacts
           / '(' as S term_definition_name s ')' s    # Prepare for a Role Name
             &{|s| input.context.role_name(s[3].value) }
 	  / new_derived_value		    # Prepare for a derived term
-          / new_adjective_term		    # Prepae for an existing term with new Adjectives
+          / new_adjective_term		    # Prepare for an existing term with new Adjectives
 	# The remaining rules exist to correctly eat up anything that doesn't match the above:
           / global_term                     # If we see A B - C D, don't recognise B as a new adjective for C D.
 	  / prescan_aggregate
@@ -76,7 +77,7 @@ module ActiveFacts
 
       # Not sure this is even needed, but it doesn't seem to hurt:
       rule prescan_aggregate
-	aggregate_type:id s of s global_term in s &'('
+	aggregate_type:id s agg_of s global_term agg_in s &'('
       end
 
       rule new_derived_value

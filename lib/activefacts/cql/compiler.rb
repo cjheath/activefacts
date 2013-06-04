@@ -17,12 +17,19 @@ require 'activefacts/cql/compiler/query'
 module ActiveFacts
   module CQL
     class Compiler < ActiveFacts::CQL::Parser
+      LANGUAGES = {
+        'en' => 'English',
+        'fr' => 'French',
+        'cn' => 'Mandarin'
+      }
       attr_reader :vocabulary
 
-      def initialize(filename = "stdin")
-        @filename = filename
+      def initialize *a
+        @filename = a.shift || "stdio"
+        super *a
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
-        debug :file, "Parsing '#{filename}'"
+        @language = nil
+        debug :file, "Parsing '#{@filename}'"
       end
 
       def compile_file filename
@@ -35,8 +42,25 @@ module ActiveFacts
         @vocabulary
       end
 
+      # Load the appropriate natural language module
+      def detect_language
+        @filename =~ /.*\.(..)\.cql$/i
+        language_code = $1
+        @language = LANGUAGES[language_code] || 'English'
+      end
+
+      def include_language
+        detect_language unless @langage
+        require 'activefacts/cql/Language/'+@language
+        language_module = ActiveFacts::CQL.const_get(@language)
+        extend language_module
+      end
+
       def compile input
+        include_language
+
         @string = input
+
         # The syntax tree created from each parsed CQL statement gets passed to the block.
         # parse_all returns an array of the block's non-nil return values.
         ok = parse_all(@string, :definition) do |node|
@@ -69,12 +93,12 @@ module ActiveFacts
       def compile_import file, aliases
         saved_index = @index
         saved_block = @block
-	saved_string = @string
-	saved_input_length = @input_length
+        saved_string = @string
+        saved_input_length = @input_length
         old_filename = @filename
-        @filename = file+'.cql'	  # REVISIT: Use File.dirname(@filename)+@filename ?
+        @filename = file+'.cql'   # REVISIT: Use File.dirname(@filename)+@filename ?
 
-	# REVISIT: Save and use another @vocabulary for this file?
+        # REVISIT: Save and use another @vocabulary for this file?
         File.open(@filename) do |f|
           ok = parse_all(f.read, nil, &@block)
         end
@@ -86,8 +110,8 @@ module ActiveFacts
       ensure
         @block = saved_block
         @index = saved_index
-	@input_length = saved_input_length
-	@string = saved_string
+        @input_length = saved_input_length
+        @string = saved_string
         @filename = old_filename
         nil
       end

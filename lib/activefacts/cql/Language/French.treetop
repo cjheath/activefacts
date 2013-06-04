@@ -8,7 +8,7 @@
 #
 module ActiveFacts
   module CQL
-    grammar Language
+    grammar French
 
       # >>>>>>>>>>>>>>>>>>>> Object Types <<<<<<<<<<<<<<<<<<<<
       # The pattern to introduce a Value Type
@@ -36,7 +36,7 @@ module ActiveFacts
 
       # The pattern to introduce an objectified fact type with implicit identification
       rule is_where
-	est s i:(independent s)? where
+	existe s i:(independent s)? si
 	{ def independent; !i.empty?; end }
       end
 
@@ -54,7 +54,7 @@ module ActiveFacts
       # External presence constraint syntax:
       rule each_occurs_in_clauses
 	s chaque s ('combinaison' S)? role_list s existe s quantifier 'fois' S
-	  'parmis' S 'ce' S 'qui' S 'suit' s ':' s
+	  'parmis' S ce S 'qui' S 'suit' s ':' s
 	  clauses_list s c:context_note? ';'
 	{
 	  def role_list_ast
@@ -70,7 +70,7 @@ module ActiveFacts
       end
 
       rule either_or
-      s 'soit' S r1:clauses s 'ou' S r2:clauses
+      s soit s r1:clauses s 'ou' S r2:clauses
 	s c:context_note? enforcement ';'
       {
 	  def role_list_ast
@@ -104,7 +104,7 @@ module ActiveFacts
       end
 
       rule either_or_not_both
-	s 'soit' S r1:clauses s 'ou' S r2:clauses 'mais' S 'pas' S 'les' S 'deux'
+	s soit s r1:clauses s 'ou' S r2:clauses 'mais' S 'pas' S 'les' S 'deux'
 	  s c:context_note? enforcement ';'
 	{
 	  def role_list_ast
@@ -143,7 +143,7 @@ module ActiveFacts
 	(
 	  ( chaque s					# "each"
 	    { def value; [1, nil]; end }
-	  / 'a' S 'certaines' / un s 'certain' 'e'? ) s	# "some"
+	  / un s 'certain' 'e'? ) s	# "some"
 	    { def value; nil; end }
 	  / 'que' s ce s				# "that"
 	    { def value; nil; end }
@@ -198,14 +198,26 @@ module ActiveFacts
         id (s id)*
       end
 
+      rule negative_prefix
+	s 'ce' S "n'est" s 'pas' s 'le' s 'cas' s 'que'
+      end
+
+      rule agg_of de end 
+      rule agg_in dans end 
+      rule restricted_to 'limité' s 'à' !alphanumeric s end
+      rule any un !alphanumeric end
+
       # >>>>>>>>>>>>>>>>>>>> Internal vocabulary <<<<<<<<<<<<<<<<<<<<
       rule all 'tous' !alphanumeric end
       rule at 'a' !alphanumeric end
       rule both 'les deux' !alphanumeric end 
-      rule ce ('ce'/'cette'/'ces') !alphanumeric end	# ce is masculine, cette feminine, ces is plural
+      rule ce ('ce'/'cette'/'cet') !alphanumeric end	# ce is masculine, cette feminine, cet is ce before a noun
       rule chaque 'chaque' !alphanumeric end
       rule converts 'convertit' !alphanumeric end 
+      rule de 'de' !alphanumeric end
+      rule dans 'dans' !alphanumeric end
       rule descending 'descendant' !alphanumeric end
+      rule each chaque end
       rule either 'soit' !alphanumeric end 
       rule entity 'entité' !alphanumeric end 
       rule est 'est' !alphanumeric end 
@@ -231,14 +243,17 @@ module ActiveFacts
       rule as 'comme' !alphanumeric end
       rule as_opposed_to 'au' S 'lieu' S 'de' !alphanumeric end
       rule asymmetric 'asymétrique' !alphanumeric end
+      rule au 'au' !alphanumeric end
       rule because ('parce' s 'que' / 'car') !alphanumeric end
       rule but 'mais' !alphanumeric end 
       rule by 'par' !alphanumeric end 
       rule definitely 'définitivement' !alphanumeric end
+      rule entre 'entre' !alphanumeric end
       rule ephemera 'éphémère' !alphanumeric end 
+      rule existe 'existe' !alphanumeric end
       rule false 'faux' !alphanumeric end 
       rule feminine 'féminin' !alphanumeric end 
-      rule identified ('connus'/'identifiés') !alphanumeric end 
+      rule identified ('identifié') !alphanumeric end 
       rule if 'si' !alphanumeric end
       rule import 'import' !alphanumeric end			# REVISIT: translation?
       rule independent 'indépendant' !alphanumeric end
@@ -246,9 +261,9 @@ module ActiveFacts
       rule intransitive 'intransitif' !alphanumeric end
       rule irreflexive 'irréflexive' !alphanumeric end
       rule is est end			# Called from ObjectTypes.treetop in "is identified by"
-      rule its 'ses' !alphanumeric end
+      rule its ('sa' / 'son') !alphanumeric end
       rule masculine 'masculin' !alphanumeric end 
-      rule maybe 'peut-être' !alphanumeric end
+      rule maybe 'peut-être' !alphanumeric end			# REVISIT: eventuellement = possibly?
       rule only 'only' !alphanumeric end			# REVISIT: Used in constraints
       rule or 'ou' !alphanumeric end 
       rule ordering_prefix by s (ascending/descending)? s end
@@ -257,10 +272,11 @@ module ActiveFacts
       rule personal 'personelle' !alphanumeric end 
       rule radix_point ',' end
       rule reflexive 'réflexive' !alphanumeric end
-      rule restricted 'limité' s 'a' !alphanumeric end
       rule returning 'retour' !alphanumeric end
       rule separate 'distincte' !alphanumeric end 
+      rule si 'si' !alphanumeric end
       rule so_that 'pour' s 'que' !alphanumeric end
+      rule soit 'soit' !alphanumeric end
       rule static 'statique' !alphanumeric end
       rule symmetric 'symétrique' !alphanumeric end
       rule that 'que' !alphanumeric end

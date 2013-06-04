@@ -6,7 +6,7 @@
 #
 module ActiveFacts
   module CQL
-    grammar Language
+    grammar English
 
       # >>>>>>>>>>>>>>>>>>>> Object Types <<<<<<<<<<<<<<<<<<<<
       # The pattern to introduce a Value Type
@@ -208,6 +208,12 @@ module ActiveFacts
 	s it s is s not s the s case s that s
       end
 
+      rule agg_of of end 
+      rule agg_in in end 
+      rule restricted_to 'restricted' s 'to' s !alphanumeric end
+      # any is optionally used in an identifying role_list
+      rule any one !alphanumeric end
+
       # >>>>>>>>>>>>>>>>>>>> Internal vocabulary <<<<<<<<<<<<<<<<<<<<
       rule all 'all' !alphanumeric end
       rule ascending 'ascending' !alphanumeric end
@@ -271,7 +277,6 @@ module ActiveFacts
       rule personal 'personal' !alphanumeric end 
       rule radix_point '.' end
       rule reflexive 'reflexive' !alphanumeric end
-      rule restricted 'restricted' !alphanumeric end
       rule returning 'returning' !alphanumeric end
       rule separate 'separate' !alphanumeric end 
       rule so_that 'so' S that end

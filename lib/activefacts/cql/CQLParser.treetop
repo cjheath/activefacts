@@ -8,7 +8,6 @@ module ActiveFacts
   module CQL
     grammar CQL
       include LexicalRules
-      include Language        # One of the language modules provides this module
       include Expressions
       include Terms
       include ObjectTypes

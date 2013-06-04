@@ -263,10 +263,9 @@ module ActiveFacts
       end
 
       rule aggregate
-	aggregate:id s of s term s	# REVISIT: this term may need to pre-scanned in the qualified_clauses
-	in s '('
-	  qualified_clauses	# REVISIT: Need to test to verify this is the right level (not query_clauses, etc)
-	s ')'
+	aggregate:id s
+	agg_of s term s agg_in s    # REVISIT: this term may need to pre-scanned in the qualified_clauses
+	'(' qualified_clauses s ')' # REVISIT: Need to test to verify this is the right level (not query_clauses, etc)
 	{
 	  def ast
 	    raise "Not implemented: AST for '#{aggregate.text_value} of #{term.text_value}'"

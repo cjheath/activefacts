@@ -115,7 +115,13 @@ module ActiveFacts
 
       # Identified by roles... also used for constraints, beware
       rule role_list 
-        head:term_or_unary s tail:( ( and S / ',' s ) term_or_unary s )*
+#	any? s
+        head:term_or_unary s
+	tail:(
+	  ( and S / ',' s )
+#	  any? s
+	  term_or_unary s
+	)*
         {
 	  def ast
 	    [head.ast, *tail.elements.map{|e| e.term_or_unary.ast}]
@@ -124,7 +130,7 @@ module ActiveFacts
       end
 
       rule unary_text
-	(s !non_phrase !term id)*
+	(s !any !non_phrase !term id)*
 	{
 	  def node_type; :linking; end
 	}
@@ -146,7 +152,7 @@ module ActiveFacts
 	    end
 	  }
 	/
-	s !non_phrase id s &non_phrase s ss:subscript
+	s !non_phrase id s &non_phrase s ss:subscript?
 	  { # A forward-referenced entity type
 	    # REVISIT: A change in this rule might allow forward-referencing a multi-word term
 	    def ast

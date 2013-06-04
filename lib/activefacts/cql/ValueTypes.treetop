@@ -125,7 +125,7 @@ module ActiveFacts
       end
 
       rule non_unit
-        restricted / conversion / approximately / ephemera
+        restricted_to / conversion / approximately / ephemera
       end
 
       rule unit
@@ -146,7 +146,7 @@ module ActiveFacts
       end
 
       rule value_constraint
-	restricted s to s range_list s u:units?
+	restricted_to range_list s u:units?
         {
           def ranges
             range_list.ranges
