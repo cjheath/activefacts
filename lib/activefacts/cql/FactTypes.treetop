@@ -17,6 +17,7 @@ module ActiveFacts
       end
 
       rule named_fact_type
+	s each?
         s term_definition_name
         mapping_pragmas is_where
         anonymous_fact_type
@@ -284,7 +285,7 @@ module ActiveFacts
 
       # This is the rule that causes most back-tracking. I think you can see why.
       rule simple_role
-	q:(quantifier enforcement cn:context_note?)?
+	q:( quantifier enforcement cn:context_note? )?
         player:derived_variable
         lr:(
 	  literal u:unit?
