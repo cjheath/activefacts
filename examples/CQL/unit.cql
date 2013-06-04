@@ -80,7 +80,7 @@ vocabulary Units;
 1 pennyweight converts to pwt;
 100.0 kg converts to quintal;
 25.0 converts to quire;
-0.5 pi converts to radian;
+0.5 pi^-1 converts to radian;
 500.0 converts to ream;
 1 converts to sec;
 1 sec converts to second;
