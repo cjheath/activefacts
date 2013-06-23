@@ -215,9 +215,10 @@ module ActiveFacts
       rule agg_in in end 
       rule restricted_to 'restricted' s 'to' s !alphanumeric end
       # any is optionally used in an identifying role_list
-      rule any one !alphanumeric end
+      rule any one / a end
 
       # >>>>>>>>>>>>>>>>>>>> Internal vocabulary <<<<<<<<<<<<<<<<<<<<
+      rule a 'a' 'n'? !alphanumeric end
       rule all 'all' !alphanumeric end
       rule ascending 'ascending' !alphanumeric end
       rule at 'at' !alphanumeric end

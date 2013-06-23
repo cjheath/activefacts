@@ -34,11 +34,11 @@ module ActiveFacts
           term_definition_name mapping_pragmas entity_prefix
 		&{|e| input.context.object_type(e[0].value, "entity type") }
           /
-          t1:term_definition_name mapping_pragmas written_as t2:term_definition_name
+          t1:term_definition_name mapping_pragmas written_as any? s t2:term_definition_name
                 &{|e|
 		  new_term = e[0].value
 		  input.context.object_type(new_term, "value type")
-		  base_term = e[3].value
+		  base_term = e[5].value
 		  input.context.object_type(base_term, "value type")
 		}
           /
