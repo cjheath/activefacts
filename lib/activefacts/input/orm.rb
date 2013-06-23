@@ -152,25 +152,27 @@ module ActiveFacts
         # get and process all the entity types:
         entity_types = []
         x_entity_types = @x_model.xpath("orm:Objects/orm:EntityType")
-        x_entity_types.each{|x|
+        x_entity_types.each do |x|
           id = x['id']
           name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
           name = nil if name.size == 0
-          entity_types <<
-            @by_id[id] =
-              entity_type =
-		@vocabulary.valid_entity_type_name(name) ||
-		@constellation.EntityType(@vocabulary, name, :guid => id_of(x))
-            independent = x['IsIndependent']
-            entity_type.is_independent = true if independent && independent == 'true'
-            personal = x['IsPersonal']
-            entity_type.pronoun = 'personal' if personal && personal == 'true'
+	  debug :orm, "Asserting new EntityType #{name.inspect}" do
+	    entity_types <<
+	      @by_id[id] =
+		entity_type =
+		  @vocabulary.valid_entity_type_name(name) ||
+		  @constellation.EntityType(@vocabulary, name, :guid => id_of(x))
+	  end
+	  independent = x['IsIndependent']
+	  entity_type.is_independent = true if independent && independent == 'true'
+	  personal = x['IsPersonal']
+	  entity_type.pronoun = 'personal' if personal && personal == 'true'
   #       x_pref = x.xpath("orm:PreferredIdentifier")[0]
   #       if x_pref
   #         pi_id = x_pref['ref']
   #         @pref_id_for[pi_id] = x
   #       end
-        }
+        end
       end
 
       def read_value_types
@@ -203,7 +205,14 @@ module ActiveFacts
         type_name.sub!(/^orm:/,'')
 
         type_name.sub!(/DataType\Z/,'')
-        type_name = DataTypeMapping[type_name] || type_name
+	if t = DataTypeMapping[type_name]
+	  existing = @constellation.ObjectType[[@vocabulary.identifying_role_values, t]]
+	  if !existing || existing.is_a?(ActiveFacts::Metamodel::ValueType)
+	    # There's no type conflict, so use the mapped name.
+	    type_name = t
+	  end
+	end
+	debug :orm, "Using #{type_name.inspect} as supertype for new #{name}"
         if !length and type_name =~ /\(([0-9]+)\)/
           length = $1.to_i
         end
@@ -221,23 +230,30 @@ module ActiveFacts
           supertype_name = x_supertype['Name']
           raise "Supertype of #{name} is post-defined but recursiving processing failed" unless supertype
           raise "Supertype #{supertype_name} of #{name} is not a value type" unless supertype.kind_of? ActiveFacts::Metamodel::ValueType
-          value_super_type =
-	    @vocabulary.valid_value_type_name(supertype_name) ||
-	    @constellation.ValueType(@vocabulary, supertype_name, :guid => id_of(x_supertype))
+	  debug :orm, "Asserting new ValueType #{supertype_name.inspect} for supertype" do
+	    value_super_type =
+	      @vocabulary.valid_value_type_name(supertype_name) ||
+	      @constellation.ValueType(@vocabulary, supertype_name, :guid => id_of(x_supertype))
+	  end
         else
           # REVISIT: Need to handle standard types better here:
           value_super_type =
 	    if type_name != name
-	      @vocabulary.valid_value_type_name(type_name) ||
-		@constellation.ValueType(@vocabulary.identifying_role_values, type_name, :guid => :new)
+	      debug :orm, "Asserting new ValueType #{type_name.inspect} for supertype" do
+		@vocabulary.valid_value_type_name(type_name) ||
+		  @constellation.ValueType(@vocabulary.identifying_role_values, type_name, :guid => :new)
+	      end
 	    else
 	      nil
 	    end
         end
 
-        @by_id[id] =
-	  vt = @vocabulary.valid_value_type_name(name) ||
-	    @constellation.ValueType(@vocabulary.identifying_role_values, name, :guid => id_of(x))
+	vt =
+	  debug :orm, "Asserting new ValueType #{name.inspect}" do
+	    @by_id[id] =
+	      @vocabulary.valid_value_type_name(name) ||
+	      @constellation.ValueType(@vocabulary.identifying_role_values, name, :guid => id_of(x))
+	  end
         vt.supertype = value_super_type
         vt.length = length if length
         vt.scale = scale if scale && scale != 0
