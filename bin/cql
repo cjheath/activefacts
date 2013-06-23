@@ -141,7 +141,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     begin
       @results = []
       compile(statement)
-      if @results.size == 1 && @results[0].is_a?(ActiveFacts::Metamodel::Join)
+      if @results.size == 1 && @results[0].is_a?(ActiveFacts::Metamodel::Query)
 	process_query(@results[0])
       else
 	puts(@results.map{|r| "\t"+r.inspect}*"\n")
