@@ -218,7 +218,7 @@ module ActiveFacts
       rule any one / a end
 
       # >>>>>>>>>>>>>>>>>>>> Internal vocabulary <<<<<<<<<<<<<<<<<<<<
-      rule a 'a' 'n'? !alphanumeric end
+      rule a ('a'/'an') !alphanumeric end
       rule all 'all' !alphanumeric end
       rule ascending 'ascending' !alphanumeric end
       rule at 'at' !alphanumeric end

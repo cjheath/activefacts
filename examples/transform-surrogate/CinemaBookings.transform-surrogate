@@ -1,6 +1,6 @@
-Booking: Booking.ID[*], Count, Person.ID[1], Showing.Cinema.ID[1], Showing.Date.Time.Value[1], Showing.Film.ID[1]
+Booking: Booking.ID[*], Is.Confirmed, Number, Person.ID[1], Showing.Cinema.ID[1], Showing.Date.Time.Value[1], Showing.Film.ID[1]
 Cinema: Cinema.ID[*]
 Film: Film.ID[*], Name
 Person: Login.Name[1], Person.ID[*]
-Seat: Cinema.ID[1], Number[1], Row[1], Seat.ID[*], Section.Name
-SeatAllocation: Allocated.Seat.ID[*], Booking.ID[*]
+Seat: Row.Cinema.ID[1], Row.Nr[1], Seat.ID[*], Seat.Number[1], Section.Name
+Seat Allocation: Allocated.Seat.ID[*], Booking.ID[*]

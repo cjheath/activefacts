@@ -8,13 +8,13 @@ module ActiveFacts
   module Metamodel
     class Vocabulary
       def finalise
-	constellation.FactType.values.each do |fact_type|
-	  if c = fact_type.check_and_add_spanning_uniqueness_constraint
-	    debug :constraint, "Checking for existence of at least one uniqueness constraint over the roles of #{fact_type.default_reading.inspect}"
-	    fact_type.check_and_add_spanning_uniqueness_constraint = nil
-	    c.call
-	  end
-	end
+        constellation.FactType.values.each do |fact_type|
+          if c = fact_type.check_and_add_spanning_uniqueness_constraint
+            debug :constraint, "Checking for existence of at least one uniqueness constraint over the roles of #{fact_type.default_reading.inspect}"
+            fact_type.check_and_add_spanning_uniqueness_constraint = nil
+            c.call
+          end
+        end
       end
 
       # This name does not yet exist (at least not as we expect it to).
@@ -23,46 +23,46 @@ module ActiveFacts
       # readings to be re-interpreted to a different meaning, complain.
       # Otherwise return nil.
       def check_valid_nonexistent_object_type_name name
-	if valid_object_type_name name
-	  raise "Cannot redefine #{ot.class.basename} #{name}"
-	end
+        if ot = valid_object_type_name(name)
+          raise "Cannot redefine #{ot.class.basename} #{name}"
+        end
       end
 
       def valid_object_type_name name
-	# Raise an exception if adding this name to the vocabulary would create anomalies
-	anomaly = constellation.Reading.detect do |r_key, reading|
-	    expanded = reading.expand do |role_ref, *words|
-		words.map! do |w|
-		  case
-		  when w == nil
-		    w
-		  when w[0...name.size] == name
-		    '_ok_'+w
-		  when w[-name.size..-1] == name
-		    w[-1]+'_ok_'
-		  else
-		    w
-		  end
-		end
+        # Raise an exception if adding this name to the vocabulary would create anomalies
+        anomaly = constellation.Reading.detect do |r_key, reading|
+            expanded = reading.expand do |role_ref, *words|
+                words.map! do |w|
+                  case
+                  when w == nil
+                    w
+                  when w[0...name.size] == name
+                    '_ok_'+w
+                  when w[-name.size..-1] == name
+                    w[-1]+'_ok_'
+                  else
+                    w
+                  end
+                end
 
-		words
-	      end
-	    expanded =~ %r{\b#{name}\b}
-	  end
-	raise "Adding new term '#{name}' would create anomalous re-interpretation of '#{anomaly.expand}'" if anomaly
+                words
+              end
+            expanded =~ %r{\b#{name}\b}
+          end
+        raise "Adding new term '#{name}' would create anomalous re-interpretation of '#{anomaly.expand}'" if anomaly
         @constellation.ObjectType[[identifying_role_values, name]]
       end
 
       # If this entity type exists, ok, otherwise check it's ok to add it
       def valid_entity_type_name name
         @constellation.EntityType[[identifying_role_values, name]] or
-	  check_valid_nonexistent_object_type_name name
+          check_valid_nonexistent_object_type_name name
       end
 
       # If this entity type exists, ok, otherwise check it's ok to add it
       def valid_value_type_name name
         @constellation.ValueType[[identifying_role_values, name]] or
-	  check_valid_nonexistent_object_type_name name
+          check_valid_nonexistent_object_type_name name
       end
     end
 
@@ -98,6 +98,11 @@ module ActiveFacts
         end.flatten.compact.uniq
       end
 
+      def implicit_boolean_type vocabulary
+        @constellation.ImplicitBooleanValueType[[vocabulary.identifying_role_values, "_ImplicitBooleanValueType"]] ||
+        @constellation.ImplicitBooleanValueType(vocabulary.identifying_role_values, "_ImplicitBooleanValueType", :guid => :new)
+      end
+
       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
       def create_implicit_fact_type_for_unary
         role = all_role.single
@@ -105,17 +110,15 @@ module ActiveFacts
         # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
         # We only do it when the unary fact type is not objectified
         link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
-        entity_type = @entity_type ||
-	    @constellation.ImplicitBooleanValueType[[role.object_type.vocabulary.identifying_role_values, "_ImplicitBooleanValueType"]] ||
-	    @constellation.ImplicitBooleanValueType(role.object_type.vocabulary.identifying_role_values, "_ImplicitBooleanValueType", :guid => :new)
+        entity_type = @entity_type || implicit_boolean_type(role.object_type.vocabulary)
         phantom_role = @constellation.Role(link_fact_type, 0, :object_type => entity_type, :guid => :new)
       end
 
       def reading_preferably_starting_with_role role, negated = false
         all_reading_by_ordinal.detect do |reading|
           reading.text =~ /\{\d\}/ and
-	    reading.role_sequence.all_role_ref_in_order[$1.to_i].role == role and
-	    reading.is_negative == !!negated
+            reading.role_sequence.all_role_ref_in_order[$1.to_i].role == role and
+            reading.is_negative == !!negated
         end || preferred_reading(negated)
       end
 
@@ -141,6 +144,7 @@ module ActiveFacts
       end
 
       def is_mandatory
+        link_fact_type ||
         all_role_ref.detect{|rr|
           rs = rr.role_sequence
           rs.all_role_ref.size == 1 and
@@ -239,26 +243,26 @@ module ActiveFacts
 
     class EntityType
       def identification_is_inherited
-	preferred_identifier and
-	  preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) }
+        preferred_identifier and
+          preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) }
       end
 
       def assimilation
-	if rr = identification_is_inherited
-	  rr.role.fact_type.assimilation
-	else
-	  nil
-	end
+        if rr = identification_is_inherited
+          rr.role.fact_type.assimilation
+        else
+          nil
+        end
       end
 
       def preferred_identifier
         return @preferred_identifier if @preferred_identifier
         if fact_type
-	  # When compiling a fact instance, the delayed creation of a preferred identifier might be necessary
-	  if c = fact_type.check_and_add_spanning_uniqueness_constraint
-	    fact_type.check_and_add_spanning_uniqueness_constraint = nil
-	    c.call
-	  end
+          # When compiling a fact instance, the delayed creation of a preferred identifier might be necessary
+          if c = fact_type.check_and_add_spanning_uniqueness_constraint
+            fact_type.check_and_add_spanning_uniqueness_constraint = nil
+            c.call
+          end
 
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles
           fact_roles = Array(fact_type.all_role)
@@ -616,16 +620,16 @@ module ActiveFacts
     class Value
       def to_s
         if is_a_string
-	  "'"+
-	  literal.
-	    inspect.		# Use Ruby's inspect to generate necessary escapes
-	    gsub(/\A"|"\Z/,'').	# Remove surrounding quotes
-	    gsub(/'/, "\\'") +	# Escape any single quotes
-	  "'"
-	else
-	  literal
-	end +
-	(unit ? " " + unit.name : "")
+          "'"+
+          literal.
+            inspect.            # Use Ruby's inspect to generate necessary escapes
+            gsub(/\A"|"\Z/,''). # Remove surrounding quotes
+            gsub(/'/, "\\'") +  # Escape any single quotes
+          "'"
+        else
+          literal
+        end +
+        (unit ? " " + unit.name : "")
       end
 
       def inspect
@@ -794,6 +798,13 @@ module ActiveFacts
         end
       end
 
+      def all_reading
+        [@reading ||= ImplicitReading.new(
+          self,
+          implying_role.fact_type.entity_type ? "{0} involves {1}" : implying_role.fact_type.default_reading+" Boolean"
+        )]
+      end
+
       # This is only used for debugging, from RoleRef#describe
       class ImplicitReading
         attr_accessor :fact_type, :text
@@ -844,13 +855,6 @@ module ActiveFacts
         def expand
           @fact_type.default_reading
         end
-      end
-
-      def all_reading
-        [@reading ||= ImplicitReading.new(
-          self,
-          implying_role.fact_type.entity_type ? "{0} involves {1}" : implying_role.fact_type.default_reading+" Boolean"
-        )]
       end
     end
 

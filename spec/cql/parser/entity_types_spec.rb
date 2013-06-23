@@ -37,14 +37,14 @@ describe "Entity Types" do
     [ "a is identified by b, c where d;",                    # Entity type declaration with two-part identifier
       ["EntityType: a [{b}, {c}] where [\"d\"];"]
     ],
-    [ "a is written as b(); e is identified by a where d;",
-      ["ValueType: a is written as b;", "EntityType: e [{a}] where [\"d\"];"]
+    [ "aa is written as b(); e is identified by aa where d;",
+      ["ValueType: aa is written as b;", "EntityType: e [{aa}] where [\"d\"];"]
     ],
-    [ " a is written as b ( ) ; e is identified by a where d ; ",
-      ["ValueType: a is written as b;", "EntityType: e [{a}] where [\"d\"];"]
+    [ " aa is written as b ( ) ; e is identified by aa where d ; ",
+      ["ValueType: aa is written as b;", "EntityType: e [{aa}] where [\"d\"];"]
     ],
-    [ "e is written as b; a is identified by e where maybe d;",
-      ["ValueType: e is written as b;", "EntityType: a [{e}] where [maybe \"d\"];"]
+    [ "e is written as b; aa is identified by e where maybe d;",
+      ["ValueType: e is written as b;", "EntityType: aa [{e}] where [maybe \"d\"];"]
     ],
   ]
 

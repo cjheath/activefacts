@@ -1,5 +1,7 @@
 # The test parser regards any word starting with an upper-case letter as a pre-existing term
+require 'activefacts/cql/Language/English'
 class TestParser < ActiveFacts::CQL::Parser
+  include ActiveFacts::CQL::English
   def context
     @context ||= Context.new(self)
   end     

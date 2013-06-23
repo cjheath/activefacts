@@ -6,11 +6,6 @@ module ::CinemaBookings
     value_type 
   end
 
-  class Count < UnsignedInteger
-    value_type :length => 16
-    restrict 1..Infinity
-  end
-
   class DateTimeValue < DateTime
     value_type 
   end
@@ -25,14 +20,19 @@ module ::CinemaBookings
 
   class Number < UnsignedInteger
     value_type :length => 16
+    restrict 1..Infinity
   end
 
   class PersonID < AutoCounter
     value_type 
   end
 
-  class Row < Char
+  class RowNr < Char
     value_type :length => 2
+  end
+
+  class SeatNumber < UnsignedInteger
+    value_type :length => 16
   end
 
   class SectionName < String
@@ -61,11 +61,16 @@ module ::CinemaBookings
     one_to_one :person_id, :class => PersonID, :mandatory => true  # See PersonID.person
   end
 
+  class Row
+    identified_by :cinema, :row_nr
+    has_one :cinema, :mandatory => true         # See Cinema.all_row
+    has_one :row_nr, :mandatory => true         # See RowNr.all_row
+  end
+
   class Seat
-    identified_by :cinema, :row, :number
-    has_one :cinema                             # See Cinema.all_seat
-    has_one :number, :mandatory => true         # See Number.all_seat
+    identified_by :row, :seat_number
     has_one :row, :mandatory => true            # See Row.all_seat
+    has_one :seat_number, :mandatory => true    # See SeatNumber.all_seat
     has_one :section                            # See Section.all_seat
   end
 
@@ -83,9 +88,10 @@ module ::CinemaBookings
 
   class Booking
     identified_by :person, :showing
-    has_one :count, :mandatory => true          # See Count.all_booking
+    has_one :number, :mandatory => true         # See Number.all_booking
     has_one :person, :mandatory => true         # See Person.all_booking
     has_one :showing, :mandatory => true        # See Showing.all_booking
+    maybe :is_confirmed
   end
 
   class SeatAllocation

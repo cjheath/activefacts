@@ -39,11 +39,11 @@ module ActiveFacts
       attr_reader :from, :to            # A "from" instance is related to one "to" instance
       attr_reader :from_role, :to_role  # For objectified facts, one role will be nil (a phantom)
       attr_reader :fact_type
-      attr_accessor :fk_jump		# True if this reference links a table to another in an FK (between absorbed references)
+      attr_accessor :fk_jump            # True if this reference links a table to another in an FK (between absorbed references)
 
       # A Reference is created from a object_type in regard to a role it plays
       def initialize(from, role)
-	@fk_jump = false
+        @fk_jump = false
         @from = from
         return unless role              # All done if it's a self-value reference for a ValueType
         @fact_type = role.fact_type
@@ -140,7 +140,7 @@ module ActiveFacts
         when is_unary
           if @from && @from.fact_type
             @from.name.camelwords
-	  else
+          else
             @from_role.fact_type.preferred_reading.text.gsub(/\{[0-9]\}/,'').strip.camelwords
           end
         when !@from_role                  # Self-value role of an independent ValueType
@@ -154,7 +154,7 @@ module ActiveFacts
       end
 
       def is_one_to_one
-	[:one_one, :subtype, :supertype].include?(role_type)
+        [:one_one, :subtype, :supertype].include?(role_type)
       end
 
       # For a one-to-one (or a subtyping fact type), reverse the direction.
@@ -162,7 +162,7 @@ module ActiveFacts
         raise "Illegal flip of #{self}" unless @to and is_one_to_one
 
         detabulate
-	mirror
+        mirror
         tabulate
       end
 
@@ -176,11 +176,11 @@ module ActiveFacts
         # Flip the reference
         @to, @from = @from, @to
         @to_role, @from_role = @from_role, @to_role
-	self
+        self
       end
 
       def reversed
-	clone.mirror
+        clone.mirror
       end
 
       def tabulate        #:nodoc:
@@ -201,7 +201,7 @@ module ActiveFacts
       end
 
       def to_s              #:nodoc:
-	ref_type = fk_jump ? "jumping to" : (is_absorbing ? "absorbing" : "to")
+        ref_type = fk_jump ? "jumping to" : (is_absorbing ? "absorbing" : "to")
         "reference from #{@from.name}#{@to ? " #{ref_type} #{@to.name}" : ""}" + (@fact_type ? " in '#{@fact_type.default_reading}'" : "")
       end
 
@@ -385,21 +385,21 @@ module ActiveFacts
             end
           end
         end
-	show_all_references
+        show_all_references
       end
 
       def show_all_references
-	if debug :references
-	  debug :references, "Finished object_type references" do
-	    all_object_type.each do |object_type|
-	      next unless object_type.references_from.size > 0
-	      debug :references, "#{object_type.name}:" do
-		object_type.references_from.each do |ref|
-		  debug :references, "#{ref}"
-		end
-	      end
-	    end
-	  end
+        if debug :references
+          debug :references, "Finished object_type references" do
+            all_object_type.each do |object_type|
+              next unless object_type.references_from.size > 0
+              debug :references, "#{object_type.name}:" do
+                object_type.references_from.each do |ref|
+                  debug :references, "#{ref}"
+                end
+              end
+            end
+          end
         end
       end
     end
