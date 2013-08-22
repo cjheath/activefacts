@@ -156,13 +156,13 @@ module ActiveFacts
           id = x['id']
           name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
           name = nil if name.size == 0
-	  debug :orm, "Asserting new EntityType #{name.inspect}" do
-	    entity_types <<
-	      @by_id[id] =
-		entity_type =
-		  @vocabulary.valid_entity_type_name(name) ||
-		  @constellation.EntityType(@vocabulary, name, :guid => id_of(x))
-	  end
+	  entity_type =
+	    @by_id[id] =
+	      debug :orm, "Asserting new EntityType #{name.inspect}" do
+		@vocabulary.valid_entity_type_name(name) ||
+		@constellation.EntityType(@vocabulary, name, :guid => id_of(x))
+	      end
+	  entity_types << entity_type
 	  independent = x['IsIndependent']
 	  entity_type.is_independent = true if independent && independent == 'true'
 	  personal = x['IsPersonal']
@@ -761,7 +761,13 @@ module ActiveFacts
               join_over, = *ActiveFacts::Metamodel.plays_over(role_sequence.all_role_ref.map{|rr| rr.role}, :counterpart)
 
               players = role_sequence.all_role_ref.map{|rr| rr.role.object_type.name}.uniq
-              raise "Uniqueness join constraint #{name} has incompatible players #{players.inspect}" unless join_over
+	      unless join_over
+		if x.xpath("orm:RoleSequence/orm:JoinRule").size > 0
+		  $stderr.puts "Ignoring Join #{name} because its query is not understood"
+		  next
+		end
+		raise "Uniqueness join constraint #{name} has incompatible players #{players.inspect}"
+	      end
               subtyping = players.size > 1 ? 'subtyping ' : ''
               # REVISIT: Create the Query, the Variable for join_over, and steps from each role_ref to join_over
               debug :query, "#{subtyping}join uniqueness constraint over #{join_over.name} in #{fact_types.map(&:default_reading)*', '}"

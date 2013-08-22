@@ -11,6 +11,8 @@ require 'activefacts/input/orm'
 require 'activefacts/generate/metadata/json'
 
 describe "NORMA Loader with JSON Metadata output" do
+  orm_failures = {
+  }
   norma_metadata_json_failures = {
   }
 

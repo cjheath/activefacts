@@ -1,0 +1,175 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<style media='screen' type='text/css'>
+ul {
+  margin: 0px 0px 0px 2em;
+  -webkit-margin-before: 0px;
+  -webkit-margin-after: 0px;
+  -webkit-padding-start: 0px;
+  padding: 0px;
+}
+
+pre.slide {
+  background-color: #000;
+  padding: 5px;
+  display: table-cell;
+  border-style: dashed;
+  border-width: 2px;
+  border-color: #BBB;
+}
+
+span {
+  font-family: "Frutiger", sans-serif;
+}
+
+.keyword {
+  color: #0000CC;
+}
+.term, .concept {
+  /* Xcolor: #6A0072;   The color used by NORMA */
+  color: #8A0092;
+}
+.vocabulary, .object_type {
+  /* Xcolor: #6A0072;   The color used by NORMA */
+  color: #8A0092;
+}
+.linking, .copula {
+  color: #0E5400;
+}
+.literal, .value {
+  color: #FF990E;
+}
+
+dd {
+  margin-bottom: 0.5em;
+}
+
+.glossary-sidebar {
+  display: block;
+  margin: 0;
+  padding: 0 16px;
+  border-right: solid #DDD 3px;
+  background: #EEE;
+  float: right;
+  width: 240px;
+}
+
+.glossary-toc {
+  overflow: auto;
+  height: 100%;
+  margin: 0;
+  padding: 0 0px;
+  list-style: none;
+  font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
+}
+
+.glossary-doc {
+  display: block;
+  background: #FFF;
+  border-right: solid #EEE 3px;
+  font: 300 16px/1.4 "Myriad Pro", "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif;
+  height: 100%;
+  margin: 0;
+  overflow: auto;
+  padding: 0 30px;
+
+  left: 0px;
+  right: 240px;
+}
+
+.glossary-toc li {
+  margin-left: 20px;
+  text-indent: -20px;
+}
+
+.glossary-doc dl {
+  margin-bottom: 1600px;
+}
+
+.glossary-doc dd {
+  margin-bottom: 30px;
+}
+
+.glossary-constraint {
+  background: #EDC;
+}
+
+.value {
+  display: inline;
+}
+
+.keyword,
+.glossary-facttype,
+.glossary-reading {
+  display: inline;
+  XXbackground: #E8E8E8;
+}
+</style>
+<pre>
+<span class='keyword'>vocabulaire <span class='vocabulary'>RéservationsCinéma</span>;
+
+<span class='comment'>/*
+ * Valeur Types
+ */</span>
+</span>
+<span class='keyword'>chaque <span class='term'>Cinéma ID </span>est écrit en un <span class='term'>Serial</span>;</span>
+<span class='keyword'>chaque <span class='term'>Nombre </span>est écrit en un <span class='term'>Integer</span>(<span class='literal'>16</span>) limité à {<span class='literal'>1..</span>};</span>
+<span class='keyword'>chaque <span class='term'>Date Heure Valeur </span>est écrit en une <span class='term'>DateHeure</span>;</span>
+<span class='keyword'>chaque <span class='term'>Film ID </span>est écrit en un <span class='term'>Serial</span>;</span>
+<span class='keyword'>chaque <span class='term'>Name </span>est écrit en un <span class='term'>Serial</span>;</span>
+<span class='keyword'>chaque <span class='term'>Nombre </span>est écrit en un <span class='term'>Integer</span>;</span>
+<span class='keyword'>chaque <span class='term'>Personne ID </span>est écrit en un <span class='term'>Serial</span>;</span>
+<span class='keyword'>chaque <span class='term'>Rangée </span>est écrit en un <span class='term'>Char</span>(<span class='literal'>2</span>);</span>
+<span class='keyword'>chaque <span class='term'>Section Nom </span>est écrit en un <span class='term'>String</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>Nom de Connexion </span>est écrit en un <span class='term'>String</span>;
+<span class='comment'>/*
+ * Entity Types
+ */</span>
+</span>
+<span class='keyword'>chaque <span class='term'>Cinéma </span>est identifié par son <span class='term'>ID</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>Date Heure </span>est identifié par sa <span class='term'>Valeur</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>Film </span>est identifié par son <span class='term'>ID</span>;</span>
+<span class='keyword'><span class='term'>Film</span> <span class='linking'>a </span>au plus une <span class='term'>Name</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>Personne </span>est identifié par son <span class='term'>ID</span>;</span>
+<span class='keyword'><span class='term'>Personne</span> <span class='linking'>a </span>un <span class='term'>Nom de Connexion</span>,
+	<span class='term'>Nom de Connexion</span> <span class='linking'>est de </span>au plus une <span class='term'>Personne</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>Siège </span>est identifié par un <span class='term'>Cinéma</span>, un <span class='term'>Rangée</span> et un <span class='term'>Nombre</span> où
+	ce <span class='term'>Cinéma</span> <span class='linking'>a </span>ce <span class='term'>Siège</span>,
+	ce <span class='term'>Siège</span> <span class='linking'>est dans </span>au plus un <span class='term'>Cinéma</span>,
+	ce <span class='term'>Siège</span> <span class='linking'>est dans </span>une <span class='term'>Rangée</span>,
+	cette <span class='term'>Rangée</span> <span class='linking'>contient </span>ce <span class='term'>Siège</span>,
+	ce <span class='term'>Siège</span> <span class='linking'>a </span>un <span class='term'>Nombre</span>,
+	ce <span class='term'>Nombre</span> <span class='linking'>est de </span>ce <span class='term'>Siège</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>Section </span>est identifié par son <span class='term'>Nom</span>;</span>
+<span class='keyword'><span class='term'>Siège</span> <span class='linking'>est dans </span>au plus une <span class='term'>Section</span>,
+	cette <span class='term'>Section</span> <span class='linking'>contient </span>ce <span class='term'>Siège</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>Projection </span>existe si
+	<span class='term'>Cinéma</span> <span class='linking'>transmet </span><span class='term'>Film</span> <span class='linking'>à </span><span class='term'>Date Heure</span>,
+	<span class='term'>Film</span> <span class='linking'>est transmis à </span><span class='term'>Date Heure</span> <span class='linking'>à </span><span class='term'>Cinéma</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>Réservation </span>existe si
+	<span class='term'>Personne</span> <span class='linking'>a réservé </span><span class='term'>Projection</span> <span class='linking'>pour </span>un <span class='term'>Nombre</span>,
+	cette <span class='term'>Personne</span> <span class='linking'>a réservée </span>ce <span class='term'>Nombre</span> <span class='linking'>de sièges pour </span>cette <span class='term'>Projection</span>;
+</span>
+<span class='keyword'><span class='term'>Réservation</span> <span class='linking'>est confirmée</span>;
+</span>
+<span class='keyword'>chaque <span class='term'>SiègeAttribution </span>existe si
+	<span class='term'>Réservation</span> <span class='linking'>a </span><span class='term'>Siège -attribué</span>;
+</span>
+<span class='keyword'>un certaine <span class='term'>Réservation</span>
+    (dans laquelle une certaine <span class='term'>Personne</span> <span class='linking'>a réservée </span>un certain <span class='term'>Nombre</span> <span class='linking'>de sièges pour </span>une certaine <span class='term'>Projection</span>
+	(dans laquelle un certain <span class='term'>Film</span> <span class='linking'>est transmis à </span>une certaine <span class='term'>Date Heure</span> <span class='linking'>à </span>un certain <span class='term'>Cinéma</span>))
+    <span class='linking'>a </span>un <span class='term'>Siège</span> <span class='linking'>attribué
+    </span>que si ce <span class='term'>Siège</span> <span class='linking'>est dans </span>ce <span class='term'>Cinéma</span>;</span>
+
+</pre>
+</html>

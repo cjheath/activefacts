@@ -1,0 +1,166 @@
+<style media='screen' type='text/css'>
+ul {
+  margin: 0px 0px 0px 2em;
+  -webkit-margin-before: 0px;
+  -webkit-margin-after: 0px;
+  -webkit-padding-start: 0px;
+  padding: 0px;
+}
+
+pre.slide {
+  background-color: #000;
+  padding: 5px;
+  display: table-cell;
+  border-style: dashed;
+  border-width: 2px;
+  border-color: #BBB;
+}
+
+span {
+  font-family: "Frutiger", sans-serif;
+}
+
+.keyword {
+  color: #0000CC;
+}
+.term, .concept {
+  /* Xcolor: #6A0072;   The color used by NORMA */
+  color: #8A0092;
+}
+.vocabulary, .object_type {
+  /* Xcolor: #6A0072;   The color used by NORMA */
+  color: #8A0092;
+}
+.linking, .copula {
+  color: #0E5400;
+}
+.literal, .value {
+  color: #FF990E;
+}
+
+dd {
+  margin-bottom: 0.5em;
+}
+
+.glossary-sidebar {
+  display: block;
+  margin: 0;
+  padding: 0 16px;
+  border-right: solid #DDD 3px;
+  background: #EEE;
+  float: right;
+  width: 240px;
+}
+
+.glossary-toc {
+  overflow: auto;
+  height: 100%;
+  margin: 0;
+  padding: 0 0px;
+  list-style: none;
+  font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
+}
+
+.glossary-doc {
+  display: block;
+  background: #FFF;
+  border-right: solid #EEE 3px;
+  font: 300 16px/1.4 "Myriad Pro", "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif;
+  height: 100%;
+  margin: 0;
+  overflow: auto;
+  padding: 0 30px;
+
+  left: 0px;
+  right: 240px;
+}
+
+.glossary-toc li {
+  margin-left: 20px;
+  text-indent: -20px;
+}
+
+.glossary-doc dl {
+  margin-bottom: 1600px;
+}
+
+.glossary-doc dd {
+  margin-bottom: 30px;
+}
+
+.glossary-constraint {
+  background: #EDC;
+}
+
+.value {
+  display: inline;
+}
+
+.keyword,
+.glossary-facttype,
+.glossary-reading {
+  display: inline;
+  XXbackground: #E8E8E8;
+}
+</style>
+<pre>
+<span class='keyword'>vocabulary <span class='vocabulary'>CinemaBookings</span>;
+
+<span class='comment'>/*
+ * Value Types
+ */</span>
+</span>
+<span class='keyword'>each <span class='term'>CinemaID </span>is written as <span class='term'>Auto Numberer</span>;</span>
+<span class='keyword'>each <span class='term'>Number </span>is written as <span class='term'>Unsigned Integer</span>(<span class='literal'>16</span>) restricted to {<span class='literal'>1..</span>};</span>
+<span class='keyword'>each <span class='term'>DateTimeValue </span>is written as <span class='term'>Date Time</span>;</span>
+<span class='keyword'>each <span class='term'>FilmID </span>is written as <span class='term'>Auto Numberer</span>;</span>
+<span class='keyword'>each <span class='term'>Name </span>is written as <span class='term'>String</span>;</span>
+<span class='keyword'>each <span class='term'>Number </span>is written as <span class='term'>Unsigned Integer</span>(<span class='literal'>16</span>);</span>
+<span class='keyword'>each <span class='term'>PersonID </span>is written as <span class='term'>Auto Numberer</span>;</span>
+<span class='keyword'>each <span class='term'>Row </span>is written as <span class='term'>Char</span>(<span class='literal'>2</span>);</span>
+<span class='keyword'>each <span class='term'>SectionName </span>is written as <span class='term'>String</span>;
+<span class='comment'>/*
+ * Entity Types
+ */</span>
+</span>
+<span class='keyword'>each <span class='term'>Cinema </span>is identified by its <span class='term'>ID</span>;
+</span>
+<span class='keyword'>each <span class='term'>DateTime </span>is identified by its <span class='term'>Value</span>;
+</span>
+<span class='keyword'>each <span class='term'>Film </span>is identified by its <span class='term'>ID</span>;</span>
+<span class='keyword'><span class='term'>Film</span> <span class='linking'>has </span>at most one <span class='term'>Name</span>;
+</span>
+<span class='keyword'>each <span class='term'>Person </span>is identified by its <span class='term'>ID</span>;</span>
+<span class='keyword'><span class='term'>Person</span> <span class='linking'>has </span>one <span class='term'>login-Name</span>,
+	<span class='term'>Name</span> <span class='linking'>is of </span>at most one <span class='term'>Person</span>;
+</span>
+<span class='keyword'>each <span class='term'>Seat </span>is identified by a <span class='term'>Cinema</span>, a <span class='term'>Row</span> and a <span class='term'>Number</span> where
+	that <span class='term'>Cinema</span> <span class='linking'>has </span>that <span class='term'>Seat</span>,
+	that <span class='term'>Seat</span> <span class='linking'>is in </span>at most one <span class='term'>Cinema</span>,
+	that <span class='term'>Seat</span> <span class='linking'>is in </span>one <span class='term'>Row</span>,
+	that <span class='term'>Row</span> <span class='linking'>contains </span>that <span class='term'>Seat</span>,
+	that <span class='term'>Seat</span> <span class='linking'>has </span>one <span class='term'>Number</span>,
+	that <span class='term'>Number</span> <span class='linking'>is of </span>that <span class='term'>Seat</span>;
+</span>
+<span class='keyword'>each <span class='term'>Section </span>is identified by its <span class='term'>Name</span>;</span>
+<span class='keyword'><span class='term'>Seat</span> <span class='linking'>is in </span>at most one <span class='term'>Section</span>,
+	that <span class='term'>Section</span> <span class='linking'>contains </span>at least one <span class='term'>Seat</span>;
+</span>
+<span class='keyword'>each <span class='term'>Showing </span>is where
+	some <span class='term'>Cinema</span> <span class='linking'>shows </span>some <span class='term'>Film</span> <span class='linking'>on </span>some <span class='term'>DateTime</span>,
+	that <span class='term'>Film</span> <span class='linking'>is showing on </span>that <span class='term'>DateTime</span> <span class='linking'>at </span>that <span class='term'>Cinema</span>;
+</span>
+<span class='keyword'>each <span class='term'>Booking </span>is where
+	some <span class='term'>Person</span> <span class='linking'>booked </span>some <span class='term'>Number</span> <span class='linking'>of seats for </span>some <span class='term'>Showing</span>,
+	that <span class='term'>Person</span> <span class='linking'>booked </span>that <span class='term'>Showing</span> <span class='linking'>for </span>one <span class='term'>Number</span><span class='linking'> of seats</span>;
+</span>
+<span class='keyword'><span class='term'>Booking</span> <span class='linking'>is confirmed</span>;
+</span>
+<span class='keyword'>each <span class='term'>Seat Allocation </span>is where
+	some <span class='term'>Booking</span> <span class='linking'>has </span>some <span class='term'>allocated-Seat</span>;
+
+<span class='keyword'>some <span class='term'>Booking</span>
+    (in which some <span class='term'>Person</span> <span class='linking'>booked </span>some <span class='term'>Number</span> <span class='linking'>of seats for </span>some <span class='term'>Showing</span>
+	(in which some <span class='term'>Film</span> <span class='linking'>is showing on </span>some <span class='term'>DateTime</span> <span class='linking'>at </span>some <span class='term'>Cinema</span>))
+    <span class='linking'>has </span>some <span class='term'>allocated Seat</span>
+    only if that <span class='term'>Seat</span> <span class='linking'>is in </span>that <span class='term'>Cinema</span>;

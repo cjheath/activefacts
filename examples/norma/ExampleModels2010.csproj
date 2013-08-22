@@ -17,6 +17,7 @@
     </UpgradeBackupLocation>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -29,7 +30,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -56,9 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Address._ORMCustomToolReport.cs">
+    <Compile Include="Binarize._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
-      <DependentUpon>Address.orm</DependentUpon>
+      <DependentUpon>Binarize.orm</DependentUpon>
     </Compile>
     <Compile Include="Blog._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -71,6 +71,10 @@
     <Compile Include="CompanyDirectorEmployee._ORMCustomToolReport.cs">
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
       <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="Corporate._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Corporate.orm</DependentUpon>
     </Compile>
     <Compile Include="Death._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -191,7 +195,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="Binarize.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Binarize._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="Blog.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Blog._ORMCustomToolReport.cs</LastGenOutput>
@@ -199,6 +206,10 @@
     <None Include="CinemaBookings.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CinemaBookings._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Corporate.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Corporate._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="WindowInRoomInBldg.orm">
       <Generator>ORMCustomTool</Generator>
@@ -218,7 +229,7 @@
     </None>
     <None Include="Address.orm">
       <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>Address._ORMCustomToolReport.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </None>
     <None Include="SchoolActivities.orm">
       <Generator>ORMCustomTool</Generator>
@@ -820,6 +831,24 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup Condition="Exists('Corporate.orm')">
+    <None Include="Corporate.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Corporate.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Corporate.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Corporate.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Corporate.PostgreSQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Corporate.orm</DependentUpon>
+      <ORMGenerator>DDILtoPostgreSQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

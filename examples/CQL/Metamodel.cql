@@ -165,10 +165,10 @@ Unit has at most one plural-Name,
 	plural-Name is of at most one Unit;
 Unit is fundamental;
 
-Value is identified by Literal and Value is a string and Unit where
+Value is identified by Literal and Value is literal string and Unit where
 	Value is represented by one Literal,
 	Literal represents Value,
-	Value is a string,
+	Value is literal string,
 	Value is in at most one Unit,
 	Unit is of Value;
 Instance has at most one Value;

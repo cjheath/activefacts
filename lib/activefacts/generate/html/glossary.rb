@@ -100,11 +100,6 @@ module ActiveFacts
 
 	  # Put out a table of contents first:
 	  puts '<div class="glossary-sidebar">'
-	  puts '<div class="glossary-controls">'
-	  puts '  <input type="button" onclick="toggle_constraints()" value="Constraints" class="glossary-toggle-constraint">'
-	  puts '  <input type="button" onclick="toggle_alternates()" value="Alternates" class="glossary-toggle-alternates">'
-	  puts '  <input type="button" onclick="toggle_examples()" value="Examples" class="glossary-toggle-examples">'
-	  puts '</div>'
 	  puts '<ol class="glossary-toc">'
 	  all_object_type.
 	  reject do |o|
@@ -116,9 +111,14 @@ module ActiveFacts
 	      puts "<li>#{termref(o.name)}</li>"
 	    end
 	  puts '</ol>'
+	  puts '<div class="glossary-controls">'
+	  puts '  <input type="button" onclick="toggle_constraints()" value="Constraints" class="glossary-toggle-constraint">'
+	  puts '  <input type="button" onclick="toggle_alternates()" value="Alternates" class="glossary-toggle-alternates">'
+	  puts '  <input type="button" onclick="toggle_examples()" value="Examples" class="glossary-toggle-examples">'
+	  puts '</div>'
 	  puts '</div>'
 
-	  puts '<div class="glossary-doc" id="glossary-doc">'
+	  puts '<div class="glossary-doc hide-alternates hide-constraints" id="glossary-doc">'
 	    puts "<h1>#{@vocabulary.name}</h1>"
 	    puts '<dl>'
 	    all_object_type.
