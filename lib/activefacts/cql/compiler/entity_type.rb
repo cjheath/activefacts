@@ -19,12 +19,13 @@ module ActiveFacts
       end
 
       class EntityType < ObjectType
-        def initialize name, supertypes, identification, pragmas, clauses
+        def initialize name, supertypes, identification, pragmas, clauses, context_note
           super name
           @supertypes = supertypes
           @identification = identification
           @pragmas = pragmas
           @clauses = clauses || []
+	  @context_note = context_note
         end
 
         def compile
@@ -56,6 +57,10 @@ module ActiveFacts
           identifying_roles = bind_identifying_roles context
 
           make_preferred_identifier_over_roles identifying_roles
+
+	  if @context_note
+	    @context_note.compile(@constellation, @entity_type)
+	  end
 
           @clauses.each do |clause|
             next unless clause.context_note

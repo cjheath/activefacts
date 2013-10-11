@@ -9,8 +9,8 @@ module ActiveFacts
     grammar Context
       rule context_note
         '('
-        w:who_says? s context_type discussion agreed:(',' a:as_agreed_by)? s
-        ')'
+        s w:who_says? s context_type discussion agreed:(',' a:as_agreed_by)? s
+        ')' s
         {
 	  def value
 	    [ w.empty? ? nil : w.value, context_type.value, discussion.text_value, agreed.empty? ? [] : agreed.a.value]
@@ -33,11 +33,6 @@ module ActiveFacts
         as_opposed_to   { def value; 'as_opposed_to'; end } /
         so_that         { def value; 'so_that'; end } /
         to_avoid        { def value; 'to_avoid'; end }
-      end
-
-      # An enforcement action, like SMS, email, log, alarm, etc.
-      rule action
-	id
       end
 
       rule discussion

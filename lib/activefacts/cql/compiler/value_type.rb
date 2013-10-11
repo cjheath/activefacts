@@ -87,13 +87,14 @@ module ActiveFacts
       end
 
       class ValueType < ObjectType
-        def initialize name, base, parameters, unit, value_constraint, pragmas
+        def initialize name, base, parameters, unit, value_constraint, pragmas, context_note
           super name
           @base_type_name = base
           @parameters = parameters
           @unit = unit
           @value_constraint = value_constraint
           @pragmas = pragmas
+	  @context_note = context_note
         end
 
         def compile
@@ -141,6 +142,10 @@ module ActiveFacts
             @value_constraint.constellation = @constellation
             vt.value_constraint = @value_constraint.compile
           end
+
+	  if @context_note
+	    @context_note.compile(@constellation, vt)
+	  end
 
           vt
         end

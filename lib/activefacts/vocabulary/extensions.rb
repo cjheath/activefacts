@@ -1006,5 +1006,33 @@ module ActiveFacts
       end
     end
 
+    class ContextNote
+      def verbalise(context=nil)
+	' (' +
+	( if all_context_according_to
+	    'according to '
+	    all_context_according_to.map do |act|
+	      act.agent.agent_name+', '
+	    end.join('')
+	  end
+	) +
+	context_note_kind.gsub(/_/, ' ') +
+	' ' +
+	discussion +
+	( if agreement
+	    ', as agreed ' +
+	    (agreement.date ? ' on '+agreement.date+' ' : '') +
+	    'by '
+	    agreement.all_context_agreed_by.map do |acab|
+	      acab.agent.agent_name+', '
+	    end.join('')
+	  else
+	    ''
+	  end
+	) +
+	')'
+      end
+    end
+
   end
 end

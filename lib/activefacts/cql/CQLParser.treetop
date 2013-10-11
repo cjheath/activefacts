@@ -109,6 +109,11 @@ module ActiveFacts
 	  }
       end
 
+      # An enforcement action, like SMS, email, log, alarm, etc.
+      rule action
+	id
+      end
+
       # presence constraint:
       rule presence_constraint
 	(each_occurs_in_clauses / either_or)

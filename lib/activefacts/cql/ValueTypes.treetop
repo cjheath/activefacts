@@ -17,8 +17,10 @@ module ActiveFacts
         base:(term/implicit_value_type_name) s
         value_type_parameters
         u:units?
+	c:context_note?
         r:(value_constraint enforcement)?
         m2:mapping_pragmas
+	c2:context_note?
         s ';' s
         {
 	  def ast
@@ -30,7 +32,8 @@ module ActiveFacts
 	    end
 	    units = u.empty? ? [] : u.value
 	    pragmas = m1.value+m2.value
-	    Compiler::ValueType.new name, base.value, params, units, value_constraint, pragmas
+	    context_note = !c.empty? ? c.ast : (!c2.empty? ? c2.ast : nil)
+	    Compiler::ValueType.new name, base.value, params, units, value_constraint, pragmas, context_note
 	  end
         }
       end

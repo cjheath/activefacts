@@ -18,10 +18,11 @@ module ActiveFacts
 	s each?
         s term_definition_name
 	m1:mapping_pragmas
+	c:context_note?
         sup:(basetype / subtype)
 	  &{|s|
 	    # There's an implicit type when we use an identification mode, register it:
-	    mode = s[5].identification_mode
+	    mode = s[6].identification_mode
 	    if mode
 	      input.context.object_type(s[3].value+mode, "identification mode type")
 	      input.context.object_type(s[3].value+' '+mode, "identification mode type")
@@ -29,6 +30,7 @@ module ActiveFacts
 	    true
 	  }
         m2:mapping_pragmas
+	c2:context_note?
         ec:entity_clauses?
         ';'
         {
@@ -37,7 +39,8 @@ module ActiveFacts
 	    clauses_ast = ec.empty? ? [] : ec.ast
 	    pragmas = m1.value+m2.value
 	    pragmas << 'independent' if sup.independent
-	    Compiler::EntityType.new name, sup.supers, sup.ast, pragmas, clauses_ast
+	    context_note = !c.empty? ? c.ast : (!c2.empty? ? c2.ast : nil)
+	    Compiler::EntityType.new name, sup.supers, sup.ast, pragmas, clauses_ast, context_note
 	  end
         }
       end
