@@ -28,7 +28,7 @@ module ActiveFacts
 	    params = value_type_parameters.values
 	    value_constraint = nil
 	    unless r.empty? 
-	      value_constraint = Compiler::ValueConstraint.new(r.value_constraint.ranges, r.value_constraint.units, r.enforcement.ast)
+	      value_constraint = Compiler::ValueConstraint.new(r.value_constraint.ast, r.enforcement.ast)
 	    end
 	    units = u.empty? ? [] : u.value
 	    pragmas = m1.value+m2.value
@@ -151,20 +151,34 @@ module ActiveFacts
       end
 
       rule value_constraint
-	restricted_to range_list s u:units?
+	restricted_to restricted_values c:context_note?
         {
-          def ranges
-            range_list.ranges
-          end
-
-	  def units
-	    u.empty? ? nil : u.value
+	  def ast
+	    v = restricted_values.values
+	    c[:context_note] = c.ast unless c.empty?
+	    v
 	  end
         }
 	# REVISIT: "where the possible value/s of that <Term> is/are value (, ...)"
       end
 
-      # REVISIT: Value constraint for ValueType or EntityType&Refmode: "the possible values of <TYPE> are value (, ...)"
+      rule restricted_values
+	range_list s u:units?
+	{
+	  def values
+	    { :ranges => range_list.ranges,
+	      :units => u.empty? ? nil : u.value
+	    }
+	  end
+	}
+	/
+	regular_expression
+	{
+	  def values
+	    { :regular_expression => contents }
+	  end
+	}
+      end
 
       rule range_list
         '{' s

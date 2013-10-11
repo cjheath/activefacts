@@ -95,6 +95,10 @@ module ActiveFacts
       restrict 'feminine', 'masculine', 'neuter', 'personal'
     end
 
+    class RegularExpression < String
+      value_type 
+    end
+
     class RingType < String
       value_type 
     end
@@ -281,13 +285,15 @@ module ActiveFacts
     end
 
     class Value
-      identified_by :literal, :is_a_string, :unit
-      maybe :is_a_string
+      identified_by :literal, :is_literal_string, :unit
+      maybe :is_literal_string
       has_one :literal, :mandatory => true        # See Literal.all_value
       has_one :unit                               # See Unit.all_value
+      has_one :value_type, :mandatory => true     # See ValueType.all_value
     end
 
     class ValueConstraint < Constraint
+      has_one :regular_expression                 # See RegularExpression.all_value_constraint
       one_to_one :role, :counterpart => :role_value_constraint  # See Role.role_value_constraint
     end
 
@@ -502,13 +508,14 @@ module ActiveFacts
       identified_by :value_type, :name
       has_one :name, :mandatory => true           # See Name.all_facet
       has_one :value_type, :mandatory => true     # See ValueType.all_facet
+      has_one :facet_value_type, :class => ValueType, :mandatory => true  # See ValueType.all_facet_as_facet_value_type
     end
 
-    class FacetValue
+    class FacetRestriction
       identified_by :value_type, :facet
-      has_one :facet, :mandatory => true          # See Facet.all_facet_value
-      has_one :value, :mandatory => true          # See Value.all_facet_value
-      has_one :value_type, :mandatory => true     # See ValueType.all_facet_value
+      has_one :facet, :mandatory => true          # See Facet.all_facet_restriction
+      has_one :value_type, :mandatory => true     # See ValueType.all_facet_restriction
+      has_one :value, :mandatory => true          # See Value.all_facet_restriction
     end
 
     class ImplicitBooleanValueType < ValueType

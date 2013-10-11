@@ -287,7 +287,7 @@ module ActiveFacts
         min = x_range['MinValue']
         max = x_range['MaxValue']
 
-        strings = is_a_string(min) || is_a_string(max)
+        strings = is_literal_string(min) || is_literal_string(max)
         # ValueRange takes a minimum and/or a maximum Bound, each takes value and whether inclusive
 	@constellation.ValueRange(
 	  min.length > 0 ? @constellation.Bound(assert_value(min, strings), true) : nil,
@@ -1254,7 +1254,7 @@ module ActiveFacts
               vt = @by_id[vt_id]
               throw "ValueType #{vtname} not found" unless vt
 
-              i = @constellation.Instance(id_of(v.parent), :population => population, :object_type => vt, :value => [v.text, is_a_string(v.text), nil])
+              i = @constellation.Instance(id_of(v.parent), :population => population, :object_type => vt, :value => [v.text, is_literal_string(v.text), nil])
               @by_id[id] = i
               # show_xmlobj(v)
             }
@@ -1549,7 +1549,7 @@ module ActiveFacts
       end
 
       # Detect numeric data and denote it as a string:
-      def is_a_string(value)
+      def is_literal_string(value)
         value =~ /[^ \d.]/
       end
 

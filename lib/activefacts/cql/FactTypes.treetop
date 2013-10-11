@@ -307,7 +307,7 @@ module ActiveFacts
 	      if lr.respond_to?(:literal)
 		literal = Compiler::Literal.new(lr.literal.value, lr.u.empty? ? nil : lr.u.text_value)
 	      end
-	      value_constraint = Compiler::ValueConstraint.new(lr.value_constraint.ranges, lr.value_constraint.units, lr.enforcement.ast) if lr.respond_to?(:value_constraint)
+	      value_constraint = Compiler::ValueConstraint.new(lr.value_constraint.ast, lr.enforcement.ast) if lr.respond_to?(:value_constraint)
 	      raise "It is not permitted to provide both a literal value and a value constraint" if value_constraint and literal
 	    end
 

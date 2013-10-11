@@ -83,7 +83,7 @@ module ActiveFacts
 	      if r.empty?
 		value_constraint = nil
 	      else
-		value_constraint = Compiler::ValueConstraint.new(r.value_constraint.ranges, r.value_constraint.units, r.enforcement.ast)
+		value_constraint = Compiler::ValueConstraint.new(r.value_constraint.ast, r.enforcement.ast)
 	      end
 	      Compiler::ReferenceMode.new(i.value, value_constraint, value_type_parameters.values)
 	    end

@@ -192,6 +192,63 @@ module ActiveFacts
 	}
       end
 
+      rule regular_expression
+	'/' !'/' regular_expression_contents '/'
+	{
+	  def contents
+	    regular_expression_contents.text_value
+	  end
+	}
+      end
+
+      rule regular_expression_contents
+	regular_expression_alternate ( '|' regular_expression_alternate )*
+      end
+
+      rule regular_expression_alternate
+	regular_expression_sequence
+      end
+
+      rule regular_expression_sequence
+	regular_expression_atom*
+      end
+
+      rule regular_expression_atom
+	(
+	  '[' character_classes ']'
+	  / regular_expression_group
+	  / ![*+?()|/] string_char
+	) regular_expression_multiplicity?
+      end
+
+      rule character_classes
+	character_class+
+      end
+
+      rule character_class
+	!']' string_char '-' !']' string_char
+	/ '-'
+	/ !']' string_char
+      end
+
+      rule regular_expression_multiplicity
+	'*' / '+' / '?'
+      end
+
+      rule regular_expression_group
+	'('
+	  regular_expression_group_extension?
+	  regular_expression_contents
+	')'
+      end
+
+      rule regular_expression_group_extension
+	'?' (
+	  '<' ( !'>' .)+ '>'	# A tag for a regular expression group
+	# REVISIT: Add more group extensions as needed
+	)
+      end
+
     end
   end
 end

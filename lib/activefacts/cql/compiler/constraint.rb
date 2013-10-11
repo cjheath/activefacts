@@ -493,10 +493,11 @@ module ActiveFacts
       end
 
       class ValueConstraint < Constraint
-        def initialize value_ranges, units, enforcement
+        def initialize ast, enforcement
           super nil, enforcement
-          @value_ranges = value_ranges
-          @units = units
+          @value_ranges = ast[:ranges]
+          @units = ast[:units]
+          @regular_expression = ast[:regular_expression]
         end
 
 	def assert_value(val)
@@ -514,16 +515,20 @@ module ActiveFacts
           raise "Units on value constraints are not yet processed (at line #{'REVISIT'})" if @units
               # @string.line_of(node.interval.first)
 
-          @value_ranges.each do |range|
-            min, max = Array === range ? range : [range, range]
-            v_range = @constellation.ValueRange(
-	      min && @constellation.Bound(:value => assert_value(min), :is_inclusive => true),
-	      max && @constellation.Bound(:value => assert_value(max), :is_inclusive => true))
-            ar = @constellation.AllowedRange(@constraint, v_range)
-          end
-          @enforcement.compile(@constellation, @constraint) if @enforcement
-          super
-        end
+	  if @value_ranges
+	    @value_ranges.each do |range|
+	      min, max = Array === range ? range : [range, range]
+	      v_range = @constellation.ValueRange(
+		min && @constellation.Bound(:value => assert_value(min), :is_inclusive => true),
+		max && @constellation.Bound(:value => assert_value(max), :is_inclusive => true))
+	      ar = @constellation.AllowedRange(@constraint, v_range)
+	    end
+	  else
+	    @constraint.regular_expression = @regular_expression
+	  end
+	  @enforcement.compile(@constellation, @constraint) if @enforcement
+	  super
+	end
 
         def vrto_s vr
           if Array === vr
@@ -544,7 +549,11 @@ module ActiveFacts
         end
 
         def to_s
-          "#{super} to (#{@value_ranges.map{|vr| vrto_s(vr) }.inspect })#{ @units ? " in #{@units.inspect}" : ''}"
+          "#{super} to " +
+	  (@value_ranges ?
+	    "(#{@value_ranges.map{|vr| vrto_s(vr) }.inspect })#{ @units ? " in #{@units.inspect}" : ''}" :
+	    @regular_expression
+	  )
         end
       end
 

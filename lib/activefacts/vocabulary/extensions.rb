@@ -562,9 +562,13 @@ module ActiveFacts
 
     class ValueConstraint
       def describe
-        "restricted to {"+
-          all_allowed_range_sorted.map{|ar| ar.to_s(false) }*", "+
-          "}"
+        "restricted to "+
+	  ( if regular_expression
+	      '/' + regular_expression + '/'
+	    else
+	      '{' + all_allowed_range_sorted.map{|ar| ar.to_s(false) }*', ' + '}'
+	    end
+	  )
       end
 
       def all_allowed_range_sorted
@@ -593,7 +597,7 @@ module ActiveFacts
 
         if min = value_range.minimum_bound
           min = min.value
-          if min.is_a_string
+          if min.is_literal_string
             min_literal = min.literal.inspect.gsub(/\A"|"\Z/,"'")   # Escape string characters
           else
             min_literal = min.literal
@@ -603,7 +607,7 @@ module ActiveFacts
         end
         if max = value_range.maximum_bound
           max = max.value
-          if max.is_a_string
+          if max.is_literal_string
             max_literal = max.literal.inspect.gsub(/\A"|"\Z/,"'")   # Escape string characters
           else
             max_literal = max.literal
@@ -619,7 +623,7 @@ module ActiveFacts
 
     class Value
       def to_s
-        if is_a_string
+        if is_literal_string
           "'"+
           literal.
             inspect.            # Use Ruby's inspect to generate necessary escapes

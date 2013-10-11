@@ -218,7 +218,7 @@ module ActiveFacts
 		(i.population.name.empty? ? '' : i.population.name+': ') +
 		termref(o.name) + ' ' +
 		div(
-		# v.is_a_string ? v.literal.inspect : v.literal,
+		# v.is_literal_string ? v.literal.inspect : v.literal,
 		  v.literal.inspect,
 		  'value'
 		),
@@ -413,7 +413,7 @@ module ActiveFacts
 		(i.population.name.empty? ? '' : i.population.name+': ') +
 		termref(o.name) + ' ' +
 		div(
-		# v.is_a_string ? v.literal.inspect : v.literal,
+		# v.is_literal_string ? v.literal.inspect : v.literal,
 		  v.literal.inspect,
 		  'value'),
 		'glossary-example'

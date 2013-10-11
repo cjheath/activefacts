@@ -237,7 +237,7 @@ CREATE UNIQUE CLUSTERED INDEX #{escape index.name} ON dbo.#{view_name}(#{index.c
 
       private
         def sql_value(value)
-          value.is_a_string ? sql_string(value.literal) : value.literal
+          value.is_literal_string ? sql_string(value.literal) : value.literal
         end
 
         def sql_string(str)
