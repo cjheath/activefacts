@@ -265,11 +265,11 @@ module ActiveFacts
 
       rule aggregate
 	aggregate:id s
-	agg_of s term s agg_in s    # REVISIT: this term may need to pre-scanned in the qualified_clauses
+	agg_of s term_or_unary s agg_in s    # REVISIT: this term may need to pre-scanned in the qualified_clauses
 	'(' qualified_clauses s ')' # REVISIT: Need to test to verify this is the right level (not query_clauses, etc)
 	{
 	  def ast
-	    raise "Not implemented: AST for '#{aggregate.text_value} of #{term.text_value}'"
+	    raise "Not implemented: AST for '#{aggregate.text_value} of #{term_or_unary.text_value}'"
 	    # This returns just the role with the nested clauses, which doesn't even work:
 	    term.ast(
 	      nil,	# No quantifier
