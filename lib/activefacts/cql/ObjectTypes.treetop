@@ -66,7 +66,7 @@ module ActiveFacts
       end
 
       rule supertype_list
-        primary:term s alternate_supertypes:( ',' s !identified_by name:term s )*
+        primary:term s alternate_supertypes:( (','/'and' !alpha) s !identified_by name:term s )*
         {
 	  def value
 	    [primary.value, *alternate_supertypes.elements.map { |sup| sup.name.value } ]
