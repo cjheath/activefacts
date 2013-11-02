@@ -93,6 +93,13 @@ module ActiveFacts
           # * Objectify the fact type if @name
           #
 
+	  # Prepare to objectify the fact type (so readings for implicit fact types can be created)
+          if @name
+	    entity_type = @vocabulary.valid_entity_type_name(@name)
+            raise "You can't objectify #{@name}, it already exists" if entity_type
+            @entity_type = @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type, :guid => :new)
+	  end
+
           prepare_roles @clauses
 
           # REVISIT: Compiling the conditions here make it impossible to define a self-referential (transitive) query.
@@ -102,9 +109,16 @@ module ActiveFacts
           @clauses.reject!{|clause| clause.is_existential_type }
           return true unless @clauses.size > 0   # Nothing interesting was said.
 
+	  if @entity_type
+	    # Extract readings for implicit fact types
+	    @implicit_readings, @clauses =
+	      @clauses.partition do |clause|
+		clause.refs.size == 2 and clause.refs.detect{|ref| ref.player == @entity_type}
+	      end
+	  end
+
           # See if any existing fact type is being invoked (presumably to objectify or extend it)
           @fact_type = check_compatibility_of_matched_clauses
-
           verify_matching_roles   # All clauses of a fact type must have the same roles
 
           if !@fact_type
@@ -134,17 +148,16 @@ module ActiveFacts
             clause.make_embedded_constraints(vocabulary)
           end
 
-          # Objectify the fact type if necessary:
           if @name
+	    # Objectify the fact type:
+            @entity_type.fact_type = @fact_type
             if @fact_type.entity_type and @name != @fact_type.entity_type.name
               raise "Cannot objectify fact type as #{@name} and as #{@fact_type.entity_type.name}"
             end
-	    e = @vocabulary.valid_entity_type_name(@name)
-            raise "You can't objectify #{@name}, it already exists" if e
-            e = @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type, :guid => :new)
-            e.create_implicit_fact_types
+            ifts = @entity_type.create_implicit_fact_types
+	    create_implicit_readings(ifts)
             if @pragmas
-              e.is_independent = true if @pragmas.delete('independent')
+              @entity_type.is_independent = true if @pragmas.delete('independent')
             end
             if @pragmas && @pragmas.size > 0
               $stderr.puts "Mapping pragmas #{@pragmas.inspect} are ignored for objectified fact type #{@name}"
@@ -169,6 +182,28 @@ module ActiveFacts
 
           @fact_type
         end
+
+	def create_implicit_readings(ifts)
+	  @implicit_readings.each do |clause|
+	    #next false unless clause.refs.size == 2 and clause.refs.detect{|r| r.role.object_type == @entity_type }
+	    other_ref = clause.refs.detect{|ref| ref.player != @entity_type}
+	    ift = ifts.detect do |ift|
+	      other_ref.binding.refs.map{|r| r.role}.include?(ift.implying_role)
+	    end
+	    next unless ift
+	    # This clause is a reading for the implicit LinkFactType ift
+	    i = 0
+	    reading_text = clause.phrases.map do |phrase|
+		next phrase if String === phrase
+		"{#{(i += 1)-1}}"
+	      end*' '
+	    ir = ActiveFacts::Metamodel::LinkFactType::ImplicitReading
+	    irrs = ir::ImplicitReadingRoleSequence
+	    irrf = irrs::ImplicitReadingRoleRef
+	    reading = ir.new(ift, reading_text)
+	    ift.add_reading reading
+	  end
+	end
 
         def project_clause_roles(clause)
           # Attach the clause's role references to the projected roles of the query

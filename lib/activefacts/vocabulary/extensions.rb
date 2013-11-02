@@ -447,12 +447,13 @@ module ActiveFacts
 
       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
       def create_implicit_fact_types
-        fact_type.all_role.each do |role|
+        fact_type.all_role.map do |role|
           next if role.link_fact_type     # Already exists
           link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
           phantom_role = @constellation.Role(link_fact_type, 0, :object_type => self, :guid => :new)
           # We could create a copy of the visible external role here, but there's no need yet...
           # Nor is there a need for a presence constraint, readings, etc.
+	  link_fact_type
         end
       end
     end
@@ -802,11 +803,18 @@ module ActiveFacts
         end
       end
 
+      def add_reading implicit_reading
+	@readings ||= []
+	@readings << implicit_reading
+      end
+
       def all_reading
-        [@reading ||= ImplicitReading.new(
-          self,
-          implying_role.fact_type.entity_type ? "{0} involves {1}" : implying_role.fact_type.default_reading+" Boolean"
-        )]
+        @readings ||=
+	  [ ImplicitReading.new(
+	      self,
+	      implying_role.fact_type.entity_type ? "{0} involves {1}" : implying_role.fact_type.default_reading+" Boolean"
+	    )
+	  ]
       end
 
       # This is only used for debugging, from RoleRef#describe
