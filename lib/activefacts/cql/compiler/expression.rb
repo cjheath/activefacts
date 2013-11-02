@@ -192,7 +192,10 @@ module ActiveFacts
               raise "REVISIT: The player is the projected expression"
             end
             v = context.vocabulary
-            @player = v.constellation.ValueType(v, 'Boolean', :guid => :new)
+            @boolean ||=
+	      v.constellation.ValueType[[[v.name], 'Boolean']] ||
+	      v.constellation.ValueType(v, 'Boolean', :guid => :new)
+            @player = @boolean
           end
         end
 
