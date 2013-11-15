@@ -95,7 +95,7 @@ module ActiveFacts
           @identification.map do |id|
             if id.is_a?(Reference)
               binding = id.binding
-              roles = binding.refs.map{|r| r.role}.compact.uniq
+              roles = binding.refs.map{|r|r.role || (rr=r.role_ref and rr.role)}.compact.uniq
               raise "Looking for an occurrence of identifying role #{id.inspect}, but found #{roles.size == 0 ? "none" : roles.size}" if roles.size != 1
               roles[0]
             else
@@ -224,7 +224,7 @@ module ActiveFacts
           end
 
           @fact_type = @entity_type.fact_type = fact_type
-          @entity_type.create_implicit_fact_types
+          @entity_type.create_implicit_fact_types # REVISIT: Could there be readings for the implicit fact types here?
           @fact_type
         end
 

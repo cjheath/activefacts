@@ -96,7 +96,7 @@ module ActiveFacts
         def warn_ignored_queries
           # Warn about ignored queries
           @clauses_lists.each do |clauses_list|
-            fact_types = clauses_list.map{|clauses| clauses.refs[0].role_ref.role.fact_type}.uniq
+            fact_types = clauses_list.map{|clauses| (rr = clauses.refs[0].role_ref) && rr.role.fact_type}.compact.uniq
             if fact_types.size > 1
               raise "------->>>> join ignored in #{self.class}: #{fact_types.map{|ft| ft.preferred_reading.expand}*' and '}"
             end
