@@ -5,6 +5,7 @@
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/vocabulary'
+require 'activefacts/registry'
 require 'activefacts/generate/helpers/ordered'
 
 module ActiveFacts
@@ -409,7 +410,7 @@ module ActiveFacts
           pl = (min&&min>1)||(max&&max>1) ? 's' : ''
           puts \
             "each #{players.size > 1 ? "combination " : ""}#{players*", "} occurs #{c.frequency} time#{pl} in\n\t"+
-            "#{expanded_readings*",\n\t"};"
+            "#{Array(expanded_readings)*",\n\t"};"
         end
       end
 
