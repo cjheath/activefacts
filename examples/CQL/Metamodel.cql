@@ -25,6 +25,7 @@ Numerator is written as Decimal;
 Offset is written as Decimal;
 Ordinal is written as Unsigned Integer(16);
 Pronoun is written as String(20) restricted to {'feminine', 'masculine', 'neuter', 'personal'};
+Regular Expression is written as String;
 Ring Type is written as String;
 Rotation Setting is written as String restricted to {'left', 'right'};
 Scale is written as Unsigned Integer(32);
@@ -116,8 +117,6 @@ Role is a kind of Concept identified by Fact Type and Ordinal [partitioned] wher
 	Fact Type contains Role,
 	Role fills one Ordinal,
 	Ordinal applies to Role;
-Link Fact Type is implied by one Role (as Implying Role),
-	Implying Role implies at most one Link Fact Type;
 Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is of Ring Constraint;  // Avoid ambiguity; this is a new fact type
@@ -125,6 +124,12 @@ Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
+
+Role Proxy is a kind of Role;
+Link Fact Type has one Role Proxy,
+	Role Proxy is of at most one Link Fact Type;
+Role Proxy is for at most one Role,
+	Role has at most one Role Proxy;
 
 Role Sequence is identified by Guid where
 	Role Sequence has one Guid,
@@ -176,6 +181,7 @@ Instance has at most one Value;
 Value Constraint is a kind of Constraint;
 Role has at most one role-Value Constraint,
 	Value Constraint applies to at most one Role;
+Value Constraint requires matching at most one Regular Expression;
 
 Variable is identified by Query and Ordinal where
 	Query includes at least one Variable,
@@ -344,14 +350,13 @@ Value Range is identified by minimum-Bound and maximum-Bound where
 	Value Range has at most one maximum-Bound;
 
 Allowed Range is where
-	Value Constraint allows at least one Value Range;
+	Value Constraint allows Value Range;
 
 Domain Object Type is a kind of Object Type;
 
 Entity Type is a kind of Domain Object Type;
 Entity Type nests at most one Fact Type,
 	Fact Type is nested as at most one Entity Type;
-Entity Type is implied by objectification;
 
 Type Inheritance is a kind of Fact Type identified by Subtype and Supertype where
 	Entity Type (as Subtype) is subtype of super-Entity Type (as Supertype) [acyclic, intransitive],
@@ -361,6 +366,8 @@ Assimilation applies to Type Inheritance,
 Type Inheritance provides identification;
 
 Value Type is a kind of Domain Object Type;
+Value is of one Value Type,
+	Value Type has Value;
 Value Type has at most one Length,
 	Length is of Value Type;
 Value Type has at most one Scale,
@@ -375,10 +382,12 @@ Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic, t
 Facet is where
 	Value Type has facet called Name,
 	Name is a facet of Value Type;
+Facet requires value of one facet-Value Type;
 
-Facet Value is where
-	Value Type defines Facet as having one Value,
-	Value for Facet applies to Value Type;
+Facet Restriction is where
+	Value Type applies Facet,
+	Facet applies to Value Type;
+Facet Restriction has one Value;
 
 Implicit Boolean Value Type is a kind of Value Type;
 
@@ -412,6 +421,7 @@ either Set Constraint is a Set Comparison Constraint or Set Constraint is a Subs
 either Unit uses coefficient from Ephemera URL or Unit has Coefficient but not both;
 either Unit is fundamental or Unit is derived from base-Unit but not both;
 either Value Constraint Shape is for Object Type Shape or Value Constraint Shape is for Role Display but not both;
+either Value Constraint allows Value Range or Value Constraint requires matching Regular Expression but not both;
 either Value Constraint constrains Value Type or Value Constraint applies to Role but not both;
 for each Instance at most one of these holds:
 	Instance has Value,
@@ -431,8 +441,6 @@ Role Value fulfils Fact that is of Fact Type
 Variable is for Object Type that plays Role
 	if and only if
 	Variable is restricted by Role;
-Entity Type is implied by objectification
-	only if Entity Type nests Fact Type;
 Presence Constraint is preferred identifier
 	only if Presence Constraint has max Frequency;
 Step involves incidental Play

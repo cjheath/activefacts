@@ -233,10 +233,14 @@ module ::Metamodel
   class Role < Concept
     identified_by :fact_type, :ordinal
     has_one :fact_type, :mandatory => true      # See FactType.all_role
-    one_to_one :link_fact_type, :counterpart => :implying_role  # See LinkFactType.implying_role
     has_one :object_type, :mandatory => true    # See ObjectType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
     has_one :role_name, :class => Name          # See Name.all_role_as_role_name
+  end
+
+  class RoleProxy < Role
+    one_to_one :link_fact_type                  # See LinkFactType.role_proxy
+    one_to_one :role                            # See Role.role_proxy
   end
 
   class RoleSequence
@@ -280,10 +284,11 @@ module ::Metamodel
   end
 
   class Value
-    identified_by :literal, :is_a_string, :unit
-    maybe :is_a_string
+    identified_by :literal, :is_literal_string, :unit
+    maybe :is_literal_string
     has_one :literal, :mandatory => true        # See Literal.all_value
     has_one :unit                               # See Unit.all_value
+    has_one :value_type, :mandatory => true     # See ValueType.all_value
   end
 
   class ValueConstraint < Constraint
@@ -477,7 +482,6 @@ module ::Metamodel
 
   class EntityType < DomainObjectType
     one_to_one :fact_type                       # See FactType.entity_type
-    maybe :is_implied_by_objectification
   end
 
   class TypeInheritance < FactType
@@ -501,6 +505,7 @@ module ::Metamodel
     identified_by :value_type, :name
     has_one :name, :mandatory => true           # See Name.all_facet
     has_one :value_type, :mandatory => true     # See ValueType.all_facet
+    has_one :facet_value_type, :class => ValueType, :mandatory => true  # See ValueType.all_facet_as_facet_value_type
   end
 
   class FacetValue

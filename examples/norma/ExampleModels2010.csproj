@@ -56,10 +56,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Binarize._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Binarize.orm</DependentUpon>
-    </Compile>
     <Compile Include="Blog._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Blog.orm</DependentUpon>
@@ -67,6 +63,10 @@
     <Compile Include="CinemaBookings._ORMCustomToolReport.cs">
       <DependentUpon>CinemaBookings.orm</DependentUpon>
       <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="CinemaBookingsTagged._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CinemaBookingsTagged.orm</DependentUpon>
     </Compile>
     <Compile Include="CompanyDirectorEmployee._ORMCustomToolReport.cs">
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
@@ -195,10 +195,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Binarize.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>Binarize._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
     <None Include="Blog.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Blog._ORMCustomToolReport.cs</LastGenOutput>
@@ -206,6 +202,10 @@
     <None Include="CinemaBookings.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>CinemaBookings._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="CinemaBookingsTagged.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>CinemaBookingsTagged._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="Corporate.orm">
       <Generator>ORMCustomTool</Generator>
@@ -849,6 +849,23 @@
     </None>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup Condition="Exists('CinemaBookingsTagged.orm')">
+    <None Include="CinemaBookingsTagged.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CinemaBookingsTagged.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="CinemaBookingsTagged.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CinemaBookingsTagged.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="CinemaBookingsTagged.PostgreSQL.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CinemaBookingsTagged.orm</DependentUpon>
+      <ORMGenerator>DDILtoPostgreSQL</ORMGenerator>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

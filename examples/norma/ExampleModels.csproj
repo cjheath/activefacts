@@ -46,6 +46,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Blog.orm</DependentUpon>
     </Compile>
+    <Compile Include="CinemaBookingsCompressed._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CinemaBookingsCompressed.orm</DependentUpon>
+    </Compile>
     <Compile Include="CompanyDirectorEmployee._ORMCustomToolReport.cs">
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -209,6 +213,10 @@
   <ItemGroup Condition="Exists('Units.orm')">
   </ItemGroup>
   <ItemGroup>
+    <None Include="CinemaBookingsCompressed.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>CinemaBookingsCompressed._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="CompanyDirectorEmployee.DCIL.xml">
       <DependentUpon>CompanyDirectorEmployee.orm</DependentUpon>
       <AutoGen>True</AutoGen>
