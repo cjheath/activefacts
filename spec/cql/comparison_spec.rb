@@ -43,7 +43,7 @@ describe "When matching a reading with an existing fact type" do
     def value_should_match value, lit, unit = nil
       value.should_not be_nil
       value.literal.should == lit.to_s
-      (!!value.is_a_string).should == lit.is_a?(String)
+      (!!value.is_literal_string).should == lit.is_a?(String)
       if unit
         value.unit.should_not be_nil
         value.unit.name.should == unit
