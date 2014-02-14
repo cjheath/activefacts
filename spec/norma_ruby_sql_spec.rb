@@ -23,7 +23,7 @@ describe "Column lists from absorption compared with Ruby's" do
   # Generate and return the Ruby for the given vocabulary
   def ruby(vocabulary)
     output = StringIO.new
-    @dumper = ActiveFacts::Generate::RUBY.new(vocabulary.constellation, "sql")
+    @dumper = ActiveFacts::Generate::RUBY.new(vocabulary.constellation, "mapping=sql")
     @dumper.generate(output)
     output.rewind
     output.read
@@ -89,7 +89,8 @@ describe "Column lists from absorption compared with Ruby's" do
       mod = eval(vocabulary.name)
       ruby_tables = mod.constants.map{|n|
           c = mod.const_get(n)
-          c.class == Class && c.is_table ? c : nil
+	  next unless c.class == Class
+	  c.is_table ? c : nil
         }.compact.sort_by{|c|
           c.basename
         }
