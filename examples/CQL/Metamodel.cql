@@ -295,7 +295,7 @@ Reading Shape is for one Reading,
 	Reading has Reading Shape;
 
 Ring Constraint Shape is a kind of Constraint Shape;
-Ring Constraint Shape is attached to one Fact Type;
+Ring Constraint Shape is attached to one Fact Type Shape;
 
 Role Display is where
 	Fact Type Shape displays Role in Ordinal position,

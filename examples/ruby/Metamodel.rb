@@ -94,6 +94,10 @@ module ::Metamodel
     restrict 'feminine', 'masculine', 'neuter', 'personal'
   end
 
+  class RegularExpression < String
+    value_type 
+  end
+
   class RingType < String
     value_type 
   end
@@ -292,6 +296,7 @@ module ::Metamodel
   end
 
   class ValueConstraint < Constraint
+    has_one :regular_expression                 # See RegularExpression.all_value_constraint
     one_to_one :role, :counterpart => :role_value_constraint  # See Role.role_value_constraint
   end
 
@@ -409,7 +414,7 @@ module ::Metamodel
   end
 
   class RingConstraintShape < ConstraintShape
-    has_one :fact_type, :mandatory => true      # See FactType.all_ring_constraint_shape
+    has_one :fact_type_shape, :mandatory => true  # See FactTypeShape.all_ring_constraint_shape
   end
 
   class RoleDisplay
@@ -508,11 +513,11 @@ module ::Metamodel
     has_one :facet_value_type, :class => ValueType, :mandatory => true  # See ValueType.all_facet_as_facet_value_type
   end
 
-  class FacetValue
+  class FacetRestriction
     identified_by :value_type, :facet
-    has_one :facet, :mandatory => true          # See Facet.all_facet_value
-    has_one :value, :mandatory => true          # See Value.all_facet_value
-    has_one :value_type, :mandatory => true     # See ValueType.all_facet_value
+    has_one :facet, :mandatory => true          # See Facet.all_facet_restriction
+    has_one :value_type, :mandatory => true     # See ValueType.all_facet_restriction
+    has_one :value, :mandatory => true          # See Value.all_facet_restriction
   end
 
   class ImplicitBooleanValueType < ValueType

@@ -27,11 +27,11 @@ module Concernz
       # Allowed Range (in which Value Constraint allows Value Range) and Value Constraint is a kind of Constraint
       belongs_to :constraint_via_value_constraint, :class_name => 'Constraint', :foreign_key => :value_constraint_guid
 
-      # Allowed Range (in which Value Constraint allows Value Range) and Value Range has maximum-Bound and Bound has Value and Value is in Unit
-      belongs_to :unit_via_value_range_maximum_bound_value, :class_name => 'Unit', :foreign_key => :value_range_maximum_bound_value_unit_guid
+      # Allowed Range (in which Value Constraint allows Value Range) and Value Range has maximum-Bound and Bound has Value
+      belongs_to :value_via_value_range_maximum_bound, :class_name => 'Value', :foreign_key => :value_range_maximum_bound_value_id
 
-      # Allowed Range (in which Value Constraint allows Value Range) and Value Range has minimum-Bound and Bound has Value and Value is in Unit
-      belongs_to :unit_via_value_range_minimum_bound_value, :class_name => 'Unit', :foreign_key => :value_range_minimum_bound_value_unit_guid
+      # Allowed Range (in which Value Constraint allows Value Range) and Value Range has minimum-Bound and Bound has Value
+      belongs_to :value_via_value_range_minimum_bound, :class_name => 'Value', :foreign_key => :value_range_minimum_bound_value_id
 
       validates :value_constraint_guid, :presence => true
     end
@@ -230,23 +230,44 @@ module Concernz
 end
 
 module Concernz
-  module FacetValue
+  module Facet
     extend ActiveSupport::Concern
     included do
-      self.primary_key = 'facet_value_id'
+      self.primary_key = 'facet_id'
 
-      # Facet Value (in which Value Type defines Facet as having Value) and Facet (in which Value Type has facet called Name) and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
-      belongs_to :object_type_via_facet_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :facet_value_type_object_type_id
+      # Facet requires value of facet-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :facet_value_type_object_type_id
 
-      # Facet Value (in which Value Type defines Facet as having Value) and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      # Facet (in which Value Type has facet called Name) and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
       belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_object_type_id
 
-      # Facet Value (in which Value Type defines Facet as having Value) and Value is in Unit
-      belongs_to :unit_via_value, :class_name => 'Unit', :foreign_key => :value_unit_guid
+      # Facet Restriction (in which Value Type applies Facet)
+      has_many :facet_restrictions, :class_name => 'FacetRestriction', :foreign_key => :facet_id, :dependent => :destroy
 
+      validates :name, :presence => true
+      validates :value_type_object_type_id, :presence => true
       validates :facet_value_type_object_type_id, :presence => true
-      validates :facet_name, :presence => true
-      validates :value_literal, :presence => true
+    end
+  end
+end
+
+module Concernz
+  module FacetRestriction
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'facet_restriction_id'
+
+      # Facet Restriction (in which Value Type applies Facet)
+      belongs_to :facet
+
+      # Facet Restriction (in which Value Type applies Facet) and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_object_type_id
+
+      # Facet Restriction has Value
+      belongs_to :value
+
+      validates :facet_id, :presence => true
+      validates :value_id, :presence => true
       validates :value_type_object_type_id, :presence => true
     end
   end
@@ -308,14 +329,11 @@ module Concernz
       # Role belongs to Fact Type
       has_many :roles, :class_name => 'Role', :foreign_key => :fact_type_guid, :dependent => :destroy
 
-      # Link Fact Type is implied by Role and Link Fact Type is a kind of Fact Type
-      has_one :implying_role_via_link_fact_type, :class_name => 'Role', :foreign_key => :link_fact_type_guid, :dependent => :destroy
+      # Role Proxy is a kind of Role and Link Fact Type has Role Proxy and Link Fact Type is a kind of Fact Type
+      has_one :role_via_role_proxy_link_fact_type, :class_name => 'Role', :foreign_key => :role_proxy_link_fact_type_guid, :dependent => :destroy
 
       # Fact Type Shape is a kind of Shape and Fact Type Shape is for Fact Type
       has_many :shapes_via_fact_type_shape, :class_name => 'Shape', :foreign_key => :fact_type_shape_fact_type_guid, :dependent => :destroy
-
-      # Constraint Shape is a kind of Shape and Ring Constraint Shape is a kind of Constraint Shape and Ring Constraint Shape is attached to Fact Type
-      has_many :shapes_via_constraint_shape_ring_constraint_shape, :class_name => 'Shape', :foreign_key => :ring_constraint_shape_fact_type_guid, :dependent => :destroy
 
       # Step specifies Fact Type
       has_many :steps, :class_name => 'Step', :foreign_key => :fact_type_guid, :dependent => :destroy
@@ -343,8 +361,8 @@ module Concernz
       # Population includes Instance
       belongs_to :population
 
-      # Instance has Value and Value is in Unit
-      belongs_to :unit_via_value, :class_name => 'Unit', :foreign_key => :value_unit_guid
+      # Instance has Value
+      belongs_to :value
 
       # Instance plays Role Value
       has_many :role_values, :class_name => 'RoleValue', :foreign_key => :instance_guid, :dependent => :destroy
@@ -376,12 +394,14 @@ module Concernz
       # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type is of Unit
       belongs_to :unit_via_domain_object_type_value_type, :class_name => 'Unit', :foreign_key => :value_type_unit_guid
 
-      # Facet Value (in which Value Type defines Facet as having Value) and Facet (in which Value Type has facet called Name) and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
-      has_many :facet_values_via_facet_value_type_domain_object_type, :class_name => 'FacetValue', :foreign_key => :facet_value_type_object_type_id, :dependent => :destroy
-      has_many :names, :through => :facet_values_via_facet_value_type_domain_object_type
+      # Facet Restriction (in which Value Type applies Facet) and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      has_many :facet_restrictions_via_value_type_domain_object_type, :class_name => 'FacetRestriction', :foreign_key => :value_type_object_type_id, :dependent => :destroy
 
-      # Facet Value (in which Value Type defines Facet as having Value) and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
-      has_many :facet_values_via_value_type_domain_object_type, :class_name => 'FacetValue', :foreign_key => :value_type_object_type_id, :dependent => :destroy
+      # Facet requires value of facet-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      has_many :facets_via_value_type_domain_object_type, :class_name => 'Facet', :foreign_key => :facet_value_type_object_type_id, :dependent => :destroy
+
+      # Facet (in which Value Type has facet called Name) and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      has_many :facets_via_value_type_domain_object_type, :class_name => 'Facet', :foreign_key => :value_type_object_type_id, :dependent => :destroy
 
       # Entity Type nests Fact Type and Entity Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
       has_one :fact_type_via_entity_type_domain_object_type, :class_name => 'FactType', :foreign_key => :entity_type_object_type_id, :dependent => :destroy
@@ -405,6 +425,9 @@ module Concernz
 
       # Object Type Shape is a kind of Shape and Object Type Shape is for Object Type
       has_many :shapes_via_object_type_shape, :class_name => 'Shape', :foreign_key => :object_type_shape_object_type_id, :dependent => :destroy
+
+      # Value is of Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      has_many :values_via_value_type_domain_object_type, :class_name => 'Value', :foreign_key => :value_type_object_type_id, :dependent => :destroy
 
       # Variable is for Object Type
       has_many :variables, :class_name => 'Variable', :foreign_key => :object_type_id, :dependent => :destroy
@@ -521,14 +544,17 @@ module Concernz
       # Role is a kind of Concept
       belongs_to :concept
 
-      # Link Fact Type is implied by Role and Link Fact Type is a kind of Fact Type
-      belongs_to :fact_type_via_link_fact_type, :class_name => 'FactType', :foreign_key => :link_fact_type_guid
+      # Role Proxy is a kind of Role and Link Fact Type has Role Proxy and Link Fact Type is a kind of Fact Type
+      belongs_to :fact_type_via_role_proxy_link_fact_type, :class_name => 'FactType', :foreign_key => :role_proxy_link_fact_type_guid
 
       # Role belongs to Fact Type
       belongs_to :fact_type
 
       # Object Type plays Role
       belongs_to :object_type
+
+      # Role Proxy is a kind of Role and Role Proxy is for Role
+      belongs_to :role_via_role_proxy, :class_name => 'Role', :foreign_key => :role_proxy_role_id
 
       # Ring Constraint is a kind of Constraint and Ring Constraint has other-Role
       has_many :constraints_via_ring_constraint, :class_name => 'Constraint', :foreign_key => :ring_constraint_other_role_id, :dependent => :destroy
@@ -551,6 +577,9 @@ module Concernz
       # Role Value is of Role
       has_many :role_values, :class_name => 'RoleValue', :foreign_key => :role_id, :dependent => :destroy
       has_many :facts, :through => :role_values
+
+      # Role Proxy is a kind of Role and Role Proxy is for Role
+      has_one :role_via_role_proxy, :class_name => 'Role', :foreign_key => :role_proxy_role_id, :dependent => :destroy
 
       # Variable projects Role
       has_one :variable, :class_name => 'Variable', :foreign_key => :projection_id, :dependent => :destroy
@@ -697,9 +726,6 @@ module Concernz
       # Shape is in ORM Diagram and ORM Diagram is a kind of Diagram
       belongs_to :diagram_via_orm_diagram, :class_name => 'Diagram', :foreign_key => :orm_diagram_id
 
-      # Constraint Shape is a kind of Shape and Ring Constraint Shape is a kind of Constraint Shape and Ring Constraint Shape is attached to Fact Type
-      belongs_to :fact_type_via_constraint_shape_ring_constraint_shape, :class_name => 'FactType', :foreign_key => :ring_constraint_shape_fact_type_guid
-
       # Fact Type Shape is a kind of Shape and Fact Type Shape is for Fact Type
       belongs_to :fact_type_via_fact_type_shape, :class_name => 'FactType', :foreign_key => :fact_type_shape_fact_type_guid
 
@@ -714,6 +740,9 @@ module Concernz
 
       # Role Name Shape is a kind of Shape and Role Name Shape is for Role Display
       belongs_to :role_display_via_role_name_shape, :class_name => 'RoleDisplay', :foreign_key => :role_name_shape_role_display_id
+
+      # Constraint Shape is a kind of Shape and Ring Constraint Shape is a kind of Constraint Shape and Ring Constraint Shape is attached to Fact Type Shape and Fact Type Shape is a kind of Shape
+      belongs_to :shape_via_constraint_shape_ring_constraint_shape_fact_type_shape, :class_name => 'Shape', :foreign_key => :ring_constraint_shape_fact_type_shape_guid
 
       # Constraint Shape is a kind of Shape and Value Constraint Shape is a kind of Constraint Shape and Value Constraint Shape is for Object Type Shape and Object Type Shape is a kind of Shape
       belongs_to :shape_via_constraint_shape_value_constraint_shape_object_type_shape, :class_name => 'Shape', :foreign_key => :value_constraint_shape_object_type_shape_guid
@@ -732,6 +761,9 @@ module Concernz
 
       # Reading Shape is a kind of Shape and Fact Type Shape has Reading Shape and Fact Type Shape is a kind of Shape
       has_one :shape_via_reading_shape_fact_type_shape, :class_name => 'Shape', :foreign_key => :reading_shape_fact_type_shape_guid, :dependent => :destroy
+
+      # Constraint Shape is a kind of Shape and Ring Constraint Shape is a kind of Constraint Shape and Ring Constraint Shape is attached to Fact Type Shape and Fact Type Shape is a kind of Shape
+      has_many :shapes_via_constraint_shape_ring_constraint_shape_fact_type_shape, :class_name => 'Shape', :foreign_key => :ring_constraint_shape_fact_type_shape_guid, :dependent => :destroy
 
       # Constraint Shape is a kind of Shape and Value Constraint Shape is a kind of Constraint Shape and Value Constraint Shape is for Object Type Shape and Object Type Shape is a kind of Shape
       has_many :shapes_via_constraint_shape_value_constraint_shape_object_type_shape, :class_name => 'Shape', :foreign_key => :value_constraint_shape_object_type_shape_guid, :dependent => :destroy
@@ -778,14 +810,6 @@ module Concernz
       # Unit is a kind of Concept
       belongs_to :concept
 
-      # Allowed Range (in which Value Constraint allows Value Range) and Value Range has maximum-Bound and Bound has Value and Value is in Unit
-      has_many :allowed_ranges_via_value_range_maximum_bound_value, :class_name => 'AllowedRange', :foreign_key => :value_range_maximum_bound_value_unit_guid, :dependent => :destroy
-      has_many :literals, :through => :allowed_ranges_via_value_range_maximum_bound_value
-
-      # Allowed Range (in which Value Constraint allows Value Range) and Value Range has minimum-Bound and Bound has Value and Value is in Unit
-      has_many :allowed_ranges_via_value_range_minimum_bound_value, :class_name => 'AllowedRange', :foreign_key => :value_range_minimum_bound_value_unit_guid, :dependent => :destroy
-      has_many :literals, :through => :allowed_ranges_via_value_range_minimum_bound_value
-
       # Derivation (in which Unit is derived from base-Unit)
       has_many :derivations, :class_name => 'Derivation', :foreign_key => :base_unit_guid, :dependent => :destroy
       has_many :units, :through => :derivations
@@ -794,24 +818,48 @@ module Concernz
       has_many :derivations, :class_name => 'Derivation', :foreign_key => :derived_unit_guid, :dependent => :destroy
       has_many :units, :through => :derivations
 
-      # Facet Value (in which Value Type defines Facet as having Value) and Value is in Unit
-      has_many :facet_values_via_value, :class_name => 'FacetValue', :foreign_key => :value_unit_guid, :dependent => :destroy
-      has_many :literals, :through => :facet_values_via_value
-
-      # Instance has Value and Value is in Unit
-      has_many :instances_via_value, :class_name => 'Instance', :foreign_key => :value_unit_guid, :dependent => :destroy
-      has_many :literals, :through => :instances_via_value
-
       # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type is of Unit
       has_many :object_types_via_domain_object_type_value_type, :class_name => 'ObjectType', :foreign_key => :value_type_unit_guid, :dependent => :destroy
 
-      # Variable is bound to Value and Value is in Unit
-      has_many :variables_via_value, :class_name => 'Variable', :foreign_key => :value_unit_guid, :dependent => :destroy
-      has_many :literals, :through => :variables_via_value
+      # Value is in Unit
+      has_many :values, :class_name => 'Value', :foreign_key => :unit_guid, :dependent => :destroy
 
       validates :concept_guid, :presence => true
       validates :name, :presence => true
       validates :vocabulary_name, :presence => true
+    end
+  end
+end
+
+module Concernz
+  module Value
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'value_id'
+
+      # Value is of Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_object_type_id
+
+      # Value is in Unit
+      belongs_to :unit
+
+      # Allowed Range (in which Value Constraint allows Value Range) and Value Range has maximum-Bound and Bound has Value
+      has_many :allowed_ranges_via_value_range_maximum_bound, :class_name => 'AllowedRange', :foreign_key => :value_range_maximum_bound_value_id, :dependent => :destroy
+
+      # Allowed Range (in which Value Constraint allows Value Range) and Value Range has minimum-Bound and Bound has Value
+      has_many :allowed_ranges_via_value_range_minimum_bound, :class_name => 'AllowedRange', :foreign_key => :value_range_minimum_bound_value_id, :dependent => :destroy
+
+      # Facet Restriction has Value
+      has_many :facet_restrictions, :class_name => 'FacetRestriction', :foreign_key => :value_id, :dependent => :destroy
+
+      # Instance has Value
+      has_many :instances, :class_name => 'Instance', :foreign_key => :value_id, :dependent => :destroy
+
+      # Variable is bound to Value
+      has_many :variables, :class_name => 'Variable', :foreign_key => :value_id, :dependent => :destroy
+
+      validates :literal, :presence => true
+      validates :value_type_object_type_id, :presence => true
     end
   end
 end
@@ -831,8 +879,8 @@ module Concernz
       # Variable projects Role
       belongs_to :projection, :class_name => 'Role', :foreign_key => :projection_id
 
-      # Variable is bound to Value and Value is in Unit
-      belongs_to :unit_via_value, :class_name => 'Unit', :foreign_key => :value_unit_guid
+      # Variable is bound to Value
+      belongs_to :value
 
       # Aggregation (in which Variable is bound to Aggregate over aggregated-Variable)
       has_many :aggregations, :class_name => 'Aggregation', :foreign_key => :aggregated_variable_id, :dependent => :destroy

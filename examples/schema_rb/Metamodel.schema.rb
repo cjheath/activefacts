@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for Metamodel on 2013-04-30
+# schema.rb auto-generated using ActiveFacts for Metamodel on 2014-02-18
 #
 
-ActiveRecord::Schema.define(:version => 20130430120819) do
+ActiveRecord::Schema.define(:version => 20140218163251) do
   create_table "aggregations", :primary_key => :aggregation_id, :force => true do |t|
     t.integer	"aggregated_variable_id", :null => false
     t.integer	"variable_id", :null => false
@@ -14,16 +14,12 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
   create_table "allowed_ranges", :primary_key => :allowed_range_id, :force => true do |t|
     t.Guid	"value_constraint_guid", :null => false
     t.boolean	"value_range_maximum_bound_is_inclusive"
-    t.boolean	"value_range_maximum_bound_value_is_a_string"
-    t.string	"value_range_maximum_bound_value_literal"
-    t.Guid	"value_range_maximum_bound_value_unit_guid"
+    t.integer	"value_range_maximum_bound_value_id"
     t.boolean	"value_range_minimum_bound_is_inclusive"
-    t.boolean	"value_range_minimum_bound_value_is_a_string"
-    t.string	"value_range_minimum_bound_value_literal"
-    t.Guid	"value_range_minimum_bound_value_unit_guid"
+    t.integer	"value_range_minimum_bound_value_id"
   end
 
-  add_index "allowed_ranges", ["value_constraint_guid", "value_range_minimum_bound_value_literal", "value_range_minimum_bound_value_is_a_string", "value_range_minimum_bound_value_unit_guid", "value_range_minimum_bound_is_inclusive", "value_range_maximum_bound_value_literal", "value_range_maximum_bound_value_is_a_string", "value_range_maximum_bound_value_unit_guid", "value_range_maximum_bound_is_inclusive"], :name => :index_allowed_ranges_on_value_constraint_guid_value_r__fde64ef4
+  add_index "allowed_ranges", ["value_constraint_guid", "value_range_minimum_bound_value_id", "value_range_minimum_bound_is_inclusive", "value_range_maximum_bound_value_id", "value_range_maximum_bound_is_inclusive"], :name => :index_allowed_ranges_on_value_constraint_guid_value_r__7075763f
 
   create_table "alternative_sets", :id => false, :force => true do |t|
     t.Guid	"guid", :null => false, :primary => true
@@ -55,6 +51,7 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     t.boolean	"set_exclusion_constraint_is_mandatory"
     t.Guid	"subset_constraint_subset_role_sequence_guid"
     t.Guid	"subset_constraint_superset_role_sequence_guid"
+    t.string	"value_constraint_regular_expression"
     t.integer	"value_constraint_role_id"
     t.string	"vocabulary_name", :limit => 64
   end
@@ -104,16 +101,21 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
 
   add_index "diagrams", ["vocabulary_name", "name"], :name => :index_diagrams_on_vocabulary_name_name, :unique => true
 
-  create_table "facet_values", :primary_key => :facet_value_id, :force => true do |t|
-    t.integer	"value_type_object_type_id", :null => false
-    t.string	"facet_name", :limit => 64, :null => false
+  create_table "facets", :primary_key => :facet_id, :force => true do |t|
     t.integer	"facet_value_type_object_type_id", :null => false
-    t.boolean	"value_is_a_string"
-    t.string	"value_literal", :null => false
-    t.Guid	"value_unit_guid"
+    t.integer	"value_type_object_type_id", :null => false
+    t.string	"name", :limit => 64, :null => false
   end
 
-  add_index "facet_values", ["value_type_object_type_id", "facet_value_type_object_type_id", "facet_name"], :name => :index_facet_values_on_value_type_object_type_id_facet__086f7d80, :unique => true
+  add_index "facets", ["value_type_object_type_id", "name"], :name => :index_facets_on_value_type_object_type_id_name, :unique => true
+
+  create_table "facet_restrictions", :primary_key => :facet_restriction_id, :force => true do |t|
+    t.integer	"facet_id", :null => false
+    t.integer	"value_id", :null => false
+    t.integer	"value_type_object_type_id", :null => false
+  end
+
+  add_index "facet_restrictions", ["value_type_object_type_id", "facet_id"], :name => :index_facet_restrictions_on_value_type_object_type_id_facet_id, :unique => true
 
   create_table "facts", :id => false, :force => true do |t|
     t.Guid	"concept_guid", :null => false, :primary => true
@@ -142,9 +144,7 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     t.Guid	"fact_guid"
     t.integer	"object_type_id", :null => false
     t.integer	"population_id", :null => false
-    t.boolean	"value_is_a_string"
-    t.string	"value_literal"
-    t.Guid	"value_unit_guid"
+    t.integer	"value_id"
   end
 
   add_index "instances", ["concept_guid"], :name => :index_instances_on_concept_guid, :unique => true
@@ -152,7 +152,6 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
 
   create_table "object_types", :primary_key => :object_type_id, :force => true do |t|
     t.Guid	"concept_guid", :null => false
-    t.boolean	"entity_type_is_implied_by_objectification"
     t.boolean	"is_independent"
     t.string	"name", :limit => 64, :null => false
     t.string	"pronoun", :limit => 20
@@ -206,15 +205,17 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
   create_table "roles", :primary_key => :role_id, :force => true do |t|
     t.Guid	"concept_guid", :null => false
     t.Guid	"fact_type_guid", :null => false
-    t.Guid	"link_fact_type_guid"
     t.integer	"object_type_id", :null => false
     t.integer	"ordinal", :null => false
     t.string	"role_name", :limit => 64
+    t.Guid	"role_proxy_link_fact_type_guid"
+    t.integer	"role_proxy_role_id"
   end
 
   add_index "roles", ["concept_guid"], :name => :index_roles_on_concept_guid, :unique => true
   add_index "roles", ["fact_type_guid", "ordinal"], :name => :index_roles_on_fact_type_guid_ordinal, :unique => true
-  add_index "roles", ["link_fact_type_guid"], :name => :index_roles_on_link_fact_type_guid
+  add_index "roles", ["role_proxy_link_fact_type_guid"], :name => :index_roles_on_role_proxy_link_fact_type_guid
+  add_index "roles", ["role_proxy_role_id"], :name => :index_roles_on_role_proxy_role_id
 
   create_table "role_displays", :primary_key => :role_display_id, :force => true do |t|
     t.Guid	"fact_type_shape_guid", :null => false
@@ -278,7 +279,7 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     t.Guid	"objectified_fact_type_name_shape_fact_type_shape_guid"
     t.Guid	"reading_shape_fact_type_shape_guid"
     t.integer	"reading_shape_reading_id"
-    t.Guid	"ring_constraint_shape_fact_type_guid"
+    t.Guid	"ring_constraint_shape_fact_type_shape_guid"
     t.integer	"role_name_shape_role_display_id"
     t.Guid	"value_constraint_shape_object_type_shape_guid"
     t.integer	"value_constraint_shape_role_display_id"
@@ -320,16 +321,23 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
   add_index "units", ["plural_name"], :name => :index_units_on_plural_name
   add_index "units", ["vocabulary_name", "name"], :name => :index_units_on_vocabulary_name_name, :unique => true
 
+  create_table "values", :primary_key => :value_id, :force => true do |t|
+    t.Guid	"unit_guid"
+    t.integer	"value_type_object_type_id", :null => false
+    t.boolean	"is_literal_string"
+    t.string	"literal", :null => false
+  end
+
+  add_index "values", ["literal", "is_literal_string", "unit_guid"], :name => :index_values_on_literal_is_literal_string_unit_guid
+
   create_table "variables", :primary_key => :variable_id, :force => true do |t|
     t.integer	"object_type_id", :null => false
     t.integer	"projection_id"
     t.Guid	"query_guid", :null => false
+    t.integer	"value_id"
     t.integer	"ordinal", :null => false
     t.string	"role_name", :limit => 64
     t.integer	"subscript"
-    t.boolean	"value_is_a_string"
-    t.string	"value_literal"
-    t.Guid	"value_unit_guid"
   end
 
   add_index "variables", ["projection_id"], :name => :index_variables_on_projection_id
@@ -339,8 +347,8 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     add_foreign_key :aggregations, :variables, :column => :aggregated_variable_id, :primary_key => :variable_id, :dependent => :cascade
     add_foreign_key :aggregations, :variables, :column => :variable_id, :primary_key => :variable_id, :dependent => :cascade
     add_foreign_key :allowed_ranges, :constraints, :column => :value_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
-    add_foreign_key :allowed_ranges, :units, :column => :value_range_maximum_bound_value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-    add_foreign_key :allowed_ranges, :units, :column => :value_range_minimum_bound_value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :allowed_ranges, :values, :column => :value_range_maximum_bound_value_id, :primary_key => :value_id, :dependent => :cascade
+    add_foreign_key :allowed_ranges, :values, :column => :value_range_minimum_bound_value_id, :primary_key => :value_id, :dependent => :cascade
     add_foreign_key :constraints, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :constraints, :roles, :column => :ring_constraint_other_role_id, :primary_key => :role_id, :dependent => :cascade
     add_foreign_key :constraints, :roles, :column => :ring_constraint_role_id, :primary_key => :role_id, :dependent => :cascade
@@ -354,9 +362,11 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     add_foreign_key :context_notes, :concepts, :column => :relevant_concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :derivations, :units, :column => :base_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :derivations, :units, :column => :derived_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
-    add_foreign_key :facet_values, :object_types, :column => :facet_value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-    add_foreign_key :facet_values, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
-    add_foreign_key :facet_values, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :facets, :object_types, :column => :facet_value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :facets, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :facet_restrictions, :facets, :column => :facet_id, :primary_key => :facet_id, :dependent => :cascade
+    add_foreign_key :facet_restrictions, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :facet_restrictions, :values, :column => :value_id, :primary_key => :value_id, :dependent => :cascade
     add_foreign_key :facts, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :facts, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :facts, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
@@ -368,7 +378,7 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     add_foreign_key :instances, :facts, :column => :fact_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :instances, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :instances, :populations, :column => :population_id, :primary_key => :population_id, :dependent => :cascade
-    add_foreign_key :instances, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :instances, :values, :column => :value_id, :primary_key => :value_id, :dependent => :cascade
     add_foreign_key :object_types, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :object_types, :constraints, :column => :value_type_value_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :object_types, :object_types, :column => :value_type_supertype_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
@@ -381,9 +391,10 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     add_foreign_key :readings, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :readings, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :roles, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
-    add_foreign_key :roles, :fact_types, :column => :link_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :roles, :fact_types, :column => :role_proxy_link_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :roles, :fact_types, :column => :fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :roles, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :roles, :roles, :column => :role_proxy_role_id, :primary_key => :role_id, :dependent => :cascade
     add_foreign_key :role_displays, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
     add_foreign_key :role_displays, :shapes, :column => :fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :role_refs, :plays, :column => :play_id, :primary_key => :play_id, :dependent => :cascade
@@ -398,12 +409,12 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     add_foreign_key :shapes, :constraints, :column => :constraint_shape_constraint_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :shapes, :context_notes, :column => :model_note_shape_context_note_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :shapes, :diagrams, :column => :orm_diagram_id, :primary_key => :diagram_id, :dependent => :cascade
-    add_foreign_key :shapes, :fact_types, :column => :ring_constraint_shape_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :shapes, :fact_types, :column => :fact_type_shape_fact_type_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :shapes, :object_types, :column => :object_type_shape_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :shapes, :readings, :column => :reading_shape_reading_id, :primary_key => :reading_id, :dependent => :cascade
     add_foreign_key :shapes, :role_displays, :column => :value_constraint_shape_role_display_id, :primary_key => :role_display_id, :dependent => :cascade
     add_foreign_key :shapes, :role_displays, :column => :role_name_shape_role_display_id, :primary_key => :role_display_id, :dependent => :cascade
+    add_foreign_key :shapes, :shapes, :column => :ring_constraint_shape_fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :shapes, :shapes, :column => :value_constraint_shape_object_type_shape_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :shapes, :shapes, :column => :objectified_fact_type_name_shape_fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :shapes, :shapes, :column => :reading_shape_fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
@@ -412,9 +423,11 @@ ActiveRecord::Schema.define(:version => 20130430120819) do
     add_foreign_key :steps, :plays, :column => :input_play_id, :primary_key => :play_id, :dependent => :cascade
     add_foreign_key :steps, :plays, :column => :output_play_id, :primary_key => :play_id, :dependent => :cascade
     add_foreign_key :units, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
+    add_foreign_key :values, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :values, :units, :column => :unit_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :variables, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
     add_foreign_key :variables, :queries, :column => :query_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :variables, :roles, :column => :projection_id, :primary_key => :role_id, :dependent => :cascade
-    add_foreign_key :variables, :units, :column => :value_unit_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :variables, :values, :column => :value_id, :primary_key => :value_id, :dependent => :cascade
   end
 end
