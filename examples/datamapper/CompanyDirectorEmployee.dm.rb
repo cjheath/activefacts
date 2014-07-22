@@ -57,13 +57,7 @@ end
 class Employee < Person
   property :company_name, String, :length => 48, :required => true	# Employee works at Company and Company is called Company Name
   belongs_to :company	# Employee works at Company
-  property :manager_nr, Integer	# maybe Employee is supervised by Manager and Employee has Employee Nr
-  belongs_to :manager, :child_key => [:manager_nr], :parent_key => [:given_name]	# Employee is supervised by Manager
   property :employee_nr, Integer, :key => true	# Employee has Employee Nr
-end
-
-class Manager < Employee
-  property :is_ceo, Boolean	# Manager is ceo
-  has n, :employee, :child_key => [:manager_nr], :parent_key => [:given_name]	# Employee is supervised by Manager
+  property :manager_is_ceo, Boolean	# maybe Employee is supervised by Manager and Manager is ceo
 end
 

@@ -80,7 +80,7 @@ module ::CinemaBookings
   end
 
   class Showing
-    identified_by :cinema, :film, :date_time
+    identified_by :cinema, :date_time
     has_one :cinema, :mandatory => true         # See Cinema.all_showing
     has_one :date_time, :mandatory => true      # See DateTime.all_showing
     has_one :film, :mandatory => true           # See Film.all_showing

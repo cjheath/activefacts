@@ -19,11 +19,11 @@ Year Nr is written as Signed Integer(32);
 Month is identified by its Nr restricted to {1..12};
 Month is in one Season;
 
-Product is identified by its Name;
+Product is independent identified by its Name;
 
-Refinery is identified by its Name;
+Refinery is independent identified by its Name;
 
-Region is identified by its Name;
+Region is independent identified by its Name;
 
 Transport Route is where
 	Transport Method transportation is available from Refinery to Region,
@@ -32,7 +32,7 @@ Transport Route incurs at most one Cost per kl;
 
 Year is identified by its Nr;
 
-Acceptable Substitutes is where
+Acceptable Substitution is where
 	Product may be substituted by alternate-Product in Season [acyclic, intransitive],
 	alternate-Product is an acceptable substitute for Product in Season;
 
@@ -41,11 +41,10 @@ Supply Period is identified by Year and Month where
 	Supply Period is in one Month;
 
 Production Forecast is where
-	Refinery forecasts production of Product in Supply Period;
+	Refinery will make Quantity of Product in Supply Period,
+	Refinery in Supply Period will make Product in one Quantity;
 Production Forecast predicts at most one Cost;
-Production Forecast is for one Quantity;
 
 Regional Demand is where
-	Region will need Product in Supply Period;
-Regional Demand is for at most one Quantity;
-
+	Region will need Quantity of Product in Supply Period,
+	Region in Supply Period will need Product in one Quantity;

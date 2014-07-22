@@ -56,6 +56,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Astronomy._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Astronomy.orm</DependentUpon>
+    </Compile>
     <Compile Include="Blog._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Blog.orm</DependentUpon>
@@ -109,8 +113,8 @@
       <DependentUpon>MonthInSeason.orm</DependentUpon>
     </Compile>
     <Compile Include="Moon._ORMCustomToolReport.cs">
-      <AutoGen>True</AutoGen>
       <DependentUpon>Moon.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="MultiInheritance._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
@@ -180,6 +184,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>WaiterTips.orm</DependentUpon>
     </Compile>
+    <Compile Include="Warehousing.CoRef._ORMCustomToolReport.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.CoRef.orm</DependentUpon>
+    </Compile>
     <Compile Include="Warehousing._ORMCustomToolReport.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Warehousing.orm</DependentUpon>
@@ -195,6 +203,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Astronomy.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Astronomy._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
     <None Include="Blog.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Blog._ORMCustomToolReport.cs</LastGenOutput>
@@ -210,6 +222,22 @@
     <None Include="Corporate.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>Corporate._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Moon.DCIL.xml">
+      <DependentUpon>Moon.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
+    <None Include="Moon.DDIL.xml">
+      <DependentUpon>Moon.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
+    </None>
+    <None Include="Moon.orm">
+      <Generator>ORMCustomTool</Generator>
+      <LastGenOutput>Moon._ORMCustomToolReport.cs</LastGenOutput>
+    </None>
+    <None Include="Moon.SQLStandard.sql">
+      <DependentUpon>Moon.orm</DependentUpon>
+      <AutoGen>True</AutoGen>
     </None>
     <None Include="WindowInRoomInBldg.orm">
       <Generator>ORMCustomTool</Generator>
@@ -286,10 +314,6 @@
     <None Include="MonthInSeason.orm">
       <Generator>ORMCustomTool</Generator>
       <LastGenOutput>MonthInSeason._ORMCustomToolReport.cs</LastGenOutput>
-    </None>
-    <None Include="Moon.orm">
-      <Generator>ORMCustomTool</Generator>
-      <LastGenOutput>Moon._ORMCustomToolReport.cs</LastGenOutput>
     </None>
     <None Include="MultiInheritance.orm">
       <Generator>ORMCustomTool</Generator>
@@ -470,23 +494,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SubtypePI.orm</DependentUpon>
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
-    </None>
-  </ItemGroup>
-  <ItemGroup Condition="Exists('Warehousing.orm')">
-    <None Include="Warehousing.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Warehousing.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Warehousing.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Warehousing.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Warehousing.SQLStandard.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Warehousing.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
     </None>
   </ItemGroup>
   <ItemGroup Condition="Exists('Marriage.orm')">
@@ -693,23 +700,6 @@
       <ORMGenerator>DDILtoSQLServer</ORMGenerator>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="Exists('Moon.orm')">
-    <None Include="Moon.DCIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Moon.orm</DependentUpon>
-      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
-    </None>
-    <None Include="Moon.DDIL.xml">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Moon.orm</DependentUpon>
-      <ORMGenerator>DCILtoDDIL</ORMGenerator>
-    </None>
-    <None Include="Moon.SQLStandard.sql">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Moon.orm</DependentUpon>
-      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
-    </None>
-  </ItemGroup>
   <ItemGroup Condition="Exists('Richmond-ORMModel-v0.9.orm')">
   </ItemGroup>
   <ItemGroup Condition="Exists('JoinEquality.orm')">
@@ -864,6 +854,38 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CinemaBookingsTagged.orm</DependentUpon>
       <ORMGenerator>DDILtoPostgreSQL</ORMGenerator>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Warehousing.orm')">
+    <None Include="Warehousing.CoRef.orm">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>CoRefORM</ORMGenerator>
+    </None>
+    <None Include="Warehousing.DCIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>ConceptualDBtoDCL</ORMGenerator>
+    </None>
+    <None Include="Warehousing.DDIL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>DCILtoDDIL</ORMGenerator>
+    </None>
+    <None Include="Warehousing.OIAL.xml">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>ORMtoOIAL</ORMGenerator>
+    </None>
+    <None Include="Warehousing.SQLStandard.sql">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>DDILtoSQLStandard</ORMGenerator>
+    </None>
+    <None Include="Warehousing.xsd">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Warehousing.orm</DependentUpon>
+      <ORMGenerator>OIALtoXSD</ORMGenerator>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

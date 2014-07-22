@@ -17,7 +17,7 @@ describe "Parsing Invalid Numbers and Strings" do
 
   it "should fail to parse a hexadecimal number containing non-hexadecimal digits" do
     "aa is written as b(0xDice);".
-    should fail_to_parse /Expected (.|\n)* at .* after aa is written as b\(0$/
+    should fail_to_parse /Expected \[0-9A-Fa-f\] at .* after aa is written as b\(0xD$/
   end
 
   it "should fail to parse a negative number with an intervening space" do

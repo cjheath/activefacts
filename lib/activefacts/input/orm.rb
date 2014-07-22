@@ -305,7 +305,6 @@ module ActiveFacts
             name = "<unnamed>" if !name
             name = "" if !name || name.size == 0
             # Note that the new metamodel doesn't have a name for a facttype unless it's objectified
-            next if x.xpath("orm:DerivationRule").size > 0
 
             debug :orm, "FactType #{name || id}"
             facts << @by_id[id] = fact_type = @constellation.FactType(id_of(x))
@@ -402,7 +401,6 @@ module ActiveFacts
 
             fact_id = x_fact_type['ref']
             fact_type = @by_id[fact_id]
-            next if x.xpath("orm:DerivationRule").size > 0
             next unless fact_type # "Nested fact #{fact_id} not found; objectification of a derived fact type?"
 
             debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.guid}"
@@ -431,7 +429,6 @@ module ActiveFacts
         debug :orm, "Reading roles and readings" do
           @x_facts.each{|x|
             id = x['id']
-            next if x.xpath("orm:DerivationRule").size > 0
             fact_type = @by_id[id]
             fact_name = x['Name'] || x['_Name'] || ''
             #fact_name.gsub!(/\s/,'')
@@ -475,7 +472,9 @@ module ActiveFacts
                   @by_id.delete(ref)    # and de-index it from our list
                   next
                 end
-                throw "RolePlayer for '#{name}' #{ref} in fact type #{x.parent.parent['_Name']} was not found" if !object_type
+		if !object_type
+		  throw "RolePlayer for '#{name}' #{ref} in fact type #{x.parent.parent['_Name']} was not found"
+		end
 
                 debug :orm, "#{@vocabulary.name}, RoleName=#{x['Name'].inspect} played by object_type=#{object_type.name}"
                 throw "Role is played by #{object_type.class} not ObjectType" if !(@constellation.vocabulary.object_type(:ObjectType) === object_type)
@@ -571,7 +570,7 @@ module ActiveFacts
         text.strip!
         text.downcase!    # Check for reserved words and object type names *after* downcasing
         elided = ''
-        text.gsub!(/( |-?\b[A-Za-z_][A-Za-z0-9_]*\b-?|\{\d\})|./) do |w|
+        text.gsub!(/( |[a-z]+(-[a-z]+)+|-?\b[A-Za-z_][A-Za-z0-9_]*\b-?|\{\d\})|./) do |w|
           case w
           when /[A-Za-z]/
             if RESERVED_WORDS.include?(w)
@@ -639,8 +638,6 @@ module ActiveFacts
 
             # This might have been a role of an ImpliedFact, which makes it safe to ignore.
             next if 'ImpliedFact' == x_role.parent.parent.name
-
-            next if x_role.parent.parent.xpath('orm:DerivationRule').size > 0
 
             # Talk about why this wasn't found - this shouldn't happen.
             if (!x_nests || !implied)

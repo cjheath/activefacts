@@ -32,6 +32,17 @@ require 'activefacts/generate/dm'
 require 'dm-core'
 require 'dm-core/spec/lib/spec_helper'
 
+#def SecureRandom.uuid
+#  @@counter ||= 99999999999
+#  h = "%032X" % @@counter
+#  @@counter -= 1
+#  h.
+#    sub(
+#      @@format_pattern ||= /(........)(....)(....)(....)(............)/,
+#      @@format_string ||= '\1-\2-\3-\4-\5'
+#    )
+#end
+
 describe "CQL Loader with DataMapper output" do
   cql_failures = {      # These CQL files can't be compiled
   }

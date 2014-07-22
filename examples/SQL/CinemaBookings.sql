@@ -5,13 +5,11 @@ CREATE TABLE Booking (
 	Number                                  smallint NOT NULL CHECK(Number >= 1),
 	-- Booking is where Person booked Showing for Number of seats and Person has Person ID,
 	PersonID                                int NOT NULL,
-	-- Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Cinema has Cinema ID,
+	-- Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID,
 	ShowingCinemaID                         int NOT NULL,
-	-- Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Date Time has Date Time Value,
+	-- Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value,
 	ShowingDateTimeValue                    datetime NOT NULL,
-	-- Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Film has Film ID,
-	ShowingFilmID                           int NOT NULL,
-	PRIMARY KEY(PersonID, ShowingCinemaID, ShowingFilmID, ShowingDateTimeValue)
+	PRIMARY KEY(PersonID, ShowingCinemaID, ShowingDateTimeValue)
 )
 GO
 
@@ -64,27 +62,34 @@ CREATE TABLE SeatAllocation (
 	AllocatedSeatRowNr                      char(2) NOT NULL,
 	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Person has Person ID,
 	BookingPersonID                         int NOT NULL,
-	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Cinema has Cinema ID,
+	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID,
 	BookingShowingCinemaID                  int NOT NULL,
-	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Date Time has Date Time Value,
+	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value,
 	BookingShowingDateTimeValue             datetime NOT NULL,
-	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Film has Film ID,
-	BookingShowingFilmID                    int NOT NULL,
-	PRIMARY KEY(BookingPersonID, BookingShowingCinemaID, BookingShowingFilmID, BookingShowingDateTimeValue, AllocatedSeatRowCinemaID, AllocatedSeatRowNr, AllocatedSeatNumber),
-	FOREIGN KEY (BookingPersonID, BookingShowingCinemaID, BookingShowingFilmID, BookingShowingDateTimeValue) REFERENCES Booking (PersonID, ShowingCinemaID, ShowingFilmID, ShowingDateTimeValue),
+	PRIMARY KEY(BookingPersonID, BookingShowingCinemaID, BookingShowingDateTimeValue, AllocatedSeatRowCinemaID, AllocatedSeatRowNr, AllocatedSeatNumber),
+	FOREIGN KEY (BookingPersonID, BookingShowingCinemaID, BookingShowingDateTimeValue) REFERENCES Booking (PersonID, ShowingCinemaID, ShowingDateTimeValue),
 	FOREIGN KEY (AllocatedSeatRowCinemaID, AllocatedSeatRowNr, AllocatedSeatNumber) REFERENCES Seat (RowCinemaID, RowNr, SeatNumber)
 )
 GO
 
-ALTER TABLE Booking
-	ADD FOREIGN KEY (ShowingCinemaID) REFERENCES Cinema (CinemaID)
-GO
-
-ALTER TABLE Booking
-	ADD FOREIGN KEY (ShowingFilmID) REFERENCES Film (FilmID)
+CREATE TABLE Showing (
+	-- Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID,
+	CinemaID                                int NOT NULL,
+	-- Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value,
+	DateTimeValue                           datetime NOT NULL,
+	-- Showing is where Cinema shows Film on DateTime and Film has Film ID,
+	FilmID                                  int NOT NULL,
+	PRIMARY KEY(CinemaID, DateTimeValue),
+	FOREIGN KEY (CinemaID) REFERENCES Cinema (CinemaID),
+	FOREIGN KEY (FilmID) REFERENCES Film (FilmID)
+)
 GO
 
 ALTER TABLE Booking
 	ADD FOREIGN KEY (PersonID) REFERENCES Person (PersonID)
+GO
+
+ALTER TABLE Booking
+	ADD FOREIGN KEY (ShowingCinemaID, ShowingDateTimeValue) REFERENCES Showing (CinemaID, DateTimeValue)
 GO
 

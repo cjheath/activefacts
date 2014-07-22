@@ -286,15 +286,23 @@ module ActiveFacts
 	  debug :constraint, "Need to check #{@fact_type.default_reading.inspect} for a uniqueness constraint"
           fact_type.check_and_add_spanning_uniqueness_constraint = proc do
 	    debug :constraint, "Checking #{@fact_type.default_reading.inspect} for a uniqueness constraint"
-            if !@fact_type.all_role.
+	    existing_pc = nil
+            found = @fact_type.all_role.
 		detect do |role|
                   role.all_role_ref.detect do |rr|
                     # This RoleSequence, to be relevant, must only reference roles of this fact type
                     rr.role_sequence.all_role_ref.all? {|rr2| rr2.role.fact_type == @fact_type} and
                     # The RoleSequence must have at least one uniqueness constraint
-                    rr.role_sequence.all_presence_constraint.detect{|pc| pc.max_frequency == 1}
+                    rr.role_sequence.all_presence_constraint.detect do |pc|
+		      if pc.max_frequency == 1
+			existing_pc = pc
+		      end
+		    end
 		  end
                 end
+	    true  # A place for a breakpoint
+
+            if !found
 	      # There's no existing uniqueness constraint over the roles of this fact type. Add one
 	      pc = @constellation.PresenceConstraint(
 		:new,
@@ -305,6 +313,8 @@ module ActiveFacts
 		:is_preferred_identifier => true # (prefer || !!@fact_type.entity_type)
 	      )
 	      debug :constraint, "Made new fact type implicit PC GUID=#{pc.guid} #{pc.name} min=nil max=1 over #{rs.describe}"
+	    elsif pc
+	      debug :constraint, "Will rely on existing UC GUID=#{pc.guid} #{pc.name} to be used as PI over #{rs.describe}"
             end
 	  end
         end

@@ -4,7 +4,7 @@ vocabulary CinemaBookings;
  * Value Types
  */
 Cinema ID is written as Auto Counter;
-Date Time Value is written as DateTime;
+DateTime Value is written as Date Time;
 Film ID is written as Auto Counter;
 Name is written as String;
 Number is written as Unsigned Integer(16) restricted to {1..};
@@ -18,7 +18,7 @@ Section Name is written as String;
  */
 Cinema is identified by its ID;
 
-Date Time is identified by its Value;
+DateTime is identified by its Value;
 
 Film is identified by its ID;
 Film has at most one Name;
@@ -43,9 +43,10 @@ Section is identified by its Name;
 Seat is in at most one Section,
 	Section contains Seat;
 
-Showing is where
-	Cinema shows Film on Date Time,
-	Film is showing on Date Time at Cinema;
+Showing is independent where
+	Cinema shows Film on DateTime,
+	Film is showing on DateTime at Cinema,
+	Cinema at DateTime is showing one Film;
 
 Booking is where
 	Person booked Showing for one Number of seats,
@@ -53,13 +54,14 @@ Booking is where
 Booking is confirmed;
 
 Seat Allocation is where
-	Booking has allocated-Seat;
+	Booking has allocated-Seat,
+	Seat is allocated to Booking;
 
 /*
  * Constraints:
  */
 Booking
     (in which Person booked Number of seats for Showing
-	(in which Film is showing on Date Time at Cinema))
+	(in which Film is showing on DateTime at Cinema))
     has allocated-Seat
     only if Seat is in Row that is in Cinema;

@@ -183,6 +183,7 @@ module ActiveFacts
       end
 
       def role_name(separator = "-")
+	return 'UNKNOWN' unless role
         name_array =
           if role.fact_type.all_role.size == 1
             if role.fact_type.is_a?(LinkFactType)
@@ -380,12 +381,15 @@ module ActiveFacts
               #pi = supertype.preferred_identifier
               #return nil
             elsif fact_type
+	      possible_pi = nil
               fact_type.all_role.each{|role|
                 role.all_role_ref.each{|role_ref|
                   # Discount role sequences that contain roles not in this fact type:
                   next if role_ref.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type != fact_type }
                   role_ref.role_sequence.all_presence_constraint.each{|pc|
-                    next unless pc.is_preferred_identifier and pc.max_frequency == 1
+		    next unless pc.max_frequency == 1
+		    possible_pi = pc
+                    next unless pc.is_preferred_identifier
                     pi = pc
                     break
                   }
@@ -393,6 +397,10 @@ module ActiveFacts
                 }
                 break if pi
               }
+	      if !pi && possible_pi
+		debug :pi, "Using existing PC as PI for #{name}"
+		pi = possible_pi
+	      end
             else
               debug :pi, "No PI found for #{name}"
             end
@@ -482,26 +490,35 @@ module ActiveFacts
 
             expanded.gsub!(/\{#{i}\}/) do
                 role_ref = role_refs[i]
-                player = role_ref.role.object_type
-                role_name = role.role_name
-                role_name = nil if role_name == ""
-                if role_name && define_role_names == false
-                  l_adj = t_adj = nil   # When using role names, don't add adjectives
-                end
-                freq_con = frequency_constraints[i]
-                freq_con = freq_con.frequency if freq_con && freq_con.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
-                if freq_con.is_a?(Array)
-                  freq_con, player_name = *freq_con
-                else
-                  player_name = player.name
-                end
+		if role_ref.role
+		  player = role_ref.role.object_type
+		  role_name = role.role_name
+		  role_name = nil if role_name == ""
+		  if role_name && define_role_names == false
+		    l_adj = t_adj = nil   # When using role names, don't add adjectives
+		  end
+
+		  freq_con = frequency_constraints[i]
+		  freq_con = freq_con.frequency if freq_con && freq_con.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
+		  if freq_con.is_a?(Array)
+		    freq_con, player_name = *freq_con
+		  else
+		    player_name = player.name
+		  end
+		else
+		  # We have an unknown role. The reading cannot be correctly expanded
+		  player_name = "UNKNOWN"
+		  role_name = nil
+		  freq_con = nil
+		end
+
                 literal = literals[i]
                 words = [
                   freq_con ? freq_con : nil,
                   l_adj,
                   define_role_names == false && role_name ? role_name : player_name,
                   t_adj,
-                  define_role_names && role_name && player.name != role_name ? "(as #{role_name})" : nil,
+                  define_role_names && role_name && player_name != role_name ? "(as #{role_name})" : nil,
                   # Can't have both a literal and a value constraint, but we don't enforce that here:
                   literal ? literal : nil
                 ]

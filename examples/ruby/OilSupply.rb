@@ -74,11 +74,11 @@ module ::OilSupply
     one_to_one :year_nr, :mandatory => true     # See YearNr.year
   end
 
-  class AcceptableSubstitutes
+  class AcceptableSubstitution
     identified_by :product, :alternate_product, :season
-    has_one :alternate_product, :class => Product, :mandatory => true  # See Product.all_acceptable_substitutes_as_alternate_product
-    has_one :product, :mandatory => true        # See Product.all_acceptable_substitutes
-    has_one :season, :mandatory => true         # See Season.all_acceptable_substitutes
+    has_one :alternate_product, :class => Product, :mandatory => true  # See Product.all_acceptable_substitution_as_alternate_product
+    has_one :product, :mandatory => true        # See Product.all_acceptable_substitution
+    has_one :season, :mandatory => true         # See Season.all_acceptable_substitution
   end
 
   class SupplyPeriod
@@ -90,18 +90,18 @@ module ::OilSupply
   class ProductionForecast
     identified_by :refinery, :product, :supply_period
     has_one :product, :mandatory => true        # See Product.all_production_forecast
+    has_one :quantity, :mandatory => true       # See Quantity.all_production_forecast
     has_one :refinery, :mandatory => true       # See Refinery.all_production_forecast
     has_one :supply_period, :mandatory => true  # See SupplyPeriod.all_production_forecast
     has_one :cost                               # See Cost.all_production_forecast
-    has_one :quantity, :mandatory => true       # See Quantity.all_production_forecast
   end
 
   class RegionalDemand
     identified_by :region, :product, :supply_period
     has_one :product, :mandatory => true        # See Product.all_regional_demand
+    has_one :quantity, :mandatory => true       # See Quantity.all_regional_demand
     has_one :region, :mandatory => true         # See Region.all_regional_demand
     has_one :supply_period, :mandatory => true  # See SupplyPeriod.all_regional_demand
-    has_one :quantity                           # See Quantity.all_regional_demand
   end
 
 end

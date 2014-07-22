@@ -17,7 +17,6 @@ describe "Norma Loader" do
   orm_cql_failures = {
     # "OddIdentifier" => "Strange identification pattern is incorrectly verbalised to CQL",  # Fixed
     "UnaryIdentification" => "No PI for VisitStatus",
-    "Supervision" => "Derivations are not imported from NORMA",
   }
   # Generate and return the CQL for the given vocabulary
   def cql(vocabulary)

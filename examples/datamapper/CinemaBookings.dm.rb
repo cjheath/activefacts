@@ -8,16 +8,17 @@ class Booking
   property :number, Integer, :key => true	# Booking is where Person booked Showing for Number of seats
   property :person_id, Integer, :key => true	# Booking is where Person booked Showing for Number of seats and Person has Person ID
   belongs_to :person	# Person is involved in Booking
-  property :showing_cinema_id, Integer, :key => true	# Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Cinema has Cinema ID
-  property :showing_date_time_value, DateTime, :key => true	# Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Date Time has Date Time Value
-  property :showing_film_id, Integer, :key => true	# Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Film has Film ID
-  has n, :seat_allocation, 'SeatAllocation', :child_key => [:booking_person_id, :booking_showing_cinema_id, :booking_showing_film_id, :booking_showing_date_time_value], :parent_key => [:person_id, :showing_cinema_id, :showing_film_id, :showing_date_time_value]	# Seat_Allocation is involved in Booking
+  property :showing_cinema_id, Integer, :key => true	# Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID
+  property :showing_date_time_value, DateTime, :key => true	# Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value
+  belongs_to :showing, :child_key => [:showing_cinema_id, :showing_date_time_value], :parent_key => [:cinema_id, :date_time_value]	# Showing is involved in Booking
+  has n, :seat_allocation, 'SeatAllocation', :child_key => [:booking_person_id, :booking_showing_cinema_id, :booking_showing_date_time_value], :parent_key => [:person_id, :showing_cinema_id, :showing_date_time_value]	# Seat_Allocation is involved in Booking
 end
 
 class Cinema
   include DataMapper::Resource
 
   property :cinema_id, Serial	# Cinema has Cinema ID
+  has n, :showing	# Cinema shows Film on DateTime
 end
 
 class Film
@@ -25,6 +26,7 @@ class Film
 
   property :film_id, Serial	# Film has Film ID
   property :name, String	# maybe Film has Name
+  has n, :showing	# Cinema shows Film on DateTime
 end
 
 class Person
@@ -49,13 +51,23 @@ class SeatAllocation
   include DataMapper::Resource
 
   property :booking_person_id, Integer, :key => true	# Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Person has Person ID
-  property :booking_showing_cinema_id, Integer, :key => true	# Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Cinema has Cinema ID
-  property :booking_showing_date_time_value, DateTime, :key => true	# Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Date Time has Date Time Value
-  property :booking_showing_film_id, Integer, :key => true	# Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on Date Time and Film has Film ID
-  belongs_to :booking, :child_key => [:booking_person_id, :booking_showing_cinema_id, :booking_showing_film_id, :booking_showing_date_time_value], :parent_key => [:person_id, :showing_cinema_id, :showing_film_id, :showing_date_time_value]	# Booking is involved in Seat Allocation
+  property :booking_showing_cinema_id, Integer, :key => true	# Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID
+  property :booking_showing_date_time_value, DateTime, :key => true	# Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value
+  belongs_to :booking, :child_key => [:booking_person_id, :booking_showing_cinema_id, :booking_showing_date_time_value], :parent_key => [:person_id, :showing_cinema_id, :showing_date_time_value]	# Booking is involved in Seat Allocation
   property :allocated_seat_number, Integer, :key => true	# Seat Allocation is where Booking has allocated-Seat and Seat has Seat Number
   property :allocated_seat_row_cinema_id, Integer, :key => true	# Seat Allocation is where Booking has allocated-Seat and Seat is in Row and Row is in Cinema and Cinema has Cinema ID
   property :allocated_seat_row_nr, String, :length => 2, :key => true	# Seat Allocation is where Booking has allocated-Seat and Seat is in Row and Row has Row Nr
   belongs_to :allocated_seat, 'Seat', :child_key => [:allocated_seat_row_cinema_id, :allocated_seat_row_nr, :allocated_seat_number], :parent_key => [:row_cinema_id, :row_nr, :seat_number]	# allocated_Seat is involved in Seat Allocation
+end
+
+class Showing
+  include DataMapper::Resource
+
+  property :cinema_id, Integer, :key => true	# Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID
+  belongs_to :cinema	# Cinema is involved in Showing
+  property :film_id, Integer, :key => true	# Showing is where Cinema shows Film on DateTime and Film has Film ID
+  belongs_to :film	# Film is involved in Showing
+  property :date_time_value, DateTime, :key => true	# Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value
+  has n, :booking, :child_key => [:showing_cinema_id, :showing_date_time_value], :parent_key => [:cinema_id, :date_time_value]	# Booking is involved in Showing
 end
 

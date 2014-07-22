@@ -115,7 +115,7 @@ describe "ASTs from Derived Fact Types with expressions" do
   it "should fail to parse a contracted comparison that doesn't follow a role" do
     %q{
       Director is old: Person directs company, Person is of Age considerable > 3*20;
-    }.should fail_to_parse /Expected (.|\n)* after (.|\n)* Age considerable $/
+    }.should fail_to_parse /Expected (.|\n)* after (.|\n)* Age considerable > 3\*20;\n *$/
   end
 
   it "should parse pre and post-qualifiers and leading and trailing adjectives with contracted comparisons" do

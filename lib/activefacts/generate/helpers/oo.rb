@@ -97,11 +97,12 @@ module ActiveFacts
           binary_dump(role, other_role_name, other_player, role.is_mandatory, one_to_one, nil, role_name, other_role_method)
         end
 
-        def preferred_role_name(role, is_for = nil)
-          return "" if role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+        def preferred_role_name(role, is_for = nil, &b)
+	  b ||= proc {|names| names.map(&:downcase)*'_' }   # Make snake_case by default
+          return b.call([]) if role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
 
           if is_for && role.fact_type.entity_type == is_for && role.fact_type.all_role.size == 1
-            return role.object_type.name.gsub(/[- ]/,'_').snakecase
+            return b.call(role.object_type.name.gsub(/[- ]/,'_').split(/_/))
           end
 
           # debug "Looking for preferred_role_name of #{describe_fact_type(role.fact_type, role)}"
@@ -112,8 +113,11 @@ module ActiveFacts
 
           # Unaries are a hack, with only one role for what is effectively a binary:
           if (role.fact_type.all_role.size == 1)
-            return (role.role_name && role.role_name.snakecase) ||
-              reading.text.gsub(/ *\{0\} */,'').gsub(/[- ]/,'_').downcase
+            return b.call(
+	      ( (role.role_name && role.role_name.snakecase) ||
+		reading.text.gsub(/ *\{0\} */,'').gsub(/[- ]/,'_')
+	      ).split(/_/)
+	    )
           end
 
           # debug "\tleading_adjective=#{(p=preferred_role_ref).leading_adjective}, role_name=#{role.role_name}, role player=#{role.object_type.name}, trailing_adjective=#{p.trailing_adjective}"
@@ -131,7 +135,7 @@ module ActiveFacts
           role_words << ta.gsub(/[- ]/,'_') if ta && ta != "" and !role_name
           n = role_words.map{|w| w.gsub(/([a-z])([A-Z]+)/,'\1_\2').downcase}*"_"
           # debug "\tresult=#{n}"
-          n.gsub(' ','_') 
+          return b.call(n.gsub(' ','_').split(/_/))
         end
 
         def skip_fact_type(f)

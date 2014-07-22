@@ -419,9 +419,14 @@ module ActiveFacts
               if la = role_ref.leading_adjective and !la.empty?
                 # The leading adjectives must match, one way or another
                 la = la.split(/\s+/)
-                # We may have hyphenated adjectives. Break them up to check:
-                iw = intervening_words.map{|w| w.split(/-/)}.flatten
-                return nil unless la[0,iw.size] == iw
+		if (la[0, intervening_words.size] == intervening_words)		# Exact match
+		  iw = intervening_words
+		else
+		  # We may have hyphenated adjectives. Break them up to check:
+		  iw = intervening_words.map{|w| w.split(/-/)}.flatten
+		  return nil unless la[0,iw.size] == iw
+		end
+
                 # Any intervening_words matched, see what remains
                 la.slice!(0, iw.size)
 
@@ -801,7 +806,7 @@ module ActiveFacts
           @negated = negated
         end
 
-        def to_s
+        def inspect
           'side-effects are [' +
             @role_side_effects.map{|r| r.to_s}*', ' +
             ']' +
