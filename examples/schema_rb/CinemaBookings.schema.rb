@@ -1,18 +1,16 @@
 #
-# schema.rb auto-generated using ActiveFacts for CinemaBookings on 2013-06-23
+# schema.rb auto-generated using ActiveFacts for CinemaBookings on 2014-08-18
 #
 
-ActiveRecord::Schema.define(:version => 20130623165949) do
+ActiveRecord::Schema.define(:version => 20140818163654) do
   create_table "bookings", :primary_key => :booking_id, :force => true do |t|
     t.integer	"person_id", :null => false
+    t.integer	"showing_id", :null => false
     t.boolean	"is_confirmed"
     t.integer	"number", :null => false
-    t.integer	"showing_cinema_id", :null => false
-    t.datetime	"showing_date_time_value", :null => false
-    t.integer	"showing_film_id", :null => false
   end
 
-  add_index "bookings", ["person_id", "showing_cinema_id", "showing_film_id", "showing_date_time_value"], :name => :index_bookings_on_person_id_showing_cinema_id_showing__22f4afc6, :unique => true
+  add_index "bookings", ["person_id", "showing_id"], :name => :index_bookings_on_person_id_showing_id, :unique => true
 
   create_table "cinemas", :primary_key => :cinema_id, :force => true do |t|
 
@@ -46,12 +44,21 @@ ActiveRecord::Schema.define(:version => 20130623165949) do
 
   add_index "seat_allocations", ["booking_id", "allocated_seat_id"], :name => :index_seat_allocations_on_booking_id_allocated_seat_id, :unique => true
 
+  create_table "showings", :primary_key => :showing_id, :force => true do |t|
+    t.integer	"cinema_id", :null => false
+    t.integer	"film_id", :null => false
+    t.datetime	"date_time_value", :null => false
+  end
+
+  add_index "showings", ["cinema_id", "date_time_value"], :name => :index_showings_on_cinema_id_date_time_value, :unique => true
+
   unless ENV["EXCLUDE_FKS"]
-    add_foreign_key :bookings, :cinemas, :column => :showing_cinema_id, :primary_key => :cinema_id, :dependent => :cascade
-    add_foreign_key :bookings, :films, :column => :showing_film_id, :primary_key => :film_id, :dependent => :cascade
     add_foreign_key :bookings, :people, :column => :person_id, :primary_key => :person_id, :dependent => :cascade
+    add_foreign_key :bookings, :showings, :column => :showing_id, :primary_key => :showing_id, :dependent => :cascade
     add_foreign_key :seats, :cinemas, :column => :row_cinema_id, :primary_key => :cinema_id, :dependent => :cascade
     add_foreign_key :seat_allocations, :bookings, :column => :booking_id, :primary_key => :booking_id, :dependent => :cascade
     add_foreign_key :seat_allocations, :seats, :column => :allocated_seat_id, :primary_key => :seat_id, :dependent => :cascade
+    add_foreign_key :showings, :cinemas, :column => :cinema_id, :primary_key => :cinema_id, :dependent => :cascade
+    add_foreign_key :showings, :films, :column => :film_id, :primary_key => :film_id, :dependent => :cascade
   end
 end

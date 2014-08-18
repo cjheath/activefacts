@@ -1,0 +1,209 @@
+{
+  "types": {
+    "Event": {
+      "is_main": true,
+      "id": "665984c0-ffb2-4c7c-9da8-24af76b1de64",
+      "functions": [
+        {
+          "title": "Event Id",
+          "type": "Event Id",
+          "where": "this Event has one Event Id",
+          "role_id": "5ad743db-36d1-445d-ac40-1e3d95b0a78a"
+        },
+        {
+          "title": "Venue",
+          "type": "Venue",
+          "where": "this Event is held at one Venue",
+          "role_id": "40f11dbf-4f21-41cb-b973-670e0881666d"
+        },
+        {
+          "title": "all Ticket",
+          "type": "Ticket",
+          "where": "some Ticket is for this Event",
+          "role_id": "5bd31f58-bd51-43c4-82ea-dd56647a2b6d",
+          "is_list": true
+        }
+      ]
+    },
+    "Event Id": {
+      "is_main": false,
+      "id": "8db5fa8b-5673-4ea4-9fe6-7391c4d46a4a",
+      "functions": [
+        {
+          "title": "Event",
+          "type": "Event",
+          "where": "one Event has this Event Id",
+          "role_id": "27b80e59-4deb-4579-bbef-32ffe2ccf47d"
+        }
+      ]
+    },
+    "Number": {
+      "is_main": false,
+      "id": "56269d24-0798-40fa-a7ab-6f98fcc1ad1e",
+      "functions": [
+        {
+          "title": "all Seat",
+          "type": "Seat",
+          "where": "some Seat has this Number",
+          "role_id": "eadd8546-761c-4f28-9edc-f8bf1eea9601",
+          "is_list": true
+        }
+      ]
+    },
+    "Reserve": {
+      "is_main": false,
+      "id": "5dd3c639-eb20-4563-9ec9-2f25b4a7cc7b",
+      "functions": [
+        {
+          "title": "Reserve Name",
+          "type": "Reserve Name",
+          "where": "this Reserve has one Reserve Name",
+          "role_id": "0e76c3bf-de75-4f51-97af-f89bfdca7d0b"
+        },
+        {
+          "title": "all Seat",
+          "type": "Seat",
+          "where": "some Seat is in this Reserve",
+          "role_id": "544a8eff-5045-4185-997a-9c6b65a9b8e8",
+          "is_list": true
+        }
+      ]
+    },
+    "Reserve Name": {
+      "is_main": false,
+      "id": "16afca45-0d5e-468d-84fb-e4173858a7bc",
+      "functions": [
+        {
+          "title": "Reserve",
+          "type": "Reserve",
+          "where": "one Reserve has this Reserve Name",
+          "role_id": "1a6327df-6170-42fe-b3b1-8ee95e210cab"
+        }
+      ]
+    },
+    "Row": {
+      "is_main": false,
+      "id": "43e2d79b-1f31-4f86-bad9-8dab1af01d39",
+      "functions": [
+        {
+          "title": "Row Code",
+          "type": "Row Code",
+          "where": "this Row has one Row Code",
+          "role_id": "d4445477-531b-4d5c-a9a3-c6f22cb29136"
+        },
+        {
+          "title": "all Seat",
+          "type": "Seat",
+          "where": "some Seat is in this Row",
+          "role_id": "1bf5f760-2f38-46a8-ab9b-84076c74a38f",
+          "is_list": true
+        }
+      ]
+    },
+    "Row Code": {
+      "is_main": false,
+      "id": "e77118d0-6c83-4606-9afc-fd232a02a2bf",
+      "functions": [
+        {
+          "title": "Row",
+          "type": "Row",
+          "where": "one Row has this Row Code",
+          "role_id": "f92e8b0a-7f39-4db8-b15b-1ae154b92034"
+        }
+      ]
+    },
+    "Seat": {
+      "is_main": true,
+      "id": "a5e6ed42-1b74-4df8-bf74-42b18d4b8b66",
+      "functions": [
+        {
+          "title": "Number",
+          "type": "Number",
+          "where": "this Seat has one Number",
+          "role_id": "82813ff0-8eb4-4b28-b393-2421d7393f80"
+        },
+        {
+          "title": "Venue",
+          "type": "Venue",
+          "where": "this Seat is at one Venue",
+          "role_id": "c123003e-15a4-4af2-9e66-fce53af1e442"
+        },
+        {
+          "title": "Reserve",
+          "type": "Reserve",
+          "where": "this Seat is in one Reserve",
+          "role_id": "2b2edb97-11a5-428d-840d-0563503b9cb9"
+        },
+        {
+          "title": "Row",
+          "type": "Row",
+          "where": "this Seat is in one Row",
+          "role_id": "66071200-43ba-4f66-b421-c15e7375d69b"
+        },
+        {
+          "title": "all Ticket",
+          "type": "Ticket",
+          "where": "some Ticket is for this Seat",
+          "role_id": "11c2162e-bf22-46fc-abd1-524a42d8fbe5",
+          "is_list": true
+        }
+      ]
+    },
+    "Ticket": {
+      "is_main": true,
+      "id": "81fd69b8-fd7e-431f-9679-3515c72d9814",
+      "functions": [
+        {
+          "title": "Event",
+          "type": "Event",
+          "where": "this Ticket is for one Event",
+          "role_id": "2e1a1208-e169-42b7-b5ae-8b356e5e0a67"
+        },
+        {
+          "title": "Seat",
+          "type": "Seat",
+          "where": "this Ticket is for one Seat",
+          "role_id": "84e3dada-5927-4dae-aab0-9a7fc91c1256"
+        }
+      ]
+    },
+    "Venue": {
+      "is_main": true,
+      "id": "94fd1ec9-03bf-410c-966a-68a6a1e2690a",
+      "functions": [
+        {
+          "title": "all Event",
+          "type": "Event",
+          "where": "some Event is held at this Venue",
+          "role_id": "06d1fe55-a5eb-4fe0-954c-80b3aa62f5c7",
+          "is_list": true
+        },
+        {
+          "title": "all Seat",
+          "type": "Seat",
+          "where": "some Seat is at this Venue",
+          "role_id": "7e80cf66-dc3c-41a2-89df-3e3130d70e79",
+          "is_list": true
+        },
+        {
+          "title": "Venue Id",
+          "type": "Venue Id",
+          "where": "this Venue has one Venue Id",
+          "role_id": "b42b22cb-0e8e-4b9a-bfb3-4ba67ec86111"
+        }
+      ]
+    },
+    "Venue Id": {
+      "is_main": false,
+      "id": "56d18cf6-6c56-4e56-b921-e8a9349282f6",
+      "functions": [
+        {
+          "title": "Venue",
+          "type": "Venue",
+          "where": "one Venue has this Venue Id",
+          "role_id": "9c9bd201-949d-4247-9a15-cc5551f06aa1"
+        }
+      ]
+    }
+  }
+}

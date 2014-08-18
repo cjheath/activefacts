@@ -24,6 +24,17 @@ module ::CompanyDirectorEmployee
     maybe :is_listed
   end
 
+  class Employee
+    identified_by :employee_nr
+    has_one :company, :mandatory => true        # See Company.all_employee
+    one_to_one :employee_nr, :mandatory => true  # See EmployeeNr.employee
+    has_one :manager                            # See Manager.all_employee
+  end
+
+  class Manager < Employee
+    maybe :is_ceo
+  end
+
   class Meeting
     identified_by :company, :date, :is_board_meeting
     has_one :company, :mandatory => true        # See Company.all_meeting
@@ -51,15 +62,10 @@ module ::CompanyDirectorEmployee
     has_one :appointment_date, :class => Date, :mandatory => true  # See Date.all_directorship_as_appointment_date
   end
 
-  class Employee < Person
-    identified_by :employee_nr
-    has_one :company, :mandatory => true        # See Company.all_employee
-    one_to_one :employee_nr, :mandatory => true  # See EmployeeNr.employee
-    has_one :manager                            # See Manager.all_employee
-  end
-
-  class Manager < Employee
-    maybe :is_ceo
+  class Employment
+    identified_by :person, :employee
+    has_one :employee, :mandatory => true       # See Employee.all_employment
+    has_one :person, :mandatory => true         # See Person.all_employment
   end
 
 end

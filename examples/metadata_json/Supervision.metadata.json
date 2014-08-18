@@ -1,0 +1,128 @@
+{
+  "types": {
+    "CEO": {
+      "is_main": false,
+      "id": "9E7D3467-3958-4723-9A3A-BF959CEC2ADB",
+      "functions": [
+        {
+          "title": "as Manager",
+          "type": "Manager"
+        },
+        {
+          "title": "as Employee",
+          "type": "Employee"
+        },
+        {
+          "title": "all Company",
+          "type": "Company",
+          "where": "this CEO runs some Company",
+          "role_id": "0CA8DDBF-0AF8-45BE-A076-C967144A74F7",
+          "is_list": true
+        }
+      ]
+    },
+    "Company": {
+      "is_main": true,
+      "id": "2EEF1364-C38B-463A-A788-4D9125F7415F",
+      "functions": [
+        {
+          "title": "CEO",
+          "type": "CEO",
+          "where": "one CEO runs this Company",
+          "role_id": "58B56A84-676D-4ACF-9574-2E9A1A62F13B"
+        },
+        {
+          "title": "CompanyName",
+          "type": "CompanyName",
+          "where": "this Company has one CompanyName",
+          "role_id": "8EE11F88-7B85-4AB2-B29B-3AED99F7D1C2"
+        },
+        {
+          "title": "all Employee",
+          "type": "Employee",
+          "where": "some Employee works for this Company",
+          "role_id": "99AE0FAA-FBDA-4E7E-BA8B-36A7536510E2",
+          "is_list": true
+        }
+      ]
+    },
+    "CompanyName": {
+      "is_main": false,
+      "id": "1B4DF375-EF40-40FA-AE02-8A694229C269",
+      "functions": [
+        {
+          "title": "Company",
+          "type": "Company",
+          "where": "one Company has this CompanyName",
+          "role_id": "92CC272C-7EB9-4966-9764-074711CD0F62"
+        }
+      ]
+    },
+    "Employee": {
+      "is_main": true,
+      "id": "DE951F51-2BC1-49AE-BE50-63537CB31B4A",
+      "functions": [
+        {
+          "title": "as Manager",
+          "type": "Manager"
+        },
+        {
+          "title": "as CEO",
+          "type": "CEO"
+        },
+        {
+          "title": "EmployeeNr",
+          "type": "EmployeeNr",
+          "where": "this Employee has one EmployeeNr",
+          "role_id": "01D605F1-B540-46A6-90C4-0AB2E0277A7A"
+        },
+        {
+          "title": "Company",
+          "type": "Company",
+          "where": "this Employee works for one Company",
+          "role_id": "87651993-4C7D-4587-B700-22E24A8F2E26"
+        },
+        {
+          "title": "Manager",
+          "type": "Manager",
+          "where": "one Manager supervises this Employee",
+          "role_id": "F18C5E05-DDED-4583-AF93-509F9C1A534F"
+        }
+      ]
+    },
+    "EmployeeNr": {
+      "is_main": false,
+      "id": "819C61BD-9BA2-43A4-9AA1-2BED86D31A2F",
+      "functions": [
+        {
+          "title": "all Employee",
+          "type": "Employee",
+          "where": "some Employee has this EmployeeNr",
+          "role_id": "EBC5494A-9AFD-4B8D-8205-D2B2B67BB29E",
+          "is_list": true
+        }
+      ]
+    },
+    "Manager": {
+      "is_main": false,
+      "id": "B8483284-E8FA-4438-BF19-9BCA1CC7E434",
+      "functions": [
+        {
+          "title": "as Employee",
+          "type": "Employee"
+        },
+        {
+          "title": "as CEO",
+          "type": "CEO"
+        },
+        {
+          "title": "all Employee",
+          "type": "Employee",
+          "where": "this Manager supervises some Employee",
+          "role_id": "777B175B-DF26-448F-99C0-16E3740D69C1",
+          "is_list": true
+        }
+      ]
+    }
+  }
+}

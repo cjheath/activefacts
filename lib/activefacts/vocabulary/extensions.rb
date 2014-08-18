@@ -88,6 +88,18 @@ module ActiveFacts
         preferred_reading.expand(frequency_constraints, define_role_names)
       end
 
+      # Does any role of this fact type participate in a preferred identifier?
+      def is_existential
+	return false if all_role.size > 2
+	all_role.detect do |role|
+	  role.all_role_ref.detect do |rr|
+	    rr.role_sequence.all_presence_constraint.detect do |pc|
+	      pc.is_preferred_identifier
+	    end
+	  end
+	end
+      end
+
       def internal_presence_constraints
         all_role.map do |r|
           r.all_role_ref.map do |rr|
@@ -837,6 +849,7 @@ module ActiveFacts
       # This is only used for debugging, from RoleRef#describe
       class ImplicitReading
         attr_accessor :fact_type, :text
+	attr_reader :is_negative  # Never true
 
         def initialize(fact_type, text)
           @fact_type = fact_type

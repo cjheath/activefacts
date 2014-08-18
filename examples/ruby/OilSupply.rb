@@ -88,7 +88,7 @@ module ::OilSupply
   end
 
   class ProductionForecast
-    identified_by :refinery, :product, :supply_period
+    identified_by :refinery, :supply_period, :product
     has_one :product, :mandatory => true        # See Product.all_production_forecast
     has_one :quantity, :mandatory => true       # See Quantity.all_production_forecast
     has_one :refinery, :mandatory => true       # See Refinery.all_production_forecast
@@ -97,7 +97,7 @@ module ::OilSupply
   end
 
   class RegionalDemand
-    identified_by :region, :product, :supply_period
+    identified_by :region, :supply_period, :product
     has_one :product, :mandatory => true        # See Product.all_regional_demand
     has_one :quantity, :mandatory => true       # See Quantity.all_regional_demand
     has_one :region, :mandatory => true         # See Region.all_regional_demand

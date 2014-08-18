@@ -15,6 +15,15 @@ Company is identified by its Name where
 	Company is called Company Name;
 Company is listed;
 
+Employee is identified by its Nr;
+Employee works at one Company,
+	Company employs Employee;
+
+Manager is a kind of Employee;
+Employee is supervised by at most one Manager [acyclic],
+	Manager supervises Employee;
+Manager is ceo;
+
 Meeting is independent identified by Company and Date and Meeting is board meeting where
 	Meeting is held by one Company,
 	Company held Meeting,
@@ -37,14 +46,9 @@ Directorship is where
 	Company is directed by at least one Director;
 Directorship began on one appointment-Date;
 
-Employee is a kind of Person identified by its Nr;
-Employee works at one Company,
-	Company employs Employee;
-
-Manager is a kind of Employee;
-Employee is supervised by at most one Manager [acyclic],
-	Manager supervises Employee;
-Manager is ceo;
+Employment is where
+	Person works as Employee,
+	Employee role is assigned to at least one Person;
 
 /*
  * Constraints:

@@ -1,0 +1,70 @@
+
+module Concernz
+  module Event
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'event_id'
+
+      # Event is held at Venue
+      belongs_to :venue
+
+      # Ticket is for Event
+      has_many :tickets, :class_name => 'Ticket', :foreign_key => :event_id, :dependent => :destroy
+      has_many :seats, :through => :tickets
+
+      validates :venue_id, :presence => true
+    end
+  end
+end
+
+module Concernz
+  module Seat
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'seat_id'
+
+      # Seat is at Venue
+      belongs_to :venue
+
+      # Ticket is for Seat
+      has_many :tickets, :class_name => 'Ticket', :foreign_key => :seat_id, :dependent => :destroy
+      has_many :events, :through => :tickets
+
+      validates :number, :presence => true
+      validates :reserve_name, :presence => true
+      validates :row_code, :presence => true
+      validates :venue_id, :presence => true
+    end
+  end
+end
+
+module Concernz
+  module Ticket
+    extend ActiveSupport::Concern
+    included do
+      # Ticket is for Event
+      belongs_to :event
+
+      # Ticket is for Seat
+      belongs_to :seat
+
+      validates :event_id, :presence => true
+      validates :seat_id, :presence => true
+    end
+  end
+end
+
+module Concernz
+  module Venue
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'venue_id'
+
+      # Event is held at Venue
+      has_many :events, :class_name => 'Event', :foreign_key => :venue_id, :dependent => :destroy
+
+      # Seat is at Venue
+      has_many :seats, :class_name => 'Seat', :foreign_key => :venue_id, :dependent => :destroy
+    end
+  end
+end

@@ -93,6 +93,26 @@ module ActiveFacts
           units_end if done_banner
         end
 
+        def value_type_fork(o)
+	  if o.name == "_ImplicitBooleanValueType"
+	    # do nothing
+	  elsif
+	      !o.supertype                      # No supertype, i.e. a base type
+	      o.all_role.size == 0 &&           # No roles
+	      !o.is_independent &&              # not independent
+	      !o.value_constraint &&		# No value constraints
+	      o.all_context_note_as_relevant_concept.size == 0 &&	# No context notes
+	      o.all_instance.size == 0          # No instances
+	    data_type_dump(o)
+	  else
+	    super_type_name = o.supertype ? o.supertype.name : o.name
+	    length = (l = o.length) && l > 0 ? "#{l}" : nil
+	    scale = (s = o.scale) && s > 0 ? "#{s}" : nil
+	    facets = { :length => length, :scale => scale }
+	    value_type_dump(o, super_type_name, facets)
+	  end
+	end
+
         def value_types_dump
           done_banner = false
           @value_type_dumped = {}
@@ -112,7 +132,7 @@ module ActiveFacts
         def value_type_chain_dump(o)
           return if @value_type_dumped[o]
           value_type_chain_dump(o.supertype) if (o.supertype && !@value_type_dumped[o.supertype])
-          value_type_dump(o) if o.name != "_ImplicitBooleanValueType"
+          value_type_fork(o)
           @value_type_dumped[o] = true
         end
 
@@ -306,11 +326,13 @@ module ActiveFacts
         end
 
         def skip_fact_type(f)
-          # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
-          # These will come up as un-handled constraints:
-          pcs = @presence_constraints_by_fact[f]
           return true if f.is_a?(ActiveFacts::Metamodel::TypeInheritance)
           return false if f.entity_type && !@object_types_dumped[f.entity_type]
+
+          # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
+          # These will come up as un-handled constraints:
+	  # Dump this fact type only if it contains a presence constraint we've missed:
+          pcs = @presence_constraints_by_fact[f]
           pcs && pcs.size > 0 && !pcs.detect{|c| !@constraints_used[c] }
         end
 
@@ -531,7 +553,11 @@ module ActiveFacts
           debug "Should override value_type_end"
         end
 
-        def value_type_dump(o)
+        def data_type_dump(o)
+          debug "Should override data_type_dump"
+        end
+
+	def value_type_dump(o, super_type_name, facets)
           debug "Should override value_type_dump"
         end
 

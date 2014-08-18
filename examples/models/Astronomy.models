@@ -1,0 +1,17 @@
+
+module Concernz
+  module AstronomicalObject
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'astronomical_object_id'
+
+      # Orbit (in which AstronomicalObject is in orbit) and Orbit is around AstronomicalObject
+      belongs_to :astronomical_object_via_orbit, :class_name => 'AstronomicalObject', :foreign_key => :orbit_astronomical_object_id
+
+      # Orbit (in which AstronomicalObject is in orbit) and Orbit is around AstronomicalObject
+      has_many :astronomical_objects_via_orbit, :class_name => 'AstronomicalObject', :foreign_key => :orbit_astronomical_object_id, :dependent => :destroy
+
+      validates :astronomical_object_code, :presence => true
+    end
+  end
+end

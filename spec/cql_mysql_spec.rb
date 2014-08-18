@@ -31,7 +31,7 @@ describe "CQL Loader with SQL output" do
   pattern = ENV["AFTESTS"] || "*"
   Dir["examples/CQL/#{pattern}.cql"].each do |cql_file|
     actual_file = cql_file.sub(%r{examples/CQL/(.*).cql}, 'spec/actual/\1.my.sql')
-    expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/MySQL/\1.sql')
+    expected_file = cql_file.sub(%r{examples/CQL/(.*).cql\Z}, 'examples/MySQL/\1.my.sql')
 
     next unless ENV["AFTESTS"] || File.exists?(expected_file)
 

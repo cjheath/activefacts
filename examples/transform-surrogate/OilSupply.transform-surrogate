@@ -1,5 +1,8 @@
-Acceptable Substitutes: Acceptable.Substitutes.ID[*], Alternate.Product.Name[1], Product.Name[1], Season[1]
+Acceptable Substitution: Acceptable.Substitution.ID[*], Alternate.Product.ID[1], Product.ID[1], Season[1]
 Month: Month.ID[*], Month.Nr[1], Season
-Production Forecast: Cost, Product.Name[1], Production.Forecast.ID[*], Quantity, Refinery.Name[1], Supply.Period.Month.ID[1], Supply.Period.Year.Nr[1]
-Regional Demand: Product.Name[1], Quantity, Region.Name[1], Regional.Demand.ID[*], Supply.Period.Month.ID[1], Supply.Period.Year.Nr[1]
-Transport Route: Cost, Refinery.Name[1], Region.Name[1], Transport.Method[1], Transport.Route.ID[*]
+Product: Product.ID[*], Product.Name[1]
+Production Forecast: Cost, Product.ID[1], Production.Forecast.ID[*], Quantity, Refinery.ID[1], Supply.Period.Month.ID[1], Supply.Period.Year.Nr[1]
+Refinery: Refinery.ID[*], Refinery.Name[1]
+Region: Region.ID[*], Region.Name[1]
+Regional Demand: Product.ID[1], Quantity, Region.ID[1], Regional.Demand.ID[*], Supply.Period.Month.ID[1], Supply.Period.Year.Nr[1]
+Transport Route: Cost, Refinery.ID[1], Region.ID[1], Transport.Method[1], Transport.Route.ID[*]

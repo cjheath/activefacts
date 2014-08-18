@@ -59,25 +59,17 @@ module ActiveFacts
         end
       end
 
-      def value_type_dump(o)
+      def data_type_dump(o)
+	value_type_dump(o, o.name, {}) if o.all_role.size > 0
+      end
+
+      def value_type_dump(o, super_type_name, facets)
         length = (l = o.length) && l > 0 ? ":length => #{l}" : nil
         scale = (s = o.scale) && s > 0 ? ":scale => #{s}" : nil
         params = [length,scale].compact * ", "
 
-        return if
-          !o.supertype &&                   # No supertype, i.e. a base type
-          o.all_role.size == 0 &&           # No roles
-          !o.is_independent &&              # not independent
-          o.all_instance.size == 0          # No instances
-
-        name = o.name
-        ruby_type_name =
-            if o.supertype
-              o.supertype.name.gsub(/ /,'')
-            else
-              o.name.gsub(/ /,'')
-            end
-        name = name.sub(/^[a-z]/) {|i| i.upcase}.gsub(/ /,'')
+        ruby_type_name = super_type_name.gsub(/ /,'')
+        name = o.name.sub(/^[a-z]/) {|i| i.upcase}.gsub(/ /,'')
         if ruby_type_name == name
           ruby_type_name = '::'+ruby_type_name
         end

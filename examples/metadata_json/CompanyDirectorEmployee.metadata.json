@@ -1,0 +1,270 @@
+{
+  "types": {
+    "Company": {
+      "is_main": true,
+      "id": "03E42D8C-6D87-4BD6-98BB-0E9626D75A7E",
+      "functions": [
+        {
+          "title": "Company Name",
+          "type": "Company Name",
+          "where": "this Company is called one Company Name",
+          "role_id": "6DC1F8FE-F00A-4579-87DA-D117F8A97337"
+        },
+        {
+          "title": "Company is listed",
+          "type": "boolean",
+          "where": "this Company is listed",
+          "role_id": "3CEB9294-DB70-4596-B56A-142FE3BB72B0"
+        },
+        {
+          "title": "all Employee",
+          "type": "Employee",
+          "where": "some Employee works at this Company",
+          "role_id": "45B0FFFC-564C-4FFA-A98F-5025990CBBBD",
+          "is_list": true
+        },
+        {
+          "title": "all Meeting",
+          "type": "Meeting",
+          "where": "some Meeting is held by this Company",
+          "role_id": "168CAB25-0486-479D-B805-2396573C5F7C",
+          "is_list": true
+        },
+        {
+          "title": "all Directorship",
+          "type": "Directorship",
+          "where": "some Director directs this Company",
+          "role_id": "8A6330A1-B7AD-432F-B633-38946BDC054F",
+          "is_list": true
+        }
+      ]
+    },
+    "Company Name": {
+      "is_main": false,
+      "id": "6477A044-D18F-48E6-9024-E22AD7BE4968",
+      "functions": [
+        {
+          "title": "Company",
+          "type": "Company",
+          "where": "one Company is called this Company Name",
+          "role_id": "B8D90ABE-71D2-46BD-B5E3-7C54B1DA2D6C"
+        }
+      ]
+    },
+    "Date": {
+      "is_main": false,
+      "id": "72001F12-4E59-4E01-9ED7-0C543BCFEBFC",
+      "functions": [
+        {
+          "title": "all Directorship",
+          "type": "Directorship",
+          "where": "some Directorship began on this appointment-Date",
+          "role_id": "F5AD730C-46A4-4E12-A2A3-B248D1F3F161",
+          "is_list": true
+        },
+        {
+          "title": "all Meeting",
+          "type": "Meeting",
+          "where": "some Meeting is held on this Date",
+          "role_id": "63DBCFF8-45A4-4B25-A505-919808E85BC4",
+          "is_list": true
+        },
+        {
+          "title": "all Person",
+          "type": "Person",
+          "where": "some Person was born on this birth-Date",
+          "role_id": "9FD492C4-DC67-4308-892F-A577827D0B85",
+          "is_list": true
+        }
+      ]
+    },
+    "Directorship": {
+      "is_main": true,
+      "id": "50320266-CCB4-45A5-89DB-AADE63810AAF",
+      "functions": [
+        {
+          "title": "involving Director",
+          "type": "Person",
+          "where": "this Director directs some Company"
+        },
+        {
+          "title": "involving Company",
+          "type": "Company",
+          "where": "some Director directs this Company"
+        },
+        {
+          "title": "Appointment Date",
+          "type": "Date",
+          "where": "this Directorship began on one appointment-Date",
+          "role_id": "A46E6303-24C5-4DCE-B2C8-2944BF0E328E"
+        }
+      ]
+    },
+    "Employee": {
+      "is_main": true,
+      "id": "7B1C120A-8407-4731-A16E-2F2A623F7A0D",
+      "functions": [
+        {
+          "title": "as Manager",
+          "type": "Manager"
+        },
+        {
+          "title": "Employee Nr",
+          "type": "Employee Nr",
+          "where": "this Employee has one Employee Nr",
+          "role_id": "35D50EF9-7539-471A-908A-2B0228489BF0"
+        },
+        {
+          "title": "Manager",
+          "type": "Manager",
+          "where": "this Employee is supervised by one Manager",
+          "role_id": "42C7D5EA-D61D-474E-8A5D-5E498AA6EEAB"
+        },
+        {
+          "title": "Company",
+          "type": "Company",
+          "where": "this Employee works at one Company",
+          "role_id": "4F49E2A7-6557-4451-BC08-C0169B460889"
+        },
+        {
+          "title": "all Person",
+          "type": "Person",
+          "where": "some Person works as this Employee",
+          "role_id": "563860C6-0767-4CC1-8B4F-62C65C7DB2AF",
+          "is_list": true
+        }
+      ]
+    },
+    "Employee Nr": {
+      "is_main": false,
+      "id": "2AFFE769-FE05-40C5-849D-B1316EDFA88E",
+      "functions": [
+        {
+          "title": "Employee",
+          "type": "Employee",
+          "where": "one Employee has this Employee Nr",
+          "role_id": "A15853B4-4CC7-40C0-9A8B-34A632FAE1CD"
+        }
+      ]
+    },
+    "Manager": {
+      "is_main": false,
+      "id": "BC093355-2353-4496-A3BE-BAD71775ED98",
+      "functions": [
+        {
+          "title": "as Employee",
+          "type": "Employee"
+        },
+        {
+          "title": "all Employee",
+          "type": "Employee",
+          "where": "some Employee is supervised by this Manager",
+          "role_id": "0E8D33BE-9080-4398-832A-4846F5DC23DA",
+          "is_list": true
+        },
+        {
+          "title": "Manager is ceo",
+          "type": "boolean",
+          "where": "this Manager is ceo",
+          "role_id": "336909EA-CF10-45C4-8100-5139BA2D82BD"
+        }
+      ]
+    },
+    "Meeting": {
+      "is_main": true,
+      "id": "18CD3010-7D5A-494D-BE5E-94AEA95B849B",
+      "functions": [
+        {
+          "title": "Meeting is board meeting",
+          "type": "boolean",
+          "where": "this Meeting is board meeting",
+          "role_id": "F33F6A74-B0D0-404D-BE10-873ED0BF454C"
+        },
+        {
+          "title": "Company",
+          "type": "Company",
+          "where": "this Meeting is held by one Company",
+          "role_id": "B7A3A619-09B9-4DC1-B7E0-C3F300B66951"
+        },
+        {
+          "title": "Date",
+          "type": "Date",
+          "where": "this Meeting is held on one Date",
+          "role_id": "0F6226CB-2B7F-48A6-A83F-EAD2FD46E6E8"
+        },
+        {
+          "title": "all Attendee",
+          "type": "Person",
+          "where": "some Attendee attended this Meeting",
+          "role_id": "B7A89C92-0C8E-4A7B-B8B5-49E2EFD72EDD",
+          "is_list": true
+        }
+      ]
+    },
+    "Name": {
+      "is_main": false,
+      "id": "AF2B1FE0-DFB4-4852-80D4-B0B99F744812",
+      "functions": [
+        {
+          "title": "all Person as Given Name",
+          "type": "Person",
+          "where": "some Person has this given-Name",
+          "role_id": "903F7CCC-9054-42B7-A2EE-27EA1D0DD97F",
+          "is_list": true
+        },
+        {
+          "title": "all Person as Family Name",
+          "type": "Person",
+          "where": "this family-Name is of some Person",
+          "role_id": "B184DDF6-FEAF-4603-A9DD-6492957DE7D4",
+          "is_list": true
+        }
+      ]
+    },
+    "Person": {
+      "is_main": true,
+      "id": "DFC45711-72ED-4E50-A15A-A559A33A66DF",
+      "functions": [
+        {
+          "title": "all Meeting",
+          "type": "Meeting",
+          "where": "this Attendee attended some Meeting",
+          "role_id": "026301F0-29C8-47AC-8503-825DBCBF68A0",
+          "is_list": true
+        },
+        {
+          "title": "all Directorship",
+          "type": "Directorship",
+          "where": "this Director directs some Company",
+          "role_id": "027183E4-1CE6-4554-BDB1-C295255FCAC6",
+          "is_list": true
+        },
+        {
+          "title": "Given Name",
+          "type": "Name",
+          "where": "this Person has one given-Name",
+          "role_id": "CF346F11-F9CF-4C58-A22A-1C0FA2EE8E91"
+        },
+        {
+          "title": "Birth Date",
+          "type": "Date",
+          "where": "this Person was born on one birth-Date",
+          "role_id": "7A5ED546-F9DB-41B4-90FB-9005EC5B1C6F"
+        },
+        {
+          "title": "all Employee",
+          "type": "Employee",
+          "where": "this Person works as some Employee",
+          "role_id": "D72CD653-D4EA-4DBC-B2E7-570A1E97E492",
+          "is_list": true
+        },
+        {
+          "title": "Family Name",
+          "type": "Name",
+          "where": "one family-Name is of this Person",
+          "role_id": "B8F65E26-0C1B-4308-A0AE-B5C91DC1234F"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "types": {
+    "Booking": {
+      "is_main": true,
+      "id": "BA83CA77-D18B-465B-972D-65B7C20B02B5",
+      "functions": [
+        {
+          "title": "involving Person",
+          "type": "Person",
+          "where": "this Person booked some Showing for some Number of seats"
+        },
+        {
+          "title": "involving Showing",
+          "type": "Showing",
+          "where": "some Person booked this Showing for some Number of seats"
+        },
+        {
+          "title": "involving Number",
+          "type": "Number",
+          "where": "some Person booked some Showing for this Number of seats"
+        },
+        {
+          "title": "all Allocated Seat",
+          "type": "Seat",
+          "where": "this Booking has some allocated-Seat",
+          "role_id": "8FDD16EF-5022-4E97-BB7E-A630D4C359AF",
+          "is_list": true
+        },
+        {
+          "title": "Booking is confirmed",
+          "type": "boolean",
+          "where": "this Booking is confirmed",
+          "role_id": "230AC380-0BC3-48AC-9132-A6196025DFDF"
+        }
+      ]
+    },
+    "Cinema": {
+      "is_main": true,
+      "id": "08A0B413-B208-4B67-938A-A2549D7852D2",
+      "functions": [
+        {
+          "title": "Cinema ID",
+          "type": "Cinema ID",
+          "where": "this Cinema has one Cinema ID",
+          "role_id": "519D2544-8F96-4A35-A55D-C426A03476F0"
+        },
+        {
+          "title": "all Showing",
+          "type": "Showing",
+          "where": "this Cinema shows some Film on some DateTime",
+          "role_id": "EE13CF17-637A-4FCE-AC0F-DE10DB736097",
+          "is_list": true
+        },
+        {
+          "title": "all Row",
+          "type": "Row",
+          "where": "some Row is in this Cinema",
+          "role_id": "F5EE5A4F-2B2B-4A86-A513-3E7125DCAFC2",
+          "is_list": true
+        }
+      ]
+    },
+    "Cinema ID": {
+      "is_main": false,
+      "id": "0CE122FC-4382-4E6E-BD44-627B0E3E3CA3",
+      "functions": [
+        {
+          "title": "Cinema",
+          "type": "Cinema",
+          "where": "one Cinema has this Cinema ID",
+          "role_id": "F8E7A818-5E6C-4232-8E91-6FFA770F3F52"
+        }
+      ]
+    },
+    "DateTime": {
+      "is_main": false,
+      "id": "F573795B-C363-4B39-851C-0C0F3D393450",
+      "functions": [
+        {
+          "title": "all Showing",
+          "type": "Showing",
+          "where": "some Cinema shows some Film on this DateTime",
+          "role_id": "2A59139D-08FF-4037-9BB4-988313F340AB",
+          "is_list": true
+        },
+        {
+          "title": "DateTime Value",
+          "type": "DateTime Value",
+          "where": "this DateTime has one DateTime Value",
+          "role_id": "6DD7C0B9-018A-48C6-AE69-A8981A5C916C"
+        }
+      ]
+    },
+    "DateTime Value": {
+      "is_main": false,
+      "id": "CA7756F6-DC38-4C23-A850-E2F28E2B0FFA",
+      "functions": [
+        {
+          "title": "DateTime",
+          "type": "DateTime",
+          "where": "one DateTime has this DateTime Value",
+          "role_id": "BAA1550D-7154-4434-816C-817D52B2CD59"
+        }
+      ]
+    },
+    "Film": {
+      "is_main": true,
+      "id": "D952707D-CDAA-4A38-A3AA-796B0432ECE3",
+      "functions": [
+        {
+          "title": "all Showing",
+          "type": "Showing",
+          "where": "some Cinema shows this Film on some DateTime",
+          "role_id": "81F80D26-8320-4E75-8D2A-C3BFE3A6747C",
+          "is_list": true
+        },
+        {
+          "title": "Film ID",
+          "type": "Film ID",
+          "where": "this Film has one Film ID",
+          "role_id": "870D3519-0839-4782-A7BA-90CEB92BAD87"
+        },
+        {
+          "title": "Name",
+          "type": "Name",
+          "where": "this Film has one Name",
+          "role_id": "BEF7E8D6-5486-40FE-BA52-F31DB7B88C3F"
+        }
+      ]
+    },
+    "Film ID": {
+      "is_main": false,
+      "id": "693FE793-9B80-4004-8AFC-07C55E16B2C2",
+      "functions": [
+        {
+          "title": "Film",
+          "type": "Film",
+          "where": "one Film has this Film ID",
+          "role_id": "BC16FB5C-FB10-42BF-8E7F-A24634003954"
+        }
+      ]
+    },
+    "Name": {
+      "is_main": false,
+      "id": "DC874B83-0C8E-4FF2-BE56-FA045A841A05",
+      "functions": [
+        {
+          "title": "all Film",
+          "type": "Film",
+          "where": "some Film has this Name",
+          "role_id": "AE52C355-67F6-4588-9B64-6FA64BF79242",
+          "is_list": true
+        },
+        {
+          "title": "Person",
+          "type": "Person",
+          "where": "one Person has this login-Name",
+          "role_id": "EE2F2DA5-B72A-4955-BC4D-2F503C2C3DD5"
+        }
+      ]
+    },
+    "Number": {
+      "is_main": false,
+      "id": "3AF94362-CE88-4F42-843B-95F8EC29F007",
+      "functions": [
+        {
+          "title": "all Booking",
+          "type": "Booking",
+          "where": "some Person booked some Showing for this Number of seats",
+          "role_id": "314F9F9F-5D03-4D32-BDD6-111D957F0BD3",
+          "is_list": true
+        }
+      ]
+    },
+    "Person": {
+      "is_main": true,
+      "id": "5DBD7894-8881-467C-B40D-DC8A7AD5BC45",
+      "functions": [
+        {
+          "title": "all Booking",
+          "type": "Booking",
+          "where": "this Person booked some Showing for some Number of seats",
+          "role_id": "A32A4AAD-3DCD-4552-9782-E8DAD65AA8DE",
+          "is_list": true
+        },
+        {
+          "title": "Person ID",
+          "type": "Person ID",
+          "where": "this Person has one Person ID",
+          "role_id": "DF60CE62-3FE4-45B9-893A-4C37745891B9"
+        },
+        {
+          "title": "Login Name",
+          "type": "Name",
+          "where": "this Person has one login-Name",
+          "role_id": "0B78806C-7742-4246-8504-2C74B5FA3740"
+        }
+      ]
+    },
+    "Person ID": {
+      "is_main": false,
+      "id": "91B2E34B-9AEB-4FA0-A80A-44E183F1D333",
+      "functions": [
+        {
+          "title": "Person",
+          "type": "Person",
+          "where": "one Person has this Person ID",
+          "role_id": "B3B4F309-64A3-4151-B7E0-85355C4909B5"
+        }
+      ]
+    },
+    "Row": {
+      "is_main": false,
+      "id": "A81086C3-138A-41C2-A9D5-63968F421C17",
+      "functions": [
+        {
+          "title": "Row Nr",
+          "type": "Row Nr",
+          "where": "this Row has one Row Nr",
+          "role_id": "40D8F7FB-41C8-4F47-9EBD-AFD23B13C4E5"
+        },
+        {
+          "title": "Cinema",
+          "type": "Cinema",
+          "where": "this Row is in one Cinema",
+          "role_id": "7ECA4717-EADF-4303-974F-264828F8040C"
+        },
+        {
+          "title": "all Seat",
+          "type": "Seat",
+          "where": "some Seat is in this Row",
+          "role_id": "D52FD4FD-18B9-4D0C-8BA2-276E6D542133",
+          "is_list": true
+        }
+      ]
+    },
+    "Row Nr": {
+      "is_main": false,
+      "id": "24C1DD5C-6851-4213-AFA8-757A21902BBC",
+      "functions": [
+        {
+          "title": "all Row",
+          "type": "Row",
+          "where": "some Row has this Row Nr",
+          "role_id": "0C29A968-F40A-4734-BFE2-BB62B8DC779B",
+          "is_list": true
+        }
+      ]
+    },
+    "Seat": {
+      "is_main": true,
+      "id": "879AB0C3-236A-42AB-A7B2-795E9634FE88",
+      "functions": [
+        {
+          "title": "all Booking",
+          "type": "Booking",
+          "where": "some Booking has this allocated-Seat",
+          "role_id": "8E61253C-1C84-4977-8AEE-D70A282FB5F9",
+          "is_list": true
+        },
+        {
+          "title": "Seat Number",
+          "type": "Seat Number",
+          "where": "this Seat has one Seat Number",
+          "role_id": "BDA4F988-DDC2-42B2-95D4-9CCE722547A9"
+        },
+        {
+          "title": "Row",
+          "type": "Row",
+          "where": "this Seat is in one Row",
+          "role_id": "B9858B15-5D28-43B6-BF01-D567EBA31562"
+        },
+        {
+          "title": "Section",
+          "type": "Section",
+          "where": "this Seat is in one Section",
+          "role_id": "937CADDA-DA86-4B9D-A2F1-6A2F1BB77E94"
+        }
+      ]
+    },
+    "Seat Number": {
+      "is_main": false,
+      "id": "A8F93CD0-BBC6-4E2C-B5E1-1346C34A1A3D",
+      "functions": [
+        {
+          "title": "all Seat",
+          "type": "Seat",
+          "where": "some Seat has this Seat Number",
+          "role_id": "E7DEEF27-BF70-46F7-98FE-7E405E800F3B",
+          "is_list": true
+        }
+      ]
+    },
+    "Section": {
+      "is_main": false,
+      "id": "3C8335B3-C0AD-40E4-9B3F-C8F2CDD02E7A",
+      "functions": [
+        {
+          "title": "all Seat",
+          "type": "Seat",
+          "where": "some Seat is in this Section",
+          "role_id": "B5CD16A2-A1FE-4395-A110-68D1D50A42C4",
+          "is_list": true
+        },
+        {
+          "title": "Section Name",
+          "type": "Section Name",
+          "where": "this Section has one Section Name",
+          "role_id": "7AA32380-DE31-4893-9469-7E535E3E733C"
+        }
+      ]
+    },
+    "Section Name": {
+      "is_main": false,
+      "id": "007B7503-3A9F-4067-B984-80228A906080",
+      "functions": [
+        {
+          "title": "Section",
+          "type": "Section",
+          "where": "one Section has this Section Name",
+          "role_id": "C7350C40-D480-4453-B852-001C1320BABE"
+        }
+      ]
+    },
+    "Showing": {
+      "is_main": true,
+      "id": "E6173BF8-5908-4ACC-A26A-C95EFD930767",
+      "functions": [
+        {
+          "title": "involving Cinema",
+          "type": "Cinema",
+          "where": "this Cinema shows some Film on some DateTime"
+        },
+        {
+          "title": "involving Film",
+          "type": "Film",
+          "where": "some Cinema shows this Film on some DateTime"
+        },
+        {
+          "title": "involving DateTime",
+          "type": "DateTime",
+          "where": "some Cinema shows some Film on this DateTime"
+        },
+        {
+          "title": "all Booking",
+          "type": "Booking",
+          "where": "some Person booked this Showing for some Number of seats",
+          "role_id": "A2C0FEC6-8DDD-4D51-B14F-9F11E1FE4CE5",
+          "is_list": true
+        }
+      ]
+    }
+  }
+}

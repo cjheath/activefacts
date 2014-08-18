@@ -5,14 +5,11 @@ module Concernz
     included do
       self.primary_key = 'booking_id'
 
-      # Booking (in which Person booked Showing for Number of seats) and Showing (in which Cinema shows Film on Date Time)
-      belongs_to :cinema_via_showing, :class_name => 'Cinema', :foreign_key => :showing_cinema_id
-
-      # Booking (in which Person booked Showing for Number of seats) and Showing (in which Cinema shows Film on Date Time)
-      belongs_to :film_via_showing, :class_name => 'Film', :foreign_key => :showing_film_id
-
       # Booking (in which Person booked Showing for Number of seats)
       belongs_to :person
+
+      # Booking (in which Person booked Showing for Number of seats)
+      belongs_to :showing
 
       # Seat Allocation (in which Booking has allocated-Seat)
       has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :booking_id, :dependent => :destroy
@@ -20,9 +17,7 @@ module Concernz
 
       validates :number, :presence => true
       validates :person_id, :presence => true
-      validates :showing_cinema_id, :presence => true
-      validates :showing_film_id, :presence => true
-      validates :showing_date_time_value, :presence => true
+      validates :showing_id, :presence => true
     end
   end
 end
@@ -33,14 +28,12 @@ module Concernz
     included do
       self.primary_key = 'cinema_id'
 
-      # Booking (in which Person booked Showing for Number of seats) and Showing (in which Cinema shows Film on Date Time)
-      has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_cinema_id, :dependent => :destroy
-      has_many :films, :through => :bookings_via_showing
-      has_many :date_times, :through => :bookings_via_showing
-
       # Seat is in Row and Row is in Cinema
       has_many :seats_via_row, :class_name => 'Seat', :foreign_key => :row_cinema_id, :dependent => :destroy
       has_many :row_nrs, :through => :seats_via_row
+
+      # Showing (in which Cinema shows Film on DateTime)
+      has_many :showings, :class_name => 'Showing', :foreign_key => :cinema_id, :dependent => :destroy
     end
   end
 end
@@ -51,10 +44,8 @@ module Concernz
     included do
       self.primary_key = 'film_id'
 
-      # Booking (in which Person booked Showing for Number of seats) and Showing (in which Cinema shows Film on Date Time)
-      has_many :bookings_via_showing, :class_name => 'Booking', :foreign_key => :showing_film_id, :dependent => :destroy
-      has_many :cinemas, :through => :bookings_via_showing
-      has_many :date_times, :through => :bookings_via_showing
+      # Showing (in which Cinema shows Film on DateTime)
+      has_many :showings, :class_name => 'Showing', :foreign_key => :film_id, :dependent => :destroy
     end
   end
 end
@@ -105,6 +96,28 @@ module Concernz
 
       validates :booking_id, :presence => true
       validates :allocated_seat_id, :presence => true
+    end
+  end
+end
+
+module Concernz
+  module Showing
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'showing_id'
+
+      # Showing (in which Cinema shows Film on DateTime)
+      belongs_to :cinema
+
+      # Showing (in which Cinema shows Film on DateTime)
+      belongs_to :film
+
+      # Booking (in which Person booked Showing for Number of seats)
+      has_many :bookings, :class_name => 'Booking', :foreign_key => :showing_id, :dependent => :destroy
+
+      validates :cinema_id, :presence => true
+      validates :date_time_value, :presence => true
+      validates :film_id, :presence => true
     end
   end
 end

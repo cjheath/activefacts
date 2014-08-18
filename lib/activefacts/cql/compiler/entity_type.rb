@@ -122,7 +122,7 @@ module ActiveFacts
           if (pc)
             pc.is_preferred_identifier = true
             pc.name = "#{@entity_type.name}PK" unless pc.name
-            debug "Existing PC #{pc.verbalise} is now PK for #{@entity_type.name} #{pc.class.roles.keys.map{|k|"#{k} => "+pc.send(k).verbalise}*", "}"
+            debug "Existing PC #{pc.verbalise} is now PK for #{@entity_type.name}"
           else
             # Add a unique constraint over all identifying roles
             pc = @constellation.PresenceConstraint(

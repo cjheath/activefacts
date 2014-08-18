@@ -42,40 +42,15 @@ module ActiveFacts
         puts "\n"
       end
 
-      def value_type_dump(o)
-        # Ignore Value Types that don't do anything:
-        return if
-          !o.supertype &&
-          o.all_role.size == 0 &&
-          !o.is_independent &&
-          !o.value_constraint &&
-          o.all_context_note_as_relevant_concept.size == 0 &&
-          o.all_instance.size == 0
+      def data_type_dump(o)
+	value_type_dump(o, o.name, {}) if o.all_role.size > 0
+      end
+
+      def value_type_dump(o, super_type_name, facets)
         # No need to dump it if the only thing it does is be a supertype; it'll be created automatically
         # return if o.all_value_type_as_supertype.size == 0
 
-=begin
-        # Leave this out, pending a proper on-demand system for dumping VT's
-        # A ValueType that is only used as a reference mode need not be emitted here.
-        if o.all_value_type_as_supertype.size == 0 &&
-          !o.all_role.
-            detect do |role|
-              (other_roles = role.fact_type.all_role.to_a-[role]).size != 1 ||      # Not a role in a binary FT
-              !(object_type = other_roles[0].object_type).is_a?(ActiveFacts::Metamodel::EntityType) ||  # Counterpart is not an ET
-              (pi = object_type.preferred_identifier).role_sequence.all_role_ref.size != 1 ||   # Entity PI has > 1 roles
-              pi.role_sequence.all_role_ref.single.role != role                     # This isn't the identifying role
-            end
-          puts "About to skip #{o.name}"
-          debugger
-          return
-        end
-
-        # We'll dump the subtypes before any roles, so we don't need to dump this here.
-        # ... except that isn't true, we won't do that so we can't skip it now
-        #return if
-        #  o.all_value_type_as_supertype.size != 0 &&    # We have subtypes
-        #  o.all_role.size != 0
-=end
+        # REVISIT: A ValueType that is only used as a reference mode need not be emitted here.
 
 	puts o.as_cql
       end

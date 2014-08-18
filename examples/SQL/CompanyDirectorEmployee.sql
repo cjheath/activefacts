@@ -36,6 +36,33 @@ CREATE TABLE Directorship (
 )
 GO
 
+CREATE TABLE Employee (
+	-- Employee works at Company and Company is called Company Name,
+	CompanyName                             varchar(48) NOT NULL,
+	-- Employee has Employee Nr,
+	EmployeeNr                              int NOT NULL,
+	-- maybe Manager is a kind of Employee and Manager is ceo,
+	ManagerIsCeo                            bit NULL,
+	-- maybe Employee is supervised by Manager and Employee has Employee Nr,
+	ManagerNr                               int NULL,
+	PRIMARY KEY(EmployeeNr),
+	FOREIGN KEY (CompanyName) REFERENCES Company (CompanyName),
+	FOREIGN KEY (ManagerNr) REFERENCES Employee (EmployeeNr)
+)
+GO
+
+CREATE TABLE Employment (
+	-- Employment is where Person works as Employee and Employee has Employee Nr,
+	EmployeeNr                              int NOT NULL,
+	-- Employment is where Person works as Employee and maybe family-Name is of Person,
+	PersonFamilyName                        varchar(48) NULL,
+	-- Employment is where Person works as Employee and Person has given-Name,
+	PersonGivenName                         varchar(48) NOT NULL,
+	UNIQUE(PersonGivenName, PersonFamilyName, EmployeeNr),
+	FOREIGN KEY (EmployeeNr) REFERENCES Employee (EmployeeNr)
+)
+GO
+
 CREATE TABLE Meeting (
 	-- Meeting is held by Company and Company is called Company Name,
 	CompanyName                             varchar(48) NOT NULL,
@@ -51,30 +78,12 @@ GO
 CREATE TABLE Person (
 	-- maybe Person was born on birth-Date,
 	BirthDate                               datetime NULL CHECK(BirthDate >= '1900/01/01'),
-	-- maybe Employee is a kind of Person and Employee works at Company and Company is called Company Name,
-	EmployeeCompanyName                     varchar(48) NULL,
-	-- maybe Employee is a kind of Person and maybe Employee is supervised by Manager and Employee has Employee Nr,
-	EmployeeManagerNr                       int NULL,
-	-- maybe Employee is a kind of Person and Employee has Employee Nr,
-	EmployeeNr                              int NULL,
 	-- maybe family-Name is of Person,
 	FamilyName                              varchar(48) NULL,
 	-- Person has given-Name,
 	GivenName                               varchar(48) NOT NULL,
-	-- maybe Employee is a kind of Person and maybe Manager is a kind of Employee and Manager is ceo,
-	ManagerIsCeo                            bit NULL,
-	UNIQUE(GivenName, FamilyName),
-	FOREIGN KEY (EmployeeCompanyName) REFERENCES Company (CompanyName),
-	FOREIGN KEY (EmployeeManagerNr) REFERENCES Person (GivenName)
+	UNIQUE(GivenName, FamilyName)
 )
-GO
-
-CREATE VIEW dbo.EmployeeInPerson_Nr (EmployeeNr) WITH SCHEMABINDING AS
-	SELECT EmployeeNr FROM dbo.Person
-	WHERE	EmployeeNr IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX PK_EmployeeInPerson ON dbo.EmployeeInPerson_Nr(EmployeeNr)
 GO
 
 ALTER TABLE Attendance
@@ -87,5 +96,9 @@ GO
 
 ALTER TABLE Directorship
 	ADD FOREIGN KEY (DirectorGivenName, DirectorFamilyName) REFERENCES Person (GivenName, FamilyName)
+GO
+
+ALTER TABLE Employment
+	ADD FOREIGN KEY (PersonGivenName, PersonFamilyName) REFERENCES Person (GivenName, FamilyName)
 GO
 

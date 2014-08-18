@@ -23,6 +23,8 @@
 # so if the final query is what you're after, then you'll have to
 # hook those both instead.
 
+if false
+
 require 'spec_helper'
 require 'stringio'
 require 'activefacts/vocabulary'
@@ -130,3 +132,5 @@ describe "CQL Loader with DataMapper output" do
     end
   end
 end
+
+end # if false

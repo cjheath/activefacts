@@ -483,7 +483,7 @@ module ActiveFacts
               :ring_type => ring_type
             )
 
-          debug :constraint, "Added #{@constraint.verbalise} #{@constraint.class.roles.keys.map{|k|"#{k} => "+@constraint.send(k).verbalise}*", "}"
+          debug :constraint, "Added #{@constraint.verbalise}"
           super
         end
 

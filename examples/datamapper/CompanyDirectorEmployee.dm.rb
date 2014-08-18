@@ -34,6 +34,32 @@ class Directorship
   property :appointment_date, DateTime, :required => true	# Directorship began on appointment-Date
 end
 
+class Employee
+  include DataMapper::Resource
+
+  property :company_name, String, :length => 48, :required => true	# Employee works at Company and Company is called Company Name
+  belongs_to :company	# Employee works at Company
+  property :manager_nr, Integer	# maybe Employee is supervised by Manager and Employee has Employee Nr
+  belongs_to :manager, :child_key => [:manager_nr], :parent_key => [:employee_nr]	# Employee is supervised by Manager
+  property :employee_nr, Integer, :key => true	# Employee has Employee Nr
+  has n, :employment	# Person works as Employee
+end
+
+class Employment
+  include DataMapper::Resource
+
+  property :employee_nr, Integer, :key => true	# Employment is where Person works as Employee and Employee has Employee Nr
+  belongs_to :employee	# Employee is involved in Employment
+  property :person_family_name, String, :length => 48, :key => true	# Employment is where Person works as Employee and maybe family-Name is of Person
+  property :person_given_name, String, :length => 48, :key => true	# Employment is where Person works as Employee and Person has given-Name
+  belongs_to :person, :child_key => [:person_given_name, :person_family_name], :parent_key => [:given_name, :family_name]	# Person is involved in Employment
+end
+
+class Manager < Employee
+  property :is_ceo, Boolean	# Manager is ceo
+  has n, :employee, :child_key => [:manager_nr], :parent_key => [:employee_nr]	# Employee is supervised by Manager
+end
+
 class Meeting
   include DataMapper::Resource
 
@@ -52,12 +78,6 @@ class Person
   property :family_name, String, :length => 48, :key => true	# maybe family-Name is of Person
   has n, :attendance_as_attendee, 'Attendance', :child_key => [:attendee_given_name, :attendee_family_name], :parent_key => [:given_name, :family_name]	# Person attended Meeting
   has n, :directorship_as_director, 'Directorship', :child_key => [:director_given_name, :director_family_name], :parent_key => [:given_name, :family_name]	# Person directs Company
-end
-
-class Employee < Person
-  property :company_name, String, :length => 48, :required => true	# Employee works at Company and Company is called Company Name
-  belongs_to :company	# Employee works at Company
-  property :employee_nr, Integer, :key => true	# Employee has Employee Nr
-  property :manager_is_ceo, Boolean	# maybe Employee is supervised by Manager and Manager is ceo
+  has n, :employment, :child_key => [:person_given_name, :person_family_name], :parent_key => [:given_name, :family_name]	# Person works as Employee
 end
 
