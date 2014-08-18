@@ -167,7 +167,7 @@ CREATE VIEW dbo.SubsetConstraintInConcept_SubsetConstraintSubsetRoleSequenceGuid
 	  AND	SubsetConstraintSupersetRoleSequenceGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConcept_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
+CREATE UNIQUE CLUSTERED INDEX IX_SubsetConstraintInConceptBySubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid ON dbo.SubsetConstraintInConcept_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
 GO
 
 CREATE VIEW dbo.UnitInConcept_Name (UnitName) WITH SCHEMABINDING AS
@@ -201,7 +201,7 @@ CREATE VIEW dbo.ValueConstraintInConcept_ValueConstraintRoleFactTypeConceptGuidV
 	  AND	ValueConstraintRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConceptByValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal ON dbo.ValueConstraintInConcept_ValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX RoleHasOneRoleValueConstraint ON dbo.ValueConstraintInConcept_ValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal)
 GO
 
 CREATE TABLE ContextAccordingTo (
@@ -315,7 +315,7 @@ CREATE VIEW dbo.FactType_EntityTypeVocabularyNameEntityTypeName (EntityTypeVocab
 	  AND	EntityTypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_FactTypeByEntityTypeVocabularyNameEntityTypeName ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
+CREATE UNIQUE CLUSTERED INDEX EntityTypeNestsOneFactType ON dbo.FactType_EntityTypeVocabularyNameEntityTypeName(EntityTypeVocabularyName, EntityTypeName)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification) WITH SCHEMABINDING AS
@@ -325,7 +325,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceProvidesIdentification IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_TypeInheritanceInFactTypeByTypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdent ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
+CREATE UNIQUE CLUSTERED INDEX OnlyOneSupertypeMayBePrimary ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceProvidesIdentific(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceProvidesIdentification)
 GO
 
 CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula (TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName) WITH SCHEMABINDING AS
@@ -336,7 +336,7 @@ CREATE VIEW dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTy
 	  AND	TypeInheritanceSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX TypeInheritanceUQ ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX PK_TypeInheritanceInFactType ON dbo.TypeInheritanceInFactType_TypeInheritanceSubtypeVocabularyNameTypeInheritanceSubtypeNameTypeInheritanceSupertypeVocabula(TypeInheritanceSubtypeVocabularyName, TypeInheritanceSubtypeName, TypeInheritanceSupertypeVocabularyName, TypeInheritanceSupertypeName)
 GO
 
 CREATE TABLE ObjectType (
@@ -384,7 +384,7 @@ CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeLengthValueTypeScaleValueTypeSupe
 	  AND	ValueTypeSupertypeName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX DomainObjectTypeMustHaveSupertypeObjectType ON dbo.ValueTypeInObjectType_ValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionPhaseValueTypeUni(ValueTypeLength, ValueTypeScale, ValueTypeSupertypeVocabularyName, ValueTypeTransactionPhase, ValueTypeUnitGuid, ValueTypeValueConstraintGuid, ValueTypeSupertypeName)
+CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionPhaseValueTyp ON dbo.ValueTypeInObjectType_ValueTypeLengthValueTypeScaleValueTypeSupertypeVocabularyNameValueTypeTransactionPhaseValueTypeUni(ValueTypeLength, ValueTypeScale, ValueTypeSupertypeVocabularyName, ValueTypeTransactionPhase, ValueTypeUnitGuid, ValueTypeValueConstraintGuid, ValueTypeSupertypeName)
 GO
 
 CREATE VIEW dbo.ValueTypeInObjectType_ValueTypeValueConstraintGuid (ValueTypeValueConstraintGuid) WITH SCHEMABINDING AS
@@ -458,8 +458,6 @@ CREATE TABLE Role (
 	ConceptGuid                             uniqueidentifier NOT NULL,
 	-- Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
 	FactTypeConceptGuid                     uniqueidentifier NOT NULL,
-	-- maybe Link Fact Type is for Role and Fact Type is an instance of Concept and Concept has Guid,
-	LinkFactTypeConceptGuid                 uniqueidentifier NULL,
 	-- Object Type plays Role and Object Type is called Name,
 	ObjectTypeName                          varchar(64) NOT NULL,
 	-- Object Type plays Role and Object Type belongs to Vocabulary and Vocabulary is called Name,
@@ -468,21 +466,37 @@ CREATE TABLE Role (
 	Ordinal                                 smallint NOT NULL,
 	-- maybe Role has role-Name,
 	RoleName                                varchar(64) NULL,
+	-- maybe Role Proxy is a kind of Role and maybe Link Fact Type has Role Proxy and Fact Type is an instance of Concept and Concept has Guid,
+	RoleProxyLinkFactTypeConceptGuid        uniqueidentifier NULL,
+	-- maybe Role Proxy is a kind of Role and maybe Role Proxy is for Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
+	RoleProxyRoleFactTypeConceptGuid        uniqueidentifier NULL,
+	-- maybe Role Proxy is a kind of Role and maybe Role Proxy is for Role and Role fills Ordinal,
+	RoleProxyRoleOrdinal                    smallint NULL,
 	PRIMARY KEY(FactTypeConceptGuid, Ordinal),
 	UNIQUE(ConceptGuid),
 	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid),
-	FOREIGN KEY (LinkFactTypeConceptGuid) REFERENCES FactType (ConceptGuid),
+	FOREIGN KEY (RoleProxyLinkFactTypeConceptGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (FactTypeConceptGuid) REFERENCES FactType (ConceptGuid),
-	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name)
+	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name),
+	FOREIGN KEY (RoleProxyRoleFactTypeConceptGuid, RoleProxyRoleOrdinal) REFERENCES Role (FactTypeConceptGuid, Ordinal)
 )
 GO
 
-CREATE VIEW dbo.Role_LinkFactTypeConceptGuid (LinkFactTypeConceptGuid) WITH SCHEMABINDING AS
-	SELECT LinkFactTypeConceptGuid FROM dbo.Role
-	WHERE	LinkFactTypeConceptGuid IS NOT NULL
+CREATE VIEW dbo.RoleProxyInRole_RoleProxyLinkFactTypeConceptGuid (RoleProxyLinkFactTypeConceptGuid) WITH SCHEMABINDING AS
+	SELECT RoleProxyLinkFactTypeConceptGuid FROM dbo.Role
+	WHERE	RoleProxyLinkFactTypeConceptGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_RoleByLinkFactTypeConceptGuid ON dbo.Role_LinkFactTypeConceptGuid(LinkFactTypeConceptGuid)
+CREATE UNIQUE CLUSTERED INDEX IX_RoleProxyInRoleByRoleProxyLinkFactTypeConceptGuid ON dbo.RoleProxyInRole_RoleProxyLinkFactTypeConceptGuid(RoleProxyLinkFactTypeConceptGuid)
+GO
+
+CREATE VIEW dbo.RoleProxyInRole_RoleProxyRoleFactTypeConceptGuidRoleProxyRoleOrdinal (RoleProxyRoleFactTypeConceptGuid, RoleProxyRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT RoleProxyRoleFactTypeConceptGuid, RoleProxyRoleOrdinal FROM dbo.Role
+	WHERE	RoleProxyRoleFactTypeConceptGuid IS NOT NULL
+	  AND	RoleProxyRoleOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_RoleProxyInRoleByRoleProxyRoleFactTypeConceptGuidRoleProxyRoleOrdinal ON dbo.RoleProxyInRole_RoleProxyRoleFactTypeConceptGuidRoleProxyRoleOrdinal(RoleProxyRoleFactTypeConceptGuid, RoleProxyRoleOrdinal)
 GO
 
 CREATE TABLE RoleDisplay (

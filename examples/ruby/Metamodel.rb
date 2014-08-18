@@ -250,10 +250,14 @@ module ::Metamodel
     identified_by :fact_type, :ordinal
     one_to_one :concept, :mandatory => true     # See Concept.role
     has_one :fact_type, :mandatory => true      # See FactType.all_role
-    one_to_one :link_fact_type, :counterpart => :implying_role  # See LinkFactType.implying_role
     has_one :object_type, :mandatory => true    # See ObjectType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
     has_one :role_name, :class => Name          # See Name.all_role_as_role_name
+  end
+
+  class RoleProxy < Role
+    one_to_one :link_fact_type                  # See LinkFactType.role_proxy
+    one_to_one :role                            # See Role.role_proxy
   end
 
   class RoleSequence

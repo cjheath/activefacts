@@ -2,7 +2,7 @@
 # schema.rb auto-generated using ActiveFacts for Metamodel on 2014-08-18
 #
 
-ActiveRecord::Schema.define(:version => 20140818194059) do
+ActiveRecord::Schema.define(:version => 20140818231017) do
   create_table "aggregations", :primary_key => :aggregation_id, :force => true do |t|
     t.integer	"aggregated_variable_id", :null => false
     t.integer	"variable_id", :null => false
@@ -187,15 +187,17 @@ ActiveRecord::Schema.define(:version => 20140818194059) do
   create_table "roles", :primary_key => :role_id, :force => true do |t|
     t.Guid	"concept_guid", :null => false
     t.Guid	"fact_type_concept_guid", :null => false
-    t.Guid	"link_fact_type_concept_guid"
     t.integer	"object_type_id", :null => false
     t.integer	"ordinal", :null => false
     t.string	"role_name", :limit => 64
+    t.Guid	"role_proxy_link_fact_type_concept_guid"
+    t.integer	"role_proxy_role_id"
   end
 
   add_index "roles", ["concept_guid"], :name => :index_roles_on_concept_guid, :unique => true
   add_index "roles", ["fact_type_concept_guid", "ordinal"], :name => :index_roles_on_fact_type_concept_guid_ordinal, :unique => true
-  add_index "roles", ["link_fact_type_concept_guid"], :name => :index_roles_on_link_fact_type_concept_guid
+  add_index "roles", ["role_proxy_link_fact_type_concept_guid"], :name => :index_roles_on_role_proxy_link_fact_type_concept_guid
+  add_index "roles", ["role_proxy_role_id"], :name => :index_roles_on_role_proxy_role_id
 
   create_table "role_displays", :primary_key => :role_display_id, :force => true do |t|
     t.Guid	"fact_type_shape_guid", :null => false
@@ -348,9 +350,10 @@ ActiveRecord::Schema.define(:version => 20140818194059) do
     add_foreign_key :readings, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :readings, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :roles, :concepts, :column => :concept_guid, :primary_key => :guid, :dependent => :cascade
-    add_foreign_key :roles, :fact_types, :column => :link_fact_type_concept_guid, :primary_key => :concept_guid, :dependent => :cascade
+    add_foreign_key :roles, :fact_types, :column => :role_proxy_link_fact_type_concept_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :roles, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :dependent => :cascade
     add_foreign_key :roles, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :dependent => :cascade
+    add_foreign_key :roles, :roles, :column => :role_proxy_role_id, :primary_key => :role_id, :dependent => :cascade
     add_foreign_key :role_displays, :roles, :column => :role_id, :primary_key => :role_id, :dependent => :cascade
     add_foreign_key :role_displays, :shapes, :column => :fact_type_shape_guid, :primary_key => :guid, :dependent => :cascade
     add_foreign_key :role_refs, :plays, :column => :play_id, :primary_key => :play_id, :dependent => :cascade

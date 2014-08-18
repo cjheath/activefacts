@@ -296,8 +296,8 @@ module Concernz
       # Role belongs to Fact Type
       has_many :roles, :class_name => 'Role', :foreign_key => :fact_type_concept_guid, :dependent => :destroy
 
-      # Link Fact Type is for Role and Link Fact Type is a kind of Fact Type
-      has_one :implying_role_via_link_fact_type, :class_name => 'Role', :foreign_key => :link_fact_type_concept_guid, :dependent => :destroy
+      # Role Proxy is a kind of Role and Link Fact Type has Role Proxy and Link Fact Type is a kind of Fact Type
+      has_one :role_via_role_proxy_link_fact_type, :class_name => 'Role', :foreign_key => :role_proxy_link_fact_type_concept_guid, :dependent => :destroy
 
       # Fact Type Shape is a kind of Shape and Fact Type Shape is for Fact Type
       has_many :shapes_via_fact_type_shape, :class_name => 'Shape', :foreign_key => :fact_type_shape_fact_type_concept_guid, :dependent => :destroy
@@ -459,14 +459,17 @@ module Concernz
       # Role is an instance of Concept
       belongs_to :concept
 
-      # Link Fact Type is for Role and Link Fact Type is a kind of Fact Type
-      belongs_to :fact_type_via_link_fact_type, :class_name => 'FactType', :foreign_key => :link_fact_type_concept_guid
+      # Role Proxy is a kind of Role and Link Fact Type has Role Proxy and Link Fact Type is a kind of Fact Type
+      belongs_to :fact_type_via_role_proxy_link_fact_type, :class_name => 'FactType', :foreign_key => :role_proxy_link_fact_type_concept_guid
 
       # Role belongs to Fact Type
       belongs_to :fact_type
 
       # Object Type plays Role
       belongs_to :object_type
+
+      # Role Proxy is a kind of Role and Role Proxy is for Role
+      belongs_to :role_via_role_proxy, :class_name => 'Role', :foreign_key => :role_proxy_role_id
 
       # Constraint is an instance of Concept and Ring Constraint is a kind of Constraint and Ring Constraint has other-Role
       has_many :concepts_via_constraint_ring_constraint, :class_name => 'Concept', :foreign_key => :ring_constraint_other_role_id, :dependent => :destroy
@@ -488,6 +491,9 @@ module Concernz
 
       # Role Value is of Role
       has_many :role_values, :class_name => 'RoleValue', :foreign_key => :role_id, :dependent => :destroy
+
+      # Role Proxy is a kind of Role and Role Proxy is for Role
+      has_one :role_via_role_proxy, :class_name => 'Role', :foreign_key => :role_proxy_role_id, :dependent => :destroy
 
       # Variable projects Role
       has_one :variable, :class_name => 'Variable', :foreign_key => :projection_id, :dependent => :destroy

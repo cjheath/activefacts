@@ -123,8 +123,6 @@ Role is identified by Fact Type and Ordinal where
 	Fact Type contains Role,
 	Role fills one Ordinal,
 	Ordinal applies to Role;
-Link Fact Type is for at most one Role (as ImplyingRole),
-	ImplyingRole has at most one Link Fact Type;
 Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is an instance of one Concept;
@@ -133,6 +131,12 @@ Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
+
+Role Proxy is a kind of Role;
+Link Fact Type has one Role Proxy,
+	Role Proxy is of at most one Link Fact Type;
+Role Proxy is for at most one Role,
+	Role has at most one Role Proxy;
 
 Role Sequence is identified by Guid where
 	Role Sequence has one Guid,
