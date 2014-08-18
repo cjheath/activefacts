@@ -28,7 +28,7 @@ module ActiveFacts
               :context_note_kind => @context_kind,
               :discussion => @discussion
             )
-          context_note.relevant_concept = target
+          context_note.relevant_concept = target.concept
           if @agreed_date || @agreed_agents
             agreement = constellation.Agreement(context_note)
             agreement.date = @agreed_date if @agreed_date
@@ -226,7 +226,7 @@ module ActiveFacts
               :is_mandatory => @quantifier.min && @quantifier.min > 0
             )
           @enforcement.compile(@constellation, @constraint) if @enforcement
-	  debug :constraint, "Made new PC GUID=#{@constraint.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{role_sequence.describe}"
+	  debug :constraint, "Made new PC GUID=#{@constraint.concept.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{role_sequence.describe}"
           super
         end
 

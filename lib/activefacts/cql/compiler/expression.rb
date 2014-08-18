@@ -93,7 +93,7 @@ module ActiveFacts
           vocabulary = context.vocabulary
           constellation = vocabulary.constellation
 	  vocabulary.valid_value_type_name(name) ||
-	    constellation.ValueType(vocabulary, name, :guid => :new)
+	    constellation.ValueType(vocabulary, name, :concept => :new)
         end
 
         def is_naked_object_type
@@ -194,7 +194,7 @@ module ActiveFacts
             v = context.vocabulary
             @boolean ||=
 	      v.constellation.ValueType[[[v.name], 'Boolean']] ||
-	      v.constellation.ValueType(v, 'Boolean', :guid => :new)
+	      v.constellation.ValueType(v, 'Boolean', :concept => :new)
             @player = @boolean
           end
         end
@@ -337,7 +337,7 @@ module ActiveFacts
             # REVISIT: Calculate the units of the result from the units in @divisor
             # REVISIT: Do we want integer division?
             v = context.vocabulary
-            @player = v.constellation.ValueType(v, 'Real', :guid => :new)
+            @player = v.constellation.ValueType(v, 'Real', :concept => :new)
           end
         end
 

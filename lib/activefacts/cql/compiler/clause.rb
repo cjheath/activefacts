@@ -598,7 +598,7 @@ module ActiveFacts
           debug :matching, "Making new fact type for #{@phrases.inspect}" do
             @phrases.each do |phrase|
               next unless phrase.respond_to?(:player)
-              phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :object_type => phrase.player, :guid => :new)
+              phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :object_type => phrase.player, :concept => :new)
               phrase.role.role_name = phrase.role_name if phrase.role_name && phrase.role_name.is_a?(String)
             end
           end
@@ -1040,7 +1040,7 @@ module ActiveFacts
                   :max_frequency => @quantifier.max,
                   :min_frequency => @quantifier.min
                 )
-              debug :constraint, "Made new embedded PC GUID=#{constraint.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
+              debug :constraint, "Made new embedded PC GUID=#{constraint.concept.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
               @quantifier.enforcement.compile(constellation, constraint) if @quantifier.enforcement
               @embedded_presence_constraint = constraint
             end

@@ -173,7 +173,7 @@ module ActiveFacts
 
         debug :index, "All Indices in #{name}:" do
           @indices = columns_by_unique_constraint.map do |uc, columns_with_ordinal|
-            debug :index, "Index due to uc #{uc.guid} on #{name} over (#{columns_with_ordinal.sort_by{|onc|onc[0]}.map{|ca| ca[2].name}.inspect})"
+            debug :index, "Index due to uc #{uc.concept.guid} on #{name} over (#{columns_with_ordinal.sort_by{|onc|onc[0]}.map{|ca| ca[2].name}.inspect})"
             columns = columns_with_ordinal.sort_by{|ca| [ca[0,2], ca[2].name]}.map{|ca| ca[2]}
             absorption_level = columns.map(&:absorption_level).min
             over = columns[0].references[absorption_level].from

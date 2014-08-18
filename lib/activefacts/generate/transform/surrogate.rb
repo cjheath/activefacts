@@ -14,18 +14,18 @@ module ActiveFacts
       def add_surrogate type_name = 'Auto Counter', suffix = 'ID'
 	# Find or assert the surrogate value type
 	auto_counter = vocabulary.valid_value_type_name(type_name) ||
-	  constellation.ValueType(:vocabulary => vocabulary, :name => type_name, :guid => :new)
+	  constellation.ValueType(:vocabulary => vocabulary, :name => type_name, :concept => :new)
 
 	# Create a subtype to identify this entity type:
 	vt_name = self.name + ' '+suffix
 	my_id = @vocabulary.valid_value_type_name(vt_name) ||
-	  constellation.ValueType(:vocabulary => vocabulary, :name => vt_name, :guid => :new, :supertype => auto_counter)
+	  constellation.ValueType(:vocabulary => vocabulary, :name => vt_name, :concept => :new, :supertype => auto_counter)
 
 	# Create a fact type
-	identifying_fact_type = constellation.FactType(:guid => :new)
-	my_role = constellation.Role(:guid => :new, :fact_type => identifying_fact_type, :ordinal => 0, :object_type => self)
+	identifying_fact_type = constellation.FactType(:concept => :new)
+	my_role = constellation.Role(:concept => :new, :fact_type => identifying_fact_type, :ordinal => 0, :object_type => self)
 	@injected_surrogate_role = my_role
-	id_role = constellation.Role(:guid => :new, :fact_type => identifying_fact_type, :ordinal => 1, :object_type => my_id)
+	id_role = constellation.Role(:concept => :new, :fact_type => identifying_fact_type, :ordinal => 1, :object_type => my_id)
 
 	# Create a reading (which needs a RoleSequence)
 	reading = constellation.Reading(
@@ -39,7 +39,7 @@ module ActiveFacts
 
 	# Create two uniqueness constraints for the one-to-one. Each needs a RoleSequence (two RoleRefs)
 	one_id = constellation.PresenceConstraint(
-	    :guid => :new,
+	    :concept => :new,
 	    :vocabulary => vocabulary,
 	    :name => self.name+'HasOne'+suffix,
 	    :role_sequence => [:new],
@@ -51,7 +51,7 @@ module ActiveFacts
 	@constellation.RoleRef(:role_sequence => one_id.role_sequence, :ordinal => 0, :role => my_role)
 
 	one_me = constellation.PresenceConstraint(
-	    :guid => :new,
+	    :concept => :new,
 	    :vocabulary => vocabulary,
 	    :name => self.name+suffix+'IsOfOne'+self.name,
 	    :role_sequence => [:new],

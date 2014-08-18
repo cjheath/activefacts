@@ -120,7 +120,7 @@ module ActiveFacts
       value_type :length => 256
     end
 
-    class TransactionTiming < String
+    class TransactionPhase < String
       value_type 
       restrict 'assert', 'commit'
     end
@@ -162,12 +162,16 @@ module ActiveFacts
       has_one :implication_rule                   # See ImplicationRule.all_concept
     end
 
-    class Constraint < Concept
+    class Constraint
+      identified_by :concept
+      one_to_one :concept, :mandatory => true     # See Concept.constraint
       has_one :name                               # See Name.all_constraint
       has_one :vocabulary                         # See Vocabulary.all_constraint
     end
 
-    class ContextNote < Concept
+    class ContextNote
+      identified_by :concept
+      one_to_one :concept, :mandatory => true     # See Concept.context_note
       has_one :context_note_kind, :mandatory => true  # See ContextNoteKind.all_context_note
       has_one :discussion, :mandatory => true     # See Discussion.all_context_note
       has_one :relevant_concept, :class => Concept  # See Concept.all_context_note_as_relevant_concept
@@ -180,12 +184,16 @@ module ActiveFacts
       has_one :enforcement_code, :mandatory => true  # See EnforcementCode.all_enforcement
     end
 
-    class Fact < Concept
+    class Fact
+      identified_by :concept
+      one_to_one :concept, :mandatory => true     # See Concept.fact
       has_one :fact_type, :mandatory => true      # See FactType.all_fact
       has_one :population, :mandatory => true     # See Population.all_fact
     end
 
-    class FactType < Concept
+    class FactType
+      identified_by :concept
+      one_to_one :concept, :mandatory => true     # See Concept.fact_type
     end
 
     class ImplicationRule
@@ -193,7 +201,9 @@ module ActiveFacts
       one_to_one :implication_rule_name, :mandatory => true  # See ImplicationRuleName.implication_rule
     end
 
-    class Instance < Concept
+    class Instance
+      identified_by :concept
+      one_to_one :concept, :mandatory => true     # See Concept.instance
       one_to_one :fact                            # See Fact.instance
       has_one :object_type, :mandatory => true    # See ObjectType.all_instance
       has_one :population, :mandatory => true     # See Population.all_instance
@@ -217,7 +227,9 @@ module ActiveFacts
       has_one :role_sequence, :mandatory => true  # See RoleSequence.all_presence_constraint
     end
 
-    class Query < Concept
+    class Query
+      identified_by :concept
+      one_to_one :concept, :mandatory => true     # See Concept.query
     end
 
     class Reading
@@ -235,8 +247,9 @@ module ActiveFacts
       has_one :role                               # See Role.all_ring_constraint
     end
 
-    class Role < Concept
+    class Role
       identified_by :fact_type, :ordinal
+      one_to_one :concept, :mandatory => true     # See Concept.role
       has_one :fact_type, :mandatory => true      # See FactType.all_role
       one_to_one :link_fact_type, :counterpart => :implying_role  # See LinkFactType.implying_role
       has_one :object_type, :mandatory => true    # See ObjectType.all_role
@@ -274,8 +287,10 @@ module ActiveFacts
       has_one :superset_role_sequence, :class => RoleSequence, :mandatory => true  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
     end
 
-    class Unit < Concept
+    class Unit
+      identified_by :concept
       has_one :coefficient                        # See Coefficient.all_unit
+      one_to_one :concept, :mandatory => true     # See Concept.unit
       has_one :ephemera_url, :class => EphemeraURL  # See EphemeraURL.all_unit
       maybe :is_fundamental
       one_to_one :name, :mandatory => true        # See Name.unit
@@ -375,8 +390,9 @@ module ActiveFacts
     class ORMDiagram < Diagram
     end
 
-    class ObjectType < Concept
+    class ObjectType
       identified_by :vocabulary, :name
+      one_to_one :concept, :mandatory => true     # See Concept.object_type
       maybe :is_independent
       has_one :name, :mandatory => true           # See Name.all_object_type
       has_one :pronoun                            # See Pronoun.all_object_type
@@ -399,8 +415,9 @@ module ActiveFacts
       has_one :step, :counterpart => :incidental_play  # See Step.all_incidental_play
     end
 
-    class Population < Concept
+    class Population
       identified_by :vocabulary, :name
+      one_to_one :concept, :mandatory => true     # See Concept.population
       has_one :name, :mandatory => true           # See Name.all_population
       has_one :vocabulary                         # See Vocabulary.all_population
     end
@@ -411,7 +428,7 @@ module ActiveFacts
     end
 
     class RingConstraintShape < ConstraintShape
-      has_one :fact_type, :mandatory => true      # See FactType.all_ring_constraint_shape
+      has_one :fact_type_shape, :mandatory => true  # See FactTypeShape.all_ring_constraint_shape
     end
 
     class RoleDisplay
@@ -484,7 +501,6 @@ module ActiveFacts
 
     class EntityType < DomainObjectType
       one_to_one :fact_type                       # See FactType.entity_type
-      maybe :is_implied_by_objectification
     end
 
     class TypeInheritance < FactType
@@ -499,7 +515,7 @@ module ActiveFacts
       has_one :length                             # See Length.all_value_type
       has_one :scale                              # See Scale.all_value_type
       has_one :supertype, :class => ValueType     # See ValueType.all_value_type_as_supertype
-      has_one :transaction_timing                 # See TransactionTiming.all_value_type
+      has_one :transaction_phase                  # See TransactionPhase.all_value_type
       has_one :unit                               # See Unit.all_value_type
       one_to_one :value_constraint                # See ValueConstraint.value_type
     end

@@ -10,7 +10,7 @@ module ActiveFacts
 
         def compile
           @population = @constellation.Population[[@vocabulary.identifying_role_values, @population_name]] ||
-	      @constellation.Population(@vocabulary, @population_name, :guid => :new)
+	      @constellation.Population(@vocabulary, @population_name, :concept => :new)
 
           @context = CompilationContext.new(@vocabulary)
           @context.bind @clauses

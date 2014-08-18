@@ -5,12 +5,12 @@
       "id": "9E7D3467-3958-4723-9A3A-BF959CEC2ADB",
       "functions": [
         {
-          "title": "as Manager",
-          "type": "Manager"
-        },
-        {
           "title": "as Employee",
           "type": "Employee"
+        },
+        {
+          "title": "as Manager",
+          "type": "Manager"
         },
         {
           "title": "all Company",
@@ -28,7 +28,7 @@
         {
           "title": "CEO",
           "type": "CEO",
-          "where": "one CEO runs this Company",
+          "where": "this Company is run by one CEO",
           "role_id": "58B56A84-676D-4ACF-9574-2E9A1A62F13B"
         },
         {
@@ -40,7 +40,7 @@
         {
           "title": "all Employee",
           "type": "Employee",
-          "where": "some Employee works for this Company",
+          "where": "this Company employs some Employee",
           "role_id": "99AE0FAA-FBDA-4E7E-BA8B-36A7536510E2",
           "is_list": true
         }
@@ -53,7 +53,7 @@
         {
           "title": "Company",
           "type": "Company",
-          "where": "one Company has this CompanyName",
+          "where": "this CompanyName is of one Company",
           "role_id": "92CC272C-7EB9-4966-9764-074711CD0F62"
         }
       ]
@@ -63,12 +63,12 @@
       "id": "DE951F51-2BC1-49AE-BE50-63537CB31B4A",
       "functions": [
         {
-          "title": "as Manager",
-          "type": "Manager"
-        },
-        {
           "title": "as CEO",
           "type": "CEO"
+        },
+        {
+          "title": "as Manager",
+          "type": "Manager"
         },
         {
           "title": "EmployeeNr",
@@ -85,7 +85,7 @@
         {
           "title": "Manager",
           "type": "Manager",
-          "where": "one Manager supervises this Employee",
+          "where": "this Employee reports to one Manager",
           "role_id": "F18C5E05-DDED-4583-AF93-509F9C1A534F"
         }
       ]
@@ -97,7 +97,7 @@
         {
           "title": "all Employee",
           "type": "Employee",
-          "where": "some Employee has this EmployeeNr",
+          "where": "this EmployeeNr is of some Employee",
           "role_id": "EBC5494A-9AFD-4B8D-8205-D2B2B67BB29E",
           "is_list": true
         }

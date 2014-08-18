@@ -72,7 +72,7 @@ module ActiveFacts
               if o.fact_type
                 uuid = (uuids[o.fact_type] ||= uuid_from_id(o.fact_type))
                 j[:objectifies] = uuid
-                j[:implicit] = true if o.is_implied_by_objectification
+                j[:implicit] = true if o.concept.implication_rule
               end
               if o.all_type_inheritance_as_subtype.size > 0
                 j[:supertypes] = o.
@@ -248,7 +248,7 @@ module ActiveFacts
             if (c.enforcement)
               # REVISIT: Deontic constraint
             end
-            if (c.all_context_note_as_relevant_concept.size > 0)
+            if (c.concept.all_context_note_as_relevant_concept.size > 0)
               # REVISIT: Context Notes
             end
 

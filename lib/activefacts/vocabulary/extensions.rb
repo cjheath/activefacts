@@ -112,7 +112,7 @@ module ActiveFacts
 
       def implicit_boolean_type vocabulary
         @constellation.ImplicitBooleanValueType[[vocabulary.identifying_role_values, "_ImplicitBooleanValueType"]] ||
-        @constellation.ImplicitBooleanValueType(vocabulary.identifying_role_values, "_ImplicitBooleanValueType", :guid => :new)
+        @constellation.ImplicitBooleanValueType(vocabulary.identifying_role_values, "_ImplicitBooleanValueType", :concept => :new)
       end
 
       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
@@ -123,7 +123,7 @@ module ActiveFacts
         # We only do it when the unary fact type is not objectified
         link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
         entity_type = @entity_type || implicit_boolean_type(role.object_type.vocabulary)
-        phantom_role = @constellation.Role(link_fact_type, 0, :object_type => entity_type, :guid => :new)
+        phantom_role = @constellation.Role(link_fact_type, 0, :object_type => entity_type, :concept => :new)
       end
 
       def reading_preferably_starting_with_role role, negated = false
@@ -470,7 +470,7 @@ module ActiveFacts
         fact_type.all_role.map do |role|
           next if role.link_fact_type     # Already exists
           link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
-          phantom_role = @constellation.Role(link_fact_type, 0, :object_type => self, :guid => :new)
+          phantom_role = @constellation.Role(link_fact_type, 0, :object_type => self, :concept => :new)
           # We could create a copy of the visible external role here, but there's no need yet...
           # Nor is there a need for a presence constraint, readings, etc.
 	  link_fact_type
@@ -767,7 +767,7 @@ module ActiveFacts
     class Query
       def show
         steps_shown = {}
-        debug :query, "Displaying full contents of Query #{guid}" do
+        debug :query, "Displaying full contents of Query #{concept.guid}" do
           all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
             debug :query, "#{variable.describe}" do
               variable.all_step.

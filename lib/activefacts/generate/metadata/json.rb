@@ -55,8 +55,14 @@ module ActiveFacts
 	# Using proc avoids polluting the object's namespace with these little methods
 	verbalise_role = proc do |role, plural|
 	  fc = Array.new(role.fact_type.all_role.size, plural ? 'some' : 'one')
-	  fc[role.ordinal] = 'this'
-	  role.fact_type.default_reading(fc, false)
+	  reading =
+	    (role.fact_type.all_reading.detect{|reading|
+		reading.role_sequence.all_role_ref_in_order.to_a[0].role.object_type == self
+	      } or
+	      fc.reverse! && role.fact_type.preferred_reading
+	    )
+	  fc[reading.role_sequence.all_role_ref_in_order.to_a.index{|rr| rr.role == role}] = 'this'
+	  reading.expand(fc, false)
 	end
 
 	titlize_words = proc do |phrase|
@@ -76,7 +82,7 @@ module ActiveFacts
 
 	object_type = {}
 	object_type["is_main"] = is_table
-	object_type["id"] = guid.to_s
+	object_type["id"] = concept.guid.to_s
 	functions = object_type["functions"] = []
 
 	if is_a?(ActiveFacts::Metamodel::EntityType)
@@ -87,7 +93,7 @@ module ActiveFacts
 	  end
 
 	  # Export the supertypes
-	  (supertypes_transitive-[self]).each do |supertype|
+	  (supertypes_transitive-[self]).sort_by{|t| t.name}.each do |supertype|
 	    functions <<
 	      {
 		"title" => "as #{supertype.name}",
@@ -96,7 +102,7 @@ module ActiveFacts
 	  end
 
 	  # Export the subtypes
-	  (subtypes_transitive-[self]).each do |subtype|
+	  (subtypes_transitive-[self]).sort_by{|t| t.name}.each do |subtype|
 	    functions <<
 	      {
 		"title" => "as #{subtype.name}",
@@ -106,7 +112,7 @@ module ActiveFacts
 
 	  # If an objectified fact type, export the fact type's roles
 	  if fact_type
-	    fact_type.all_role.each do |role|
+	    fact_type.preferred_reading.role_sequence.all_role_ref_in_order.map(&:role).each do |role|
 	      functions <<
 		{
 		  "title" => "involving #{role_name.call(role)}",
@@ -123,7 +129,9 @@ module ActiveFacts
 	    role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) ||
 	      role.fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
 	  end.sort_by do |role|
-	    [role.fact_type.default_reading, role.ordinal]
+	    # Where this object type plays two roles in the same fact type,
+	    # we order them by the position of that role in the preferred reading:
+	    [role.fact_type.default_reading, role.fact_type.preferred_reading.role_sequence.all_role_ref_in_order.map(&:role).index(role)]
 	  end
 
 	# For binary fact types, collect the count of the times the unadorned counterpart role name occurs, so we can adorn it
@@ -184,7 +192,7 @@ module ActiveFacts
 	    "title" => "#{plural ? 'all ' : ''}#{counterpart_name}",
 	    "type" => "#{type_name}",
 	    "where" => verbalise_role.call(role, plural),
-	    "role_id" => role.guid.to_s
+	    "role_id" => role.concept.guid.to_s
 	  }
 	  node["is_list"] = true if plural
 	  functions << node 

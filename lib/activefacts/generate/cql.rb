@@ -191,7 +191,7 @@ module ActiveFacts
         end
         (entity_type.is_independent ? ' independent' : '') +
           " identified by its #{value_residual}#{constraint_text}#{mapping_pragma(entity_type, true)}" +
-	  entity_type.all_context_note_as_relevant_concept.map do |cn|
+	  entity_type.concept.all_context_note_as_relevant_concept.map do |cn|
 	    cn.verbalise
 	  end.join("\n") +
           (fact_readings.size > 0 ? " where\n\t" : "") +
@@ -228,7 +228,7 @@ module ActiveFacts
         (entity_type.is_independent ? ' independent' : '') +
           " identified by #{ irn*" and " }" +
           mapping_pragma(entity_type, true) +
-	  entity_type.all_context_note_as_relevant_concept.map do |cn|
+	  entity_type.concept.all_context_note_as_relevant_concept.map do |cn|
 	    cn.verbalise
 	  end.join("\n") +
           " where\n\t"+identifying_fact_text
@@ -631,7 +631,7 @@ module ActiveFacts
           }#{
             unit && " "+unit.name
           }#{
-	    all_context_note_as_relevant_concept.map do |cn|
+	    concept.all_context_note_as_relevant_concept.map do |cn|
 	      cn.verbalise
 	    end.join("\n")
 	  }#{

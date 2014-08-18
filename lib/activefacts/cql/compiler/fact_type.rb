@@ -97,7 +97,7 @@ module ActiveFacts
           if @name
 	    entity_type = @vocabulary.valid_entity_type_name(@name)
             raise "You can't objectify #{@name}, it already exists" if entity_type
-            @entity_type = @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type, :guid => :new)
+            @entity_type = @constellation.EntityType(@vocabulary, @name, :fact_type => @fact_type, :concept => :new)
 	  end
 
           prepare_roles @clauses
@@ -312,9 +312,9 @@ module ActiveFacts
 		:max_frequency => 1,
 		:is_preferred_identifier => true # (prefer || !!@fact_type.entity_type)
 	      )
-	      debug :constraint, "Made new fact type implicit PC GUID=#{pc.guid} #{pc.name} min=nil max=1 over #{rs.describe}"
+	      debug :constraint, "Made new fact type implicit PC GUID=#{pc.concept.guid} #{pc.name} min=nil max=1 over #{rs.describe}"
 	    elsif pc
-	      debug :constraint, "Will rely on existing UC GUID=#{pc.guid} #{pc.name} to be used as PI over #{rs.describe}"
+	      debug :constraint, "Will rely on existing UC GUID=#{pc.concept.guid} #{pc.name} to be used as PI over #{rs.describe}"
             end
 	  end
         end

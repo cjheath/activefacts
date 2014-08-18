@@ -160,7 +160,7 @@ module ActiveFacts
 	    @by_id[id] =
 	      debug :orm, "Asserting new EntityType #{name.inspect}" do
 		@vocabulary.valid_entity_type_name(name) ||
-		@constellation.EntityType(@vocabulary, name, :guid => id_of(x))
+		@constellation.EntityType(@vocabulary, name, :concept => id_of(x))
 	      end
 	  entity_types << entity_type
 	  independent = x['IsIndependent']
@@ -233,7 +233,7 @@ module ActiveFacts
 	  debug :orm, "Asserting new ValueType #{supertype_name.inspect} for supertype" do
 	    value_super_type =
 	      @vocabulary.valid_value_type_name(supertype_name) ||
-	      @constellation.ValueType(@vocabulary, supertype_name, :guid => id_of(x_supertype))
+	      @constellation.ValueType(@vocabulary, supertype_name, :concept => id_of(x_supertype))
 	  end
         else
           # REVISIT: Need to handle standard types better here:
@@ -241,7 +241,7 @@ module ActiveFacts
 	    if type_name != name
 	      debug :orm, "Asserting new ValueType #{type_name.inspect} for supertype" do
 		@vocabulary.valid_value_type_name(type_name) ||
-		  @constellation.ValueType(@vocabulary.identifying_role_values, type_name, :guid => :new)
+		  @constellation.ValueType(@vocabulary.identifying_role_values, type_name, :concept => :new)
 	      end
 	    else
 	      nil
@@ -252,7 +252,7 @@ module ActiveFacts
 	  debug :orm, "Asserting new ValueType #{name.inspect}" do
 	    @by_id[id] =
 	      @vocabulary.valid_value_type_name(name) ||
-	      @constellation.ValueType(@vocabulary.identifying_role_values, name, :guid => id_of(x))
+	      @constellation.ValueType(@vocabulary.identifying_role_values, name, :concept => id_of(x))
 	  end
         vt.supertype = value_super_type
         vt.length = length if length
@@ -352,7 +352,7 @@ module ActiveFacts
             next if subtype.kind_of? ActiveFacts::Metamodel::ValueType or
                         supertype.kind_of? ActiveFacts::Metamodel::ValueType
 
-            inheritance_fact = @constellation.TypeInheritance(subtype, supertype, :guid => id_of(x))
+            inheritance_fact = @constellation.TypeInheritance(subtype, supertype, :concept => id_of(x))
             if x["IsPrimary"] == "true" or           # Old way
               x["PreferredIdentificationPath"] == "true"   # Newer
               debug :orm, "#{supertype.name} is primary supertype of #{subtype.name}"
@@ -364,8 +364,8 @@ module ActiveFacts
             facts << @by_id[id] = inheritance_fact
 
             # Create the new Roles so we can find constraints on them:
-            subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, :object_type => subtype, :guid => id_of(x_subtype_role))
-            supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, :object_type => supertype, :guid => id_of(x_supertype_role))
+            subtype_role = @by_id[subtype_role_id] = @constellation.Role(inheritance_fact, 0, :object_type => subtype, :concept => id_of(x_subtype_role))
+            supertype_role = @by_id[supertype_role_id] = @constellation.Role(inheritance_fact, 1, :object_type => supertype, :concept => id_of(x_supertype_role))
 
             # Create readings, so constraints can be verbalised for example:
             rs = @constellation.RoleSequence(:new)
@@ -403,14 +403,14 @@ module ActiveFacts
             fact_type = @by_id[fact_id]
             next unless fact_type # "Nested fact #{fact_id} not found; objectification of a derived fact type?"
 
-            debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.guid}"
+            debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.concept.guid}"
             @nested_types <<
               @by_id[id] =
 		nested_type = @vocabulary.valid_entity_type_name(name) ||
-		  @constellation.EntityType(@vocabulary, name, :guid => id_of(x))
+		  @constellation.EntityType(@vocabulary, name, :concept => id_of(x))
             independent = x['IsIndependent']
             nested_type.is_independent = true if independent && independent == 'true' && !is_implied
-            nested_type.is_implied_by_objectification = is_implied
+            nested_type.concept.implication_rule = 'objectification' if is_implied
             nested_type.fact_type = fact_type
           }
         end
@@ -479,11 +479,11 @@ module ActiveFacts
                 debug :orm, "#{@vocabulary.name}, RoleName=#{x['Name'].inspect} played by object_type=#{object_type.name}"
                 throw "Role is played by #{object_type.class} not ObjectType" if !(@constellation.vocabulary.object_type(:ObjectType) === object_type)
 
-                debug :orm, "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.guid} played by #{object_type.name}"
+                debug :orm, "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.concept.guid} played by #{object_type.name}"
 
-                role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :object_type => object_type, :guid => id_of(x))
+                role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :object_type => object_type, :concept => id_of(x))
                 role.role_name = name if name && name != object_type.name
-                debug :orm, "Fact #{fact_name} (id #{fact_type.guid.object_id}) role #{x['Name']} is played by #{object_type.name}, role is #{role.object_id}"
+                debug :orm, "Fact #{fact_name} (id #{fact_type.concept.guid}) role #{x['Name']} is played by #{object_type.name}, role is #{role.concept.guid}"
 
                 x_vr = x.xpath("orm:ValueRestriction/orm:RoleValueConstraint")
                 x_vr.each{|vr|
@@ -598,7 +598,7 @@ module ActiveFacts
       end
 
       def get_role_sequence(role_array)
-        # puts "Getting RoleSequence [#{role_array.map{|r| "#{r.object_type.name} (role #{r.object_id})" }*", "}]"
+        # puts "Getting RoleSequence [#{role_array.map{|r| "#{r.object_type.name} (role #{r.concept.guid})" }*", "}]"
 
         # Look for an existing RoleSequence
         # REVISIT: This searches all role sequences. Perhaps we could narrow it down first instead?
@@ -1233,7 +1233,7 @@ module ActiveFacts
 
       def read_instances
         debug :orm, "Reading sample data" do
-          population = @constellation.Population(@vocabulary, "sample", :guid => :new)
+          population = @constellation.Population(@vocabulary, "sample", :concept => :new)
 
           # Value instances first, then entities then facts:
 
@@ -1403,7 +1403,7 @@ module ActiveFacts
                       :guid => id_of(x_shape), :orm_diagram => diagram, :location => location, :is_expanded => is_expanded,
                       :constraint => subject
                     )
-                  shape.fact_type = subject.role.fact_type
+                  shape.fact_type_shape = subject.role.fact_type.all_fact_type_shape.to_a[0]
                 when 'ModelNoteShape'
                   # REVISIT: Add model notes
                 when 'ObjectTypeShape'
@@ -1442,7 +1442,7 @@ module ActiveFacts
         offs_y = -12
         if fact_type.entity_type
           offs_x -= 12
-          offs_y -= 9 if !fact_type.entity_type.is_implied_by_objectification
+          offs_y -= 9 if !fact_type.entity_type.concept.implication_rule # .implication_rule_name == 'objectification'
         end
 
         location = convert_location(bounds, Gravity::S, offs_x, offs_y)

@@ -329,12 +329,12 @@ module ActiveFacts
             )
         end
 
-        # @log.puts "Making ValueType(vocabulary, #{name}, :guid => :new)"
+        # @log.puts "Making ValueType(vocabulary, #{name}, :concept => :new)"
         @value_types[vtype] = ValueType.new(
             @vocabulary,
             name,
             :supertype => base_value_type,
-            :guid => :new
+            :concept => :new
           )
       end
 

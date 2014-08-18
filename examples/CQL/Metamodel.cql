@@ -31,7 +31,7 @@ Rotation Setting is written as String restricted to {'left', 'right'};
 Scale is written as Unsigned Integer(32);
 Subscript is written as Unsigned Integer(16);
 Text is written as String(256);
-Transaction Timing is written as String restricted to {'assert', 'commit'};
+Transaction Phase is written as String restricted to {'assert', 'commit'};
 X is written as Signed Integer(32);
 Y is written as Signed Integer(32);
 
@@ -56,16 +56,18 @@ Concept is identified by Guid where
 	Concept has one Guid,
 	Guid is of at most one Concept;
 
-Constraint is a kind of Concept [partitioned];
+Constraint is identified by Concept where
+	Constraint is an instance of one Concept;
 Name is of Constraint,
 	Constraint is called at most one Name;
 
-Context Note is a kind of Concept [partitioned];
+Context Note is identified by Concept where
+	Context Note is an instance of one Concept;
 Context Note has one Context Note Kind,
 	Context Note Kind is of Context Note;
 Context Note has one Discussion,
 	Discussion is for Context Note;
-Context Note applies to at most one relevant-Concept [acyclic, stronglyintransitive],
+Context Note applies to at most one relevant-Concept,
 	Concept has Context Note;
 
 Enforcement is identified by Constraint where
@@ -75,15 +77,18 @@ Enforcement notifies at most one Agent;
 Enforcement has one Enforcement Code,
 	Enforcement Code is of Enforcement;
 
-Fact is a kind of Concept [partitioned];
+Fact is identified by Concept where
+	Fact is an instance of one Concept;
 
-Fact Type is a kind of Concept [partitioned];
+Fact Type is independent identified by Concept where
+	Fact Type is an instance of one Concept;
 Fact is of one Fact Type;
 
 Implication Rule is identified by its Name;
 Concept is implied by at most one Implication Rule;
 
-Instance is a kind of Concept [partitioned];
+Instance is identified by Concept where
+	Instance is an instance of one Concept;
 Instance objectifies at most one Fact,
 	Fact is objectified as at most one Instance;
 
@@ -99,7 +104,8 @@ Presence Constraint has at most one min-Frequency restricted to {2..};
 Presence Constraint is mandatory;
 Presence Constraint is preferred identifier;
 
-Query is a kind of Concept [partitioned];
+Query is identified by Concept where
+	Query is an instance of one Concept;
 
 Reading is identified by Fact Type and Ordinal where
 	Fact Type has Reading,
@@ -112,24 +118,21 @@ Reading is negative;
 Ring Constraint is a kind of Constraint;
 Ring Constraint is of one Ring Type;
 
-Role is a kind of Concept identified by Fact Type and Ordinal [partitioned] where
+Role is identified by Fact Type and Ordinal where
 	Role belongs to one Fact Type,
 	Fact Type contains Role,
 	Role fills one Ordinal,
 	Ordinal applies to Role;
+Link Fact Type is for at most one Role (as ImplyingRole),
+	ImplyingRole has at most one Link Fact Type;
 Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
+Role is an instance of one Concept;
 Role is of Ring Constraint;  // Avoid ambiguity; this is a new fact type
 Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
-
-Role Proxy is a kind of Role;
-Link Fact Type has one Role Proxy,
-	Role Proxy is of at most one Link Fact Type;
-Role Proxy is for at most one Role,
-	Role has at most one Role Proxy;
 
 Role Sequence is identified by Guid where
 	Role Sequence has one Guid,
@@ -158,7 +161,8 @@ Subset Constraint is a kind of Set Constraint;
 Subset Constraint covers one subset-Role Sequence;
 Subset Constraint covers one superset-Role Sequence;
 
-Unit is a kind of Concept [partitioned];
+Unit is identified by Concept where
+	Unit is an instance of one Concept;
 Ephemera URL provides Unit coefficient,
 	Unit uses coefficient from at most one Ephemera URL;
 Name is of at most one Unit,
@@ -252,10 +256,11 @@ ORM Diagram is a kind of Diagram;
 Shape is in one ORM Diagram,
 	ORM Diagram includes Shape;
 
-Object Type is a kind of Concept identified by Vocabulary and Name [partitioned] where
+Object Type is identified by Vocabulary and Name where
 	Object Type belongs to one Vocabulary,
 	Object Type is called one Name;
 Instance is of one Object Type;
+Object Type is an instance of one Concept;
 Object Type uses at most one Pronoun;
 Object Type plays Role,
 	Role is played by one Object Type;
@@ -276,11 +281,12 @@ Play is where
 	Variable is restricted by Role,
 	Role controls Variable;
 
-Population is a kind of Concept identified by Vocabulary and Name [partitioned] where
+Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
 	Population belongs to at most one Vocabulary,
 	Population has one Name,
 	Name is of Population;
+Population is an instance of one Concept;
 Population includes Fact,
 	Fact belongs to one Population;
 Population includes Instance,
@@ -372,7 +378,7 @@ Value Type has at most one Length,
 	Length is of Value Type;
 Value Type has at most one Scale,
 	Scale is of Value Type;
-Value Type is auto-assigned at at most one Transaction Timing;
+Value Type is auto-assigned at at most one Transaction Phase;
 Value Type is of at most one Unit;
 Value Type has at most one Value Constraint,
 	Value Constraint constrains at most one Value Type;
@@ -395,16 +401,16 @@ Implicit Boolean Value Type is a kind of Value Type;
  * Constraints:
  */
 for each Concept exactly one of these holds:
-	Concept is an Instance,
-	Concept is a Fact,
-	Concept is an Object Type,
-	Concept is a Role,
-	Concept is a Fact Type,
-	Concept is a Constraint,
-	Concept is a Population,
-	Concept is an Unit,
-	Concept is a Query,
-	Concept is a Context Note;
+	Object Type is an instance of Concept,
+	Fact Type is an instance of Concept,
+	Role is an instance of Concept,
+	Constraint is an instance of Concept,
+	Context Note is an instance of Concept,
+	Unit is an instance of Concept,
+	Instance is an instance of Concept,
+	Fact is an instance of Concept,
+	Population is an instance of Concept,
+	Query is an instance of Concept;
 for each Constraint exactly one of these holds:
 	Constraint is a Presence Constraint,
 	Constraint is a Set Constraint,
@@ -448,6 +454,12 @@ Step involves incidental Play
 Value Type has Scale
 	only if Value Type has Length;
 either Agreement was reached by Agent or Agreement was on Date;
+each Concept occurs at most one time in
+	Object Type is an instance of Concept;
+each Concept occurs at most one time in
+	Population is an instance of Concept;
+each Concept occurs at most one time in
+	Role is an instance of Concept;
 each combination Entity Type(1), Type Inheritance occurs at most one time in
 	Entity Type(1) is subtype of super Entity Type(2),
 	Type Inheritance provides identification;

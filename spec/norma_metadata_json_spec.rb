@@ -25,6 +25,14 @@ describe "NORMA Loader with JSON Metadata output" do
     output.read
   end
 
+  def sequential_uuids t
+    i = 1
+    sequence = {}
+    t.gsub /"........-....-....-....-............"/ do |uuid|
+      (sequence[uuid] ||= i += 1).to_s
+    end
+  end
+
   pattern = ENV["AFTESTS"] || "*"
   Dir["examples/norma/#{pattern}.orm"].each do |orm_file|
     expected_file = orm_file.sub(%r{/norma/(.*).orm\Z}, '/metadata_json/\1.metadata.json')
@@ -54,10 +62,10 @@ describe "NORMA Loader with JSON Metadata output" do
       broken = norma_metadata_json_failures[base]
       if broken
         pending(broken) {
-          metadata_json_text.should_not differ_from(expected_text)
+	  sequential_uuids(metadata_json_text).should_not differ_from(sequential_uuids(expected_text))
         }
       else
-        metadata_json_text.should_not differ_from(expected_text)
+	sequential_uuids(metadata_json_text).should_not differ_from(sequential_uuids(expected_text))
         File.delete(actual_file)  # It succeeded, we don't need the file.
       end
     end

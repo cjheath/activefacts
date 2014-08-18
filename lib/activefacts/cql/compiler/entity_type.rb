@@ -30,7 +30,7 @@ module ActiveFacts
 
         def compile
           @entity_type = @vocabulary.valid_entity_type_name(@name) ||
-	    @constellation.EntityType(@vocabulary, @name, :guid => :new)
+	    @constellation.EntityType(@vocabulary, @name, :concept => :new)
           @entity_type.is_independent = true if (@pragmas.include? 'independent')
 
           # REVISIT: CQL needs a way to indicate whether subtype migration can occur.
@@ -135,7 +135,7 @@ module ActiveFacts
                 #:is_mandatory => true,
                 #:min_frequency => 1,
               )
-	    debug :constraint, "Made new preferred PC GUID=#{pc.guid} min=nil max=1 over #{role_sequence.describe}"
+	    debug :constraint, "Made new preferred PC GUID=#{pc.concept.guid} min=nil max=1 over #{role_sequence.describe}"
           end
         end
 
@@ -220,7 +220,7 @@ module ActiveFacts
               :is_preferred_identifier => false,  # We only get here when there is a reference mode on the entity type
               :max_frequency => 1
             )
-	    debug :constraint, "Made new objectification PC GUID=#{pc.guid} min=nil max=1 over #{fact_type.preferred_reading.role_sequence.describe}"
+	    debug :constraint, "Made new objectification PC GUID=#{pc.concept.guid} min=nil max=1 over #{fact_type.preferred_reading.role_sequence.describe}"
           end
 
           @fact_type = @entity_type.fact_type = fact_type
@@ -231,7 +231,7 @@ module ActiveFacts
         def add_supertype(supertype_name, not_identifying)
           debug :supertype, "Adding #{not_identifying ? '' : 'identifying '}supertype #{supertype_name} to #{@entity_type.name}" do
             supertype = @vocabulary.valid_entity_type_name(supertype_name) ||
-	      @constellation.EntityType(@vocabulary, supertype_name, :guid => :new) # Should always already exist
+	      @constellation.EntityType(@vocabulary, supertype_name, :concept => :new) # Should always already exist
 
             # Did we already know about this supertyping?
             return if @entity_type.all_type_inheritance_as_subtype.detect{|ti| ti.supertype == supertype}
@@ -239,15 +239,15 @@ module ActiveFacts
             # By default, the first supertype identifies this entity type
             is_identifying_supertype = !not_identifying && @entity_type.all_type_inheritance_as_subtype.size == 0
 
-            inheritance_fact = @constellation.TypeInheritance(@entity_type, supertype, :guid => :new)
+            inheritance_fact = @constellation.TypeInheritance(@entity_type, supertype, :concept => :new)
 
             assimilations = @pragmas.select { |p| ['absorbed', 'separate', 'partitioned'].include? p}
             raise "Conflicting assimilation pragmas #{assimilations*', '}" if assimilations.size > 1
             inheritance_fact.assimilation = assimilations[0]
 
             # Create a reading:
-            sub_role = @constellation.Role(inheritance_fact, 0, :object_type => @entity_type, :guid => :new)
-            super_role = @constellation.Role(inheritance_fact, 1, :object_type => supertype, :guid => :new)
+            sub_role = @constellation.Role(inheritance_fact, 0, :object_type => @entity_type, :concept => :new)
+            super_role = @constellation.Role(inheritance_fact, 1, :object_type => supertype, :concept => :new)
 
             rs = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs, 0, :role => sub_role)
@@ -275,7 +275,7 @@ module ActiveFacts
             pc1.min_frequency = 1
             pc1.max_frequency = 1
             pc1.is_preferred_identifier = false
-	    debug :constraint, "Made new subtype PC GUID=#{pc1.guid} min=1 max=1 over #{p1rs.describe}"
+	    debug :constraint, "Made new subtype PC GUID=#{pc1.concept.guid} min=1 max=1 over #{p1rs.describe}"
 
             p2rs = @constellation.RoleSequence(:new)
             constellation.RoleRef(p2rs, 0).role = super_role
@@ -288,7 +288,7 @@ module ActiveFacts
             # The supertype role often identifies the subtype:
             pc2.is_preferred_identifier = inheritance_fact.provides_identification
 	    debug :supertype, "identification of #{@entity_type.name} via supertype #{supertype.name} was #{inheritance_fact.provides_identification ? '' : 'not '}added"
-	    debug :constraint, "Made new supertype PC GUID=#{pc2.guid} min=1 max=1 over #{p2rs.describe}"
+	    debug :constraint, "Made new supertype PC GUID=#{pc2.concept.guid} min=1 max=1 over #{p2rs.describe}"
           end
         end
 
@@ -301,8 +301,8 @@ module ActiveFacts
             unless vt = @vocabulary.valid_object_type_name(vt_name) or
 		   vt = @vocabulary.valid_object_type_name(vt_name = "#{name} #{mode}")
               base_vt = @vocabulary.valid_value_type_name(mode) ||
-		  @constellation.ValueType(@vocabulary, mode, :guid => :new)
-              vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt, :guid => :new)
+		  @constellation.ValueType(@vocabulary, mode, :concept => :new)
+              vt = @constellation.ValueType(@vocabulary, vt_name, :supertype => base_vt, :concept => :new)
               if parameters
                 length, scale = *parameters
                 vt.length = length if length
@@ -335,8 +335,8 @@ module ActiveFacts
           unless fact_type
             fact_type = @constellation.FactType(:new)
             fact_types << fact_type
-            entity_role = @constellation.Role(fact_type, 0, :object_type => @entity_type, :guid => :new)
-            identifying_role = @constellation.Role(fact_type, 1, :object_type => identifying_type, :guid => :new)
+            entity_role = @constellation.Role(fact_type, 0, :object_type => @entity_type, :concept => :new)
+            identifying_role = @constellation.Role(fact_type, 1, :object_type => identifying_type, :concept => :new)
           end
           @identification[0].role = identifying_role
 
@@ -403,7 +403,7 @@ module ActiveFacts
               :is_preferred_identifier => false,
               :is_mandatory => true
             )
-	    debug :constraint, "Made new refmode PC GUID=#{constraint.guid} min=1 max=1 over #{rs0.describe}"
+	    debug :constraint, "Made new refmode PC GUID=#{constraint.concept.guid} min=1 max=1 over #{rs0.describe}"
           else
             debug :mode, "Using existing EntityType PresenceConstraint"
           end
@@ -431,7 +431,7 @@ module ActiveFacts
               :is_preferred_identifier => true,
               :is_mandatory => false
             )
-	    debug :constraint, "Made new refmode ValueType PC GUID=#{constraint.guid} min=0 max=1 over #{rs1.describe}"
+	    debug :constraint, "Made new refmode ValueType PC GUID=#{constraint.concept.guid} min=0 max=1 over #{rs1.describe}"
           else
             debug :mode, "Marking existing ValueType PresenceConstraint as preferred"
             rs1.all_presence_constraint.single.is_preferred_identifier = true
