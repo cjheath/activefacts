@@ -96,7 +96,7 @@ module ActiveFacts
         saved_string = @string
         saved_input_length = @input_length
         old_filename = @filename
-        @filename = file+'.cql'   # REVISIT: Use File.dirname(@filename)+@filename ?
+        @filename = File.dirname(old_filename)+'/'+file+'.cql'
 
         # REVISIT: Save and use another @vocabulary for this file?
         File.open(@filename) do |f|
