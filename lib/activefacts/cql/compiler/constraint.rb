@@ -461,7 +461,7 @@ module ActiveFacts
             raise "ambiguous #{@rings*' '} ring constraint, consider #{role_pairs.map{|rp| "#{rp[0].inspect}<->#{rp[1].inspect}"}*', '}"
           end
           if role_pairs.size == 0
-            raise "No matching role pair found for #{@rings*' '} ring constraint"
+            raise "No matching role pair found for #{@rings*' '} ring constraint over #{role_refs.map(&:role).map(&:object_type).map(&:name).inspect}"
           end
 
           rp = role_pairs[0]
