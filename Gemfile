@@ -1,19 +1,19 @@
 source 'https://rubygems.org'
 
-gem 'activefacts-api', '~> 1.3'
-gem 'rbtree-pure'
-gem 'treetop', '>= 1.4.14'
-gem 'nokogiri'
-gem 'rake'
+gem 'activefacts-api', '~> 1', '>= 1.3'
+gem 'rbtree-pure', '~> 0', '>= 0.1.1'
+gem 'treetop', '~> 1.4', '>= 1.4.14'
+gem 'nokogiri', '~> 1', '>= 1.6'
+gem 'rake', '~> 10'
 
 group :development do
-  gem 'debugger', :platforms => [:mri_19, :mri_20]
-  gem 'activesupport'
-  gem 'dm-core'
-  gem 'dm-constraints'
-  gem 'dm-migrations'
-  gem 'jeweler'
-  gem 'rspec', '~>2.11.0'
+  gem 'debugger', '~> 1', :platforms => [:mri_19, :mri_20]
+  gem 'activesupport', '~> 4'
+  gem 'dm-core', '~> 1', '>= 1.2'
+  gem 'dm-constraints', '~> 1', '>= 1.2'
+  gem 'dm-migrations', '~> 1', '>= 1.2'
+  gem 'jeweler', '~> 2', '>= 2.0'
+  gem 'rspec', '~>2.11', '>= 2.11.0'
 end
 
 group :test do

@@ -31,14 +31,6 @@ and object models in SQL, Ruby and other languages.
 
   gem.email = "cjh@dataconstellation.com"
   gem.authors = ["Clifford Heath"]
-  gem.add_dependency "activefacts-api", "~>0.9.1"
-  gem.add_dependency "treetop"
-  gem.add_dependency "nokogiri"
-  gem.add_development_dependency "rspec", "~> 2.3.0"
-  gem.add_development_dependency "bundler", "~> 1.0.0"
-  gem.add_development_dependency "jeweler", "~> 1.5.2"
-  # gem.add_development_dependency "rcov", ">= 0"
-  gem.add_development_dependency "rdoc", ">= 2.4.2"
 
   # gem.changes              = paragraphs_of("History.txt", 0..1).join("\n\n")
   gem.extensions = ['lib/activefacts/cql/Rakefile']
