@@ -137,6 +137,16 @@ module ActiveFacts
       def all_role_in_order
         all_role.sort_by{|r| r.ordinal}
       end
+
+      def compatible_readings types_array
+	all_reading.select do |reading|
+	  ok = true
+	  reading.role_sequence.all_role_ref_in_order.each_with_index do |rr, i|
+	    ok = false unless types_array[i].include?(rr.role.object_type)
+	  end
+	  ok
+	end
+      end
     end
 
     class Role

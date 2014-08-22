@@ -232,26 +232,13 @@ module ActiveFacts
               candidate_fact_types =
                 start_obj.map do |related_type|
                   related_type.all_role.select do |role|
-                    all_roles = role.fact_type.all_role
-                    next if all_roles.size != players.size      # Wrong number of players
+                    # next if role.fact_type.all_reading.size == 0
                     next if role.fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
+                    next if role.fact_type.all_role.size != players.size      # Wrong number of players
 
-                    all_players = all_roles.map{|r| r.object_type}  # All the players of this candidate fact type
-
-                    next if player_related_types[1..-1].        # We know the first player is compatible, check the rest
-                      detect do |player_types|                  # Make sure that there remains a compatible player
-                        # player_types is an array of the types compatible with the Nth player
-                        compatible_player = nil
-                        all_players.each_with_index do |p, i|
-                          if player_types.include?(p)
-                            compatible_player = p
-                            all_players.delete_at(i)
-                            break
-                          end
-                        end
-                        !compatible_player
-                      end
-
+		    compatible_readings = role.fact_type.compatible_readings(player_related_types)
+		    next unless compatible_readings.size > 0
+		    debug :matching_fails, "These readings are compatible: #{compatible_readings.map(&:expand).inspect}"
                     true
                   end.
                     map{ |role| role.fact_type}
