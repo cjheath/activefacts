@@ -18,7 +18,7 @@ require 'activefacts/input/orm'
 orm_failures = {
 }
 norma_table_exceptions = {
-  "Metamodel" => [%w{Query}, %w{Agreement Enforcement}],          # ActiveFacts absorbs Agreement into ContextNote, Enforcement into Constraint
+  "Metamodel" => [%w{Query}, %w{Agreement Enforcement Comment ContactReport ID Money Nr Photo ReferenceCheck Resource TimeDivision}],          # ActiveFacts absorbs Agreement into ContextNote, Enforcement into Constraint, lots into Concept
   "MetamodelNext" => [[], %w{Agreement Enforcement TypeInheritance}],
   "Orienteering" => [%w{Punch}, []],                                # NORMA doesn't make a table for the IDENTITY field
   "OrienteeringER" => [%w{SeriesEvent}, []],                        # NORMA doesn't make a table for the IDENTITY field

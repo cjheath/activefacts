@@ -79,18 +79,18 @@ module ::CinemaBookings
     one_to_one :section_name, :mandatory => true  # See SectionName.section
   end
 
-  class Showing
+  class Session
     identified_by :cinema, :date_time
-    has_one :cinema, :mandatory => true         # See Cinema.all_showing
-    has_one :date_time, :mandatory => true      # See DateTime.all_showing
-    has_one :film, :mandatory => true           # See Film.all_showing
+    has_one :cinema, :mandatory => true         # See Cinema.all_session
+    has_one :date_time, :mandatory => true      # See DateTime.all_session
+    has_one :film, :mandatory => true           # See Film.all_session
   end
 
   class Booking
-    identified_by :person, :showing
+    identified_by :person, :session
     has_one :number, :mandatory => true         # See Number.all_booking
     has_one :person, :mandatory => true         # See Person.all_booking
-    has_one :showing, :mandatory => true        # See Showing.all_booking
+    has_one :session, :mandatory => true        # See Session.all_booking
     maybe :is_confirmed
   end
 

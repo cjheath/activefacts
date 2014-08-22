@@ -43,14 +43,14 @@ Section is identified by its Name;
 Seat is in at most one Section,
 	Section contains Seat;
 
-Showing is independent where
+Session is where
 	Cinema shows Film on DateTime,
 	Film is showing on DateTime at Cinema,
 	Cinema at DateTime is showing one Film;
 
 Booking is where
-	Person booked Showing for one Number of seats,
-	Person booked Number of seats for Showing;
+	Person booked Session for one Number of seats,
+	Person booked Number of seats for Session;
 Booking is confirmed;
 
 Seat Allocation is where
@@ -60,5 +60,5 @@ Seat Allocation is where
 /*
  * Constraints:
  */
-Person booked Showing (in which Cinema shows Film on DateTime) for Number of seats and Booking has allocated Seat
+Person booked Session (in which Cinema shows Film on DateTime) for Number of seats and Booking has allocated Seat
 	only if Cinema contains Row that contains Seat;

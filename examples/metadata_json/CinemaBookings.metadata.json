@@ -7,17 +7,17 @@
         {
           "title": "involving Person",
           "type": "Person",
-          "where": "this Person booked some Showing for some Number of seats"
+          "where": "this Person booked some Session for some Number of seats"
         },
         {
-          "title": "involving Showing",
-          "type": "Showing",
-          "where": "some Person booked this Showing for some Number of seats"
+          "title": "involving Session",
+          "type": "Session",
+          "where": "some Person booked this Session for some Number of seats"
         },
         {
           "title": "involving Number",
           "type": "Number",
-          "where": "some Person booked some Showing for this Number of seats"
+          "where": "some Person booked some Session for this Number of seats"
         },
         {
           "title": "all Allocated Seat",
@@ -45,8 +45,8 @@
           "role_id": "519D2544-8F96-4A35-A55D-C426A03476F0"
         },
         {
-          "title": "all Showing",
-          "type": "Showing",
+          "title": "all Session",
+          "type": "Session",
           "where": "this Cinema shows some Film on some DateTime",
           "role_id": "EE13CF17-637A-4FCE-AC0F-DE10DB736097",
           "is_list": true
@@ -77,8 +77,8 @@
       "id": "F573795B-C363-4B39-851C-0C0F3D393450",
       "functions": [
         {
-          "title": "all Showing",
-          "type": "Showing",
+          "title": "all Session",
+          "type": "Session",
           "where": "some Cinema shows some Film on this DateTime",
           "role_id": "2A59139D-08FF-4037-9BB4-988313F340AB",
           "is_list": true
@@ -108,8 +108,8 @@
       "id": "D952707D-CDAA-4A38-A3AA-796B0432ECE3",
       "functions": [
         {
-          "title": "all Showing",
-          "type": "Showing",
+          "title": "all Session",
+          "type": "Session",
           "where": "this Film is showing on some DateTime at some Cinema",
           "role_id": "81F80D26-8320-4E75-8D2A-C3BFE3A6747C",
           "is_list": true
@@ -166,7 +166,7 @@
         {
           "title": "all Booking",
           "type": "Booking",
-          "where": "some Person booked some Showing for this Number of seats",
+          "where": "some Person booked some Session for this Number of seats",
           "role_id": "314F9F9F-5D03-4D32-BDD6-111D957F0BD3",
           "is_list": true
         }
@@ -179,7 +179,7 @@
         {
           "title": "all Booking",
           "type": "Booking",
-          "where": "this Person booked some Showing for some Number of seats",
+          "where": "this Person booked some Session for some Number of seats",
           "role_id": "A32A4AAD-3DCD-4552-9782-E8DAD65AA8DE",
           "is_list": true
         },
@@ -322,7 +322,7 @@
         }
       ]
     },
-    "Showing": {
+    "Session": {
       "is_main": true,
       "id": "E6173BF8-5908-4ACC-A26A-C95EFD930767",
       "functions": [
@@ -344,7 +344,7 @@
         {
           "title": "all Booking",
           "type": "Booking",
-          "where": "some Person booked this Showing for some Number of seats",
+          "where": "some Person booked this Session for some Number of seats",
           "role_id": "A2C0FEC6-8DDD-4D51-B14F-9F11E1FE4CE5",
           "is_list": true
         }

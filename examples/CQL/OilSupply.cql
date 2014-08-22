@@ -41,10 +41,13 @@ Supply Period is identified by Year and Month where
 	Supply Period is in one Month;
 
 Production Forecast is where
-	Refinery will make Quantity of Product in Supply Period,
-	Refinery in Supply Period will make Product in one Quantity;
+	Refinery in Supply Period will make Product in one Quantity,
+	Refinery will make Product in Supply Period in Quantity,
+	Refinery will make Quantity of Product in Supply Period;
 Production Forecast predicts at most one Cost;
 
 Regional Demand is where
-	Region will need Quantity of Product in Supply Period,
-	Region in Supply Period will need Product in one Quantity;
+	Region in Supply Period will need Product in one Quantity,
+	Region will need Product in Supply Period in Quantity,
+	Region will need Quantity of Product in Supply Period;
+

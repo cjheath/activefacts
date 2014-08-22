@@ -1,15 +1,15 @@
 CREATE TABLE Booking (
 	-- Booking is confirmed,
 	IsConfirmed                             bit NULL,
-	-- Booking is where Person booked Showing for Number of seats,
+	-- Booking is where Person booked Session for Number of seats,
 	Number                                  smallint NOT NULL CHECK(Number >= 1),
-	-- Booking is where Person booked Showing for Number of seats and Person has Person ID,
+	-- Booking is where Person booked Session for Number of seats and Person has Person ID,
 	PersonID                                int NOT NULL,
-	-- Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID,
-	ShowingCinemaID                         int NOT NULL,
-	-- Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value,
-	ShowingDateTimeValue                    datetime NOT NULL,
-	PRIMARY KEY(PersonID, ShowingCinemaID, ShowingDateTimeValue)
+	-- Booking is where Person booked Session for Number of seats and Session is where Cinema shows Film on DateTime and Cinema has Cinema ID,
+	SessionCinemaID                         int NOT NULL,
+	-- Booking is where Person booked Session for Number of seats and Session is where Cinema shows Film on DateTime and DateTime has DateTime Value,
+	SessionDateTimeValue                    datetime NOT NULL,
+	PRIMARY KEY(PersonID, SessionCinemaID, SessionDateTimeValue)
 )
 GO
 
@@ -60,24 +60,24 @@ CREATE TABLE SeatAllocation (
 	AllocatedSeatRowCinemaID                int NOT NULL,
 	-- Seat Allocation is where Booking has allocated-Seat and Seat is in Row and Row has Row Nr,
 	AllocatedSeatRowNr                      char(2) NOT NULL,
-	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Person has Person ID,
+	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Session for Number of seats and Person has Person ID,
 	BookingPersonID                         int NOT NULL,
-	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID,
-	BookingShowingCinemaID                  int NOT NULL,
-	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Showing for Number of seats and Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value,
-	BookingShowingDateTimeValue             datetime NOT NULL,
-	PRIMARY KEY(BookingPersonID, BookingShowingCinemaID, BookingShowingDateTimeValue, AllocatedSeatRowCinemaID, AllocatedSeatRowNr, AllocatedSeatNumber),
-	FOREIGN KEY (BookingPersonID, BookingShowingCinemaID, BookingShowingDateTimeValue) REFERENCES Booking (PersonID, ShowingCinemaID, ShowingDateTimeValue),
+	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Session for Number of seats and Session is where Cinema shows Film on DateTime and Cinema has Cinema ID,
+	BookingSessionCinemaID                  int NOT NULL,
+	-- Seat Allocation is where Booking has allocated-Seat and Booking is where Person booked Session for Number of seats and Session is where Cinema shows Film on DateTime and DateTime has DateTime Value,
+	BookingSessionDateTimeValue             datetime NOT NULL,
+	PRIMARY KEY(BookingPersonID, BookingSessionCinemaID, BookingSessionDateTimeValue, AllocatedSeatRowCinemaID, AllocatedSeatRowNr, AllocatedSeatNumber),
+	FOREIGN KEY (BookingPersonID, BookingSessionCinemaID, BookingSessionDateTimeValue) REFERENCES Booking (PersonID, SessionCinemaID, SessionDateTimeValue),
 	FOREIGN KEY (AllocatedSeatRowCinemaID, AllocatedSeatRowNr, AllocatedSeatNumber) REFERENCES Seat (RowCinemaID, RowNr, SeatNumber)
 )
 GO
 
-CREATE TABLE Showing (
-	-- Showing is where Cinema shows Film on DateTime and Cinema has Cinema ID,
+CREATE TABLE Session (
+	-- Session is where Cinema shows Film on DateTime and Cinema has Cinema ID,
 	CinemaID                                int NOT NULL,
-	-- Showing is where Cinema shows Film on DateTime and DateTime has DateTime Value,
+	-- Session is where Cinema shows Film on DateTime and DateTime has DateTime Value,
 	DateTimeValue                           datetime NOT NULL,
-	-- Showing is where Cinema shows Film on DateTime and Film has Film ID,
+	-- Session is where Cinema shows Film on DateTime and Film has Film ID,
 	FilmID                                  int NOT NULL,
 	PRIMARY KEY(CinemaID, DateTimeValue),
 	FOREIGN KEY (CinemaID) REFERENCES Cinema (CinemaID),
@@ -90,6 +90,6 @@ ALTER TABLE Booking
 GO
 
 ALTER TABLE Booking
-	ADD FOREIGN KEY (ShowingCinemaID, ShowingDateTimeValue) REFERENCES Showing (CinemaID, DateTimeValue)
+	ADD FOREIGN KEY (SessionCinemaID, SessionDateTimeValue) REFERENCES Session (CinemaID, DateTimeValue)
 GO
 

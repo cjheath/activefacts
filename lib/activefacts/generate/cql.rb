@@ -662,6 +662,7 @@ module ActiveFacts
         end +
 
 	all_derivation_as_derived_unit.
+	  sort_by{|d| d.base_unit.name}.
           # REVISIT: Sort base units
           # REVISIT: convert negative powers to division?
           map do |der|
