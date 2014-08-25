@@ -4,7 +4,6 @@ gem 'activefacts-api', '~> 1', '>= 1.3'
 gem 'rbtree-pure', '~> 0', '>= 0.1.1'
 gem 'treetop', '~> 1.4', '>= 1.4.14'
 gem 'nokogiri', '~> 1', '>= 1.6'
-gem 'rake', '~> 10'
 
 group :development do
   gem 'debugger', '~> 1', :platforms => [:mri_19, :mri_20]
