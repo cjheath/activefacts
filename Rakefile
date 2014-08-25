@@ -38,8 +38,7 @@ and object models in SQL, Ruby and other languages.
 
   gem.files = File.open("Manifest.txt"){|f| f.read.split(/\n/)}
   gem.executables = gem.files.grep(%r{^bin/}).map{|f| f.sub('bin/', '')}
-  gem.rdoc_options = ['-S'] +
-    # RDoc used to have these options: -A has_one -A one_to_one -A maybe
+  gem.rdoc_options =  # RDoc used to have these options: -A has_one -A one_to_one -A maybe
     %w{
       -x lib/activefacts/cql/.*.rb
       -x lib/activefacts/vocabulary/.*.rb
