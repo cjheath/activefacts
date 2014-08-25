@@ -33,8 +33,8 @@ and object models in SQL, Ruby and other languages.
   gem.authors = ["Clifford Heath"]
 
   # gem.changes              = paragraphs_of("History.txt", 0..1).join("\n\n")
-  gem.extensions = ['lib/activefacts/cql/Rakefile']
-  gem.post_install_message = 'For more information on ActiveFacts, see http://dataconstellation.com/ActiveFacts'
+  # gem.extensions = ['lib/activefacts/cql/Rakefile']
+  # gem.post_install_message = 'For more information on ActiveFacts, see http://dataconstellation.com/ActiveFacts'
 
   gem.files = File.open("Manifest.txt"){|f| f.read.split(/\n/)}
   gem.executables = gem.files.grep(%r{^bin/}).map{|f| f.sub('bin/', '')}
