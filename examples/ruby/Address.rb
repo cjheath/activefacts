@@ -8,10 +8,12 @@ module ::Address
 
   class CompanyName < String
     value_type 
+    one_to_one :company                         # See Company.company_name
   end
 
   class FamilyName < String
     value_type :length => 20
+    one_to_one :family                          # See Family.family_name
   end
 
   class GivenNames < String

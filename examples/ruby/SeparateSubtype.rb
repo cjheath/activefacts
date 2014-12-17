@@ -4,6 +4,7 @@ module ::SeparateSubtype
 
   class ClaimID < AutoCounter
     value_type 
+    one_to_one :claim                           # See Claim.claim_id
   end
 
   class DateTime < ::DateTime
@@ -12,6 +13,7 @@ module ::SeparateSubtype
 
   class PersonName < String
     value_type 
+    one_to_one :person                          # See Person.person_name
   end
 
   class Claim

@@ -4,6 +4,7 @@ module ::Supervision
 
   class CompanyName < String
     value_type 
+    one_to_one :company                         # See Company.company_name
   end
 
   class EmployeeNr < SignedInteger

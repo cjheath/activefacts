@@ -4,19 +4,22 @@ module ::WaiterTips
 
   class AUDValue < Money
     value_type 
+    one_to_one :amount                          # See Amount.aud_value
   end
 
   class MealId < AutoCounter
     value_type 
+    one_to_one :meal                            # See Meal.meal_id
   end
 
   class WaiterNr < SignedInteger
     value_type :length => 32
+    one_to_one :waiter                          # See Waiter.waiter_nr
   end
 
   class Amount
-    identified_by :audvalue
-    one_to_one :audvalue, :class => AUDValue, :mandatory => true  # See AUDValue.amount
+    identified_by :aud_value
+    one_to_one :aud_value, :class => AUDValue, :mandatory => true  # See AUDValue.amount
   end
 
   class Meal

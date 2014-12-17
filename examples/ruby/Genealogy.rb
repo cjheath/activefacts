@@ -21,6 +21,7 @@ module ::Genealogy
 
   class EventID < AutoCounter
     value_type 
+    one_to_one :event                           # See Event.event_id
   end
 
   class EventLocation < String
@@ -30,15 +31,18 @@ module ::Genealogy
   class EventRoleName < String
     value_type 
     restrict 'Celebrant', 'Father', 'Husband', 'Mother', 'Subject', 'Wife'
+    one_to_one :role                            # See Role.event_role_name
   end
 
   class EventTypeID < AutoCounter
     value_type 
+    one_to_one :event_type                      # See EventType.event_type_id
   end
 
   class EventTypeName < String
     value_type :length => 16
     restrict 'Birth', 'Burial', 'Christening', 'Death', 'Divorce', 'Marriage'
+    one_to_one :event_type                      # See EventType.event_type_name
   end
 
   class Gender < Char
@@ -65,6 +69,7 @@ module ::Genealogy
 
   class PersonID < AutoCounter
     value_type 
+    one_to_one :person                          # See Person.person_id
   end
 
   class Picture < Image
@@ -73,18 +78,22 @@ module ::Genealogy
 
   class RoleID < AutoCounter
     value_type 
+    one_to_one :role                            # See Role.role_id
   end
 
   class SourceID < AutoCounter
     value_type 
+    one_to_one :source                          # See Source.source_id
   end
 
   class SourceName < String
     value_type :length => 128
+    one_to_one :source                          # See Source.source_name
   end
 
   class UserID < AutoCounter
     value_type 
+    one_to_one :user                            # See User.user_id
   end
 
   class Year < UnsignedInteger

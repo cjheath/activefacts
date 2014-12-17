@@ -9,10 +9,12 @@ module ActiveFacts
 
     class AgentName < String
       value_type 
+      one_to_one :agent                           # See Agent.agent_name
     end
 
     class AggregateCode < String
       value_type :length => 32
+      one_to_one :aggregate                       # See Aggregate.aggregate_code
     end
 
     class Assimilation < String
@@ -60,10 +62,15 @@ module ActiveFacts
 
     class Guid < ::Guid
       value_type 
+      one_to_one :alternative_set                 # See AlternativeSet.guid
+      one_to_one :concept                         # See Concept.guid
+      one_to_one :role_sequence                   # See RoleSequence.guid
+      one_to_one :shape                           # See Shape.guid
     end
 
     class ImplicationRuleName < String
       value_type 
+      one_to_one :implication_rule                # See ImplicationRule.implication_rule_name
     end
 
     class Length < UnsignedInteger
@@ -76,6 +83,9 @@ module ActiveFacts
 
     class Name < String
       value_type :length => 64
+      one_to_one :unit_as_plural_name, :counterpart => :plural_name  # See Unit.plural_name
+      one_to_one :unit                            # See Unit.name
+      one_to_one :vocabulary                      # See Vocabulary.name
     end
 
     class Numerator < Decimal

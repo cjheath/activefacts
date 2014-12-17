@@ -8,6 +8,7 @@ module ::Monogamy
 
   class PersonID < AutoCounter
     value_type 
+    one_to_one :person                          # See Person.person_id
   end
 
   class Person

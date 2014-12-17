@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'rake'
 require 'fileutils'
+$: << "lib"
 require File.dirname(__FILE__) + '/lib/activefacts'
 
 def File.read_utf(path)

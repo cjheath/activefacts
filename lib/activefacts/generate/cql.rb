@@ -15,8 +15,9 @@ module ActiveFacts
     #   afgen --cql <file>.cql
     class CQL < Helpers::OrderedDumper
     private
-      def vocabulary_start(vocabulary)
-        puts "vocabulary #{vocabulary.name};\n\n"
+      def vocabulary_start
+        puts "vocabulary #{@vocabulary.name};\n\n"
+	build_indices
       end
 
       def vocabulary_end
@@ -56,7 +57,7 @@ module ActiveFacts
       end
 
       def entity_type_dump(o)
-	@object_types_dumped[o] = true
+	o.ordered_dumped!
 	pi = o.preferred_identifier
 
 	supers = o.supertypes
@@ -67,7 +68,7 @@ module ActiveFacts
 	else
 	  non_subtype_dump(o, pi)
 	end
-	@constraints_used[pi] = true
+	pi.ordered_dumped! if pi
       end
 
       def append_ring_to_reading(reading, ring)
@@ -149,7 +150,7 @@ module ActiveFacts
         return nil if entity_type.fact_type and
           entity_type.fact_type.all_role.detect{|role| role.object_type == value_role.object_type }
 
-        @fact_types_dumped[fact_type] = true  # We've covered this fact type
+        fact_type.ordered_dumped!  # We've covered this fact type
 
         # Elide the constraints that would have been emitted on the standard readings.
         # If there is a UC that's not in the standard form for a reference mode,
@@ -158,7 +159,7 @@ module ActiveFacts
         fact_constraints.each do |pc|
           if (pc.role_sequence.all_role_ref.size == 1 and pc.max_frequency == 1)
             # It's a uniqueness constraint, and will be regenerated
-            @constraints_used[pc] = true
+            pc.ordered_dumped!
           end
         end
 
@@ -214,7 +215,7 @@ module ActiveFacts
         identifying_facts.each do |fact_type|
           # The RoleRefs for corresponding roles across all readings are for the same player.
           verbaliser.alternate_readings fact_type.all_reading
-          @fact_types_dumped[fact_type] = true unless fact_type.entity_type # Must dump objectification still!
+          fact_type.ordered_dumped! unless fact_type.entity_type # Must dump objectification still!
         end
         verbaliser.create_subscripts(:rolenames)
 
@@ -304,7 +305,7 @@ module ActiveFacts
         if reading_texts.size > 1
           ambiguity =
             fact_type.all_role.to_a[0].object_type.all_role.map{|r| r.fact_type}.
-              select{|f| f != fact_type && @fact_types_dumped.include?(f) }.
+              select{|f| f != fact_type && f.ordered_dumped }.
               detect do |dft|
                 ambiguous_readings =
                   reading_texts & dft.all_reading.map{|r| naiive_expand(r)}
@@ -559,8 +560,8 @@ module ActiveFacts
         value_constraints = []
         roles.each do |role|
           value_constraints <<
-            if vc = role.role_value_constraint and !@constraints_used[vc]
-              @constraints_used[vc] = true
+            if vc = role.role_value_constraint and !vc.ordered_dumped
+              vc.ordered_dumped!
               vc.describe
             else
               nil
@@ -571,10 +572,10 @@ module ActiveFacts
               constraint = fact_constraints.
                 detect do |c|  # Find a UC that spans all other Roles
                   c.is_a?(ActiveFacts::Metamodel::PresenceConstraint) &&
-                    !@constraints_used[c] &&  # Already verbalised
+                    !c.ordered_dumped &&  # Already verbalised
                     roles-c.role_sequence.all_role_ref.map(&:role) == [role]
                 end
-              @constraints_used[constraint] = true if constraint
+              constraint.ordered_dumped! if constraint
               constraint && constraint.frequency
             else
               nil
@@ -585,8 +586,8 @@ module ActiveFacts
 	expanded = "it is not the case that "+expanded if (reading.is_negative)
 
         if (ft_rings = @ring_constraints_by_fact[reading.fact_type]) &&
-           (ring = ft_rings.detect{|rc| !@constraints_used[rc]})
-          @constraints_used[ring] = true
+           (ring = ft_rings.detect{|rc| !rc.ordered_dumped})
+          ring.ordered_dumped!
           append_ring_to_reading(expanded, ring)
         end
         expanded
@@ -607,6 +608,26 @@ module ActiveFacts
 	expanded = verbaliser.expand_reading(reading, frequency_constraints)
 	expanded = "it is not the case that "+expanded if (reading.is_negative)
 	expanded
+      end
+
+      def build_indices
+	@presence_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
+	@ring_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
+
+	@vocabulary.all_constraint.each { |c|
+	    case c
+	    when ActiveFacts::Metamodel::PresenceConstraint
+	      fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq  # All fact types spanned by this constraint
+	      if fact_types.size == 1     # There's only one, save it:
+		# debug "Single-fact constraint on #{fact_types[0].concept.guid}: #{c.name}"
+		(@presence_constraints_by_fact[fact_types[0]] ||= []) << c
+	      end
+	    when ActiveFacts::Metamodel::RingConstraint
+	      (@ring_constraints_by_fact[c.role.fact_type] ||= []) << c
+	    else
+	      # debug "Found unhandled constraint #{c.class} #{c.name}"
+	    end
+	  }
       end
 
     end

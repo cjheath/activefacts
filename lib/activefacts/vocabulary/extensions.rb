@@ -185,12 +185,16 @@ module ActiveFacts
       def is_functional
         fact_type.entity_type or
         fact_type.all_role.size != 2 or
-          all_role_ref.detect do |rr|
-            rr.role_sequence.all_role_ref.size == 1 and
-              rr.role_sequence.all_presence_constraint.detect do |pc|
-                pc.max_frequency == 1 and !pc.enforcement   # Alethic uniqueness constraint
-              end
-          end
+	is_unique
+      end
+
+      def is_unique
+	all_role_ref.detect do |rr|
+	  rr.role_sequence.all_role_ref.size == 1 and
+	    rr.role_sequence.all_presence_constraint.detect do |pc|
+	      pc.max_frequency == 1 and !pc.enforcement   # Alethic uniqueness constraint
+	    end
+	end
       end
 
     end
@@ -621,7 +625,7 @@ module ActiveFacts
       def to_s
         if all_allowed_range.size > 1
         "[" +
-          all_allowed_range.sorted.map { |ar| ar.to_s(true) }*", " +
+          all_allowed_range_sorted.map { |ar| ar.to_s(true) }*", " +
         "]"
         else
           all_allowed_range.single.to_s

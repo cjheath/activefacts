@@ -4,18 +4,22 @@ module ::CinemaBookings
 
   class CinemaID < AutoCounter
     value_type 
+    one_to_one :cinema                          # See Cinema.cinema_id
   end
 
   class DateTimeValue < DateTime
     value_type 
+    one_to_one :date_time                       # See DateTime.date_time_value
   end
 
   class FilmID < AutoCounter
     value_type 
+    one_to_one :film                            # See Film.film_id
   end
 
   class Name < String
     value_type 
+    one_to_one :person, :counterpart => :login_name  # See Person.login_name
   end
 
   class Number < UnsignedInteger
@@ -25,6 +29,7 @@ module ::CinemaBookings
 
   class PersonID < AutoCounter
     value_type 
+    one_to_one :person                          # See Person.person_id
   end
 
   class RowNr < Char
@@ -37,6 +42,7 @@ module ::CinemaBookings
 
   class SectionName < String
     value_type 
+    one_to_one :section                         # See Section.section_name
   end
 
   class Cinema

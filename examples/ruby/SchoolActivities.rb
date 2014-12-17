@@ -4,14 +4,17 @@ module ::SchoolActivities
 
   class ActivityName < String
     value_type :length => 32
+    one_to_one :activity                        # See Activity.activity_name
   end
 
   class SchoolName < String
     value_type 
+    one_to_one :school                          # See School.school_name
   end
 
   class StudentName < String
     value_type 
+    one_to_one :student                         # See Student.student_name
   end
 
   class Activity

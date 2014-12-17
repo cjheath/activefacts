@@ -6,8 +6,34 @@
 #
 require 'activefacts/api'
 
+require 'activefacts/generate/helpers/inject'
+
 module ActiveFacts
   module Generate #:nodoc:
+    module OrderedMethods
+      module DumpedFlag
+	attr_reader :ordered_dumped
+
+	def ordered_dumped!
+	  @ordered_dumped = true
+	end
+      end
+
+      module ObjectType
+	include DumpedFlag
+      end
+
+      module FactType
+	include DumpedFlag
+      end
+
+      module Constraint
+	include DumpedFlag
+      end
+
+      include Injector	# Must be last in this module, after all submodules have been defined
+    end
+
     module Helpers #:nodoc:
       class OrderedDumper #:nodoc:
         # Base class for generators of object-oriented class libraries for an ActiveFacts vocabulary.
@@ -30,38 +56,13 @@ module ActiveFacts
 
         def generate(out = $>)
           @out = out
-          vocabulary_start(@vocabulary)
-
-          build_indices
-          @object_types_dumped = {}
-          @fact_types_dumped = {}
-          units_dump()
-          value_types_dump()
-          entity_types_dump()
-          fact_types_dump()
-          constraints_dump(@constraints_used)
+          vocabulary_start
+          units_dump
+          value_types_dump
+          entity_types_dump
+          fact_types_dump
+          constraints_dump
           vocabulary_end
-        end
-
-        def build_indices
-          @presence_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
-          @ring_constraints_by_fact = Hash.new{ |h, k| h[k] = [] }
-
-          @vocabulary.all_constraint.each { |c|
-              case c
-              when ActiveFacts::Metamodel::PresenceConstraint
-                fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq  # All fact types spanned by this constraint
-                if fact_types.size == 1     # There's only one, save it:
-                  # debug "Single-fact constraint on #{fact_types[0].concept.guid}: #{c.name}"
-                  (@presence_constraints_by_fact[fact_types[0]] ||= []) << c
-                end
-              when ActiveFacts::Metamodel::RingConstraint
-                (@ring_constraints_by_fact[c.role.fact_type] ||= []) << c
-              else
-                # debug "Found unhandled constraint #{c.class} #{c.name}"
-              end
-            }
-          @constraints_used = {}
         end
 
         def units_dump
@@ -115,7 +116,6 @@ module ActiveFacts
 
         def value_types_dump
           done_banner = false
-          @value_type_dumped = {}
           @vocabulary.all_object_type.sort_by{|o| o.name.gsub(/ /,'')}.each{|o|
               next unless o.is_a?(ActiveFacts::Metamodel::ValueType)
 
@@ -123,17 +123,18 @@ module ActiveFacts
               done_banner = true
 
               value_type_chain_dump(o)
-              @object_types_dumped[o] = true
+#              @object_types_dumped[o] = true
+	      o.ordered_dumped!
             }
           value_type_end if done_banner
         end
 
         # Ensure that supertype gets dumped first
         def value_type_chain_dump(o)
-          return if @value_type_dumped[o]
-          value_type_chain_dump(o.supertype) if (o.supertype && !@value_type_dumped[o.supertype])
+          return if o.ordered_dumped
+          value_type_chain_dump(o.supertype) if (o.supertype && !o.supertype.ordered_dumped)
           value_type_fork(o)
-          @value_type_dumped[o] = true
+          o.ordered_dumped!
         end
 
         # Try to dump entity types in order of name, but we need
@@ -152,11 +153,11 @@ module ActiveFacts
             count_this_pass = 0
             skipped_this_pass = 0
             sorted.each{|o|
-                next if @object_types_dumped[o]    # Already done
+		next if o.ordered_dumped	    # Already done
 
                 # Can we do this yet?
                 if (o != panic and                  # We don't *have* to do it (panic mode)
-                    (p = @precursors[o]) and         # There might be...
+                    (p = @precursors[o]) and        # There might be...
                     p.size > 0)                     # precursors - still blocked
                   skipped_this_pass += 1
                   next
@@ -188,7 +189,7 @@ module ActiveFacts
                 if panic        # We were already panicing... what to do now?
                   # This won't happen again unless the above code is changed to decide it can't dump "panic".
                   raise "Unresolvable cycle of forward references: " +
-                    (bad = sorted.select{|o| EntityType === o && !@object_types_dumped[o]}).map{|o| o.name }.inspect +
+                    (bad = sorted.select{|o| EntityType === o && !o.ordered_dumped}).map{|o| o.name }.inspect +
                     ":\n\t" + bad.map{|o|
                       o.name +
                       ": " +
@@ -198,10 +199,10 @@ module ActiveFacts
                   # Find the object that has the most followers and no fwd-ref'd supertypes:
                   # This selection might be better if we allow PI roles to be fwd-ref'd...
                   panic = sorted.
-                    select{|o| !@object_types_dumped[o] }.
+                    select{|o| o.ordered_dumped }.
                     sort_by{|o|
                         f = @followers[o] || []; 
-                        o.supertypes.detect{|s| !@object_types_dumped[s] } ? 0 : -f.size
+                        o.supertypes.detect{|s| !s.ordered_dumped } ? 0 : -f.size
                       }[0]
                   # debug "Panic mode, selected #{panic.name} next"
                 end
@@ -299,9 +300,9 @@ module ActiveFacts
             progress = false
             roles.map(&:fact_type).uniq.select{|fact_type|
                 # The fact type hasn't already been dumped but all its role players have
-                !@fact_types_dumped[fact_type] &&
+                !fact_type.ordered_dumped &&
                   !fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType) &&
-                  !fact_type.all_role.detect{|r| !@object_types_dumped[r.object_type] } &&
+                  !fact_type.all_role.detect{|r| !r.object_type.ordered_dumped } &&
                   !fact_type.entity_type &&
                   derivation_precursors_complete(fact_type)
                 # REVISIT: A derived fact type must not be dumped before its dependent fact types have
@@ -320,27 +321,26 @@ module ActiveFacts
           pr = fact_type.preferred_reading
           return true unless jr = pr.role_sequence.all_role_ref.to_a[0].play
           query = jr.variable.query
-          return false if query.all_step.detect{|js| !@fact_types_dumped[js.fact_type] }
-          return false if query.all_variable.detect{|jn| !@object_types_dumped[jn.object_type] }
+          return false if query.all_step.detect{|js| !js.fact_type.ordered_dumped }
+          return false if query.all_variable.detect{|jn| !jn.object_type.ordered_dumped }
           true
         end
 
         def skip_fact_type(f)
           return true if f.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-          return false if f.entity_type && !@object_types_dumped[f.entity_type]
+          return false if f.entity_type && !f.entity_type.ordered_dumped
 
           # REVISIT: There might be constraints we have to merge into the nested entity or subtype. 
           # These will come up as un-handled constraints:
 	  # Dump this fact type only if it contains a presence constraint we've missed:
           pcs = @presence_constraints_by_fact[f]
-          pcs && pcs.size > 0 && !pcs.detect{|c| !@constraints_used[c] }
+          pcs && pcs.size > 0 && !pcs.detect{|c| !c.ordered_dumped }
         end
 
         # Dump one fact type.
         # Include as many as possible internal constraints in the fact type readings.
         def fact_type_dump_with_dependents(fact_type)
-          @fact_types_dumped[fact_type] = true
-          # debug "Trying to dump FT again" if @fact_types_dumped[fact_type]
+          fact_type.ordered_dumped!
           return if skip_fact_type(fact_type)
 
           if (et = fact_type.entity_type) &&
@@ -352,9 +352,6 @@ module ActiveFacts
             return
           end
 
-          fact_constraints = @presence_constraints_by_fact[fact_type]
-
-          # debug "for fact type #{fact_type.to_s}, considering\n\t#{fact_constraints.map(&:to_s)*",\n\t"}"
           # debug "#{fact_type.name} has readings:\n\t#{fact_type.readings.map(&:name)*"\n\t"}"
           # debug "Dumping #{fact_type.concept.guid} as a fact type"
 
@@ -365,8 +362,9 @@ module ActiveFacts
 
           # REVISIT: Go through the residual constraints and re-process appropriate readings to show them
 
-          @fact_types_dumped[fact_type] = true
-          @object_types_dumped[fact_type.entity_type] = true if fact_type.entity_type
+#CJH: Necessary?
+          fact_type.ordered_dumped!
+          fact_type.entity_type.ordered_dumped! if fact_type.entity_type
         end
 
         # Dump fact types.
@@ -383,7 +381,7 @@ module ActiveFacts
                   fact_type = fact_collection[fact_id] and
                   !fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance) and
                   !fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType) and
-                  !@fact_types_dumped[fact_type] and
+                  !fact_type.ordered_dumped and
                   !skip_fact_type(fact_type) and
                   !fact_type.all_role.detect{|r| r.object_type.is_a?(ActiveFacts::Metamodel::EntityType) }
               }.sort_by{|fact_id|
@@ -404,7 +402,7 @@ module ActiveFacts
             }.sort_by{|fact_type|
               fact_type_key(fact_type)
             }.each{|fact_type|
-              next if @fact_types_dumped[fact_type]
+              next if fact_type.ordered_dumped
               # debug "Not dumped #{fact_type.verbalise}(#{fact_type.all_role.map{|r| r.object_type.name}*", "})"
               fact_type_banner unless done_banner
               done_banner = true
@@ -412,10 +410,6 @@ module ActiveFacts
             }
 
           fact_type_end if done_banner
-          # unused = constraints - @constraints_used.keys
-          # debug "residual constraints are\n\t#{unused.map(&:to_s)*",\n\t"}"
-
-          @constraints_used
         end
 
         def fact_instances_dump
@@ -498,9 +492,13 @@ module ActiveFacts
           end
         end
 
-        def constraints_dump(except = {})
+        def constraints_dump
           heading = false
-          @vocabulary.all_constraint.reject{|c| except[c]}.sort_by{ |c| constraint_sort_key(c) }.each do|c|
+          @vocabulary.
+	      all_constraint.
+	      reject{|c| c.ordered_dumped}.
+	      sort_by{ |c| constraint_sort_key(c) }.
+	      each do |c|
             # Skip some PresenceConstraints:
             if c.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
               # Skip uniqueness constraints that cover all roles of a fact type, they're implicit
@@ -528,7 +526,7 @@ module ActiveFacts
           constraint_end if heading
         end
 
-        def vocabulary_start(vocabulary)
+        def vocabulary_start
           debug "Should override vocabulary_start"
         end
 

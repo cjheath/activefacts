@@ -4,10 +4,12 @@ module ::PersonPlaysGame
 
   class GameCode < Char
     value_type 
+    one_to_one :game                            # See Game.game_code
   end
 
   class PersonName < String
     value_type 
+    one_to_one :person                          # See Person.person_name
   end
 
   class Game

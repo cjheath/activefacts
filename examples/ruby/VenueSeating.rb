@@ -4,6 +4,7 @@ module ::VenueSeating
 
   class EventId < AutoCounter
     value_type 
+    one_to_one :event                           # See Event.event_id
   end
 
   class Number < UnsignedInteger
@@ -12,14 +13,17 @@ module ::VenueSeating
 
   class ReserveName < String
     value_type 
+    one_to_one :reserve                         # See Reserve.reserve_name
   end
 
   class RowCode < Char
     value_type 
+    one_to_one :row                             # See Row.row_code
   end
 
   class VenueId < AutoCounter
     value_type 
+    one_to_one :venue                           # See Venue.venue_id
   end
 
   class Event

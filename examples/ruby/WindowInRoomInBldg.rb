@@ -4,6 +4,7 @@ module ::WindowInRoomInBldg
 
   class BuildingNumber < SignedInteger
     value_type :length => 32
+    one_to_one :building                        # See Building.building_number
   end
 
   class RoomNumber < SignedInteger

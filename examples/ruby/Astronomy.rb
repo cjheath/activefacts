@@ -4,6 +4,7 @@ module ::Astronomy
 
   class AstronomicalObjectCode < String
     value_type :length => 12
+    one_to_one :astronomical_object             # See AstronomicalObject.astronomical_object_code
   end
 
   class Mass < Real
@@ -12,6 +13,7 @@ module ::Astronomy
 
   class MoonName < String
     value_type :length => 256
+    one_to_one :moon                            # See Moon.moon_name
   end
 
   class NrDays < Real
@@ -20,6 +22,7 @@ module ::Astronomy
 
   class PlanetName < String
     value_type :length => 256
+    one_to_one :planet                          # See Planet.planet_name
   end
 
   class AstronomicalObject
@@ -34,9 +37,9 @@ module ::Astronomy
   end
 
   class Orbit
-    identified_by :astronomicalobject
-    one_to_one :astronomicalobject, :class => AstronomicalObject, :mandatory => true  # See AstronomicalObject.orbit_as_astronomicalobject
-    has_one :astronomical_object, :mandatory => true  # See AstronomicalObject.all_orbit
+    identified_by :astronomical_object
+    one_to_one :astronomical_object, :mandatory => true  # See AstronomicalObject.orbit
+    has_one :center, :class => AstronomicalObject, :mandatory => true  # See AstronomicalObject.all_orbit_as_center
     has_one :nr_days                            # See NrDays.all_orbit
   end
 

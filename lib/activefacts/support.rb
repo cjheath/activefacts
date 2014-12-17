@@ -23,6 +23,22 @@
 	    $stderr.puts "---\nDebugging keys available: #{$debug_available.keys.map{|s| s.to_s}.sort*", "}"
 	  }
 	end
+	if $debug_keys[:flame]
+	  require 'ruby-prof'
+	  require 'ruby-prof-flamegraph'
+	  profile_result = RubyProf.start
+	  at_exit {
+	    profile_result2 = RubyProf.stop
+	    printer = RubyProf::FlameGraphPrinter.new(profile_result2)
+	    data_file = "/tmp/flamedata_#{Process.pid}.txt"
+	    svg_file = "/tmp/flamedata_#{Process.pid}.svg"
+	    flamegraph = File.dirname(__FILE__)+"/flamegraph.pl"
+	    File.popen("tee #{data_file} | perl #{flamegraph} --countname=ms --width=4800 > #{svg_file}", "w") { |f|
+	      printer.print(f, {})
+	    }
+	    STDERR.puts("Flame graph dumped to file:///#{svg_file}")
+	  }
+	end
       end
     end
   end
@@ -154,6 +170,64 @@ class Array
     self
   end
 end
+
+class String
+  class Words
+    def initialize words
+      @words = words
+    end
+
+    def map(&b)
+      @words.map(&b)
+    end
+
+    def to_s
+      titlecase
+    end
+
+    def titlewords
+      @words.map do |word|
+	word[0].upcase+word[1..-1].downcase
+      end
+    end
+
+    def titlecase
+      titlewords.join('')
+    end
+
+    def camelwords
+      count = 0
+      @words.map do |word|
+	if (count += 1) == 1
+	  word
+	else
+	  word[0].upcase+word[1..-1].downcase
+	end
+      end
+    end
+
+    def camelcase
+      camelwords.join('')
+    end
+
+    def snakewords
+      @words.map do |w|
+	w.downcase
+      end
+    end
+
+    def snakecase
+      snakewords.join('_')
+    end
+  end
+
+  def words
+    Words.new(
+      self.split(/(?:[^[:alnum:]]+|(?<=[[:alnum:]])(?=[[:upper:]][[:lower:]]))/).reject{|w| w == '' }
+    )
+  end
+end
+
 
 # Load the ruby debugger before everything else, if requested
 if debug :debug or debug :firstaid

@@ -4,10 +4,12 @@ module ::OneRoleNesting
 
   class AccuracyLevel < SignedInteger
     value_type :length => 32
+    one_to_one :accuracy, :restrict => 1..5     # See Accuracy.accuracy_level
   end
 
   class PartyId < AutoCounter
     value_type 
+    one_to_one :party                           # See Party.party_id
   end
 
   class PartyName < String
@@ -16,6 +18,7 @@ module ::OneRoleNesting
 
   class Ymd < Date
     value_type 
+    one_to_one :event_date                      # See EventDate.ymd
   end
 
   class Accuracy

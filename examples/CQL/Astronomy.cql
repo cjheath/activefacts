@@ -19,7 +19,7 @@ Moon is a kind of AstronomicalObject identified by its Name;
 
 Orbit is where
 	AstronomicalObject is in orbit;
-Orbit is around one AstronomicalObject [acyclic, intransitive];
+Orbit is around one AstronomicalObject (as Center) /* [acyclic, stronglyintransitive] */;
 Orbit has a synodic period of at most one Nr Days;
 
 Planet is a kind of AstronomicalObject identified by its Name;

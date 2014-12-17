@@ -9,10 +9,12 @@ module ::Orienteering
 
   class ClubCode < String
     value_type :length => 6
+    one_to_one :club                            # See Club.club_code
   end
 
   class ClubName < String
     value_type :length => 32
+    one_to_one :club                            # See Club.club_name
   end
 
   class ControlNumber < UnsignedInteger
@@ -27,14 +29,17 @@ module ::Orienteering
 
   class EntryID < AutoCounter
     value_type 
+    one_to_one :entry                           # See Entry.entry_id
   end
 
   class EventID < AutoCounter
     value_type 
+    one_to_one :event                           # See Event.event_id
   end
 
   class EventName < String
     value_type :length => 50
+    one_to_one :event                           # See Event.event_name
   end
 
   class FamilyName < String
@@ -56,10 +61,12 @@ module ::Orienteering
 
   class MapID < AutoCounter
     value_type 
+    one_to_one :map                             # See Map.map_id
   end
 
   class MapName < String
     value_type :length => 80
+    one_to_one :map                             # See Map.map_name
   end
 
   class Number < UnsignedInteger
@@ -69,6 +76,7 @@ module ::Orienteering
 
   class PersonID < AutoCounter
     value_type 
+    one_to_one :person                          # See Person.person_id
   end
 
   class Placing < UnsignedInteger
@@ -85,6 +93,7 @@ module ::Orienteering
 
   class PunchID < AutoCounter
     value_type 
+    one_to_one :punch                           # See Punch.punch_id
   end
 
   class Score < SignedInteger
@@ -98,10 +107,12 @@ module ::Orienteering
 
   class SeriesID < AutoCounter
     value_type 
+    one_to_one :series                          # See Series.series_id
   end
 
   class SeriesName < String
     value_type :length => 40
+    one_to_one :series, :counterpart => :name   # See Series.name
   end
 
   class StartTime < DateTime

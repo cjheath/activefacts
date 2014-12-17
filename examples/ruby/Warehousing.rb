@@ -4,26 +4,32 @@ module ::Warehousing
 
   class BinID < AutoCounter
     value_type 
+    one_to_one :bin                             # See Bin.bin_id
   end
 
   class DispatchID < AutoCounter
     value_type 
+    one_to_one :dispatch                        # See Dispatch.dispatch_id
   end
 
   class DispatchItemID < AutoCounter
     value_type 
+    one_to_one :dispatch_item                   # See DispatchItem.dispatch_item_id
   end
 
   class PartyID < AutoCounter
     value_type 
+    one_to_one :party                           # See Party.party_id
   end
 
   class ProductID < AutoCounter
     value_type 
+    one_to_one :product                         # See Product.product_id
   end
 
   class PurchaseOrderID < AutoCounter
     value_type 
+    one_to_one :purchase_order                  # See PurchaseOrder.purchase_order_id
   end
 
   class Quantity < UnsignedInteger
@@ -32,22 +38,27 @@ module ::Warehousing
 
   class ReceiptID < AutoCounter
     value_type 
+    one_to_one :receipt                         # See Receipt.receipt_id
   end
 
   class ReceivedItemID < AutoCounter
     value_type 
+    one_to_one :received_item                   # See ReceivedItem.received_item_id
   end
 
   class SalesOrderID < AutoCounter
     value_type 
+    one_to_one :sales_order                     # See SalesOrder.sales_order_id
   end
 
   class TransferRequestID < AutoCounter
     value_type 
+    one_to_one :transfer_request                # See TransferRequest.transfer_request_id
   end
 
   class WarehouseID < AutoCounter
     value_type 
+    one_to_one :warehouse                       # See Warehouse.warehouse_id
   end
 
   class Bin

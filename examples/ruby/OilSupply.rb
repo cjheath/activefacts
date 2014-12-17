@@ -8,10 +8,12 @@ module ::OilSupply
 
   class MonthNr < SignedInteger
     value_type :length => 32
+    one_to_one :month, :restrict => 1..12       # See Month.month_nr
   end
 
   class ProductName < String
     value_type 
+    one_to_one :product                         # See Product.product_name
   end
 
   class Quantity < UnsignedInteger
@@ -20,10 +22,12 @@ module ::OilSupply
 
   class RefineryName < String
     value_type :length => 80
+    one_to_one :refinery                        # See Refinery.refinery_name
   end
 
   class RegionName < String
     value_type 
+    one_to_one :region                          # See Region.region_name
   end
 
   class Season < String
@@ -38,6 +42,7 @@ module ::OilSupply
 
   class YearNr < SignedInteger
     value_type :length => 32
+    one_to_one :year                            # See Year.year_nr
   end
 
   class Month

@@ -4,6 +4,7 @@ module ::CompanyDirectorEmployee
 
   class CompanyName < String
     value_type :length => 48
+    one_to_one :company                         # See Company.company_name
   end
 
   class Date < ::Date
@@ -12,6 +13,7 @@ module ::CompanyDirectorEmployee
 
   class EmployeeNr < SignedInteger
     value_type :length => 32
+    one_to_one :employee                        # See Employee.employee_nr
   end
 
   class Name < String

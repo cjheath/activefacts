@@ -4,14 +4,17 @@ module ::Diplomacy
 
   class CountryName < String
     value_type 
+    one_to_one :country                         # See Country.country_name
   end
 
   class DiplomatName < String
     value_type 
+    one_to_one :diplomat                        # See Diplomat.diplomat_name
   end
 
   class LanguageName < String
     value_type 
+    one_to_one :language                        # See Language.language_name
   end
 
   class Country

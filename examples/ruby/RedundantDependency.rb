@@ -4,6 +4,7 @@ module ::RedundantDependency
 
   class AddressId < AutoCounter
     value_type 
+    one_to_one :address                         # See Address.address_id
   end
 
   class DistrictNumber < SignedInteger
@@ -12,6 +13,7 @@ module ::RedundantDependency
 
   class PoliticianId < AutoCounter
     value_type 
+    one_to_one :politician                      # See Politician.politician_id
   end
 
   class PostalCode < SignedInteger
@@ -20,6 +22,7 @@ module ::RedundantDependency
 
   class StateOrProvinceId < AutoCounter
     value_type 
+    one_to_one :state_or_province               # See StateOrProvince.state_or_province_id
   end
 
   class Address

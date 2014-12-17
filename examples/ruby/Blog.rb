@@ -4,14 +4,18 @@ module ::Blog
 
   class AuthorId < AutoCounter
     value_type 
+    one_to_one :author                          # See Author.author_id
   end
 
   class CommentId < AutoCounter
     value_type 
+    one_to_one :comment                         # See Comment.comment_id
   end
 
   class Name < String
     value_type :length => 64
+    one_to_one :author, :counterpart => :author_name  # See Author.author_name
+    one_to_one :topic, :counterpart => :topic_name  # See Topic.topic_name
   end
 
   class Ordinal < UnsignedInteger
@@ -20,6 +24,7 @@ module ::Blog
 
   class PostId < AutoCounter
     value_type 
+    one_to_one :post                            # See Post.post_id
   end
 
   class Style < String
@@ -32,6 +37,7 @@ module ::Blog
 
   class TopicId < AutoCounter
     value_type 
+    one_to_one :topic                           # See Topic.topic_id
   end
 
   class Author

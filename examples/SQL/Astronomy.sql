@@ -8,13 +8,13 @@ CREATE TABLE AstronomicalObject (
 	-- maybe Moon is a kind of AstronomicalObject and Moon has Moon Name,
 	MoonName                                varchar(256) NULL,
 	-- Orbit is where AstronomicalObject is in orbit and Orbit is around AstronomicalObject and AstronomicalObject has AstronomicalObject Code,
-	OrbitAstronomicalObjectCode             varchar(12) NULL,
+	OrbitCenterAstronomicalObjectCode       varchar(12) NULL,
 	-- Orbit is where AstronomicalObject is in orbit and maybe Orbit has a synodic period of Nr Days,
 	OrbitNrDays                             Real(32) NULL,
 	-- maybe Planet is a kind of AstronomicalObject and Planet has Planet Name,
 	PlanetName                              varchar(256) NULL,
 	PRIMARY KEY(AstronomicalObjectCode),
-	FOREIGN KEY (OrbitAstronomicalObjectCode) REFERENCES AstronomicalObject (AstronomicalObjectCode)
+	FOREIGN KEY (OrbitCenterAstronomicalObjectCode) REFERENCES AstronomicalObject (AstronomicalObjectCode)
 )
 GO
 

@@ -8,6 +8,7 @@ module ::Death
 
   class PersonName < String
     value_type :length => 40
+    one_to_one :person                          # See Person.person_name
   end
 
   class Person

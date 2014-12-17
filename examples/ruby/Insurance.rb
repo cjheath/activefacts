@@ -4,14 +4,17 @@ module ::Insurance
 
   class Alias < Char
     value_type :length => 3
+    one_to_one :product                         # See Product.alias
   end
 
   class ApplicationNr < SignedInteger
     value_type :length => 32
+    one_to_one :application                     # See Application.application_nr
   end
 
   class AssetID < AutoCounter
     value_type 
+    one_to_one :asset                           # See Asset.asset_id
   end
 
   class Badge < String
@@ -28,6 +31,7 @@ module ::Insurance
 
   class ClaimID < AutoCounter
     value_type 
+    one_to_one :claim                           # See Claim.claim_id
   end
 
   class ClaimSequence < UnsignedInteger
@@ -50,10 +54,12 @@ module ::Insurance
 
   class CoverTypeCode < Char
     value_type 
+    one_to_one :cover_type                      # See CoverType.cover_type_code
   end
 
   class CoverTypeName < String
     value_type 
+    one_to_one :cover_type                      # See CoverType.cover_type_name
   end
 
   class Date < ::Date
@@ -66,6 +72,7 @@ module ::Insurance
 
   class Description < String
     value_type :length => 1024
+    one_to_one :product                         # See Product.description
   end
 
   class Email < String
@@ -78,6 +85,7 @@ module ::Insurance
 
   class HospitalName < String
     value_type 
+    one_to_one :hospital                        # See Hospital.hospital_name
   end
 
   class ITCClaimed < Decimal
@@ -92,10 +100,12 @@ module ::Insurance
   class LiabilityCode < Char
     value_type :length => 1
     restrict 'D', 'L', 'R', 'U'
+    one_to_one :liability, :restrict => ['D', 'L', 'R', 'U']  # See Liability.liability_code
   end
 
   class LicenseNumber < String
     value_type 
+    one_to_one :license                         # See License.license_number
   end
 
   class LicenseType < String
@@ -108,6 +118,7 @@ module ::Insurance
 
   class LossTypeCode < Char
     value_type 
+    one_to_one :loss_type                       # See LossType.loss_type_code
   end
 
   class LostItemNr < SignedInteger
@@ -132,10 +143,12 @@ module ::Insurance
 
   class PartyID < AutoCounter
     value_type 
+    one_to_one :party                           # See Party.party_id
   end
 
   class PhoneNr < String
     value_type 
+    one_to_one :phone                           # See Phone.phone_nr
   end
 
   class Place < String
@@ -149,6 +162,7 @@ module ::Insurance
 
   class PolicyWordingText < String
     value_type 
+    one_to_one :policy_wording                  # See PolicyWording.policy_wording_text
   end
 
   class Postcode < String
@@ -162,6 +176,7 @@ module ::Insurance
   class ProductCode < UnsignedInteger
     value_type :length => 8
     restrict 1..99
+    one_to_one :product                         # See Product.product_code
   end
 
   class Reason < String
@@ -170,6 +185,7 @@ module ::Insurance
 
   class RegistrationNr < Char
     value_type :length => 8
+    one_to_one :registration                    # See Registration.registration_nr
   end
 
   class ReportNr < SignedInteger
@@ -179,10 +195,12 @@ module ::Insurance
   class StateCode < UnsignedInteger
     value_type :length => 8
     restrict 0..9
+    one_to_one :state                           # See State.state_code
   end
 
   class StateName < String
     value_type :length => 256
+    one_to_one :state                           # See State.state_name
   end
 
   class Street < String
@@ -195,6 +213,7 @@ module ::Insurance
 
   class Text < String
     value_type 
+    one_to_one :underwriting_question           # See UnderwritingQuestion.text
   end
 
   class Time < ::Time
@@ -207,14 +226,17 @@ module ::Insurance
 
   class UnderwritingQuestionID < AutoCounter
     value_type 
+    one_to_one :underwriting_question           # See UnderwritingQuestion.underwriting_question_id
   end
 
   class VIN < UnsignedInteger
     value_type :length => 32
+    one_to_one :vehicle                         # See Vehicle.vin
   end
 
   class YearNr < SignedInteger
     value_type :length => 32
+    one_to_one :year                            # See Year.year_nr
   end
 
   class Application

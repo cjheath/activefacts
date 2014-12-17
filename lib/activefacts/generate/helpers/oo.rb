@@ -9,10 +9,74 @@ require 'activefacts/generate/helpers/ordered'
 
 module ActiveFacts
   module Generate
+    module OOMethods
+      module ObjectType
+	# Map the ObjectType name to an OO class name
+	def oo_type_name
+	  name.words.titlecase
+	end
+
+	# Map the OO class name to a default role name
+	def oo_default_role_name
+          name.words.snakecase
+	end
+      end
+
+      module Role
+	def oo_role_definition
+          return if fact_type.entity_type
+
+          if fact_type.all_role.size == 1
+	    return "    maybe :#{preferred_role_name}\n"
+          elsif fact_type.all_role.size != 2
+            # Shouldn't come here, except perhaps for an invalid model
+            return  # ternaries and higher are always objectified
+          end
+
+          # REVISIT: TypeInheritance
+          if fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+            # debug "Ignoring role #{self} in #{fact_type}, subtype fact type"
+            # REVISIT: What about secondary subtypes?
+            # REVISIT: What about dumping the relational mapping when using separate tables?
+            return
+          end
+
+          return unless is_functional
+
+          counterpart_role = fact_type.all_role.select{|r| r != self}[0]
+          counterpart_type = counterpart_role.object_type
+          counterpart_role_name = counterpart_role.preferred_role_name
+          counterpart_type_default_role_name = counterpart_type.oo_default_role_name
+
+          # It's a one_to_one if there's a uniqueness constraint on the other role:
+          one_to_one = counterpart_role.is_functional
+          return if one_to_one &&
+              false # REVISIT: !@object_types_dumped[counterpart_role.object_type]
+
+          # Find role name:
+          role_method = preferred_role_name
+          counterpart_role_method = one_to_one ? role_method : "all_"+role_method
+          # puts "---"+role.role_name if role.role_name
+          if counterpart_role_name != counterpart_type.oo_default_role_name and
+	      role_method == self.object_type.oo_default_role_name
+#	    debugger
+            counterpart_role_method += "_as_#{counterpart_role_name}"
+          end
+
+          role_name = role_method
+          role_name = nil if role_name == object_type.oo_default_role_name
+
+          as_binary(counterpart_role_name, counterpart_type, is_mandatory, one_to_one, nil, role_name, counterpart_role_method)
+	end
+      end
+
+      include Injector	# Must be last in this module, after all submodules have been defined
+    end
+
     module Helpers
       # Base class for generators of object-oriented class libraries for an ActiveFacts vocabulary.
       class OO < OrderedDumper  #:nodoc:
-        def constraints_dump(constraints_used)
+        def constraints_dump
           # Stub, not needed.
         end
 
@@ -23,7 +87,7 @@ module ActiveFacts
         end
 
         def entity_type_dump(o)
-          @object_types_dumped[o] = true
+          o.ordered_dumped!
           pi = o.preferred_identifier
 
           supers = o.supertypes
@@ -34,7 +98,7 @@ module ActiveFacts
           else
             non_subtype_dump(o, pi)
           end
-          @constraints_used[pi] = true
+          pi.ordered_dumped! if pi
         end
 
         # Dump the roles for an object type (excluding the roles of a fact type which is objectified)
@@ -45,7 +109,8 @@ module ActiveFacts
                 !role.fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
             }.
             sort_by{|role|
-              preferred_role_name(role.fact_type.all_role.select{|r2| r2 != role}[0] || role, o)
+	      other_role = role.fact_type.all_role.select{|r2| r2 != role}[0] || role
+              other_role.preferred_role_name(o)
             }.each{|role| 
               role_dump(role)
             }
@@ -56,7 +121,7 @@ module ActiveFacts
 
           fact_type = role.fact_type
           if fact_type.all_role.size == 1
-            unary_dump(role, preferred_role_name(role))
+            unary_dump(role, role.preferred_role_name)
             return
           elsif fact_type.all_role.size != 2
             # Shouldn't come here, except perhaps for an invalid model
@@ -74,68 +139,31 @@ module ActiveFacts
           return unless role.is_functional
 
           other_role = fact_type.all_role.select{|r| r != role}[0]
-          other_role_name = preferred_role_name(other_role)
+          other_role_name = other_role.preferred_role_name
           other_player = other_role.object_type
 
           # It's a one_to_one if there's a uniqueness constraint on the other role:
           one_to_one = other_role.is_functional
           return if one_to_one &&
-              !@object_types_dumped[other_role.object_type]
+              !other_role.object_type.ordered_dumped
 
           # Find role name:
-          role_method = preferred_role_name(role)
+          role_method = role.preferred_role_name
           other_role_method = one_to_one ? role_method : "all_"+role_method
           # puts "---"+role.role_name if role.role_name
-          if other_role_name != other_player.name.gsub(/ /,'_').snakecase and
-            role_method == role.object_type.name.gsub(/ /,'_').snakecase
+          if other_role_name != other_player.oo_default_role_name and
+	      role_method == role.object_type.oo_default_role_name
+	    # debugger
             other_role_method += "_as_#{other_role_name}"
           end
 
           role_name = role_method
-          role_name = nil if role_name == role.object_type.name.gsub(/ /,'_').snakecase
+          role_name = nil if role_name == role.object_type.oo_default_role_name
 
-          binary_dump(role, other_role_name, other_player, role.is_mandatory, one_to_one, nil, role_name, other_role_method)
-        end
+b = role.ruby_role_definition
+puts b
 
-        def preferred_role_name(role, is_for = nil, &b)
-	  b ||= proc {|names| names.map(&:downcase)*'_' }   # Make snake_case by default
-          return b.call([]) if role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-
-          if is_for && role.fact_type.entity_type == is_for && role.fact_type.all_role.size == 1
-            return b.call(role.object_type.name.gsub(/[- ]/,'_').split(/_/))
-          end
-
-          # debug "Looking for preferred_role_name of #{describe_fact_type(role.fact_type, role)}"
-          reading = role.fact_type.preferred_reading
-          preferred_role_ref = reading.role_sequence.all_role_ref.detect{|reading_rr|
-              reading_rr.role == role
-            }
-
-          # Unaries are a hack, with only one role for what is effectively a binary:
-          if (role.fact_type.all_role.size == 1)
-            return b.call(
-	      ( (role.role_name && role.role_name.snakecase) ||
-		reading.text.gsub(/ *\{0\} */,'').gsub(/[- ]/,'_')
-	      ).split(/_/)
-	    )
-          end
-
-          # debug "\tleading_adjective=#{(p=preferred_role_ref).leading_adjective}, role_name=#{role.role_name}, role player=#{role.object_type.name}, trailing_adjective=#{p.trailing_adjective}"
-          role_words = []
-          role_name = role.role_name
-          role_name = nil if role_name == ""
-
-          # REVISIT: Consider whether NOT to use the adjective if it's a prefix of the role_name
-          la = preferred_role_ref.leading_adjective
-          role_words << la.gsub(/[- ]/,'_') if la && la != "" and !role.role_name
-
-          role_words << (role_name || role.object_type.name.gsub(/[- ]/,'_'))
-          # REVISIT: Same when trailing_adjective is a suffix of the role_name
-          ta = preferred_role_ref.trailing_adjective
-          role_words << ta.gsub(/[- ]/,'_') if ta && ta != "" and !role_name
-          n = role_words.map{|w| w.gsub(/([a-z])([A-Z]+)/,'\1_\2').downcase}*"_"
-          # debug "\tresult=#{n}"
-          return b.call(n.gsub(' ','_').split(/_/))
+          # binary_dump(role, other_role_name, other_player, role.is_mandatory, one_to_one, nil, role_name, other_role_method)
         end
 
         def skip_fact_type(f)
@@ -147,19 +175,15 @@ module ActiveFacts
         # An objectified fact type has internal roles that are always "has_one":
         def fact_roles_dump(fact_type)
           fact_type.all_role.sort_by{|role|
-              preferred_role_name(role, fact_type.entity_type)
+              role.preferred_role_name(fact_type.entity_type)
             }.each{|role| 
-              role_name = preferred_role_name(role, fact_type.entity_type)
-              one_to_one = role.all_role_ref.detect{|rr|
-                rr.role_sequence.all_role_ref.size == 1 &&
-                rr.role_sequence.all_presence_constraint.detect{|pc|
-                  pc.max_frequency == 1
-                }
-              }
-              as = role_name != role.object_type.name.gsub(/ /,'_').snakecase ? "_as_#{role_name}" : ""
+              role_name = role.preferred_role_name(fact_type.entity_type)
+              one_to_one = role.is_unique
+              as = role_name != role.object_type.oo_default_role_name ? "_as_#{role_name}" : ""
+#	      debugger if as != ''
               raise "Fact #{fact_type.describe} type is not objectified" unless fact_type.entity_type
               other_role_method = (one_to_one ? "" : "all_") + 
-                fact_type.entity_type.name.gsub(/ /,'_').snakecase +
+                fact_type.entity_type.oo_default_role_name +
                 as
               binary_dump(role, role_name, role.object_type, true, one_to_one, nil, nil, other_role_method)
             }

@@ -256,7 +256,11 @@ module ActiveFacts
                   first_pi_role = pi_roles[0]
                   pi_ref = nil
                   if pi_roles.size == 1 and
-                    object_type.references_to.detect{|ref| pi_ref = ref if ref.from_role == first_pi_role && ref.from.is_a?(EntityType)}
+                    object_type.references_to.detect do |ref|
+		      if ref.from_role == first_pi_role and ref.from.is_a?(EntityType) # and ref.is_mandatory # REVISIT
+			pi_ref = ref
+		      end
+		    end
 
                     debug :absorption, "#{object_type.name} is fully absorbed along its sole reference path into entity type #{pi_ref.from.name}"
                     object_type.definitely_not_table
@@ -322,6 +326,8 @@ module ActiveFacts
                   end
 
                   if non_identifying_refs_from.size == 0
+		    # REVISIT: This allows absorption along a non-mandatory role of a objectified fact type
+		    # and object_type.references_to.all?{|ref| ref.is_mandatory }
 #                    and (!object_type.is_a?(EntityType) ||
 #                      # REVISIT: The roles may be collectively but not individually mandatory.
 #                      object_type.references_to.detect { |ref| !ref.from_role || ref.from_role.is_mandatory })

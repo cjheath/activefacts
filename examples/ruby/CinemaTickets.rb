@@ -4,14 +4,17 @@ module ::CinemaTickets
 
   class AddressText < Text
     value_type 
+    one_to_one :address                         # See Address.address_text
   end
 
   class BookingNr < SignedInteger
     value_type :length => 32
+    one_to_one :booking                         # See Booking.booking_nr
   end
 
   class CinemaID < AutoCounter
     value_type 
+    one_to_one :cinema                          # See Cinema.cinema_id
   end
 
   class CollectionCode < SignedInteger
@@ -29,6 +32,7 @@ module ::CinemaTickets
 
   class FilmID < AutoCounter
     value_type 
+    one_to_one :film                            # See Film.film_id
   end
 
   class HighDemand < Boolean
@@ -48,10 +52,13 @@ module ::CinemaTickets
   class MonthNr < SignedInteger
     value_type :length => 32
     restrict 1..12
+    one_to_one :month                           # See Month.month_nr
   end
 
   class Name < String
     value_type 
+    one_to_one :cinema                          # See Cinema.name
+    one_to_one :person, :counterpart => :login_name  # See Person.login_name
   end
 
   class Number < UnsignedInteger
@@ -61,10 +68,12 @@ module ::CinemaTickets
 
   class PaymentMethodCode < String
     value_type 
+    one_to_one :payment_method, :restrict => ['Card', 'Cash', 'Gift Voucher', 'Loyalty Voucher']  # See PaymentMethod.payment_method_code
   end
 
   class PersonID < AutoCounter
     value_type 
+    one_to_one :person                          # See Person.person_id
   end
 
   class Price < Money
@@ -81,11 +90,13 @@ module ::CinemaTickets
 
   class SectionName < String
     value_type 
+    one_to_one :section                         # See Section.section_name
   end
 
   class YearNr < SignedInteger
     value_type :length => 32
     restrict 1900..9999
+    one_to_one :year                            # See Year.year_nr
   end
 
   class Address
@@ -188,7 +199,7 @@ module ::CinemaTickets
     one_to_one :booking_nr, :mandatory => true  # See BookingNr.booking
     has_one :collection_code                    # See CollectionCode.all_booking
     has_one :section                            # See Section.all_booking
-    maybe :tickets_forhave_been_issued
+    maybe :tickets_for_have_been_issued
   end
 
   class PlacesPaid
