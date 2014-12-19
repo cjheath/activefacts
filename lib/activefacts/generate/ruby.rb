@@ -65,11 +65,13 @@ module ActiveFacts
 
       module Role
         def preferred_role_name(is_for = nil, &name_builder)
-	  name_builder ||= proc {|names| names.map(&:downcase)*'_' }   # Make snake_case by default
 
 	  if fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-	    return name_builder.call([])
+	    # Subtype and Supertype roles default to TitleCase names, and have no role_name to worry about:
+	    return (name_builder || proc {|names| names.titlecase}).call(object_type.name.words)
 	  end
+
+	  name_builder ||= proc {|names| names.map(&:downcase)*'_' }   # Make snake_case by default
 
 	  # Handle an objectified unary role:
           if is_for && fact_type.entity_type == is_for && fact_type.all_role.size == 1
