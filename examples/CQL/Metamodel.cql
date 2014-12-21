@@ -132,15 +132,11 @@ Role is of Ring Constraint,
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
 
-Link Fact Type is for at most one Role (as Implying Role),
-	Implying Role has at most one Link Fact Type;
-/*
 Role Proxy is a kind of Role;
 Link Fact Type has one Role Proxy,
 	Role Proxy is of at most one Link Fact Type;
 Role Proxy is for at most one Role,
 	Role has at most one Role Proxy;
-*/
 
 Role Sequence is identified by Guid where
 	Role Sequence has one Guid,

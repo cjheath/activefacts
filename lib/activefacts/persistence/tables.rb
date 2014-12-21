@@ -57,10 +57,8 @@ module ActiveFacts
 
     class EntityType < DomainObjectType
       # A Reference from an entity type that fully absorbs this one
-      def absorbed_via; @absorbed_via; end
-      def absorbed_via=(r) #:nodoc:
-        @absorbed_via = r
-      end
+      attr_accessor :absorbed_via #:nodoc:
+      attr_accessor :absorbed_mirror #:nodoc:
 
       def is_auto_assigned  #:nodoc:
         false

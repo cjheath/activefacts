@@ -323,9 +323,10 @@ module ActiveFacts
             (all_type_inheritance_as_subtype.size == 0 ||
               all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification })
             rc = absorbed_via.from.reference_columns(excluded_supertypes)
-            # The absorbed_via reference gets skipped here, ans also in object_type.rb
+            # The absorbed_via reference gets skipped here, and also in object_type.rb
             debug :columns, "Skipping #{absorbed_via}"
-            #rc.each{|col| col.prepend(absorbed_via)}
+            absorbed_mirror ||= absorbed_via.reversed
+            rc.each{|col| col.prepend(absorbed_mirror)}
             return rc
           end
 

@@ -5,35 +5,11 @@
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 require 'activefacts/api'
-
 require 'activefacts/generate/helpers/inject'
+require 'activefacts/generate/traits/ordered'
 
 module ActiveFacts
   module Generate #:nodoc:
-    module OrderedMethods
-      module DumpedFlag
-	attr_reader :ordered_dumped
-
-	def ordered_dumped!
-	  @ordered_dumped = true
-	end
-      end
-
-      module ObjectType
-	include DumpedFlag
-      end
-
-      module FactType
-	include DumpedFlag
-      end
-
-      module Constraint
-	include DumpedFlag
-      end
-
-      include Injector	# Must be last in this module, after all submodules have been defined
-    end
-
     module Helpers #:nodoc:
       class OrderedDumper #:nodoc:
         # Base class for generators of object-oriented class libraries for an ActiveFacts vocabulary.
