@@ -1,3 +1,18 @@
+CREATE TABLE BackOrderAllocation (
+	-- Back Order Allocation is where Purchase Order Item is allocated to Sales Order Item and Purchase Order Item is for Product and Product has Product ID,
+	PurchaseOrderItemProductID              int NOT NULL,
+	-- Back Order Allocation is where Purchase Order Item is allocated to Sales Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID,
+	PurchaseOrderItemPurchaseOrderID        int NOT NULL,
+	-- Back Order Allocation is for Quantity,
+	Quantity                                int NOT NULL,
+	-- Back Order Allocation is where Purchase Order Item is allocated to Sales Order Item and Sales Order Item is for Product and Product has Product ID,
+	SalesOrderItemProductID                 int NOT NULL,
+	-- Back Order Allocation is where Purchase Order Item is allocated to Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID,
+	SalesOrderItemSalesOrderID              int NOT NULL,
+	PRIMARY KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID, SalesOrderItemSalesOrderID, SalesOrderItemProductID)
+)
+GO
+
 CREATE TABLE Bin (
 	-- Bin has Bin ID,
 	BinID                                   int IDENTITY NOT NULL,
@@ -8,19 +23,6 @@ CREATE TABLE Bin (
 	-- maybe Warehouse contains Bin and Warehouse has Warehouse ID,
 	WarehouseID                             int NULL,
 	PRIMARY KEY(BinID)
-)
-GO
-
-CREATE TABLE DirectOrderMatch (
-	-- Direct Order Match is where Purchase Order Item matches Sales Order Item and Purchase Order Item is for Product and Product has Product ID,
-	PurchaseOrderItemProductID              int NOT NULL,
-	-- Direct Order Match is where Purchase Order Item matches Sales Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID,
-	PurchaseOrderItemPurchaseOrderID        int NOT NULL,
-	-- Direct Order Match is where Purchase Order Item matches Sales Order Item and Sales Order Item is for Product and Product has Product ID,
-	SalesOrderItemProductID                 int NOT NULL,
-	-- Direct Order Match is where Purchase Order Item matches Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID,
-	SalesOrderItemSalesOrderID              int NOT NULL,
-	PRIMARY KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID, SalesOrderItemSalesOrderID, SalesOrderItemProductID)
 )
 GO
 
@@ -60,7 +62,7 @@ GO
 CREATE TABLE PurchaseOrder (
 	-- Purchase Order has Purchase Order ID,
 	PurchaseOrderID                         int IDENTITY NOT NULL,
-	-- Purchase Order is to Supplier and Party has Party ID,
+	-- Purchase Order is to Supplier and Supplier is a kind of Party and Party has Party ID,
 	SupplierID                              int NOT NULL,
 	-- Purchase Order is to Warehouse and Warehouse has Warehouse ID,
 	WarehouseID                             int NOT NULL,
@@ -104,7 +106,7 @@ CREATE TABLE ReceivedItem (
 GO
 
 CREATE TABLE SalesOrder (
-	-- Customer made Sales Order and Party has Party ID,
+	-- Customer made Sales Order and Customer is a kind of Party and Party has Party ID,
 	CustomerID                              int NOT NULL,
 	-- Sales Order has Sales Order ID,
 	SalesOrderID                            int IDENTITY NOT NULL,
@@ -151,20 +153,20 @@ CREATE TABLE Warehouse (
 )
 GO
 
+ALTER TABLE BackOrderAllocation
+	ADD FOREIGN KEY (PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID) REFERENCES PurchaseOrderItem (PurchaseOrderID, ProductID)
+GO
+
+ALTER TABLE BackOrderAllocation
+	ADD FOREIGN KEY (SalesOrderItemSalesOrderID, SalesOrderItemProductID) REFERENCES SalesOrderItem (SalesOrderID, ProductID)
+GO
+
 ALTER TABLE Bin
 	ADD FOREIGN KEY (ProductID) REFERENCES Product (ProductID)
 GO
 
 ALTER TABLE Bin
 	ADD FOREIGN KEY (WarehouseID) REFERENCES Warehouse (WarehouseID)
-GO
-
-ALTER TABLE DirectOrderMatch
-	ADD FOREIGN KEY (PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID) REFERENCES PurchaseOrderItem (PurchaseOrderID, ProductID)
-GO
-
-ALTER TABLE DirectOrderMatch
-	ADD FOREIGN KEY (SalesOrderItemSalesOrderID, SalesOrderItemProductID) REFERENCES SalesOrderItem (SalesOrderID, ProductID)
 GO
 
 ALTER TABLE DispatchItem

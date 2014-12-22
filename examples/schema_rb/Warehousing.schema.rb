@@ -1,21 +1,22 @@
 #
-# schema.rb auto-generated using ActiveFacts for Warehousing on 2013-04-30
+# schema.rb auto-generated using ActiveFacts for Warehousing on 2014-12-22
 #
 
-ActiveRecord::Schema.define(:version => 20130430120831) do
+ActiveRecord::Schema.define(:version => 20141222111648) do
+  create_table "back_order_allocations", :id => false, :force => true do |t|
+    t.integer	"purchase_order_item_id", :null => false
+    t.integer	"sales_order_item_id", :null => false
+    t.integer	"quantity", :null => false
+  end
+
+  add_index "back_order_allocations", ["purchase_order_item_id", "sales_order_item_id"], :name => :index_back_order_allocations_on_purchase_order_item_i__1a63f970, :unique => true
+
   create_table "bins", :primary_key => :bin_id, :force => true do |t|
     t.integer	"product_id"
     t.integer	"warehouse_id"
     t.integer	"quantity", :null => false
   end
 
-
-  create_table "direct_order_matches", :id => false, :force => true do |t|
-    t.integer	"purchase_order_item_id", :null => false
-    t.integer	"sales_order_item_id", :null => false
-  end
-
-  add_index "direct_order_matches", ["purchase_order_item_id", "sales_order_item_id"], :name => :index_direct_order_matches_on_purchase_order_item_id___aad35fa1, :unique => true
 
   create_table "dispatch_items", :primary_key => :dispatch_item_id, :force => true do |t|
     t.integer	"product_id", :null => false
@@ -87,10 +88,10 @@ ActiveRecord::Schema.define(:version => 20130430120831) do
 
 
   unless ENV["EXCLUDE_FKS"]
+    add_foreign_key :back_order_allocations, :purchase_order_items, :column => :purchase_order_item_id, :primary_key => :purchase_order_item_id, :dependent => :cascade
+    add_foreign_key :back_order_allocations, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :dependent => :cascade
     add_foreign_key :bins, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
     add_foreign_key :bins, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :dependent => :cascade
-    add_foreign_key :direct_order_matches, :purchase_order_items, :column => :purchase_order_item_id, :primary_key => :purchase_order_item_id, :dependent => :cascade
-    add_foreign_key :direct_order_matches, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :dependent => :cascade
     add_foreign_key :dispatch_items, :products, :column => :product_id, :primary_key => :product_id, :dependent => :cascade
     add_foreign_key :dispatch_items, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :dependent => :cascade
     add_foreign_key :dispatch_items, :transfer_requests, :column => :transfer_request_id, :primary_key => :transfer_request_id, :dependent => :cascade

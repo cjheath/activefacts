@@ -82,19 +82,20 @@ Transfer Request is from one Warehouse (as From Warehouse);
 Transfer Request is to one Warehouse (as To Warehouse);
 Warehouse contains at least one Bin;
 
+Back Order Allocation is where
+	Purchase Order Item is allocated to Sales Order Item;
+Back Order Allocation is for one Quantity;
+
 Customer is a kind of Party;
 Customer made Sales Order,
 	Sales Order was made by one Customer;
-
-Direct Order Match is where
-	Purchase Order Item matches Sales Order Item;
 
 /*
  * Constraints:
  */
 either Dispatch Item is for Transfer Request or Dispatch Item is for Sales Order Item but not both;
 either Received Item is for Purchase Order Item or Received Item is for Transfer Request but not both;
-Purchase Order Item matches Sales Order Item
+Purchase Order Item is allocated to Sales Order Item
 	only if Purchase Order Item is for Product that is in Sales Order Item;
 each Bin occurs at most one time in
 	Warehouse contains Bin;

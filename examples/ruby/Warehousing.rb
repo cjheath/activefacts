@@ -154,13 +154,14 @@ module ::Warehousing
     one_to_one :warehouse_id, :class => WarehouseID, :mandatory => true  # See WarehouseID.warehouse
   end
 
-  class Customer < Party
+  class BackOrderAllocation
+    identified_by :purchase_order_item, :sales_order_item
+    has_one :purchase_order_item, :mandatory => true  # See PurchaseOrderItem.all_back_order_allocation
+    has_one :sales_order_item, :mandatory => true  # See SalesOrderItem.all_back_order_allocation
+    has_one :quantity, :mandatory => true       # See Quantity.all_back_order_allocation
   end
 
-  class DirectOrderMatch
-    identified_by :purchase_order_item, :sales_order_item
-    has_one :purchase_order_item, :mandatory => true  # See PurchaseOrderItem.all_direct_order_match
-    has_one :sales_order_item, :mandatory => true  # See SalesOrderItem.all_direct_order_match
+  class Customer < Party
   end
 
 end
