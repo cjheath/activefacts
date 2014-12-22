@@ -47,7 +47,7 @@ CREATE TABLE LanguageUse (
 GO
 
 CREATE TABLE Representation (
-	-- Representation is where Ambassador is from Country to Country and Diplomat has DiplomatName,
+	-- Representation is where Ambassador is from Country to Country and Ambassador is a kind of Diplomat and Diplomat has DiplomatName,
 	AmbassadorName                          varchar NOT NULL,
 	-- Representation is where Ambassador is from Country to Country and Country has CountryName,
 	CountryName                             varchar NOT NULL,

@@ -3,11 +3,11 @@ CREATE TABLE Asset (
 	AssetID                                 int IDENTITY NOT NULL,
 	-- maybe Vehicle is a kind of Asset and maybe Vehicle is of Colour,
 	VehicleColour                           varchar NULL,
-	-- maybe Vehicle is a kind of Asset and maybe Vehicle was sold by Dealer and Party has Party ID,
+	-- maybe Vehicle is a kind of Asset and maybe Vehicle was sold by Dealer and Dealer is a kind of Party and Party has Party ID,
 	VehicleDealerID                         int NULL,
 	-- maybe Vehicle is a kind of Asset and maybe Vehicle has Engine Number,
 	VehicleEngineNumber                     varchar NULL,
-	-- maybe Vehicle is a kind of Asset and maybe Vehicle is subject to finance with Finance Institution and Party has Party ID,
+	-- maybe Vehicle is a kind of Asset and maybe Vehicle is subject to finance with Finance Institution and Finance Institution is a kind of Company and Company is a kind of Party and Party has Party ID,
 	VehicleFinanceInstitutionID             int NULL,
 	-- maybe Vehicle is a kind of Asset and Vehicle has commercial registration,
 	VehicleHasCommercialRegistration        bit NULL,
@@ -32,7 +32,7 @@ CREATE VIEW dbo.VehicleInAsset_VIN (VehicleVIN) WITH SCHEMABINDING AS
 	WHERE	VehicleVIN IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX PK_VehicleInAsset ON dbo.VehicleInAsset_VIN(VehicleVIN)
+CREATE UNIQUE CLUSTERED INDEX VehiclePK ON dbo.VehicleInAsset_VIN(VehicleVIN)
 GO
 
 CREATE TABLE Claim (
@@ -60,7 +60,7 @@ CREATE TABLE Claim (
 	IncidentStationName                     varchar(256) NULL,
 	-- Lodgement is where Claim was lodged by Person and maybe Lodgement was made at Date Time,
 	LodgementDateTime                       datetime NULL,
-	-- Lodgement is where Claim was lodged by Person and Lodgement is where Claim was lodged by Person and Party has Party ID,
+	-- Lodgement is where Claim was lodged by Person and Lodgement is where Claim was lodged by Person and Person is a kind of Party and Party has Party ID,
 	LodgementPersonID                       int NOT NULL,
 	-- Claim has Claim Sequence,
 	PSequence                               int NOT NULL CHECK((PSequence >= 1 AND PSequence <= 999)),
@@ -80,7 +80,7 @@ GO
 CREATE TABLE ContractorAppointment (
 	-- Contractor Appointment is where Claim involves Contractor and Claim has Claim ID,
 	ClaimID                                 int NOT NULL,
-	-- Contractor Appointment is where Claim involves Contractor and Party has Party ID,
+	-- Contractor Appointment is where Claim involves Contractor and Contractor is a kind of Company and Company is a kind of Party and Party has Party ID,
 	ContractorID                            int NOT NULL,
 	PRIMARY KEY(ClaimID, ContractorID),
 	FOREIGN KEY (ClaimID) REFERENCES Claim (ClaimID)
@@ -143,8 +143,8 @@ GO
 CREATE TABLE LostItem (
 	-- Description is of Lost Item,
 	Description                             varchar(1024) NOT NULL,
-	-- Lost Item was lost in Incident and Claim has Claim ID,
-	IncidentID                              int NOT NULL,
+	-- Lost Item was lost in Incident and Claim concerns Incident and Claim has Claim ID,
+	IncidentClaimID                         int NOT NULL,
 	-- Lost Item has Lost Item Nr,
 	LostItemNr                              int NOT NULL,
 	-- maybe Lost Item was purchased on purchase-Date,
@@ -153,13 +153,13 @@ CREATE TABLE LostItem (
 	PurchasePlace                           varchar NULL,
 	-- maybe Lost Item was purchased for purchase-Price,
 	PurchasePrice                           decimal(18, 2) NULL,
-	PRIMARY KEY(IncidentID, LostItemNr),
-	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID)
+	PRIMARY KEY(IncidentClaimID, LostItemNr),
+	FOREIGN KEY (IncidentClaimID) REFERENCES Claim (ClaimID)
 )
 GO
 
 CREATE TABLE Party (
-	-- maybe Company is a kind of Party and Company has contact-Person and Party has Party ID,
+	-- maybe Company is a kind of Party and Company has contact-Person and Person is a kind of Party and Party has Party ID,
 	CompanyContactPersonID                  int NULL,
 	-- Party is a company,
 	IsACompany                              bit NULL,
@@ -227,11 +227,11 @@ GO
 CREATE TABLE Policy (
 	-- Application is for Policy and Application has Application Nr,
 	ApplicationNr                           int NOT NULL,
-	-- maybe Policy was sold by Authorised Rep and Party has Party ID,
+	-- maybe Policy was sold by Authorised Rep and Authorised Rep is a kind of Party and Party has Party ID,
 	AuthorisedRepID                         int NULL,
 	-- maybe ITC Claimed is for Policy,
 	ITCClaimed                              decimal(18, 2) NULL CHECK((ITCClaimed >= 0.0 AND ITCClaimed <= 100.0)),
-	-- Policy belongs to Insured and Party has Party ID,
+	-- Policy belongs to Insured and Insured is a kind of Party and Party has Party ID,
 	InsuredID                               int NOT NULL,
 	-- Policy is for product having Product and Product has Product Code,
 	PProductCode                            tinyint NOT NULL,
@@ -283,14 +283,14 @@ CREATE TABLE PropertyDamage (
 	AddressStateCode                        tinyint NULL CHECK((AddressStateCode >= 0 AND AddressStateCode <= 9)),
 	-- Property Damage is at Address and Address is at Street,
 	AddressStreet                           varchar(256) NOT NULL,
-	-- maybe Incident caused Property Damage and Claim has Claim ID,
-	IncidentID                              int NULL,
+	-- maybe Incident caused Property Damage and Claim concerns Incident and Claim has Claim ID,
+	IncidentClaimID                         int NULL,
 	-- maybe Property Damage belongs to owner-Name,
 	OwnerName                               varchar(256) NULL,
 	-- maybe Property Damage owner has contact Phone and Phone has Phone Nr,
 	PhoneNr                                 varchar NULL,
-	UNIQUE(IncidentID, AddressStreet, AddressCity, AddressPostcode, AddressStateCode),
-	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID)
+	UNIQUE(IncidentClaimID, AddressStreet, AddressCity, AddressPostcode, AddressStateCode),
+	FOREIGN KEY (IncidentClaimID) REFERENCES Claim (ClaimID)
 )
 GO
 
@@ -312,14 +312,14 @@ CREATE UNIQUE CLUSTERED INDEX IX_StateByStateName ON dbo.State_Name(StateName)
 GO
 
 CREATE TABLE ThirdParty (
-	-- maybe Third Party is insured by Insurer and Party has Party ID,
+	-- maybe Third Party is insured by Insurer and Insurer is a kind of Company and Company is a kind of Party and Party has Party ID,
 	InsurerID                               int NULL,
 	-- maybe Third Party vehicle is of model-Year and Year has Year Nr,
 	ModelYearNr                             int NULL,
-	-- Third Party is where Person was third party in Vehicle Incident and Party has Party ID,
+	-- Third Party is where Person was third party in Vehicle Incident and Person is a kind of Party and Party has Party ID,
 	PersonID                                int NOT NULL,
-	-- Third Party is where Person was third party in Vehicle Incident and Vehicle Incident is a kind of Incident and Claim has Claim ID,
-	VehicleIncidentID                       int NOT NULL,
+	-- Third Party is where Person was third party in Vehicle Incident and Vehicle Incident is a kind of Incident and Claim concerns Incident and Claim has Claim ID,
+	VehicleIncidentClaimID                  int NOT NULL,
 	-- maybe Third Party drove vehicle-Registration and Registration has Registration Nr,
 	VehicleRegistrationNr                   char(8) NULL,
 	-- maybe Third Party vehicle is of Vehicle Type and maybe Badge is of Vehicle Type,
@@ -328,7 +328,7 @@ CREATE TABLE ThirdParty (
 	VehicleTypeMake                         varchar NULL,
 	-- maybe Third Party vehicle is of Vehicle Type and Vehicle Type is of Model,
 	VehicleTypeModel                        varchar NULL,
-	PRIMARY KEY(PersonID, VehicleIncidentID),
+	PRIMARY KEY(PersonID, VehicleIncidentClaimID),
 	FOREIGN KEY (InsurerID) REFERENCES Party (PartyID),
 	FOREIGN KEY (PersonID) REFERENCES Party (PartyID)
 )
@@ -339,9 +339,9 @@ CREATE TABLE UnderwritingDemerit (
 	OccurrenceCount                         int NULL,
 	-- Underwriting Demerit has Underwriting Question and Underwriting Question has Underwriting Question ID,
 	UnderwritingQuestionID                  int NOT NULL,
-	-- Vehicle Incident occurred despite Underwriting Demerit and Vehicle Incident is a kind of Incident and Claim has Claim ID,
-	VehicleIncidentID                       int NOT NULL,
-	PRIMARY KEY(VehicleIncidentID, UnderwritingQuestionID)
+	-- Vehicle Incident occurred despite Underwriting Demerit and Vehicle Incident is a kind of Incident and Claim concerns Incident and Claim has Claim ID,
+	VehicleIncidentClaimID                  int NOT NULL,
+	PRIMARY KEY(VehicleIncidentClaimID, UnderwritingQuestionID)
 )
 GO
 
@@ -372,12 +372,12 @@ CREATE TABLE VehicleIncident (
 	DrivingIsAWarning                       bit NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was without owners consent for nonconsent-Reason,
 	DrivingNonconsentReason                 varchar NULL,
-	-- Driving is where Vehicle Incident occurred while being driven and Person was Driving and Party has Party ID,
+	-- Driving is where Vehicle Incident occurred while being driven and Person was Driving and Person is a kind of Party and Party has Party ID,
 	DrivingPersonID                         int NULL,
 	-- Driving is where Vehicle Incident occurred while being driven and maybe Driving was unlicenced for unlicensed-Reason,
 	DrivingUnlicensedReason                 varchar NULL,
-	-- Vehicle Incident is a kind of Incident and Claim has Claim ID,
-	IncidentID                              int NOT NULL,
+	-- Vehicle Incident is a kind of Incident and Claim concerns Incident and Claim has Claim ID,
+	IncidentClaimID                         int NOT NULL,
 	-- maybe Vehicle Incident resulted from Loss Type and Loss Type has Loss Type Code,
 	LossTypeCode                            char NULL,
 	-- Driving is where Vehicle Incident occurred while being driven,
@@ -390,8 +390,8 @@ CREATE TABLE VehicleIncident (
 	TowedLocation                           varchar NULL,
 	-- maybe Vehicle Incident occurred during weather-Description,
 	WeatherDescription                      varchar(1024) NULL,
-	PRIMARY KEY(IncidentID),
-	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID),
+	PRIMARY KEY(IncidentClaimID),
+	FOREIGN KEY (IncidentClaimID) REFERENCES Claim (ClaimID),
 	FOREIGN KEY (LossTypeCode) REFERENCES LossType (LossTypeCode),
 	FOREIGN KEY (DrivingPersonID) REFERENCES Party (PartyID)
 )
@@ -408,12 +408,12 @@ CREATE TABLE Witness (
 	AddressStreet                           varchar(256) NULL,
 	-- maybe Witness has contact-Phone and Phone has Phone Nr,
 	ContactPhoneNr                          varchar NULL,
-	-- Incident was seen by Witness and Claim has Claim ID,
-	IncidentID                              int NOT NULL,
+	-- Incident was seen by Witness and Claim concerns Incident and Claim has Claim ID,
+	IncidentClaimID                         int NOT NULL,
 	-- Witness is called Name,
 	Name                                    varchar(256) NOT NULL,
-	PRIMARY KEY(IncidentID, Name),
-	FOREIGN KEY (IncidentID) REFERENCES Claim (ClaimID),
+	PRIMARY KEY(IncidentClaimID, Name),
+	FOREIGN KEY (IncidentClaimID) REFERENCES Claim (ClaimID),
 	FOREIGN KEY (AddressStateCode) REFERENCES State (StateCode)
 )
 GO
@@ -471,7 +471,7 @@ ALTER TABLE PropertyDamage
 GO
 
 ALTER TABLE ThirdParty
-	ADD FOREIGN KEY (VehicleIncidentID) REFERENCES VehicleIncident (IncidentID)
+	ADD FOREIGN KEY (VehicleIncidentClaimID) REFERENCES VehicleIncident (IncidentClaimID)
 GO
 
 ALTER TABLE UnderwritingDemerit
@@ -479,6 +479,6 @@ ALTER TABLE UnderwritingDemerit
 GO
 
 ALTER TABLE UnderwritingDemerit
-	ADD FOREIGN KEY (VehicleIncidentID) REFERENCES VehicleIncident (IncidentID)
+	ADD FOREIGN KEY (VehicleIncidentClaimID) REFERENCES VehicleIncident (IncidentClaimID)
 GO
 

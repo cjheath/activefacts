@@ -1,5 +1,5 @@
 CREATE TABLE Person (
-	-- maybe Girl is a kind of Person and maybe Girl is going out with Boy and Person has Person ID,
+	-- maybe Girl is a kind of Person and maybe Girl is going out with Boy and Boy is a kind of Person and Person has Person ID,
 	GirlBoyfriendID                         int NULL,
 	-- Person is called Name,
 	Name                                    varchar NOT NULL,

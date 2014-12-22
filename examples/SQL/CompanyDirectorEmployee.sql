@@ -43,7 +43,7 @@ CREATE TABLE Employee (
 	EmployeeNr                              int NOT NULL,
 	-- maybe Manager is a kind of Employee and Manager is ceo,
 	ManagerIsCeo                            bit NULL,
-	-- maybe Employee is supervised by Manager and Employee has Employee Nr,
+	-- maybe Employee is supervised by Manager and Manager is a kind of Employee and Employee has Employee Nr,
 	ManagerNr                               int NULL,
 	PRIMARY KEY(EmployeeNr),
 	FOREIGN KEY (CompanyName) REFERENCES Company (CompanyName),
