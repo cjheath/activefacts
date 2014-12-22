@@ -69,13 +69,24 @@ module ActiveFacts
 	    end
 	    loop do
 	      ref = column.references[ref_prefix.size]
-	      role_name = ref.to_role.preferred_role_name
+	      if ref.is_self_value
+		# REVISIT: I think these should be 'insert :value, :as => "XYZ"'
+		role_name = "value".snakecase
+		reading = "Intrinsic value of #{role_name}"
+	      elsif ref.is_to_objectified_fact
+		# REVISIT: It's ugly to have to handle these special cases here
+		role_name = ref.to.name.words.snakecase
+		reading = ref.from_role.link_fact_type.default_reading
+	      else
+		role_name = ref.to_role.preferred_role_name
+		reading = ref.fact_type.default_reading
+	      end
 	      if ref == column.references.last
 		# REVISIT: Avoid the "as" here when the value is implied by the role_name:
-		puts '    '+'  '*ref_prefix.size+"nest :#{role_name}, :as => \"#{column.name}\"\t\t# #{ref.fact_type.default_reading}"
+		puts '    '+'  '*ref_prefix.size+"nest :#{role_name}, :as => \"#{column.name}\"\t\t# #{reading}"
 		break
 	      else
-		puts '    '+'  '*ref_prefix.size+"flatten :#{role_name} do\t\t# #{ref.fact_type.default_reading}"
+		puts '    '+'  '*ref_prefix.size+"flatten :#{role_name} do\t\t# #{reading}"
 		ref_prefix.push ref
 	      end
 	    end

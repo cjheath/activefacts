@@ -219,6 +219,14 @@ class String
     def snakecase
       snakewords.join('_')
     end
+
+    def to_a
+      @words
+    end
+
+    def +(words)
+      Words.new(@words + Array(words))
+    end
   end
 
   def words
