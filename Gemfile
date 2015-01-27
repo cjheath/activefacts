@@ -7,6 +7,7 @@ gem 'nokogiri', '~> 1', '>= 1.6'
 
 group :development do
   # gem 'debugger', '~> 1', :platforms => [:mri_19, :mri_20]
+  # gem 'byebug', '~> 1', :platforms => [:mri_21]
   gem 'activesupport', '~> 4'
   gem 'dm-core', '~> 1', '>= 1.2'
   gem 'dm-constraints', '~> 1', '>= 1.2'

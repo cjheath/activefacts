@@ -246,6 +246,29 @@ if debug :debug or debug :firstaid
     # Ok, no debugger, tough luck.
   end
 
+  (
+    [ENV["DEBUG_PREFERENCE"]].compact +
+    [
+      'byebug',
+      'pry',
+      'debugger',
+      'ruby-debug'
+    ]
+  ).each do |debugger|
+    begin
+      require debugger
+      if debugger == 'byebug'
+	Kernel.class_eval do
+	  alias_method :byebug, :debugger
+	end
+      end
+      ::Debugger.start if (const_get(::Debugger) rescue nil)
+      break
+    rescue LoadError => e
+      errors << e
+    end
+  end
+
   if debug :trap
     trap('SIGINT') do
       puts "Stopped at:\n\t"+caller*"\n\t"
