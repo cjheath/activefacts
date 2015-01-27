@@ -74,8 +74,9 @@ module ActiveFacts
 
       # Is this Reference covered by a mandatory constraint (implicitly or explicitly)
       def is_mandatory
-        !@from_role ||        # All phantom roles of fact types are mandatory
-        @from_role.is_mandatory
+	!is_unary &&
+	  (!@from_role ||        # All phantom roles of fact types are mandatory
+	    @from_role.is_mandatory)
       end
 
       # Is this Reference from a unary Role?

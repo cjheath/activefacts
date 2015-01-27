@@ -78,7 +78,12 @@ module ActiveFacts
 		role_name = ref.to.name.words.snakecase
 		reading = ref.from_role.link_fact_type.default_reading
 	      else
-		role_name = ref.to_role.preferred_role_name
+		if ref.is_unary && ref.is_from_objectified_fact
+		  role_name = ref.to_role.fact_type.entity_type.name.words.snakecase
+		else
+		  role_name = ref.to_role.preferred_role_name
+		end
+		# puts ">>>>> #{ref.inspect}: #{role_name} <<<<<<"
 		reading = ref.fact_type.default_reading
 	      end
 	      if ref == column.references.last

@@ -202,8 +202,29 @@ module ActiveFacts
         cols = 
           if is_unary
             kind = "unary "
-            [Column.new()] +
-              ((@to && @to.fact_type) ?  @to.all_columns(excluded_supertypes) : [])
+	    objectified_unary_columns =
+	      ((@to && @to.fact_type) ?  @to.all_columns(excluded_supertypes) : [])
+
+	    first_mandatory_column = nil
+	    if (@to && @to.fact_type)
+	      debug :unary_col, "Deciding whether to skip unary column for #{inspect}" do
+		first_mandatory_column =
+		  objectified_unary_columns.detect do |col|	# Detect a mandatory column for the unary
+		    debug :unary_col, "checking column #{col.name}" do
+		      !col.references.detect do |ref|
+			debug :unary_col, "#{ref} is mandatory=#{ref.is_mandatory.inspect}"
+			!ref.is_mandatory
+		      end
+		    end
+		  end
+		if is_from_objectified_fact && first_mandatory_column
+		  debug :unary_col, "Skipping unary column for #{inspect} because #{first_mandatory_column.name} is mandatory"
+		end
+	      end
+	    end
+
+            (is_from_objectified_fact && first_mandatory_column ? [] : [Column.new()]) +	  # The unary itself, unless its objectified
+	      objectified_unary_columns
           elsif is_self_value
             kind = "self-role "
             [Column.new()]

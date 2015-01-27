@@ -166,7 +166,6 @@ module ActiveFacts
       end
 
       def is_mandatory
-        link_fact_type ||
         all_role_ref.detect{|rr|
           rs = rr.role_sequence
           rs.all_role_ref.size == 1 and
