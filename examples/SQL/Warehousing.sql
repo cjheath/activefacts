@@ -1,13 +1,13 @@
 CREATE TABLE BackOrderAllocation (
-	-- Back Order Allocation is where Purchase Order Item is allocated to Sales Order Item and Purchase Order Item is for Product and Product has Product ID,
+	-- Back Order Allocation (in which Purchase Order Item is allocated to Sales Order Item) and Purchase Order Item is for Product and Product has Product ID,
 	PurchaseOrderItemProductID              int NOT NULL,
-	-- Back Order Allocation is where Purchase Order Item is allocated to Sales Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID,
+	-- Back Order Allocation (in which Purchase Order Item is allocated to Sales Order Item) and Purchase Order Item is part of Purchase Order and Purchase Order has Purchase Order ID,
 	PurchaseOrderItemPurchaseOrderID        int NOT NULL,
 	-- Back Order Allocation is for Quantity,
 	Quantity                                int NOT NULL,
-	-- Back Order Allocation is where Purchase Order Item is allocated to Sales Order Item and Sales Order Item is for Product and Product has Product ID,
+	-- Back Order Allocation (in which Purchase Order Item is allocated to Sales Order Item) and Sales Order Item is for Product and Product has Product ID,
 	SalesOrderItemProductID                 int NOT NULL,
-	-- Back Order Allocation is where Purchase Order Item is allocated to Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID,
+	-- Back Order Allocation (in which Purchase Order Item is allocated to Sales Order Item) and Sales Order Item is part of Sales Order and Sales Order has Sales Order ID,
 	SalesOrderItemSalesOrderID              int NOT NULL,
 	PRIMARY KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID, SalesOrderItemSalesOrderID, SalesOrderItemProductID)
 )
@@ -16,7 +16,7 @@ GO
 CREATE TABLE Bin (
 	-- Bin has Bin ID,
 	BinID                                   int IDENTITY NOT NULL,
-	-- maybe Product is stocked in Bin and Product has Product ID,
+	-- maybe Bin contains Product and Product has Product ID,
 	ProductID                               int NULL,
 	-- Bin contains Quantity,
 	Quantity                                int NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE Bin (
 GO
 
 CREATE TABLE DispatchItem (
-	-- maybe Dispatch is of Dispatch Item and Dispatch has Dispatch ID,
+	-- maybe Dispatch Item is for Dispatch and Dispatch has Dispatch ID,
 	DispatchID                              int NULL,
 	-- Dispatch Item has Dispatch Item ID,
 	DispatchItemID                          int IDENTITY NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE DispatchItem (
 	Quantity                                int NOT NULL,
 	-- maybe Dispatch Item is for Sales Order Item and Sales Order Item is for Product and Product has Product ID,
 	SalesOrderItemProductID                 int NULL,
-	-- maybe Dispatch Item is for Sales Order Item and Sales Order includes Sales Order Item and Sales Order has Sales Order ID,
+	-- maybe Dispatch Item is for Sales Order Item and Sales Order Item is part of Sales Order and Sales Order has Sales Order ID,
 	SalesOrderItemSalesOrderID              int NULL,
 	-- maybe Dispatch Item is for Transfer Request and Transfer Request has Transfer Request ID,
 	TransferRequestID                       int NULL,
@@ -74,7 +74,7 @@ GO
 CREATE TABLE PurchaseOrderItem (
 	-- Purchase Order Item is for Product and Product has Product ID,
 	ProductID                               int NOT NULL,
-	-- Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID,
+	-- Purchase Order Item is part of Purchase Order and Purchase Order has Purchase Order ID,
 	PurchaseOrderID                         int NOT NULL,
 	-- Purchase Order Item is in Quantity,
 	Quantity                                int NOT NULL,
@@ -89,11 +89,11 @@ CREATE TABLE ReceivedItem (
 	ProductID                               int NOT NULL,
 	-- maybe Received Item is for Purchase Order Item and Purchase Order Item is for Product and Product has Product ID,
 	PurchaseOrderItemProductID              int NULL,
-	-- maybe Received Item is for Purchase Order Item and Purchase Order includes Purchase Order Item and Purchase Order has Purchase Order ID,
+	-- maybe Received Item is for Purchase Order Item and Purchase Order Item is part of Purchase Order and Purchase Order has Purchase Order ID,
 	PurchaseOrderItemPurchaseOrderID        int NULL,
 	-- Received Item is in Quantity,
 	Quantity                                int NOT NULL,
-	-- maybe Receipt is of Received Item and Receipt has Receipt ID,
+	-- maybe Received Item has Receipt and Receipt has Receipt ID,
 	ReceiptID                               int NULL,
 	-- Received Item has Received Item ID,
 	ReceivedItemID                          int IDENTITY NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE ReceivedItem (
 GO
 
 CREATE TABLE SalesOrder (
-	-- Customer made Sales Order and Customer is a kind of Party and Party has Party ID,
+	-- Sales Order was made by Customer and Customer is a kind of Party and Party has Party ID,
 	CustomerID                              int NOT NULL,
 	-- Sales Order has Sales Order ID,
 	SalesOrderID                            int IDENTITY NOT NULL,
@@ -122,7 +122,7 @@ CREATE TABLE SalesOrderItem (
 	ProductID                               int NOT NULL,
 	-- Sales Order Item is in Quantity,
 	Quantity                                int NOT NULL,
-	-- Sales Order includes Sales Order Item and Sales Order has Sales Order ID,
+	-- Sales Order Item is part of Sales Order and Sales Order has Sales Order ID,
 	SalesOrderID                            int NOT NULL,
 	PRIMARY KEY(SalesOrderID, ProductID),
 	FOREIGN KEY (ProductID) REFERENCES Product (ProductID),

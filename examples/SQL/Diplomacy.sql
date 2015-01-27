@@ -19,9 +19,9 @@ CREATE TABLE Diplomat (
 GO
 
 CREATE TABLE Fluency (
-	-- Fluency is where Diplomat speaks Language and Diplomat has DiplomatName,
+	-- Fluency (in which Diplomat speaks Language) and Diplomat has DiplomatName,
 	DiplomatName                            varchar NOT NULL,
-	-- Fluency is where Diplomat speaks Language and Language has LanguageName,
+	-- Fluency (in which Diplomat speaks Language) and Language has LanguageName,
 	LanguageName                            varchar NOT NULL,
 	PRIMARY KEY(DiplomatName, LanguageName),
 	FOREIGN KEY (DiplomatName) REFERENCES Diplomat (DiplomatName)
@@ -36,9 +36,9 @@ CREATE TABLE Language (
 GO
 
 CREATE TABLE LanguageUse (
-	-- LanguageUse is where Language is spoken in Country and Country has CountryName,
+	-- LanguageUse (in which Language is spoken in Country) and Country has CountryName,
 	CountryName                             varchar NOT NULL,
-	-- LanguageUse is where Language is spoken in Country and Language has LanguageName,
+	-- LanguageUse (in which Language is spoken in Country) and Language has LanguageName,
 	LanguageName                            varchar NOT NULL,
 	PRIMARY KEY(LanguageName, CountryName),
 	FOREIGN KEY (CountryName) REFERENCES Country (CountryName),
@@ -47,11 +47,11 @@ CREATE TABLE LanguageUse (
 GO
 
 CREATE TABLE Representation (
-	-- Representation is where Ambassador is from Country to Country and Ambassador is a kind of Diplomat and Diplomat has DiplomatName,
+	-- Representation (in which Ambassador is from Country to Country) and Ambassador is a kind of Diplomat and Diplomat has DiplomatName,
 	AmbassadorName                          varchar NOT NULL,
-	-- Representation is where Ambassador is from Country to Country and Country has CountryName,
+	-- Representation (in which Ambassador is from Country to Country) and Country has CountryName,
 	CountryName                             varchar NOT NULL,
-	-- Representation is where Ambassador is from Country to Country and Country has CountryName,
+	-- Representation (in which Ambassador is from Country to Country) and Country has CountryName,
 	RepresentedCountryName                  varchar NOT NULL,
 	PRIMARY KEY(RepresentedCountryName, CountryName),
 	FOREIGN KEY (CountryName) REFERENCES Country (CountryName),

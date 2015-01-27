@@ -1,11 +1,10 @@
 #
-# schema.rb auto-generated using ActiveFacts for Astronomy on 2014-12-05
+# schema.rb auto-generated using ActiveFacts for Astronomy on 2015-01-27
 #
 
-ActiveRecord::Schema.define(:version => 20141205182036) do
+ActiveRecord::Schema.define(:version => 20150127152033) do
   create_table "astronomical_objects", :primary_key => :astronomical_object_id, :force => true do |t|
     t.string	"astronomical_object_code", :limit => 12, :null => false
-    t.boolean	"is_in_orbit"
     t.Real	"mass", :limit => 32
     t.string	"moon_name", :limit => 256
     t.integer	"orbit_center_astronomical_object_id"

@@ -1,7 +1,7 @@
 CREATE TABLE Author (
 	-- Author has Author Id,
 	AuthorId                                int IDENTITY NOT NULL,
-	-- author-Name is of Author,
+	-- Author is called Name,
 	AuthorName                              varchar(64) NOT NULL,
 	PRIMARY KEY(AuthorId),
 	UNIQUE(AuthorName)
@@ -9,17 +9,17 @@ CREATE TABLE Author (
 GO
 
 CREATE TABLE Comment (
-	-- Author wrote Comment and Author has Author Id,
+	-- Comment was written by Author and Author has Author Id,
 	AuthorId                                int NOT NULL,
 	-- Comment has Comment Id,
 	CommentId                               int IDENTITY NOT NULL,
-	-- Content provides text of Comment and maybe Content is of Style,
+	-- Comment consists of text-Content and maybe Content is of Style,
 	ContentStyle                            varchar(20) NULL,
-	-- Content provides text of Comment and Content has Text,
+	-- Comment consists of text-Content and Content has Text,
 	ContentText                             text NOT NULL,
-	-- Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph,
+	-- Comment is on Paragraph and Paragraph (in which Post includes Ordinal paragraph) involves Ordinal,
 	ParagraphOrdinal                        int NOT NULL,
-	-- Paragraph has Comment and Paragraph is where Post includes Ordinal paragraph and Post has Post Id,
+	-- Comment is on Paragraph and Paragraph (in which Post includes Ordinal paragraph) and Post has Post Id,
 	ParagraphPostId                         int NOT NULL,
 	PRIMARY KEY(CommentId),
 	FOREIGN KEY (AuthorId) REFERENCES Author (AuthorId)
@@ -27,13 +27,13 @@ CREATE TABLE Comment (
 GO
 
 CREATE TABLE Paragraph (
-	-- Content is of Paragraph and maybe Content is of Style,
+	-- Paragraph contains Content and maybe Content is of Style,
 	ContentStyle                            varchar(20) NULL,
-	-- Content is of Paragraph and Content has Text,
+	-- Paragraph contains Content and Content has Text,
 	ContentText                             text NOT NULL,
-	-- Paragraph is where Post includes Ordinal paragraph,
+	-- Paragraph (in which Post includes Ordinal paragraph) involves Ordinal,
 	Ordinal                                 int NOT NULL,
-	-- Paragraph is where Post includes Ordinal paragraph and Post has Post Id,
+	-- Paragraph (in which Post includes Ordinal paragraph) and Post has Post Id,
 	PostId                                  int NOT NULL,
 	PRIMARY KEY(PostId, Ordinal)
 )

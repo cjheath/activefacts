@@ -1,13 +1,13 @@
 CREATE TABLE Attendance (
-	-- Attendance is where Person attended Meeting and maybe family-Name is of Person,
+	-- Attendance (in which Person attended Meeting) and maybe Person is called family-Name,
 	AttendeeFamilyName                      varchar(48) NULL,
-	-- Attendance is where Person attended Meeting and Person has given-Name,
+	-- Attendance (in which Person attended Meeting) and Person has given-Name,
 	AttendeeGivenName                       varchar(48) NOT NULL,
-	-- Attendance is where Person attended Meeting and Meeting is held by Company and Company is called Company Name,
+	-- Attendance (in which Person attended Meeting) and Meeting is held by Company and Company is called Company Name,
 	MeetingCompanyName                      varchar(48) NOT NULL,
-	-- Attendance is where Person attended Meeting and Meeting is held on Date,
+	-- Attendance (in which Person attended Meeting) and Meeting is held on Date,
 	MeetingDate                             datetime NOT NULL,
-	-- Attendance is where Person attended Meeting and Meeting is board meeting,
+	-- Attendance (in which Person attended Meeting) and Meeting is board meeting,
 	MeetingIsBoardMeeting                   bit NULL,
 	UNIQUE(AttendeeGivenName, AttendeeFamilyName, MeetingCompanyName, MeetingDate, MeetingIsBoardMeeting)
 )
@@ -25,11 +25,11 @@ GO
 CREATE TABLE Directorship (
 	-- Directorship began on appointment-Date,
 	AppointmentDate                         datetime NOT NULL,
-	-- Directorship is where Person directs Company and Company is called Company Name,
+	-- Directorship (in which Person directs Company) and Company is called Company Name,
 	CompanyName                             varchar(48) NOT NULL,
-	-- Directorship is where Person directs Company and maybe family-Name is of Person,
+	-- Directorship (in which Person directs Company) and maybe Person is called family-Name,
 	DirectorFamilyName                      varchar(48) NULL,
-	-- Directorship is where Person directs Company and Person has given-Name,
+	-- Directorship (in which Person directs Company) and Person has given-Name,
 	DirectorGivenName                       varchar(48) NOT NULL,
 	UNIQUE(DirectorGivenName, DirectorFamilyName, CompanyName),
 	FOREIGN KEY (CompanyName) REFERENCES Company (CompanyName)
@@ -41,7 +41,7 @@ CREATE TABLE Employee (
 	CompanyName                             varchar(48) NOT NULL,
 	-- Employee has Employee Nr,
 	EmployeeNr                              int NOT NULL,
-	-- maybe Manager is a kind of Employee and Manager is ceo,
+	-- maybe Employee is a Manager and Manager is ceo,
 	ManagerIsCeo                            bit NULL,
 	-- maybe Employee is supervised by Manager and Manager is a kind of Employee and Employee has Employee Nr,
 	ManagerNr                               int NULL,
@@ -52,11 +52,11 @@ CREATE TABLE Employee (
 GO
 
 CREATE TABLE Employment (
-	-- Employment is where Person works as Employee and Employee has Employee Nr,
+	-- Employment (in which Person works as Employee) and Employee has Employee Nr,
 	EmployeeNr                              int NOT NULL,
-	-- Employment is where Person works as Employee and maybe family-Name is of Person,
+	-- Employment (in which Person works as Employee) and maybe Person is called family-Name,
 	PersonFamilyName                        varchar(48) NULL,
-	-- Employment is where Person works as Employee and Person has given-Name,
+	-- Employment (in which Person works as Employee) and Person has given-Name,
 	PersonGivenName                         varchar(48) NOT NULL,
 	UNIQUE(PersonGivenName, PersonFamilyName, EmployeeNr),
 	FOREIGN KEY (EmployeeNr) REFERENCES Employee (EmployeeNr)
@@ -78,7 +78,7 @@ GO
 CREATE TABLE Person (
 	-- maybe Person was born on birth-Date,
 	BirthDate                               datetime NULL CHECK(BirthDate >= '1900/01/01'),
-	-- maybe family-Name is of Person,
+	-- maybe Person is called family-Name,
 	FamilyName                              varchar(48) NULL,
 	-- Person has given-Name,
 	GivenName                               varchar(48) NOT NULL,

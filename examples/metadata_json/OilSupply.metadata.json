@@ -2,7 +2,7 @@
   "types": {
     "Acceptable Substitution": {
       "is_main": true,
-      "id": "46299C4A-9F69-4F4F-85D7-43B33DAAE15D",
+      "id": "701bd82b-ffec-4f6d-ab43-9b007aa4f676",
       "functions": [
         {
           "title": "involving Product",
@@ -12,7 +12,7 @@
         {
           "title": "involving Alternate Product",
           "type": "Product",
-          "where": "some Product may be substituted by this alternate-Product in some Season"
+          "where": "this alternate-Product is an acceptable substitute for some Product in some Season"
         },
         {
           "title": "involving Season",
@@ -23,116 +23,116 @@
     },
     "Cost": {
       "is_main": false,
-      "id": "1C145D4D-F6A3-455A-B103-6FB654F45671",
+      "id": "c720ceaa-893b-4c94-ab18-44798ad7f770",
       "functions": [
         {
           "title": "all Production Forecast",
           "type": "Production Forecast",
           "where": "some Production Forecast predicts this Cost",
-          "role_id": "08FEE9C7-B0BF-4AD6-95B2-EC99B7AE46EC",
+          "role_id": "93adadfa-94c4-4826-b505-ae5b19c6581b",
           "is_list": true
         },
         {
           "title": "all Transport Route",
           "type": "Transport Route",
           "where": "some Transport Route incurs this Cost per kl",
-          "role_id": "256FB476-D5EE-463B-87ED-3BD6494F2EC8",
+          "role_id": "261b1d66-d3b2-4364-97a7-60ab778bafba",
           "is_list": true
         }
       ]
     },
     "Month": {
       "is_main": true,
-      "id": "CDF8EE98-34F1-4989-9B58-61B99A61E8E2",
+      "id": "6bd33be2-d737-4917-9b62-e64f695d3500",
       "functions": [
         {
           "title": "Month Nr",
           "type": "Month Nr",
           "where": "this Month has one Month Nr",
-          "role_id": "3CAF1B93-3F96-4E7C-A8AF-FFAC4935E9E2"
+          "role_id": "d448d935-78b2-449f-b13e-2032875407cd"
         },
         {
           "title": "Season",
           "type": "Season",
           "where": "this Month is in one Season",
-          "role_id": "25811225-AD77-45D7-879F-31161027F3E6"
+          "role_id": "6b4f9a88-a4c7-4195-b3c0-bf40b30f7837"
         },
         {
           "title": "all Supply Period",
           "type": "Supply Period",
           "where": "some Supply Period is in this Month",
-          "role_id": "2B21C4CA-81D9-4924-81C1-23650B3022A1",
+          "role_id": "43e52c81-ec26-4ef2-8142-20390c523c79",
           "is_list": true
         }
       ]
     },
     "Month Nr": {
       "is_main": false,
-      "id": "2EC24502-C9BE-40A3-9430-61A1CA23C415",
+      "id": "3b6897be-dd01-4554-8b88-c24ecdc539ad",
       "functions": [
         {
           "title": "Month",
           "type": "Month",
           "where": "this Month Nr is of one Month",
-          "role_id": "76A3933A-EDD4-4420-ABFC-2CA82AC84F27"
+          "role_id": "7d042761-8d0b-4f4a-88a9-61b0210a6630"
         }
       ]
     },
     "Product": {
       "is_main": true,
-      "id": "9B9E96D3-43A4-4B06-AF7B-540EBBED56C1",
+      "id": "29cab936-a1b5-440c-b22a-eeae45b18d65",
       "functions": [
         {
           "title": "Product Name",
           "type": "Product Name",
           "where": "this Product has one Product Name",
-          "role_id": "272C72C4-CB90-4B5E-95B7-788C021035B6"
+          "role_id": "ffd7c277-23cf-48cd-96a5-362daea17e25"
         },
         {
           "title": "all Acceptable Substitution",
           "type": "Acceptable Substitution",
           "where": "this Product may be substituted by some alternate-Product in some Season",
-          "role_id": "914D38B5-B8A6-4E3D-84E3-D18F4BD8C9B5",
+          "role_id": "7b1ef5a9-2530-4a9c-9dc2-a4a7be6a6344",
           "is_list": true
         },
         {
           "title": "all Acceptable Substitution",
           "type": "Acceptable Substitution",
-          "where": "some Product may be substituted by this alternate-Product in some Season",
-          "role_id": "D479C192-1292-4A30-AB90-D8EB3DC9B857",
+          "where": "this alternate-Product is an acceptable substitute for some Product in some Season",
+          "role_id": "e6d7faba-c2d1-47fe-80e0-b1b3244e0071",
           "is_list": true
         },
         {
           "title": "all Production Forecast",
           "type": "Production Forecast",
           "where": "some Refinery in some Supply Period will make this Product in some Quantity",
-          "role_id": "76D25543-5651-413A-940A-05E3A2F8F482",
+          "role_id": "ebc40f02-b953-4ec2-b7c9-8135f2e49685",
           "is_list": true
         },
         {
           "title": "all Regional Demand",
           "type": "Regional Demand",
           "where": "some Region in some Supply Period will need this Product in some Quantity",
-          "role_id": "A1CDE33D-5654-41A3-86C2-1F1D5A58ED90",
+          "role_id": "fcf7e11c-6cda-4adb-bae0-e0683ecde3ad",
           "is_list": true
         }
       ]
     },
     "Product Name": {
       "is_main": false,
-      "id": "56E07B5D-B848-4637-A7CE-6575EAA287E6",
+      "id": "76252b6a-94ce-4e29-b5dd-4429c1ac00bc",
       "functions": [
         {
           "title": "Product",
           "type": "Product",
           "where": "this Product Name is of one Product",
-          "role_id": "E7C93935-5478-4ED1-B02B-4A8B0DCE1DA7"
+          "role_id": "bce343ce-bde0-4b1c-9033-7f7318c8cf64"
         }
       ]
     },
     "Production Forecast": {
       "is_main": true,
-      "id": "0AB026AB-90F9-48B3-9D0A-3791387E0014",
+      "id": "24e70514-9c92-4abd-aa8c-3a5e08b529bb",
       "functions": [
         {
           "title": "involving Refinery",
@@ -158,109 +158,109 @@
           "title": "Cost",
           "type": "Cost",
           "where": "this Production Forecast predicts one Cost",
-          "role_id": "D7E826EB-30A0-4F38-9DAC-B6AA4CB73812"
+          "role_id": "601bc0fd-5226-409d-bd4a-0003212232fd"
         }
       ]
     },
     "Quantity": {
       "is_main": false,
-      "id": "A3464012-E2A4-4A5C-822B-93F1732BD985",
+      "id": "7974c85c-c21d-491e-864c-3d71ff1a1068",
       "functions": [
         {
           "title": "all Production Forecast",
           "type": "Production Forecast",
           "where": "some Refinery in some Supply Period will make some Product in this Quantity",
-          "role_id": "6D4CAB3C-817F-4D6F-BB25-C33A8FDAE503",
+          "role_id": "51abfbe3-010b-4829-8fc3-5d6d119d6077",
           "is_list": true
         },
         {
           "title": "all Regional Demand",
           "type": "Regional Demand",
           "where": "some Region in some Supply Period will need some Product in this Quantity",
-          "role_id": "1F4635EC-FB50-481D-9BAB-78CFF3D286AA",
+          "role_id": "3c79bcb4-b13c-494c-be5a-8f1831a554da",
           "is_list": true
         }
       ]
     },
     "Refinery": {
       "is_main": true,
-      "id": "1B0862C1-8C10-4545-968D-DE6F87785FED",
+      "id": "3efe0238-b526-449c-b3a3-ac5974159326",
       "functions": [
         {
           "title": "Refinery Name",
           "type": "Refinery Name",
           "where": "this Refinery has one Refinery Name",
-          "role_id": "0C199902-6257-4D78-A418-7D05E5FA8B5C"
+          "role_id": "c025b72b-689e-435c-b8ba-439ca7140f5a"
         },
         {
           "title": "all Production Forecast",
           "type": "Production Forecast",
           "where": "this Refinery in some Supply Period will make some Product in some Quantity",
-          "role_id": "1B194D02-93A2-49CC-9BD5-735C489F44E9",
+          "role_id": "8c40e0de-84ba-43e9-804a-9fd04b036ce5",
           "is_list": true
         },
         {
           "title": "all Transport Route",
           "type": "Transport Route",
           "where": "some Transport Method transportation is available from this Refinery to some Region",
-          "role_id": "E15056F5-DAA6-4DA0-9618-A7484473FD2C",
+          "role_id": "cfd0b159-50a5-4f93-a3d3-71e33eb1f45e",
           "is_list": true
         }
       ]
     },
     "Refinery Name": {
       "is_main": false,
-      "id": "75CF9EFE-9ACF-4C9B-9B57-A3B033E4C1EB",
+      "id": "ec3c726e-4e99-49ab-94ef-8e1079564ad3",
       "functions": [
         {
           "title": "Refinery",
           "type": "Refinery",
           "where": "this Refinery Name is of one Refinery",
-          "role_id": "343CACDB-6F2C-4DC1-A55F-80652B3E52D8"
+          "role_id": "38c1989e-56a4-48f0-a04d-9799959c9c09"
         }
       ]
     },
     "Region": {
       "is_main": true,
-      "id": "407948D2-73D0-4D6E-8E0A-B38EAA06447B",
+      "id": "747077cd-83e5-4e0e-8857-cafdfe52e7cc",
       "functions": [
         {
           "title": "Region Name",
           "type": "Region Name",
           "where": "this Region has one Region Name",
-          "role_id": "C1227CDE-A69F-4C6A-A0D8-9BF2BFEC78BC"
+          "role_id": "b5cada0c-e9a9-41f0-9042-29560aa8fd21"
         },
         {
           "title": "all Regional Demand",
           "type": "Regional Demand",
           "where": "this Region in some Supply Period will need some Product in some Quantity",
-          "role_id": "17D7B6F7-4B5E-444B-B839-48F2C194E43B",
+          "role_id": "7feba2a7-537d-40d2-87e5-e2c423e1e2da",
           "is_list": true
         },
         {
           "title": "all Transport Route",
           "type": "Transport Route",
           "where": "some Transport Method transportation is available from some Refinery to this Region",
-          "role_id": "511FBFE1-3B82-4EC9-A633-E8662E4E198E",
+          "role_id": "19460964-a083-410a-a86e-18a4c139c9c7",
           "is_list": true
         }
       ]
     },
     "Region Name": {
       "is_main": false,
-      "id": "BA574B2E-1C23-42C3-BCB9-B6C46009E51B",
+      "id": "59dd9412-a170-444a-8684-26cd0522f0ec",
       "functions": [
         {
           "title": "Region",
           "type": "Region",
           "where": "this Region Name is of one Region",
-          "role_id": "1D55A045-CF04-443F-B786-0B1634268AF9"
+          "role_id": "cd9247f0-c4eb-4530-9344-bcc51303c9f1"
         }
       ]
     },
     "Regional Demand": {
       "is_main": true,
-      "id": "A0D45DFC-4DB4-4DB8-8E1B-D9FE94CB67E3",
+      "id": "01402fe3-1ae0-4668-8f02-b9f21d5a0a9d",
       "functions": [
         {
           "title": "involving Region",
@@ -286,72 +286,72 @@
     },
     "Season": {
       "is_main": false,
-      "id": "97C68700-C3CF-4E26-B7E5-FA6CACB2290A",
+      "id": "97ef253f-19d0-451c-93ce-87898afc6057",
       "functions": [
         {
           "title": "all Month",
           "type": "Month",
           "where": "some Month is in this Season",
-          "role_id": "C55C16BC-FEF6-4181-91B3-209EFEDCEF74",
+          "role_id": "660635ba-f631-489a-9a3a-1a6b34899838",
           "is_list": true
         },
         {
           "title": "all Acceptable Substitution",
           "type": "Acceptable Substitution",
           "where": "some Product may be substituted by some alternate-Product in this Season",
-          "role_id": "406229F4-9CC1-4255-8A07-DFE69E67D5E1",
+          "role_id": "86d9db9b-d51c-49cf-ba2f-d67a627885a3",
           "is_list": true
         }
       ]
     },
     "Supply Period": {
       "is_main": false,
-      "id": "0542D7A4-AC6E-4BED-B5B0-242C74EB0D3B",
+      "id": "23d6a8d7-4344-4350-a6f0-aaa431a89e21",
       "functions": [
         {
           "title": "all Production Forecast",
           "type": "Production Forecast",
           "where": "some Refinery in this Supply Period will make some Product in some Quantity",
-          "role_id": "220D9070-E28D-42E4-BCB5-0294DFAA9465",
+          "role_id": "077942f3-f447-499b-8048-a36997532749",
           "is_list": true
         },
         {
           "title": "all Regional Demand",
           "type": "Regional Demand",
           "where": "some Region in this Supply Period will need some Product in some Quantity",
-          "role_id": "11D91447-7AF5-4D9D-B335-A88DC1BA2493",
+          "role_id": "f52c62d9-9998-46b4-a6f5-9e3d7f3edc13",
           "is_list": true
         },
         {
           "title": "Month",
           "type": "Month",
           "where": "this Supply Period is in one Month",
-          "role_id": "A731F142-EF35-4C6B-ADE6-25DB10222CD3"
+          "role_id": "90e60c14-3fe1-45c0-a938-e0e08998e393"
         },
         {
           "title": "Year",
           "type": "Year",
           "where": "this Supply Period is in one Year",
-          "role_id": "13696B65-1C70-4B8B-8D75-32565F852F83"
+          "role_id": "4b3b61cc-72a4-4587-bfcf-1b6e1ae8cdfd"
         }
       ]
     },
     "Transport Method": {
       "is_main": false,
-      "id": "149E788B-81B7-48FF-A081-BE4178E4147B",
+      "id": "d3329e25-f398-45f2-83fe-e5951f08f686",
       "functions": [
         {
           "title": "all Transport Route",
           "type": "Transport Route",
           "where": "this Transport Method transportation is available from some Refinery to some Region",
-          "role_id": "B2681E73-13DF-49E7-8A35-39A1D2FF1B6A",
+          "role_id": "0fd5c4b7-6ba0-41c4-aa2a-d4781bd71107",
           "is_list": true
         }
       ]
     },
     "Transport Route": {
       "is_main": true,
-      "id": "C878B756-DF3F-4D4B-80D3-2701240F1A45",
+      "id": "7dca304b-17d4-4243-b6b8-713c210a0e35",
       "functions": [
         {
           "title": "involving Transport Method",
@@ -372,38 +372,38 @@
           "title": "Cost",
           "type": "Cost",
           "where": "this Transport Route incurs one Cost per kl",
-          "role_id": "73DCFE2A-F68B-4457-9E51-0755CDE2D67E"
+          "role_id": "15667d0a-b032-4d7a-b78e-68bf09ebd4c9"
         }
       ]
     },
     "Year": {
       "is_main": false,
-      "id": "0A48198E-095F-4753-9662-8A4DEC436074",
+      "id": "b02b1460-55b4-4bf0-8802-49fa9d2dd7c6",
       "functions": [
         {
           "title": "all Supply Period",
           "type": "Supply Period",
           "where": "some Supply Period is in this Year",
-          "role_id": "69E48469-5D76-4E4D-B812-A0E54474112C",
+          "role_id": "8c8c3fea-c2c9-4622-bcb3-6f1f00c64c89",
           "is_list": true
         },
         {
           "title": "Year Nr",
           "type": "Year Nr",
           "where": "this Year has one Year Nr",
-          "role_id": "08CF37AA-D541-4ACD-9A99-54C5A6F9911A"
+          "role_id": "64a249d5-3c03-4451-a274-278741c0a48b"
         }
       ]
     },
     "Year Nr": {
       "is_main": false,
-      "id": "0DD79E94-57BB-4F44-A4B9-120CE7D21CD0",
+      "id": "5c07f445-6e39-4242-81ba-a7a633815f4b",
       "functions": [
         {
           "title": "Year",
           "type": "Year",
           "where": "this Year Nr is of one Year",
-          "role_id": "27166569-0EB0-4A91-8CA0-5474623875DE"
+          "role_id": "55f1964f-359b-4277-91de-ab4bb563fddc"
         }
       ]
     }

@@ -55,12 +55,8 @@ module ActiveFacts
 	# Using proc avoids polluting the object's namespace with these little methods
 	verbalise_role = proc do |role, plural|
 	  fc = Array.new(role.fact_type.all_role.size, plural ? 'some' : 'one')
-	  reading =
-	    (role.fact_type.all_reading.detect{|reading|
-		reading.role_sequence.all_role_ref_in_order.to_a[0].role.object_type == self
-	      } or
-	      fc.reverse! && role.fact_type.preferred_reading
-	    )
+	  reading = role.fact_type.reading_preferably_starting_with_role(role)
+          fc.reverse! unless reading.role_sequence.all_role_ref.to_a[0].role == role
 	  fc[reading.role_sequence.all_role_ref_in_order.to_a.index{|rr| rr.role == role}] = 'this'
 	  reading.expand(fc, false)
 	end

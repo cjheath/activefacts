@@ -215,17 +215,17 @@ Driving resulted in at most one breath-Test Result;
 Driving was without owners consent for at most one nonconsent-Reason;
 Driving was unlicenced for at most one unlicensed-Reason;
 Person was Driving,
-	Driving was by one Person;
+	Driving was by at most one Person;
 
 Driving Charge is where
-	Driving resulted in one Charge;
+	Driving resulted in at most one Charge;
 Driving Charge is a warning;
 
 Finance Institution is a kind of Company;
 Vehicle is subject to finance with at most one Finance Institution;
 
 Hospitalization is where
-	Driving resulted in driver taken to one Hospital;
+	Driving resulted in driver taken to at most one Hospital;
 Hospitalization resulted in at most one blood-Test Result;
 
 Insured is a kind of Party;

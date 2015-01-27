@@ -1,7 +1,7 @@
 CREATE TABLE Person (
-	-- maybe Australian is a kind of Person and maybe Australian has TFN,
+	-- maybe Person is an Australian and maybe Australian has TFN,
 	AustralianTFN                           char(9) NULL,
-	-- maybe Employee is a kind of Person and Employee has Employee ID,
+	-- maybe Person is an Employee and Employee has Employee ID,
 	EmployeeID                              int NULL,
 	-- Person has Person Name,
 	PersonName                              varchar NOT NULL,

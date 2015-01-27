@@ -9,7 +9,7 @@ module Concernz
       belongs_to :person_via_incident_witness, :class_name => 'Person', :foreign_key => :incident_witness_id
 
       # Vehicle Incident is a kind of Incident and Claim concerns Incident
-      has_one :vehicle_incident_via_incident, :class_name => 'VehicleIncident', :foreign_key => :incident_id, :dependent => :destroy
+      has_one :vehicle_incident_via_incident, :class_name => 'VehicleIncident', :foreign_key => :incident_claim_id, :dependent => :destroy
     end
   end
 end
@@ -35,15 +35,15 @@ module Concernz
   module VehicleIncident
     extend ActiveSupport::Concern
     included do
-      self.primary_key = 'incident_id'
+      self.primary_key = 'incident_claim_id'
 
       # Vehicle Incident is a kind of Incident and Claim concerns Incident
-      belongs_to :claim_via_incident, :class_name => 'Claim', :foreign_key => :incident_id
+      belongs_to :claim_via_incident, :class_name => 'Claim', :foreign_key => :incident_claim_id
 
       # Vehicle Incident occured while Driver was in charge and Driver is a kind of Person
       belongs_to :person_via_driver, :class_name => 'Person', :foreign_key => :driver_id
 
-      validates :incident_id, :presence => true
+      validates :incident_claim_id, :presence => true
     end
   end
 end

@@ -2,7 +2,7 @@
   "types": {
     "AstronomicalObject": {
       "is_main": true,
-      "id": "1374E469-7DB3-4254-833F-A24DDC4F7892",
+      "id": "73abfc2f-f4fd-4e68-bdb9-becc6b384fe0",
       "functions": [
         {
           "title": "as Moon",
@@ -20,58 +20,58 @@
           "title": "AstronomicalObject Code",
           "type": "AstronomicalObject Code",
           "where": "this AstronomicalObject has one AstronomicalObject Code",
-          "role_id": "4B3F4D6E-D565-4E0D-94F6-A4602AEEBBFA"
+          "role_id": "542d5953-f066-430b-b5a2-da5a2214b52e"
         },
         {
           "title": "Mass",
           "type": "Mass",
           "where": "this AstronomicalObject has one Mass",
-          "role_id": "A7931700-44FC-457D-AFB5-BDD861E074BD"
+          "role_id": "0b099e1c-2107-4ace-a11b-337799e8021c"
         },
         {
           "title": "all Orbit",
           "type": "Orbit",
           "where": "this AstronomicalObject is in orbit",
-          "role_id": "85693445-34BC-4E46-B768-A09CB18197A6",
+          "role_id": "cb9c8f98-8cd4-495a-826c-13474a7050ce",
           "is_list": true
         },
         {
           "title": "all Orbit",
           "type": "Orbit",
-          "where": "some Orbit is around this AstronomicalObject",
-          "role_id": "6F0859CE-29B9-41BC-83AA-7C4B97E3612C",
+          "where": "some Orbit is around this Center",
+          "role_id": "f489f274-2eaf-40ed-a11f-4b6108e5434f",
           "is_list": true
         }
       ]
     },
     "AstronomicalObject Code": {
       "is_main": false,
-      "id": "A78D5E53-CDDF-4B2A-9BCC-275FDB8BD34E",
+      "id": "a7019247-3fbf-4086-884d-25b392676d6c",
       "functions": [
         {
           "title": "AstronomicalObject",
           "type": "AstronomicalObject",
           "where": "this AstronomicalObject Code is of one AstronomicalObject",
-          "role_id": "00FDB4B2-ECB0-4EE0-9B3D-9313C1E147ED"
+          "role_id": "36c14935-1464-48f5-9792-613ac5a3a56a"
         }
       ]
     },
     "Mass": {
       "is_main": false,
-      "id": "B7AE445E-B448-42B0-BBA1-D8901FFEF062",
+      "id": "a4d136cc-b3de-40cf-a714-20419ef8dbc2",
       "functions": [
         {
           "title": "all AstronomicalObject",
           "type": "AstronomicalObject",
           "where": "some AstronomicalObject has this Mass",
-          "role_id": "6D09B2F8-666D-4C32-B2F8-42175E488C01",
+          "role_id": "cebe9290-a45f-455c-b1e9-d553d54a5f1d",
           "is_list": true
         }
       ]
     },
     "Moon": {
       "is_main": false,
-      "id": "DE2BAB74-9851-4D2E-B2C6-EE6A07D55050",
+      "id": "ff940d0e-6df5-4070-b8c1-8967f7345294",
       "functions": [
         {
           "title": "as AstronomicalObject",
@@ -81,38 +81,38 @@
           "title": "Moon Name",
           "type": "Moon Name",
           "where": "this Moon has one Moon Name",
-          "role_id": "930700E9-C524-4740-91E8-300D57232BEF"
+          "role_id": "e9137e6a-f704-48a2-a044-78abe1f608c9"
         }
       ]
     },
     "Moon Name": {
       "is_main": false,
-      "id": "781AAFE9-4E78-4A92-9415-06926812184A",
+      "id": "4e8df254-14de-4312-9f4b-5581a2fabb3d",
       "functions": [
         {
           "title": "Moon",
           "type": "Moon",
           "where": "this Moon Name is of one Moon",
-          "role_id": "A6C72AB9-734D-4280-84E3-93D9954E9166"
+          "role_id": "65cb9cf5-cf4a-49e0-bb81-672d988de5ed"
         }
       ]
     },
     "Nr Days": {
       "is_main": false,
-      "id": "13C9C101-6DC7-4A69-84F3-9502AD3FED94",
+      "id": "4c8013b9-df87-4b38-98b2-867b4913c036",
       "functions": [
         {
           "title": "all Orbit",
           "type": "Orbit",
           "where": "some Orbit has a synodic period of this Nr Days",
-          "role_id": "2301DC91-6810-4B85-92B0-77C3D8C8D21F",
+          "role_id": "98d4a743-7e78-4afe-b956-3e1babe60e22",
           "is_list": true
         }
       ]
     },
     "Orbit": {
       "is_main": false,
-      "id": "E27FFAAD-593A-4268-8EE5-B3A07C52129D",
+      "id": "ca066c51-2d1e-4e3b-9812-f8f2216c1058",
       "functions": [
         {
           "title": "involving AstronomicalObject",
@@ -123,19 +123,19 @@
           "title": "Nr Days",
           "type": "Nr Days",
           "where": "this Orbit has a synodic period of one Nr Days",
-          "role_id": "8C4EAFA7-A80C-4400-87F0-677203277C1F"
+          "role_id": "2382af8a-ca1e-4db9-97e5-8c9cfefd6210"
         },
         {
-          "title": "AstronomicalObject",
+          "title": "Center",
           "type": "AstronomicalObject",
-          "where": "this Orbit is around one AstronomicalObject",
-          "role_id": "234D04D7-CC1D-4CD9-A3AF-587C1FACFE23"
+          "where": "this Orbit is around one Center",
+          "role_id": "a3287cd8-cef8-41c0-b8a1-21f875b703c5"
         }
       ]
     },
     "Planet": {
       "is_main": false,
-      "id": "0D6B597C-AA4C-4B3F-8DE5-11EE8EF45BDB",
+      "id": "0ce5de4e-b1ed-4482-b920-189a5e199574",
       "functions": [
         {
           "title": "as AstronomicalObject",
@@ -145,25 +145,25 @@
           "title": "Planet Name",
           "type": "Planet Name",
           "where": "this Planet has one Planet Name",
-          "role_id": "EBB3A56D-4DBB-41FD-882A-6AADA0BED1D2"
+          "role_id": "361b2aa5-e39b-4c52-a604-05b7fcc89955"
         }
       ]
     },
     "Planet Name": {
       "is_main": false,
-      "id": "0DB7A4D3-AEE5-46F8-BF1A-F3959BA95390",
+      "id": "5407733c-bb82-426a-b38a-c989a25c01ce",
       "functions": [
         {
           "title": "Planet",
           "type": "Planet",
           "where": "this Planet Name is of one Planet",
-          "role_id": "4DF857D5-C2ED-4A8E-8C6C-8149583696DD"
+          "role_id": "7bcd7799-6ae6-408e-a972-012acd1da80f"
         }
       ]
     },
     "Star": {
       "is_main": false,
-      "id": "AFC55441-E1F7-4B36-8EF6-AF8A325E5278",
+      "id": "abc03dc8-a92c-41ad-8bd3-3cefd43834a4",
       "functions": [
         {
           "title": "as AstronomicalObject",

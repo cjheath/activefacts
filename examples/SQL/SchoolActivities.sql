@@ -1,7 +1,7 @@
 CREATE TABLE SchoolActivity (
-	-- School Activity is where School sanctions Activity and Activity has Activity Name,
+	-- School Activity (in which School sanctions Activity) and Activity has Activity Name,
 	ActivityName                            varchar(32) NOT NULL,
-	-- School Activity is where School sanctions Activity and School has School Name,
+	-- School Activity (in which School sanctions Activity) and School has School Name,
 	SchoolName                              varchar NOT NULL,
 	PRIMARY KEY(SchoolName, ActivityName)
 )
@@ -17,11 +17,11 @@ CREATE TABLE Student (
 GO
 
 CREATE TABLE StudentParticipation (
-	-- Student Participation is where Student represents School in Activity and Activity has Activity Name,
+	-- Student Participation (in which Student represents School in Activity) and Activity has Activity Name,
 	ActivityName                            varchar(32) NOT NULL,
-	-- Student Participation is where Student represents School in Activity and School has School Name,
+	-- Student Participation (in which Student represents School in Activity) and School has School Name,
 	SchoolName                              varchar NOT NULL,
-	-- Student Participation is where Student represents School in Activity and Student has Student Name,
+	-- Student Participation (in which Student represents School in Activity) and Student has Student Name,
 	StudentName                             varchar NOT NULL,
 	PRIMARY KEY(StudentName, ActivityName),
 	FOREIGN KEY (StudentName) REFERENCES Student (StudentName)

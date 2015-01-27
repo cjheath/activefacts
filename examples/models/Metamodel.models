@@ -25,7 +25,7 @@ module Concernz
       self.primary_key = 'allowed_range_id'
 
       # Allowed Range (in which Value Constraint allows Value Range) and Value Constraint is a kind of Constraint and Constraint is an instance of Concept
-      belongs_to :concept_via_value_constraint_constraint, :class_name => 'Concept', :foreign_key => :value_constraint_guid
+      belongs_to :concept_via_value_constraint_constraint, :class_name => 'Concept', :foreign_key => :value_constraint_concept_guid
 
       # Allowed Range (in which Value Constraint allows Value Range) and Value Range has maximum-Bound and Bound has Value
       belongs_to :value_via_value_range_maximum_bound, :class_name => 'Value', :foreign_key => :value_range_maximum_bound_value_id
@@ -33,7 +33,7 @@ module Concernz
       # Allowed Range (in which Value Constraint allows Value Range) and Value Range has minimum-Bound and Bound has Value
       belongs_to :value_via_value_range_minimum_bound, :class_name => 'Value', :foreign_key => :value_range_minimum_bound_value_id
 
-      validates :value_constraint_guid, :presence => true
+      validates :value_constraint_concept_guid, :presence => true
     end
   end
 end
@@ -62,7 +62,7 @@ module Concernz
       belongs_to :relevant_concept_via_context_note, :class_name => 'Concept', :foreign_key => :context_note_relevant_concept_guid
 
       # Instance is an instance of Concept and Instance objectifies Fact and Fact is an instance of Concept
-      belongs_to :concept_via_instance_fact, :class_name => 'Concept', :foreign_key => :instance_fact_guid
+      belongs_to :concept_via_instance_fact, :class_name => 'Concept', :foreign_key => :instance_fact_concept_guid
 
       # Fact is an instance of Concept and Fact is of Fact Type
       belongs_to :fact_type_via_fact, :class_name => 'FactType', :foreign_key => :fact_type_concept_guid
@@ -98,25 +98,25 @@ module Concernz
       belongs_to :value_via_instance, :class_name => 'Value', :foreign_key => :instance_value_id
 
       # Allowed Range (in which Value Constraint allows Value Range) and Value Constraint is a kind of Constraint and Constraint is an instance of Concept
-      has_many :allowed_ranges_via_value_constraint_constraint, :class_name => 'AllowedRange', :foreign_key => :value_constraint_guid, :dependent => :destroy
+      has_many :allowed_ranges_via_value_constraint_constraint, :class_name => 'AllowedRange', :foreign_key => :value_constraint_concept_guid, :dependent => :destroy
 
       # Context Note is an instance of Concept and Context Note applies to relevant-Concept
       has_many :concepts_via_context_note, :class_name => 'Concept', :foreign_key => :context_note_relevant_concept_guid, :dependent => :destroy
 
       # Instance is an instance of Concept and Instance objectifies Fact and Fact is an instance of Concept
-      has_one :concept_via_instance_fact, :class_name => 'Concept', :foreign_key => :instance_fact_guid, :dependent => :destroy
+      has_one :concept_via_instance_fact, :class_name => 'Concept', :foreign_key => :instance_fact_concept_guid, :dependent => :destroy
 
       # Context According To (in which Context Note is according to Agent) and Context Note is an instance of Concept
-      has_many :context_according_tos_via_context_note, :class_name => 'ContextAccordingTo', :foreign_key => :context_note_guid, :dependent => :destroy
+      has_many :context_according_tos_via_context_note, :class_name => 'ContextAccordingTo', :foreign_key => :context_note_concept_guid, :dependent => :destroy
 
       # Context Agreed By (in which Agreement was reached by Agent) and Context Note was added by Agreement and Context Note is an instance of Concept
-      has_many :context_agreed_bies_via_agreement_context_note, :class_name => 'ContextAgreedBy', :foreign_key => :agreement_guid, :dependent => :destroy
+      has_many :context_agreed_bies_via_agreement_context_note, :class_name => 'ContextAgreedBy', :foreign_key => :agreement_context_note_concept_guid, :dependent => :destroy
 
       # Derivation (in which Unit is derived from base-Unit) and Unit is an instance of Concept
-      has_many :derivations_via_unit, :class_name => 'Derivation', :foreign_key => :base_unit_guid, :dependent => :destroy
+      has_many :derivations_via_unit, :class_name => 'Derivation', :foreign_key => :base_unit_concept_guid, :dependent => :destroy
 
       # Derivation (in which Unit is derived from base-Unit) and Unit is an instance of Concept
-      has_many :derivations_via_unit, :class_name => 'Derivation', :foreign_key => :derived_unit_guid, :dependent => :destroy
+      has_many :derivations_via_unit, :class_name => 'Derivation', :foreign_key => :derived_unit_concept_guid, :dependent => :destroy
 
       # Fact Type is an instance of Concept
       has_one :fact_type, :class_name => 'FactType', :foreign_key => :concept_guid, :dependent => :destroy
@@ -125,37 +125,37 @@ module Concernz
       has_one :object_type, :class_name => 'ObjectType', :foreign_key => :concept_guid, :dependent => :destroy
 
       # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type is of Unit and Unit is an instance of Concept
-      has_many :object_types_via_domain_object_type_value_type_unit, :class_name => 'ObjectType', :foreign_key => :value_type_unit_guid, :dependent => :destroy
+      has_many :object_types_via_domain_object_type_value_type_unit, :class_name => 'ObjectType', :foreign_key => :value_type_unit_concept_guid, :dependent => :destroy
 
       # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type has Value Constraint and Value Constraint is a kind of Constraint and Constraint is an instance of Concept
-      has_one :object_type_via_domain_object_type_value_type_value_constraint_constraint, :class_name => 'ObjectType', :foreign_key => :value_type_value_constraint_guid, :dependent => :destroy
+      has_one :object_type_via_domain_object_type_value_type_value_constraint_constraint, :class_name => 'ObjectType', :foreign_key => :value_type_value_constraint_concept_guid, :dependent => :destroy
 
       # Population is an instance of Concept
       has_one :population, :class_name => 'Population', :foreign_key => :concept_guid, :dependent => :destroy
 
       # Role Value fulfils Fact and Fact is an instance of Concept
-      has_many :role_values_via_fact, :class_name => 'RoleValue', :foreign_key => :fact_guid, :dependent => :destroy
+      has_many :role_values_via_fact, :class_name => 'RoleValue', :foreign_key => :fact_concept_guid, :dependent => :destroy
 
       # Instance plays Role Value and Instance is an instance of Concept
-      has_many :role_values_via_instance, :class_name => 'RoleValue', :foreign_key => :instance_guid, :dependent => :destroy
+      has_many :role_values_via_instance, :class_name => 'RoleValue', :foreign_key => :instance_concept_guid, :dependent => :destroy
 
       # Role is an instance of Concept
       has_one :role, :class_name => 'Role', :foreign_key => :concept_guid, :dependent => :destroy
 
       # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence) and Set Comparison Constraint is a kind of Set Constraint and Set Constraint is a kind of Constraint and Constraint is an instance of Concept
-      has_many :set_comparison_roles_via_set_comparison_constraint_set_constraint_constraint, :class_name => 'SetComparisonRoles', :foreign_key => :set_comparison_constraint_guid, :dependent => :destroy
+      has_many :set_comparison_roles_via_set_comparison_constraint_set_constraint_constraint, :class_name => 'SetComparisonRoles', :foreign_key => :set_comparison_constraint_concept_guid, :dependent => :destroy
 
       # Constraint Shape is a kind of Shape and Constraint Shape is for Constraint and Constraint is an instance of Concept
-      has_many :shapes_via_constraint_shape_constraint, :class_name => 'Shape', :foreign_key => :constraint_shape_constraint_guid, :dependent => :destroy
+      has_many :shapes_via_constraint_shape_constraint, :class_name => 'Shape', :foreign_key => :constraint_shape_constraint_concept_guid, :dependent => :destroy
 
       # Model Note Shape is a kind of Shape and Model Note Shape is for Context Note and Context Note is an instance of Concept
-      has_many :shapes_via_model_note_shape_context_note, :class_name => 'Shape', :foreign_key => :model_note_shape_context_note_guid, :dependent => :destroy
+      has_many :shapes_via_model_note_shape_context_note, :class_name => 'Shape', :foreign_key => :model_note_shape_context_note_concept_guid, :dependent => :destroy
 
       # Value is in Unit and Unit is an instance of Concept
-      has_many :values_via_unit, :class_name => 'Value', :foreign_key => :unit_guid, :dependent => :destroy
+      has_many :values_via_unit, :class_name => 'Value', :foreign_key => :unit_concept_guid, :dependent => :destroy
 
       # Query includes Variable and Query is an instance of Concept
-      has_many :variables_via_query, :class_name => 'Variable', :foreign_key => :query_guid, :dependent => :destroy
+      has_many :variables_via_query, :class_name => 'Variable', :foreign_key => :query_concept_guid, :dependent => :destroy
 
       validates :guid, :presence => true
     end
@@ -169,10 +169,10 @@ module Concernz
       self.primary_key = 'context_according_to_id'
 
       # Context According To (in which Context Note is according to Agent) and Context Note is an instance of Concept
-      belongs_to :concept_via_context_note, :class_name => 'Concept', :foreign_key => :context_note_guid
+      belongs_to :concept_via_context_note, :class_name => 'Concept', :foreign_key => :context_note_concept_guid
 
       validates :agent_name, :presence => true
-      validates :context_note_guid, :presence => true
+      validates :context_note_concept_guid, :presence => true
     end
   end
 end
@@ -184,10 +184,10 @@ module Concernz
       self.primary_key = 'context_agreed_by_id'
 
       # Context Agreed By (in which Agreement was reached by Agent) and Context Note was added by Agreement and Context Note is an instance of Concept
-      belongs_to :concept_via_agreement_context_note, :class_name => 'Concept', :foreign_key => :agreement_guid
+      belongs_to :concept_via_agreement_context_note, :class_name => 'Concept', :foreign_key => :agreement_context_note_concept_guid
 
       validates :agent_name, :presence => true
-      validates :agreement_guid, :presence => true
+      validates :agreement_context_note_concept_guid, :presence => true
     end
   end
 end
@@ -199,13 +199,13 @@ module Concernz
       self.primary_key = 'derivation_id'
 
       # Derivation (in which Unit is derived from base-Unit) and Unit is an instance of Concept
-      belongs_to :concept_via_unit, :class_name => 'Concept', :foreign_key => :base_unit_guid
+      belongs_to :concept_via_unit, :class_name => 'Concept', :foreign_key => :base_unit_concept_guid
 
       # Derivation (in which Unit is derived from base-Unit) and Unit is an instance of Concept
-      belongs_to :concept_via_unit, :class_name => 'Concept', :foreign_key => :derived_unit_guid
+      belongs_to :concept_via_unit, :class_name => 'Concept', :foreign_key => :derived_unit_concept_guid
 
-      validates :base_unit_guid, :presence => true
-      validates :derived_unit_guid, :presence => true
+      validates :base_unit_concept_guid, :presence => true
+      validates :derived_unit_concept_guid, :presence => true
     end
   end
 end
@@ -316,14 +316,14 @@ module Concernz
     included do
       self.primary_key = 'object_type_id'
 
+      # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type has Value Constraint and Value Constraint is a kind of Constraint and Constraint is an instance of Concept
+      belongs_to :concept_via_domain_object_type_value_type_value_constraint_constraint, :class_name => 'Concept', :foreign_key => :value_type_value_constraint_concept_guid
+
       # Object Type is an instance of Concept
       belongs_to :concept
 
-      # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type has Value Constraint and Value Constraint is a kind of Constraint and Constraint is an instance of Concept
-      belongs_to :concept_via_domain_object_type_value_type_value_constraint_constraint, :class_name => 'Concept', :foreign_key => :value_type_value_constraint_guid
-
       # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type is of Unit and Unit is an instance of Concept
-      belongs_to :concept_via_domain_object_type_value_type_unit, :class_name => 'Concept', :foreign_key => :value_type_unit_guid
+      belongs_to :concept_via_domain_object_type_value_type_unit, :class_name => 'Concept', :foreign_key => :value_type_unit_concept_guid
 
       # Domain Object Type is a kind of Object Type and Value Type is a kind of Domain Object Type and Value Type is subtype of super-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
       belongs_to :object_type_via_domain_object_type_value_type_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_supertype_object_type_id
@@ -589,10 +589,10 @@ module Concernz
       self.primary_key = 'role_value_id'
 
       # Role Value fulfils Fact and Fact is an instance of Concept
-      belongs_to :concept_via_fact, :class_name => 'Concept', :foreign_key => :fact_guid
+      belongs_to :concept_via_fact, :class_name => 'Concept', :foreign_key => :fact_concept_guid
 
       # Instance plays Role Value and Instance is an instance of Concept
-      belongs_to :concept_via_instance, :class_name => 'Concept', :foreign_key => :instance_guid
+      belongs_to :concept_via_instance, :class_name => 'Concept', :foreign_key => :instance_concept_guid
 
       # Population includes Role Value
       belongs_to :population
@@ -600,8 +600,8 @@ module Concernz
       # Role Value is of Role
       belongs_to :role
 
-      validates :fact_guid, :presence => true
-      validates :instance_guid, :presence => true
+      validates :fact_concept_guid, :presence => true
+      validates :instance_concept_guid, :presence => true
       validates :population_id, :presence => true
       validates :role_id, :presence => true
     end
@@ -615,14 +615,14 @@ module Concernz
       self.primary_key = 'set_comparison_roles_id'
 
       # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence) and Set Comparison Constraint is a kind of Set Constraint and Set Constraint is a kind of Constraint and Constraint is an instance of Concept
-      belongs_to :concept_via_set_comparison_constraint_set_constraint_constraint, :class_name => 'Concept', :foreign_key => :set_comparison_constraint_guid
+      belongs_to :concept_via_set_comparison_constraint_set_constraint_constraint, :class_name => 'Concept', :foreign_key => :set_comparison_constraint_concept_guid
 
       # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence)
       belongs_to :role_sequence
 
       validates :ordinal, :presence => true
       validates :role_sequence_guid, :presence => true
-      validates :set_comparison_constraint_guid, :presence => true
+      validates :set_comparison_constraint_concept_guid, :presence => true
     end
   end
 end
@@ -634,10 +634,10 @@ module Concernz
       self.primary_key = 'guid'
 
       # Constraint Shape is a kind of Shape and Constraint Shape is for Constraint and Constraint is an instance of Concept
-      belongs_to :concept_via_constraint_shape_constraint, :class_name => 'Concept', :foreign_key => :constraint_shape_constraint_guid
+      belongs_to :concept_via_constraint_shape_constraint, :class_name => 'Concept', :foreign_key => :constraint_shape_constraint_concept_guid
 
       # Model Note Shape is a kind of Shape and Model Note Shape is for Context Note and Context Note is an instance of Concept
-      belongs_to :concept_via_model_note_shape_context_note, :class_name => 'Concept', :foreign_key => :model_note_shape_context_note_guid
+      belongs_to :concept_via_model_note_shape_context_note, :class_name => 'Concept', :foreign_key => :model_note_shape_context_note_concept_guid
 
       # Shape is in ORM Diagram and ORM Diagram is a kind of Diagram
       belongs_to :diagram_via_orm_diagram, :class_name => 'Diagram', :foreign_key => :orm_diagram_id
@@ -724,7 +724,7 @@ module Concernz
       self.primary_key = 'value_id'
 
       # Value is in Unit and Unit is an instance of Concept
-      belongs_to :concept_via_unit, :class_name => 'Concept', :foreign_key => :unit_guid
+      belongs_to :concept_via_unit, :class_name => 'Concept', :foreign_key => :unit_concept_guid
 
       # Value is of Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
       belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_object_type_id
@@ -757,7 +757,7 @@ module Concernz
       self.primary_key = 'variable_id'
 
       # Query includes Variable and Query is an instance of Concept
-      belongs_to :concept_via_query, :class_name => 'Concept', :foreign_key => :query_guid
+      belongs_to :concept_via_query, :class_name => 'Concept', :foreign_key => :query_concept_guid
 
       # Variable is for Object Type
       belongs_to :object_type
@@ -779,7 +779,7 @@ module Concernz
 
       validates :object_type_id, :presence => true
       validates :ordinal, :presence => true
-      validates :query_guid, :presence => true
+      validates :query_concept_guid, :presence => true
     end
   end
 end

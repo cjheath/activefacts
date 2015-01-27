@@ -450,7 +450,7 @@ module ::Insurance
     has_one :breath_test_result, :class => TestResult  # See TestResult.all_driving_as_breath_test_result
     has_one :intoxication                       # See Intoxication.all_driving
     has_one :nonconsent_reason, :class => Reason  # See Reason.all_driving_as_nonconsent_reason
-    has_one :person, :mandatory => true         # See Person.all_driving
+    has_one :person                             # See Person.all_driving
     has_one :unlicensed_reason, :class => Reason  # See Reason.all_driving_as_unlicensed_reason
   end
 

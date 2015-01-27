@@ -177,10 +177,18 @@ module ActiveFacts
       # The comment is the readings from the References expressed as a series of steps (not a full verbalisation)
       def comment
         @references.map do |ref|
-          (ref.is_mandatory ? "" : "maybe ") +
-          (ref.fact_type && ref.fact_type.entity_type ? ref.fact_type.entity_type.name+" is where " : "") +
-          ref.reading
-        end * " and "
+	  # REVISIT: Some contraction would be nice here
+          objectification = ref.fact_type && ref.fact_type.entity_type
+	  involves = ''
+	  if objectification && ref == @references.last
+	    objectification = nil if ref.fact_type.all_role.size == 1	# Disregard the objectification of a trailing unary
+	    involves = ref.to_role.link_fact_type.default_reading[ref.fact_type.entity_type.name.size..-1]
+	  end
+	  (objectification ? objectification.name + ' (in which ' : '') +
+          (ref.is_mandatory || ref.is_unary ? '' : 'maybe ') +
+          ref.reading +
+	  (objectification ? ')'+involves : '')
+        end.compact * " and "
       end
 
       def to_s  #:nodoc:

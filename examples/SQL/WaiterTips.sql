@@ -8,9 +8,9 @@ GO
 CREATE TABLE Service (
 	-- maybe Service earned a tip of Amount and Amount has AUDValue,
 	AmountAUDValue                          decimal NULL,
-	-- Service is where Waiter served Meal and Meal has MealId,
+	-- Service (in which Waiter served Meal) and Meal has MealId,
 	MealId                                  int NOT NULL,
-	-- Service is where Waiter served Meal and Waiter has WaiterNr,
+	-- Service (in which Waiter served Meal) and Waiter has WaiterNr,
 	WaiterNr                                int NOT NULL,
 	PRIMARY KEY(WaiterNr, MealId),
 	FOREIGN KEY (MealId) REFERENCES Meal (MealId)
@@ -18,11 +18,11 @@ CREATE TABLE Service (
 GO
 
 CREATE TABLE WaiterTip (
-	-- WaiterTip is where Waiter for serving Meal reported a tip of Amount and Amount has AUDValue,
+	-- WaiterTip (in which Waiter for serving Meal reported a tip of Amount) and Amount has AUDValue,
 	AmountAUDValue                          decimal NOT NULL,
-	-- WaiterTip is where Waiter for serving Meal reported a tip of Amount and Meal has MealId,
+	-- WaiterTip (in which Waiter for serving Meal reported a tip of Amount) and Meal has MealId,
 	MealId                                  int NOT NULL,
-	-- WaiterTip is where Waiter for serving Meal reported a tip of Amount and Waiter has WaiterNr,
+	-- WaiterTip (in which Waiter for serving Meal reported a tip of Amount) and Waiter has WaiterNr,
 	WaiterNr                                int NOT NULL,
 	PRIMARY KEY(WaiterNr, MealId),
 	FOREIGN KEY (MealId) REFERENCES Meal (MealId)

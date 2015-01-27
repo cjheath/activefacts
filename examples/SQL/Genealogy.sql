@@ -34,22 +34,22 @@ GO
 CREATE TABLE Friendship (
 	-- Friendship is confirmed,
 	IsConfirmed                             bit NULL,
-	-- Friendship is where User is friendly with other-User and User has User ID,
+	-- Friendship (in which User is friendly with other-User) and User has User ID,
 	OtherUserID                             int NOT NULL,
-	-- Friendship is where User is friendly with other-User and User has User ID,
+	-- Friendship (in which User is friendly with other-User) and User has User ID,
 	UserID                                  int NOT NULL,
 	PRIMARY KEY(UserID, OtherUserID)
 )
 GO
 
 CREATE TABLE Participation (
-	-- Participation is where Person played Role in Event according to Source and Event has Event ID,
+	-- Participation (in which Person played Role in Event according to Source) and Event has Event ID,
 	EventID                                 int NOT NULL,
-	-- Participation is where Person played Role in Event according to Source and Person has Person ID,
+	-- Participation (in which Person played Role in Event according to Source) and Person has Person ID,
 	PersonID                                int NOT NULL,
-	-- Participation is where Person played Role in Event according to Source and Role has Role ID,
+	-- Participation (in which Person played Role in Event according to Source) and Role has Role ID,
 	RoleID                                  int NOT NULL,
-	-- Participation is where Person played Role in Event according to Source and Source has Source ID,
+	-- Participation (in which Person played Role in Event according to Source) and Source has Source ID,
 	SourceID                                int NOT NULL,
 	PRIMARY KEY(PersonID, RoleID, EventID, SourceID),
 	FOREIGN KEY (EventID) REFERENCES Event (EventID)
@@ -57,21 +57,21 @@ CREATE TABLE Participation (
 GO
 
 CREATE TABLE Person (
-	-- maybe Address is of Person,
+	-- maybe Person lives at Address,
 	Address                                 varchar(128) NULL,
-	-- maybe Email is of Person,
+	-- maybe Person has Email,
 	Email                                   varchar(64) NULL,
 	-- maybe Person is called family-Name,
 	FamilyName                              varchar(128) NULL,
 	-- maybe Person is of Gender,
 	Gender                                  char(1) NULL CHECK(Gender = 'F' OR Gender = 'M'),
-	-- maybe given-Name is name of Person,
+	-- maybe Person is called given-Name,
 	GivenName                               varchar(128) NULL,
-	-- maybe Occupation is of Person,
+	-- maybe Person is employed in Occupation,
 	Occupation                              varchar(128) NULL,
 	-- Person has Person ID,
 	PersonID                                int IDENTITY NOT NULL,
-	-- maybe preferred-Picture is of Person,
+	-- maybe Person has preferred-Picture,
 	PreferredPicture                        image NULL,
 	PRIMARY KEY(PersonID)
 )
@@ -92,7 +92,7 @@ CREATE TABLE Source (
 	SourceID                                int IDENTITY NOT NULL,
 	-- Source has Source Name,
 	SourceName                              varchar(128) NOT NULL,
-	-- User provided Source and User has User ID,
+	-- Source was provided by User and User has User ID,
 	UserID                                  int NOT NULL,
 	PRIMARY KEY(SourceID),
 	UNIQUE(SourceName)
@@ -100,7 +100,7 @@ CREATE TABLE Source (
 GO
 
 CREATE TABLE [User] (
-	-- maybe Email is of User,
+	-- maybe User has Email,
 	Email                                   varchar(64) NULL,
 	-- User has User ID,
 	UserID                                  int IDENTITY NOT NULL,

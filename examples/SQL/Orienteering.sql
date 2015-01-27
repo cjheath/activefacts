@@ -1,7 +1,7 @@
 CREATE TABLE Club (
 	-- Club has Club Code,
 	ClubCode                                varchar(6) NOT NULL,
-	-- Club Name is name of Club,
+	-- Club is called Club Name,
 	ClubName                                varchar(32) NOT NULL,
 	PRIMARY KEY(ClubCode),
 	UNIQUE(ClubName)
@@ -9,15 +9,15 @@ CREATE TABLE Club (
 GO
 
 CREATE TABLE Entry (
-	-- Entry is where Person entered Course of Event,
+	-- Entry (in which Person entered Course of Event) involves Course,
 	Course                                  varchar(16) NOT NULL CHECK((Course >= 'A' AND Course <= 'E') OR Course = 'PW'),
 	-- Entry has Entry ID,
 	EntryID                                 int IDENTITY NOT NULL,
-	-- Entry is where Person entered Course of Event and Event has Event ID,
+	-- Entry (in which Person entered Course of Event) and Event has Event ID,
 	EventID                                 int NOT NULL,
 	-- maybe Entry finished in finish-Placing,
 	FinishPlacing                           int NULL,
-	-- Entry is where Person entered Course of Event and Person has Person ID,
+	-- Entry (in which Person entered Course of Event) and Person has Person ID,
 	PersonID                                int NOT NULL,
 	-- maybe Entry received Score,
 	Score                                   int NULL,
@@ -27,13 +27,13 @@ CREATE TABLE Entry (
 GO
 
 CREATE TABLE Event (
-	-- Club runs Event and Club has Club Code,
+	-- Event is run by Club and Club has Club Code,
 	ClubCode                                varchar(6) NOT NULL,
 	-- Event has Event ID,
 	EventID                                 int IDENTITY NOT NULL,
 	-- maybe Event is called Event Name,
 	EventName                               varchar(50) NULL,
-	-- Map is map for Event and Map has Map ID,
+	-- Event uses Map and Map has Map ID,
 	MapID                                   int NOT NULL,
 	-- maybe Event has Number,
 	Number                                  int NULL CHECK((Number >= 1 AND Number <= 100)),
@@ -53,7 +53,7 @@ CREATE VIEW dbo.Event_Name (EventName) WITH SCHEMABINDING AS
 	WHERE	EventName IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX EventNameIsOfOneEvent ON dbo.Event_Name(EventName)
+CREATE UNIQUE CLUSTERED INDEX IX_EventByEventName ON dbo.Event_Name(EventName)
 GO
 
 CREATE VIEW dbo.Event_SeriesIDNumber (SeriesID, Number) WITH SCHEMABINDING AS
@@ -66,9 +66,9 @@ CREATE UNIQUE CLUSTERED INDEX IX_EventBySeriesIDNumber ON dbo.Event_SeriesIDNumb
 GO
 
 CREATE TABLE EventControl (
-	-- Event Control is where Event includes Control Number,
+	-- Event Control (in which Event includes Control Number) involves Control Number,
 	ControlNumber                           int NOT NULL CHECK((ControlNumber >= 1 AND ControlNumber <= 1000)),
-	-- Event Control is where Event includes Control Number and Event has Event ID,
+	-- Event Control (in which Event includes Control Number) and Event has Event ID,
 	EventID                                 int NOT NULL,
 	-- maybe Event Control has Point Value,
 	PointValue                              int NULL,
@@ -78,11 +78,11 @@ CREATE TABLE EventControl (
 GO
 
 CREATE TABLE EventScoringMethod (
-	-- Event Scoring Method is where Scoring Method is used for Course of Event,
+	-- Event Scoring Method (in which Scoring Method is used for Course of Event) involves Course,
 	Course                                  varchar(16) NOT NULL CHECK((Course >= 'A' AND Course <= 'E') OR Course = 'PW'),
-	-- Event Scoring Method is where Scoring Method is used for Course of Event and Event has Event ID,
+	-- Event Scoring Method (in which Scoring Method is used for Course of Event) and Event has Event ID,
 	EventID                                 int NOT NULL,
-	-- Event Scoring Method is where Scoring Method is used for Course of Event,
+	-- Event Scoring Method (in which Scoring Method is used for Course of Event) involves Scoring Method,
 	ScoringMethod                           varchar(32) NOT NULL CHECK(ScoringMethod = 'Scatter' OR ScoringMethod = 'Score' OR ScoringMethod = 'Special'),
 	PRIMARY KEY(Course, EventID),
 	FOREIGN KEY (EventID) REFERENCES Event (EventID)
@@ -96,7 +96,7 @@ CREATE TABLE Map (
 	MapID                                   int IDENTITY NOT NULL,
 	-- Map has Map Name,
 	MapName                                 varchar(80) NOT NULL,
-	-- Club owns Map and Club has Club Code,
+	-- Map is owned by Club and Club has Club Code,
 	OwnerCode                               varchar(6) NOT NULL,
 	PRIMARY KEY(MapID),
 	UNIQUE(MapName),
@@ -133,11 +133,11 @@ CREATE TABLE Punch (
 GO
 
 CREATE TABLE PunchPlacement (
-	-- Punch Placement is where Punch is placed at Event Control and Event Control is where Event includes Control Number and Event has Event ID,
+	-- Punch Placement (in which Punch is placed at Event Control) and Event Control (in which Event includes Control Number) and Event has Event ID,
 	EventControlEventID                     int NOT NULL,
-	-- Punch Placement is where Punch is placed at Event Control and Event Control is where Event includes Control Number,
+	-- Punch Placement (in which Punch is placed at Event Control) and Event Control (in which Event includes Control Number) involves Control Number,
 	EventControlNumber                      int NOT NULL,
-	-- Punch Placement is where Punch is placed at Event Control and Punch has Punch ID,
+	-- Punch Placement (in which Punch is placed at Event Control) and Punch has Punch ID,
 	PunchID                                 int NOT NULL,
 	PRIMARY KEY(PunchID, EventControlEventID, EventControlNumber),
 	FOREIGN KEY (EventControlEventID, EventControlNumber) REFERENCES EventControl (EventID, ControlNumber),
@@ -156,11 +156,11 @@ CREATE TABLE Series (
 GO
 
 CREATE TABLE Visit (
-	-- Visit is where Punch was visited by Entry at Time and Entry has Entry ID,
+	-- Visit (in which Punch was visited by Entry at Time) and Entry has Entry ID,
 	EntryID                                 int NOT NULL,
-	-- Visit is where Punch was visited by Entry at Time and Punch has Punch ID,
+	-- Visit (in which Punch was visited by Entry at Time) and Punch has Punch ID,
 	PunchID                                 int NOT NULL,
-	-- Visit is where Punch was visited by Entry at Time,
+	-- Visit (in which Punch was visited by Entry at Time) involves Time,
 	Time                                    datetime NOT NULL,
 	PRIMARY KEY(PunchID, EntryID, Time),
 	FOREIGN KEY (EntryID) REFERENCES Entry (EntryID),

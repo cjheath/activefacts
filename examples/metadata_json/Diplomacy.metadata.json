@@ -2,7 +2,7 @@
   "types": {
     "Ambassador": {
       "is_main": false,
-      "id": "0E0B637E-182A-45CD-B73E-C02D1EC9B971",
+      "id": "e3739561-2c67-4dc6-a16d-52385e4b0893",
       "functions": [
         {
           "title": "as Diplomat",
@@ -12,73 +12,73 @@
           "title": "all Representation",
           "type": "Representation",
           "where": "this Ambassador is from some Represented Country to some Country",
-          "role_id": "7605F9A0-F2C0-4A9A-9EF4-4BBE08FBA355",
+          "role_id": "13956e3a-c9db-4b34-b8c7-3b71d2b2cd14",
           "is_list": true
         }
       ]
     },
     "Country": {
       "is_main": true,
-      "id": "D30F2093-D984-42D3-9875-45A4A7F0E67E",
+      "id": "5d040e22-dca7-452b-a97c-768603ad46c6",
       "functions": [
         {
           "title": "all Representation",
           "type": "Representation",
           "where": "this Represented Country is represented in some Country by some Ambassador",
-          "role_id": "89507856-42BF-4065-9DC1-9ED1054A0F23",
+          "role_id": "d7179af7-f2d4-4292-a684-d5e35f98e259",
           "is_list": true
         },
         {
           "title": "all Representation",
           "type": "Representation",
-          "where": "some Represented Country is represented in this Country by some Ambassador",
-          "role_id": "0557BE5A-BEF9-43AC-8174-304E04AB0157",
+          "where": "some Ambassador is from some Represented Country to this Country",
+          "role_id": "ef1abb10-cba8-47e3-9bc9-b725da6ba266",
           "is_list": true
         },
         {
           "title": "CountryName",
           "type": "CountryName",
           "where": "this Country has one CountryName",
-          "role_id": "09A47183-97C9-4C5D-A491-B77B115B9A57"
+          "role_id": "017a0ae6-cc98-4243-ba91-8c9893012e6d"
         },
         {
           "title": "all Diplomat as Represented Country",
           "type": "Diplomat",
           "where": "some Diplomat represents this Represented Country",
-          "role_id": "B7CF075C-B9EE-45DA-8CA9-8378AE8725A1",
+          "role_id": "7774d904-358c-4ec7-88c9-a0992bbd310d",
           "is_list": true
         },
         {
           "title": "all Diplomat as Served Country",
           "type": "Diplomat",
           "where": "some Diplomat serves in this Served Country",
-          "role_id": "D7FF7D56-CDE2-43D1-A923-545529150B9C",
+          "role_id": "530ee23c-1343-40d9-8d69-a14c16166771",
           "is_list": true
         },
         {
           "title": "all Language",
           "type": "Language",
           "where": "this Country uses some Language",
-          "role_id": "305FFA83-34EC-4221-8380-2A4919235A99",
+          "role_id": "fd280c6f-f71c-4d45-b02c-30abda6523a9",
           "is_list": true
         }
       ]
     },
     "CountryName": {
       "is_main": false,
-      "id": "FC4E49D3-C0B9-45ED-BD99-C9514E5F48DB",
+      "id": "4b90afcd-5ad9-4484-8225-c914cebe5f61",
       "functions": [
         {
           "title": "Country",
           "type": "Country",
           "where": "this CountryName is of one Country",
-          "role_id": "D078B13E-7F88-4C14-AA0C-EE57353A0EA4"
+          "role_id": "9eaf6756-1537-4cf9-bc66-cf39964a72d8"
         }
       ]
     },
     "Diplomat": {
       "is_main": true,
-      "id": "F480F9D3-31A0-406C-9A94-9A7E4C4A222F",
+      "id": "3d5e1881-1c87-42e0-9341-055fa5ee94ee",
       "functions": [
         {
           "title": "as Ambassador",
@@ -88,82 +88,82 @@
           "title": "DiplomatName",
           "type": "DiplomatName",
           "where": "this Diplomat has one DiplomatName",
-          "role_id": "3F59C20F-D781-4252-89E0-485760046A98"
+          "role_id": "9bca632a-ece4-4cee-a18a-b6a56608d0aa"
         },
         {
           "title": "Represented Country",
           "type": "Country",
           "where": "this Diplomat represents one Represented Country",
-          "role_id": "2A155BF9-8598-4298-92B7-3029D0198CF8"
+          "role_id": "69f6e7fb-2cdf-4c92-835f-07e4eb2c9ea2"
         },
         {
           "title": "Served Country",
           "type": "Country",
           "where": "this Diplomat serves in one Served Country",
-          "role_id": "390B5ACC-9FD4-42F5-B885-528B2457D977"
+          "role_id": "0f905672-4827-4c21-b1c1-50851d9fb51b"
         },
         {
           "title": "all Language",
           "type": "Language",
           "where": "this Diplomat speaks some Language",
-          "role_id": "3DCA6D76-14D5-44C8-8D77-22E55AE2DEB2",
+          "role_id": "f3bb205f-4b31-49f5-8412-a86d5527ec29",
           "is_list": true
         }
       ]
     },
     "DiplomatName": {
       "is_main": false,
-      "id": "1CB6DEBB-AECD-4559-B553-C7F379CAC561",
+      "id": "2493221b-56c7-450f-a38f-ac7a229c930b",
       "functions": [
         {
           "title": "Diplomat",
           "type": "Diplomat",
           "where": "this DiplomatName is of one Diplomat",
-          "role_id": "0B00E230-08DC-4973-BF61-FFF7DAECAA1D"
+          "role_id": "33831596-1441-4dd9-92a9-dee2809bb9b8"
         }
       ]
     },
     "Language": {
       "is_main": true,
-      "id": "D5B2E000-C821-4359-B0F2-55F46FEBF212",
+      "id": "1ebb916b-5bd4-43a9-a399-404c41cde15c",
       "functions": [
         {
           "title": "all Diplomat",
           "type": "Diplomat",
           "where": "this Language is spoken by some Diplomat",
-          "role_id": "1EADD61D-85F5-4FD4-B6E0-CA6BF16918E9",
+          "role_id": "d403771c-5d4d-4bfe-8953-60715ca312c3",
           "is_list": true
         },
         {
           "title": "LanguageName",
           "type": "LanguageName",
           "where": "this Language has one LanguageName",
-          "role_id": "09EAD705-1688-4D02-A6C6-66152D1BFA08"
+          "role_id": "58ed9ecc-30a4-4f24-b097-9f09c8aead1e"
         },
         {
           "title": "all Country",
           "type": "Country",
           "where": "this Language is spoken in some Country",
-          "role_id": "1ACC3A87-DA17-45B2-9741-FCC86A69AFDC",
+          "role_id": "aa1150c8-bba6-4ce3-a04a-592e94a098b8",
           "is_list": true
         }
       ]
     },
     "LanguageName": {
       "is_main": false,
-      "id": "E6B66595-3058-437B-B248-2E56D2D12FDA",
+      "id": "051bafb8-ec70-47d3-920a-12ade2b7ed61",
       "functions": [
         {
           "title": "Language",
           "type": "Language",
           "where": "this LanguageName is of one Language",
-          "role_id": "6789F8B6-FDDC-4E5F-B41A-FFDAFA6C9284"
+          "role_id": "11f5d17d-22fb-4459-b4d6-75ac0eed5515"
         }
       ]
     },
     "Representation": {
       "is_main": true,
-      "id": "DFDEEBB0-0735-4AE4-B616-E7C7FBE330E0",
+      "id": "2c359377-c3e3-4250-834b-f729e001b001",
       "functions": [
         {
           "title": "involving Ambassador",
@@ -173,7 +173,7 @@
         {
           "title": "involving Represented Country",
           "type": "Country",
-          "where": "some Ambassador is from this Represented Country to some Country"
+          "where": "this Represented Country is represented in some Country by some Ambassador"
         },
         {
           "title": "involving Country",
