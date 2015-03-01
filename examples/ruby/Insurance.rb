@@ -373,6 +373,7 @@ module ::Insurance
   class VehicleIncident < Incident
     has_one :description                        # See Description.all_vehicle_incident
     has_one :loss_type                          # See LossType.all_vehicle_incident
+    maybe :occurred_while_being_driven
     has_one :previous_damage_description, :class => Description  # See Description.all_vehicle_incident_as_previous_damage_description
     has_one :reason                             # See Reason.all_vehicle_incident
     has_one :towed_location, :class => Location  # See Location.all_vehicle_incident_as_towed_location
@@ -450,7 +451,7 @@ module ::Insurance
     has_one :breath_test_result, :class => TestResult  # See TestResult.all_driving_as_breath_test_result
     has_one :intoxication                       # See Intoxication.all_driving
     has_one :nonconsent_reason, :class => Reason  # See Reason.all_driving_as_nonconsent_reason
-    has_one :person                             # See Person.all_driving
+    has_one :person, :mandatory => true         # See Person.all_driving
     has_one :unlicensed_reason, :class => Reason  # See Reason.all_driving_as_unlicensed_reason
   end
 

@@ -10,7 +10,7 @@ module ActiveFacts
       module ObjectType
 	# Map the ObjectType name to an OO class name
 	def oo_type_name
-	  name.words.titlecase
+	  name.words.capcase
 	end
 
 	# Map the OO class name to a default role name

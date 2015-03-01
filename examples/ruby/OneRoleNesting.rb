@@ -44,6 +44,7 @@ module ::OneRoleNesting
   end
 
   class Person < Party
+    maybe :died
   end
 
   class Birth

@@ -78,7 +78,8 @@ module ActiveFacts
 		role_name = ref.to.name.words.snakecase
 		reading = ref.from_role.link_fact_type.default_reading
 	      else
-		if ref.is_unary && ref.is_from_objectified_fact
+		if ref.is_unary && ref.is_from_objectified_fact && ref != column.references.last
+		  # Use the name of the objectification on the path to other absorbed fact types:
 		  role_name = ref.to_role.fact_type.entity_type.name.words.snakecase
 		else
 		  role_name = ref.to_role.preferred_role_name

@@ -1,6 +1,8 @@
 CREATE TABLE AstronomicalObject (
 	-- AstronomicalObject has AstronomicalObject Code,
 	AstronomicalObjectCode                  varchar(12) NOT NULL,
+	-- AstronomicalObject is in orbit,
+	IsInOrbit                               bit NULL,
 	-- maybe AstronomicalObject has Mass,
 	Mass                                    Real(32) NULL,
 	-- maybe AstronomicalObject is a Moon and Moon has Moon Name,

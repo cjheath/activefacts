@@ -82,8 +82,8 @@ module ::Metamodel
 
   class Name < String
     value_type :length => 64
+    one_to_one :plural_named_unit, :class => "Unit", :counterpart => :plural_name  # See Unit.plural_name
     one_to_one :unit                            # See Unit.name
-    one_to_one :unit, :counterpart => :plural_name  # See Unit.plural_name
     one_to_one :vocabulary                      # See Vocabulary.name
   end
 
@@ -308,7 +308,7 @@ module ::Metamodel
     maybe :is_fundamental
     one_to_one :name, :mandatory => true        # See Name.unit
     has_one :offset                             # See Offset.all_unit
-    one_to_one :plural_name, :class => Name     # See Name.unit_as_plural_name
+    one_to_one :plural_name, :class => Name, :counterpart => :plural_named_unit  # See Name.plural_named_unit
     has_one :vocabulary, :mandatory => true     # See Vocabulary.all_unit
   end
 

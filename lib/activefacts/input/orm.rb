@@ -219,6 +219,7 @@ module ActiveFacts
         type_name = type_name.sub(/\(([0-9]*)\)/,'')
 
         subtype_roles = x.xpath("orm:PlayedRoles/orm:SubtypeMetaRole")
+	value_super_type = nil
         if !subtype_roles.empty?
           subtype_role_id = subtype_roles[0]['ref']
           subtype_role = @x_by_id[subtype_role_id]

@@ -173,9 +173,9 @@ Name is of at most one Unit,
 	Unit is called one Name;
 Unit has at most one Coefficient;
 Unit has at most one Offset;
-Unit has plural-Name;  // Avoid ambiguity; this is a new fact type
-Unit has at most one plural-Name,
-	plural-Name is of at most one Unit;
+Unit (as Plural Named Unit) has plural-Name;  // Avoid ambiguity; this is a new fact type
+Unit (as Plural Named Unit) has at most one plural-Name,
+	plural-Name is of at most one Plural Named Unit;
 Unit is fundamental;
 
 Value is identified by Literal and Value is literal string and Unit where

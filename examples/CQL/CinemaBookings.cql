@@ -60,5 +60,5 @@ Seat Allocation is where
 /*
  * Constraints:
  */
-Person booked Session (in which Cinema shows Film on DateTime) for Number of seats and Booking has allocated Seat
+Person booked Session (in which Cinema shows Film on DateTime) for Number of seats and Booking(1) has allocated Seat
 	only if Cinema contains Row that contains Seat;

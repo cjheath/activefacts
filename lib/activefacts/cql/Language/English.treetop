@@ -155,6 +155,7 @@ module ActiveFacts
 	    # "that" on the other hand means that this role player was *previously* designated using "some".
 	    # These distinctions are lost here
 	  / that s                  { def value; nil; end }
+	  / which s                 { def value; nil; end }
 	  / one s                   { def value; [1, 1]; end }
 	  / no s                    { def value; [0, 0]; end }
 	  / exactly s quantity      { def value; q = quantity.value; [q, q]; end }
@@ -264,7 +265,7 @@ module ActiveFacts
       rule in 'in' !alphanumeric end
       rule import 'import' !alphanumeric end
       rule independent 'independent' !alphanumeric end 
-      rule stronglyintransitive 'stronglyintransitive' !alphanumeric end
+      rule stronglyintransitive 'strongly' s 'intransitive' !alphanumeric end
       rule intransitive 'intransitive' !alphanumeric end
       rule irreflexive 'irreflexive' !alphanumeric end
       rule is 'is' !alphanumeric end 

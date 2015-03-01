@@ -48,20 +48,21 @@ module ActiveFacts
             }.
             sort_by{|role|
 	      other_role = role.fact_type.all_role.select{|r2| r2 != role}[0] || role
-              other_role.preferred_role_name(o)
+              other_role.preferred_role_name(o) + ':' + role.preferred_role_name(other_role.object_type)
             }.each{|role| 
               role_dump(role)
             }
         end
 
         def role_dump(role)
-          return if role.fact_type.entity_type
-
           fact_type = role.fact_type
           if fact_type.all_role.size == 1
             unary_dump(role, role.preferred_role_name)
             return
-          elsif fact_type.all_role.size != 2
+	  end
+          return if role.fact_type.entity_type
+
+          if fact_type.all_role.size != 2
             # Shouldn't come here, except perhaps for an invalid model
             return  # ternaries and higher are always objectified
           end

@@ -28,6 +28,7 @@ module ::Astronomy
   class AstronomicalObject
     identified_by :astronomical_object_code
     one_to_one :astronomical_object_code, :mandatory => true  # See AstronomicalObjectCode.astronomical_object
+    maybe :is_in_orbit
     has_one :mass                               # See Mass.all_astronomical_object
   end
 

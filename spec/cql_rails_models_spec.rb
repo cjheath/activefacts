@@ -57,7 +57,7 @@ describe "CQL Loader with Rails models output" do
       Dir.mkdir "spec/actual" rescue nil
       File.open(actual_file, "w") { |f| f.write models_text }
 
-      pending("expected output file #{expected_file} not found") unless File.exists? expected_file
+      skip("expected output file #{expected_file} not found") unless File.exists? expected_file
 
       expected_text = File.open(expected_file) {|f| f.read }
       broken = cql_models_failures[File.basename(cql_file, ".cql")]

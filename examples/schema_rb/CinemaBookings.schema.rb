@@ -1,8 +1,8 @@
 #
-# schema.rb auto-generated using ActiveFacts for CinemaBookings on 2014-10-21
+# schema.rb auto-generated using ActiveFacts for CinemaBookings on 2014-08-22
 #
 
-ActiveRecord::Schema.define(:version => 20141021184315) do
+ActiveRecord::Schema.define(:version => 20140822121340) do
   create_table "bookings", :primary_key => :booking_id, :force => true do |t|
     t.integer	"person_id", :null => false
     t.integer	"session_id", :null => false

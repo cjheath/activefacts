@@ -372,7 +372,7 @@ CREATE TABLE VehicleIncident (
 	DrivingIsAWarning                       bit NULL,
 	-- Driving (in which Vehicle Incident occurred while being driven) and maybe Driving was without owners consent for nonconsent-Reason,
 	DrivingNonconsentReason                 varchar NULL,
-	-- Driving (in which Vehicle Incident occurred while being driven) and maybe Driving was by Person and Person is a kind of Party and Party has Party ID,
+	-- Driving (in which Vehicle Incident occurred while being driven) and Driving was by Person and Person is a kind of Party and Party has Party ID,
 	DrivingPersonID                         int NULL,
 	-- Driving (in which Vehicle Incident occurred while being driven) and maybe Driving was unlicenced for unlicensed-Reason,
 	DrivingUnlicensedReason                 varchar NULL,

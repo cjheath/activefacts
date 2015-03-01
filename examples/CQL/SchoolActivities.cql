@@ -22,7 +22,7 @@ Student is enrolled in one School;
 
 Student Participation is where
 	Student represents School in Activity,
-	Student participates in Activity which is sanctioned by one School;
+	Student participates in Activity as representative of one School;
 
 /*
  * Constraints:

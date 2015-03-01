@@ -1,6 +1,6 @@
 RSpec::Matchers.define :be_different_array_from do |x|
   match do |actual|
-    perform_match(actual, expected)
+    perform_match(actual, expected_as_array)
     @extra + @missing != []
   end
 

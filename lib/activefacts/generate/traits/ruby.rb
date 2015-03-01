@@ -33,7 +33,7 @@ module ActiveFacts
             end.
             sort_by do |role|
               r = role.fact_type.all_role.select{|r2| r2 != role}[0] || role
-	      r.preferred_role_name(self)
+	      r.preferred_role_name(self) + ':' + role.preferred_role_name(r.object_type)
             end
 	end
 
@@ -156,7 +156,7 @@ module ActiveFacts
 
 	  base_type = supertype || self
 	  base_type_name = base_type.ruby_type_name
-	  ruby_name = name.sub(/^[a-z]/) {|i| i.upcase}.gsub(/ /,'')
+	  ruby_name = ruby_type_name
 	  if base_type_name == ruby_name
 	    base_type_name = '::'+base_type_name
 	  end

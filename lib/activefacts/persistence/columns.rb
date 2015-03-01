@@ -205,6 +205,8 @@ module ActiveFacts
 	    objectified_unary_columns =
 	      ((@to && @to.fact_type) ?  @to.all_columns(excluded_supertypes) : [])
 
+=begin
+	    # This code omits the unary if it's objectified and that plays a mandatory role
 	    first_mandatory_column = nil
 	    if (@to && @to.fact_type)
 	      debug :unary_col, "Deciding whether to skip unary column for #{inspect}" do
@@ -224,6 +226,9 @@ module ActiveFacts
 	    end
 
             (is_from_objectified_fact && first_mandatory_column ? [] : [Column.new()]) +	  # The unary itself, unless its objectified
+=end
+
+            [Column.new()] +	  # The unary itself
 	      objectified_unary_columns
           elsif is_self_value
             kind = "self-role "

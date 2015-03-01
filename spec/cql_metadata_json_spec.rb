@@ -60,7 +60,7 @@ describe "CQL Loader with JSON Metadata output" do
       Dir.mkdir "spec/actual" rescue nil
       File.open(actual_file, "w") { |f| f.write metadata_json_text }
 
-      pending("expected output file #{expected_file} not found") unless File.exists? expected_file
+      skip("expected output file #{expected_file} not found") unless File.exists? expected_file
 
       expected_text = File.open(expected_file) {|f| f.read }
       broken = cql_metadata_json_failures[File.basename(cql_file, ".cql")]

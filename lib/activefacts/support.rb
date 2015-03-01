@@ -195,6 +195,16 @@ class String
       titlewords.join('')
     end
 
+    def capwords
+      @words.map do |word|
+	word[0].upcase+word[1..-1]
+      end
+    end
+
+    def capcase
+      capwords.join('')
+    end
+
     def camelwords
       count = 0
       @words.map do |word|

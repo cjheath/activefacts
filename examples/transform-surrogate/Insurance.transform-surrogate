@@ -5,14 +5,14 @@ Cover: Asset.ID[*], Cover.Type.ID[*], Policy.ID[*]
 Cover Type: Cover.Type.Code[1], Cover.Type.ID[*], Cover.Type.Name[2]
 Cover Wording: Cover.Type.ID[1], Cover.Wording.ID[*], Policy.Wording.Text[1], Start.Date[1]
 Loss Type: Involves.Driving, Is.Single.Vehicle.Incident, Liability.Code, Loss.Type.Code[1], Loss.Type.ID[*]
-Lost Item: Description, Incident.ID[1], Lost.Item.ID[*], Lost.Item.Nr[1], Purchase.Date, Purchase.Place, Purchase.Price
+Lost Item: Description, Incident.Claim.ID[1], Lost.Item.ID[*], Lost.Item.Nr[1], Purchase.Date, Purchase.Place, Purchase.Price
 Party: Company.Contact.Person.ID, Is.A.Company, Party.ID[*], Person.Address.City, Person.Address.Postcode, Person.Address.State.ID, Person.Address.Street, Person.Birth.Date, Person.Business.Phone.Nr, Person.Contact.Time, Person.Email, Person.Family.Name, Person.Given.Name, Person.Home.Phone.Nr, Person.Is.International, Person.License.Number[1], Person.License.Type, Person.Mobile.Phone.Nr, Person.Occupation, Person.Preferred.Contact.Method, Person.Title, Person.Year.Nr, Postal.Address.City, Postal.Address.Postcode, Postal.Address.State.ID, Postal.Address.Street
 Policy: Application.Nr, Authorised.Rep.ID, ITC.Claimed, Insured.ID, P.Product.ID[1], P.Serial[1], P.State.ID[1], P.Year.Nr[1], Policy.ID[*]
 Product: Alias[1], Description[2], Product.Code[3], Product.ID[*]
-Property Damage: Address.City[1], Address.Postcode[1], Address.State.ID[1], Address.Street[1], Incident.ID[1], Owner.Name, Phone.Nr, Property.Damage.ID[*]
+Property Damage: Address.City[1], Address.Postcode[1], Address.State.ID[1], Address.Street[1], Incident.Claim.ID[1], Owner.Name, Phone.Nr, Property.Damage.ID[*]
 State: State.Code[1], State.ID[*], State.Name[2]
-Third Party: Insurer.ID, Model.Year.Nr, Person.ID[1], Third.Party.ID[*], Vehicle.Incident.ID[1], Vehicle.Registration.Nr, Vehicle.Type.Badge, Vehicle.Type.Make, Vehicle.Type.Model
-Underwriting Demerit: Occurrence.Count, Underwriting.Question.ID[*], Vehicle.Incident.ID[*]
+Third Party: Insurer.ID, Model.Year.Nr, Person.ID[1], Third.Party.ID[*], Vehicle.Incident.Claim.ID[1], Vehicle.Registration.Nr, Vehicle.Type.Badge, Vehicle.Type.Make, Vehicle.Type.Model
+Underwriting Demerit: Occurrence.Count, Underwriting.Question.ID[*], Vehicle.Incident.Claim.ID[*]
 Underwriting Question: Text[1], Underwriting.Question.ID[*]
-Vehicle Incident: Description, Driving.Blood.Test.Result, Driving.Breath.Test.Result, Driving.Charge, Driving.Hospital.Name, Driving.Intoxication, Driving.Is.A.Warning, Driving.Nonconsent.Reason, Driving.Person.ID, Driving.Unlicensed.Reason, Incident.ID[*], Loss.Type.ID, Occurred.While.Being.Driven, Previous.Damage.Description, Reason, Towed.Location, Weather.Description
-Witness: Address.City, Address.Postcode, Address.State.ID, Address.Street, Contact.Phone.Nr, Incident.ID[1], Name[1], Witness.ID[*]
+Vehicle Incident: Description, Driving.Blood.Test.Result, Driving.Breath.Test.Result, Driving.Charge, Driving.Hospital.Name, Driving.Intoxication, Driving.Is.A.Warning, Driving.Nonconsent.Reason, Driving.Person.ID, Driving.Unlicensed.Reason, Incident.Claim.ID[*], Loss.Type.ID, Occurred.While.Being.Driven, Previous.Damage.Description, Reason, Towed.Location, Weather.Description
+Witness: Address.City, Address.Postcode, Address.State.ID, Address.Street, Contact.Phone.Nr, Incident.Claim.ID[1], Name[1], Witness.ID[*]

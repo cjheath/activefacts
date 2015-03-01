@@ -363,6 +363,7 @@ module ActiveFacts
             r.tabulate
           end
         else
+	  # REVISIT: Should we implicitly objectify this fact type here and add a spanning UC?
           raise "Role #{role.object_type.name} in '#{role.fact_type.default_reading}' lacks a uniqueness constraint"
         end
       end

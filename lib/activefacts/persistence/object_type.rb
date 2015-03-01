@@ -12,6 +12,8 @@ module ActiveFacts
       end
 
       def columns
+raise "This method is no longer in use"
+=begin
         return @columns if @columns
         debug :persistence, "Calculating columns for #{basename}" do
           @columns = (
@@ -55,6 +57,7 @@ module ActiveFacts
               end*"."
             end
         end
+=end
       end
 
       # Return an array of the absorbed columns, using prefix for name truncation
