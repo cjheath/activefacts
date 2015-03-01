@@ -69,7 +69,7 @@ describe "When matching a reading" do
       end
 
       it "should remove duplicate new readings" do
-        pending("duplicate new clauses cause an error") do
+        skip("duplicate new clauses cause an error") do
           compile %q{
               Girl is going out with Boy,
                 Girl is going out with Boy,
@@ -99,7 +99,7 @@ describe "When matching a reading" do
           }
         (new_fact_types = fact_types).size.should == 1
         (readings = (fact_type = new_fact_types[0]).all_reading.to_a).size.should == 2
-        readings.detect{|r| r.text =~ /semi-trailer/}.should be_true
+        readings.detect{|r| r.text =~ /semi-trailer/}.should be_truthy
         (pcs = fact_pcs(fact_type)).size.should == 1
       end
 
@@ -112,7 +112,7 @@ describe "When matching a reading" do
       end
 
       it "should match role names" do
-        pending("duplicate new clauses cause an error") do
+        skip("duplicate new clauses cause an error") do
           compile %q{
               Girl (as Girlfriend) is going out with Boy,
               Boy is going out with Girlfriend;

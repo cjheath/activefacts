@@ -176,7 +176,7 @@ describe "When compiling a query, " do
     end
 
     it "and should project the fact type roles from the query" do
-      pending "Plays are not yet projected" do
+      skip "Plays are not yet projected" do
         query = derivation(fact_type)
         queries = fact_type.all_role.map{|r| r.all_play.map{|play| play.query}}.flatten.uniq
         queries.size == 1

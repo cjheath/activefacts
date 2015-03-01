@@ -78,7 +78,7 @@ describe "When comparing roles of a reading with an existing reading" do
       side_effects.size.should == 2
       side_effects[0].should_not be_nil
       side_effects[1].should be_nil
-      pending side_effects[0].to_s
+      skip side_effects[0].to_s
       side_effects[0].to_s.should == '[{bad- Boy} absorbs 0/0 at 0 with residual adjectives, {Girl} absorbs 0/0 at 5] with residual adjectives'
       #side_effects[1].to_s.should == ''
     end
@@ -91,7 +91,7 @@ describe "When comparing roles of a reading with an existing reading" do
       @asts.size.should == 1
       side_effects = match_readings_to_existing(@asts[0], @ugly_ft.all_reading.single)
       side_effects.size.should == 2
-      pending "Matched adjectives must be removed and the role rebound before deciding whether residual adjectives have a purpose" do
+      skip "Matched adjectives must be removed and the role rebound before deciding whether residual adjectives have a purpose" do
         side_effects[0].should_not be_nil
         puts side_effects[0].to_s
         #side_effects.to_s.should == ''
@@ -103,7 +103,7 @@ describe "When comparing roles of a reading with an existing reading" do
       parse %q{Boy-monster hurts Girl;}
       @asts.size.should == 1
       side_effects = match_readings_to_existing(@asts[0], @hurts_ft.all_reading.single)
-      pending "Thinks trailing adjectives are always residual"
+      skip "Thinks trailing adjectives are always residual"
       side_effects[0].should_not be_nil
       side_effects[0].to_s.should == ''
     end
@@ -137,7 +137,7 @@ describe "When comparing roles of a reading with an existing reading" do
       side_effects = match_readings_to_existing(@asts[0], @hurts_ft.all_reading.single)
       side_effects.size.should == 2
 
-      pending "Matched adjectives must be removed and the role rebound before deciding whether residual adjectives have a purpose" do
+      skip "Matched adjectives must be removed and the role rebound before deciding whether residual adjectives have a purpose" do
         side_effects[0].should_not be_nil
         puts side_effects.to_s
         # side_effects.to_s.should == ''
