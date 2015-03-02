@@ -307,7 +307,7 @@ describe "When compiling an entity type, " do
             test.call(@compiler.vocabulary.constellation)
           rescue RSpec::Expectations::ExpectationNotMetError
             raise
-          rescue RSpec::Core::Pending::PendingDeclaredInExample.new
+          rescue RSpec::Core::Pending::PendingDeclaredInExample
             raise
           rescue => e
             puts "Failed on\n\t"+tests.select{|t| t.is_a?(String)}*" "
