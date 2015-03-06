@@ -65,7 +65,7 @@ describe "Column lists from absorption compared with Ruby's" do
             begin
               eval_it.call
             rescue => exception
-              if debug :exception
+              if trace :exception
                 puts exception.to_s+": \n\t"+exception.backtrace*"\n\t"
               end
               raise
@@ -77,7 +77,7 @@ describe "Column lists from absorption compared with Ruby's" do
           begin
             eval_it.call
           rescue => exception
-            if debug :exception
+            if trace :exception
               puts exception.to_s+": \n\t"+exception.backtrace*"\n\t"
             end
             raise

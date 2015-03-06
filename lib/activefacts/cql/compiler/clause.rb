@@ -137,7 +137,7 @@ module ActiveFacts
           changed_conjunction = (lcc = context.left_contraction_conjunction) && lcc != conjunction
           if context.left_contraction_allowed && (new_conjunction || changed_conjunction)
             # Conjunctions are that/who, where, comparison-operator, ','
-            debug :matching, "A left contraction will be against #{self.inspect}, conjunction is #{conjunction.inspect}"
+            trace :matching, "A left contraction will be against #{self.inspect}, conjunction is #{conjunction.inspect}"
             context.left_contractable_clause = self
             left_contract_this_onto = nil # Can't left-contract this clause
           end
@@ -164,7 +164,7 @@ module ActiveFacts
             vrs.unshift contracted_role
             contracted_left = true
             phrases = [contracted_role]+phrases
-            debug :matching, "Failed to match #{inspect}. Trying again using left contraction onto #{contraction_player.name}"
+            trace :matching, "Failed to match #{inspect}. Trying again using left contraction onto #{contraction_player.name}"
           end
 
           contract_right = proc do
@@ -178,7 +178,7 @@ module ActiveFacts
             contracted_role.bind(context)
             vrs.push contracted_role
             phrases = phrases+[contracted_role]
-            debug :matching, "Failed to match #{inspect}. Trying again using right contraction onto #{contraction_player.name}"
+            trace :matching, "Failed to match #{inspect}. Trying again using right contraction onto #{contraction_player.name}"
           end
 
           begin
@@ -195,8 +195,8 @@ module ActiveFacts
 
             player_names = players.map{|p| p.name}
 
-            debug :matching, "Looking for existing #{players.size}-ary fact types matching '#{inspect(phrases)}'" do
-              debug :matching, "Players are '#{player_names.inspect}'"
+            trace :matching, "Looking for existing #{players.size}-ary fact types matching '#{inspect(phrases)}'" do
+              trace :matching, "Players are '#{player_names.inspect}'"
 
               # Match existing fact types in nested clauses first:
               # (not for contractions) REVISIT: Why not?
@@ -225,7 +225,7 @@ module ActiveFacts
                     player.subtypes_transitive).uniq
                 end
 
-              debug :matching, "Players must match '#{player_related_types.map{|pa| pa.map{|p|p.name}}.inspect}'"
+              trace :matching, "Players must match '#{player_related_types.map{|pa| pa.map{|p|p.name}}.inspect}'"
 
               start_obj = player_related_types[0] || [left_contract_this_onto.refs[-1].player]
               # The candidate fact types have the right number of role players of related types.
@@ -240,7 +240,7 @@ module ActiveFacts
 
 		    compatible_readings = role.fact_type.compatible_readings(player_related_types)
 		    next unless compatible_readings.size > 0
-		    debug :matching_fails, "These readings are compatible: #{compatible_readings.map(&:expand).inspect}"
+		    trace :matching_fails, "These readings are compatible: #{compatible_readings.map(&:expand).inspect}"
                     true
                   end.
                     map{ |role| role.fact_type}
@@ -248,7 +248,7 @@ module ActiveFacts
 
               # If there is more than one possible exact match (same adjectives) with different subyping, the implicit query is ambiguous and is not allowed
 
-              debug :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching #{left_insertion}'#{inspect}'#{right_insertion}" do
+              trace :matching, "Looking amongst #{candidate_fact_types.size} existing fact types for one matching #{left_insertion}'#{inspect}'#{right_insertion}" do
                 matches = {}
                 candidate_fact_types.map do |fact_type|
                   fact_type.all_reading.map do |reading|
@@ -268,7 +268,7 @@ module ActiveFacts
                   # Between equivalents, prefer the one without steps on the first role
                   (m = matches[match]).cost*2 + ((!(e = m.role_side_effects[0]) || e.cost) == 0 ? 0 : 1)
                 }
-                debug :matching_fails, "Found #{matches.size} valid matches#{matches.size > 0 ? ', best is '+best_matches[0].expand : ''}"
+                trace :matching_fails, "Found #{matches.size} valid matches#{matches.size > 0 ? ', best is '+best_matches[0].expand : ''}"
 
                 if matches.size > 1
                   first = matches[best_matches[0]]
@@ -286,14 +286,14 @@ module ActiveFacts
                   @reading = best_matches[0]
                   @side_effects = matches[@reading]
                   @fact_type = @side_effects.fact_type
-                  debug :matching, "Matched '#{@fact_type.default_reading}'"
+                  trace :matching, "Matched '#{@fact_type.default_reading}'"
                   @phrases = phrases
                   apply_side_effects(context, @side_effects)
                   return @fact_type
                 end
 
               end
-              debug :matching, "No fact type matched, candidates were '#{candidate_fact_types.map{|ft| ft.default_reading}*"', '"}'"
+              trace :matching, "No fact type matched, candidates were '#{candidate_fact_types.map{|ft| ft.default_reading}*"', '"}'"
             end
             if left_contract_this_onto
               if !contracted_left
@@ -343,21 +343,21 @@ module ActiveFacts
           # REVISIT: the verbaliser will need to know about a negated step to a free variable
           implicitly_negated = true if refs.detect{|ref| q = ref.quantifier and q.is_zero }
 
-          debug :matching_fails, "Does '#{phrases.inspect}' match '#{reading.expand}'" do
+          trace :matching_fails, "Does '#{phrases.inspect}' match '#{reading.expand}'" do
             phrase_num = 0
             reading_parts = reading.text.split(/\s+/)
             reading_parts.each do |element|
               phrase = phrases[phrase_num]
               if phrase == 'not'
                 raise "Stop playing games with your double negatives: #{phrases.inspect}" if implicitly_negated
-                debug :matching, "Negation detected"
+                trace :matching, "Negation detected"
                 implicitly_negated = true
                 phrase = phrases[phrase_num += 1]
               end
               if element !~ /\{(\d+)\}/
                 # Just a word; it must match
                 unless phrase == element
-                  debug :matching_fails, "Mismatched ordinary word #{phrases[phrase_num].inspect} (wanted #{element})"
+                  trace :matching_fails, "Mismatched ordinary word #{phrases[phrase_num].inspect} (wanted #{element})"
                   return nil
                 end
                 phrase_num += 1
@@ -390,11 +390,11 @@ module ActiveFacts
                 # This relies on the supertypes being in breadth-first order:
                 common_supertype = (next_player.supertypes_transitive & player.supertypes_transitive)[0]
                 if !common_supertype
-                  debug :matching_fails, "Reading discounted because next player #{player.name} doesn't match #{next_player.name}"
+                  trace :matching_fails, "Reading discounted because next player #{player.name} doesn't match #{next_player.name}"
                   return nil
                 end
 
-                debug :matching_fails, "Subtype step is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
+                trace :matching_fails, "Subtype step is required between #{player.name} and #{next_player_phrase.player.name} via common supertype #{common_supertype.name}"
               else
                 if !next_player_phrase
                   next    # Contraction succeeded so far
@@ -462,7 +462,7 @@ module ActiveFacts
               if a = (!phrase.role_name.is_a?(Integer) && phrase.role_name) and
                   e = role_ref.role.role_name and
                   a != e
-                debug :matching, "Role names #{e.inspect} for #{player.name} and #{a.inspect} for #{next_player_phrase.player.name} don't match"
+                trace :matching, "Role names #{e.inspect} for #{player.name} and #{a.inspect} for #{next_player_phrase.player.name} don't match"
                 return nil
               end
 =end
@@ -471,7 +471,7 @@ module ActiveFacts
               if residual_adjectives && next_player_phrase.binding.refs.size == 1
                 # This makes matching order-dependent, because there may be no "other purpose"
                 # until another reading has been matched and the roles rebound.
-                debug :matching_fails, "Residual adjectives have no other purpose, so this match fails"
+                trace :matching_fails, "Residual adjectives have no other purpose, so this match fails"
                 return nil
               end
 
@@ -480,7 +480,7 @@ module ActiveFacts
             end
 
             if phrase_num != phrases.size || !intervening_words.empty?
-              debug :matching_fails, "Extra words #{(intervening_words + phrases[phrase_num..-1]).inspect}"
+              trace :matching_fails, "Extra words #{(intervening_words + phrases[phrase_num..-1]).inspect}"
               return nil
             end
 
@@ -488,7 +488,7 @@ module ActiveFacts
               # There may be only one subtyping step on a TypeInheritance fact type.
               ti_steps = side_effects.select{|side_effect| side_effect.common_supertype}
               if ti_steps.size > 1   # Not allowed
-                debug :matching_fails, "Can't have more than one subtyping step on a TypeInheritance fact type"
+                trace :matching_fails, "Can't have more than one subtyping step on a TypeInheritance fact type"
                 return nil
               end
 
@@ -498,13 +498,13 @@ module ActiveFacts
                     fact_type.subtype.supertypes_transitive :
                     fact_type.supertype.subtypes_transitive
                 if !allowed.include?(ti.common_supertype)
-                  debug :matching_fails, "Implicit subtyping step extends in the wrong direction"
+                  trace :matching_fails, "Implicit subtyping step extends in the wrong direction"
                   return nil
                 end
               end
             end
 
-            debug :matching, "Matched reading '#{reading.expand}' (with #{
+            trace :matching, "Matched reading '#{reading.expand}' (with #{
                   side_effects.map{|side_effect|
                     side_effect.absorbed_precursors+side_effect.absorbed_followers + (side_effect.common_supertype ? 1 : 0)
                   }.inspect
@@ -520,12 +520,12 @@ module ActiveFacts
           @applied_side_effects = side_effects
           # Enact the side-effects of this match (delete the consumed adjectives):
           # Since this deletes words from the phrases, we do it in reverse order.
-          debug :matching, "Apply side-effects" do
+          trace :matching, "Apply side-effects" do
             side_effects.apply_all do |side_effect|
               phrase = side_effect.phrase
 
               # We re-use the role_ref if possible (no extra adjectives were used, no rolename or step, etc).
-              debug :matching, "side-effect means binding #{phrase.inspect} matches role ref #{side_effect.role_ref.role.object_type.name}"
+              trace :matching, "side-effect means binding #{phrase.inspect} matches role ref #{side_effect.role_ref.role.object_type.name}"
               phrase.role_ref = side_effect.role_ref
 
               changed = false
@@ -534,7 +534,7 @@ module ActiveFacts
               # the role_ref, those must be local, and we'll need to extract them.
 
               if rra = side_effect.role_ref.trailing_adjective
-                debug :matching, "Deleting matched trailing adjective '#{rra}'#{side_effect.absorbed_followers>0 ? " in #{side_effect.absorbed_followers} followers" : ""}, cost is #{side_effect.cost}"
+                trace :matching, "Deleting matched trailing adjective '#{rra}'#{side_effect.absorbed_followers>0 ? " in #{side_effect.absorbed_followers} followers" : ""}, cost is #{side_effect.cost}"
                 side_effect.cancel_cost side_effect.absorbed_followers
 
                 # These adjective(s) matched either an adjective here, or a follower word, or both.
@@ -554,7 +554,7 @@ module ActiveFacts
               end
 
               if rra = side_effect.role_ref.leading_adjective
-                debug :matching, "Deleting matched leading adjective '#{rra}'#{side_effect.absorbed_precursors>0 ? " in #{side_effect.absorbed_precursors} precursors" : ""}, cost is #{side_effect.cost}"
+                trace :matching, "Deleting matched leading adjective '#{rra}'#{side_effect.absorbed_precursors>0 ? " in #{side_effect.absorbed_precursors} precursors" : ""}, cost is #{side_effect.cost}"
                 side_effect.cancel_cost side_effect.absorbed_precursors
 
                 # These adjective(s) matched either an adjective here, or a precursor word, or both.
@@ -584,7 +584,7 @@ module ActiveFacts
         # Don't assign @fact_type; that will happen when the reading is added
         def make_fact_type vocabulary
           fact_type = vocabulary.constellation.FactType(:new)
-          debug :matching, "Making new fact type for #{@phrases.inspect}" do
+          trace :matching, "Making new fact type for #{@phrases.inspect}" do
             @phrases.each do |phrase|
               next unless phrase.respond_to?(:player)
               phrase.role = vocabulary.constellation.Role(fact_type, fact_type.all_role.size, :object_type => phrase.player, :concept => :new)
@@ -600,7 +600,7 @@ module ActiveFacts
           @role_sequence = constellation.RoleSequence(:new)
           reading_words = @phrases.clone
           index = 0
-          debug :matching, "Making new reading for #{@phrases.inspect}" do
+          trace :matching, "Making new reading for #{@phrases.inspect}" do
             reading_words.map! do |phrase|
               if phrase.respond_to?(:player)
                 # phrase.role will be set if this reading was used to make_fact_type.
@@ -664,7 +664,7 @@ module ActiveFacts
               if phrase.role_name != phrase.role_ref.role.role_name ||
                   phrase.leading_adjective ||
                   phrase.trailing_adjective
-                debug :matching, "phrase in matched clause has residual adjectives or role name, so needs a new role_sequence" if @fact_type.all_reading.size > 0
+                trace :matching, "phrase in matched clause has residual adjectives or role name, so needs a new role_sequence" if @fact_type.all_reading.size > 0
                 new_role_sequence_needed = true
               end
             else
@@ -673,7 +673,7 @@ module ActiveFacts
             end
           end
 
-          debug :matching, "Clause '#{reading_words*' '}' #{new_role_sequence_needed ? 'requires' : 'does not require'} a new Role Sequence"
+          trace :matching, "Clause '#{reading_words*' '}' #{new_role_sequence_needed ? 'requires' : 'does not require'} a new Role Sequence"
 
           constellation = @fact_type.constellation
           reading_text = reading_words*" "
@@ -695,15 +695,15 @@ module ActiveFacts
                 extra_adjectives << "(as #{a})"
               end
             end
-            debug :matching, "Making new role sequence for new reading #{reading_text} due to #{extra_adjectives.inspect}"
+            trace :matching, "Making new role sequence for new reading #{reading_text} due to #{extra_adjectives.inspect}"
           else
             # Use existing RoleSequence
             @role_sequence = role_phrases[0].role_ref.role_sequence
             if @role_sequence.all_reading.detect{|r| r.text == reading_text }
-              debug :matching, "No need to re-create identical reading for #{reading_text}"
+              trace :matching, "No need to re-create identical reading for #{reading_text}"
               return @role_sequence
             else
-              debug :matching, "Using existing role sequence for new reading '#{reading_text}'"
+              trace :matching, "Using existing role sequence for new reading '#{reading_text}'"
             end
           end
           if @fact_type.all_reading.
@@ -740,7 +740,7 @@ module ActiveFacts
             end
 
             # REVISIT: Check maybe and other qualifiers:
-            debug :constraint, "Need to make constraints for #{@qualifiers.inspect}" if @qualifiers.size > 0 or @certainty != true
+            trace :constraint, "Need to make constraints for #{@qualifiers.inspect}" if @qualifiers.size > 0 or @certainty != true
           end
         end
 
@@ -764,7 +764,7 @@ module ActiveFacts
           @common_supertype = common_supertype
           @residual_adjectives = residual_adjectives
           @cancelled_cost = 0
-          debug :matching_fails, "Saving side effects for #{@phrase.term}, absorbs #{@absorbed_precursors}/#{@absorbed_followers}#{@common_supertype ? ', step over supertype '+ @common_supertype.name : ''}" if @absorbed_precursors+@absorbed_followers+(@common_supertype ? 1 : 0) > 0
+          trace :matching_fails, "Saving side effects for #{@phrase.term}, absorbs #{@absorbed_precursors}/#{@absorbed_followers}#{@common_supertype ? ', step over supertype '+ @common_supertype.name : ''}" if @absorbed_precursors+@absorbed_followers+(@common_supertype ? 1 : 0) > 0
         end
 
         def cost
@@ -984,7 +984,7 @@ module ActiveFacts
         end
 
         def rebind_to(context, other_ref)
-          debug :binding, "Rebinding #{inspect} to #{other_ref.inspect}"
+          trace :binding, "Rebinding #{inspect} to #{other_ref.inspect}"
 
           old_binding = binding   # Remember to move all refs across
           unbind(context)
@@ -1022,20 +1022,20 @@ module ActiveFacts
           fact_type = @role_ref.role.fact_type
           constellation = vocabulary.constellation
 
-          debug :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role_ref.role.object_type.name} in #{fact_type.describe}" do
+          trace :constraint, "Processing embedded constraint #{@quantifier.inspect} on #{@role_ref.role.object_type.name} in #{fact_type.describe}" do
             # Preserve the role order of the clause, excluding this role:
             constrained_roles = (@clause.refs-[self]).map{|vr| vr.role_ref.role}
             if constrained_roles.empty?
-              debug :constraint, "Quantifier over unary role has no effect"
+              trace :constraint, "Quantifier over unary role has no effect"
               return
             end
             constraint = find_pc_over_roles(constrained_roles)
             if constraint
               raise "Conflicting maximum frequency for constraint" if constraint.max_frequency && constraint.max_frequency != @quantifier.max
-              debug :constraint, "Setting max frequency to #{@quantifier.max} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}" unless constraint.max_frequency
+              trace :constraint, "Setting max frequency to #{@quantifier.max} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}" unless constraint.max_frequency
               constraint.max_frequency = @quantifier.max
               raise "Conflicting minimum frequency for constraint" if constraint.min_frequency && constraint.min_frequency != @quantifier.min
-              debug :constraint, "Setting min frequency to #{@quantifier.min} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}" unless constraint.min_frequency
+              trace :constraint, "Setting min frequency to #{@quantifier.min} for existing constraint #{constraint.object_id} over #{constraint.role_sequence.describe} in #{fact_type.describe}" unless constraint.min_frequency
               constraint.min_frequency = @quantifier.min
             else
               role_sequence = constellation.RoleSequence(:new)
@@ -1050,7 +1050,7 @@ module ActiveFacts
                   :max_frequency => @quantifier.max,
                   :min_frequency => @quantifier.min
                 )
-              debug :constraint, "Made new embedded PC GUID=#{constraint.concept.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
+              trace :constraint, "Made new embedded PC GUID=#{constraint.concept.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
               @quantifier.enforcement.compile(constellation, constraint) if @quantifier.enforcement
               @embedded_presence_constraint = constraint
             end

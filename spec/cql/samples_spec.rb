@@ -181,7 +181,7 @@ describe "Sample data" do
           @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
 	  @vocabulary.finalise
         rescue => exception
-          if debug :exception
+          if trace :exception
             puts "#{exception.message}"
             puts "\t#{exception.backtrace*"\n\t"}"
           end
@@ -206,7 +206,7 @@ describe "Sample data" do
         begin
           @vocabulary = ActiveFacts::Input::CQL.readstring(@text)
         rescue => exception
-          if debug :exception
+          if trace :exception
             puts "#{exception.message}"
             puts "\t#{exception.backtrace*"\n\t"}"
           end

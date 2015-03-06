@@ -107,7 +107,7 @@ module ActiveFacts
 	    ref.fk_jump = true
             array << [ref]
           elsif ref.is_absorbing or (ref.to && !ref.to.is_table)
-	    debug :fk, "getting fks absorbed into #{name} via #{ref}" do
+	    trace :fk, "getting fks absorbed into #{name} via #{ref}" do
 	      ref.to.all_absorbed_foreign_key_reference_path.each do |aref|
 		array << aref.insert(0, ref)
 	      end
@@ -129,24 +129,24 @@ module ActiveFacts
 	  begin
 	    fk_ref_paths = all_absorbed_foreign_key_reference_path
 	    fk_ref_paths.map do |fk_ref_path|
-	      debug :fk, "\nFK: " + fk_ref_path.map{|fk_ref| fk_ref.reading }*" and " do
+	      trace :fk, "\nFK: " + fk_ref_path.map{|fk_ref| fk_ref.reading }*" and " do
 
 		from_columns = (columns||all_columns({})).select{|column|
 		  column.references[0...fk_ref_path.size] == fk_ref_path
 		}
-		debug :fk, "from_columns = #{from_columns.map { |column| column.name }*", "}"
+		trace :fk, "from_columns = #{from_columns.map { |column| column.name }*", "}"
 
 		# Figure out absorption on the target end:
 		to = fk_ref_path.last.to
 		if to.absorbed_via
-		  debug :fk, "Reference target #{fk_ref_path.last.to.name} is absorbed via:" do
+		  trace :fk, "Reference target #{fk_ref_path.last.to.name} is absorbed via:" do
 		    while (r = to.absorbed_via)
 		      m = r.reversed
-		      debug :fk, "#{m.reading}"
+		      trace :fk, "#{m.reading}"
 		      fk_ref_path << m
 		      to = m.from == to ? m.to : m.from
 		    end
-		    debug :fk, "Absorption ends at #{to.name}"
+		    trace :fk, "Absorption ends at #{to.name}"
 		  end
 		end
 

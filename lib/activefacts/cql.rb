@@ -19,7 +19,7 @@ module ActiveFacts
   #   require 'activefacts/cql'
   class CQLLoader
     def self.load(file) #:nodoc:
-      debug "Loading #{file}" do
+      trace "Loading #{file}" do
         vocabulary = ActiveFacts::Input::CQL.readfile(file)
 
         ruby = StringIO.new

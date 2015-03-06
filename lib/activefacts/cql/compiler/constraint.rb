@@ -105,13 +105,13 @@ module ActiveFacts
 
         def loose_bind_wherever_possible
           # Apply loose binding over applicable roles:
-          debug :binding, "Loose binding on #{self.class.name}" do
+          trace :binding, "Loose binding on #{self.class.name}" do
             @clauses_lists.each do |clauses_list|
               clauses_list.each do |clause|
                 clause.refs.each_with_index do |ref, i|
                   next if ref.binding.refs.size > 1
 #                  if clause.side_effects && !clause.side_effects.role_side_effects[i].residual_adjectives
-#                    debug :binding, "Discounting #{ref.inspect} as needing loose binding because it has no residual_adjectives"
+#                    trace :binding, "Discounting #{ref.inspect} as needing loose binding because it has no residual_adjectives"
 #                    next
 #                  end
                   # This ref didn't match any other ref. Have a scout around for a suitable partner
@@ -128,7 +128,7 @@ module ActiveFacts
                         }
                     end.map{|k,b| b}
                   next if candidates.size != 1  # Fail
-                  debug :binding, "Loose binding #{ref.inspect} to #{candidates[0].inspect}"
+                  trace :binding, "Loose binding #{ref.inspect} to #{candidates[0].inspect}"
                   ref.rebind_to(@context, candidates[0].refs[0])
                 end
               end
@@ -138,15 +138,15 @@ module ActiveFacts
 
         def loose_bind
           # Apply loose binding over applicable @roles:
-          debug :binding, "Check for loose bindings on #{@roles.size} roles in #{self.class.name}" do
+          trace :binding, "Check for loose bindings on #{@roles.size} roles in #{self.class.name}" do
             @roles.each do |ref|
               if ref.binding.refs.size < @clauses_lists.size+1
-                debug :binding, "Insufficient bindings for #{ref.inspect} (#{ref.binding.refs.size}, expected #{@clauses_lists.size+1}), attempting loose binding" do
+                trace :binding, "Insufficient bindings for #{ref.inspect} (#{ref.binding.refs.size}, expected #{@clauses_lists.size+1}), attempting loose binding" do
                   @clauses_lists.each do |clauses_list|
                     candidates = []
                     next if clauses_list.
                       detect do |clause|
-                        debug :binding, "Checking #{clause.inspect}"
+                        trace :binding, "Checking #{clause.inspect}"
                         clause.refs.
                           detect do |vr|
                             already_bound = vr.binding == ref.binding
@@ -156,10 +156,10 @@ module ActiveFacts
                             already_bound
                           end
                       end
-                    debug :binding, "Attempting loose binding for #{ref.inspect} in #{clauses_list.inspect}, from the following candidates: #{candidates.inspect}"
+                    trace :binding, "Attempting loose binding for #{ref.inspect} in #{clauses_list.inspect}, from the following candidates: #{candidates.inspect}"
 
                     if candidates.size == 1
-                      debug :binding, "Rebinding #{candidates[0].inspect} to #{ref.inspect}"
+                      trace :binding, "Rebinding #{candidates[0].inspect} to #{ref.inspect}"
                       candidates[0].rebind_to(@context, ref)
                     end
                   end
@@ -226,7 +226,7 @@ module ActiveFacts
               :is_mandatory => @quantifier.min && @quantifier.min > 0
             )
           @enforcement.compile(@constellation, @constraint) if @enforcement
-	  debug :constraint, "Made new PC GUID=#{@constraint.concept.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{role_sequence.describe}"
+	  trace :constraint, "Made new PC GUID=#{@constraint.concept.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{role_sequence.describe}"
           super
         end
 
@@ -244,7 +244,7 @@ module ActiveFacts
                   clause.refs.select{ |vr| vr.player == ref.player }
                 end.flatten
               if candidates.size == 1
-                debug :binding, "Rebinding #{ref.inspect} to #{candidates[0].inspect} in presence constraint"
+                trace :binding, "Rebinding #{ref.inspect} to #{candidates[0].inspect} in presence constraint"
                 ref.rebind_to(@context, candidates[0])
               end
             end
@@ -276,8 +276,8 @@ module ActiveFacts
 		clause.includes_literals
 	      end
 
-              debug :query, "Building query for #{clauses_list.inspect}" do
-                debug :query, "Constrained bindings are #{@common_bindings.inspect}"
+              trace :query, "Building query for #{clauses_list.inspect}" do
+                trace :query, "Constrained bindings are #{@common_bindings.inspect}"
                 # Every Binding in these clauses becomes a Variable,
                 # and every clause becomes a Step (and a RoleSequence).
                 # The returned RoleSequences contains the RoleRefs for the common_bindings.
@@ -301,7 +301,7 @@ module ActiveFacts
               role_sequence = @constellation.RoleSequence(:new)
               query_bindings = bindings-@common_bindings
               unless query_bindings.empty? or ignore_trailing_steps && query_bindings.size <= 1
-                debug :constraint, "REVISIT: #{self.class}: Ignoring query from #{@common_bindings.inspect} to #{query_bindings.inspect} in #{clauses_list.inspect}"
+                trace :constraint, "REVISIT: #{self.class}: Ignoring query from #{@common_bindings.inspect} to #{query_bindings.inspect} in #{clauses_list.inspect}"
               end
               @common_bindings.each do |binding|
                 roles = clauses_list.
@@ -483,7 +483,7 @@ module ActiveFacts
               :ring_type => ring_type
             )
 
-          debug :constraint, "Added #{@constraint.verbalise}"
+          trace :constraint, "Added #{@constraint.verbalise}"
           super
         end
 

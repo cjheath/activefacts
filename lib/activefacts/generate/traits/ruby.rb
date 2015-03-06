@@ -72,7 +72,7 @@ module ActiveFacts
             return name_builder.call(object_type.name.words)
           end
 
-          # debug "Looking for preferred_role_name of #{describe_fact_type(fact_type, self)}"
+          # trace "Looking for preferred_role_name of #{describe_fact_type(fact_type, self)}"
           reading = fact_type.preferred_reading
           preferred_role_ref = reading.role_sequence.all_role_ref.detect{|reading_rr|
               reading_rr.role == self
@@ -102,7 +102,7 @@ module ActiveFacts
 
           # n = role_words.map{|w| w.gsub(/([a-z])([A-Z]+)/,'\1_\2').downcase}*"_"
 	  n = role_words*'_'
-          # debug "\tresult=#{n}"
+          # trace "\tresult=#{n}"
           return name_builder.call(n.gsub(' ','_').split(/_/))
         end
 

@@ -29,7 +29,7 @@ module ActiveFacts
         super *a
         @constellation = ActiveFacts::API::Constellation.new(ActiveFacts::Metamodel)
         @language = nil
-        debug :file, "Parsing '#{@filename}'"
+        trace :file, "Parsing '#{@filename}'"
       end
 
       def compile_file filename
@@ -64,16 +64,16 @@ module ActiveFacts
         # The syntax tree created from each parsed CQL statement gets passed to the block.
         # parse_all returns an array of the block's non-nil return values.
         ok = parse_all(@string, :definition) do |node|
-          debug :parse, "Parsed '#{node.text_value.gsub(/\s+/,' ').strip}'" do
+          trace :parse, "Parsed '#{node.text_value.gsub(/\s+/,' ').strip}'" do
             begin
               ast = node.ast
               next unless ast
-              debug :ast, ast.inspect
+              trace :ast, ast.inspect
               ast.tree = node
               ast.constellation = @constellation
               ast.vocabulary = @vocabulary
               value = compile_definition ast
-              debug :definition, "Compiled to #{value.is_a?(Array) ? value.map{|v| v.verbalise}*', ' : value.verbalise}" if value
+              trace :definition, "Compiled to #{value.is_a?(Array) ? value.map{|v| v.verbalise}*', ' : value.verbalise}" if value
               @vocabulary = value if ast.is_a?(Compiler::Vocabulary)
             rescue => e
               # Augment the exception message, but preserve the backtrace
@@ -123,7 +123,7 @@ module ActiveFacts
       def unit? s
         name = @constellation.Name[s]
         units = (!name ? [] : Array(name.unit) + Array(name.plural_named_unit)).uniq
-        debug :units, "Looking for unit #{s}, got #{units.map{|u|u.name}.inspect}"
+        trace :units, "Looking for unit #{s}, got #{units.map{|u|u.name}.inspect}"
         units.size > 0
       end
 

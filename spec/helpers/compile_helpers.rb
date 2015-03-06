@@ -47,7 +47,7 @@ module CompileHelpers
   def parse string
     lambda {
       @asts = @compiler.parse_all(string, :definition).map{ |tree|
-        debug :parse, "Parsed '#{tree.text_value.gsub(/\s+/,' ').strip}'"
+        trace :parse, "Parsed '#{tree.text_value.gsub(/\s+/,' ').strip}'"
         ast = tree.ast
         ast.vocabulary = @compiler.vocabulary
         ast.constellation = @compiler.vocabulary.constellation

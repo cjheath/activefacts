@@ -10,7 +10,7 @@ module ActiveFacts
       def finalise
         constellation.FactType.values.each do |fact_type|
           if c = fact_type.check_and_add_spanning_uniqueness_constraint
-            debug :constraint, "Checking for existence of at least one uniqueness constraint over the roles of #{fact_type.default_reading.inspect}"
+            trace :constraint, "Checking for existence of at least one uniqueness constraint over the roles of #{fact_type.default_reading.inspect}"
             fact_type.check_and_add_spanning_uniqueness_constraint = nil
             c.call
           end
@@ -292,7 +292,7 @@ module ActiveFacts
 
           # For a nested fact type, the PI is a unique constraint over N or N-1 roles
           fact_roles = Array(fact_type.all_role)
-          debug :pi, "Looking for PI on nested fact type #{name}" do
+          trace :pi, "Looking for PI on nested fact type #{name}" do
             pi = catch :pi do
                 fact_roles[0,2].each{|r|                  # Try the first two roles of the fact type, that's enough
                     r.all_role_ref.map{|rr|               # All role sequences that reference this role
@@ -326,18 +326,18 @@ module ActiveFacts
                   }
                 throw :pi, nil
               end
-            debug :pi, "Got PI #{pi.name||pi.object_id} for nested #{name}" if pi
-            debug :pi, "Looking for PI on entity that nests this fact" unless pi
+            trace :pi, "Got PI #{pi.name||pi.object_id} for nested #{name}" if pi
+            trace :pi, "Looking for PI on entity that nests this fact" unless pi
             raise "Oops, pi for nested fact is #{pi.class}" unless !pi || pi.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
             return @preferred_identifier = pi if pi
           end
         end
 
-        debug :pi, "Looking for PI for ordinary entity #{name} with #{all_role.size} roles:" do
-          debug :pi, "Roles are in fact types #{all_role.map{|r| r.fact_type.describe(r)}*", "}"
+        trace :pi, "Looking for PI for ordinary entity #{name} with #{all_role.size} roles:" do
+          trace :pi, "Roles are in fact types #{all_role.map{|r| r.fact_type.describe(r)}*", "}"
           pi = catch :pi do
               all_supertypes = supertypes_transitive
-              debug :pi, "PI roles must be played by one of #{all_supertypes.map(&:name)*", "}" if all_supertypes.size > 1
+              trace :pi, "PI roles must be played by one of #{all_supertypes.map(&:name)*", "}" if all_supertypes.size > 1
               all_role.each{|role|
                   next unless role.unique || fact_type
                   ftroles = Array(role.fact_type.all_role)
@@ -345,41 +345,41 @@ module ActiveFacts
                   # Skip roles in ternary and higher fact types, they're objectified, and in unaries, they can't identify us.
                   next if ftroles.size != 2
 
-                  debug :pi, "Considering role in #{role.fact_type.describe(role)}"
+                  trace :pi, "Considering role in #{role.fact_type.describe(role)}"
 
                   # Find the related role which must be included in any PI:
                   # Note this works with unary fact types:
                   pi_role = ftroles[ftroles[0] != role ? 0 : -1]
 
                   next if ftroles.size == 2 && pi_role.object_type == self
-                  debug :pi, "  Considering #{pi_role.object_type.name} as a PI role"
+                  trace :pi, "  Considering #{pi_role.object_type.name} as a PI role"
 
                   # If this is an identifying role, the PI is a PC whose role_sequence spans the role.
                   # Walk through all role_sequences that span this role, and test each:
                   pi_role.all_role_ref.each{|rr|
                       role_sequence = rr.role_sequence  # A role sequence that includes a possible role
 
-                      debug :pi, "    Considering role sequence #{role_sequence.describe}"
+                      trace :pi, "    Considering role sequence #{role_sequence.describe}"
 
                       # All roles in this role_sequence must be in fact types which
                       # (apart from that role) only have roles played by the original
                       # entity type or a supertype.
-                      #debug :pi, "      All supertypes #{all_supertypes.map{|st| "#{st.object_id}=>#{st.name}"}*", "}"
+                      #trace :pi, "      All supertypes #{all_supertypes.map{|st| "#{st.object_id}=>#{st.name}"}*", "}"
                       if role_sequence.all_role_ref.detect{|rsr|
                           fact_type = rsr.role.fact_type
-                          debug :pi, "      Role Sequence touches #{fact_type.describe(pi_role)}"
+                          trace :pi, "      Role Sequence touches #{fact_type.describe(pi_role)}"
 
                           fact_type_roles = fact_type.all_role
-                          debug :pi, "      residual is #{fact_type_roles.map{|r| r.object_type.name}.inspect} minus #{rsr.role.object_type.name}"
+                          trace :pi, "      residual is #{fact_type_roles.map{|r| r.object_type.name}.inspect} minus #{rsr.role.object_type.name}"
                           residual_roles = fact_type_roles-[rsr.role]
                           residual_roles.detect{|rfr|
-                              debug :pi, "        Checking residual role #{rfr.object_type.object_id}=>#{rfr.object_type.name}"
+                              trace :pi, "        Checking residual role #{rfr.object_type.object_id}=>#{rfr.object_type.name}"
 # This next line looks right, but breaks things. Find out what and why:
 #                              !rfr.unique or
                                 !all_supertypes.include?(rfr.object_type)
                             }
                         }
-                        debug :pi, "      Discounting this role_sequence because it includes alien roles"
+                        trace :pi, "      Discounting this role_sequence because it includes alien roles"
                         next
                       end
 
@@ -387,7 +387,7 @@ module ActiveFacts
                       rr.role_sequence.all_presence_constraint.detect{|pc|
                           # Found it!
                           if pc.is_preferred_identifier
-                            debug :pi, "found PI #{pc.name||pc.object_id}, is_preferred_identifier=#{pc.is_preferred_identifier.inspect} over #{pc.role_sequence.describe}"
+                            trace :pi, "found PI #{pc.name||pc.object_id}, is_preferred_identifier=#{pc.is_preferred_identifier.inspect} over #{pc.role_sequence.describe}"
                             throw :pi, pc
                           end
                         }
@@ -396,13 +396,13 @@ module ActiveFacts
               throw :pi, nil
             end
           raise "Oops, pi for entity is #{pi.class}" if pi && !pi.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
-          debug :pi, "Got PI #{pi.name||pi.object_id} for #{name}" if pi
+          trace :pi, "Got PI #{pi.name||pi.object_id} for #{name}" if pi
 
           if !pi
             if (supertype = identifying_supertype)
               # This shouldn't happen now, as an identifying supertype is connected by a fact type
               # that has a uniqueness constraint marked as the preferred identifier.
-              #debug :pi, "PI not found for #{name}, looking in supertype #{supertype.name}"
+              #trace :pi, "PI not found for #{name}, looking in supertype #{supertype.name}"
               #pi = supertype.preferred_identifier
               #return nil
             elsif fact_type
@@ -423,11 +423,11 @@ module ActiveFacts
                 break if pi
               }
 	      if !pi && possible_pi
-		debug :pi, "Using existing PC as PI for #{name}"
+		trace :pi, "Using existing PC as PI for #{name}"
 		pi = possible_pi
 	      end
             else
-              debug :pi, "No PI found for #{name}"
+              trace :pi, "No PI found for #{name}"
             end
           end
           raise "No PI found for #{name}" unless pi
@@ -467,14 +467,14 @@ module ActiveFacts
 
       # A subtype does not have a identifying_supertype if it defines its own identifier
       def identifying_supertype
-        debug "Looking for identifying_supertype of #{name}"
+        trace "Looking for identifying_supertype of #{name}"
         all_type_inheritance_as_subtype.detect{|ti|
-            debug "considering supertype #{ti.supertype.name}"
+            trace "considering supertype #{ti.supertype.name}"
             next unless ti.provides_identification
-            debug "found identifying supertype of #{name}, it's #{ti.supertype.name}"
+            trace "found identifying supertype of #{name}, it's #{ti.supertype.name}"
             return ti.supertype
           }
-        debug "Failed to find identifying supertype of #{name}"
+        trace "Failed to find identifying supertype of #{name}"
         return nil
       end
 
@@ -554,7 +554,7 @@ module ActiveFacts
             end
         }
         expanded.gsub!(/ ?- ?/, '-')        # Remove single spaces around adjectives
-        #debug "Expanded '#{expanded}' using #{frequency_constraints.inspect}"
+        #trace "Expanded '#{expanded}' using #{frequency_constraints.inspect}"
         expanded
       end
 
@@ -780,17 +780,17 @@ module ActiveFacts
     class Query
       def show
         steps_shown = {}
-        debug :query, "Displaying full contents of Query #{concept.guid}" do
+        trace :query, "Displaying full contents of Query #{concept.guid}" do
           all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
-            debug :query, "#{variable.describe}" do
+            trace :query, "#{variable.describe}" do
               variable.all_step.
                 each do |step|
                   next if steps_shown[step]
                   steps_shown[step] = true
-                  debug :query, "#{step.describe}"
+                  trace :query, "#{step.describe}"
                 end
               variable.all_play.each do |play|
-                debug :query, "role of #{play.describe} in '#{play.role.fact_type.default_reading}'"
+                trace :query, "role of #{play.describe} in '#{play.role.fact_type.default_reading}'"
               end
             end
           end
@@ -982,9 +982,9 @@ module ActiveFacts
       # Discount a subtype step over an object type that's not a player here,
       # if we can use an objectification step to an object type that is:
       if counterpart_sups.size > 0 && obj_sups.size > 0 && counterpart_sups[0] != obj_sups[0]
-        debug :query, "ambiguous query, could be over #{counterpart_sups[0].name} or #{obj_sups[0].name}"
+        trace :query, "ambiguous query, could be over #{counterpart_sups[0].name} or #{obj_sups[0].name}"
         if !roles.detect{|r| r.object_type == counterpart_sups[0]} and roles.detect{|r| r.object_type == obj_sups[0]}
-          debug :query, "discounting #{counterpart_sups[0].name} in favour of direct objectification"
+          trace :query, "discounting #{counterpart_sups[0].name} in favour of direct objectification"
           counterpart_sups = []
         end
       end

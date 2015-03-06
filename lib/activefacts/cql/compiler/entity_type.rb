@@ -122,7 +122,7 @@ module ActiveFacts
           if (pc)
             pc.is_preferred_identifier = true
             pc.name = "#{@entity_type.name}PK" unless pc.name
-            debug "Existing PC #{pc.verbalise} is now PK for #{@entity_type.name}"
+            trace "Existing PC #{pc.verbalise} is now PK for #{@entity_type.name}"
           else
             # Add a unique constraint over all identifying roles
             pc = @constellation.PresenceConstraint(
@@ -135,7 +135,7 @@ module ActiveFacts
                 #:is_mandatory => true,
                 #:min_frequency => 1,
               )
-	    debug :constraint, "Made new preferred PC GUID=#{pc.concept.guid} min=nil max=1 over #{role_sequence.describe}"
+	    trace :constraint, "Made new preferred PC GUID=#{pc.concept.guid} min=nil max=1 over #{role_sequence.describe}"
           end
         end
 
@@ -183,7 +183,7 @@ module ActiveFacts
 
           operation = any_matched ? 'Objectifying' : 'Creating'
           player_names = clauses[0].refs.map{|vr| vr.key.compact*'-'}
-          debug :matching, "#{operation} fact type for #{clauses.size} clauses over (#{player_names*', '})" do
+          trace :matching, "#{operation} fact type for #{clauses.size} clauses over (#{player_names*', '})" do
             if any_matched  # There's an existing fact type we must be objectifying
               fact_type = objectify_existing_fact_type(existing_clauses[0].fact_type)
             end
@@ -220,7 +220,7 @@ module ActiveFacts
               :is_preferred_identifier => false,  # We only get here when there is a reference mode on the entity type
               :max_frequency => 1
             )
-	    debug :constraint, "Made new objectification PC GUID=#{pc.concept.guid} min=nil max=1 over #{fact_type.preferred_reading.role_sequence.describe}"
+	    trace :constraint, "Made new objectification PC GUID=#{pc.concept.guid} min=nil max=1 over #{fact_type.preferred_reading.role_sequence.describe}"
           end
 
           @fact_type = @entity_type.fact_type = fact_type
@@ -229,7 +229,7 @@ module ActiveFacts
         end
 
         def add_supertype(supertype_name, not_identifying)
-          debug :supertype, "Adding #{not_identifying ? '' : 'identifying '}supertype #{supertype_name} to #{@entity_type.name}" do
+          trace :supertype, "Adding #{not_identifying ? '' : 'identifying '}supertype #{supertype_name} to #{@entity_type.name}" do
             supertype = @vocabulary.valid_entity_type_name(supertype_name) ||
 	      @constellation.EntityType(@vocabulary, supertype_name, :concept => :new) # Should always already exist
 
@@ -275,7 +275,7 @@ module ActiveFacts
             pc1.min_frequency = 1
             pc1.max_frequency = 1
             pc1.is_preferred_identifier = false
-	    debug :constraint, "Made new subtype PC GUID=#{pc1.concept.guid} min=1 max=1 over #{p1rs.describe}"
+	    trace :constraint, "Made new subtype PC GUID=#{pc1.concept.guid} min=1 max=1 over #{p1rs.describe}"
 
             p2rs = @constellation.RoleSequence(:new)
             constellation.RoleRef(p2rs, 0).role = super_role
@@ -287,15 +287,15 @@ module ActiveFacts
             pc2.max_frequency = 1
             # The supertype role often identifies the subtype:
             pc2.is_preferred_identifier = inheritance_fact.provides_identification
-	    debug :supertype, "identification of #{@entity_type.name} via supertype #{supertype.name} was #{inheritance_fact.provides_identification ? '' : 'not '}added"
-	    debug :constraint, "Made new supertype PC GUID=#{pc2.concept.guid} min=1 max=1 over #{p2rs.describe}"
+	    trace :supertype, "identification of #{@entity_type.name} via supertype #{supertype.name} was #{inheritance_fact.provides_identification ? '' : 'not '}added"
+	    trace :constraint, "Made new supertype PC GUID=#{pc2.concept.guid} min=1 max=1 over #{p2rs.describe}"
           end
         end
 
         def make_entity_type_refmode_valuetypes(name, mode, parameters)
           vt_name = "#{name}#{mode}"
           vt = nil
-          debug :entity, "Preparing value type #{vt_name} for reference mode" do
+          trace :entity, "Preparing value type #{vt_name} for reference mode" do
             # Find an existing ValueType called 'vt_name' or 'name vtname'
 	    # or find/create the supertype '#{mode}' and the subtype
             unless vt = @vocabulary.valid_object_type_name(vt_name) or
@@ -309,7 +309,7 @@ module ActiveFacts
                 vt.scale = scale if scale
               end
             else
-              debug :entity, "Value type #{vt_name} already exists"
+              trace :entity, "Value type #{vt_name} already exists"
             end
           end
 
@@ -363,9 +363,9 @@ module ActiveFacts
           end
           if rs01.all_reading.empty?
             @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs01, :text => "{0} has {1}", :is_negative => false)
-            debug :mode, "Creating new forward reading '#{entity_role.object_type.name} has #{identifying_type.name}'"
+            trace :mode, "Creating new forward reading '#{entity_role.object_type.name} has #{identifying_type.name}'"
           else
-            debug :mode, "Using existing forward reading"
+            trace :mode, "Using existing forward reading"
           end
 
           # Make a reverse reading if none exists
@@ -377,20 +377,20 @@ module ActiveFacts
           end
           if rs10.all_reading.empty?
             @constellation.Reading(fact_type, fact_type.all_reading.size, :role_sequence => rs10, :text => "{0} is of {1}", :is_negative => false)
-            debug :mode, "Creating new reverse reading '#{identifying_type.name} is of #{entity_role.object_type.name}'"
+            trace :mode, "Creating new reverse reading '#{identifying_type.name} is of #{entity_role.object_type.name}'"
           else
-            debug :mode, "Using existing reverse reading"
+            trace :mode, "Using existing reverse reading"
           end
 
           # Entity must have one identifying instance. Find or create the role sequence, then create a PC if necessary
           rs0 = entity_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}[0]
           if rs0
             rs0 = rs0.role_sequence
-            debug :mode, "Using existing EntityType role sequence"
+            trace :mode, "Using existing EntityType role sequence"
           else
             rs0 = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs0, 0, :role => entity_role)
-            debug :mode, "Creating new EntityType role sequence"
+            trace :mode, "Creating new EntityType role sequence"
           end
           if (rs0.all_presence_constraint.size == 0)
             constraint = @constellation.PresenceConstraint(
@@ -403,22 +403,22 @@ module ActiveFacts
               :is_preferred_identifier => false,
               :is_mandatory => true
             )
-	    debug :constraint, "Made new refmode PC GUID=#{constraint.concept.guid} min=1 max=1 over #{rs0.describe}"
+	    trace :constraint, "Made new refmode PC GUID=#{constraint.concept.guid} min=1 max=1 over #{rs0.describe}"
           else
-            debug :mode, "Using existing EntityType PresenceConstraint"
+            trace :mode, "Using existing EntityType PresenceConstraint"
           end
 
           # Value Type must have a value type. Find or create the role sequence, then create a PC if necessary
-          debug :mode, "identifying_role has #{identifying_role.all_role_ref.size} attached sequences"
-          debug :mode, "identifying_role has #{identifying_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}.size} unary sequences"
+          trace :mode, "identifying_role has #{identifying_role.all_role_ref.size} attached sequences"
+          trace :mode, "identifying_role has #{identifying_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1}.size} unary sequences"
           rs1 = identifying_role.all_role_ref.select{|rr| rr.role_sequence.all_role_ref.size == 1 ? rr.role_sequence : nil }.compact[0]
           if (!rs1)
             rs1 = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs1, 0, :role => identifying_role)
-            debug :mode, "Creating new ValueType role sequence"
+            trace :mode, "Creating new ValueType role sequence"
           else
             rs1 = rs1.role_sequence
-            debug :mode, "Using existing ValueType role sequence"
+            trace :mode, "Using existing ValueType role sequence"
           end
           if (rs1.all_presence_constraint.size == 0)
             constraint = @constellation.PresenceConstraint(
@@ -431,9 +431,9 @@ module ActiveFacts
               :is_preferred_identifier => true,
               :is_mandatory => false
             )
-	    debug :constraint, "Made new refmode ValueType PC GUID=#{constraint.concept.guid} min=0 max=1 over #{rs1.describe}"
+	    trace :constraint, "Made new refmode ValueType PC GUID=#{constraint.concept.guid} min=0 max=1 over #{rs1.describe}"
           else
-            debug :mode, "Marking existing ValueType PresenceConstraint as preferred"
+            trace :mode, "Marking existing ValueType PresenceConstraint as preferred"
             rs1.all_presence_constraint.single.is_preferred_identifier = true
           end
         end

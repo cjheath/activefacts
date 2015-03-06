@@ -180,7 +180,7 @@ module ActiveFacts
                         f = @followers[o] || []; 
                         o.supertypes.detect{|s| !s.ordered_dumped } ? 0 : -f.size
                       }[0]
-                  # debug "Panic mode, selected #{panic.name} next"
+                  # trace "Panic mode, selected #{panic.name} next"
                 end
               end
 
@@ -253,7 +253,7 @@ module ActiveFacts
                 subtyping = o.all_type_inheritance_as_supertype
                 next a if subtyping.size == 0
                 subtyping.each{|ti|
-                    # debug ti.class.roles.verbalise; debug "all_type_inheritance_as_supertype"; exit
+                    # debug ti.class.roles.verbalise; trace "all_type_inheritance_as_supertype"; exit
                     s = ti.subtype
                     (precursor[s] ||= []) << o
                     (follower[o] ||= []) << s
@@ -322,14 +322,14 @@ module ActiveFacts
           if (et = fact_type.entity_type) &&
               (pi = et.preferred_identifier) &&
               pi.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type != fact_type }
-            # debug "Dumping objectified FT #{et.name} as an entity, non-fact PI"
+            # trace "Dumping objectified FT #{et.name} as an entity, non-fact PI"
             entity_type_dump(et)
             released_fact_types_dump(et)
             return
           end
 
-          # debug "#{fact_type.name} has readings:\n\t#{fact_type.readings.map(&:name)*"\n\t"}"
-          # debug "Dumping #{fact_type.concept.guid} as a fact type"
+          # trace "#{fact_type.name} has readings:\n\t#{fact_type.readings.map(&:name)*"\n\t"}"
+          # trace "Dumping #{fact_type.concept.guid} as a fact type"
 
           # Fact types that aren't nested have no names
           name = fact_type.entity_type && fact_type.entity_type.name
@@ -379,7 +379,7 @@ module ActiveFacts
               fact_type_key(fact_type)
             }.each{|fact_type|
               next if fact_type.ordered_dumped
-              # debug "Not dumped #{fact_type.verbalise}(#{fact_type.all_role.map{|r| r.object_type.name}*", "})"
+              # trace "Not dumped #{fact_type.verbalise}(#{fact_type.all_role.map{|r| r.object_type.name}*", "})"
               fact_type_banner unless done_banner
               done_banner = true
               fact_type_dump_with_dependents(fact_type)
@@ -393,7 +393,7 @@ module ActiveFacts
               # Dump the instances:
               f.facts.each{|i|
                 raise "REVISIT: Not dumping fact instances"
-                debug "\t\t"+i.to_s
+                trace "\t\t"+i.to_s
               }
           }
         end
@@ -503,11 +503,11 @@ module ActiveFacts
         end
 
         def vocabulary_start
-          debug "Should override vocabulary_start"
+          trace "Should override vocabulary_start"
         end
 
         def vocabulary_end
-          debug "Should override vocabulary_end"
+          trace "Should override vocabulary_end"
         end
 
         def units_banner
@@ -520,63 +520,63 @@ module ActiveFacts
         end
 
         def value_type_banner
-          debug "Should override value_type_banner"
+          trace "Should override value_type_banner"
         end
 
         def value_type_end
-          debug "Should override value_type_end"
+          trace "Should override value_type_end"
         end
 
         def data_type_dump(o)
-          debug "Should override data_type_dump"
+          trace "Should override data_type_dump"
         end
 
 	def value_type_dump(o, super_type_name, facets)
-          debug "Should override value_type_dump"
+          trace "Should override value_type_dump"
         end
 
         def entity_type_banner
-          debug "Should override entity_type_banner"
+          trace "Should override entity_type_banner"
         end
 
         def entity_type_group_end
-          debug "Should override entity_type_group_end"
+          trace "Should override entity_type_group_end"
         end
 
         def non_subtype_dump(o, pi)
-          debug "Should override non_subtype_dump"
+          trace "Should override non_subtype_dump"
         end
 
         def subtype_dump(o, supertypes, pi = nil)
-          debug "Should override subtype_dump"
+          trace "Should override subtype_dump"
         end
 
         def append_ring_to_reading(reading, ring)
-          debug "Should override append_ring_to_reading"
+          trace "Should override append_ring_to_reading"
         end
 
         def fact_type_banner
-          debug "Should override fact_type_banner"
+          trace "Should override fact_type_banner"
         end
 
         def fact_type_end
-          debug "Should override fact_type_end"
+          trace "Should override fact_type_end"
         end
 
         def fact_type_dump(fact_type, name)
-          debug "Should override fact_type_dump"
+          trace "Should override fact_type_dump"
         end
 
         def constraint_banner
-          debug "Should override constraint_banner"
+          trace "Should override constraint_banner"
         end
 
         def constraint_end
-          debug "Should override constraint_end"
+          trace "Should override constraint_end"
         end
 
         def constraint_dump(c)
-          debug "Should override constraint_dump"
+          trace "Should override constraint_dump"
         end
 
       end

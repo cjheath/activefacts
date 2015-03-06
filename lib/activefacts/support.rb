@@ -1,29 +1,29 @@
 #
 #       ActiveFacts Support code.
-#       The debug method supports indented tracing.
+#       The trace method supports indented tracing.
 #       Set the TRACE environment variable to enable it. Search the code to find the TRACE keywords, or use "all".
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
 #module ActiveFacts
-  $debug_indent = 0
-  $debug_nested = false   # Set when a block enables all enclosed debugging
-  $debug_keys = nil
-  $debug_available = {}
+  $trace_indent = 0
+  $trace_nested = false   # Set when a block enables all enclosed tracing
+  $trace_keys = nil
+  $trace_available = {}
 
-  def debug_initialize
+  def trace_initialize
     # First time, initialise the tracing environment
-    $debug_indent = 0
-    unless $debug_keys
-      $debug_keys = {}
+    $trace_indent = 0
+    unless $trace_keys
+      $trace_keys = {}
       if (e = ENV["TRACE"])
-	e.split(/[^_a-zA-Z0-9]/).each{|k| debug_enable(k) }
-	if $debug_keys[:help]
+	e.split(/[^_a-zA-Z0-9]/).each{|k| trace_enable(k) }
+	if $trace_keys[:help]
 	  at_exit {
-	    $stderr.puts "---\nDebugging keys available: #{$debug_available.keys.map{|s| s.to_s}.sort*", "}"
+	    $stderr.puts "---\nTracing keys available: #{$trace_available.keys.map{|s| s.to_s}.sort*", "}"
 	  }
 	end
-	if $debug_keys[:flame]
+	if $trace_keys[:flame]
 	  require 'ruby-prof'
 	  require 'ruby-prof-flamegraph'
 	  profile_result = RubyProf.start
@@ -43,27 +43,27 @@
     end
   end
 
-  def debug_keys
-    $debug_available.keys
+  def trace_keys
+    $trace_available.keys
   end
 
-  def debug_enabled key
-    !key.empty? && $debug_keys[key.to_sym]
+  def trace_enabled key
+    !key.empty? && $trace_keys[key.to_sym]
   end
 
-  def debug_enable key
-    !key.empty? && $debug_keys[key.to_sym] = true
+  def trace_enable key
+    !key.empty? && $trace_keys[key.to_sym] = true
   end
 
-  def debug_disable key
-    !key.empty? && $debug_keys.delete(key.to_sym)
+  def trace_disable key
+    !key.empty? && $trace_keys.delete(key.to_sym)
   end
 
-  def debug_toggle key
-    !key.empty? and debug_enabled(key) ? (debug_disable(key); false) : (debug_enable(key); true)
+  def trace_toggle key
+    !key.empty? and trace_enabled(key) ? (trace_disable(key); false) : (trace_enable(key); true)
   end
 
-  def debug_selected(args)
+  def trace_selected(args)
     # Figure out whether this trace is enabled (itself or by :all), if it nests, and if we should print the key:
     key =
       if Symbol === args[0]
@@ -78,43 +78,43 @@
         :all
       end
 
-    $debug_available[key] ||= key   # Remember that this debug was requested, for help
-    enabled = $debug_nested ||      # This debug is enabled because it's in a nested block
-              $debug_keys[key] ||   # This debug is enabled in its own right
-              $debug_keys[:all]     # This debug is enabled because all are
-    $debug_nested = nested
+    $trace_available[key] ||= key   # Remember that this trace was requested, for help
+    enabled = $trace_nested ||      # This trace is enabled because it's in a nested block
+              $trace_keys[key] ||   # This trace is enabled in its own right
+              $trace_keys[:all]     # This trace is enabled because all are
+    $trace_nested = nested
     [
       (enabled ? 1 : 0),
-      $debug_keys[:keys] || $debug_keys[:all] ? " %-15s"%control : nil
+      $trace_keys[:keys] || $trace_keys[:all] ? " %-15s"%control : nil
     ]
   end
 
-  def debug_show(*args)
-    unless $debug_keys
-      debug_initialize
+  def trace_show(*args)
+    unless $trace_keys
+      trace_initialize
     end
 
-    enabled, key_to_show = debug_selected(args)
+    enabled, key_to_show = trace_selected(args)
 
     # Emit the message if enabled or a parent is:
     if args.size > 0 && enabled == 1
       puts "\##{key_to_show} " +
-        '  '*$debug_indent +
+        '  '*$trace_indent +
         args.
 #          A laudable aim, certainly, but in practise the Procs leak and slow things down:
 #          map{|a| a.respond_to?(:call) ? a.call : a}.
           join(' ')
     end
-    $debug_indent += enabled
+    $trace_indent += enabled
     enabled
   end
 
-  def debug(*args, &block)
+  def trace(*args, &block)
     begin
-      old_indent, old_nested, enabled  = $debug_indent, $debug_nested, debug_show(*args)
+      old_indent, old_nested, enabled  = $trace_indent, $trace_nested, trace_show(*args)
       return (block || proc { enabled == 1 }).call
     ensure
-      $debug_indent, $debug_nested = old_indent, old_nested
+      $trace_indent, $trace_nested = old_indent, old_nested
     end
   end
 
@@ -248,9 +248,9 @@ end
 
 
 # Load the ruby debugger before everything else, if requested
-if debug :debug or debug :firstaid
+if trace :debug or trace :firstaid
   begin
-    require 'ruby-debug'
+    require 'ruby-trace '
     Debugger.start # (:post_mortem => true)  # Some Ruby versions crash on post-mortem debugging
   rescue LoadError
     # Ok, no debugger, tough luck.
@@ -262,7 +262,7 @@ if debug :debug or debug :firstaid
       'byebug',
       'pry',
       'debugger',
-      'ruby-debug'
+      'ruby-trace '
     ]
   ).each do |debugger|
     begin
@@ -279,7 +279,7 @@ if debug :debug or debug :firstaid
     end
   end
 
-  if debug :trap
+  if trace :trap
     trap('SIGINT') do
       puts "Stopped at:\n\t"+caller*"\n\t"
       debugger
@@ -287,7 +287,7 @@ if debug :debug or debug :firstaid
     end
   end
 
-  if debug :firstaid
+  if trace :firstaid
     puts "Preparing first aid kit"
     class ::Exception
       alias_method :firstaid_initialize, :initialize

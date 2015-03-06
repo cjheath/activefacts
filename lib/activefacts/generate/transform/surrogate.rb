@@ -71,7 +71,7 @@ module ActiveFacts
       end
 
       def inject_surrogate
-	debug :transform_surrogate, "Adding surrogate ID to Value Type #{name}"
+	trace :transform_surrogate, "Adding surrogate ID to Value Type #{name}"
 	add_surrogate('Auto Counter', 'ID')
       end
     end
@@ -96,22 +96,22 @@ module ActiveFacts
       def needs_surrogate
 
 	# A recursive proc to replace any reference to an Entity Type by its identifying references:
-	debug :transform_surrogate_expansion, "Expanding key for #{name}"
+	trace :transform_surrogate_expansion, "Expanding key for #{name}"
 	substitute_identifying_refs = proc do |object|
 	  if ref = object.absorbed_via
 	    # This shouldn't be necessary, but see the absorbed_via comment above.
 	    absorbed_into = ref.from
-	    debug :transform_surrogate_expansion, "recursing to handle absorption of #{object.name} into #{absorbed_into.name}"
+	    trace :transform_surrogate_expansion, "recursing to handle absorption of #{object.name} into #{absorbed_into.name}"
 	    [substitute_identifying_refs.call(absorbed_into)]
 	  else
 	    irf = object.identifying_refs_from
-	    debug :transform_surrogate_expansion, "Iterating for #{object.name} over #{irf.inspect}" do
+	    trace :transform_surrogate_expansion, "Iterating for #{object.name} over #{irf.inspect}" do
 	      irf.each_with_index do |ref, i|
 		next if ref.is_unary
 		next if ref.to_role.object_type.kind_of?(ActiveFacts::Metamodel::ValueType)
 		recurse_to = ref.to_role.object_type
 
-		debug :transform_surrogate_expansion, "#{i}: recursing to expand #{recurse_to.name} key in #{ref}" do
+		trace :transform_surrogate_expansion, "#{i}: recursing to expand #{recurse_to.name} key in #{ref}" do
 		  irf[i] = substitute_identifying_refs.call(recurse_to)
 		end
 	      end
@@ -121,7 +121,7 @@ module ActiveFacts
 	end
 	irf = substitute_identifying_refs.call(self)
 
-	debug :transform_surrogate, "Does #{name} need a surrogate? it's identified by #{irf.inspect}" do
+	trace :transform_surrogate, "Does #{name} need a surrogate? it's identified by #{irf.inspect}" do
 
 	  pk_fks = identifying_refs_from.map do |ref|
 	    ref.to && ref.to.is_table ? ref.to : nil
@@ -132,13 +132,13 @@ module ActiveFacts
 	  # Multi-part identifiers are only allowed if each part is a foreign key (i.e. it's a join table) and the object is not the target of a foreign key:
 	  if irf.size >= 2
 	    if pk_fks.include?(nil)
-	      debug :transform_surrogate, "#{self.name} needs a surrogate because its multi-part key contains a non-table"
+	      trace :transform_surrogate, "#{self.name} needs a surrogate because its multi-part key contains a non-table"
 	      return true
 	    elsif references_to.size != 0
-	      debug :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect} but is also an FK target"
+	      trace :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect} but is also an FK target"
 	      return true
 	    else
-	      debug :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect}"
+	      trace :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect}"
 	      return false
 	    end
 	    return true
@@ -148,7 +148,7 @@ module ActiveFacts
 
 	  identifying_type = irf[0].to
 	  if identifying_type.needs_surrogate
-	    debug :transform_surrogate, "#{self.name} needs a surrogate because #{irf[0].to.name} is not an AutoCounter, but #{identifying_type.supertypes_transitive.map(&:name).inspect}"
+	    trace :transform_surrogate, "#{self.name} needs a surrogate because #{irf[0].to.name} is not an AutoCounter, but #{identifying_type.supertypes_transitive.map(&:name).inspect}"
 	    return true
 	  end
 
@@ -157,17 +157,17 @@ module ActiveFacts
       end
 
       def inject_surrogate
-	debug :transform_surrogate, "Injecting a surrogate key into #{self.name}"
+	trace :transform_surrogate, "Injecting a surrogate key into #{self.name}"
 
 	# Disable the preferred identifier:
 	pi = preferred_identifier
-	debug :transform_surrogate, "pi for #{name} was '#{pi.describe}'"
+	trace :transform_surrogate, "pi for #{name} was '#{pi.describe}'"
 	pi.is_preferred_identifier = false
 	@preferred_identifier = nil   # Kill the cache
 
 	add_surrogate
 
-	debug :transform_surrogate, "pi for #{name} is now '#{preferred_identifier.describe}'"
+	trace :transform_surrogate, "pi for #{name} is now '#{preferred_identifier.describe}'"
       end
 
     end

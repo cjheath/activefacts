@@ -189,7 +189,7 @@ module ActiveFacts
         @from.references_from << self
         @to.references_to << self if @to        # Guard against self-values
 
-        debug :references, "Adding #{to_s}"
+        trace :references, "Adding #{to_s}"
         self
       end
 
@@ -197,7 +197,7 @@ module ActiveFacts
         # Remove from @to and @from's reference lists if present
         return unless @from.references_from.delete(self)
         @to.references_to.delete self if @to    # Guard against self-values
-        debug :references, "Dropping #{to_s}"
+        trace :references, "Dropping #{to_s}"
         self
       end
 
@@ -285,7 +285,7 @@ module ActiveFacts
 
       def populate_reference role       #:nodoc:
         role_type = role.role_type
-        debug :references, "#{name} has #{role_type} role in '#{role.fact_type.describe}'"
+        trace :references, "#{name} has #{role_type} role in '#{role.fact_type.describe}'"
         case role_type
         when :many_one
           ActiveFacts::Persistence::Reference.new(self, role).tabulate      # A simple reference
@@ -295,7 +295,7 @@ module ActiveFacts
             ActiveFacts::Persistence::Reference.new(self, role).tabulate    # A simple reference; check that
           else
             # Can't absorb many of these into one of those
-            #debug :references, "Ignoring #{role_type} reference from #{name} to #{Reference.new(self, role).to.name}"
+            #trace :references, "Ignoring #{role_type} reference from #{name} to #{Reference.new(self, role).to.name}"
           end
 
         when :unary
@@ -305,11 +305,11 @@ module ActiveFacts
           # REVISIT: Or when partitioned
           raise hell unless role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
           if role.fact_type.assimilation  # assimilation == 'separate' or assimilation == 'partitioned'
-            debug :references, "supertype #{name} doesn't absorb a reference to separate subtype #{role.fact_type.subtype.name}"
+            trace :references, "supertype #{name} doesn't absorb a reference to separate subtype #{role.fact_type.subtype.name}"
           else
             r = ActiveFacts::Persistence::Reference.new(self, role)
             r.to.absorbed_via = r
-            debug :references, "supertype #{name} absorbs subtype #{r.to.name}"
+            trace :references, "supertype #{name} absorbs subtype #{r.to.name}"
             r.tabulate
           end
 
@@ -318,7 +318,7 @@ module ActiveFacts
             ActiveFacts::Persistence::Reference.new(self, role).tabulate
             # If partitioned, the supertype is absorbed into *each* subtype; a reference to the supertype needs to know which
           else
-            # debug :references, "subtype #{name} is absorbed into #{role.fact_type.supertype.name}"
+            # trace :references, "subtype #{name} is absorbed into #{role.fact_type.supertype.name}"
           end
 
         when :one_one
@@ -341,11 +341,11 @@ module ActiveFacts
 
             # Force the decision if one EntityType identifies another:
             if preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role == r.to_role}
-              debug :references, "EntityType #{name} is identified by EntityType #{r.to.name}, so gets absorbed elsewhere"
+              trace :references, "EntityType #{name} is identified by EntityType #{r.to.name}, so gets absorbed elsewhere"
               return
             end
             if r.to.preferred_identifier.role_sequence.all_role_ref.detect{|rr| rr.role == role}
-              debug :references, "EntityType #{name} identifies EntityType #{r.to.name}, so absorbs it"
+              trace :references, "EntityType #{name} identifies EntityType #{r.to.name}, so absorbs it"
               r.to.absorbed_via = r
               # We can't be absorbed into our supertype!
               # REVISIT: We might need to flip all one-to-ones as well
@@ -383,9 +383,9 @@ module ActiveFacts
 
     class Vocabulary
       def populate_all_references #:nodoc:
-        debug :references, "Populating all object_type references" do
+        trace :references, "Populating all object_type references" do
           all_object_type.each do |object_type|
-            debug :references, "Populating references for #{object_type.name}" do
+            trace :references, "Populating references for #{object_type.name}" do
               object_type.populate_references
             end
           end
@@ -394,13 +394,13 @@ module ActiveFacts
       end
 
       def show_all_references
-        if debug :references
-          debug :references, "Finished object_type references" do
+        if trace :references
+          trace :references, "Finished object_type references" do
             all_object_type.each do |object_type|
               next unless object_type.references_from.size > 0
-              debug :references, "#{object_type.name}:" do
+              trace :references, "#{object_type.name}:" do
                 object_type.references_from.each do |ref|
-                  debug :references, "#{ref}"
+                  trace :references, "#{ref}"
                 end
               end
             end

@@ -15,11 +15,11 @@ module ActiveFacts
 raise "This method is no longer in use"
 =begin
         return @columns if @columns
-        debug :persistence, "Calculating columns for #{basename}" do
+        trace :persistence, "Calculating columns for #{basename}" do
           @columns = (
             if superclass.is_entity_type
               # REVISIT: Need keys to secondary supertypes as well, but no duplicates.
-              debug :persistence, "Separate subtype has a foreign key to its supertype" do
+              trace :persistence, "Separate subtype has a foreign key to its supertype" do
                 superclass.__absorb([[superclass.basename]], self)
               end
             else
@@ -30,7 +30,7 @@ raise "This method is no longer in use"
               role.unique && !role.counterpart_unary_has_precedence
             end.inject([]) do |columns, role|
               rn = role.name.to_s.split(/_/)
-              debug :persistence, "Role #{rn*'.'}" do
+              trace :persistence, "Role #{rn*'.'}" do
                 columns += role.counterpart_object_type.__absorb([rn], role.counterpart)
               end
             end +
@@ -40,7 +40,7 @@ raise "This method is no longer in use"
               inject([]) do |columns, subtype|
                 # Pass self as 2nd param here, not a role, standing for the supertype role
                 subtype_name = subtype.basename
-                debug :persistence, "Absorbing subtype #{subtype_name}" do
+                trace :persistence, "Absorbing subtype #{subtype_name}" do
                   columns += subtype.__absorb([[subtype_name]], self)
                 end
               end
@@ -71,7 +71,7 @@ raise "This method is no longer in use"
               # counterpart_object_type = role.counterpart_object_type
               # This omission matches the one in columns.rb, see EntityType#reference_columns
               # new_prefix = prefix + [role.name.to_s.split(/_/)]
-              debug :persistence, "Reference to #{role.name} (absorbed elsewhere)" do
+              trace :persistence, "Reference to #{role.name} (absorbed elsewhere)" do
                 role.counterpart_object_type.__absorb(prefix, role.counterpart)
               end
             else
@@ -89,7 +89,7 @@ raise "This method is no longer in use"
                 inject([]) do |columns, subtype|
                   # Pass self as 2nd param here, not a role, standing for the supertype role
                   new_prefix = prefix[0..-2] + [[subtype.basename]]
-                  debug :persistence, "Absorbed subtype #{subtype.basename}" do
+                  trace :persistence, "Absorbed subtype #{subtype.basename}" do
                     columns += subtype.__absorb(new_prefix, self)
                   end
                 end
@@ -101,7 +101,7 @@ raise "This method is no longer in use"
           # Create a foreign key to the table
           if is_entity_type
             ir = identifying_role_names.map{|role_name| roles(role_name) }
-            debug :persistence, "Reference to #{basename} with #{prefix.inspect}" do
+            trace :persistence, "Reference to #{basename} with #{prefix.inspect}" do
               ic = identifying_role_names.map{|role_name| role_name.to_s.split(/_/)}
               ir.inject([]) do |columns, role|
                 columns += __absorb_role(prefix, role)
@@ -110,7 +110,7 @@ raise "This method is no longer in use"
           else
             # Reference to value type which is a table
             col = prefix.clone
-            debug :persistence, "Self-value #{col[-1]}.Value"
+            trace :persistence, "Self-value #{col[-1]}.Value"
             col[-1] += ["Value"]
             col
           end
@@ -125,23 +125,23 @@ raise "This method is no longer in use"
             (n = irn[0].to_s.split(/_/)).size > 1 and
             (owner = role.owner.basename.snakecase.split(/_/)) and
             n[0...owner.size] == owner
-          debug :persistence, "truncating transitive identifying role #{n.inspect}"
+          trace :persistence, "truncating transitive identifying role #{n.inspect}"
           owner.size.times { n.shift }
           new_prefix = prefix + [n]
         elsif (c = role.counterpart_object_type).is_entity_type and
             (irn = c.identifying_role_names).size == 1 and
             #irn[0].to_s.split(/_/)[0] == role.owner.basename.downcase
             irn[0] == role.counterpart.name
-          #debug :persistence, "=== #{irn[0].to_s.split(/_/)[0]} elided ==="
+          #trace :persistence, "=== #{irn[0].to_s.split(/_/)[0]} elided ==="
           new_prefix = prefix
         elsif (fa_role = fully_absorbed) && fa_role == role
           new_prefix = prefix
         else
           new_prefix = prefix + [role.name.to_s.split(/_/)]
         end
-        #debug :persistence, "new_prefix is #{new_prefix*"."}"
+        #trace :persistence, "new_prefix is #{new_prefix*"."}"
 
-        debug :persistence, "Absorbing role #{role.name} as #{new_prefix[prefix.size..-1]*"."}" do
+        trace :persistence, "Absorbing role #{role.name} as #{new_prefix[prefix.size..-1]*"."}" do
           role.counterpart_object_type.__absorb(new_prefix, role.counterpart)
         end
       end

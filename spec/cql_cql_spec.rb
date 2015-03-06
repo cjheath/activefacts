@@ -47,7 +47,7 @@ describe "CQL Loader" do
         begin
           vocabulary = ActiveFacts::Input::CQL.readfile(cql_file)
         rescue => e
-          debug :exception, "#{e.message}\n" +
+          trace :exception, "#{e.message}\n" +
             "\t#{e.backtrace*"\n\t"}"
           raise
         end

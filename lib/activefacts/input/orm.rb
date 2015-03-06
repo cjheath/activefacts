@@ -158,7 +158,7 @@ module ActiveFacts
           name = nil if name.size == 0
 	  entity_type =
 	    @by_id[id] =
-	      debug :orm, "Asserting new EntityType #{name.inspect}" do
+	      trace :orm, "Asserting new EntityType #{name.inspect}" do
 		@vocabulary.valid_entity_type_name(name) ||
 		@constellation.EntityType(@vocabulary, name, :concept => id_of(x))
 	      end
@@ -212,7 +212,7 @@ module ActiveFacts
 	    type_name = t
 	  end
 	end
-	debug :orm, "Using #{type_name.inspect} as supertype for new #{name}"
+	trace :orm, "Using #{type_name.inspect} as supertype for new #{name}"
         if !length and type_name =~ /\(([0-9]+)\)/
           length = $1.to_i
         end
@@ -231,7 +231,7 @@ module ActiveFacts
           supertype_name = x_supertype['Name']
           raise "Supertype of #{name} is post-defined but recursiving processing failed" unless supertype
           raise "Supertype #{supertype_name} of #{name} is not a value type" unless supertype.kind_of? ActiveFacts::Metamodel::ValueType
-	  debug :orm, "Asserting new ValueType #{supertype_name.inspect} for supertype" do
+	  trace :orm, "Asserting new ValueType #{supertype_name.inspect} for supertype" do
 	    value_super_type =
 	      @vocabulary.valid_value_type_name(supertype_name) ||
 	      @constellation.ValueType(@vocabulary, supertype_name, :concept => id_of(x_supertype))
@@ -240,7 +240,7 @@ module ActiveFacts
           # REVISIT: Need to handle standard types better here:
           value_super_type =
 	    if type_name != name
-	      debug :orm, "Asserting new ValueType #{type_name.inspect} for supertype" do
+	      trace :orm, "Asserting new ValueType #{type_name.inspect} for supertype" do
 		@vocabulary.valid_value_type_name(type_name) ||
 		  @constellation.ValueType(@vocabulary.identifying_role_values, type_name, :concept => :new)
 	      end
@@ -250,7 +250,7 @@ module ActiveFacts
         end
 
 	vt =
-	  debug :orm, "Asserting new ValueType #{name.inspect}" do
+	  trace :orm, "Asserting new ValueType #{name.inspect}" do
 	    @by_id[id] =
 	      @vocabulary.valid_value_type_name(name) ||
 	      @constellation.ValueType(@vocabulary.identifying_role_values, name, :concept => id_of(x))
@@ -299,7 +299,7 @@ module ActiveFacts
         # Handle the fact types:
         facts = []
         @x_facts = @x_model.xpath("orm:Facts/orm:Fact")
-        debug :orm, "Reading fact types" do
+        trace :orm, "Reading fact types" do
           @x_facts.each{|x|
             id = x['id']
             name = x['Name'] || x['_Name']
@@ -307,7 +307,7 @@ module ActiveFacts
             name = "" if !name || name.size == 0
             # Note that the new metamodel doesn't have a name for a facttype unless it's objectified
 
-            debug :orm, "FactType #{name || id}"
+            trace :orm, "FactType #{name || id}"
             facts << @by_id[id] = fact_type = @constellation.FactType(id_of(x))
           }
         end
@@ -327,12 +327,12 @@ module ActiveFacts
         # Handle the subtype fact types:
         facts = []
 
-        debug :orm, "Reading sub-types" do
+        trace :orm, "Reading sub-types" do
           @x_subtypes.each{|x|
             id = x['id']
             name = (x['Name'] || x['_Name'] || '').gsub(/\s+/,' ').gsub(/-/,'_').strip
             name = nil if name.size == 0
-            debug :orm, "FactType #{name || id}"
+            trace :orm, "FactType #{name || id}"
 
             x_subtype_role = x.xpath('orm:FactRoles/orm:SubtypeMetaRole')[0]
             subtype_role_id = x_subtype_role['id']
@@ -347,7 +347,7 @@ module ActiveFacts
 
             throw "For Subtype fact #{name}, the supertype #{supertype_id} was not found" if !supertype
             throw "For Subtype fact #{name}, the subtype #{subtype_id} was not found" if !subtype
-            debug :orm, "#{subtype.name} is a subtype of #{supertype.name}"
+            trace :orm, "#{subtype.name} is a subtype of #{supertype.name}"
 
             # We already handled ValueType subtyping:
             next if subtype.kind_of? ActiveFacts::Metamodel::ValueType or
@@ -356,7 +356,7 @@ module ActiveFacts
             inheritance_fact = @constellation.TypeInheritance(subtype, supertype, :concept => id_of(x))
             if x["IsPrimary"] == "true" or           # Old way
               x["PreferredIdentificationPath"] == "true"   # Newer
-              debug :orm, "#{supertype.name} is primary supertype of #{subtype.name}"
+              trace :orm, "#{supertype.name} is primary supertype of #{subtype.name}"
               inheritance_fact.provides_identification = true
             end
             mapping = @x_mappings.detect{ |m| m['ref'] == id }
@@ -391,7 +391,7 @@ module ActiveFacts
         # This happens for all ternaries and higher order facts
         @nested_types = []
         x_nested_types = @x_model.xpath("orm:Objects/orm:ObjectifiedType")
-        debug :orm, "Reading objectified types" do
+        trace :orm, "Reading objectified types" do
           x_nested_types.each{|x|
             id = x['id']
             name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
@@ -404,7 +404,7 @@ module ActiveFacts
             fact_type = @by_id[fact_id]
             next unless fact_type # "Nested fact #{fact_id} not found; objectification of a derived fact type?"
 
-            debug :orm, "NestedType #{name} is #{id}, nests #{fact_type.concept.guid}"
+            trace :orm, "NestedType #{name} is #{id}, nests #{fact_type.concept.guid}"
             @nested_types <<
               @by_id[id] =
 		nested_type = @vocabulary.valid_entity_type_name(name) ||
@@ -427,7 +427,7 @@ module ActiveFacts
       end
 
       def read_roles
-        debug :orm, "Reading roles and readings" do
+        trace :orm, "Reading roles and readings" do
           @x_facts.each{|x|
             id = x['id']
             fact_type = @by_id[id]
@@ -438,7 +438,7 @@ module ActiveFacts
             x_fact_roles = x.xpath('orm:FactRoles/*')
 
             # Deal with FactRoles (Roles):
-            debug :orm, "Reading fact roles" do
+            trace :orm, "Reading fact roles" do
               x_fact_roles.each{|x|
                 name = (x['Name'] || "").gsub(/\s+/,' ').gsub(/-/,'_').strip
                 name = nil if name.size == 0
@@ -463,7 +463,7 @@ module ActiveFacts
                     }[0]
                   other_role_id = x_other_role["id"]
                   other_role = @by_id[other_role_id]
-                  debug :orm, "Indexing unary FT role #{other_role_id} by implicit boolean role #{id}"
+                  trace :orm, "Indexing unary FT role #{other_role_id} by implicit boolean role #{id}"
                   @by_id[id] = other_role
 
                   # The role name of the ignored role is the one that applies:
@@ -477,14 +477,14 @@ module ActiveFacts
 		  throw "RolePlayer for '#{name}' #{ref} in fact type #{x.parent.parent['_Name']} was not found"
 		end
 
-                debug :orm, "#{@vocabulary.name}, RoleName=#{x['Name'].inspect} played by object_type=#{object_type.name}"
+                trace :orm, "#{@vocabulary.name}, RoleName=#{x['Name'].inspect} played by object_type=#{object_type.name}"
                 throw "Role is played by #{object_type.class} not ObjectType" if !(@constellation.vocabulary.object_type(:ObjectType) === object_type)
 
-                debug :orm, "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.concept.guid} played by #{object_type.name}"
+                trace :orm, "Creating role #{name} nr#{fact_type.all_role.size} of #{fact_type.concept.guid} played by #{object_type.name}"
 
                 role = @by_id[id] = @constellation.Role(fact_type, fact_type.all_role.size, :object_type => object_type, :concept => id_of(x))
                 role.role_name = name if name && name != object_type.name
-                debug :orm, "Fact #{fact_name} (id #{fact_type.concept.guid}) role #{x['Name']} is played by #{object_type.name}, role is #{role.concept.guid}"
+                trace :orm, "Fact #{fact_name} (id #{fact_type.concept.guid}) role #{x['Name']} is played by #{object_type.name}, role is #{role.concept.guid}"
 
                 x_vr = x.xpath("orm:ValueRestriction/orm:RoleValueConstraint")
                 x_vr.each{|vr|
@@ -497,14 +497,14 @@ module ActiveFacts
                   }
                 }
 
-                debug :orm, "Adding Role #{role.role_name || role.object_type.name} to #{fact_type.describe}"
+                trace :orm, "Adding Role #{role.role_name || role.object_type.name} to #{fact_type.describe}"
                 #fact_type.add_role(role)
-                debug :orm, "Role #{role} is #{id}"
+                trace :orm, "Role #{role} is #{id}"
               }
             end
 
             # Deal with Readings:
-            debug :orm, "Reading fact readings" do
+            trace :orm, "Reading fact readings" do
 	      x_reading_orders = x.xpath('orm:ReadingOrders/*')
               x_reading_orders.each{|x|
                 x_role_sequence = x.xpath('orm:RoleSequence/*')
@@ -513,7 +513,7 @@ module ActiveFacts
                 # Build an array of the Roles needed:
                 role_array = x_role_sequence.map{|x| @by_id[x['ref']] }
 
-                debug :orm, "Reading #{x_readings.map(&:text).inspect}"
+                trace :orm, "Reading #{x_readings.map(&:text).inspect}"
                 role_sequence = get_role_sequence(role_array)
 
                 #role_sequence.all_role_ref.each_with_index{|rr, i|
@@ -678,7 +678,7 @@ module ActiveFacts
         x_mandatory_constraints = @x_model.xpath("orm:Constraints/orm:MandatoryConstraint")
         @mandatory_constraints_by_rs = {}
         @mandatory_constraint_rs_by_id = {}
-        debug :orm, "Scanning mandatory constraints" do
+        trace :orm, "Scanning mandatory constraints" do
           x_mandatory_constraints.each{|x|
             name = x["Name"] || ''
             name = nil if name.size == 0
@@ -690,7 +690,7 @@ module ActiveFacts
             role_sequence = map_roles(x_roles, "mandatory constraint #{name}")
             next if !role_sequence
 
-            debug :orm, "New MC #{x['Name']} over #{role_sequence.describe}"
+            trace :orm, "New MC #{x['Name']} over #{role_sequence.describe}"
             @mandatory_constraints_by_rs[role_sequence] = x
             @mandatory_constraint_rs_by_id[x['id']] = role_sequence
           }
@@ -699,7 +699,7 @@ module ActiveFacts
 
       # Mandatory constraints that didn't get merged with an exclusion constraint or a uniqueness constraint are simple mandatories
       def read_residual_mandatory_constraints
-        debug :orm, "Processing non-absorbed mandatory constraints" do
+        trace :orm, "Processing non-absorbed mandatory constraints" do
           @mandatory_constraints_by_rs.each { |role_sequence, x|
             id = x['id']
             # Create a simply-mandatory PresenceConstraint for each mandatory constraint
@@ -711,7 +711,7 @@ module ActiveFacts
               join_over, = *ActiveFacts::Metamodel.plays_over(role_sequence.all_role_ref.map{|rr| rr.role}, :proximate)
               raise "Mandatory join constraint #{name} has incompatible players #{players.map{|o| o.name}.inspect}" unless join_over
               if players.detect{|p| p != join_over}
-                debug :query, "subtyping step simple mandatory constraint #{name} over #{join_over.name}"
+                trace :query, "subtyping step simple mandatory constraint #{name} over #{join_over.name}"
                 players.each_with_index do |player, i|
                   next if player != join_over
                   # REVISIT: We don't need to make a subtyping step here (from join_over to player)
@@ -736,7 +736,7 @@ module ActiveFacts
 
       def read_uniqueness_constraints
         x_uniqueness_constraints = @x_model.xpath("orm:Constraints/orm:UniquenessConstraint")
-        debug :orm, "Reading uniqueness constraints" do
+        trace :orm, "Reading uniqueness constraints" do
           x_uniqueness_constraints.each{|x|
             name = x["Name"] || ''
             name = nil if name.size == 0
@@ -768,7 +768,7 @@ module ActiveFacts
 	      end
               subtyping = players.size > 1 ? 'subtyping ' : ''
               # REVISIT: Create the Query, the Variable for join_over, and steps from each role_ref to join_over
-              debug :query, "#{subtyping}join uniqueness constraint over #{join_over.name} in #{fact_types.map(&:default_reading)*', '}"
+              trace :query, "#{subtyping}join uniqueness constraint over #{join_over.name} in #{fact_types.map(&:default_reading)*', '}"
             end
 
             # There is an implicit uniqueness constraint when any object plays a unary. Skip it.
@@ -787,7 +787,7 @@ module ActiveFacts
 
             if (mc = @mandatory_constraints_by_rs[role_sequence])
               # Remove absorbed mandatory constraints, leaving residual ones.
-              debug :orm, "Absorbing MC #{mc['Name']} over #{role_sequence.describe}"
+              trace :orm, "Absorbing MC #{mc['Name']} over #{role_sequence.describe}"
               @mandatory_constraints_by_rs.delete(role_sequence)
               mc_id = mc['id']
               @mandatory_constraint_rs_by_id.delete(mc['id'])
@@ -798,7 +798,7 @@ module ActiveFacts
               # That is, the phantom roles are mandatory, even if the visible roles are not.
               mc = true
             else
-              debug :orm, "No MC to absorb over #{role_sequence.describe}"
+              trace :orm, "No MC to absorb over #{role_sequence.describe}"
             end
 
             # A TypeInheritance fact type has a uniqueness constraint on each role.
@@ -819,9 +819,9 @@ module ActiveFacts
             pc.min_frequency = mc ? 1 : 0
             pc.max_frequency = 1 
             pc.is_preferred_identifier = true if pi || unary_identifier || is_supertype_constraint
-            debug :orm, "#{name} covers #{role_sequence.describe} has min=#{pc.min_frequency}, max=1, preferred=#{pc.is_preferred_identifier.inspect}"
+            trace :orm, "#{name} covers #{role_sequence.describe} has min=#{pc.min_frequency}, max=1, preferred=#{pc.is_preferred_identifier.inspect}"
 
-            debug :orm, role_sequence.all_role_ref.to_a[0].role.fact_type.describe + " is subject to " + pc.describe if role_sequence.all_role_ref.all?{|r| r.role.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance }
+            trace :orm, role_sequence.all_role_ref.to_a[0].role.fact_type.describe + " is subject to " + pc.describe if role_sequence.all_role_ref.all?{|r| r.role.fact_type.is_a? ActiveFacts::Metamodel::TypeInheritance }
 
             (@constraints_by_rs[role_sequence] ||= []) << pc
             @by_id[uc_id] = pc
@@ -841,7 +841,7 @@ module ActiveFacts
         @constellation.RoleRef(rs, 1, :role => ti.supertype_role)
         sup_play = @constellation.Play(supertype_node, ti.supertype_role)
         step = @constellation.Step(sub_play, sup_play, :fact_type => ti)
-        debug :query, "New subtyping step #{step.describe}"
+        trace :query, "New subtyping step #{step.describe}"
         step
       end
 
@@ -916,10 +916,10 @@ module ActiveFacts
             return true
           end
 
-          debug :query, "#{constraint_type} join constraint #{name} over #{role_sequences.map{|rs|rs.describe}*', '}"
+          trace :query, "#{constraint_type} join constraint #{name} over #{role_sequences.map{|rs|rs.describe}*', '}"
 
           query = nil
-          debug :query, "#{constraint_type} join constraint #{name} constrains #{
+          trace :query, "#{constraint_type} join constraint #{name} constrains #{
               end_points.zip(end_steps).map{|(p,j)| (p ? p.name : 'NULL')+(j ? ' & subtypes':'')}*', '
             }#{
             if role_sequences[0].all_role_ref.size > 1
@@ -957,7 +957,7 @@ module ActiveFacts
                 unless end_point
                   raise "In #{constraint_type} #{name}, there is a faulty or non-translated query"
                 end
-                debug :query, "Variable #{query.all_variable.size} is for #{end_point.name}"
+                trace :query, "Variable #{query.all_variable.size} is for #{end_point.name}"
                 end_node = @constellation.Variable(query, query.all_variable.size, :object_type => end_point)
 
                 # We're going to rewrite the constraint to constrain the supertype roles, but assume they're the same:
@@ -968,7 +968,7 @@ module ActiveFacts
                 projecting_play = nil
                 constrained_play = nil
                 if (subtype = role_ref.role.object_type) != end_point
-                  debug :query, "Making subtyping steps from #{subtype.name} to #{end_point.name}" do
+                  trace :query, "Making subtyping steps from #{subtype.name} to #{end_point.name}" do
                     # There may be more than one supertyping level. Make the steps:
                     subtyping_steps = subtype_steps(query, subtype, end_point)
                     step = subtyping_steps[0]
@@ -990,10 +990,10 @@ module ActiveFacts
 
                 if join_over
                   if !variable     # Create the Variable when processing the first role
-                    debug :query, "Variable #{query.all_variable.size} is over #{join_over.name}"
+                    trace :query, "Variable #{query.all_variable.size} is over #{join_over.name}"
                     variable = @constellation.Variable(query, query.all_variable.size, :object_type => join_over)
                   end
-                  debug :query, "Making step from #{end_point.name} to #{join_over.name}" do
+                  trace :query, "Making step from #{end_point.name} to #{join_over.name}" do
                     rs = @constellation.RoleSequence(:new)
                     # Detect the fact type over which we're stepping (may involve objectification)
                     raise "Internal error in #{constraint_type} #{name}: making illegal reference to variable, object type mismatch" if role_ref.role.object_type != role_node.object_type
@@ -1004,10 +1004,10 @@ module ActiveFacts
                     join_play = @constellation.Play(variable, joined_role)
 
                     step = @constellation.Step(role_play, join_play, :fact_type => joined_role.fact_type)
-                    debug :query, "New step #{step.describe}"
+                    trace :query, "New step #{step.describe}"
                   end
                 else
-                  debug :query, "Need step for non-join_over role #{end_point.name} #{role_ref.describe} in #{role_ref.role.fact_type.default_reading}"
+                  trace :query, "Need step for non-join_over role #{end_point.name} #{role_ref.describe} in #{role_ref.role.fact_type.default_reading}"
                   if (roles = role_ref.role.fact_type.all_role.to_a).size > 1
                     # Here we have an end join (step already created) but no sequence join
                     if variable
@@ -1053,7 +1053,7 @@ module ActiveFacts
 
               # Thoroughly check that this is a valid query
               query.validate
-              debug :query, "Query has projected nodes #{replacement_rs.describe}"
+              trace :query, "Query has projected nodes #{replacement_rs.describe}"
 
               # Constrain the replacement role sequence, which has the attached query:
               role_sequences[role_sequences.index(role_sequence)] = replacement_rs
@@ -1061,7 +1061,7 @@ module ActiveFacts
             return true
           end
         rescue => e
-          debugger if debug :debug
+          debugger if trace :debug
           $stderr.puts "// #{e.to_s}: #{e.backtrace[0]}"
           return false
         end
@@ -1070,7 +1070,7 @@ module ActiveFacts
 
       def read_exclusion_constraints
         x_exclusion_constraints = @x_model.xpath("orm:Constraints/orm:ExclusionConstraint")
-        debug :orm, "Reading #{x_exclusion_constraints.size} exclusion constraints" do
+        trace :orm, "Reading #{x_exclusion_constraints.size} exclusion constraints" do
           x_exclusion_constraints.each{|x|
             id = x['id']
             name = x["Name"] || ''
@@ -1112,7 +1112,7 @@ module ActiveFacts
 
       def read_equality_constraints
         x_equality_constraints = @x_model.xpath("orm:Constraints/orm:EqualityConstraint")
-        debug :orm, "Reading equality constraints" do
+        trace :orm, "Reading equality constraints" do
           x_equality_constraints.each{|x|
             id = x['id']
             name = x["Name"] || ''
@@ -1145,7 +1145,7 @@ module ActiveFacts
 
       def read_subset_constraints
         x_subset_constraints = @x_model.xpath("orm:Constraints/orm:SubsetConstraint")
-        debug :orm, "Reading subset constraints" do
+        trace :orm, "Reading subset constraints" do
           x_subset_constraints.each{|x|
             id = x['id']
             name = x["Name"] || ''
@@ -1174,7 +1174,7 @@ module ActiveFacts
 
       def read_ring_constraints
         x_ring_constraints = @x_model.xpath("orm:Constraints/orm:RingConstraint")
-        debug :orm, "Reading ring constraints" do
+        trace :orm, "Reading ring constraints" do
           x_ring_constraints.each{|x|
             id = x['id']
             name = x["Name"] || ''
@@ -1189,7 +1189,7 @@ module ActiveFacts
             if from.object_type != to.object_type
               join_over, = *ActiveFacts::Metamodel.plays_over([from, to], :counterpart)
               raise "Ring constraint has incompatible players #{from.object_type.name}, #{to.object_type.name}" if !join_over
-              debug :query, "join ring constraint over #{join_over.name}"
+              trace :query, "join ring constraint over #{join_over.name}"
             end
             rc = @constellation.RingConstraint(id_of(x))
             rc.vocabulary = @vocabulary
@@ -1205,7 +1205,7 @@ module ActiveFacts
 
       def read_frequency_constraints
         x_frequency_constraints = @x_model.xpath("orm:Constraints/orm:FrequencyConstraint")
-        debug :orm, "Reading frequency constraints" do
+        trace :orm, "Reading frequency constraints" do
           x_frequency_constraints.each do |x_frequency_constraint|
             id = x_frequency_constraint['id']
             min_frequency = x_frequency_constraint["MinFrequency"].to_i
@@ -1217,7 +1217,7 @@ module ActiveFacts
             role_sequence = @constellation.RoleSequence(:new)
             role_ref = @constellation.RoleRef(role_sequence, 0, :role => role)
             next unless role  # Role missing; belongs to a derived fact type
-            debug :orm, "FrequencyConstraint(min #{min_frequency.inspect} max #{max_frequency.inspect} over #{role.fact_type.describe(role)} #{id} role ref = #{x_roles[0]["ref"]}"
+            trace :orm, "FrequencyConstraint(min #{min_frequency.inspect} max #{max_frequency.inspect} over #{role.fact_type.describe(role)} #{id} role ref = #{x_roles[0]["ref"]}"
             @by_id[id] = @constellation.PresenceConstraint(
                 id_of(x_frequency_constraint),
                 :vocabulary => @vocabulary,
@@ -1233,14 +1233,14 @@ module ActiveFacts
       end
 
       def read_instances
-        debug :orm, "Reading sample data" do
+        trace :orm, "Reading sample data" do
           population = @constellation.Population(@vocabulary, "sample", :concept => :new)
 
           # Value instances first, then entities then facts:
 
           x_values = @x_model.xpath("orm:Objects/orm:ValueType/orm:Instances/orm:ValueTypeInstance/orm:Value")
           #pp x_values.map{|v| [ v.parent['id'], v.text ] }
-          debug :orm, "Reading sample values" do
+          trace :orm, "Reading sample values" do
             x_values.each{|v|
               id = v.parent['id']
               # Get details of the ValueType:
@@ -1265,7 +1265,7 @@ module ActiveFacts
           last_et_id = nil
           last_et = nil
           et = nil
-          debug :orm, "Reading sample entities" do
+          trace :orm, "Reading sample entities" do
             x_entities.each{|v|
               id = v['id']
 
@@ -1283,7 +1283,7 @@ module ActiveFacts
 
               instance = @constellation.Instance(id_of(v), :population => population, :object_type => et, :value => nil)
               @by_id[id] = instance
-              debug :orm, "Made new EntityType #{etname}"
+              trace :orm, "Made new EntityType #{etname}"
             }
           end
 
@@ -1292,14 +1292,14 @@ module ActiveFacts
           # We create implicit PI facts after all the instances.
           entity_count = 0
           pi_fact_count = 0
-          debug :orm, "Creating identifying facts for entities" do
+          trace :orm, "Creating identifying facts for entities" do
             x_entities.each do |v|
               id = v['id']
               instance = @by_id[id]
               et = @by_id[v.parent.parent['id']]
               next unless (preferred_id = et.preferred_identifier)
 
-              debug :orm, "Create identifying facts using #{preferred_id}"
+              trace :orm, "Create identifying facts using #{preferred_id}"
 
               # Collate the referenced objects by role:
               role_instances = v.elements[0].elements.inject({}){|h, v|
@@ -1316,14 +1316,14 @@ module ActiveFacts
                 preferred_id.role_sequence.all_role_ref.map { |rr| rr.role.fact_type }.uniq
               identifying_fact_types.
                 each do |ft|
-                  debug :orm, "For FactType #{ft}" do
+                  trace :orm, "For FactType #{ft}" do
                     fact = @constellation.Fact(:new, :population => population, :fact_type => ft)
                     fact_roles = ft.all_role.map do |role|
                       if role.object_type == et
                         object = instance
                       else
                         object = role_instances[role]
-                        debug :orm, "instance for role #{role} is #{object}"
+                        trace :orm, "instance for role #{role} is #{object}"
                       end
                       @constellation.RoleValue(:instance => object, :population => population, :fact => fact, :role => role)
                     end
@@ -1334,7 +1334,7 @@ module ActiveFacts
               entity_count += 1
             end
           end
-          debug :orm, "Created #{pi_fact_count} facts to identify #{entity_count} entities"
+          trace :orm, "Created #{pi_fact_count} facts to identify #{entity_count} entities"
 
           # Use the "ref" attribute of FactTypeRoleInstance:
           x_fact_roles = @x_model.xpath("orm:Facts/orm:Fact/orm:Instances/orm:FactTypeInstance/orm:RoleInstances/orm:FactTypeRoleInstance")
@@ -1343,7 +1343,7 @@ module ActiveFacts
           last_id = nil
           fact = nil
           fact_roles = []
-          debug :orm, "Reading sample facts" do
+          trace :orm, "Reading sample facts" do
             x_fact_roles.each do |v|
               fact_type_id = v.parent.parent.parent.parent['id']
               id = v.parent.parent['id']
@@ -1372,13 +1372,13 @@ module ActiveFacts
 
       def read_diagrams
         x_diagrams = @document.root.xpath("ormDiagram:ORMDiagram")
-        debug :orm, "Reading diagrams" do
+        trace :orm, "Reading diagrams" do
           x_diagrams.each do |x|
             name = (x["Name"] || '').strip
             diagram = @constellation.ORMDiagram(@vocabulary, name)
-            debug :diagram, "Starting to read diagram #{name}"
+            trace :diagram, "Starting to read diagram #{name}"
             shapes = x.xpath("ormDiagram:Shapes/*")
-            debug :orm, "Reading shapes" do
+            trace :orm, "Reading shapes" do
               shapes.map do |x_shape|
                 x_subject = x_shape.xpath("ormDiagram:Subject")[0]
                 subject = @by_id[x_subject["ref"]]
@@ -1450,9 +1450,9 @@ module ActiveFacts
 
         # $stderr.puts "#{fact_type.describe}: bounds=#{bounds} -> location = (#{location.x}, #{location.y})"
 
-        debug :orm, "REVISIT: Can't place rotated fact type correctly on diagram yet" if rotation_setting
+        trace :orm, "REVISIT: Can't place rotated fact type correctly on diagram yet" if rotation_setting
 
-        debug :orm, "fact type at #{location.x},#{location.y} has display_role_names_setting=#{display_role_names_setting.inspect}, rotation_setting=#{rotation_setting.inspect}"
+        trace :orm, "fact type at #{location.x},#{location.y} has display_role_names_setting=#{display_role_names_setting.inspect}, rotation_setting=#{rotation_setting.inspect}"
         shape = @constellation.FactTypeShape(
             :guid => id_of(x_shape),
             :orm_diagram => diagram,
@@ -1466,7 +1466,7 @@ module ActiveFacts
         x_role_display = x_shape.xpath("ormDiagram:RoleDisplayOrder/ormDiagram:Role")
         # print "Fact type '#{fact_type.preferred_reading.expand}' (#{fact_type.all_role.map{|r|r.object_type.name}*' '})"
         if x_role_display.size > 0
-          debug :orm, " has roleDisplay (#{x_role_display.map{|rd| @by_id[rd['ref']].object_type.name}*','})'"
+          trace :orm, " has roleDisplay (#{x_role_display.map{|rd| @by_id[rd['ref']].object_type.name}*','})'"
           x_role_display.each_with_index do |rd, ordinal|
             role_display = @constellation.RoleDisplay(shape, ordinal, :role => @by_id[rd['ref']])
           end
@@ -1474,7 +1474,7 @@ module ActiveFacts
           # Decide whether to create all RoleDisplay objects for this fact type, which is in role order
           # Omitting this here might lead to incomplete RoleDisplay sequences,
           # because each RoleNameShape or ValueConstraintShape creates just one.
-          debug :orm, " has no roleDisplay"
+          trace :orm, " has no roleDisplay"
         end
 
         relative_shapes = x_shape.xpath('ormDiagram:RelativeShapes/*')
@@ -1493,7 +1493,7 @@ module ActiveFacts
           when 'RoleNameShape'
             role = @by_id[xr_shape.xpath("ormDiagram:Subject")[0]['ref']]
             role_display = role_display_for_role(shape, x_role_display, role)
-            debug :orm, "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name}"
+            trace :orm, "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name}"
             @constellation.RoleNameShape(
               :guid => id_of(xr_shape), :orm_diagram => diagram, :location => location, :is_expanded => false,
               :role_display => role_display
@@ -1501,10 +1501,10 @@ module ActiveFacts
           when 'ValueConstraintShape'
             vc_subject_id = xr_shape.xpath("ormDiagram:Subject")[0]['ref']
             constraint = @by_id[vc_subject_id]
-            debug :orm, "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name} for #{constraint.inspect}"
+            trace :orm, "Fact type '#{fact_type.preferred_reading.expand}' has #{xr_shape.name} for #{constraint.inspect}"
 
             role_display = role_display_for_role(shape, x_role_display, constraint.role)
-            debug :orm, "ValueConstraintShape is on #{role_display.ordinal}'th role (by #{x_role_display.size > 0 ? 'role_display' : 'fact roles'})"
+            trace :orm, "ValueConstraintShape is on #{role_display.ordinal}'th role (by #{x_role_display.size > 0 ? 'role_display' : 'fact roles'})"
             @constellation.ValueConstraintShape(
               :guid => id_of(xr_shape), :orm_diagram => diagram, :location => location, :is_expanded => false,
               :constraint => constraint,

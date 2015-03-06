@@ -124,13 +124,13 @@ module ActiveFacts
         # Note also that this produces columns ordered for each refpath the same as the
         # order of the columns, not the same as the columns in the PK for which they might be an FK.
         all_column_by_ref_path =
-          debug :index2, "Indexing columns by ref_path" do
+          trace :index2, "Indexing columns by ref_path" do
             columns.inject({}) do |hash, column|
-              debug :index2, "References in column #{name}.#{column.name}" do
+              trace :index2, "References in column #{name}.#{column.name}" do
                 ref_path = column.absorption_references
                 raise "No absorption_references for #{column.name} from #{column.references.map(&:to_s)*" and "}" if !ref_path || ref_path.empty?
                 (hash[ref_path] ||= []) << column
-                debug :index2, "#{column.name} involves #{ref_path.map(&:to_s)*" and "}"
+                trace :index2, "#{column.name} involves #{ref_path.map(&:to_s)*" and "}"
               end
               hash
             end
@@ -143,7 +143,7 @@ module ActiveFacts
             inject({}) do |hash, ref_path|
               ref_path.each do |ref|
                 next unless ref.to_role
-                # debug :index2, "Considering #{ref_path.map(&:to_s)*" and "} yielding columns #{all_column_by_ref_path[ref_path].map{|c| c.name('.')}*", "}"
+                # trace :index2, "Considering #{ref_path.map(&:to_s)*" and "} yielding columns #{all_column_by_ref_path[ref_path].map{|c| c.name('.')}*", "}"
                 ref.to_role.all_role_ref.each do |role_ref|
                   all_pcs = role_ref.role_sequence.all_presence_constraint
 		  # puts "pcs over #{ref_path.map{|r| r.to_names}.flatten*'.'}: #{role_ref.role_sequence.all_presence_constraint.map(&:describe)*"; "}" if all_pcs.size > 0
@@ -171,9 +171,9 @@ module ActiveFacts
               hash
             end
 
-        debug :index, "All Indices in #{name}:" do
+        trace :index, "All Indices in #{name}:" do
           @indices = columns_by_unique_constraint.map do |uc, columns_with_ordinal|
-            debug :index, "Index due to uc #{uc.concept.guid} on #{name} over (#{columns_with_ordinal.sort_by{|onc|onc[0]}.map{|ca| ca[2].name}.inspect})"
+            trace :index, "Index due to uc #{uc.concept.guid} on #{name} over (#{columns_with_ordinal.sort_by{|onc|onc[0]}.map{|ca| ca[2].name}.inspect})"
             columns = columns_with_ordinal.sort_by{|ca| [ca[0,2], ca[2].name]}.map{|ca| ca[2]}
             absorption_level = columns.map(&:absorption_level).min
             over = columns[0].references[absorption_level].from
@@ -193,7 +193,7 @@ module ActiveFacts
               columns,
               uc.is_preferred_identifier
             )
-            debug :index, index
+            trace :index, index
             index
           end.
           compact.
@@ -211,24 +211,24 @@ module ActiveFacts
 
     class Vocabulary
       def populate_all_indices  #:nodoc:
-        debug :index, "Populating all object_type indices" do
+        trace :index, "Populating all object_type indices" do
           all_object_type.each do |object_type|
             object_type.clear_indices
           end
           all_object_type.each do |object_type|
             next unless object_type.is_table
-            debug :index, "Populating indices for #{object_type.name}" do
+            trace :index, "Populating indices for #{object_type.name}" do
               object_type.populate_indices
             end
           end
         end
-        debug :index, "Finished object_type indices" do
+        trace :index, "Finished object_type indices" do
           all_object_type.each do |object_type|
             next unless object_type.is_table
             next unless object_type.indices.size > 0
-            debug :index, "#{object_type.name}:" do
+            trace :index, "#{object_type.name}:" do
               object_type.indices.each do |index|
-                debug :index, index
+                trace :index, index
               end
             end
           end

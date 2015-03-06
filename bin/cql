@@ -7,16 +7,6 @@
 #
 require 'readline'
 
-# Load the ruby debugger before everything else, if requested
-#if d = ENV['DEBUG'] and d.split(/,/).include?('debug')
-#  begin
-#    require 'ruby-debug'
-#    Debugger.start(:post_mortem => true)        # Stop when an exception is thrown, but before it's rescued
-#  rescue LoadError
-#    # Ok, no debugger, tough luck.
-#  end
-#end
-
 require 'activefacts'
 require 'activefacts/cql/compiler'
 
@@ -40,7 +30,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
 
   def toggle_trace words
     words.each { |word|
-      puts "#{word} #{debug_toggle(word) ? "en" : "dis"}abled"
+      puts "#{word} #{trace_toggle(word) ? "en" : "dis"}abled"
     }
   end
 
@@ -79,7 +69,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     case cmd = words.shift
     when "/trace"
       if words.empty?
-	puts debug_keys*", "
+	puts trace_keys*", "
       else
 	toggle_trace words
       end
@@ -103,13 +93,13 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
       end
     when "/load"
       load_file(words*' ')
+    when "/quit"
+      exit
+    when "/help", "/"
+      help words
     else
-      if cmd == "/help" or cmd == "/"
-	help words
-      else
-	puts "Unknown metacommand #{line}?"
-	help
-      end
+      puts "Unknown metacommand #{line}?"
+      help
     end
   end
 
@@ -124,16 +114,23 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
       $stderr.puts e.message
     rescue => e
       puts e.message
-      puts "\t#{e.backtrace*"\n\t"}" if debug :exception
+      puts "\t#{e.backtrace*"\n\t"}" if trace :exception
     end
   end
 
-  def process_query(join)
-    if join.all_join_node.size == 1 and join.all_join_step.size == 0
-      list_instances(join.all_join_node.single.object_type)
+  def process_query(query)
+    if query.all_variable.size == 1 and
+    	(v = query.all_variable.single).all_play.map{|p| p.all_step.to_a}.flatten.uniq.size == 0
+      if v.object_type.all_instance.size == 0
+	puts "There are no instances of #{v.object_type.name}"
+      else
+	list_instances(v.object_type)
+      end
     else
-      # REVISIT: Identify all the unbound Join Nodes, and do a nested-loops iteration checking all Steps
-      puts "Can't yet process complex queries (involving #{join.all_join_node.map{|jn|jn.object_type.name}*', '})"
+      # REVISIT: Identify all the unbound Variables, and do a nested-loops iteration checking all Steps
+      puts "Can't yet process complex queries (involving #{
+	  query.all_variable.map{|v| v.object_type.name}
+	}*', '})"
     end
   end
 
@@ -148,7 +145,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
       end
     rescue => e
       puts e
-      puts "\t"+e.backtrace*"\n\t" if ENV["DEBUG"] =~ /exception/
+      puts "\t"+e.backtrace*"\n\t" if trace :exception
     end
   end
 
@@ -196,7 +193,7 @@ Meta-commands are:
   /root rule\t\tParse just a fragment of a CQL statement, matching syntax rule only
   /timings\t\t\tDisplay the elapsed time to execute each command
   /tree\t\t\tDisplay the abstract syntax tree from each statement parsed
-  /trace key\t\tToggle debug tracing key, or list available keys
+  /trace key\t\tToggle tracing key, or list available keys
 }
     else
       words.each do |word|

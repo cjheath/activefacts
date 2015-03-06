@@ -103,7 +103,7 @@ module ActiveFacts
 
               role_name = role.role_name
               role_name = nil if role_name == ""
-              # debug "object_type.name=#{preferred_role_ref.role.object_type.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
+              # trace "object_type.name=#{preferred_role_ref.role.object_type.name}, role_name=#{role_name.inspect}, preferred_role_name=#{preferred_role_ref.role.role_name.inspect}"
 
               if (role.fact_type.all_role.size == 1)
                 # REVISIT: Guard against unary reading containing the illegal words "and" and "where".
@@ -153,8 +153,8 @@ module ActiveFacts
               end
             end
 
-            debug :mode, "------------------- Didn't find standard forward reading" unless forward_reading
-            debug :mode, "------------------- Didn't find standard reverse reading" unless reverse_reading
+            trace :mode, "------------------- Didn't find standard forward reading" unless forward_reading
+            trace :mode, "------------------- Didn't find standard reverse reading" unless reverse_reading
 
             # If we didn't find at least one of the standard readings, don't use a refmode:
             if (forward_reading || reverse_reading)
@@ -173,7 +173,7 @@ module ActiveFacts
 
               # Figure out whether any non-standard readings exist:
               other_readings = ft.all_reading - [forward_reading] - [reverse_reading]
-              debug :mode, "--- other_readings.size now = #{other_readings.size}" if other_readings.size > 0
+              trace :mode, "--- other_readings.size now = #{other_readings.size}" if other_readings.size > 0
 
               fact_text = other_readings.map do |reading|
                 expanded_reading(reading, fact_constraints, true)

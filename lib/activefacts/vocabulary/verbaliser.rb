@@ -139,10 +139,10 @@ module ActiveFacts
             @player_by_role_ref[ref] or ref.play && @player_by_play[ref.play]
           end
         if existing_player
-          debug :player, "Using existing player for #{ref.role.object_type.name} #{ref.respond_to?(:role_sequence) && ref.role_sequence.all_reading.size > 0 ? ' in reading' : ''}in '#{ref.role.fact_type.default_reading}'"
+          trace :player, "Using existing player for #{ref.role.object_type.name} #{ref.respond_to?(:role_sequence) && ref.role_sequence.all_reading.size > 0 ? ' in reading' : ''}in '#{ref.role.fact_type.default_reading}'"
           return existing_player
         else
-          debug :player, "Adding new player for #{ref.role.object_type.name} #{ref.respond_to?(:role_sequence) && ref.role_sequence.all_reading.size > 0 ? ' in reading' : ''}in '#{ref.role.fact_type.default_reading}'"
+          trace :player, "Adding new player for #{ref.role.object_type.name} #{ref.respond_to?(:role_sequence) && ref.role_sequence.all_reading.size > 0 ? ' in reading' : ''}in '#{ref.role.fact_type.default_reading}'"
           p = Player.new(ref.role.object_type)
           @players.push(p)
           p
@@ -162,11 +162,11 @@ module ActiveFacts
 
       # Add a RoleRef to an existing Player
       def add_role_player player, role_ref
-        #debug :subscript, "Adding role_ref #{role_ref.object_id} to player #{player.object_id}"
+        #trace :subscript, "Adding role_ref #{role_ref.object_id} to player #{player.object_id}"
         if jr = role_ref.play
           add_play(player, jr)
         elsif !player.role_refs.include?(role_ref)
-          debug :subscript, "Adding reference to player #{player.object_id} for #{role_ref.role.object_type.name} in #{role_ref.role_sequence.describe} with #{role_ref.role_sequence.all_reading.size} readings"
+          trace :subscript, "Adding reference to player #{player.object_id} for #{role_ref.role.object_type.name} in #{role_ref.role_sequence.describe} with #{role_ref.role_sequence.all_reading.size} readings"
           player.role_refs.push(role_ref)
           @player_by_role_ref[role_ref] = player
         end
@@ -222,9 +222,9 @@ module ActiveFacts
         end
         p = existing_players[0] || player(plays[0])
         debugger if plays.detect{|jr| jr.role.object_type != p.object_type }
-        debug :subscript, "roles are playes of #{p.describe}" do
+        trace :subscript, "roles are playes of #{p.describe}" do
           plays.each do |play|
-            debug :subscript, "#{play.describe}" do
+            trace :subscript, "#{play.describe}" do
               add_play p, play
             end
           end
@@ -244,7 +244,7 @@ module ActiveFacts
         end
         p = existing_players[0] || player(role_refs[0])
 
-        debug :subscript, "#{existing_players[0] ? 'Adding to existing' : 'Creating new'} player for #{role_refs.map{|rr| rr.role.object_type.name}.uniq*', '}" do
+        trace :subscript, "#{existing_players[0] ? 'Adding to existing' : 'Creating new'} player for #{role_refs.map{|rr| rr.role.object_type.name}.uniq*', '}" do
           role_refs.each do |rr|
             unless p.object_type == rr.role.object_type
               # This happens in SubtypePI because uniqueness constraint is built without its implicit subtyping step.
@@ -275,10 +275,10 @@ module ActiveFacts
                 p.role_adjuncts(matching) == player.role_adjuncts(matching)
               end
             if dups.size == 1
-              debug :subscript, "No subscript needed for #{object_type.name}"
+              trace :subscript, "No subscript needed for #{object_type.name}"
               next
             end
-            debug :subscript, "Applying subscripts to #{dups.size} occurrences of #{object_type.name}" do
+            trace :subscript, "Applying subscripts to #{dups.size} occurrences of #{object_type.name}" do
               s = 0
               dups.
                 sort_by{|p|   # Guarantee stable numbering
@@ -350,7 +350,7 @@ module ActiveFacts
           prrs = fact_type.preferred_reading.role_sequence.all_role_ref
           residual_roles = fact_type.all_role.select{|r| !@role_refs.detect{|rr| rr.role == r} }
           residual_roles.each do |role|
-            debug :subscript, "Adding residual role for #{role.object_type.name} (in #{fact_type.default_reading}) not covered in role sequence"
+            trace :subscript, "Adding residual role for #{role.object_type.name} (in #{fact_type.default_reading}) not covered in role sequence"
             preferred_role_ref = prrs.detect{|rr| rr.role == role}
             if p = @player_by_role_ref[preferred_role_ref] and !p.role_refs.include?(preferred_role_ref)
               raise "Adding DUPLICATE residual role for #{role.object_type.name}"
@@ -361,11 +361,11 @@ module ActiveFacts
       end
 
       def prepare_query_players query
-        debug :subscript, "Indexing roles of fact types in #{query.all_step.size} steps" do
+        trace :subscript, "Indexing roles of fact types in #{query.all_step.size} steps" do
           steps = []
           # Register all references to each variable as being for the same player:
           query.all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
-            debug :subscript, "Adding Roles of #{variable.describe}" do
+            trace :subscript, "Adding Roles of #{variable.describe}" do
               plays_have_same_player(variable.all_play.to_a)
               steps = steps | variable.all_step
             end
@@ -388,11 +388,11 @@ module ActiveFacts
           #steps.map{|js|js.fact_type}.uniq.each do |fact_type|
             next if fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
 
-            debug :subscript, "Residual roles in '#{fact_type.default_reading}' are" do
+            trace :subscript, "Residual roles in '#{fact_type.default_reading}' are" do
               prrs = fact_type.preferred_reading.role_sequence.all_role_ref
               residual_roles = fact_type.all_role.select{|r| !r.all_role_ref.detect{|rr| rr.variable && rr.variable.query == query} }
               residual_roles.each do |r|
-                debug :subscript, "Adding residual role for #{r.object_type.name} (in #{fact_type.default_reading}) not covered in query"
+                trace :subscript, "Adding residual role for #{r.object_type.name} (in #{fact_type.default_reading}) not covered in query"
                 preferred_role_ref = prrs.detect{|rr| rr.role == r}
                 if p = @player_by_role_ref[preferred_role_ref] and !p.role_refs.include?(preferred_role_ref)
                   raise "Adding DUPLICATE residual role for #{r.object_type.name} not covered in query"
@@ -433,7 +433,7 @@ module ActiveFacts
           reading.role_sequence.all_role_ref.each do |rr|
             next unless player = @player_by_role_ref[rr]
             next unless subscript = player.subscript
-            debug :subscript, "Need to apply subscript #{subscript} to #{rr.role.object_type.name}"
+            trace :subscript, "Need to apply subscript #{subscript} to #{rr.role.object_type.name}"
           end
           player_by_role = {}
           @player_by_role_ref.keys.each{|rr| player_by_role[rr.role] = @player_by_role_ref[rr] if rr.role.fact_type == fact_type }
@@ -454,7 +454,7 @@ module ActiveFacts
 	  plays = ([step.input_play, step.output_play]+step.all_incidental_play.to_a).compact
 	  variable_by_role = plays.inject({}) { |h, play| h[play.role] = play.variable; h }
 	end
-        debug :subscript, "expanding '#{text}' with #{role_sequence.describe}" do
+        trace :subscript, "expanding '#{text}' with #{role_sequence.describe}" do
           text.gsub(/\{(\d)\}/) do
             role_ref = rrs[$1.to_i]
             # REVISIT: We may need to use the step's role_refs to expand the role players here, not the reading's one (extra adjectives?)
@@ -471,7 +471,7 @@ module ActiveFacts
       def subscripted_player role_ref, subscript = nil, play_name = nil, value = nil
         prr = @player_by_role_ref[role_ref]
         subscript ||= prr.subscript if prr
-        debug :subscript, "Need to apply subscript #{subscript} to #{role_ref.role.object_type.name}" if subscript
+        trace :subscript, "Need to apply subscript #{subscript} to #{role_ref.role.object_type.name}" if subscript
         object_type = role_ref.role.object_type
         (play_name ||
           [
@@ -532,19 +532,19 @@ module ActiveFacts
         # so just use any step involving this node, or just any step.
         if next_steps
           if next_step = next_steps.detect { |ns| !ns.is_objectification_step }
-            debug :query, "Chose new non-objectification step: #{next_step.describe}"
+            trace :query, "Chose new non-objectification step: #{next_step.describe}"
             return next_step
           end
         end
 
         if next_step = @steps.detect { |ns| !ns.is_objectification_step }
-          debug :query, "Chose random non-objectification step: #{next_step.describe}"
+          trace :query, "Chose random non-objectification step: #{next_step.describe}"
           return next_step
         end
 
         next_step = @steps[0]
         if next_step
-          debug :query, "Chose new random step from #{steps.size}: #{next_step.describe}"
+          trace :query, "Chose new random step from #{steps.size}: #{next_step.describe}"
           if next_step.is_objectification_step
             # if this objectification plays any roles (other than its FT roles) in remaining steps, use one of those first:
             fact_type = next_step.fact_type.implying_role.fact_type
@@ -590,7 +590,7 @@ module ActiveFacts
               end
             next_reading
           end
-        debug :query, "#{next_reading ? "'"+next_reading.expand+"'" : "No reading"} contracts against last node '#{next_node.object_type.name}'"
+        trace :query, "#{next_reading ? "'"+next_reading.expand+"'" : "No reading"} contracts against last node '#{next_node.object_type.name}'"
         return [next_step, next_reading]
       end
 
@@ -621,7 +621,7 @@ module ActiveFacts
                 js.input_play.variable.object_type == object_type || js.output_play.variable.object_type == object_type
             }
           steps << other_step
-          debug :query, "Emitting objectification step allows deleting #{other_step.describe}"
+          trace :query, "Emitting objectification step allows deleting #{other_step.describe}"
           step_completed(other_step)
         end
 
@@ -658,12 +658,12 @@ module ActiveFacts
         exit_node = @variables.detect{|jn| jn.all_play.detect{|jr| jr.role == last_role_ref.role}}
         exit_step = nil
 
-	debug :query, "Stepping over an objectification to #{exit_node.object_type.name} requires eliding the other implied steps" do
+	trace :query, "Stepping over an objectification to #{exit_node.object_type.name} requires eliding the other implied steps" do
 	  count = 0
 	  while other_step =
 	    @steps.
 	      detect{|js|
-		debug :query, "Considering step '#{js.fact_type.default_reading}'"
+		trace :query, "Considering step '#{js.fact_type.default_reading}'"
 		next unless js.is_objectification_step
 
 		# REVISIT: This test is too weak: We need to ensure that the same variables are involved, not just the same object types:
@@ -671,7 +671,7 @@ module ActiveFacts
 		exit_step = js if js.output_play.variable == exit_node
 		true
 	      }
-	    debug :query, "Emitting objectified FT allows deleting #{other_step.describe}"
+	    trace :query, "Emitting objectified FT allows deleting #{other_step.describe}"
 	    step_completed(other_step)
   #          raise "The objectification of '#{fact_type.default_reading}' should not cause the deletion of more than #{fact_type.all_role.size} other steps" if (count += 1) > fact_type.all_role.size
 	  end
@@ -685,12 +685,12 @@ module ActiveFacts
         readings = ''
         next_node = @role_refs[0].play.variable   # Choose a place to start
         last_is_contractable = false
-        debug :query, "Variables are #{@variables.map{|jn| jn.describe }.inspect}, Steps are #{@steps.map{|js| js.describe }.inspect}" do
+        trace :query, "Variables are #{@variables.map{|jn| jn.describe }.inspect}, Steps are #{@steps.map{|js| js.describe }.inspect}" do
           until @steps.empty?
             next_reading = nil
             # Choose amonst all remaining steps we can take from the next node, if any
             next_steps = @steps_by_variable[next_node]
-            debug :query, "Next Steps from #{next_node.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
+            trace :query, "Next Steps from #{next_node.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
 
             # See if we can find a next step that contracts against the last (if any):
             next_step = nil
@@ -699,7 +699,7 @@ module ActiveFacts
                 end
 
             if next_step
-              debug :query, "Chose #{next_step.describe} because it's contractable against last node #{next_node.object_type.name} using #{next_reading.expand}"
+              trace :query, "Chose #{next_step.describe} because it's contractable against last node #{next_node.object_type.name} using #{next_reading.expand}"
 
               player_by_role =
                 next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }

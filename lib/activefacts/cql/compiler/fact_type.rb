@@ -13,7 +13,7 @@ module ActiveFacts
         end
 
         def prepare_roles clauses = nil
-          debug :binding, "preparing roles" do
+          trace :binding, "preparing roles" do
             @context ||= CompilationContext.new(@vocabulary)
             @context.bind clauses||[], @conditions, @returning
           end
@@ -28,7 +28,7 @@ module ActiveFacts
 
           # Build the query:
           unless @conditions.empty? and !@returning
-            debug :query, "building query for derived fact type" do
+            trace :query, "building query for derived fact type" do
               @query = build_variables(@conditions.flatten)
               @roles_by_binding = build_all_steps(@conditions)
               @query.validate
@@ -43,7 +43,7 @@ module ActiveFacts
           @conditions.each do |condition|
             next if condition.is_naked_object_type
             # REVISIT: Many conditions will imply a number of different steps, which need to be handled (similar to nested_clauses).
-            debug :projection, "matching condition fact_type #{condition.inspect}" do
+            trace :projection, "matching condition fact_type #{condition.inspect}" do
               fact_type = condition.match_existing_fact_type @context
               raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
             end
@@ -131,7 +131,7 @@ module ActiveFacts
             @existing_clauses = [first_clause]
           elsif (n = @clauses.size - @existing_clauses.size) > 0
 	    raise "Cannot extend a negated fact type" if @existing_clauses.detect {|clause| clause.certainty == false }
-            debug :binding, "Extending existing fact type with #{n} new readings"
+            trace :binding, "Extending existing fact type with #{n} new readings"
           end
 
           # Now make any new readings:
@@ -236,7 +236,7 @@ module ActiveFacts
           return nil if fact_types.empty?   # There are no matched fact types
 
           if @clauses.size == 1 && @existing_clauses[0].side_effects.cost != 0
-            debug :matching, "There's only a single clause, but it's not an exact match"
+            trace :matching, "There's only a single clause, but it's not an exact match"
             return nil
           end
 
@@ -283,9 +283,9 @@ module ActiveFacts
 
           # We need to check uniqueness constraints after processing the whole vocabulary
           # raise "Fact type must be named as it has no identifying uniqueness constraint" unless @name || @fact_type.all_role.size == 1
-	  debug :constraint, "Need to check #{@fact_type.default_reading.inspect} for a uniqueness constraint"
+	  trace :constraint, "Need to check #{@fact_type.default_reading.inspect} for a uniqueness constraint"
           fact_type.check_and_add_spanning_uniqueness_constraint = proc do
-	    debug :constraint, "Checking #{@fact_type.default_reading.inspect} for a uniqueness constraint"
+	    trace :constraint, "Checking #{@fact_type.default_reading.inspect} for a uniqueness constraint"
 	    existing_pc = nil
             found = @fact_type.all_role.
 		detect do |role|
@@ -312,9 +312,9 @@ module ActiveFacts
 		:max_frequency => 1,
 		:is_preferred_identifier => true # (prefer || !!@fact_type.entity_type)
 	      )
-	      debug :constraint, "Made new fact type implicit PC GUID=#{pc.concept.guid} #{pc.name} min=nil max=1 over #{rs.describe}"
+	      trace :constraint, "Made new fact type implicit PC GUID=#{pc.concept.guid} #{pc.name} min=nil max=1 over #{rs.describe}"
 	    elsif pc
-	      debug :constraint, "Will rely on existing UC GUID=#{pc.concept.guid} #{pc.name} to be used as PI over #{rs.describe}"
+	      trace :constraint, "Will rely on existing UC GUID=#{pc.concept.guid} #{pc.name} to be used as PI over #{rs.describe}"
             end
 	  end
         end
@@ -349,7 +349,7 @@ module ActiveFacts
                 clauses_m = clauses_by_refs[variants[m]]
                 l_keys = variants[l]-common
                 m_keys = variants[m]-common
-                debug :binding, "Try to collapse variant #{m} onto #{l}; diffs are #{l_keys.inspect} -> #{m_keys.inspect}"
+                trace :binding, "Try to collapse variant #{m} onto #{l}; diffs are #{l_keys.inspect} -> #{m_keys.inspect}"
                 rebindings = 0
                 l_keys.each_with_index do |l_key, i|
                   # Find possible rebinding candidates; there must be exactly one.
@@ -358,19 +358,19 @@ module ActiveFacts
                     m_key = m_keys[j]
                     l_ref = refs_by_clause_and_key[[clauses_l[0], l_key]]
                     m_ref = refs_by_clause_and_key[[clauses_m[0], m_key]]
-                    debug :binding, "Can we match #{l_ref.inspect} (#{i}) with #{m_ref.inspect} (#{j})?"
+                    trace :binding, "Can we match #{l_ref.inspect} (#{i}) with #{m_ref.inspect} (#{j})?"
                     next if m_ref.player != l_ref.player
                     if has_more_adjectives(m_ref, l_ref)
-                      debug :binding, "can rebind #{m_ref.inspect} to #{l_ref.inspect}"
+                      trace :binding, "can rebind #{m_ref.inspect} to #{l_ref.inspect}"
                       candidates << [m_ref, l_ref]
                     elsif has_more_adjectives(l_ref, m_ref)
-                      debug :binding, "can rebind #{l_ref.inspect} to #{m_ref.inspect}"
+                      trace :binding, "can rebind #{l_ref.inspect} to #{m_ref.inspect}"
                       candidates << [l_ref, m_ref]
                     end
                   end
 
-                  # debug :binding, "found #{candidates.size} rebinding candidates for this role"
-                  debug :binding, "rebinding is ambiguous so not attempted" if candidates.size > 1
+                  # trace :binding, "found #{candidates.size} rebinding candidates for this role"
+                  trace :binding, "rebinding is ambiguous so not attempted" if candidates.size > 1
                   if (candidates.size == 1)
                     candidates[0][0].rebind_to(@context, candidates[0][1])
                     rebindings += 1
@@ -379,7 +379,7 @@ module ActiveFacts
                 end
                 if (rebindings == l_keys.size)
                   # Successfully rebound this fact type
-                  debug :binding, "Successfully rebound clauses #{clauses_l.map{|r|r.inspect}*'; '} on to #{clauses_m.map{|r|r.inspect}*'; '}"
+                  trace :binding, "Successfully rebound clauses #{clauses_l.map{|r|r.inspect}*'; '} on to #{clauses_m.map{|r|r.inspect}*'; '}"
                   break
                 else
                   # No point continuing, we failed on this one.

@@ -78,7 +78,7 @@ module ActiveFacts
                 ref.to.is_a?(ActiveFacts::Metamodel::EntityType) and
                 (role_ref = ref.to.preferred_identifier.role_sequence.all_role_ref.single) and
                 role_ref.role == ref.from_role
-              debug :columns, "Skipping #{ref}, identifies non-initial object"
+              trace :columns, "Skipping #{ref}, identifies non-initial object"
               next a
             end
 
@@ -87,19 +87,19 @@ module ActiveFacts
             # When traversing type inheritances, keep the subtype name, not the supertype names as well:
             if a.size > 0 && ref.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
               if ref.to != ref.fact_type.subtype  # Did we already have the subtype?
-                debug :columns, "Skipping supertype #{ref}"
+                trace :columns, "Skipping supertype #{ref}"
                 next a
               end
-              debug :columns, "Eliding supertype in #{ref}"
+              trace :columns, "Eliding supertype in #{ref}"
               last_names.size.times { a.pop }   # Remove the last names added
             elsif last_names.last && last_names.last == names[0][0...last_names.last.size] 
               # When Xyz is followed by XyzID, truncate that to just ID
-              debug :columns, "truncating repeated #{last_names.last} in #{names[0]}"
+              trace :columns, "truncating repeated #{last_names.last} in #{names[0]}"
               names[0] = names[0][last_names.last.size..-1]
               names.shift if names[0] == ''
             elsif last_names.last == names[0]
               # Same, but where an underscore split up the words
-              debug :columns, "truncating repeated name in #{names.inspect}"
+              trace :columns, "truncating repeated name in #{names.inspect}"
               names.shift
             end
 
@@ -113,7 +113,7 @@ module ActiveFacts
                 role_ref.role == ref.to_role and
                 names[0][0...et.name.size].downcase == et.name.downcase
 
-              debug :columns, "truncating transitive identifying role #{names.inspect}"
+              trace :columns, "truncating transitive identifying role #{names.inspect}"
               names[0] = names[0][et.name.size..-1]
               names.shift if names[0] == ""
             end
@@ -209,18 +209,18 @@ module ActiveFacts
 	    # This code omits the unary if it's objectified and that plays a mandatory role
 	    first_mandatory_column = nil
 	    if (@to && @to.fact_type)
-	      debug :unary_col, "Deciding whether to skip unary column for #{inspect}" do
+	      trace :unary_col, "Deciding whether to skip unary column for #{inspect}" do
 		first_mandatory_column =
 		  objectified_unary_columns.detect do |col|	# Detect a mandatory column for the unary
-		    debug :unary_col, "checking column #{col.name}" do
+		    trace :unary_col, "checking column #{col.name}" do
 		      !col.references.detect do |ref|
-			debug :unary_col, "#{ref} is mandatory=#{ref.is_mandatory.inspect}"
+			trace :unary_col, "#{ref} is mandatory=#{ref.is_mandatory.inspect}"
 			!ref.is_mandatory
 		      end
 		    end
 		  end
 		if is_from_objectified_fact && first_mandatory_column
-		  debug :unary_col, "Skipping unary column for #{inspect} because #{first_mandatory_column.name} is mandatory"
+		  trace :unary_col, "Skipping unary column for #{inspect} because #{first_mandatory_column.name} is mandatory"
 		end
 	      end
 	    end
@@ -244,9 +244,9 @@ module ActiveFacts
           c.prepend self
         end
 
-        debug :columns, "Columns from #{kind}#{self}" do
+        trace :columns, "Columns from #{kind}#{self}" do
           cols.each {|c|
-            debug :columns, "#{c}"
+            trace :columns, "#{c}"
           }
         end
       end
@@ -273,7 +273,7 @@ module ActiveFacts
     class ValueType < DomainObjectType
       # The identifier_columns for a ValueType can only ever be the self-value role that was injected
       def identifier_columns
-        debug :columns, "Identifier Columns for #{name}" do
+        trace :columns, "Identifier Columns for #{name}" do
           raise "Illegal call to identifier_columns for absorbed ValueType #{name}" unless is_table
           if isr = injected_surrogate_role
             columns.select{|column| column.references[0].from_role == isr }
@@ -286,7 +286,7 @@ module ActiveFacts
       # When creating a foreign key to this ValueType, what columns must we include?
       # This must be a fresh copy, because the columns will have References prepended
       def reference_columns(excluded_supertypes)  #:nodoc:
-        debug :columns, "Reference Columns for #{name}" do
+        trace :columns, "Reference Columns for #{name}" do
           if is_table
             if isr = injected_surrogate_role
               ref_from = references_from.detect{|ref| ref.from_role == isr}
@@ -304,14 +304,14 @@ module ActiveFacts
       # This must be a fresh copy, because the columns will have References prepended.
       def all_columns(excluded_supertypes)    #:nodoc:
         columns = []
-        debug :columns, "All Columns for #{name}" do
+        trace :columns, "All Columns for #{name}" do
           if is_table
             self_value_reference
           else
             columns << ActiveFacts::Persistence::Column.new
           end
           references_from.each do |ref|
-            debug :columns, "Columns absorbed via #{ref}" do
+            trace :columns, "Columns absorbed via #{ref}" do
               columns += ref.columns({})
             end
           end
@@ -331,7 +331,7 @@ module ActiveFacts
     class EntityType < DomainObjectType
       # The identifier_columns for an EntityType are the columns that result from the identifying roles
       def identifier_columns
-        debug :columns, "Identifier Columns for #{name}" do
+        trace :columns, "Identifier Columns for #{name}" do
           if absorbed_via and
             # If this is a subtype that has its own identification, use that.
             (all_type_inheritance_as_subtype.size == 0 ||
@@ -350,7 +350,7 @@ module ActiveFacts
       # When creating a foreign key to this EntityType, what columns must we include (the identifier columns)?
       # This must be a fresh copy, because the columns will have References prepended
       def reference_columns(excluded_supertypes)    #:nodoc:
-        debug :columns, "Reference Columns for #{name}" do
+        trace :columns, "Reference Columns for #{name}" do
 
           if absorbed_via and
             # If this is not a subtype, or is a subtype that has its own identification, use the id.
@@ -358,7 +358,7 @@ module ActiveFacts
               all_type_inheritance_as_subtype.detect{|ti| ti.provides_identification })
             rc = absorbed_via.from.reference_columns(excluded_supertypes)
             # The absorbed_via reference gets skipped here, and also in object_type.rb
-            debug :columns, "Skipping #{absorbed_via}"
+            trace :columns, "Skipping #{absorbed_via}"
             absorbed_mirror ||= absorbed_via.reversed
             rc.each{|col| col.prepend(absorbed_mirror)}
             return rc
@@ -379,7 +379,7 @@ module ActiveFacts
       # When absorbing this EntityType, what columns must be absorbed?
       # This must be a fresh copy, because the columns will have References prepended.
       def all_columns(excluded_supertypes)    #:nodoc:
-        debug :columns, "All Columns for #{name}" do
+        trace :columns, "All Columns for #{name}" do
           columns = []
           sups = supertypes
           pi_roles = preferred_identifier.role_sequence.all_role_ref.map{|rr| rr.role}
@@ -392,10 +392,10 @@ module ActiveFacts
             end
             [3, ref.to_names]
           end.each do |ref|
-            debug :columns, "Columns absorbed via #{ref}" do
+            trace :columns, "Columns absorbed via #{ref}" do
               if (ref.role_type == :supertype)
                 if excluded_supertypes[ref.to]
-                  debug :columns, "Exclude #{ref.to.name}, we already inherited it"
+                  trace :columns, "Exclude #{ref.to.name}, we already inherited it"
                   next
                 end
 
@@ -427,20 +427,20 @@ module ActiveFacts
         # REVISIT: Is now a good time to apply schema transforms or should this be more explicit?
         finish_schema
 
-        debug :columns, "Populating all columns" do
+        trace :columns, "Populating all columns" do
           all_object_type.each do |object_type|
             next if !object_type.is_table
-            debug :columns, "Populating columns for table #{object_type.name}" do
+            trace :columns, "Populating columns for table #{object_type.name}" do
               object_type.populate_columns
             end
           end
         end
-        debug :columns, "Finished columns" do
+        trace :columns, "Finished columns" do
           all_object_type.each do |object_type|
             next if !object_type.is_table
-            debug :columns, "Finished columns for table #{object_type.name}" do
+            trace :columns, "Finished columns for table #{object_type.name}" do
               object_type.columns.each do |column|
-                debug :columns, "#{column}"
+                trace :columns, "#{column}"
               end
             end
           end

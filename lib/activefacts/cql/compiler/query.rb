@@ -4,11 +4,11 @@ module ActiveFacts
       class Definition
         # Make a Variable for every binding present in these clauses
         def build_variables(clauses_list)
-          debug :query, "Building variables" do
+          trace :query, "Building variables" do
             query = @constellation.Query(:new)
             all_bindings_in_clauses(clauses_list).
               each do |binding|
-                debug :query, "Creating variable #{query.all_variable.size} for #{binding.inspect}"
+                trace :query, "Creating variable #{query.all_variable.size} for #{binding.inspect}"
                 binding.variable = @constellation.Variable(query, query.all_variable.size, :object_type => binding.player)
 		if literal = binding.refs.detect{|r| r.literal}
 		  if literal.kind_of?(ActiveFacts::CQL::Compiler::Reference)
@@ -25,7 +25,7 @@ module ActiveFacts
 
         def build_all_steps(clauses_list)
           roles_by_binding = {}
-          debug :query, "Building steps" do
+          trace :query, "Building steps" do
             clauses_list.each do |clause|
               next if clause.is_naked_object_type
               build_steps(clause, roles_by_binding)
@@ -37,7 +37,7 @@ module ActiveFacts
         def build_steps clause, roles_by_binding = {}, objectification_node = nil
           plays = []
           incidental_roles = []
-          debug :query, "Creating Role Sequence for #{clause.inspect} with #{clause.refs.size} role refs" do
+          trace :query, "Creating Role Sequence for #{clause.inspect} with #{clause.refs.size} role refs" do
             objectification_step = nil
             clause.refs.each do |ref|
               # These refs are the Compiler::References, which have associated Metamodel::RoleRefs,
@@ -62,7 +62,7 @@ module ActiveFacts
                 end
                 refs_count += objectification_ref_count
 
-                debug :query, "Creating Variable #{ref.inspect} (counts #{refs_count}/#{objectification_ref_count}) and objectification Step for #{ref.inspect}" do
+                trace :query, "Creating Variable #{ref.inspect} (counts #{refs_count}/#{objectification_ref_count}) and objectification Step for #{ref.inspect}" do
 
                   raise "Internal error: Trying to add role of #{role.object_type.name} to variable for #{binding.variable.object_type.name}" unless binding.variable.object_type == role.object_type
                   play = @constellation.Play(binding.variable, role)
@@ -81,7 +81,7 @@ module ActiveFacts
                     # This is an implicit objectification, just the FT clause, not ET(where ...clause...)
                     # We need to create a Variable for this object, even though it has no References
                     query = binding.variable.query
-                    debug :query, "Creating JN#{query.all_variable.size} for #{clause.fact_type.entity_type.name} in objectification"
+                    trace :query, "Creating JN#{query.all_variable.size} for #{clause.fact_type.entity_type.name} in objectification"
                     objectification_node = @constellation.Variable(query, query.all_variable.size, :object_type => clause.fact_type.entity_type)
                   end
                   raise "Internal error: Trying to add role of #{role.link_fact_type.all_role.single.object_type.name} to variable for #{objectification_node.object_type.name}" unless objectification_node.object_type == role.link_fact_type.all_role.single.object_type
@@ -99,14 +99,14 @@ module ActiveFacts
 		  if clause.certainty == nil
 		    objectification_step.is_optional = true
 		  end
-                  debug :query, "New #{objectification_step.describe}"
-                  debug :query, "Associating #{incidental_roles.map(&:describe)*', '} incidental roles with #{objectification_step.describe}" if incidental_roles.size > 0
+                  trace :query, "New #{objectification_step.describe}"
+                  trace :query, "Associating #{incidental_roles.map(&:describe)*', '} incidental roles with #{objectification_step.describe}" if incidental_roles.size > 0
                   incidental_roles.each { |jr| jr.step = objectification_step }
                   incidental_roles = []
                   plays = []
                 end
               else
-                debug :query, "Creating Reference for #{ref.inspect}" do
+                trace :query, "Creating Reference for #{ref.inspect}" do
                     # REVISIT: If there's an implicit subtyping step here, create it; then always raise the error here.
                     # I don't want to do this for now because the verbaliser will always verbalise all steps.
                   if binding.variable.object_type != role.object_type and
@@ -129,7 +129,7 @@ module ActiveFacts
                 # Each of these ImplicitFactTypes has a single phantom role played by the objectifying entity type
                 # One of these phantom roles is likely to be the subject of an objectification step.
                 ref.nested_clauses.each do |r|
-                  debug :query, "Building objectification step for #{ref.nested_clauses.inspect}" do
+                  trace :query, "Building objectification step for #{ref.nested_clauses.inspect}" do
                     build_steps r, roles_by_binding, binding.variable
                   end
                 end
@@ -154,8 +154,8 @@ module ActiveFacts
 		:is_disallowed => clause.certainty == false,
 		:is_optional => clause.certainty == nil
 	      )
-            debug :query, "New #{js.describe}"
-            debug :query, "Associating #{incidental_roles.map(&:describe)*', '} incidental roles with #{js.describe}" if incidental_roles.size > 0
+            trace :query, "New #{js.describe}"
+            trace :query, "Associating #{incidental_roles.map(&:describe)*', '} incidental roles with #{js.describe}" if incidental_roles.size > 0
             incidental_roles.each { |jr| jr.step = js }
           end
           roles_by_binding

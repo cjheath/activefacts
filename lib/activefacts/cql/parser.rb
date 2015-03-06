@@ -58,12 +58,12 @@ module ActiveFacts
         end
 
         def object_type(name, kind)
-          index_name(@terms, name) && debug(:context, "new #{kind} '#{name}'")
+          index_name(@terms, name) && trace(:context, "new #{kind} '#{name}'")
           true
         end
 
         def reset_role_names
-          debug :context, "\tresetting role names #{@role_names.keys.sort*", "}" if @role_names && @role_names.size > 0
+          trace :context, "\tresetting role names #{@role_names.keys.sort*", "}" if @role_names && @role_names.size > 0
           @role_names = {}
         end
 
@@ -72,17 +72,17 @@ module ActiveFacts
         end
 
         def new_leading_adjective_term(adj, term)
-          index_name(@role_names, "#{adj} #{term}", term) && debug(:context, "new compound term '#{adj}- #{term}'")
+          index_name(@role_names, "#{adj} #{term}", term) && trace(:context, "new compound term '#{adj}- #{term}'")
           true
         end
 
         def new_trailing_adjective_term(adj, term)
-          index_name(@role_names, "#{term} #{adj}", term) && debug(:context, "new compound term '#{term} -#{adj}'")
+          index_name(@role_names, "#{term} #{adj}", term) && trace(:context, "new compound term '#{term} -#{adj}'")
           true
         end
 
         def role_name(name)
-          index_name(@role_names, name) && debug(:context, "new role '#{name}'")
+          index_name(@role_names, name) && trace(:context, "new role '#{name}'")
           true
         end
 
@@ -98,11 +98,11 @@ module ActiveFacts
               @global_term = @term = @term_part
               @context_saver.context = {:term => @term, :global_term => @global_term }
             end
-            debug :context, "Term #{t[s] ? "is" : "starts"} '#{@term_part}'"
+            trace :context, "Term #{t[s] ? "is" : "starts"} '#{@term_part}'"
           elsif @allowed_forward_terms.include?(@term_part)
             @term = @term_part
             @context_saver.context = {:term => @term, :global_term => @term }
-            debug :context, "Term #{s} is an allowed forward"
+            trace :context, "Term #{s} is an allowed forward"
             return true
           end
           t
@@ -119,13 +119,13 @@ module ActiveFacts
             w = "role_name"
           end
           if t
-            debug :context, "Multi-word #{w} #{t[@term_part] ? 'ends at' : 'continues to'} #{@term_part.inspect}"
+            trace :context, "Multi-word #{w} #{t[@term_part] ? 'ends at' : 'continues to'} #{@term_part.inspect}"
 
             # Record the name of the full term and the underlying global term:
             if t[@term_part]
               @term = @term_part if t[@term_part]
               @global_term = (t = t[@term_part]) == true ? @term_part : t
-              debug :context, "saving context #{@term}/#{@global_term}"
+              trace :context, "saving context #{@term}/#{@global_term}"
               @context_saver.context = {:term => @term, :global_term => @global_term }
             end
           end

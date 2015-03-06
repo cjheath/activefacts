@@ -29,14 +29,14 @@ module ActiveFacts
 
         # Always a table if marked so:
         if is_independent
-          debug :absorption, "ValueType #{name} is declared independent"
+          trace :absorption, "ValueType #{name} is declared independent"
           @tentative = false
           return @is_table = true
         end
 
         # Only a table if it has references (to another ValueType)
         if !references_from.empty? && !is_auto_assigned
-          debug :absorption, "#{name} is a table because it has #{references_from.size} references to it"
+          trace :absorption, "#{name} is a table because it has #{references_from.size} references to it"
           @is_table = true
         else
           @is_table = false
@@ -72,14 +72,14 @@ module ActiveFacts
 
         # Always a table if marked so
         if is_independent
-          debug :absorption, "EntityType #{name} is declared independent"
+          trace :absorption, "EntityType #{name} is declared independent"
           return @is_table = true
         end
 
         # Always a table if nowhere else to go, and has no one-to-ones that might flip:
         if references_to.empty? and
             !references_from.detect{|ref| ref.role_type == :one_one }
-          debug :absorption, "EntityType #{name} is presumed independent as it has nowhere to go"
+          trace :absorption, "EntityType #{name} is presumed independent as it has nowhere to go"
           return @is_table = true
         end
 
@@ -90,11 +90,11 @@ module ActiveFacts
           as_ti = all_supertype_inheritance.detect{|ti| ti.assimilation}
           @is_table = as_ti != nil
           if @is_table
-            debug :absorption, "EntityType #{name} is #{as_ti.assimilation} from supertype #{as_ti.supertype}"
+            trace :absorption, "EntityType #{name} is #{as_ti.assimilation} from supertype #{as_ti.supertype}"
           else
             identifying_fact_type = preferred_identifier.role_sequence.all_role_ref.to_a[0].role.fact_type
             if identifying_fact_type.is_a?(TypeInheritance)
-              debug :absorption, "EntityType #{name} is absorbed into supertype #{supertypes[0].name}"
+              trace :absorption, "EntityType #{name} is absorbed into supertype #{supertypes[0].name}"
               @is_table = false
             else
               # Possibly absorbed, we'll have to see how that pans out
@@ -112,7 +112,7 @@ module ActiveFacts
             next false unless rr.role.object_type.is_a? ValueType
             rr.role.object_type.is_auto_assigned
           }
-          debug :absorption, "#{name} has an auto-assigned counter in its ID, so must be a table"
+          trace :absorption, "#{name} has an auto-assigned counter in its ID, so must be a table"
           @tentative = false
           return @is_table = true
         end
@@ -213,7 +213,7 @@ module ActiveFacts
 
         populate_all_references
 
-        debug :absorption, "Calculating relational composition" do
+        trace :absorption, "Calculating relational composition" do
           # Evaluate the possible independence of each object_type, building an array of object_types of indeterminate status:
           undecided =
             all_object_type.select do |object_type|
@@ -221,11 +221,11 @@ module ActiveFacts
               object_type.tentative         # Selection criterion
             end
 
-          if debug :absorption, "Generating tables, #{undecided.size} undecided, already decided ones are"
+          if trace :absorption, "Generating tables, #{undecided.size} undecided, already decided ones are"
             (all_object_type-undecided).each {|object_type|
               next if ValueType === object_type && !object_type.is_table  # Skip unremarkable cases
-              debug :absorption do
-                debug :absorption, "#{object_type.name} is #{object_type.is_table ? "" : "not "}a table#{object_type.tentative ? ", tentatively" : ""}"
+              trace :absorption do
+                trace :absorption, "#{object_type.name} is #{object_type.is_table ? "" : "not "}a table#{object_type.tentative ? ", tentatively" : ""}"
               end
             }
           end
@@ -233,24 +233,24 @@ module ActiveFacts
           pass = 0
           begin                         # Loop while we continue to make progress
             pass += 1
-            debug :absorption, "Starting composition pass #{pass} with #{undecided.size} undecided tables"
+            trace :absorption, "Starting composition pass #{pass} with #{undecided.size} undecided tables"
             possible_flips = {}         # A hash by table containing an array of references that can be flipped
             finalised =                 # Make an array of things we finalised during this pass
               undecided.select do |object_type|
-                debug :absorption, "Considering #{object_type.name}:" do
-                  debug :absorption, "refs to #{object_type.name} are from #{object_type.references_to.map{|ref| ref.from.name}*", "}" if object_type.references_to.size > 0
-                  debug :absorption, "refs from #{object_type.name} are to #{object_type.references_from.map{|ref| ref.to ? ref.to.name : ref.fact_type.default_reading}*", "}" if object_type.references_from.size > 0
+                trace :absorption, "Considering #{object_type.name}:" do
+                  trace :absorption, "refs to #{object_type.name} are from #{object_type.references_to.map{|ref| ref.from.name}*", "}" if object_type.references_to.size > 0
+                  trace :absorption, "refs from #{object_type.name} are to #{object_type.references_from.map{|ref| ref.to ? ref.to.name : ref.fact_type.default_reading}*", "}" if object_type.references_from.size > 0
 
                   # Always absorb an objectified unary into its role player:
                   if object_type.fact_type && object_type.fact_type.all_role.size == 1
-                    debug :absorption, "Absorb objectified unary #{object_type.name} into #{object_type.fact_type.entity_type.name}"
+                    trace :absorption, "Absorb objectified unary #{object_type.name} into #{object_type.fact_type.entity_type.name}"
                     object_type.definitely_not_table
                     next object_type
                   end
 
                   # If the PI contains one role only, played by an entity type that can absorb us, do that.
                   pi_roles = object_type.preferred_identifier.role_sequence.all_role_ref.map(&:role)
-                  debug :absorption, "pi_roles are played by #{pi_roles.map{|role| role.object_type.name}*", "}"
+                  trace :absorption, "pi_roles are played by #{pi_roles.map{|role| role.object_type.name}*", "}"
                   first_pi_role = pi_roles[0]
                   pi_ref = nil
                   if pi_roles.size == 1 and
@@ -260,7 +260,7 @@ module ActiveFacts
 		      end
 		    end
 
-                    debug :absorption, "#{object_type.name} is fully absorbed along its sole reference path into entity type #{pi_ref.from.name}"
+                    trace :absorption, "#{object_type.name} is fully absorbed along its sole reference path into entity type #{pi_ref.from.name}"
                     object_type.definitely_not_table
                     next object_type
                   end
@@ -270,7 +270,7 @@ module ActiveFacts
                     object_type.references_from.reject{|ref|
                       pi_roles.include?(ref.to_role)
                     }
-                  debug :absorption, "#{object_type.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
+                  trace :absorption, "#{object_type.name} has #{non_identifying_refs_from.size} non-identifying functional roles"
 
 =begin
                   # This is kinda arbitrary. We need a policy for evaluating optional flips, so we can decide if they "improve" things.
@@ -278,9 +278,9 @@ module ActiveFacts
 
                   # If all non-identifying functional roles are one-to-ones that can be flipped, do that:
                   if non_identifying_refs_from.all? { |ref| ref.role_type == :one_one && (ref.to.is_table || ref.to.tentative) }
-                    debug :absorption, "Flipping references from #{object_type.name}" do
+                    trace :absorption, "Flipping references from #{object_type.name}" do
                       non_identifying_refs_from.each do |ref|
-                        debug :absorption, "Flipping #{ref}"
+                        trace :absorption, "Flipping #{ref}"
                         ref.flip
                       end
                     end
@@ -290,7 +290,7 @@ module ActiveFacts
 
                   if object_type.references_to.size > 1 and
                       non_identifying_refs_from.size > 0
-                    debug :absorption, "#{object_type.name} has non-identifying functional dependencies so 3NF requires it be a table"
+                    trace :absorption, "#{object_type.name} has non-identifying functional dependencies so 3NF requires it be a table"
                     object_type.definitely_table
                     next object_type
                   end
@@ -308,15 +308,15 @@ module ActiveFacts
                       to_is_mandatory = !ref.to_role || !!ref.to_role.is_mandatory
 
                       bad = !(ref.from == object_type ? from_is_mandatory : to_is_mandatory)
-                      debug :absorption, "Not absorbing #{object_type.name} through non-mandatory #{ref}" if bad
+                      trace :absorption, "Not absorbing #{object_type.name} through non-mandatory #{ref}" if bad
                       bad
                     end
 
                   # If this object can be fully absorbed, do that (might require flipping some references)
                   if absorption_paths.size > 0
-                    debug :absorption, "#{object_type.name} is fully absorbed through #{absorption_paths.inspect}"
+                    trace :absorption, "#{object_type.name} is fully absorbed through #{absorption_paths.inspect}"
                     absorption_paths.each do |ref|
-                      debug :absorption, "Flipping #{ref} so #{object_type.name} can be absorbed"
+                      trace :absorption, "Flipping #{ref} so #{object_type.name} can be absorbed"
                       ref.flip if object_type == ref.from
                     end
                     object_type.definitely_not_table
@@ -329,7 +329,7 @@ module ActiveFacts
 #                    and (!object_type.is_a?(EntityType) ||
 #                      # REVISIT: The roles may be collectively but not individually mandatory.
 #                      object_type.references_to.detect { |ref| !ref.from_role || ref.from_role.is_mandatory })
-                    debug :absorption, "#{object_type.name} is fully absorbed in #{object_type.references_to.size} places: #{object_type.references_to.map{|ref| ref.from.name}*", "}"
+                    trace :absorption, "#{object_type.name} is fully absorbed in #{object_type.references_to.size} places: #{object_type.references_to.map{|ref| ref.from.name}*", "}"
                     object_type.definitely_not_table
                     next object_type
                   end
@@ -339,7 +339,7 @@ module ActiveFacts
               end
 
             undecided -= finalised
-            debug :absorption, "Finalised #{finalised.size} this pass: #{finalised.map{|f| f.name}*", "}"
+            trace :absorption, "Finalised #{finalised.size} this pass: #{finalised.map{|f| f.name}*", "}"
           end while !finalised.empty?
 
           # A ValueType that isn't explicitly a table and isn't needed anywhere doesn't matter,
@@ -347,10 +347,10 @@ module ActiveFacts
           all_object_type.each do |object_type|
             if (!object_type.is_table and object_type.references_to.size == 0 and object_type.references_from.size > 0)
               if !object_type.references_from.detect{|r| !r.is_one_to_one || !r.to.is_table}
-                debug :absorption, "Flipping references from #{object_type.name}; they're all to tables"
+                trace :absorption, "Flipping references from #{object_type.name}; they're all to tables"
                 object_type.references_from.map(&:flip)
               else
-                debug :absorption, "Making #{object_type.name} a table; it has nowhere else to go and needs to absorb things"
+                trace :absorption, "Making #{object_type.name} a table; it has nowhere else to go and needs to absorb things"
                 object_type.probably_table
               end
             end
@@ -358,9 +358,9 @@ module ActiveFacts
 
           # Now, evaluate all possibilities of the tentative assignments
           # Incomplete. Apparently unnecessary as well... so far. We'll see.
-          if debug :absorption
+          if trace :absorption
             undecided.each do |object_type|
-              debug :absorption, "Unable to decide independence of #{object_type.name}, going with #{object_type.show_tabular}"
+              trace :absorption, "Unable to decide independence of #{object_type.name}, going with #{object_type.show_tabular}"
             end
           end
         end

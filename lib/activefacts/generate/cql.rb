@@ -125,8 +125,8 @@ module ActiveFacts
             end
           end
         end
-        debug :mode, "Didn't find standard forward reading" unless forward_reading
-        debug :mode, "Didn't find standard reverse reading" unless reverse_reading
+        trace :mode, "Didn't find standard forward reading" unless forward_reading
+        trace :mode, "Didn't find standard reverse reading" unless reverse_reading
         [forward_reading, reverse_reading]
       end
 
@@ -165,7 +165,7 @@ module ActiveFacts
 
         # Figure out which non-standard readings exist, if any:
         nonstandard_readings = fact_type.all_reading - [forward_reading, reverse_reading]
-        debug :mode, "--- nonstandard_readings.size now = #{nonstandard_readings.size}" if nonstandard_readings.size > 0
+        trace :mode, "--- nonstandard_readings.size now = #{nonstandard_readings.size}" if nonstandard_readings.size > 0
 
         verbaliser = ActiveFacts::Metamodel::Verbaliser.new
 
@@ -398,16 +398,16 @@ module ActiveFacts
 
         # Tell the verbaliser all we know, so it can figure out which players to subscript:
         players = []
-        debug :subscript, "Preparing query across projected roles in set comparison constraint" do
+        trace :subscript, "Preparing query across projected roles in set comparison constraint" do
           transposed_role_refs.each do |role_refs|
             verbaliser.role_refs_have_subtype_steps role_refs
             join_over, = ActiveFacts::Metamodel.plays_over(role_refs.map{|rr| rr.role})
             players << join_over
           end
         end
-        debug :subscript, "Preparing query between roles in set comparison constraint" do
+        trace :subscript, "Preparing query between roles in set comparison constraint" do
           role_sequences.each do |role_sequence|
-            debug :subscript, "role sequence is #{role_sequence.describe}" do
+            trace :subscript, "role sequence is #{role_sequence.describe}" do
               verbaliser.prepare_role_sequence role_sequence
             end
           end
@@ -619,13 +619,13 @@ module ActiveFacts
 	    when ActiveFacts::Metamodel::PresenceConstraint
 	      fact_types = c.role_sequence.all_role_ref.map{|rr| rr.role.fact_type}.uniq  # All fact types spanned by this constraint
 	      if fact_types.size == 1     # There's only one, save it:
-		# debug "Single-fact constraint on #{fact_types[0].concept.guid}: #{c.name}"
+		# trace "Single-fact constraint on #{fact_types[0].concept.guid}: #{c.name}"
 		(@presence_constraints_by_fact[fact_types[0]] ||= []) << c
 	      end
 	    when ActiveFacts::Metamodel::RingConstraint
 	      (@ring_constraints_by_fact[c.role.fact_type] ||= []) << c
 	    else
-	      # debug "Found unhandled constraint #{c.class} #{c.name}"
+	      # trace "Found unhandled constraint #{c.class} #{c.name}"
 	    end
 	  }
       end

@@ -69,7 +69,7 @@ module ActiveFacts
 
           # REVISIT: TypeInheritance
           if fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-            # debug "Ignoring role #{role} in #{fact_type}, subtype fact type"
+            # trace "Ignoring role #{role} in #{fact_type}, subtype fact type"
             # REVISIT: What about secondary subtypes?
             # REVISIT: What about dumping the relational mapping when using separate tables?
             return
@@ -135,7 +135,7 @@ puts b
         end
 
         def append_ring_to_reading(reading, ring)
-          # REVISIT: debug "Should override append_ring_to_reading"
+          # REVISIT: trace "Should override append_ring_to_reading"
         end
 
         def fact_type_banner
@@ -145,15 +145,15 @@ puts b
         end
 
         def constraint_banner
-          # debug "Should override constraint_banner"
+          # trace "Should override constraint_banner"
         end
 
         def constraint_end
-          # debug "Should override constraint_end"
+          # trace "Should override constraint_end"
         end
 
         def constraint_dump(c)
-          # debug "Should override constraint_dump"
+          # trace "Should override constraint_dump"
         end
 
       end

@@ -29,9 +29,9 @@ module ActiveFacts
           end
           @offset = nil if @offset.to_f == 0
 
-          debug :units, "Defining new unit #{@singular}#{@plural ? "/"+@plural : ""}" do
-            debug :units, "Coefficient is #{coefficient.numerator}#{coefficient.denominator != 1 ? "/#{coefficient.denominator}" : ""} #{coefficient.is_precise ? "exactly" : "approximately"}" if coefficient
-            debug :units, "Offset is #{@offset}" if @offset
+          trace :units, "Defining new unit #{@singular}#{@plural ? "/"+@plural : ""}" do
+            trace :units, "Coefficient is #{coefficient.numerator}#{coefficient.denominator != 1 ? "/#{coefficient.denominator}" : ""} #{coefficient.is_precise ? "exactly" : "approximately"}" if coefficient
+            trace :units, "Offset is #{@offset}" if @offset
             raise "Redefinition of unit #{@singular}" if @constellation.Unit.values.detect{|u| u.name == @singular}
             raise "Redefinition of unit #{@plural}" if @constellation.Unit.values.detect{|u| u.name == @plural}
             unit = @constellation.Unit(:new,
@@ -45,7 +45,7 @@ module ActiveFacts
               )
             @base_units.each do |base_unit, exponent|
               base = @constellation.Unit.values.detect{|u| u.name == base_unit || u.plural_name == base_unit }
-              debug :units, "Base unit #{base_unit}^#{exponent} #{base ? "" : "(implicitly fundamental)"}"
+              trace :units, "Base unit #{base_unit}^#{exponent} #{base ? "" : "(implicitly fundamental)"}"
               base ||= @constellation.Unit(:new, :name => base_unit, :is_fundamental => true, :vocabulary => @vocabulary)
               @constellation.Derivation(:derived_unit => unit, :base_unit => base, :exponent => exponent)
             end
