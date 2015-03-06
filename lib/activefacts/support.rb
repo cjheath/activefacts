@@ -1,7 +1,7 @@
 #
 #       ActiveFacts Support code.
 #       The debug method supports indented tracing.
-#       Set the DEBUG environment variable to enable it. Search the code to find the DEBUG keywords, or use "all".
+#       Set the TRACE environment variable to enable it. Search the code to find the TRACE keywords, or use "all".
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
@@ -16,7 +16,7 @@
     $debug_indent = 0
     unless $debug_keys
       $debug_keys = {}
-      if (e = ENV["DEBUG"])
+      if (e = ENV["TRACE"])
 	e.split(/[^_a-zA-Z0-9]/).each{|k| debug_enable(k) }
 	if $debug_keys[:help]
 	  at_exit {
@@ -85,7 +85,7 @@
     $debug_nested = nested
     [
       (enabled ? 1 : 0),
-      $debug_keys[:all] ? " %-15s"%control : nil
+      $debug_keys[:keys] || $debug_keys[:all] ? " %-15s"%control : nil
     ]
   end
 
