@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'activefacts-api', '~> 1', '>= 1.5'
+gem 'activefacts-api', '~> 1', '>= 1.7'
 gem 'rbtree-pure', '~> 0', '>= 0.1.1'
 gem 'treetop', '~> 1.4', '>= 1.4.14'
 gem 'nokogiri', '~> 1', '>= 1.6'
