@@ -108,6 +108,8 @@ module ActiveFacts
           end
         end
 
+	# This method is used in matching unary fact types in entity identification
+	# It disregards literals, which are not allowed in this context.
         def phrases_match(phrases)
           @phrases.zip(phrases).each do |mine, theirs|
             return false if mine.is_a?(Reference) != theirs.is_a?(Reference)
@@ -921,8 +923,9 @@ module ActiveFacts
             l = @leading_adjective
             t = @trailing_adjective
             key = [!l || l.empty? ? nil : l, @term, !t || t.empty? ? nil : t]
-            key
           end
+	  key += [:literal, literal.literal] if @literal
+	  key
         end
 
         def bind context
@@ -940,14 +943,34 @@ module ActiveFacts
               role_name = @term
             end
           end
-          @binding = (context.bindings[key] ||= Binding.new(@player, role_name))
-          @binding.refs << self
+	  k = key
+	  @binding = context.bindings[k]
+	  if !@binding
+	    if !literal
+	      # Find a binding that has a literal, and bind to it if it's the only one
+	      candidates = context.bindings.map do |binding_key, binding|
+		  binding_key[0...k.size] == k &&
+		    binding_key[-2] == :literal ? binding : nil
+		end.compact
+	      raise "Uncertain binding reference for #{to_s}, could be any of #{candidates.inspect}" if candidates.size > 1
+	      @binding = candidates[0]
+	    else
+	      # New binding has a literal, look for one without:
+	      @binding = context.bindings[k[0...-2]]
+	    end
+	  end
+
+	  if !@binding
+	    @binding = Binding.new(@player, role_name)
+	    context.bindings[k] = @binding
+	  end
+          @binding.add_ref self
           @binding
         end
 
         def unbind context
           # The key has changed.
-          @binding.refs.delete(self)
+          @binding.delete_ref self
           if @binding.refs.empty?
             # Remove the binding from the context if this was the last reference
             context.bindings.delete_if {|k,v| v == @binding }
@@ -969,7 +992,7 @@ module ActiveFacts
           new_binding = other_ref.binding
           [self, *old_binding.refs].each do |ref|
             ref.binding = new_binding
-            new_binding.refs << ref
+            new_binding.add_ref ref
           end
           old_binding.rebound_to = new_binding
         end

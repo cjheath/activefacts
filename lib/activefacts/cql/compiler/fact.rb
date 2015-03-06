@@ -84,9 +84,11 @@ module ActiveFacts
           # Find the roles of this clause that do not yet have an instance
           bare_roles = clause.refs.
             select do |ref|
-              next false if ref.binding.instance
-              next false if ref.literal and
+	      if !ref.binding.instance and ref.literal
                 ref.binding.instance = instance_identified_by_literal(ref.binding.player, ref.literal)
+	      end
+
+              next false if ref.binding.instance
               true
             end
 
@@ -139,35 +141,39 @@ module ActiveFacts
 
         def bind_complete_fact clause
           return true unless clause.fact_type  # An bare objectification
-          debug :instance, "All bindings in '#{clause.display}' contain instances; create the fact type"
-          instances = clause.refs.map{|vr| vr.binding.instance}
-          debug :instance, "Instances are #{instances.map{|i| "#{i.object_type.name} #{i.value.inspect}"}*", "}"
+          debug :instance, "All bindings in '#{clause.display}' contain instances; assert the fact type"
+          instances = clause.refs.map{|vr| vr.binding.instance }
+          debug :instance, "Instances are #{instances.map{|i| "#{i.verbalise}"}*", "}"
 
           if e = clause.fact_type.entity_type and
             clause.refs[0].binding.instance.object_type == e
             fact = clause.refs[0].binding.instance.fact
           else
             # Check that this fact doesn't already exist
+	    debug :instance, "Searching for existing fact instance"
+
             fact = clause.fact_type.all_fact.detect do |f|
+
               # Get the role values of this fact in the order of the clause we just bound
               role_values_in_clause_order = f.all_role_value.sort_by do |rv|
                 clause.reading.role_sequence.all_role_ref.detect{|rr| rr.role == rv.role}.ordinal
               end
+
               # If all this fact's role values are played by the bound instances, it's the same fact
               !role_values_in_clause_order.zip(instances).detect{|rv, i| rv.instance != i }
             end
           end
           if fact
             clause.fact = fact
-            debug :instance, "Found existing fact type instance"
+            debug :instance, "Found existing fact"
           else
+            debug :instance, "Creating new fact of type #{clause.fact_type.default_reading}"
             fact =
               clause.fact =
               @constellation.Fact(:new, :fact_type => clause.fact_type, :population => @population)
             @bound_facts << fact
-
             clause.reading.role_sequence.all_role_ref_in_order.zip(instances).each do |rr, instance|
-              debug :instance, "New fact has #{instance.object_type.name} role #{instance.value.inspect}"
+              debug :instance, "Assigning fact role #{instance.object_type.name} to #{instance.value ? instance.value.inspect : instance.verbalise}"
               # REVISIT: Any residual adjectives after the fact type matching are lost here.
               @constellation.RoleValue(:fact => fact, :instance => instance, :role => rr.role, :population => @population)
             end
@@ -244,12 +250,13 @@ module ActiveFacts
             return false
           end
 
-          debug :instance, "Going ahead with creating #{binding.player.name} using #{identifiers.size} roles" do
+          debug :instance, "Creating Entity #{binding.player.name} using #{identifiers.size} roles" do
             instance = @constellation.Instance(:new, :object_type => entity_type, :population => @population)
             binding.instance = instance
             @bound_facts << instance
             identifiers.each do |rr, identifying_clause, identifying_binding, identifying_instance|
               # This clause provides the identifying literal for the entity_type
+	      debug :instance, "Creating existential fact #{rr.role.fact_type.default_reading} for value #{identifying_instance.value.inspect}"
               id_fact =
                 identifying_clause.fact =
                 @constellation.Fact(:new, :fact_type => rr.role.fact_type, :population => @population)
@@ -267,21 +274,25 @@ module ActiveFacts
           if object_type.is_a?(ActiveFacts::Metamodel::EntityType)
             entity_identified_by_literal object_type, literal
           else
-            debug :instance, "Making ValueType #{object_type.name} #{literal.inspect} #{@population.name.size>0 ? " in "+@population.name.inspect : ''}" do
-
+            debug :instance, "Assert Value #{object_type.name} #{literal.inspect}" do
               is_literal_string = literal.literal.is_a?(String)
-              instance = @constellation.Instance.detect do |key, i|
+	      # REVISIT: Check for subtypes and supertypes also, and promote type if necessary
+	      instance = object_type.all_instance.detect do |i|
+              #instance = @constellation.Instance.detect do |key, i|
                   # REVISIT: And same unit
+		  debug :instance, "Comparing #{i.value.literal.inspect} to #{literal.literal.inspect}"
                   i.population == @population &&
                     i.value &&
-                    i.value.literal == literal &&
+                    i.value.literal.inspect == literal.literal.inspect &&
                     i.value.is_literal_string == is_literal_string
                 end
               #instance = object_type.all_instance.detect { |instance|
               #  instance.population == @population && instance.value == literal
               #}
-              debug :instance, "This #{object_type.name} value already exists" if instance
-              unless instance
+	      if instance
+		debug :instance, "This #{object_type.name} value already exists"
+              else
+		debug :instance, "Creating Value #{object_type.name} #{literal.inspect} #{@population.name.size>0 ? " in "+@population.name.inspect : ''}"
                 instance = @constellation.Instance(:new)
                 instance.object_type = object_type
                 instance.population = @population
@@ -296,7 +307,7 @@ module ActiveFacts
         def entity_identified_by_literal object_type, literal
           # A literal that identifies an entity type means the entity type has only one identifying role
           # That role is played either by a value type, or by another similarly single-identified entity type
-          debug "Making EntityType #{object_type.name} identified by '#{literal}' #{@population.name.size>0 ? " in "+@population.name.inspect : ''}" do
+          debug :instance, "Assert Entity #{object_type.name} identified by '#{literal}'" do
             identifying_role_refs = object_type.preferred_identifier.role_sequence.all_role_ref
             raise "Single literal cannot satisfy multiple identifying roles for #{object_type.name}" if identifying_role_refs.size > 1
             role = identifying_role_refs.single.role
@@ -315,10 +326,12 @@ module ActiveFacts
               debug :instance, "This #{object_type.name} entity already exists"
             else
               # This fact has no clause.
+	      debug :instance, "Creating implicit existential fact #{role.fact_type.default_reading}"
               fact = @constellation.Fact(:new, :fact_type => role.fact_type, :population => @population)
               @bound_facts << fact
               # This instance will be associated with its binding by our caller
               instance = @constellation.Instance(:new, :object_type => object_type, :population => @population)
+	      debug :instance, "Creating Entity #{object_type.name} identified by '#{literal}' #{@population.name.size>0 ? " in "+@population.name.inspect : ''}"
               @bound_facts << instance
               # The identifying fact type has two roles; create both role instances:
               @constellation.RoleValue(:instance => identifying_instance, :fact => fact, :population => @population, :role => role)

@@ -35,6 +35,15 @@ module ActiveFacts
         def <=>(other)
           key <=> other.key
         end
+
+	def add_ref ref
+	  @refs << ref
+	  ref
+	end
+
+	def delete_ref ref
+	  @refs.delete ref
+	end
       end
 
       class CompilationContext
