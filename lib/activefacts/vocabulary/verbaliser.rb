@@ -451,7 +451,7 @@ module ActiveFacts
         rrs = role_sequence.all_role_ref_in_order
 	variable_by_role = {}
 	if step
-	  plays = ([step.input_play, step.output_play]+step.all_incidental_play.to_a).compact
+	  plays = step.all_play
 	  variable_by_role = plays.inject({}) { |h, play| h[play.role] = play.variable; h }
 	end
         trace :subscript, "expanding '#{text}' with #{role_sequence.describe}" do
@@ -731,7 +731,7 @@ module ActiveFacts
                 objectified_node = next_step.input_play.variable
                 raise "Assumption violated that the objectification is the input play" unless objectified_node.object_type.fact_type
                 objectified_node.all_step.map do |other_step|
-                  (other_step.all_incidental_play.to_a + [other_step.output_play]).map do |jr|
+		  other_step.all_play.map do |jr|
                     player_by_role[jr.role] = @player_by_play[jr]
                   end
                 end

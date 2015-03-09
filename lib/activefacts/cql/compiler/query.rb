@@ -34,9 +34,9 @@ module ActiveFacts
           roles_by_binding
         end
 
-        def build_steps clause, roles_by_binding = {}, objectification_node = nil
+        def build_steps clause, roles_by_binding = {}, objectification_variable = nil
           plays = []
-          incidental_roles = []
+          incidental_plays = []
           trace :query, "Creating Role Sequence for #{clause.inspect} with #{clause.refs.size} role refs" do
             objectification_step = nil
             clause.refs.each do |ref|
@@ -47,7 +47,6 @@ module ActiveFacts
               role = (ref && ref.role) || (ref.role_ref && ref.role_ref.role)
               play = nil
 
-              debugger unless clause.fact_type
               if (clause.fact_type.entity_type)
                 # This clause is of an objectified fact type.
                 # We need a step from this role to the phantom role, but not
@@ -71,24 +70,24 @@ module ActiveFacts
                     if objectification_step
                       play.step = objectification_step
                     else
-                      incidental_roles << play
+                      incidental_plays << play
                     end
                     next
                   end
 
                   plays << play
-                  unless objectification_node
-                    # This is an implicit objectification, just the FT clause, not ET(where ...clause...)
+                  unless objectification_variable
+                    # This is an implicit objectification, just the FT clause, not ET(in which ...clause...)
                     # We need to create a Variable for this object, even though it has no References
                     query = binding.variable.query
                     trace :query, "Creating JN#{query.all_variable.size} for #{clause.fact_type.entity_type.name} in objectification"
-                    objectification_node = @constellation.Variable(query, query.all_variable.size, :object_type => clause.fact_type.entity_type)
+                    objectification_variable = @constellation.Variable(query, query.all_variable.size, :object_type => clause.fact_type.entity_type)
                   end
-                  raise "Internal error: Trying to add role of #{role.link_fact_type.all_role.single.object_type.name} to variable for #{objectification_node.object_type.name}" unless objectification_node.object_type == role.link_fact_type.all_role.single.object_type
+                  raise "Internal error: Trying to add role of #{role.link_fact_type.all_role.single.object_type.name} to variable for #{objectification_variable.object_type.name}" unless objectification_variable.object_type == role.link_fact_type.all_role.single.object_type
 
                   irole = role.link_fact_type.all_role.single
-                  raise "Internal error: Trying to add role of #{irole.object_type.name} to variable for #{objectification_node.object_type.name}" unless objectification_node.object_type == irole.object_type
-                  objectification_role = @constellation.Play(objectification_node, role.link_fact_type.all_role.single)
+                  raise "Internal error: Trying to add role of #{irole.object_type.name} to variable for #{objectification_variable.object_type.name}" unless objectification_variable.object_type == irole.object_type
+                  objectification_role = @constellation.Play(objectification_variable, role.link_fact_type.all_role.single)
                   objectification_step = @constellation.Step(
 		      objectification_role,
 		      play,
@@ -100,9 +99,9 @@ module ActiveFacts
 		    objectification_step.is_optional = true
 		  end
                   trace :query, "New #{objectification_step.describe}"
-                  trace :query, "Associating #{incidental_roles.map(&:describe)*', '} incidental roles with #{objectification_step.describe}" if incidental_roles.size > 0
-                  incidental_roles.each { |jr| jr.step = objectification_step }
-                  incidental_roles = []
+                  trace :query, "Associating #{incidental_plays.map(&:describe)*', '} incidental roles with #{objectification_step.describe}" if incidental_plays.size > 0
+                  incidental_plays.each { |i_play| i_play.step = objectification_step }
+                  incidental_plays = []
                   plays = []
                 end
               else
@@ -110,7 +109,7 @@ module ActiveFacts
                     # REVISIT: If there's an implicit subtyping step here, create it; then always raise the error here.
                     # I don't want to do this for now because the verbaliser will always verbalise all steps.
                   if binding.variable.object_type != role.object_type and
-                    0 == (binding.variable.object_type.supertypes_transitive & role.object_type.supertypes_transitive).size
+		      binding.variable.object_type.common_supertype(role.object_type)
                     raise "Internal error: Trying to add role of #{role.object_type.name} to variable #{binding.variable.ordinal} for #{binding.variable.object_type.name} in '#{clause.fact_type.default_reading}'"
                   end
                   raise "Internal error: Trying to add role of #{role.object_type.name} to variable #{binding.variable.ordinal} for #{binding.variable.object_type.name}" unless binding.variable.object_type == role.object_type
@@ -139,24 +138,23 @@ module ActiveFacts
           end
 
           if plays.size > 0
-            end_node = plays[-1].variable
             if !clause.fact_type.entity_type and role = clause.fact_type.all_role.single
               # Don't give the ImplicitBoolean a variable. We can live without one, for now.
-              # The Step will have a duplicate node, and the fact type will tell us what's happening
+              # The Step will have a duplicate Play, and the fact type will tell us what's happening
               plays << plays[0]
             end
             # We aren't talking about objectification here, so there must be exactly two roles.
             raise "REVISIT: Internal error constructing step for #{clause.inspect}" if plays.size != 2
-            js = @constellation.Step(
+            step = @constellation.Step(
 		plays[0],
 		plays[1],
 		:fact_type => clause.fact_type,
 		:is_disallowed => clause.certainty == false,
 		:is_optional => clause.certainty == nil
 	      )
-            trace :query, "New #{js.describe}"
-            trace :query, "Associating #{incidental_roles.map(&:describe)*', '} incidental roles with #{js.describe}" if incidental_roles.size > 0
-            incidental_roles.each { |jr| jr.step = js }
+            trace :query, "New #{step.describe}"
+            trace :query, "Associating #{incidental_plays.map(&:describe)*', '} incidental roles with #{step.describe}" if incidental_plays.size > 0
+            incidental_plays.each { |i_play| i_play.step = step }
           end
           roles_by_binding
         end

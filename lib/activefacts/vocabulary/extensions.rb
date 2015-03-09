@@ -265,6 +265,13 @@ module ActiveFacts
       def subtypes_transitive
         [self] + subtypes.map{|st| st.subtypes_transitive}.flatten
       end
+
+      def common_supertype(other)
+	return nil unless other.is_?(ActiveFacts::Metamodel::ValueType)
+	return self if other.supertypes_transitive.include?(self)
+	return other if supertypes_transitive.include(other)
+	nil
+      end
     end
 
     class EntityType
@@ -476,6 +483,13 @@ module ActiveFacts
           }
         trace "Failed to find identifying supertype of #{name}"
         return nil
+      end
+
+      def common_supertype(other)
+	return nil unless other.is_?(ActiveFacts::Metamodel::EntityType)
+	candidates = supertypes_transitive & other.supertypes_transitive
+	return candidates[0] if candidates.size <= 1
+	candidates[0] # REVISIT: This might not be the closest supertype
       end
 
       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles

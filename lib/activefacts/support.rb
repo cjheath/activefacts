@@ -1,7 +1,5 @@
 #
 #       ActiveFacts Support code.
-#       The trace method supports indented tracing.
-#       Set the TRACE environment variable to enable it. Search the code to find the TRACE keywords, or use "all".
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
