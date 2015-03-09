@@ -1025,22 +1025,38 @@ module ActiveFacts
       def verbalise(context = nil)
         return "#{object_type.name} #{value}" if object_type.is_a?(ValueType)
 
-        return "#{object_type.name} where #{fact.verbalise(context)}" if object_type.fact_type
+        return "#{object_type.name} (in which #{fact.verbalise(context)})" if object_type.fact_type
 
         # It's an entity that's not an objectified fact type
-        # REVISIT: If it has a simple identifier, there's no need to fully verbalise the identifying facts
-        pi = object_type.preferred_identifier
-        identifying_role_refs = pi.role_sequence.all_role_ref_in_order
-        "#{object_type.name}" +
-          " is identified by " +      # REVISIT: Where the single fact type is TypeInheritance, we can shrink this
-          if identifying_role_refs.size == 1 &&
-            (role = identifying_role_refs[0].role) &&
-            (my_role = (role.fact_type.all_role.to_a-[role])[0]) &&
-            (identifying_fact = my_role.all_role_value.detect{|rv| rv.instance == self}.fact) &&
-            (identifying_instance = identifying_fact.all_role_value.detect{|rv| rv.role == role}.instance)
 
-              "its #{identifying_instance.verbalise(context)}"
-          else
+        # If it has a simple identifier, there's no need to fully verbalise the identifying facts.
+	# This recursive block returns either the identifying value or nil
+	simple_identifier = proc do |instance|
+	    if instance.object_type.is_a?(ActiveFacts::Metamodel::ValueType)
+	      instance
+	    else
+	      pi = instance.object_type.preferred_identifier
+	      identifying_role_refs = pi.role_sequence.all_role_ref_in_order
+	      if identifying_role_refs.size != 1
+		nil
+	      else
+		role = identifying_role_refs[0].role
+		my_role = (role.fact_type.all_role.to_a-[role])[0]
+		identifying_fact = my_role.all_role_value.detect{|rv| rv.instance == self}.fact
+		irv = identifying_fact.all_role_value.detect{|rv| rv.role == role}
+		identifying_instance = irv.instance
+		simple_identifier.call(identifying_instance)
+	      end
+	    end
+	  end
+
+	if (id = simple_identifier.call(self))
+	  "#{object_type.name} #{id.value}"
+	else
+	  pi = object_type.preferred_identifier
+	  identifying_role_refs = pi.role_sequence.all_role_ref_in_order
+	  "#{object_type.name}" +
+	    " is identified by " +      # REVISIT: Where the single fact type is TypeInheritance, we can shrink this
             identifying_role_refs.map do |rr|
               rr = rr.preferred_reference
               [ (l = rr.leading_adjective) ? l+"-" : nil,
@@ -1056,7 +1072,7 @@ module ActiveFacts
               #identifying_instance = counterpart_role.all_role_value.detect{|rv| rv.fact == identifying_fact}.instance
               identifying_fact.verbalise(context)
             end*", "
-          end
+	end
 
       end
     end
