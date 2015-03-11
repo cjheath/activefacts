@@ -83,7 +83,6 @@ module ActiveFacts
                     trace :query, "Creating Variable #{query.all_variable.size} for implicit objectification of #{clause.fact_type.entity_type.name}"
                     objectification_variable = @constellation.Variable(query, query.all_variable.size, :object_type => clause.fact_type.entity_type)
                   end
-		  debugger unless role.link_fact_type
 		  unless objectification_variable.object_type == role.link_fact_type.all_role.single.object_type
 		    role_obj_name = role.link_fact_type.all_role.single.object_type.name
 		    raise "Internal error: Trying to add role of #{role_obj_name} to variable for #{objectification_variable.object_type.name} in #{clause}"
@@ -148,7 +147,8 @@ module ActiveFacts
               plays << plays[0]
             end
             # We aren't talking about objectification here, so there must be exactly two roles.
-            raise "REVISIT: Internal error constructing step for #{clause.inspect}" if plays.size != 2
+            # raise "REVISIT: Internal error constructing step for #{clause.inspect}" if plays.size != 2
+	    incidental_plays = plays[2..-1] if plays.size > 2
             step = @constellation.Step(
 		plays[0],
 		plays[1],

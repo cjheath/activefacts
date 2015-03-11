@@ -12,6 +12,10 @@ module ActiveFacts
           @returning = returning || []
         end
 
+	def to_s
+	  inspect
+	end
+
         def inspect
           "Query: " +
 	    if @conditions.empty?
@@ -407,7 +411,8 @@ module ActiveFacts
         end
 
         def inspect
-          "FactType: #{@conditions.size > 0 ? "#{super} " : '' }#{@clauses.inspect}" +
+	  s = super
+          "FactType: #{@conditions.size > 0 ? super+' ' : '' }#{@clauses.inspect}" +
             (@pragmas && @pragmas.size > 0 ? ", pragmas [#{@pragmas.flatten.sort*','}]" : '')
 
           # REVISIT: @returning = returning

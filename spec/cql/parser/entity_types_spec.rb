@@ -50,7 +50,7 @@ describe "Entity Types" do
 
   EntityTypes_Objectified = [
     [ "Director is where b directs c, c is directed by b;",
-      ["FactType: Director [{b} \"directs\" {c}, {c} \"is directed by\" {b}]"]
+      ["FactType: [{b} \"directs\" {c}, {c} \"is directed by\" {b}]"]
     ],
   ]
 

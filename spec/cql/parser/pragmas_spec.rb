@@ -51,13 +51,13 @@ describe "Entity Types" do
 
     # Fact Types
     [ "Director is where c relates to b;",
-      ["FactType: Director [{c} \"relates to\" {b}]"]
+      ["FactType: [{c} \"relates to\" {b}]"]
     ],
     [ "Director [independent] is where c relates to b;",
-      ["FactType: Director [{c} \"relates to\" {b}], pragmas [independent]"]
+      ["FactType: [{c} \"relates to\" {b}], pragmas [independent]"]
     ],
     [ "Director is independent where c relates to b;",
-      ["FactType: Director [{c} \"relates to\" {b}], pragmas [independent]"]
+       ["FactType: [{c} \"relates to\" {b}], pragmas [independent]"]
     ],
   ]
 

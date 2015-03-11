@@ -23,7 +23,7 @@ describe "Fact Types" do
 #      [%q{FactType: AnnualIncome [{Person} "has" {total- Income} "in" {Year}] where {Person} "has" {total- Income}.sum() , {Income} "was earned in" {current- Time (as Year)}.Year()}]
 #    ],
     [ "A is interesting : b- C has F -g;",
-      ["FactType: [{A} \"is interesting\"] where {b- C} \"has\" {F -g}"]
+      [%q{FactType: Query: where {b- C} "has" {F -g} [{A} "is interesting"]}]
     ],
     [ "A has one pre-- bound B;",
       [%q{FactType: [{A} "has" {[1..1] pre-bound- B}]}]
