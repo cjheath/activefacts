@@ -47,7 +47,7 @@ module ActiveFacts
               role = (ref && ref.role) || (ref.role_ref && ref.role_ref.role)
               play = nil
 
-              if (clause.fact_type.entity_type)
+              if clause.fact_type.entity_type && objectification_variable
                 # This clause is of an objectified fact type.
                 # We need a step from this role to the phantom role, but not
                 # for a role that has only one ref (this one) in their binding.
@@ -80,16 +80,20 @@ module ActiveFacts
                     # This is an implicit objectification, just the FT clause, not ET(in which ...clause...)
                     # We need to create a Variable for this object, even though it has no References
                     query = binding.variable.query
-                    trace :query, "Creating JN#{query.all_variable.size} for #{clause.fact_type.entity_type.name} in objectification"
+                    trace :query, "Creating Variable #{query.all_variable.size} for implicit objectification of #{clause.fact_type.entity_type.name}"
                     objectification_variable = @constellation.Variable(query, query.all_variable.size, :object_type => clause.fact_type.entity_type)
                   end
-                  raise "Internal error: Trying to add role of #{role.link_fact_type.all_role.single.object_type.name} to variable for #{objectification_variable.object_type.name}" unless objectification_variable.object_type == role.link_fact_type.all_role.single.object_type
+		  debugger unless role.link_fact_type
+		  unless objectification_variable.object_type == role.link_fact_type.all_role.single.object_type
+		    role_obj_name = role.link_fact_type.all_role.single.object_type.name
+		    raise "Internal error: Trying to add role of #{role_obj_name} to variable for #{objectification_variable.object_type.name} in #{clause}"
+		  end
 
                   irole = role.link_fact_type.all_role.single
                   raise "Internal error: Trying to add role of #{irole.object_type.name} to variable for #{objectification_variable.object_type.name}" unless objectification_variable.object_type == irole.object_type
-                  objectification_role = @constellation.Play(objectification_variable, role.link_fact_type.all_role.single)
+                  objectification_play = @constellation.Play(objectification_variable, role.link_fact_type.all_role.single)
                   objectification_step = @constellation.Step(
-		      objectification_role,
+		      objectification_play,
 		      play,
 		      :fact_type => role.link_fact_type,
 		      :is_optional => false,

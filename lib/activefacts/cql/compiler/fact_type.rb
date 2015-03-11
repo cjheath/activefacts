@@ -12,6 +12,16 @@ module ActiveFacts
           @returning = returning || []
         end
 
+        def inspect
+          "Query: " +
+	    if @conditions.empty?
+	      ''
+	    else
+	      'where ' + @conditions.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.inspect}*' '
+	    end
+          # REVISIT: @returning = returning
+        end
+
         def prepare_roles clauses = nil
           trace :binding, "preparing roles" do
             @context ||= CompilationContext.new(@vocabulary)
@@ -396,16 +406,8 @@ module ActiveFacts
           end
         end
 
-        def to_s
-          if @conditions.size > 0
-            true
-          end
-          "FactType: #{(s = super and !s.empty?) ? "#{s} " : '' }#{@clauses.inspect}" +
-            if @conditions && !@conditions.empty?
-              " where "+@conditions.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' '
-            else
-              ''
-            end +
+        def inspect
+          "FactType: #{@conditions.size > 0 ? "#{super} " : '' }#{@clauses.inspect}" +
             (@pragmas && @pragmas.size > 0 ? ", pragmas [#{@pragmas.flatten.sort*','}]" : '')
 
           # REVISIT: @returning = returning

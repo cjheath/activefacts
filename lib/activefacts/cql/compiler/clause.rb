@@ -37,8 +37,8 @@ module ActiveFacts
           to_s
         end
 
-        def inspect phrases = nil
-          to_s(phrases||@phrases)
+        def inspect
+          to_s
         end
 
         def to_s phrases = nil
@@ -52,21 +52,34 @@ module ActiveFacts
             # else 'definitely '
             end
           }#{
-            quotes = false
-            phrases.inject(""){|s, p|
-              if String === p
-                s + (quotes ? '' : (quotes = true; '"')) + p.to_s + ' '
-#              REVISIT: Add something here when I re-add functions
-#              elsif FunctionCallChain === p
-#                s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s
-              else # if Reference === p
-                s[0..-2] + (quotes ? (quotes = false; '" ') : '') + p.to_s +
-                  ((oj = p.nested_clauses) ?  ' ('+ oj.map{|c| ((j=c.conjunction) ? j+' ' : '') + c.to_s}*' ' + ')' : '') +
-                ' '
-#              else
-#                raise "Unexpected phrase type in clause: #{p.to_s}"
-              end
-            }.sub(/ $/,'') + (quotes ? '"' : '')
+	    (
+	      phrases.map do |phrase|
+		case phrase
+		when String
+		  '"' + phrase.to_s + '"'
+		when Reference
+		  phrase.to_s +
+		    if phrase.nested_clauses
+		      ' (in which ' +
+			phrase.nested_clauses.map do |c|
+			  ((j = c.conjunction) ? j+' ' : '') +
+			    c.to_s
+			end*' ' +
+		      ')'
+		    else
+		      ''
+		    end
+		when Operation
+		  phrase.inspect
+		when Literal
+		  phrase.inspect
+		#when FunctionCallChain		# REVISIT: Add something here when I re-add functions
+		#  phrase.inspect
+		else
+		  raise "Unexpected phrase type in clause: #{phrase.class}"
+		end
+	      end * ' '
+	    ).gsub(/" "/, ' ')
           }#{
             @context_note && ' ' + @context_note.inspect
           }"
@@ -195,7 +208,7 @@ module ActiveFacts
 
             player_names = players.map{|p| p.name}
 
-            trace :matching, "Looking for existing #{players.size}-ary fact types matching '#{inspect(phrases)}'" do
+            trace :matching, "Looking for existing #{players.size}-ary fact types matching '#{inspect}'" do
               trace :matching, "Players are '#{player_names.inspect}'"
 
               # Match existing fact types in nested clauses first:
@@ -204,12 +217,12 @@ module ActiveFacts
                 vrs.each do |ref|
                   next if ref.is_a?(Operation)
                   next unless steps = ref.nested_clauses and !steps.empty?
-                  ref.nested_clauses.each do |oj|
-                    ft = oj.match_existing_fact_type(context)
-                    raise "Unrecognised fact type #{oj.display}" unless ft
+                  ref.nested_clauses.each do |nested|
+                    ft = nested.match_existing_fact_type(context)
+                    raise "Unrecognised fact type #{nested.display}" unless ft
                     if (ft && ft.entity_type == ref.player)
                       ref.objectification_of = ft
-                      oj.objectified_as = ref
+                      nested.objectified_as = ref
                     end
                   end
                   raise "#{ref.inspect} contains objectification steps that do not objectify it" unless ref.objectification_of
@@ -883,7 +896,7 @@ module ActiveFacts
         end
 
         def includes_literals
-          @nested_clauses && @nested_clauses.detect{|oj| oj.includes_literals}
+          @nested_clauses && @nested_clauses.detect{|nested| nested.includes_literals}
         end
 
         # We create value types for the results of arithmetic expressions, and they get assigned here:

@@ -15,7 +15,7 @@ module ActiveFacts
         attr_reader :refs               # an array of the References
         attr_reader :role_name
         attr_accessor :rebound_to       # Loose binding may set this to another binding
-        attr_accessor :variable
+        attr_reader :variable
         attr_accessor :instance         # When binding fact instances, the instance goes here
 
         def initialize player, role_name = nil
@@ -35,6 +35,10 @@ module ActiveFacts
         def <=>(other)
           key <=> other.key
         end
+        
+	def variable= v
+	  @variable = v	  # A place for a breakpoint :)
+	end
 
 	def add_ref ref
 	  @refs << ref

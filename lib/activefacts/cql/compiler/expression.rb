@@ -179,7 +179,7 @@ module ActiveFacts
         end
 
         def result_type_name(context)
-          "compare#{operator}(#{[@e1,@e2].map{|e| e.player.name}*', '}))"
+          "COMPARE#{operator}<#{[@e1,@e2].map{|e| e.player.name}*' WITH '})>"
         end
 
         def is_equality_comparison
@@ -210,7 +210,7 @@ module ActiveFacts
         def inspect; to_s; end
 
         def to_s
-          "compare#{
+          "COMPARE#{
 	    operator
 	  }(#{
 	    case @certainty
@@ -220,7 +220,7 @@ module ActiveFacts
 	    end
           }#{
 	    e1.to_s
-	  } #{
+	  } WITH #{
 	    e2.to_s
 	  }#{
 	    @qualifiers.empty? ? '' : ', ['+@qualifiers*', '+']'
@@ -255,7 +255,7 @@ module ActiveFacts
         end
 
         def result_type_name(context)
-          "sum(#{ @terms.map{|f| f.player.name}*', ' })"
+          "SUM_OF<#{ @terms.map{|f| f.player.name}*', ' }>"
         end
 
 =begin
@@ -269,7 +269,7 @@ module ActiveFacts
         def inspect; to_s; end
 
         def to_s
-          'sum(' + @terms.map{|term| "#{term.to_s}" } * ' ' + ')'
+          'SUM(' + @terms.map{|term| "#{term.to_s}" } * ' PLUS ' + ')'
         end
       end
 
@@ -299,7 +299,7 @@ module ActiveFacts
         end
 
         def result_type_name(context)
-          "product(#{ @factors.map{|f| f.player.name}*', ' })"
+          "PRODUCT_OF<#{ @factors.map{|f| f.player.name}*' ' }>"
         end
 
 =begin
@@ -313,7 +313,7 @@ module ActiveFacts
         def inspect; to_s; end
 
         def to_s
-          'product(' + @factors.map{|factor| "#{factor.to_s}" } * ' ' + ')'
+          'PRODUCT(' + @factors.map{|factor| "#{factor.to_s}" } * ' TIMES ' + ')'
         end
       end
 
@@ -350,7 +350,7 @@ module ActiveFacts
         def inspect; to_s; end
 
         def to_s
-          "reciprocal(#{factor.to_s})"
+          "RECIPROCAL(#{factor.to_s})"
         end
       end
 
@@ -381,7 +381,7 @@ module ActiveFacts
         def inspect; to_s; end
 
         def to_s
-          "negate(#{term.to_s})"
+          "NEGATIVE(#{term.to_s})"
         end
       end
 
