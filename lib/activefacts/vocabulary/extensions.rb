@@ -764,14 +764,14 @@ module ActiveFacts
       def describe
         object_type.name +
           (subscript ? "(#{subscript})" : '') +
-          " JN#{ordinal}" +
+          " Var#{ordinal}" +
           (value ? ' = '+value.to_s : '')
       end
 
       def all_step
-        all_play.map do |jr|
-          jr.all_step_as_input_play.to_a +
-            jr.all_step_as_output_play.to_a
+        all_play.map do |play|
+          play.all_step_as_input_play.to_a +
+            play.all_step_as_output_play.to_a
         end.
           flatten.
           uniq
@@ -780,7 +780,7 @@ module ActiveFacts
 
     class Play
       def describe
-        "#{role.object_type.name} JN#{variable.ordinal}" +
+        "#{role.object_type.name} Var#{variable.ordinal}" +
           (role_ref ? " (projected)" : "")
       end
 
@@ -795,7 +795,7 @@ module ActiveFacts
       def show
         steps_shown = {}
         trace :query, "Displaying full contents of Query #{concept.guid}" do
-          all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
+          all_variable.sort_by{|var| var.ordinal}.each do |variable|
             trace :query, "#{variable.describe}" do
               variable.all_step.
                 each do |step|
@@ -812,7 +812,7 @@ module ActiveFacts
       end
 
       def all_step
-        all_variable.map{|jn| jn.all_step.to_a}.flatten.uniq
+        all_variable.map{|var| var.all_step.to_a}.flatten.uniq
       end
 
       # Check all parts of this query for validity
@@ -822,7 +822,7 @@ module ActiveFacts
 
         # Check the variables:
         steps = []
-        variables = all_variable.sort_by{|jn| jn.ordinal}
+        variables = all_variable.sort_by{|var| var.ordinal}
         variables.each_with_index do |variable, i|
           raise "Variable #{i} should have ordinal #{variable.ordinal}" unless variable.ordinal == i
           raise "Variable #{i} has missing object_type" unless variable.object_type

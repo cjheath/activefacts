@@ -1,0 +1,43 @@
+diff --git i/lib/activefacts/vocabulary/extensions.rb w/lib/activefacts/vocabulary/extensions.rb
+index 753b632..1687ac4 100644
+--- i/lib/activefacts/vocabulary/extensions.rb
++++ w/lib/activefacts/vocabulary/extensions.rb
+@@ -118,12 +118,14 @@ module ActiveFacts
+       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
+       def create_implicit_fact_type_for_unary
+         role = all_role.single
+-        return if role.link_fact_type     # Already exists
++        return if role.role_proxy     # Already exists
+         # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
+         # We only do it when the unary fact type is not objectified
+-        link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
++        link_fact_type = @constellation.LinkFactType(:new)
++
+         entity_type = @entity_type || implicit_boolean_type(role.object_type.vocabulary)
+         phantom_role = @constellation.Role(link_fact_type, 0, :object_type => entity_type, :concept => :new)
++        role_proxy = @constellation.RoleProxy(:fact_type => link_fact_type, :ordinal => 1, :role => role)
+       end
+ 
+       def reading_preferably_starting_with_role role, negated = false
+@@ -481,9 +483,10 @@ module ActiveFacts
+       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
+       def create_implicit_fact_types
+         fact_type.all_role.map do |role|
+-          next if role.link_fact_type     # Already exists
+-          link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
++          next if role.role_proxy     # Already exists
++          link_fact_type = @constellation.LinkFactType(:new)
+           phantom_role = @constellation.Role(link_fact_type, 0, :object_type => self, :concept => :new)
++	  role_proxy = @constellation.RoleProxy(:fact_type => link_fact_type, :ordinal => 1, :role => role)
+           # We could create a copy of the visible external role here, but there's no need yet...
+           # Nor is there a need for a presence constraint, readings, etc.
+ 	  link_fact_type
+@@ -959,7 +962,7 @@ module ActiveFacts
+           if fact_type.entity_type
+             objectification_role_supertypes =
+               fact_type.entity_type.supertypes_transitive+object_type.supertypes_transitive
+-            objectification_role = role.link_fact_type.all_role.single # Find the phantom role here
++            objectification_role = (role.role_proxy.link_fact_type.all_role.to_a-[role.role_proxy])[0] # Find the phantom role here
+           else
+             objectification_role_supertypes = counterpart_role_supertypes
+             objectification_role = counterpart_role
