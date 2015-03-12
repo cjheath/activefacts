@@ -16,6 +16,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     @show_highlight = false  # Show the highlighted CQL text from the parse tree
     super *a
     self.root = :definition
+    @population_name = ''	# Use the default population
   end
 
   def add_logger logger
@@ -70,8 +71,50 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
 
   def metacommand(line)
     # meta-commands start with /
-    words = line.split
-    case cmd = words.shift
+    cmd = line.sub(/(\A\/\p{Alpha}*).*/,'\1')
+    words = line[cmd.size..-1].split
+    case cmd
+    when "/about"
+      words.each do |word|
+	list_connotations word
+      end
+    when "/cql"
+      process(words*' ')
+    when "/highlight"
+      @show_highlight = !@show_highlight
+      puts "Will #{@show_highlight ? "" : "not "}show the highlighted parse"
+    when "/list"
+      list_object_types
+    when "/load"
+      load_file(words*' ')
+    when "/log"
+      @logger ||= proc {|*a|
+	unless @undoing
+	  print "LOG: "; p a
+	end
+      }
+      add_logger @logger
+    when "/population"
+      # REVISIT: Set default population for queries
+      if words == ['?']
+	puts "Defined populations are: "+@constellation.Population.keys.map{|v, p| p.empty? ? "<default>" : p}*', '
+      else
+	@population_name = words[0] || ''
+	@vocabulary = @constellation.Vocabulary.values.first
+	@population =
+	  if @vocabulary
+	    @constellation.Population[[[@vocabulary.name], @population_name]]
+	  else
+	    nil
+	  end
+	puts "Using #{@population ? 'existing ' : ''}population #{@population_name}"
+      end
+    when "/root"
+      self.root = words[0] && words[0].to_sym || :definition
+      puts "Looking for a #{self.root}"
+    when "/timings"
+      $show_timings = !$show_timings
+      puts "Will #{$show_timings ? "" : "not "}show command timings"
     when "/trace"
       if words.empty?
 	puts trace_keys*", "
@@ -81,36 +124,12 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     when "/tree"
       @show_tree = !@show_tree
       puts "Will #{@show_tree ? "" : "not "}show the parse tree"
-    when "/highlight"
-      @show_highlight = !@show_highlight
-      puts "Will #{@show_highlight ? "" : "not "}show the highlighted parse"
-    when "/log"
-      @logger ||= proc {|*a|
-	unless @undoing
-	  print "LOG: "; p a
-	end
-      }
-      add_logger @logger
-    when "/timings"
-      $show_timings = !$show_timings
-      puts "Will #{$show_timings ? "" : "not "}show command timings"
-    when "/root"
-      self.root = words[0] && words[0].to_sym || :definition
-      puts "Looking for a #{self.root}"
-    when "/list"
-      list_object_types
-    when "/about"
-      words.each do |word|
-	list_connotations word
-      end
-    when "/load"
-      load_file(words*' ')
     when "/quit"
       exit
     when "/help", "/"
       help words
     else
-      puts "Unknown metacommand #{line}?"
+      puts "Unknown metacommand #{line}"
       help
     end
   end
@@ -130,69 +149,221 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     end
   end
 
-  def process_query(query)
+  # This method is an exploration into finding a smaller search space for the given variable.
+  # It relies on the values of bindings being Instance objects.
+  def find_candidate_sets variable, bindings
+    trace :result, "Looking for a smaller candidate set by traversing from these bound variables: #{bindings.keys.map{|v| (v.object_type.name+v.ordinal.to_s).inspect }*', '}" do
+      # If this variable is connected via a single step to one or more bound variables,
+      # that's probably a better place to search than object_type.all_instance.
+      bindable_plays =
+	variable.all_play.map do |play|
+	  steps =
+	    play.all_step_as_output_play.to_a + play.all_step_as_input_play.to_a + [play.step].compact
+	  trace :result, "Considering steps over #{steps.map{|s|s.fact_type.default_reading.inspect}*', '}"
+	  bound_steps =
+	    steps.reject{|s| (s.all_play-[play]).detect{|p|
+	      # trace :result, "Rejecting steps over #{s.fact_type.default_reading.inspect} because #{p.variable.object_type.name}#{p.variable.ordinal} is not bound" unless bindings[p.variable]
+	      !bindings[p.variable]}
+	    }
+	  trace :result, "Bound steps are #{bound_steps.map{|s|s.fact_type.default_reading.inspect}*', '}"
+	  counterpart_plays =
+	    bound_steps.map{|s| (s.all_play-[play]) }.flatten.uniq
+	  trace :result, "bound_steps.size = #{bound_steps.size}, counterpart_plays.size = #{counterpart_plays.size}"
+
+	  # Consider only counterpart_plays for bound variables:
+	  #counterpart_plays.reject!{|cp| !bindings[cp.variable] }
+
+	  counterpart_plays
+	end.flatten.uniq
+
+      trace :result, "Connections of #{variable.object_type.name}#{variable.ordinal}:" do
+	if bindable_plays.empty?
+	  trace :result, "NONE"
+	else
+	  # Show the candidate instances here:
+	  if trace :result
+	    bindable_plays.each do |pl|
+	      # We have bound instances of pl.variable, and the step(s) from this play reach the variable
+	      trace :result, "Candidate facts which include this play are" do
+
+		bound_instance =
+		  bindings[pl.variable]	      # This is the instance under consideration
+		bound_instance.
+		  all_role_value.select{|rv|	      # Select its RoleValues for roles in this play's step
+		    pl.all_step.detect{|s| s.fact_type == rv.fact.fact_type }
+		  }.
+		  each{|rv|			      # Verbalise other role_values of this fact
+		    trace :result, "#{rv.fact.verbalise.inspect}"
+		  }
+	      end
+	      trace :result, "-> Role of #{pl.variable.object_type.name}#{pl.variable.ordinal} in #{pl.role.fact_type.default_reading}"
+	    end
+	  end
+	end
+      end
+    end
+  end
+
+  # REVISIT: Add population filter
+  def lookup_instance_by_value(population, object_type, value)
+    pi = object_type.is_a?(ActiveFacts::Metamodel::EntityType) && object_type.preferred_identifier
+
+    # A multi-role identifier cannot be satisfied by a single value:
+    return nil if pi && pi.role_sequence.all_role_ref.size > 1
+
+    if pi
+      identifying_role = pi.role_sequence.all_role_ref.single.role
+      identifying_instance = lookup_instance_by_value(population, identifying_role.object_type, value)
+      return nil unless identifying_instance
+      identifying_role_values =
+	identifying_instance.all_role_value.select{|rv| rv.role == identifying_role }
+      raise "Faulty Population has duplicate #{object_type.name} instance #{value}" if identifying_role_values.size > 1
+      identifying_role_value = identifying_role_values[0]
+      return nil unless identifying_role_value	# The value exists, but doesn't identify an existing entity
+      identified_instance =
+	(identifying_role_value.fact.all_role_value.to_a-[identifying_role_values])[0].instance
+    else
+      object_type.all_instance.detect do |instance|
+	instance.population == population and instance.value == value
+      end
+    end
+  end
+
+  def query(query)
     result_projection = {}  # A set of {hash of Variable to Instance}
+    @population = @constellation.Population[[[@vocabulary.name], @population_name]]
+    unless @population
+      puts "Population #{@population_name} has not yet been instantiated"
+      return
+    end
+
     query_block =
       proc do |unbound_variables = [], bindings = {}|
 	# unbound_variables is an array of the remaining dimensions of the search
-	# bindings is a hash of Varable to Instance
-	next_variable = unbound_variables[0]
-	if next_variable
-	  ins = next_variable.object_type.all_instance
-	  trace :result, "Query search through #{ins.size} #{next_variable.role_name || next_variable.object_type.name}" do
-	    candidates = next_variable.object_type.all_instance
-=begin
-	    # If this variable is connected via a single step to one or more bound variables,
-	    # that's probably a better place to search than object_type.all_instance.
-	    connections =
-	      next_variable.all_play.map do |play|
-		steps =
-		  ([play.all_step_as_output_play.to_a, play.all_step_as_input_play.to_a] + play.step.to_a).flatten
-		puts "Considering steps over #{steps.map{|s|s.fact_type.default_reading}*', '}"
-		counterpart_plays =
-		  steps.map{|s| s.all_play }.flatten.uniq-[play]
-	      end
-=end
+	# bindings is a hash of Variable to Instance
+	variable = unbound_variables[0]
+	if variable
+	  if bindings.has_key?(variable)
+	    candidates = Array(bindings[variable])
+	  else
+	    candidates = variable.object_type.all_instance
+	    # candidates = find_candidate_sets variable, bindings
+	  end
+	  trace :result, "Query search through #{candidates.size} #{variable.role_name || variable.object_type.name}" do
 
 	    candidates.each do |instance|
-	      trace :result, "Considering #{instance.verbalise}"
-	      # REVISIT: Check whether this instance satisfies the query steps that contain the bound variables
+	      # filter by population:
+	      next unless instance.population == @population
+	      hypothesis = bindings.dup
+	      trace :result, "Considering #{instance.verbalise}" do
+		hypothesis.store(variable, instance)
 
-	      # Setup recursion to search the next variable:
-	      (b = bindings.dup).store(next_variable, instance)
-	      result_projection[b] = true
-	      query_block.call(unbound_variables[1..-1], b)
+		# Check whether this instance satisfies the query steps of this play
+		next unless variable.all_play.all? do |play|  # All plays must succeed
+		  play.all_step.all? do |step|		      # All steps must succeed
+		    # REVISIT: We can skip steps that have been checked in an outer loop
+		    # REVISIT: We need to check AlternateSets here.
+
+		    # We cannot check a step that involves an unbound variable; allow it for now
+		    next true if step.all_play.any? do |other_play|
+		      # REVISIT: Unless the step is optional
+		      !hypothesis.has_key?(other_play.variable)
+		    end
+
+		    # Here we have a Step and a Play that this variable must satisfy
+		    # No need to add population filter because the fact is filtered by population already
+		    role_values = instance.all_role_value.select{|rv| rv.role == play.role }
+		    participation =
+		      trace :result, "Trying #{role_values.size} values of #{play.role.object_type.name} to see whether #{instance.verbalise} participates in #{step.fact_type.default_reading} with bound variables #{hypothesis.map{|v,i| "#{v.object_type.name}=>#{i.verbalise}"}*', '}" do
+
+			role_values.any? do |rv|
+			  fact = rv.fact
+			  next unless fact.population == @population
+			  # REVISIT: Add population filter (fact.population is the correct population)
+			  # Succeed if this fact has all its role_values set to our bound variables
+			  fact.all_role_value.all? do |rv|
+			    relevant_play = step.all_play.detect{|p| p.role == rv.role}
+			    match = hypothesis[relevant_play.variable] == rv.instance
+			    trace :result, "#{relevant_play.variable.object_type.name} (bound to #{hypothesis[relevant_play.variable].verbalise}) #{match ? 'MATCHES' : 'DOES NOT MATCH'} role value #{rv.instance.verbalise}" if match
+			    match
+			  end
+			end
+		      end
+
+		    if participation
+		      trace :result, "#{instance.verbalise} #{
+			  participation ? 'participates' : 'does not participate'
+			} in #{step.is_disallowed ? 'disallowed ' : ''}step over #{step.fact_type.default_reading} "+
+			"with bound variables #{hypothesis.map{|v,i| "#{v.object_type.name}=>#{i.verbalise}"}*', '}"
+		    end
+
+		    if step.is_disallowed
+		      participation = !participation
+		    end
+		    participation
+
+		  end
+		end
+
+		# Setup recursion to search the next variable:
+		remaining_variables = unbound_variables[1..-1]
+		hypothesis.freeze
+		if remaining_variables.empty?
+		  result_projection[hypothesis] = true
+		end
+		query_block.call(remaining_variables, hypothesis)
+	      end
 	    end
 	  end
 	end
       end
 
-    unbound_variables = query.all_variable.to_a
-    bound_variables = {}
-    unbound_variables.reject!{|v| v.value != nil ? bound_variables[v] = v.value : nil }
-    print 'bound variables: '; p bound_variables.keys.map{|v| [v.object_type.name, v.value.inspect] }
-    print 'unbound variables: '; p unbound_variables.map{|v| v.object_type.name} 
-
-    query_block.call(unbound_variables, {})
-    result_projection.map do |result, _|
-      puts(result.map{|v, i| i.verbalise }.join(', '))
+    all_variables = query.all_variable.to_a
+    bindings = {}
+    all_variables.each do |var|
+      next if var.value == nil
+      # Look up the instances for this bound variables
+      instance = lookup_instance_by_value(@population, var.object_type, var.value)
+      trace :result, "Binding was #{instance ? '' : 'un'}successful for #{var.object_type.name} #{var.value.inspect}"
+      bindings[var] = instance
     end
+    unbound_variables = all_variables.select{|v| !bindings[v]}
+    trace :result, "bound variables: {#{bindings.map{|var, instance| [var.object_type.name, instance.verbalise] }*'=>'}}"
+    trace :result, "unbound variables are #{unbound_variables.map{|v| v.object_type.name}.inspect}" 
 
-=begin
-    if query.all_variable.size == 1 and
-    	(v = query.all_variable.single).all_play.map{|p| p.all_step.to_a}.flatten.uniq.size == 0
-      if v.object_type.all_instance.size == 0
-	puts "There are no instances of #{v.object_type.name}"
+    query_block.call(all_variables, bindings)
+
+    trace :result, "Found #{result_projection.size} results:"
+    if bindings.size == all_variables.size
+      if result_projection.size > 0
+	puts "Yes."
       else
-	list_instances(v.object_type)
+	puts "No."
       end
     else
-      # REVISIT: Identify all the unbound Variables, and do a nested-loops iteration checking all Steps
-      puts "Can't yet process complex queries (involving #{
-	  query.all_variable.map{|v| v.object_type.name}
-	}*', '})"
+      # If all unbound variables have a play in the same step, expand the fact type's reading with values
+      common_steps =
+	unbound_variables.inject(nil) do |memo, var|
+	  steps = var.all_play.map{|p| p.all_step.to_a}.flatten.uniq
+	  memo ? memo & steps : steps
+	end
+      if common_steps[0]
+	reading = common_steps[0].fact_type.preferred_reading
+	reading_roles = reading.role_sequence.all_role_ref_in_order.map(&:role)
+	reading_variables = reading_roles.map { |role| common_steps[0].all_play.detect{|p| p.role == role}.variable }
+      end
+
+      result_projection.map do |result, _|
+	if reading
+	  # Verbalise result the fact, don't just dump the variable values
+	  literals = reading_variables.map{|v| [nil, result[v].verbalise] }
+	  puts reading.expand(literals)+';'
+	else
+	  puts(result.map{|var, i| i.verbalise }.join(', '))
+	end
+      end
     end
-=end
+
   end
 
   def process(statement)
@@ -200,7 +371,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
       @results = []
       compile(statement)
       if @results.size == 1 && @results[0].is_a?(ActiveFacts::Metamodel::Query)
-	process_query(@results[0])
+	query(@results[0])
       else
 	puts(@results.map{|r| "\t"+r.inspect}*"\n")
       end
@@ -294,16 +465,19 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
       puts %Q{
 Meta-commands are:
   /about term\t\tDisplay the fact types in which term plays a part
-  /help\t\t\tThis help message
+  /cql text\t\tProcess this single CQL definition or query
   /help topic\t\thelp on a specific topic
   /help topics\t\tList the available help topics
-  /highlight\t\t\tRe-display the parsed CQL with HTML highlighting markup
+  /help\t\t\tThis help message
+  /highlight\t\tRe-display the parsed CQL with HTML highlighting markup
   /list\t\t\tList all object type names (terms)
   /load file.cql\tLoad a CQL file
+  /population [? | name] List or set the active population
+  /quit\t\t\tExit CQL
   /root rule\t\tParse just a fragment of a CQL statement, matching syntax rule only
-  /timings\t\t\tDisplay the elapsed time to execute each command
-  /tree\t\t\tDisplay the abstract syntax tree from each statement parsed
+  /timings\t\tDisplay the elapsed time to execute each command
   /trace key\t\tToggle tracing key, or list available keys
+  /tree\t\t\tDisplay the abstract syntax tree from each statement parsed
 }
     else
       words.each do |word|
