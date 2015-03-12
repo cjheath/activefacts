@@ -75,9 +75,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     words = line[cmd.size..-1].split
     case cmd
     when "/about"
-      words.each do |word|
-	list_connotations word
-      end
+      list_connotations (words*' ')
     when "/cql"
       process(words*' ')
     when "/highlight"
@@ -478,6 +476,8 @@ Meta-commands are:
   /timings\t\tDisplay the elapsed time to execute each command
   /trace key\t\tToggle tracing key, or list available keys
   /tree\t\t\tDisplay the abstract syntax tree from each statement parsed
+
+Meta-commands are available on the shell command-line - use -- instead of /
 }
     else
       words.each do |word|
@@ -693,34 +693,43 @@ end
 compiler = InteractiveCQL.new
 statement = nil
 loaded_files = false
-ARGV.each do |arg|
+args = ARGV.dup
+while !args.empty?
+  arg = args.shift    # Gather up the arguments until the next one starting with -
   if arg =~ /^--(.*)/
-    compiler.metacommand('/'+$1)
-  else
-    loaded_files = false or break if arg == '-'
+    arg = '/'+$1
+    while args[0] and args[0] !~ /^-/
+      arg = arg+' '+args.shift
+    end
+    compiler.metacommand arg
+  elsif arg == '-'  # Either "stdin" or immediate-command
+    unless args.empty?
+      compiler.process args*' '
+      exit
+    end
+    break
+  else		      # Just a file
     compiler.load_file(arg)
-    loaded_files = true
+    exit if args.empty?
   end
 end
 
-if !loaded_files
-  puts "Enter / for help on special commands"
+puts "Enter / for help on special commands"
 
-  while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
-    statement = statement ? statement + "\n"+line : line
-    start = Time.now
-    case
-    when line =~ %r{\A/}
-      compiler.metacommand(line)
-      statement = nil
-    when compiler.root != :definition || line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /[;?]/
-      # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
-      compiler.process(statement)
-      statement = nil
-    end
-    if $show_timings && statement == nil
-      puts "Done in #{((Time.now.to_f-start.to_f)*1000000).to_i} usec"
-    end
+while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
+  statement = statement ? statement + "\n"+line : line
+  start = Time.now
+  case
+  when line =~ %r{\A/}
+    compiler.metacommand(line)
+    statement = nil
+  when compiler.root != :definition || line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /[;?]/
+    # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
+    compiler.process(statement)
+    statement = nil
   end
-  puts
+  if $show_timings && statement == nil
+    puts "Done in #{((Time.now.to_f-start.to_f)*1000000).to_i} usec"
+  end
 end
+puts
