@@ -280,10 +280,10 @@ module ActiveFacts
 	      instance = object_type.all_instance.detect do |i|
               #instance = @constellation.Instance.detect do |key, i|
                   # REVISIT: And same unit
-		  trace :instance, "Comparing #{i.value.literal.inspect} to #{literal.literal.inspect}"
+		  trace :instance, "Comparing #{i.value.literal.inspect} to #{literal.literal.to_s.inspect}"
                   i.population == @population &&
                     i.value &&
-                    i.value.literal.inspect == literal.literal.inspect &&
+                    i.value.literal.inspect == literal.literal.to_s.inspect &&
                     i.value.is_literal_string == is_literal_string
                 end
               #instance = object_type.all_instance.detect { |instance|
