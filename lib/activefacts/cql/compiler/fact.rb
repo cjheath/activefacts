@@ -24,7 +24,7 @@ module ActiveFacts
 
           # Figure out the simple existential facts and find fact types:
           @bound_facts = []
-          @unbound_clauses = all_clauses.
+          @unbound_clauses = all_clauses(@clauses).
             map do |clause|
               bind_literal_or_fact_type clause
             end.
@@ -132,10 +132,10 @@ module ActiveFacts
           progress
         end
 
-        # Occasionally we need to search through all the clauses:
-        def all_clauses
-          @clauses.map do |clause|
-            [clause] + clause.refs.map{|vr| vr.nested_clauses}
+        # Occasionally we need to search through all the clauses. This builds a flat list
+        def all_clauses clauses
+          clauses.map do |clause|
+            [clause] + clause.refs.map{|vr| vr.nested_clauses ? all_clauses(vr.nested_clauses) : []}
           end.flatten.compact
         end
 
@@ -234,7 +234,7 @@ module ActiveFacts
           identifiers =
             pi_role_refs.map do |rr|
               # Find a clause that provides the identifying_ref for this player:
-              identifying_clause = all_clauses.detect do |clause|
+              identifying_clause = all_clauses(@clauses).detect do |clause|
                 rr.role.fact_type == clause.fact_type &&
                   clause.refs.detect{|vr| vr.binding == binding}
               end
