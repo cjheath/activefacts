@@ -231,7 +231,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     result_projection = {}  # A set of {hash of Variable to Instance}
     @population = @constellation.Population[[[@vocabulary.name], @population_name]]
     unless @population
-      puts "Population #{@population_name} has not yet been instantiated"
+      puts "Population #{@population_name.inspect} has not yet been instantiated"
       return
     end
 
@@ -345,17 +345,19 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
 	  steps = var.all_play.map{|p| p.all_step.to_a}.flatten.uniq
 	  memo ? memo & steps : steps
 	end
-      if common_steps[0]
-	reading = common_steps[0].fact_type.preferred_reading
+      if step = common_steps[0]
+	reading = step.fact_type.preferred_reading
 	reading_roles = reading.role_sequence.all_role_ref_in_order.map(&:role)
-	reading_variables = reading_roles.map { |role| common_steps[0].all_play.detect{|p| p.role == role}.variable }
+	reading_variables = reading_roles.map { |role| step.all_play.detect{|p| p.role == role}.variable }
       end
 
       result_projection.map do |result, _|
 	if reading
 	  # Verbalise result the fact, don't just dump the variable values
 	  literals = reading_variables.map{|v| [nil, result[v].verbalise] }
-	  puts reading.expand(literals)+';'
+	  puts (step.is_disallowed ? 'it is not the case that ' : '') +
+	    reading.expand(literals) +
+	    ';'
 	else
 	  puts(result.map{|var, i| i.verbalise }.join(', '))
 	end
