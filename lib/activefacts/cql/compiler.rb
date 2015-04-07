@@ -65,6 +65,7 @@ module ActiveFacts
         # parse_all returns an array of the block's non-nil return values.
         ok = parse_all(@string, :definition) do |node|
           trace :parse, "Parsed '#{node.text_value.gsub(/\s+/,' ').strip}'" do
+	    trace :lex, (proc { node.inspect })
             begin
               ast = node.ast
               next unless ast
