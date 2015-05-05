@@ -162,7 +162,7 @@ Vehicle Type is identified by Make and Model and Badge where
 Vehicle is of one Vehicle Type;
 
 Witness is identified by Incident and Name where
-	Incident was seen by Witness,
+	Incident was independently witnessed by Witness,
 	Witness saw one Incident,
 	Witness is called one Name;
 Witness has at most one contact-Phone;

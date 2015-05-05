@@ -23,8 +23,8 @@ Vehicle Incident is a kind of Incident [separate];
 
 Witness is a kind of Person;
 Witness saw Incident,
-	Incident was seen by at most one Witness;
+	Incident was independently witnessed by at most one Witness;
 
 Driver is a kind of Person;
-Vehicle Incident occured while at most one Driver was in charge;
+Vehicle Incident occurred while at most one Driver was in charge;
 

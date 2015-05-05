@@ -3,7 +3,7 @@ CREATE TABLE Claim (
 	ClaimID                                 int IDENTITY NOT NULL,
 	-- maybe Claim concerns Incident and maybe Incident occurred on Date Time,
 	IncidentDateTime                        datetime NULL,
-	-- maybe Claim concerns Incident and maybe Incident was seen by Witness and Witness is a kind of Person and Person has Person Name,
+	-- maybe Claim concerns Incident and maybe Incident was independently witnessed by Witness and Witness is a kind of Person and Person has Person Name,
 	IncidentWitnessName                     varchar NULL,
 	PRIMARY KEY(ClaimID)
 )
@@ -17,7 +17,7 @@ CREATE TABLE Person (
 GO
 
 CREATE TABLE VehicleIncident (
-	-- maybe Vehicle Incident occured while Driver was in charge and Driver is a kind of Person and Person has Person Name,
+	-- maybe Vehicle Incident occurred while Driver was in charge and Driver is a kind of Person and Person has Person Name,
 	DriverName                              varchar NULL,
 	-- Vehicle Incident is a kind of Incident and Incident resulted in Claim and Claim has Claim ID,
 	IncidentClaimID                         int NOT NULL,
