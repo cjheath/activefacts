@@ -41,8 +41,8 @@ module ActiveFacts
           match_condition_fact_types
 
           # Build the query:
-          unless @conditions.empty? and !@returning
-            trace :query, "building query for derived fact type" do
+          unless @conditions.empty? and @returning.empty?
+            trace :query, "building query for derived fact type (returning #{@returning}) with #{@conditions.size} conditions: (#{@conditions.map{|c|c.inspect}*', '})" do
               @query = build_variables(@conditions.flatten)
               @roles_by_binding = build_all_steps(@conditions)
               @query.validate
@@ -55,12 +55,10 @@ module ActiveFacts
 
         def match_condition_fact_types
           @conditions.each do |condition|
-            next if condition.is_naked_object_type
-            # REVISIT: Many conditions will imply a number of different steps, which need to be handled (similar to nested_clauses).
-            trace :projection, "matching condition fact_type #{condition.inspect}" do
-              fact_type = condition.match_existing_fact_type @context
-              raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
-            end
+	    trace :projection, "matching condition fact_type #{condition.inspect}" do
+	      fact_type = condition.match_existing_fact_type @context
+	      raise "Unrecognised fact type #{condition.inspect} in #{self.class}" unless fact_type
+	    end
           end
         end
 
@@ -119,8 +117,6 @@ module ActiveFacts
           # REVISIT: Compiling the conditions here make it impossible to define a self-referential (transitive) query.
           return super if @clauses.empty?  # It's a query
 
-          # Ignore any useless clauses:
-          @clauses.reject!{|clause| clause.is_existential_type }
           return true unless @clauses.size > 0   # Nothing interesting was said.
 
 	  if @entity_type

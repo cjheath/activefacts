@@ -144,6 +144,22 @@ module ActiveFacts
         def match_existing_fact_type context, options = {}
           raise "Cannot match a clause that contains no object types" if refs.size == 0
           raise "Internal error, clause already matched, should not match again" if @fact_type
+
+	  if is_naked_object_type
+	    ref = refs[0]	# "There can be only one"
+	    return true unless ref.nested_clauses
+	    ref.nested_clauses.each do |nested|
+	      ft = nested.match_existing_fact_type(context)
+	      raise "Unrecognised fact type #{nested.display} nested under #{inspect}" unless ft
+	      if (ft.entity_type == ref.player)
+		ref.objectification_of = ft
+		nested.objectified_as = ref
+	      end
+	    end
+	    raise "#{ref.inspect} contains objectification steps that do not objectify it" unless ref.objectification_of
+	    return true
+	  end
+
           # If we fail to match, try a left contraction (or save this for a subsequent left contraction):
           left_contract_this_onto = context.left_contractable_clause
           new_conjunction = (conjunction == nil || conjunction == ',')
@@ -1077,6 +1093,7 @@ module ActiveFacts
         end
       end
 
+      # REVISIT: This needs to handle annotations for some/that/which, etc.
       class Quantifier
         attr_accessor :enforcement
         attr_accessor :context_note

@@ -688,7 +688,7 @@ module ActiveFacts
         trace :query, "Variables are #{@variables.map{|jn| jn.describe }.inspect}, Steps are #{@steps.map{|js| js.describe }.inspect}" do
           until @steps.empty?
             next_reading = nil
-            # Choose amonst all remaining steps we can take from the next node, if any
+            # Choose amongst all remaining steps we can take from the next node, if any
             next_steps = @steps_by_variable[next_node]
             trace :query, "Next Steps from #{next_node.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
 

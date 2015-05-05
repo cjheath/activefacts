@@ -120,7 +120,7 @@ module ActiveFacts
           unless @unit.empty?
             unit_name, exponent = *@unit[0]
             unit = @constellation.Name[unit_name].unit ||
-              @constellation.Name[unit_name].unit_as_plural_name
+              @constellation.Name[unit_name].plural_named_unit
             raise "Unit #{unit_name} for value type #{@name} is not defined" unless unit
             if exponent != 1
               base_unit = unit

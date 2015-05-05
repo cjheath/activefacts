@@ -137,10 +137,6 @@ module ActiveFacts
           @fact_type
         end
 
-        def is_existential_type
-          false
-        end
-
         def is_equality_comparison
           false
         end

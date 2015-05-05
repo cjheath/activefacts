@@ -170,10 +170,6 @@ module ActiveFacts
         end
 
         def create_identifying_fact_type context, clauses
-          # Remove uninteresting assertions:
-          clauses.reject!{|clause| clause.is_existential_type }
-          return nil unless clauses.size > 0    # Nothing interesting was said.
-
           # See if any fact type already exists (this ET cannot be a player, but might objectify it)
           existing_clauses = clauses.select{ |clause| clause.match_existing_fact_type context }
 	  if negation = existing_clauses.detect{|c| c.certainty == false }
