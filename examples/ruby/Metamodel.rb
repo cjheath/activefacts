@@ -65,6 +65,7 @@ module ::Metamodel
     one_to_one :concept                         # See Concept.guid
     one_to_one :role_sequence                   # See RoleSequence.guid
     one_to_one :shape                           # See Shape.guid
+    one_to_one :step                            # See Step.guid
   end
 
   class ImplicationRuleName < String
@@ -258,16 +259,17 @@ module ::Metamodel
 
   class Role
     identified_by :fact_type, :ordinal
+    one_to_one :base_role, :class => Role       # See Role.role_as_base_role
     one_to_one :concept, :mandatory => true     # See Concept.role
     has_one :fact_type, :mandatory => true      # See FactType.all_role
     has_one :object_type, :mandatory => true    # See ObjectType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
+    one_to_one :role, :counterpart => :base_role  # See Role.base_role
     has_one :role_name, :class => Name          # See Name.all_role_as_role_name
   end
 
   class RoleProxy < Role
     one_to_one :link_fact_type                  # See LinkFactType.role_proxy
-    one_to_one :role                            # See Role.role_proxy
   end
 
   class RoleSequence
@@ -293,6 +295,15 @@ module ::Metamodel
     maybe :is_expanded
     has_one :location                           # See Location.all_shape
     has_one :orm_diagram, :class => "ORMDiagram", :mandatory => true  # See ORMDiagram.all_shape
+  end
+
+  class Step
+    identified_by :guid
+    has_one :alternative_set                    # See AlternativeSet.all_step
+    has_one :fact_type, :mandatory => true      # See FactType.all_step
+    one_to_one :guid, :mandatory => true        # See Guid.step
+    maybe :is_disallowed
+    maybe :is_optional
   end
 
   class SubsetConstraint < SetConstraint
@@ -332,6 +343,7 @@ module ::Metamodel
     one_to_one :projection, :class => Role      # See Role.variable_as_projection
     has_one :query, :mandatory => true          # See Query.all_variable
     has_one :role_name, :class => Name          # See Name.all_variable_as_role_name
+    one_to_one :step, :counterpart => :objectification_variable  # See Step.objectification_variable
     has_one :subscript                          # See Subscript.all_variable
     has_one :value                              # See Value.all_variable
   end
@@ -422,10 +434,11 @@ module ::Metamodel
   end
 
   class Play
-    identified_by :variable, :role
+    identified_by :step, :role
     has_one :role, :mandatory => true           # See Role.all_play
+    has_one :step, :mandatory => true           # See Step.all_play
     has_one :variable, :mandatory => true       # See Variable.all_play
-    has_one :step, :counterpart => :incidental_play  # See Step.all_incidental_play
+    maybe :is_input
   end
 
   class Population
@@ -480,16 +493,6 @@ module ::Metamodel
 
   class SetExclusionConstraint < SetComparisonConstraint
     maybe :is_mandatory
-  end
-
-  class Step
-    identified_by :input_play, :output_play
-    has_one :alternative_set                    # See AlternativeSet.all_step
-    has_one :fact_type, :mandatory => true      # See FactType.all_step
-    has_one :input_play, :class => Play, :mandatory => true  # See Play.all_step_as_input_play
-    maybe :is_disallowed
-    maybe :is_optional
-    has_one :output_play, :class => Play        # See Play.all_step_as_output_play
   end
 
   class ValueConstraintShape < ConstraintShape
