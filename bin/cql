@@ -270,23 +270,39 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
 
 		    # Here we have a Step and a Play that this variable must satisfy
 		    # No need to add population filter because the fact is filtered by population already
-		    role_values = instance.all_role_value.select{|rv| rv.role == play.role }
-		    participation =
-		      trace :result, "Trying #{role_values.size} values of #{play.role.object_type.name} to see whether #{instance.verbalise} participates in #{step.fact_type.default_reading} with bound variables #{hypothesis.map{|v,i| "#{v.object_type.name}=>#{i.verbalise}"}*', '}" do
+		    if step.fact_type.is_a?(ActiveFacts::Metamodel::LinkFactType)
+		      # Find the step that spans this fact type and involves the same Variable
+		      # OOPS THERE MIGHT BE MORE THAN ONE. DOES IT NEED TO BE THE SAME PLAY????
+		      # Add the other roles of the fact type to our bound variables.
+		      instance.fact.all_role_value.each do |rv|
+			role = rv.role
+			
+			# If the variable is already bound, we fail if it's the wrong value
+			# If it's not, add it as a hypothesis and try the next unbound variable.
+			hypothesis.store(variable, instance)
+			
+		      end
+		      participation = true
+		    else
+		      role_values = instance.all_role_value.select{|rv| rv.role == play.role }
 
-			role_values.any? do |rv|
-			  fact = rv.fact
-			  next unless fact.population == @population
-			  # REVISIT: Add population filter (fact.population is the correct population)
-			  # Succeed if this fact has all its role_values set to our bound variables
-			  fact.all_role_value.all? do |rv|
-			    relevant_play = step.all_play.detect{|p| p.role == rv.role}
-			    match = hypothesis[relevant_play.variable] == rv.instance
-			    trace :result, "#{relevant_play.variable.object_type.name} (bound to #{hypothesis[relevant_play.variable].verbalise}) #{match ? 'MATCHES' : 'DOES NOT MATCH'} role value #{rv.instance.verbalise}" if match
-			    match
+		      participation =
+			trace :result, "Trying #{role_values.size} values of #{play.role.object_type.name} to see whether #{instance.verbalise} participates in #{step.fact_type.default_reading} with bound variables #{hypothesis.map{|v,i| "#{v.object_type.name}=>#{i.verbalise}"}*', '}" do
+
+			  role_values.any? do |rv|
+			    fact = rv.fact
+			    next unless fact.population == @population
+			    # REVISIT: Add population filter (fact.population is the correct population)
+			    # Succeed if this fact has all its role_values set to our bound variables
+			    fact.all_role_value.all? do |rv|
+			      relevant_play = step.all_play.detect{|p| p.role == rv.role}
+			      match = hypothesis[relevant_play.variable] == rv.instance
+			      trace :result, "#{relevant_play.variable.object_type.name} (bound to #{hypothesis[relevant_play.variable].verbalise}) #{match ? 'MATCHES' : 'DOES NOT MATCH'} role value #{rv.instance.verbalise}" if match
+			      match
+			    end
 			  end
 			end
-		      end
+		    end
 
 		    if participation
 		      trace :result, "#{instance.verbalise} #{
