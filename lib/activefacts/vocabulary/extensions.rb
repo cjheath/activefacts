@@ -736,23 +736,26 @@ module ActiveFacts
           "#{is_optional ? 'maybe ' : ''}" +
           (is_unary_step ? '(unary) ' : "from #{input_play.describe} ") +
           "#{is_disallowed ? 'not ' : ''}" +
-          "to #{output_play.describe} " +
-          "over " +
-          (is_objectification_step ? 'objectification ' : '') +
-          "'#{fact_type.default_reading}'"
+          "to #{output_plays.map(&:describe)*', '}" +
+          (objectification_variable ? ", objectified as #{objectification_variable.describe}" : '') +
+          " '#{fact_type.default_reading}'"
+      end
+
+      def input_play
+	all_play.detect{|p| p.is_input}
+      end
+
+      def output_plays
+	all_play.reject{|p| p.is_input}
       end
 
       def is_unary_step
         # Preserve this in case we have to use a real variable for the phantom
-        input_play == output_play
+        all_play.size == 1
       end
 
       def is_objectification_step
-        fact_type.is_a?(LinkFactType)
-      end
-
-      def all_play
-        [input_play, output_play].uniq + all_incidental_play.to_a
+        !!objectification_variable
       end
 
       def external_fact_type
@@ -769,12 +772,7 @@ module ActiveFacts
       end
 
       def all_step
-        all_play.map do |play|
-          play.all_step_as_input_play.to_a +
-            play.all_step_as_output_play.to_a
-        end.
-          flatten.
-          uniq
+        all_play.map(&:step).uniq
       end
     end
 
@@ -782,12 +780,6 @@ module ActiveFacts
       def describe
         "#{role.object_type.name} Var#{variable.ordinal}" +
           (role_ref ? " (projected)" : "")
-      end
-
-      def all_step
-        (all_step_as_input_play.to_a +
-          all_step_as_output_play.to_a +
-          [step]).flatten.compact.uniq
       end
     end
 

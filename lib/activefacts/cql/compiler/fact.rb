@@ -207,8 +207,9 @@ module ActiveFacts
           return false unless identifying_binding # This happens when we have a bare objectification
           identifying_instance = identifying_binding.instance
           preferred_identifier = entity_type.preferred_identifier
+	  role_count = preferred_identifier.role_sequence.all_role_ref.size 
 
-          trace :instance, "A #{binding.player.name} is identified in #{clause.inspect}"
+          trace :instance, "A #{binding.player.name} is #{role_count > 1 ? 'partly ':''}identified in #{clause.inspect}"
 
           identifying_role_ref = preferred_identifier.role_sequence.all_role_ref.detect { |rr|
               rr.role.fact_type == clause.fact_type && rr.role.object_type == identifying_binding.player
@@ -221,9 +222,9 @@ module ActiveFacts
           role_value = identifying_instance.all_role_value.detect do |rv|
             rv.fact.fact_type == identifying_role_ref.role.fact_type
           end
-          if role_value
+          if role_value && role_count == 1
             instance = (role_value.fact.all_role_value.to_a-[role_value])[0].instance
-            trace :instance, "Already known: #{instance.verbalise.inspect}"
+            trace :instance, "Existential fact already known: #{instance.verbalise.inspect}"
             binding.instance = instance
             return true  # Done with this clause
           end
@@ -289,7 +290,7 @@ module ActiveFacts
               #  instance.population == @population && instance.value == literal
               #}
 	      if instance
-		trace :instance, "Already known: #{instance.verbalise.inspect}"
+		trace :instance, "Instance already known: #{instance.verbalise.inspect}"
               else
                 instance = @constellation.Instance(:new)
                 instance.object_type = object_type

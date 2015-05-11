@@ -149,15 +149,11 @@ describe "a query" do
 
         variable0.all_play.size.should == 1
         play0 = variable0.all_play.single
-        play0.all_step_as_input_play.size.should == 1
-        play0.all_step_as_output_play.size.should == 0
-        play0.step.should be_nil
+	play0.is_input.should be_truthy
 
         variable1.all_play.size.should == 1
         play1 = variable1.all_play.single
-        play1.all_step_as_input_play.size.should == 0
-        play1.all_step_as_output_play.size.should == 1
-        play1.step.should be_nil
+	play1.is_input.should be_falsy
       end
 
       it "both plays should be through one step" do
@@ -165,11 +161,9 @@ describe "a query" do
         variable0, variable1 = *query.all_variable.to_a
         play0 = variable0.all_play.single
         play1 = variable1.all_play.single
-        step = play0.all_step_as_input_play.single
+        play0.step.should == play1.step
 
-        # Check the step/play setup
-        step.all_incidental_play.size.should == 0
-        step.should == play1.all_step_as_output_play.single
+        play0.step.all_play.size.should == 2
       end
 
       it "the step should have correct characteristics" do
@@ -177,7 +171,7 @@ describe "a query" do
         variable0, variable1 = *query.all_variable.to_a
         play0 = variable0.all_play.single
         play1 = variable1.all_play.single
-        step = play0.all_step_as_input_play.single
+        step = play0.step
 
         step.alternative_set.should == nil
         step.is_disallowed.should be_falsy
@@ -253,37 +247,27 @@ describe "a query" do
         query = queries[0]
         variable0, variable1, variable2 = *query.all_variable.to_a
 
-        variable0.all_play.size.should == 1
+        variable0.all_play.size.should == 0
         variable1.all_play.size.should == 1
         variable2.all_play.size.should == 1
 
-        play0 = variable0.all_play.single
-        play0.all_step_as_input_play.size.should == 1
-        play0.all_step_as_output_play.size.should == 0
-        play0.step.should be_nil
-        step0i = play0.all_step_as_input_play.single
+	variable0.all_play.size.should == 0
+        variable0.step.should_not be_nil
 
         variable1.all_play.size.should == 1
+        variable1.step.should be_nil
         play1 = variable1.all_play.single
-        play1.all_step_as_input_play.size.should == 1
-        play1.all_step_as_output_play.size.should == 1
-        play1.step.should be_nil
-        step1i = play1.all_step_as_input_play.single
-        step1o = play1.all_step_as_input_play.single
+        play1.step.should_not be_nil
+        step1 = play1.step
 
         variable2.all_play.size.should == 1
+        variable2.step.should be_nil
         play2 = variable2.all_play.single
-        play2.all_step_as_input_play.size.should == 0
-        play2.all_step_as_output_play.size.should == 1
-        play2.step.should be_nil
-        step2o = play2.all_step_as_output_play.single
+        play2.step.should_not be_nil
+        step2 = play2.step
 
-        step0i.fact_type.should be_kind_of(ActiveFacts::Metamodel::LinkFactType)
-        step0i.fact_type.default_reading.should == 'Directorship involves Person'
-
-        step1i.should == step1o
-        step1i.should == step2o
-        step1i.fact_type.default_reading.should == 'Person directs Company'
+        step1.should == step2
+        step1.fact_type.default_reading.should == 'Person directs Company'
 
       end
 

@@ -163,8 +163,8 @@ module ActiveFacts
       # Add a RoleRef to an existing Player
       def add_role_player player, role_ref
         #trace :subscript, "Adding role_ref #{role_ref.object_id} to player #{player.object_id}"
-        if jr = role_ref.play
-          add_play(player, jr)
+        if play = role_ref.play
+          add_play(player, play)
         elsif !player.role_refs.include?(role_ref)
           trace :subscript, "Adding reference to player #{player.object_id} for #{role_ref.role.object_type.name} in #{role_ref.role_sequence.describe} with #{role_ref.role_sequence.all_reading.size} readings"
           player.role_refs.push(role_ref)
@@ -216,12 +216,11 @@ module ActiveFacts
         return if plays.empty?
 
         # If any of these plays are for a known player, use that, else make a new player.
-        existing_players = plays.map{|jr| @player_by_play[jr] }.compact.uniq
+        existing_players = plays.map{|play| @player_by_play[play] }.compact.uniq
         if existing_players.size > 1
           raise "At most one existing player can play these roles: #{existing_players.map{|p|p.object_type.name}*', '}!"
         end
         p = existing_players[0] || player(plays[0])
-        debugger if plays.detect{|jr| jr.role.object_type != p.object_type }
         trace :subscript, "roles are playes of #{p.describe}" do
           plays.each do |play|
             trace :subscript, "#{play.describe}" do
@@ -281,22 +280,22 @@ module ActiveFacts
             trace :subscript, "Applying subscripts to #{dups.size} occurrences of #{object_type.name}" do
               s = 0
               dups.
-                sort_by{|p|   # Guarantee stable numbering
+                sort_by do |p|   # Guarantee stable numbering
                   p.role_adjuncts(:role_name) + ' ' +
                     # Tie-breaker:
                     p.role_refs.map{|rr| rr.role.fact_type.preferred_reading.text}.sort.to_s
-                }.
+                end.
                 each do |player|
-                jrname = player.plays.map{|jr| jr.role_ref && jr.role_ref.role.role_name}.compact[0]
-                rname = (rr = player.role_refs[0]) && rr.role.role_name
-                if jrname and !rname
-                  # puts "Oops: rolename #{rname.inspect} != #{jrname.inspect}" if jrname != rname
-                  player.variables_by_query.values.each{|jn| jn.role_name = jrname }
-               else
-                  player.subscript = s+1
-                  s += 1
-                end
-              end
+		  jrname = player.plays.map{|play| play.role_ref && play.role_ref.role.role_name}.compact[0]
+		  rname = (rr = player.role_refs[0]) && rr.role.role_name
+		  if jrname and !rname
+		    # puts "Oops: rolename #{rname.inspect} != #{jrname.inspect}" if jrname != rname
+		    player.variables_by_query.values.each{|jn| jn.role_name = jrname }
+		  else
+		    player.subscript = s+1
+		    s += 1
+		  end
+		end
             end
           end
       end
@@ -364,7 +363,7 @@ module ActiveFacts
         trace :subscript, "Indexing roles of fact types in #{query.all_step.size} steps" do
           steps = []
           # Register all references to each variable as being for the same player:
-          query.all_variable.sort_by{|jn| jn.ordinal}.each do |variable|
+          query.all_variable.to_a.sort_by(&:ordinal).each do |variable|
             trace :subscript, "Adding Roles of #{variable.describe}" do
               plays_have_same_player(variable.all_play.to_a)
               steps = steps | variable.all_step
@@ -445,7 +444,6 @@ module ActiveFacts
       # Expand this reading (or partial reading, during contraction)
       def expand_reading_text(step, text, role_sequence, player_by_role = {})
         if !player_by_role.empty? and !player_by_role.is_a?(Hash) || player_by_role.keys.detect{|k| !k.is_a?(ActiveFacts::Metamodel::Role)}
-          debugger
           raise "Need to change this call to expand_reading_text to pass a role->variable hash"
         end
         rrs = role_sequence.all_role_ref_in_order
@@ -462,8 +460,9 @@ module ActiveFacts
 	    variable = variable_by_role[role_ref.role]
 
             play_name = variable && variable.role_name
+	    raise hell if player && player.is_a?(ActiveFacts::Metamodel::EntityType) && player.fact_type && !variable
             subscripted_player(role_ref, player && player.subscript, play_name, variable && variable.value) +
-              objectification_verbalisation(role_ref.role.object_type)
+              objectification_verbalisation(variable)
           end
         end
       end
@@ -495,40 +494,35 @@ module ActiveFacts
         @query = query
         return unless query
 
-        @variables = query.all_variable.sort_by{|jn| jn.ordinal}
+        @variables = query.all_variable.to_a.sort_by(&:ordinal)
 
-        @steps = @variables.map{|jn| jn.all_step }.flatten.uniq
+        @steps = @variables.map(&:all_step).flatten.uniq
         @steps_by_variable = @variables.
-          inject({}) do |h, jn|
-            jn.all_step.each{|js| (h[jn] ||= []) << js}
+          inject({}) do |h, var|
+            var.all_step.each{|step| (h[var] ||= []) << step}
             h
           end
       end
 
-      # Remove this step now that we've processed it:
+      # De-index this step now that we've processed it:
       def step_completed(step)
         @steps.delete(step)
 
-        input_node = step.input_play.variable
-        steps = @steps_by_variable[input_node]
-        steps.delete(step)
-        @steps_by_variable.delete(input_node) if steps.empty?
-
-        output_node = step.output_play.variable
-        if (input_node != output_node)
-          steps = @steps_by_variable[output_node]
+	step.all_play.each do |play|
+	  var = play.variable
+          steps = @steps_by_variable[var]
           steps.delete(step)
-          @steps_by_variable.delete(output_node) if steps.empty?
+	  @steps_by_variable.delete(var) if steps.empty?
         end
       end
 
-      def choose_step(next_node)
-        next_steps = @steps_by_variable[next_node]
+      def choose_step(next_var)
+        next_steps = @steps_by_variable[next_var]
 
         # We need to emit each objectification before mentioning an object that plays a role in one, if possible
         # so that we don't wind up with an objectification as the only way to mention its name.
 
-        # If we don't have a next_node against which we can contract,
+        # If we don't have a next_var against which we can contract,
         # so just use any step involving this node, or just any step.
         if next_steps
           if next_step = next_steps.detect { |ns| !ns.is_objectification_step }
@@ -558,26 +552,26 @@ module ActiveFacts
       end
 
       # The step we just emitted (using the reading given) is contractable iff
-      # the reading has the next_node's role player as the final text
-      def node_contractable_against_reading(next_node, reading)
+      # the reading has the next_var's role player as the final text
+      def node_contractable_against_reading(next_var, reading)
         reading &&
           # Find whether last role has no following text, and its ordinal
         (reading.text =~ /\{([0-9])\}$/) &&
           # This reading's RoleRef for that role:
         (role_ref = reading.role_sequence.all_role_ref_in_order[$1.to_i]) &&
           # was that RoleRef for the upcoming node?
-        role_ref.role.object_type == next_node.object_type
+        role_ref.role.object_type == next_var.object_type
       end
 
-      def reading_starts_with_node(reading, next_node)
+      def reading_starts_with_node(reading, next_var)
         reading.text =~ /^\{([0-9])\}/ and
           role_ref = reading.role_sequence.all_role_ref.detect{|rr| rr.ordinal == $1.to_i} and
-          role_ref.role.object_type == next_node.object_type
+          role_ref.role.object_type == next_var.object_type
       end
 
-      # The last reading we emitted ended with the object type name for next_node.
+      # The last reading we emitted ended with the object type name for next_var.
       # Choose a step and a reading that can be contracted against that name
-      def contractable_step(next_steps, next_node)
+      def contractable_step(next_steps, next_var)
         next_reading = nil
         next_step =
           next_steps.detect do |js|
@@ -585,51 +579,47 @@ module ActiveFacts
             # If we find a reading here, it can be contracted against the previous one
             next_reading =
               js.fact_type.all_reading_by_ordinal.detect do |reading|
-                # This step is contractable iff the FactType has a reading that starts with the role of next_node (no preceding text)
-                reading_starts_with_node(reading, next_node)
+                # This step is contractable iff the FactType has a reading that starts with the role of next_var (no preceding text)
+                reading_starts_with_node(reading, next_var)
               end
             next_reading
           end
-        trace :query, "#{next_reading ? "'"+next_reading.expand+"'" : "No reading"} contracts against last node '#{next_node.object_type.name}'"
+        trace :query, "#{next_reading ? "'"+next_reading.expand+"'" : "No reading"} contracts against last node '#{next_var.object_type.name}'"
         return [next_step, next_reading]
       end
 
-      # REVISIT: There might be more than one objectification_verbalisation for a given object_type. Need to get the Variable here and emit an objectification step involving that node.
-      def objectification_verbalisation(object_type)
+      def objectification_verbalisation(variable)
+	return '' unless variable
+	raise "Not fully re-implemented, should pass the variable instead of #{variable.inspect}" unless variable.is_a?(ActiveFacts::Metamodel::Variable)
         objectified_node = nil
-        unless object_type.is_a?(Metamodel::EntityType) and
-          object_type.fact_type and            # Not objectified
-          objectification_step = @steps.
-            detect do |js|
-              # The objectifying entity type should always be the input_variable here, but be safe:
-              js.is_objectification_step and
-                (objectified_node = js.input_play.variable).object_type == object_type ||
-                (objectified_node = js.output_play.variable).object_type == object_type
-            end
-          return ''
-        end
+	object_type = variable.object_type
+        return '' unless object_type.is_a?(Metamodel::EntityType) # Not a entity type
+	return '' unless object_type.fact_type			  # Not objectified
 
-        # REVISIT: We need to be working from the role_ref here - pass it in
-        # if objectification_step.variable != role_ref.variable
+	objectification_step = variable.step
+	return '' unless objectification_step
 
         steps = [objectification_step]
         step_completed(objectification_step)
+
+=begin
         while other_step =
           @steps.
-            detect{|js|
-              js.is_objectification_step and
-                js.input_play.variable.object_type == object_type || js.output_play.variable.object_type == object_type
+            detect{|step|
+              step.is_objectification_step and
+                step.input_play.variable.object_type == object_type || step.output_play.variable.object_type == object_type
             }
           steps << other_step
           trace :query, "Emitting objectification step allows deleting #{other_step.describe}"
           step_completed(other_step)
         end
+=end
 
         # Find all references to roles in this objectified fact type which are relevant to the variables of these steps:
         player_by_role = {}
         steps.each do |step|
-          step.all_play.to_a.map do |jr|
-            player_by_role[jr.role] = @player_by_play[jr]
+          step.all_play.to_a.map do |play|
+            player_by_role[play.role] = @player_by_play[play]
           end
         end
 
@@ -639,14 +629,14 @@ module ActiveFacts
         " (in which #{expand_reading_text(objectification_step, reading.text, reading.role_sequence, player_by_role)})" 
       end
 
-      def elided_objectification(next_step, fact_type, last_is_contractable, next_node)
+      def elided_objectification(next_step, fact_type, last_is_contractable, next_var)
         if last_is_contractable
           # Choose a reading that's contractable against the previous step, if possible
           reading = fact_type.all_reading_by_ordinal.
             detect do |reading|
 	      # Only contract a negative reading if we want one
 	      (!next_step.is_disallowed || !reading.is_negative == !next_step.is_disallowed) and
-		reading_starts_with_node(reading, next_node)
+		reading_starts_with_node(reading, next_var)
             end
         end
         last_is_contractable = false unless reading
@@ -655,7 +645,7 @@ module ActiveFacts
         # Find which role occurs last in the reading, and which Variable is attached
         reading.text =~ /\{(\d)\}[^{]*\Z/
         last_role_ref = reading.role_sequence.all_role_ref_in_order[$1.to_i]
-        exit_node = @variables.detect{|jn| jn.all_play.detect{|jr| jr.role == last_role_ref.role}}
+        exit_node = @variables.detect{|jn| jn.all_play.detect{|play| play.role == last_role_ref.role}}
         exit_step = nil
 
 	trace :query, "Stepping over an objectification to #{exit_node.object_type.name} requires eliding the other implied steps" do
@@ -683,35 +673,49 @@ module ActiveFacts
       def verbalise_query query
         prepare_query query
         readings = ''
-        next_node = @role_refs[0].play.variable   # Choose a place to start
+        next_var = @role_refs[0].play.variable   # Choose a place to start
         last_is_contractable = false
-        trace :query, "Variables are #{@variables.map{|jn| jn.describe }.inspect}, Steps are #{@steps.map{|js| js.describe }.inspect}" do
+
+        trace :query, "Verbalising query" do
+	  if trace(:query)
+	    trace :query, "variables:" do
+	      @variables.each do |var|
+		trace :query, var.describe
+	      end
+	    end
+	    trace :query, "steps:" do
+	      @steps.each do |step|
+		trace :query, step.describe
+	      end
+	    end
+	  end
+
           until @steps.empty?
             next_reading = nil
             # Choose amongst all remaining steps we can take from the next node, if any
-            next_steps = @steps_by_variable[next_node]
-            trace :query, "Next Steps from #{next_node.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
+            next_steps = @steps_by_variable[next_var]
+            trace :query, "Next Steps from #{next_var.describe} are #{(next_steps||[]).map{|js| js.describe }.inspect}"
 
             # See if we can find a next step that contracts against the last (if any):
             next_step = nil
             if last_is_contractable && next_steps
-              next_step, next_reading = *contractable_step(next_steps, next_node)
+              next_step, next_reading = *contractable_step(next_steps, next_var)
                 end
 
             if next_step
-              trace :query, "Chose #{next_step.describe} because it's contractable against last node #{next_node.object_type.name} using #{next_reading.expand}"
+              trace :query, "Chose #{next_step.describe} because it's contractable against last node #{next_var.object_type.name} using #{next_reading.expand}"
 
               player_by_role =
-                next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }
+                next_step.all_play.inject({}) {|h, play| h[play.role] = @player_by_play[play]; h }
 	      raise "REVISIT: Needed a negated reading here" if !next_reading.is_negative != !next_step.is_disallowed
 	      raise "REVISIT: Need to emit 'maybe' here" if next_step.is_optional
               readings += expand_contracted_text(next_step, next_reading, player_by_role)
               step_completed(next_step)
             else
-              next_step = choose_step(next_node) if !next_step
+              next_step = choose_step(next_var) if !next_step
 
               player_by_role =
-                next_step.all_play.inject({}) {|h, jr| h[jr.role] = @player_by_play[jr]; h }
+                next_step.all_play.inject({}) {|h, play| h[play.role] = @player_by_play[play]; h }
 
               if next_step.is_unary_step
                 # Objectified unaries get emitted as unaries, not as objectifications:
@@ -731,20 +735,20 @@ module ActiveFacts
                 objectified_node = next_step.input_play.variable
                 raise "Assumption violated that the objectification is the input play" unless objectified_node.object_type.fact_type
                 objectified_node.all_step.map do |other_step|
-		  other_step.all_play.map do |jr|
-                    player_by_role[jr.role] = @player_by_play[jr]
+		  other_step.all_play.map do |play|
+                    player_by_role[play.role] = @player_by_play[play]
                   end
                 end
 
-                if last_is_contractable and next_node.object_type.is_a?(EntityType) and next_node.object_type.fact_type == fact_type
+                if last_is_contractable and next_var.object_type.is_a?(EntityType) and next_var.object_type.fact_type == fact_type
                   # The last reading we emitted ended with the name of the objectification of this fact type, so we can contract the objectification
                   # REVISIT: Do we need to use player_by_role here (if this objectification is traversed twice and so is subscripted)
                   readings += objectification_verbalisation(fact_type.entity_type)
                 else
                   # This objectified fact type does not need to be made explicit.
 		  negation = next_step.is_disallowed
-                  next_reading, next_node, next_step, last_is_contractable =
-                    *elided_objectification(next_step, fact_type, last_is_contractable, next_node)
+                  next_reading, next_var, next_step, last_is_contractable =
+                    *elided_objectification(next_step, fact_type, last_is_contractable, next_var)
                   if last_is_contractable
 		    raise "REVISIT: Need to emit 'maybe' here" if next_step and next_step.is_optional
                     readings += expand_contracted_text(next_step, next_reading, player_by_role)
@@ -760,11 +764,11 @@ module ActiveFacts
                 end
               else
                 fact_type = next_step.fact_type
-                # Prefer a reading that starts with the player of next_node
+                # Prefer a reading that starts with the player of next_var
                 next_reading = fact_type.all_reading_by_ordinal.
                   detect do |reading|
 		    (!next_step.is_disallowed || !reading.is_negative == !next_step.is_disallowed) and
-		      reading_starts_with_node(reading, next_node)
+		      reading_starts_with_node(reading, next_var)
                   end || fact_type.preferred_reading(next_step.is_disallowed)
                 # REVISIT: If this step and reading has role references with adjectives, we need to expand using those
                 readings += " and " unless readings.empty?
@@ -777,14 +781,16 @@ module ActiveFacts
 
 	    if next_step
 	      # Continue from this step with the node having the most steps remaining
-	      input_steps = @steps_by_variable[input_node = next_step.input_play.variable] || []
-	      output_steps = @steps_by_variable[output_node = next_step.output_play.variable] || []
-	      next_node = input_steps.size > output_steps.size ? input_node : output_node
+	      input_steps = @steps_by_variable[input_var = next_step.input_play.variable] || []
+	      output_play = next_step.output_plays.last
+	      output_steps = (output_play && (output_var = output_play.variable) && @steps_by_variable[output_var]) || []
+
+	      next_var = input_steps.size > output_steps.size ? input_var : output_var
 	      # Prepare for possible contraction following:
-	      last_is_contractable = next_reading && node_contractable_against_reading(next_node, next_reading)
+	      last_is_contractable = next_reading && node_contractable_against_reading(next_var, next_reading)
 	    else
 	      # This shouldn't happen, but an elided objectification that had missing steps can cause it. Survive:
-	      next_node = (steps[0].input_play || steps[0].output_play).variable
+	      next_var = (steps[0].input_play || steps[0].output_plays.last).variable
 	      last_is_contractable = false
 	    end
 
