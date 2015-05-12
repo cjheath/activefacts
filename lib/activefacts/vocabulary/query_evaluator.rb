@@ -184,24 +184,54 @@ module ActiveFacts
 
 	      # Check whether this instance satisfies the query steps of this play
 	      played = conforms_to_plays_and_steps(hypothesis, variable, instance)
-	      next unless played
+	      unless played
+		trace :result, "Does not conform to all steps"
+		next
+	      else
+		trace :result, "Conforms to steps #{played.inspect}" unless played.empty?
+	      end
 
-	      # Setup recursion to search the next variable:
-	      remaining_variables = unbound_variables - [variable]
+	      # If this variable is the result of an objectification, the objectified fact
+	      # has role players that might fill some remaining variables:
+	      implications = {variable => instance}
+	      if variable.step
+		objectification_plays = variable.step.all_play
 
-	      # accept this variable->instance assignment as a part of our hypothesis
-	      new_hypothesis = hypothesis.dup
-	      new_hypothesis.store(variable, instance)
+		# Ensure that the objectified instances don't contradict some bound variable:
+		next unless objectification_plays.to_a.all? do |play|
+		  objectified_instance = instance.fact.all_role_value.select{|rv| rv.role == play.role}[0].instance
+		  trace :result, "objectified instance includes #{play.variable.object_type.name}, checking it conforms" do
+		    if hypothesis[play.variable]
+		      unless hypothesis[play.variable] == objectified_instance
+			trace :result, "Objectified player #{objectified_instance.verbalise.inspect} does not match our hypothesis"
+			next false
+		      end
+		      true
+		    else
+		      implications[play.variable] = objectified_instance
+		      conforms = conforms_to_plays_and_steps(hypothesis, play.variable, objectified_instance)
+		      trace :result, "Objectified player #{objectified_instance.verbalise.inspect} does not conform to all steps" unless conforms
+		      conforms
+		    end
+		  end
+		end
+	      end
 
 	      # Some of the variable's Plays might be matched by objectified facts.
 	      # Record these values of the objectification variables.
-	      played.compact.each do |playing|
+	      next unless played.compact.all? do |playing|
 		play, fact, objectifying_variable = *playing
-		if objectifying_variable
-		  new_hypothesis[objectifying_variable] = fact.instance
-		  remaining_variables.delete(objectifying_variable)
+		next true unless objectifying_variable
+		if i = hypothesis[objectifying_variable] and i != fact.instance
+		  trace :result, "Objectification of #{fact.instance.verbalise.inspect} does not match our hypothesis"
+		  next false
 		end
+		implications[objectifying_variable] = fact.instance
 	      end
+
+	      # accept the implications of this variable->instance assignment:
+	      new_hypothesis = hypothesis.dup.merge(implications)
+	      remaining_variables = unbound_variables - implications.keys
 
 	      new_hypothesis.freeze
 	      if remaining_variables.empty?
@@ -213,6 +243,61 @@ module ActiveFacts
 	  end	# each instance
         end   # trace search through instances
       end   # query_level
+
+      # This method is an exploration into finding a smaller search space for the given variable.
+      # It relies on the values of bindings being Instance objects.
+      def find_candidate_sets variable, bindings
+	trace :result, "Looking for a smaller candidate set by traversing from these bound variables: #{bindings.keys.map{|v| (v.object_type.name+v.ordinal.to_s).inspect }*', '}" do
+	  # If this variable is connected via a single step to one or more bound variables,
+	  # that's probably a better place to search than object_type.all_instance.
+	  bindable_plays =
+	    variable.all_play.map do |play|
+	      steps =
+		play.all_step_as_output_play.to_a + play.all_step_as_input_play.to_a + [play.step].compact
+	      trace :result, "Considering steps over #{steps.map{|s|s.fact_type.default_reading.inspect}*', '}"
+	      bound_steps =
+		steps.reject{|s| (s.all_play-[play]).detect{|p|
+		  # trace :result, "Rejecting steps over #{s.fact_type.default_reading.inspect} because #{p.variable.object_type.name}#{p.variable.ordinal} is not bound" unless bindings[p.variable]
+		  !bindings[p.variable]}
+		}
+	      trace :result, "Bound steps are #{bound_steps.map{|s|s.fact_type.default_reading.inspect}*', '}"
+	      counterpart_plays =
+		bound_steps.map{|s| (s.all_play-[play]) }.flatten.uniq
+	      trace :result, "bound_steps.size = #{bound_steps.size}, counterpart_plays.size = #{counterpart_plays.size}"
+
+	      # Consider only counterpart_plays for bound variables:
+	      #counterpart_plays.reject!{|cp| !bindings[cp.variable] }
+
+	      counterpart_plays
+	    end.flatten.uniq
+
+	  trace :result, "Connections of #{variable.object_type.name}#{variable.ordinal}:" do
+	    if bindable_plays.empty?
+	      trace :result, "NONE"
+	    else
+	      # Show the candidate instances here:
+	      if trace :result
+		bindable_plays.each do |pl|
+		  # We have bound instances of pl.variable, and the step(s) from this play reach the variable
+		  trace :result, "Candidate facts which include this play are" do
+
+		    bound_instance =
+		      bindings[pl.variable]	      # This is the instance under consideration
+		    bound_instance.
+		      all_role_value.select{|rv|	      # Select its RoleValues for roles in this play's step
+			pl.all_step.detect{|s| s.fact_type == rv.fact.fact_type }
+		      }.
+		      each{|rv|			      # Verbalise other role_values of this fact
+			trace :result, "#{rv.fact.verbalise.inspect}"
+		      }
+		  end
+		  trace :result, "-> Role of #{pl.variable.object_type.name}#{pl.variable.ordinal} in #{pl.role.fact_type.default_reading}"
+		end
+	      end
+	    end
+	  end
+	end
+      end
 
     end   # QueryEvaluator
   end   # Metamodel
