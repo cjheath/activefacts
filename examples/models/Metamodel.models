@@ -46,8 +46,6 @@ module Concernz
 
       # Step falls under Alternative Set
       has_many :steps, :class_name => 'Step', :foreign_key => :alternative_set_guid, :dependent => :destroy
-
-      validates :guid, :presence => true
     end
   end
 end
@@ -156,8 +154,6 @@ module Concernz
 
       # Query includes Variable and Query is an instance of Concept
       has_many :variables_via_query, :class_name => 'Variable', :foreign_key => :query_concept_guid, :dependent => :destroy
-
-      validates :guid, :presence => true
     end
   end
 end
@@ -576,8 +572,6 @@ module Concernz
 
       # Set Comparison Roles (in which Set Comparison Constraint has in Ordinal position Role Sequence)
       has_many :set_comparison_roles, :class_name => 'SetComparisonRoles', :foreign_key => :role_sequence_guid, :dependent => :destroy
-
-      validates :guid, :presence => true
     end
   end
 end
@@ -684,7 +678,6 @@ module Concernz
       # Constraint Shape is a kind of Shape and Value Constraint Shape is a kind of Constraint Shape and Value Constraint Shape is for Object Type Shape and Object Type Shape is a kind of Shape
       has_many :shapes_via_constraint_shape_value_constraint_shape_object_type_shape, :class_name => 'Shape', :foreign_key => :value_constraint_shape_object_type_shape_guid, :dependent => :destroy
 
-      validates :guid, :presence => true
       validates :orm_diagram_id, :presence => true
     end
   end

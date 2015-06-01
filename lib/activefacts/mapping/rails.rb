@@ -4,52 +4,7 @@ require 'active_support'
 require 'digest/sha1'
 
 module ActiveFacts
-
   module Persistence
-    # Return ActiveRecord type and (modified?) length for the passed base type
-    def self.rails_type(type, length)
-      rails_type = case type
-	when /^Auto ?Counter$/
-	  'integer'	    # REVISIT: Need to detect surrogate ID fields and handle them correctly
-
-	when /^Unsigned ?Integer$/,
-	  /^Integer$/,
-	  /^Signed ?Integer$/,
-	  /^Unsigned ?Small ?Integer$/,
-	  /^Signed ?Small ?Integer$/,
-	  /^Unsigned ?Tiny ?Integer$/
-	  length = nil
-	  'integer'
-
-	when /^Decimal$/
-	  'decimal'
-
-	when /^Fixed ?Length ?Text$/, /^Char$/
-	  'string'
-	when /^Variable ?Length ?Text$/, /^String$/
-	  'string'
-	when /^Large ?Length ?Text$/, /^Text$/
-	  'text'
-
-	when /^Date ?And ?Time$/, /^Date ?Time$/
-	  'datetime'
-	when /^Date$/
-	  'datetime'
-	when /^Time$/
-	  'time'
-	when /^Auto ?Time ?Stamp$/
-	  'timestamp'
-
-	when /^Money$/
-	  'decimal'
-	when /^Picture ?Raw ?Data$/, /^Image$/, /^Variable ?Length ?Raw ?Data$/, /^Blob$/
-	  'binary'
-	when /^BIT$/
-	  'boolean'
-	else type # raise "ActiveRecord type unknown for standard type #{type}"
-	end
-      [rails_type, length]
-    end
 
     def self.rails_plural_name name
       # Crunch spaces and pluralise the first part, all in snake_case
@@ -73,6 +28,54 @@ module ActiveFacts
     class Column
       def rails_name
 	Persistence::rails_singular_name(name('_'))
+      end
+
+      def rails_type
+	type_name, params, constraints = *type()
+	rails_type = case type_name
+	  when /^Auto ?Counter$/
+	    'serial'	    # REVISIT: Need to detect surrogate ID fields and handle them correctly
+
+	  when /^[Ug]uid$/i
+	    'uuid'
+
+	  when /^Unsigned ?Integer$/,
+	    /^Integer$/,
+	    /^Signed ?Integer$/,
+	    /^Unsigned ?Small ?Integer$/,
+	    /^Signed ?Small ?Integer$/,
+	    /^Unsigned ?Tiny ?Integer$/
+	    length = nil
+	    'integer'
+
+	  when /^Decimal$/
+	    'decimal'
+
+	  when /^Fixed ?Length ?Text$/, /^Char$/
+	    'string'
+	  when /^Variable ?Length ?Text$/, /^String$/
+	    'string'
+	  when /^Large ?Length ?Text$/, /^Text$/
+	    'text'
+
+	  when /^Date ?And ?Time$/, /^Date ?Time$/
+	    'datetime'
+	  when /^Date$/
+	    'datetime'
+	  when /^Time$/
+	    'time'
+	  when /^Auto ?Time ?Stamp$/
+	    'timestamp'
+
+	  when /^Money$/
+	    'decimal'
+	  when /^Picture ?Raw ?Data$/, /^Image$/, /^Variable ?Length ?Raw ?Data$/, /^Blob$/
+	    'binary'
+	  when /^BIT$/
+	    'boolean'
+	  else type # raise "ActiveRecord type unknown for standard type #{type}"
+	  end
+	[rails_type, params[:length]]
       end
     end
 

@@ -9,11 +9,20 @@ module ActiveFacts
   module CQL
     grammar French
 
-    # >>>>>>>>>>>>>>>>>>>> Object Types <<<<<<<<<<<<<<<<<<<<
-    # The pattern to introduce a Value Type
-    rule written_as
-      s est s 'écrit' S 'en' s
-    end
+      # >>>>>>>>>>>>>>>>>>>> Object Types <<<<<<<<<<<<<<<<<<<<
+      # The pattern to introduce a Value Type
+      rule written_as
+	s est s 'écrit' S 'en' s
+      end
+
+      rule auto_assignment
+	'auto-assigné' S to time:('assertion' / 'validation') !alphanumeric s
+	{
+	  def auto_assigned_at
+	    time.text_value == 'assertion' ? 'assert' : 'commit'
+	  end
+	}
+      end
 
       # The pattern to introduce an Entity Type
       rule identified_by

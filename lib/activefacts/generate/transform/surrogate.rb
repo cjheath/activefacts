@@ -66,8 +66,7 @@ module ActiveFacts
 
     class ValueType
       def needs_surrogate
-	supertype_names = supertypes_transitive.map(&:name)
-	!(supertype_names.include?('Auto Counter') or supertype_names.include?('Guid') or supertype_names.include?('ID'))
+	!is_auto_assigned
       end
 
       def inject_surrogate

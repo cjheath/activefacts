@@ -46,13 +46,15 @@ module ActiveFacts
         @is_table
       end
 
-      # Is this ValueType auto-assigned on first save to the database?
+      # Is this ValueType auto-assigned either at assert or on first save to the database?
       def is_auto_assigned
-        # REVISIT: Find a better way to determine AutoCounters (ValueType unary role?)
         type = self
-        type = type.supertype while type.supertype
-        type.name =~ /^Auto/
+	while type
+	  return true if type.name =~ /^Auto/ || type.transaction_phase
+	  type = type.supertype
+	end
       end
+      false
     end
 
     class EntityType < DomainObjectType

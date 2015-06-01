@@ -163,15 +163,15 @@ module ActiveFacts
         end
 
         vt = references[-1].is_self_value ? references[-1].from : references[-1].to
-        params[:length] ||= vt.length if vt.length.to_i != 0
-        params[:scale] ||= vt.scale if vt.scale.to_i != 0
-        while vt.supertype
+	begin
           params[:length] ||= vt.length if vt.length.to_i != 0
           params[:scale] ||= vt.scale if vt.scale.to_i != 0
           constraints << vt.value_constraint if vt.value_constraint
+	  last_vt = vt
           vt = vt.supertype
-        end
-        return [vt.name, params, constraints]
+        end while vt
+	params[:underlying_type] = last_vt
+        return [last_vt.name, params, constraints]
       end
 
       # The comment is the readings from the References expressed as a series of steps (not a full verbalisation)

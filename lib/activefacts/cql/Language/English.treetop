@@ -14,6 +14,15 @@ module ActiveFacts
         s 'is' s 'written' S as s
       end
 
+      rule auto_assignment
+	'auto-assigned' S at s time:('assert' / 'commit') !alphanumeric s
+	{
+	  def auto_assigned_at
+	    time.text_value
+	  end
+	}
+      end
+
       # The pattern to introduce an Entity Type
       rule identified_by
         identified s by s

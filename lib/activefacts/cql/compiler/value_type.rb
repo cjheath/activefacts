@@ -87,7 +87,7 @@ module ActiveFacts
       end
 
       class ValueType < ObjectType
-        def initialize name, base, parameters, unit, value_constraint, pragmas, context_note
+        def initialize name, base, parameters, unit, value_constraint, pragmas, context_note, auto_assigned_at
           super name
           @base_type_name = base
           @parameters = parameters
@@ -95,6 +95,7 @@ module ActiveFacts
           @value_constraint = value_constraint
           @pragmas = pragmas
 	  @context_note = context_note
+	  @auto_assigned_at = auto_assigned_at
         end
 
         def compile
@@ -116,6 +117,7 @@ module ActiveFacts
           vt.supertype = base_type if base_type
           vt.length = length if length
           vt.scale = scale if scale
+          vt.transaction_phase = @auto_assigned_at
 
           unless @unit.empty?
             unit_name, exponent = *@unit[0]
