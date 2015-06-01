@@ -41,9 +41,6 @@ div svg.railroad-diagram {
 <h1>
 Introduction to the Constellation Query Language
 </h1>
-
-<p align="center">(Copyright 2015 Infinuendo)</p>
-
 <p>The Constellation Query Language (<b>CQL</b>) is a language for
 constructing and querying fact-based information models. It is based
 on the graphical <a href="#ftn1" title="ORM Foundation">
@@ -112,17 +109,29 @@ and may import elements from one or more other vocabularies.</p>
 			Choice(0,
 				Sequence(
 					NonTerminal('definition'),
-					';'
+					"';'"
 				),
 				Sequence(
 					NonTerminal('query'),
-					'?'
+					"'?'"
 				)
 			)
 		).addTo();
 	  </script>
   <dt>definition:</dt>
-  <dd><img src="../images/syntax/definition.png"></dd>
+  <dd>
+	  <script>
+	  Diagram(
+	    Choice(0, 
+	      Sequence("'vocabulary'", 'ID'), 
+	      NonTerminal('import_def'),
+	      NonTerminal('object_type'),
+	      NonTerminal('constraint'),
+	      NonTerminal('unit_def')
+	  )).addTo();
+	  </script>
+	  <img src="../images/syntax/definition.png">
+  </dd>
 </dl>
 
 <p>An import definition imports object type names from another
@@ -133,7 +142,22 @@ translations specific to this vocabulary.</p>
 
 <dl>
   <dt>import_def:</dt>
-  <dd><img src="../images/syntax/import_def.png" class="hangleft"></dd>
+  <dd>
+	  <script>
+	  Diagram(
+	    Sequence(
+	      "'import'",
+	      'ID',
+	      ZeroOrMore(
+	          Sequence(
+	              "','", "'alias'", 'ID', "'as'", 'ID'
+	          )
+	      )
+	  )).addTo();
+	  </script>
+	  <br>
+	  <img src="../images/syntax/import_def.png" class="hangleft">
+  </dd>
 </dl>
 
 <p>
@@ -150,7 +174,16 @@ same words in lower case, where they may occur in fact type readings.
 
 <dl>
   <dt>object type:</dt>
-  <dd><img src="../images/syntax/object_type.png"></dd>
+  <script>
+  Diagram(
+    Choice(0,
+      NonTerminal('entity_type'),
+     NonTerminal('value_type'),
+     NonTerminal('fact_type')
+  )).addTo();
+  </script>
+  
+  <dd><img src="../images/syntax/concept.png"></dd>
 </dl>
 
 <p>
@@ -177,9 +210,40 @@ these restrictions are discussed below.
 
 <dl>
   <dt>value type:
-  <dd><img src="../images/syntax/value_type.png" class="hangleft"><br>
+  <dd>
+	  <script>
+	  Diagram(
+	    Sequence(
+	      'ID',
+	      Choice(0,
+	         "'='",
+	         Sequence(
+	              "'is'", "'written'", "'as'"
+	         )
+	     ),
+	    'ID',
+	    NonTerminal('parameter_list'),
+	    NonTerminal('vt_details')
+	  )).addTo();
+	  </script>
+	  <img src="../images/syntax/value_type.png" class="hangleft"><br>
   <dt>value type details:
-  <dd><img src="../images/syntax/vt_details.png"><br>
+  <dd>
+	  <script>
+	  Diagram(
+	    Sequence(
+	      Optional(
+	         Sequence(
+	             "'in'",
+	             NonTerminal('unit')
+	         )
+	      ),
+	     Optional(
+	         NonTerminal('restriction')
+	     )
+	  )).addTo();
+	  </script>
+	  <img src="../images/syntax/vt_details.png"><br>
 </dl>
 
 <p>
@@ -207,12 +271,57 @@ equivalent.
 <dl>
 <dt>unit_def:
 <dd>
+	<script>
+	Diagram(
+	  Sequence(
+	     "'unit'",
+	     'ID',
+	     Optional(
+	         Sequence(
+	             "'='",
+	             Choice(0,
+	                'REAL',
+	                Sequence(
+	                     'DECIMAL', "'/'", 'DECIMAL'
+	                ),
+	               Skip()
+	            ),
+	           NonTerminal('unit_derivation')
+	       )
+	    )
+	)).addTo();
+	</script>
 <img src="../images/syntax/unit_def.png" class="hangleft"><br>
 <dt>unit_derivation:
 <dd>
+    <script>
+	Diagram(
+	  Sequence(
+	     OneOrMore(NonTerminal('unit')),
+	     Optional(
+	         Sequence(
+	             "'/'",
+	             OneOrMore(NonTerminal('unit'))
+	       )
+	    )
+	)).addTo()
+	</script>
 <img src="../images/syntax/unit_derivation.png"><br>
 <dt>unit:
 <dd>
+	<script>
+	Diagram(
+	  Sequence(
+	     'ID',
+	     Optional(
+	         Sequence(
+	             "'^'",
+	            Optional("'-'"),
+	            'DIGIT'
+	         )
+	     )
+	)).addTo();
+	</script>
 <img src="../images/syntax/unit.png">
 </dl>
 
@@ -232,15 +341,102 @@ role missing) may not occur more than once in a population.
 
 <dl>
   <dt>entity type:
-  <dd><img src="../images/syntax/entity_type.png"><br>
+  <dd>
+	  <script>
+	  Diagram(
+	    Choice(0,
+	       Sequence(
+	          'ID',
+	          "'is'",
+	          NonTerminal('identification')
+	       ),
+	      Sequence(
+	           'ID',
+	           "'is'",
+	           NonTerminal('supertypes'),
+	           Optional(
+	                 NonTerminal('identification')
+	           )
+	      )
+	  )).addTo();
+	  </script>
+	  <img src="../images/syntax/entity_type.png"><br>
   <dt>supertypes:
-  <dd><img src="../images/syntax/supertypes.png" class="hangleft">
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	        "'a'",
+	        Choice(0, "'subtype'", "'kind'"),
+	        "'of'",
+	        'ID',
+	        ZeroOrMore(
+	           Sequence(
+	               "','", 'ID'
+	           )
+	        )
+	  )).addTo();
+	  </script>
+	  <img src="../images/syntax/supertypes.png" class="hangleft">
   <dt>identification:
-  <dd><img src="../images/syntax/identification.png" class="hangleft"><br>
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	        "'identified'",
+	        "'by'",
+	        Choice(0,
+	            Sequence(
+	                "'its'",
+	                'ID',
+	                Optional(
+	                    NonTerminal('id_fact_types')
+	                )
+	             ),
+	            Sequence(
+	                NonTerminal('role_ref'),
+	                ZeroOrMore(
+	                   Sequence(
+	                        "'and'",
+	                        NonTerminal('role_ref')
+	                   )
+	                ),
+	                NonTerminal('id_fact_types')
+	           )
+	        )
+	   )).addTo();
+	  </script>
+	  <img src="../images/syntax/identification.png" class="hangleft"><br>
   <dt>id_fact_types:
-  <dd><img src="../images/syntax/id_fact_types.png"><br>
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	        "'where'",
+	        NonTerminal('clause_list')
+	   )).addTo();
+	  </script>
+	  <img src="../images/syntax/id_fact_types.png"><br>
   <dt>role_ref:
-  <dd><img src="../images/syntax/role_ref.png"><br>
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	        Optional(
+	           Sequence(
+	               'ID', "'-'"
+	           )
+	        ),
+	        'ID',
+	        Optional(
+	            Sequence(
+	               Optional("'-'"),
+	               'ID'
+	            )
+	        )
+	   )).addTo();
+	  </script>
+	  <img src="../images/syntax/role_ref.png"><br>
 </dl>
 
 <p>The simplest form of entity identification scheme is by a single
@@ -381,13 +577,69 @@ introduced by <em>where</em>.
 
 <dl>
   <dt>fact_type:
-  <dd><img src="../images/syntax/fact_type.png" class="hangleft">
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	        Optional(
+	           Sequence(
+	              'ID', "'is'", "'where'"
+	           )
+	        ),
+	       NonTerminal('clause_list'),
+	       Optional(
+	            NonTerminal('derivation')
+	       )
+	   )).addTo();
+	  </script>
+	  <img src="../images/syntax/fact_type.png" class="hangleft">
   <dt>clause_list:
-  <dd><img src="../images/syntax/clause_list.png">
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	       NonTerminal('clause'),
+	       ZeroOrMore(
+	           Sequence(
+	              "','",
+	              NonTerminal('clause')
+	           )
+	       )
+	   )).addTo();
+	  </script>
+	  <img src="../images/syntax/clause_list.png">
   <dt>clause:
-  <dd><img src="../images/syntax/clause.png">
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	       Optional(
+	           "'maybe'"
+	       ),
+	       NonTerminal('reading'),
+	       Optional(
+	            NonTerminal('qualifiers')
+	        )
+	   )).addTo();
+	  </script>
+	  <img src="../images/syntax/clause.png">
   <dt>qualifiers:
-  <dd><img src="../images/syntax/qualifiers.png" class="hangleft">
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	       "'['",
+	       NonTerminal('qualifier'),
+	       ZeroOrMore(
+	            Sequence(
+	               "','",
+	               NonTerminal('qualifier')
+	            )
+	        ),
+	       "']'"
+	   )).addTo();
+	  </script>
+	  <img src="../images/syntax/qualifiers.png" class="hangleft">
 </dl>
 
 <p>Each fact type reading may contain a quantifier expression before the
@@ -426,7 +678,22 @@ derivation clauses. Derivations are discussed below, under queries.</p>
 
 <dl>
   <dt>derivation:
-  <dd><img src="../images/syntax/derivation.png" class="hangleft">
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+	        Optional(
+	            Sequence(
+	                "'where'",
+	                NonTerminal('condition_list')
+	            )
+	       ),
+	       Optional(
+	           NonTerminal('returning')
+	       )
+	   )).addTo();
+	  </script>
+	  <img src="../images/syntax/derivation.png" class="hangleft">
 </dl>
 
 <h3>Readings</h3>
@@ -437,11 +704,47 @@ Fact type readings are a sequence of roles and linking words:
 
 <dl>
 <dt>reading:
-<dd><img src="../images/syntax/reading.png" class="hangleft">
+<dd>
+	<script>
+	Diagram(
+	   Sequence(
+	      ZeroOrMore(
+	          Choice(0,
+	              'ID',
+	              NonTerminal('fact_role')
+	          )
+	     ),
+	     Optional(
+	         NonTerminal('qualifier')
+	     ),
+	    NonTerminal('fact_role')
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/reading.png" class="hangleft">
 <dt>fact_role:
-<dd><img src="../images/syntax/fact_role.png" class="hangleft">
+<dd>
+	<script>
+	Diagram(
+	   Sequence(
+	      NonTerminal('role_ref'),
+	      Optional(
+	          NonTerminal('role_name_ref')
+	      ),
+	      Optional(
+	            NonTerminal('values')
+	      )
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/fact_role.png" class="hangleft">
 <dt>role_name_def:
-<dd><img src="../images/syntax/role_name_def.png">
+<dd>
+	<script>
+	Diagram(
+	   Sequence(
+	      "'('", "'as'", 'ID', "')'"
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/role_name_def.png">
 </dl>
 
 <p>
@@ -488,9 +791,28 @@ word <em>one</em>. Note that some quantifiers are only used in derivations
 or in constraints.
 </p>
 
-<dd>
+<dl>
 <dt>quantifier:
-<dd><img src="../images/syntax/quantifier.png" class="hangleft">
+<dd>
+	<script>
+	Diagram(
+	   Choice(0,
+	      "'some'",
+	      "'that'",
+	      "'one'",
+	      Sequence("'exactly'", NonTerminal('quantity')),
+	      Sequence("'at'", "'least'", NonTerminal('quantity')),
+	      Sequence("'at'", "'most'", NonTerminal('quantity')),
+	      Sequence(
+	            "'at'", "'least'", NonTerminal('quantity'), "'and'",
+	            "'at'", "'most'", NonTerminal('quantity')
+	      ),
+	      Sequence(
+	           "'from'", "DECIMAL", "'to'", 'DECIMAL'
+	      )
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/quantifier.png" class="hangleft">
 </dl>
 
 <p>In this way, CQL absorbs many of the uniqueness, mandatory and
@@ -529,13 +851,76 @@ values or value ranges:</p>
 
 <dl>
 <dt>restriction:
-<dd><img src="../images/syntax/restriction.png" class="hangleft">
+<dd>
+	<script>
+	Diagram(
+	   Sequence(
+	      "'restricted'",
+	      "'to'",
+	      "'{'",
+	      NonTerminal('range'),
+	      ZeroOrMore(
+	         Sequence(
+	            "','",
+	            NonTerminal('range')
+	         )
+	      ),
+	     "'}'"
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/restriction.png" class="hangleft">
 <dt>range:
-<dd><img src="../images/syntax/range.gif">
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	       NonTerminal('numeric_range'),
+	       NonTerminal('string_range')
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/range.gif">
 <dt>numeric_range:
-<dd><img src="../images/syntax/numeric_range.png">
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	       Sequence(
+	            NonTerminal('number'),
+	            Optional(
+	                Sequence(
+	                    "'..'",
+	                    Optional(NonTerminal('number'))
+	                )
+	            )
+	       ),
+	      Sequence(
+	           "'..'",
+	           NonTerminal('number')
+	       )
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/numeric_range.png">
 <dt>string_range:
-<dd><img src="../images/syntax/string_range.png">
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	       Sequence(
+	            'STRING',
+	            Optional(
+	                Sequence(
+	                    "'..'",
+	                    'STRING'
+	                )
+	            )
+	       ),
+	      Sequence(
+	           "'..'",
+	           'STRING'
+	       )
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/string_range.png">
 </dl>
 
 <p>Note that the ranges in a value restriction may be open ended at
@@ -553,9 +938,57 @@ definition, or with a ring constraint qualifier.</p>
 
 <dl>
 <dt>constraint
-<dd><img src="../images/syntax/constraint.png" class="hangleft">
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	       NonTerminal('mandatory_or_exclusive_constraint'),
+	       Sequence(
+	            NonTerminal('reading_list'),
+	            "'only'", "'if'",
+	            NonTerminal('reading_list')
+	       ),
+	      Sequence(
+	           NonTerminal('reading_list'),
+	           "'if'", "'and'", "'only'", "'if'",
+	           NonTerminal('reading_list')
+	       )
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/constraint.png" class="hangleft">
 <dt>mandatory_or_exclusive_constraint
-<dd><img src="../images/syntax/mandatory_or_exclusive_constraint.png" class="hangleft">
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	       Sequence(
+	          Choice(0,
+	             Sequence(
+	                "'for'", "'each'",
+	                NonTerminal('role_list'),
+	                NonTerminal('quantifier'),
+	                "'of'", "'these'", "'holds'", "':'"
+	              ),
+	             Sequence(
+	                 "'each'",
+	                 NonTerminal('role_list'),
+	                 "'occurs'",
+	                NonTerminal('quantifier'),
+	                "'time'", "'in'"
+	             )
+	           ),
+	          NonTerminal('reading_list')
+	       ),
+	      Sequence(
+	           "'either'",
+	           NonTerminal('reading_list'),
+	           "'or'",
+	           NonTerminal('reading_list'),
+	           "'but'", "'not'", "'both'"
+	       )
+	 )).addTo();
+	</script>
+	<img src="../images/syntax/mandatory_or_exclusive_constraint.png" class="hangleft">
 </dl>
 
 <h4>Mandatory (and either-or) constraints</h4>
@@ -804,19 +1237,9 @@ the calling program, and in what order.<br clear="all" />
 	</div>
 </div>
 <div id="footer" class="noprint">
-	<p>Copyright &copy; 2013 Data Constellation | <a href="/">Home</a> | <a href="/consulting/">Consulting Services</a> | <a href="/training/">Information Architecture</a> | <a href="/ActiveFacts/">Current and Past Projects</a> | <a href="/about/">About Us</a> | <a href="/contact.html">Contact Us</a></p>
+	<p>Copyright &copy; 2015 Infinuendo</p>
 </div>
 </body>
 </html>
-<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-2825576-2']);
-  _gaq.push(['_trackPageview']);
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-</script>
 
