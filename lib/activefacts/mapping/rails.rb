@@ -33,47 +33,51 @@ module ActiveFacts
       def rails_type
 	type_name, params, constraints = *type()
 	rails_type = case type_name
-	  when /^Auto ?Counter$/
+	  when /^Auto ?Counter$/i
 	    'serial'	    # REVISIT: Need to detect surrogate ID fields and handle them correctly
 
 	  when /^[Ug]uid$/i
 	    'uuid'
 
-	  when /^Unsigned ?Integer$/,
-	    /^Integer$/,
-	    /^Signed ?Integer$/,
-	    /^Unsigned ?Small ?Integer$/,
-	    /^Signed ?Small ?Integer$/,
-	    /^Unsigned ?Tiny ?Integer$/
+	  when /^Unsigned ?Integer$/i,
+	    /^Integer$/i,
+	    /^Signed ?Integer$/i,
+	    /^Unsigned ?Small ?Integer$/i,
+	    /^Signed ?Small ?Integer$/i,
+	    /^Unsigned ?Tiny ?Integer$/i
 	    length = nil
 	    'integer'
 
-	  when /^Decimal$/
+	  when /^Decimal$/i
 	    'decimal'
 
-	  when /^Fixed ?Length ?Text$/, /^Char$/
+	  when /^Float$/i, /^Double$/i, /^Real$/i
+	    'float'
+
+	  when /^Fixed ?Length ?Text$/i, /^Char$/i
 	    'string'
-	  when /^Variable ?Length ?Text$/, /^String$/
+	  when /^Variable ?Length ?Text$/i, /^String$/i
 	    'string'
-	  when /^Large ?Length ?Text$/, /^Text$/
+	  when /^Large ?Length ?Text$/i, /^Text$/i
 	    'text'
 
-	  when /^Date ?And ?Time$/, /^Date ?Time$/
+	  when /^Date ?And ?Time$/i, /^Date ?Time$/i
 	    'datetime'
-	  when /^Date$/
+	  when /^Date$/i
 	    'datetime'
-	  when /^Time$/
+	  when /^Time$/i
 	    'time'
-	  when /^Auto ?Time ?Stamp$/
+	  when /^Auto ?Time ?Stamp$/i
 	    'timestamp'
 
-	  when /^Money$/
+	  when /^Money$/i
 	    'decimal'
-	  when /^Picture ?Raw ?Data$/, /^Image$/, /^Variable ?Length ?Raw ?Data$/, /^Blob$/
+	  when /^Picture ?Raw ?Data$/i, /^Image$/i, /^Variable ?Length ?Raw ?Data$/i, /^Blob$/i
 	    'binary'
-	  when /^BIT$/
+	  when /^BIT$/i, /^Boolean$/i
 	    'boolean'
-	  else type # raise "ActiveRecord type unknown for standard type #{type}"
+	  else
+	    type_name # raise "ActiveRecord type unknown for standard type #{type}"
 	  end
 	[rails_type, params[:length]]
       end

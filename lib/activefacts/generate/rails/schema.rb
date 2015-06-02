@@ -66,36 +66,36 @@ module ActiveFacts
 
 	def generate_column table, pk, column
 	  name = column.rails_name
-	  type, params, constraints = column.type
+	  type, params, constraints = *column.type
 	  length = params[:length]
 	  length &&= length.to_i
 	  scale = params[:scale]
 	  scale &&= scale.to_i
-	  type, length = *column.rails_type
-
-	  length_name = type == 'decimal' ? 'precision' : 'limit'
+	  rails_type, length = *column.rails_type
+ 
+	  length_name = rails_type == 'decimal' ? 'precision' : 'limit'
 	  length_option = length ? ", :#{length_name} => #{length}" : ''
 	  scale_option = scale ? ", :scale => #{scale}" : ''
 
 	  comment = column.comment
 	  null_option = ", :null => #{!column.is_mandatory}"
 	  if pk.size == 1 && pk[0] == column
-	    case type
+	    case rails_type
 	    when 'serial'
-	      type = "primary_key"
+	      rails_type = "primary_key"
 	    when 'uuid'
-	      type = "uuid, :default => 'gen_random_uuid()', :primary_key => true"
+	      rails_type = "uuid, :default => 'gen_random_uuid()', :primary_key => true"
 	    end
 	  else
-	    case type
+	    case rails_type
 	    when 'serial'
-	      type = 'integer'	    # An integer foreign key
+	      rails_type = 'integer'	    # An integer foreign key
 	    end
 	  end
 
 	  (@include_comments ? ["    \# #{comment}"] : []) +
 	  [
-	    %Q{    t.column "#{name}", :#{type}#{length_option}#{scale_option}#{null_option}}
+	    %Q{    t.column "#{name}", :#{rails_type}#{length_option}#{scale_option}#{null_option}}
 	  ]
 	end
 
@@ -140,12 +140,17 @@ module ActiveFacts
 	    table.foreign_keys.each do |fk|
 	      from_columns = fk.from_columns.map{|column| column.rails_name}
 	      to_columns = fk.to_columns.map{|column| column.rails_name}
+
 	      foreign_keys.concat(
 		if (from_columns.length == 1)
 		  [
-		    "    add_foreign_key :#{fk.from.rails_name}, :#{fk.to.rails_name}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :on_delete => :cascade",
-		    "    add_index :#{fk.from.rails_name}, [:#{from_columns[0]}], :unique => false"
-		  ]
+		    "    add_foreign_key :#{fk.from.rails_name}, :#{fk.to.rails_name}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :on_delete => :cascade"
+		  ]+
+		  Array(
+		    # Index it non-uniquely only if it's not unique already:
+		    fk.jump_reference.to_role.unique ? nil :
+		      "    add_index :#{fk.from.rails_name}, [:#{from_columns[0]}], :unique => false"
+		  )
 		else
 		  # This probably isn't going to work without Dr Nic's CPK gem:
 		  [
