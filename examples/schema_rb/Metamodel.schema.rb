@@ -1,9 +1,9 @@
 #
-# schema.rb auto-generated using ActiveFacts for Metamodel on 2015-06-01
+# schema.rb auto-generated using ActiveFacts for Metamodel on 2015-06-02
 #
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Schema.define(:version => 20150601193622) do
+ActiveRecord::Schema.define(:version => 20150602173456) do
   enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   create_table "aggregations", :id => false, :force => true do |t|
     t.column "aggregation_id", :primary_key, :null => false
@@ -338,7 +338,6 @@ ActiveRecord::Schema.define(:version => 20150601193622) do
     add_foreign_key :concepts, :concepts, :column => :context_note_relevant_concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :concepts, [:context_note_relevant_concept_guid], :unique => false
     add_foreign_key :concepts, :concepts, :column => :instance_fact_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :concepts, [:instance_fact_concept_guid], :unique => false
     add_foreign_key :concepts, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
     add_index :concepts, [:fact_type_concept_guid], :unique => false
     add_foreign_key :concepts, :object_types, :column => :instance_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
@@ -352,7 +351,6 @@ ActiveRecord::Schema.define(:version => 20150601193622) do
     add_foreign_key :concepts, :roles, :column => :ring_constraint_role_id, :primary_key => :role_id, :on_delete => :cascade
     add_index :concepts, [:ring_constraint_role_id], :unique => false
     add_foreign_key :concepts, :roles, :column => :value_constraint_role_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :concepts, [:value_constraint_role_id], :unique => false
     add_foreign_key :concepts, :role_sequences, :column => :presence_constraint_role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :concepts, [:presence_constraint_role_sequence_guid], :unique => false
     add_foreign_key :concepts, :role_sequences, :column => :subset_constraint_subset_role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
@@ -380,17 +378,13 @@ ActiveRecord::Schema.define(:version => 20150601193622) do
     add_foreign_key :facet_restrictions, :values, :column => :value_id, :primary_key => :value_id, :on_delete => :cascade
     add_index :facet_restrictions, [:value_id], :unique => false
     add_foreign_key :fact_types, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :fact_types, [:concept_guid], :unique => false
     add_foreign_key :fact_types, :object_types, :column => :entity_type_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :fact_types, [:entity_type_object_type_id], :unique => false
     add_foreign_key :fact_types, :object_types, :column => :type_inheritance_subtype_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
     add_index :fact_types, [:type_inheritance_subtype_object_type_id], :unique => false
     add_foreign_key :fact_types, :object_types, :column => :type_inheritance_supertype_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
     add_index :fact_types, [:type_inheritance_supertype_object_type_id], :unique => false
     add_foreign_key :object_types, :concepts, :column => :value_type_value_constraint_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :object_types, [:value_type_value_constraint_concept_guid], :unique => false
     add_foreign_key :object_types, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :object_types, [:concept_guid], :unique => false
     add_foreign_key :object_types, :concepts, :column => :value_type_unit_concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :object_types, [:value_type_unit_concept_guid], :unique => false
     add_foreign_key :object_types, :object_types, :column => :value_type_supertype_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
@@ -402,27 +396,22 @@ ActiveRecord::Schema.define(:version => 20150601193622) do
     add_foreign_key :plays, :variables, :column => :variable_id, :primary_key => :variable_id, :on_delete => :cascade
     add_index :plays, [:variable_id], :unique => false
     add_foreign_key :populations, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :populations, [:concept_guid], :unique => false
     add_foreign_key :readings, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
     add_index :readings, [:fact_type_concept_guid], :unique => false
     add_foreign_key :readings, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :readings, [:role_sequence_guid], :unique => false
     add_foreign_key :roles, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :roles, [:concept_guid], :unique => false
     add_foreign_key :roles, :fact_types, :column => :role_proxy_link_fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
-    add_index :roles, [:role_proxy_link_fact_type_concept_guid], :unique => false
     add_foreign_key :roles, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
     add_index :roles, [:fact_type_concept_guid], :unique => false
     add_foreign_key :roles, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
     add_index :roles, [:object_type_id], :unique => false
     add_foreign_key :roles, :roles, :column => :role_proxy_role_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :roles, [:role_proxy_role_id], :unique => false
     add_foreign_key :role_displays, :roles, :column => :role_id, :primary_key => :role_id, :on_delete => :cascade
     add_index :role_displays, [:role_id], :unique => false
     add_foreign_key :role_displays, :shapes, :column => :fact_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :role_displays, [:fact_type_shape_guid], :unique => false
     add_foreign_key :role_refs, :plays, :column => :play_id, :primary_key => :play_id, :on_delete => :cascade
-    add_index :role_refs, [:play_id], :unique => false
     add_foreign_key :role_refs, :roles, :column => :role_id, :primary_key => :role_id, :on_delete => :cascade
     add_index :role_refs, [:role_id], :unique => false
     add_foreign_key :role_refs, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
@@ -452,17 +441,13 @@ ActiveRecord::Schema.define(:version => 20150601193622) do
     add_foreign_key :shapes, :readings, :column => :reading_shape_reading_id, :primary_key => :reading_id, :on_delete => :cascade
     add_index :shapes, [:reading_shape_reading_id], :unique => false
     add_foreign_key :shapes, :role_displays, :column => :value_constraint_shape_role_display_id, :primary_key => :role_display_id, :on_delete => :cascade
-    add_index :shapes, [:value_constraint_shape_role_display_id], :unique => false
     add_foreign_key :shapes, :role_displays, :column => :role_name_shape_role_display_id, :primary_key => :role_display_id, :on_delete => :cascade
-    add_index :shapes, [:role_name_shape_role_display_id], :unique => false
     add_foreign_key :shapes, :shapes, :column => :ring_constraint_shape_fact_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :shapes, [:ring_constraint_shape_fact_type_shape_guid], :unique => false
     add_foreign_key :shapes, :shapes, :column => :value_constraint_shape_object_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :shapes, [:value_constraint_shape_object_type_shape_guid], :unique => false
     add_foreign_key :shapes, :shapes, :column => :objectified_fact_type_name_shape_fact_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :shapes, [:objectified_fact_type_name_shape_fact_type_shape_guid], :unique => false
     add_foreign_key :shapes, :shapes, :column => :reading_shape_fact_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :shapes, [:reading_shape_fact_type_shape_guid], :unique => false
     add_foreign_key :steps, :alternative_sets, :column => :alternative_set_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :steps, [:alternative_set_guid], :unique => false
     add_foreign_key :steps, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
@@ -480,7 +465,6 @@ ActiveRecord::Schema.define(:version => 20150601193622) do
     add_foreign_key :variables, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
     add_index :variables, [:object_type_id], :unique => false
     add_foreign_key :variables, :roles, :column => :projection_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :variables, [:projection_id], :unique => false
     add_foreign_key :variables, :values, :column => :value_id, :primary_key => :value_id, :on_delete => :cascade
     add_index :variables, [:value_id], :unique => false
   end

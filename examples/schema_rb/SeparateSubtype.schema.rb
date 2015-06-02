@@ -1,9 +1,9 @@
 #
-# schema.rb auto-generated using ActiveFacts for SeparateSubtype on 2015-06-01
+# schema.rb auto-generated using ActiveFacts for SeparateSubtype on 2015-06-02
 #
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Schema.define(:version => 20150601193623) do
+ActiveRecord::Schema.define(:version => 20150602173457) do
   enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   create_table "claims", :id => false, :force => true do |t|
     t.column "claim_id", :primary_key, :null => false
@@ -29,7 +29,6 @@ ActiveRecord::Schema.define(:version => 20150601193623) do
     add_foreign_key :claims, :people, :column => :incident_witness_id, :primary_key => :person_id, :on_delete => :cascade
     add_index :claims, [:incident_witness_id], :unique => false
     add_foreign_key :vehicle_incidents, :claims, :column => :incident_claim_id, :primary_key => :claim_id, :on_delete => :cascade
-    add_index :vehicle_incidents, [:incident_claim_id], :unique => false
     add_foreign_key :vehicle_incidents, :people, :column => :driver_id, :primary_key => :person_id, :on_delete => :cascade
     add_index :vehicle_incidents, [:driver_id], :unique => false
   end
