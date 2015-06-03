@@ -1677,10 +1677,9 @@ Expressions and lexical rules follow standard C, UNIX and HTTP conventions.
 		<script>
 		Diagram(
 		  Choice(0,
-			 Sequence("'", 'CHAR', "'"),
+			 Sequence("'", 'CHAR', "'")
 	 	     NonTerminal('decimal'),
 			 NonTerminal('real'),
-             NonTerminal('faction'),
              NonTerminal('octalnumber'),
              NonTerminal('hex number')
 		)).addTo();
