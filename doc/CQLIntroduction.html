@@ -7,13 +7,14 @@
 <meta name="keywords" content="infinuendo, data constellation,information management,semantic modelling,activefacts" />
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
 <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="../css/style.css" media="screen" type="text/css" />
 <link rel="stylesheet" href="../css/screen.css" media="screen" type="text/css" />
 <!--[if lte IE 6]>
   <link rel="stylesheet" href="/css/screen.ie6.css" media="screen" type="text/css" />
 <![endif]-->
 <link rel="stylesheet" href="../css/print.css" media="print" type="text/css" />
 <link rel="stylesheet" href="../css/railroad-diagrams.css">
-<link rel="stylesheet" href="local.css" media="screen" type="text/css" />
+<link rel="stylesheet" href="../css/local.css" media="screen" type="text/css" />
 </head>
 <body>
 
@@ -56,30 +57,42 @@ described here, CQL uses English language keywords and expressions,
 though variants of CQL are being defined that substitute keywords and
 expressions from other languages. Some of these keywords are disallowed
 as open vocabulary, where they would create unresolvable ambiguities.
-This includes all the logical operators, such as <em>and, or, maybe,
-not, none, no, only if</em>, etc. Other keywords such as <em>is,
-identified, kind, of, as, at</em>, etc, are allowed to be used anywhere
+This includes all the logical operators, such as <tt>and</tt>, <tt>or</tt>, <tt>maybe</tt>,
+<tt>not</tt>, <tt>none</tt>, <tt>no</tt>, <tt>only if</tt>, etc. Other keywords such as <tt>is</tt>,
+<tt>identified</tt>, <tt>kind</tt>, <tt>of</tt>, <tt>as</tt>, <tt>at</tt>, etc, are allowed to be used anywhere
 open vocabulary is allowed, and their special meaning applies only in
 the specific places noted.</p>
 
-<p>CQL is <em>case sensitive</em>. <em>"Person"</em> is not the same
-thing as <em>"person"</em>. It's conventional, though not required, to
+<p>CQL is <em>case sensitive</em>. <tt>Person</tt> is not the same
+thing as <tt>person</tt>. It's conventional, though not required, to
 use a capital letter for all object type names.
 White space and comments as used in C and C++ are allowed:
-<b>/*&nbsp;comment<br>may&nbsp;span&nbsp;lines&nbsp;*/</b> and
-<b>//&nbsp;introduces&nbsp;a&nbsp;comment&nbsp;to&nbsp;end&nbsp;of&nbsp;the&nbsp;current&nbsp;line.</b></p>
+<tt>/*&nbsp;comment<br>may&nbsp;span&nbsp;lines&nbsp;*/</tt> and
+<tt>//&nbsp;introduces&nbsp;a&nbsp;comment&nbsp;to&nbsp;end&nbsp;of&nbsp;the&nbsp;current&nbsp;line.</tt>
+</p>
 
-<h2>CQL Definitions</h2>
+<p>
+Parsing a CQL statement consists of identifying recognised expressions and
+terms (with any applicable adjectives) while ignoring the residual predicate text.
+The combination of the object types (as designated by terms) and the predicate
+text is used to designate fact types.
+</p>
+
+<p>
+At a lexical level, CQL supports the full range of primitive data types commonly found in modern programming languages including BOOLEAN, STRING, DECIMAL, REAL, EXPONENTIAL.  CQL suports expressions on these primitive data types.  Full details of the lexical and expression rules are contained in the Lexical Rules section below.  
+</p>
+
+<h2>CQL Model</h2>
 
 <p>A fact-based model (known in CQL as a <b>vocabulary</b>) comprises definitions of the following kinds:</p>
 
 <ul type="disc">
 
-<li><b>Object Types</b> designated by name, including <b>entity types</b>
-and <b>value types</b>.
+<li><b>Object Types</b> are designated by name. Objects types include <b>value types</b>, <b>entity types</b>
+and <b>named fact types</b>.
 </li>
 
-<li><b>Fact Types</b> each designated by one or more <b>readings</b>.
+<li><b>Fact Types</b> are designated by one or more <b>readings</b>.
 Fact types declare a relationship between object types,
 or a boolean property of a single object type.
 A fact type may be designated by a name (objectified),
@@ -87,12 +100,12 @@ which allows its use as an object type in other fact types.
 A fact type may be derived from a query, analogous to an SQL view.
 </li>
 
+<li><b>Constraints</b> which restrict the allowed object instances
+and facts within a valid <b>population</b>.</li>
+
 <li><b>Instances</b> of object types and fact types as examples
 or as reference data.
 </li>
-
-<li><b>Constraints</b> which restrict the allowed object instances
-and facts within a valid <b>population</b>.</li>
 
 <li><b>Units</b> used to automate value conversion.</li>
 
@@ -126,11 +139,11 @@ and may import elements from one or more other vocabularies.</p>
 	      Sequence("'vocabulary'", 'ID'), 
 	      NonTerminal('import_def'),
 	      NonTerminal('object_type'),
+		  NonTerminal('fact_type'),
 	      NonTerminal('constraint'),
 	      NonTerminal('unit_def')
 	  )).addTo();
 	  </script>
-	  <img src="../images/syntax/definition.png">
   </dd>
 </dl>
 
@@ -155,14 +168,14 @@ translations specific to this vocabulary.</p>
 	      )
 	  )).addTo();
 	  </script>
-	  <br>
-	  <img src="../images/syntax/import_def.png" class="hangleft">
   </dd>
 </dl>
 
+<h2>Object Types</h2>
+
 <p>
 An object type represents a type of thing that can be perceived or conceived.
-Each object type has at least one name (or <em>term</em>), and the word
+Each object type has at least one name (or <b>term</b>), and the word
 object type as used throughout this document implies the use of one of these
 terms. An object type definition starts with its name, and is one of the
 following kinds.  Names in CQL are case sensitive, and it&rsquo;s
@@ -173,23 +186,17 @@ same words in lower case, where they may occur in fact type readings.
 </p>
 
 <dl>
-  <dt>object type:</dt>
+  <dt>object type:
+  <dd>
   <script>
   Diagram(
     Choice(0,
-      NonTerminal('entity_type'),
      NonTerminal('value_type'),
-     NonTerminal('fact_type')
+     NonTerminal('entity_type'),
+     NonTerminal('named_fact_type')
   )).addTo();
   </script>
-  
-  <dd><img src="../images/syntax/concept.png"></dd>
 </dl>
-
-<p>
-Note that although shown above, a fact type is only an object type if it
-is named (objectified).
-</p>
 
 <h3>Value Types</h3>
 
@@ -209,51 +216,43 @@ these restrictions are discussed below.
 </p>
 
 <dl>
-  <dt>value type:
+  <dt>value_type:
   <dd>
 	  <script>
 	  Diagram(
 	    Sequence(
+		  Optional("'each'"),
 	      'ID',
-	      Choice(0,
-	         "'='",
-	         Sequence(
-	              "'is'", "'written'", "'as'"
-	         )
-	     ),
+	      "'is written as'",
+		  Optional("'any'"),
 	    'ID',
-	    NonTerminal('parameter_list'),
-	    NonTerminal('vt_details')
+	    Optional(NonTerminal('vt_parameters')),
+	    Optional(NonTerminal('value_constaint'))
 	  )).addTo();
 	  </script>
-	  <img src="../images/syntax/value_type.png" class="hangleft"><br>
-  <dt>value type details:
+  <dt>vt_parameters:
   <dd>
 	  <script>
 	  Diagram(
-	    Sequence(
-	      Optional(
-	         Sequence(
-	             "'in'",
-	             NonTerminal('unit')
-	         )
-	      ),
-	     Optional(
-	         NonTerminal('restriction')
-	     )
+		  Optional(
+		    Sequence(
+			   "'('",
+			   NonTerminal('number'),
+			   ZeroOrMore(
+			   	Sequence("','", NonTerminal('number'))
+			   ),
+			   "')'"
+		   )
 	  )).addTo();
 	  </script>
-	  <img src="../images/syntax/vt_details.png"><br>
 </dl>
 
 <p>
 Top-level value types are defined by self-reference, e.g.
 </p>
-<pre><em>
-      Integer is written as Integer;
-
-</em></pre>
-
+<pre>
+Integer is written as Integer;
+</pre>
 <p>
 or implicitly by being used as a supertype for another value type.
 However, top-level types must be known to any underlying mapping
@@ -261,114 +260,141 @@ layer, such as a procedural language or relational database, in
 order to be used with that layer.
 </p>
 
-<p>A unit definition defines a new unit identifier in terms of an
-optional coefficient (real number or integer fraction) multiplied by one
-or more base units, each raised to an integer power. It's common to
-define the singular form of a unit, then also define the plural as
-equivalent.
-</p>
+<p>Continuing the examples from an model from the Insurance industry:</p>
+
+<pre>
+Name is written as String(256);
+Price is written as Decimal(18,2);
+</pre>
+
+Restrictions can be placed on the values taken by value types.
 
 <dl>
-<dt>unit_def:
+<dt>value_constraint:
 <dd>
 	<script>
 	Diagram(
-	  Sequence(
-	     "'unit'",
-	     'ID',
-	     Optional(
+	   Sequence(
+	      "'restricted to'",
+	      "'{'",
+	      NonTerminal('range'),
+	      ZeroOrMore(
 	         Sequence(
-	             "'='",
-	             Choice(0,
-	                'REAL',
-	                Sequence(
-	                     'DECIMAL', "'/'", 'DECIMAL'
-	                ),
-	               Skip()
-	            ),
-	           NonTerminal('unit_derivation')
-	       )
-	    )
-	)).addTo();
-	</script>
-<img src="../images/syntax/unit_def.png" class="hangleft"><br>
-<dt>unit_derivation:
-<dd>
-    <script>
-	Diagram(
-	  Sequence(
-	     OneOrMore(NonTerminal('unit')),
-	     Optional(
-	         Sequence(
-	             "'/'",
-	             OneOrMore(NonTerminal('unit'))
-	       )
-	    )
-	)).addTo()
-	</script>
-<img src="../images/syntax/unit_derivation.png"><br>
-<dt>unit:
-<dd>
-	<script>
-	Diagram(
-	  Sequence(
-	     'ID',
-	     Optional(
-	         Sequence(
-	             "'^'",
-	            Optional("'-'"),
-	            'DIGIT'
+	            "','",
+	            NonTerminal('range')
 	         )
-	     )
-	)).addTo();
+	      ),
+	     "'}'"
+	 )).addTo();
 	</script>
-<img src="../images/syntax/unit.png">
+<dt>range:
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	       NonTerminal('numeric_range'),
+	       NonTerminal('string_range')
+	 )).addTo();
+	</script>
+<dt>numeric_range:
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	       Sequence(
+	            NonTerminal('number'),
+	            Optional(
+	                Sequence(
+	                    "'..'",
+	                    Optional(NonTerminal('number'))
+	                )
+	            )
+	       ),
+	      Sequence(
+	           "'..'",
+	           NonTerminal('number')
+	       )
+	 )).addTo();
+	</script>
+<dt>string_range:
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	       Sequence(
+	            NonTerminal('string'),
+	            Optional(
+	                Sequence(
+	                    "'..'",
+	                    NonTerminal('string')
+	                )
+	            )
+	       ),
+	      Sequence(
+	           "'..'",
+	           NonTerminal('string')
+	       )
+	 )).addTo();
+	</script>
 </dl>
 
-<p>
-An extensive library of unit definitions is provided, and you can define your own.
-</p>
+<p>Note that the ranges in a value restriction may be open ended at
+one end.</p>
+
+<p>Continuing examples from the Insurance industry model:</p>
+
+<pre>
+Claim Sequence is written as Unsigned Integer(32) restricted to {1..999};
+Contact Method is written as Char(1) restricted to {'B', 'H', 'M'};
+</pre>
 
 <h3>Entity Types</h3>
 
 <p>
 Each Entity Type plays roles in at least one fact type, and is identified
 by the combination of one or more such roles. At least one identifying role
-must be mandatory. CQL uses the closed-world assumption for non-mandatory
+is mandatory. CQL uses the closed-world assumption for non-mandatory
 identifying roles, which means that the same identifier (with the same
 role missing) may not occur more than once in a population.
 </p>
 
 <dl>
-  <dt>entity type:
+  <dt>entity_type:
   <dd>
 	  <script>
 	  Diagram(
-	    Choice(0,
-	       Sequence(
-	          'ID',
-	          "'is'",
-	          NonTerminal('identification')
-	       ),
-	      Sequence(
-	           'ID',
-	           "'is'",
-	           NonTerminal('supertypes'),
-	           Optional(
-	                 NonTerminal('identification')
-	           )
-	      )
+		  Sequence(
+			  Optional("'each'"),
+			  "ID",
+			  "'is'",
+        	   Choice(0,
+			       Sequence(
+					   Optional("'independent'"),
+		   	           NonTerminal('identification')
+			       ),
+			      Sequence(
+			           NonTerminal('entity_subtype'),
+			           Optional(
+			                 NonTerminal('identification')
+			           )
+			      )
+			  ),
+			  Optional(
+			  	Sequence(
+					  "'where'",
+					  NonTerminal('reading')
+			  	)
+			  )
+
 	  )).addTo();
 	  </script>
-	  <img src="../images/syntax/entity_type.png"><br>
-  <dt>supertypes:
+  <dt>entity_subtype:
   <dd>
 	  <script>
 	  Diagram(
 	     Sequence(
-	        "'a'",
-	        Choice(0, "'subtype'", "'kind'"),
-	        "'of'",
+	        Choice(0, "'is a subtype of'", "'is a kind of'"),
+			 Optional("'independent'"),
 	        'ID',
 	        ZeroOrMore(
 	           Sequence(
@@ -377,100 +403,115 @@ role missing) may not occur more than once in a population.
 	        )
 	  )).addTo();
 	  </script>
-	  <img src="../images/syntax/supertypes.png" class="hangleft">
   <dt>identification:
   <dd>
 	  <script>
 	  Diagram(
 	     Sequence(
-	        "'identified'",
-	        "'by'",
+	        "'identified by'",
 	        Choice(0,
 	            Sequence(
 	                "'its'",
 	                'ID',
-	                Optional(
-	                    NonTerminal('id_fact_types')
-	                )
+	                NonTerminal('vt_parameters'),
+					Optional(
+						Sequence(
+							NonTerminal('value_constraint'),
+							NonTerminal('enforcement')
+						)
+					)
 	             ),
-	            Sequence(
-	                NonTerminal('role_ref'),
-	                ZeroOrMore(
-	                   Sequence(
-	                        "'and'",
-	                        NonTerminal('role_ref')
-	                   )
-	                ),
-	                NonTerminal('id_fact_types')
-	           )
+	             NonTerminal('role_list')
 	        )
 	   )).addTo();
 	  </script>
-	  <img src="../images/syntax/identification.png" class="hangleft"><br>
-  <dt>id_fact_types:
-  <dd>
-	  <script>
-	  Diagram(
-	     Sequence(
-	        "'where'",
-	        NonTerminal('clause_list')
-	   )).addTo();
-	  </script>
-	  <img src="../images/syntax/id_fact_types.png"><br>
-  <dt>role_ref:
-  <dd>
-	  <script>
-	  Diagram(
-	     Sequence(
-	        Optional(
-	           Sequence(
-	               'ID', "'-'"
-	           )
-	        ),
-	        'ID',
-	        Optional(
-	            Sequence(
-	               Optional("'-'"),
-	               'ID'
-	            )
-	        )
-	   )).addTo();
-	  </script>
-	  <img src="../images/syntax/role_ref.png"><br>
 </dl>
 
 <p>The simplest form of entity identification scheme is by a single
 role value, for which the reference mode shorthand is provided, as in:
 </p>
-<pre><em>
+<pre>
     Thing is identified by its Value;
-
-</em></pre>
+</pre>
 
 <p>
-<em>Value</em> is assumed to be (or created as) a value type.
-A subtype of <em>Value</em> is assumed (or created) called <em>ThingValue</em>.
-The <em>Thing</em> is then associated in an identifying one-to-one
-fact type with <em>ThingValue</em>. The result is equivalent to saying:
+<tt>Value</tt> is assumed to be (or created as) a value type.
+A subtype of <tt>Value</tt> is assumed (or created) called <tt>ThingValue</tt>.
+The <tt>Thing</tt> is then associated in an identifying one-to-one
+fact type with <tt>ThingValue</tt>. The result is equivalent to saying:
 </p>
-<pre><em>
+<pre>
     ThingValue is written as Thing;
     Thing is identified by ThingValue where
 	Thing has one ThingValue,
 	ThingValue is of at most one Thing;
-
-</em></pre>
+</pre>
 
 <p>
 If the default fact type readings (<em>has/is of</em>) aren't appropriate,
 you can provide one or more alternative readings. The required uniqueness
 and mandatory constraints are still added where needed.
 </p>
-<pre><em>
+<pre>
     Thing is identified by its Name where
 	Thing is called ThingName;
+</pre>
 
-</em></pre>
+<p>Continuing the examples from an model from the Insurance industry:</p>
+
+<pre>
+Asset is identified by its ID;
+Hospital is identified by its Name;
+
+Liability is identified by its Code restricted to {'D', 'L', 'R', 'U'};
+</pre>
+
+<h3>Subtypes</h3>
+
+<p>An entity type may be declared to be a subtype (or more informally,
+using the word &ldquo;kind&rdquo;) of one or more other entity types,
+the supertypes.  Any subtype may play any of the roles of its supertypes.
+A subtype may have its own identification scheme, but doesn't need to.
+It will be identified by its relationship with its first supertype.
+</p>
+
+<pre>
+    Apple is a kind of Fruit;
+
+    Employee is a kind of Person identified by its Number;
+</pre>
+
+<pre>
+    ShelfLife is written as Time in days;
+    Perishable has at most one ShelfLife;
+    Fruit has one Price per kg;
+    Apple is a kind of Fruit, Perishable;
+</pre>
+
+<p>In these fact types, each apple must have a price and may record
+a shelf life.</p>
+
+<p>Declaring a subtype creates subtyping fact types, which is useful
+when subtyping relationships must be constrained.</p>
+
+<p>Continuing the examples from an model from the Insurance industry:</p>
+
+<pre>
+Person is a kind of Party;
+Vehicle is a kind of Asset identified by VIN
+</pre>
+
+<h3>Identification</h3>
+
+<p>Explanation TBC</p>
+
+<p>Continuing the examples from an model from the Insurance industry:</p>
+
+<pre>
+State is independent identified by its Code;
+</pre>
+
+<h3>Role References</h3>
 
 <p>
 The full form of identification must be used where a new entity type is
@@ -481,8 +522,49 @@ type involved in the identification. Normally these readings will
 embed the appropriate uniqueness constraints to create each one-to-many
 relationship.  Each fact type reading in an entity type definition must
 involve the entity type and one of the identifying roles, and no other
-roles, as in the folowing example.
+roles.
 </p>
+
+<dl>
+  <dt>role_list:
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+			 Optional("'any'"),
+			 NonTerminal('role_ref'),
+             ZeroOrMore(
+                Sequence(
+                     Choice(0, "'and'", "','"),
+                     NonTerminal('role_ref')
+                )
+             )
+	   )).addTo();
+	  </script>
+  <dt>role_ref:
+  <dd>
+	  <script>
+	  Diagram(
+	  		  Choice(0,
+	  	 	     Sequence(
+	  	 	        ZeroOrMore(
+	  	 	           Sequence(
+	  	 	               'ID', Optional("'-'")
+	  	 	           )
+	  	 	        ),
+	  	 	        'ID',
+	  	 	        ZeroOrMore(
+	  	 	            Sequence(
+	  	 	               Optional("'-'"),
+	  	 	               'ID'
+	  	 	            )
+	  	 	        )
+	  			),
+	  			Sequence('ID', "'('", "'as'", 'ID', "')'"),
+	  			Sequence('ID', "'('", NonTerminal('decimal'), "')'")
+	   )).addTo();
+	  </script>
+</dl>
 
 <p>
 Note that hyphens are used here to indicate the use of adjectives, which
@@ -491,12 +573,11 @@ is only required once within a declaration, and this associates the
 adjective with that role player throughout this declaration.
 </p>
 
-<pre><em>
+<pre>
     Person is identified by given-Name and family-Name where
 	Person is called one given Name, given Name is of Person,
 	Person has one family Name, family Name is of Person;
-
-</em></pre>
+</pre>
 
 <p>Note that the uniqueness constraints for these fact types are
 shown. They could alternatively be provided later, but must be
@@ -510,10 +591,9 @@ type name. Otherwise the pair of (previously unseen) words is treated
 as a simple hyphenated term:
 </p>
 
-<pre><em>
+<pre>
     suitably- trained Person is allowed to drive semi-trailer;
-
-</em></pre>
+</pre>
 
 <p>
 Finally, when the full form of identification is used, but there are fact type
@@ -523,37 +603,7 @@ as the new entity type. This is discussed below, but in this case, the entity ty
 has an identification scheme which is not drawn from the fact type roles.
 </p>
 
-<h3>Subtypes</h3>
-
-<p>An entity type may be declared to be a subtype (or more informally,
-using the word &ldquo;kind&rdquo;) of one or more other entity types,
-the supertypes.  Any subtype may play any of the roles of its supertypes.
-A subtype may have its own identification scheme, but doesn't need to.
-It will be identified by its relationship with its first supertype.
-</p>
-
-<pre><em>
-    Apple is a kind of Fruit;
-
-    Employee is a kind of Person identified by its Number;
-
-</em></pre>
-
-<pre><em>
-    ShelfLife is written as Time in days;
-    Perishable has at most one ShelfLife;
-    Fruit has one Price per kg;
-    Apple is a kind of Fruit, Perishable;
-
-</em></pre>
-
-<p>In these fact types, each apple must have a price and may record
-a shelf life.</p>
-
-<p>Declaring a subtype creates subtyping fact types, which is useful
-when subtyping relationships must be constrained.</p>
-
-<h3>Fact Types</h3>
+<h2>Fact Types</h2>
 
 <p>
 Fact types are declared as one or more fact type readings. Each
@@ -570,78 +620,44 @@ and provides the identification scheme when needed (when the fact
 type is objectified).
 </p>
 
-<p>
-A <em>derived</em> fact type is followed by its derivation conditions,
-introduced by <em>where</em>.
-</p>
-
 <dl>
+  <dt>named_fact_type:
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+			 'ID', "'is where'",
+	       NonTerminal('fact_type')
+	   )).addTo();
+	  </script>
   <dt>fact_type:
   <dd>
 	  <script>
 	  Diagram(
-	     Sequence(
-	        Optional(
-	           Sequence(
-	              'ID', "'is'", "'where'"
-	           )
-	        ),
-	       NonTerminal('clause_list'),
-	       Optional(
-	            NonTerminal('derivation')
-	       )
-	   )).addTo();
+	  	     Sequence(
+	  	           NonTerminal('reading'),
+				  ZeroOrMore(
+				  	Sequence(
+				  		"','",
+						NonTerminal('reading')
+				  	)
+				  )
+	  	   )).addTo();
 	  </script>
-	  <img src="../images/syntax/fact_type.png" class="hangleft">
-  <dt>clause_list:
+  <dt>reading or query_clauses:
   <dd>
 	  <script>
 	  Diagram(
 	     Sequence(
-	       NonTerminal('clause'),
-	       ZeroOrMore(
-	           Sequence(
-	              "','",
-	              NonTerminal('clause')
-	           )
-	       )
+		   NonTerminal('qualified_clauses'),
+		   ZeroOrMore(
+		       Choice(0, "'and'", "'or'"),
+		       NonTerminal('qualified_clauses')
+		   )
 	   )).addTo();
 	  </script>
-	  <img src="../images/syntax/clause_list.png">
-  <dt>clause:
-  <dd>
-	  <script>
-	  Diagram(
-	     Sequence(
-	       Optional(
-	           "'maybe'"
-	       ),
-	       NonTerminal('reading'),
-	       Optional(
-	            NonTerminal('qualifiers')
-	        )
-	   )).addTo();
-	  </script>
-	  <img src="../images/syntax/clause.png">
-  <dt>qualifiers:
-  <dd>
-	  <script>
-	  Diagram(
-	     Sequence(
-	       "'['",
-	       NonTerminal('qualifier'),
-	       ZeroOrMore(
-	            Sequence(
-	               "','",
-	               NonTerminal('qualifier')
-	            )
-	        ),
-	       "']'"
-	   )).addTo();
-	  </script>
-	  <img src="../images/syntax/qualifiers.png" class="hangleft">
-</dl>
-
+</dl>	   
+	   
 <p>Each fact type reading may contain a quantifier expression before the
 last role player, which can assert mandatory, uniqueness or frequency
 constraints over the allowed population of instances of that fact. A
@@ -658,93 +674,223 @@ types. This example shows an un-named and a named (objectified)
 fact type:
 </p>
 
-<pre><em>
+<pre>
     Person was born at one birth-Place;
     Directorship is where Person directs Company;
-
-</em></pre>
+</pre>
 
 <p>
 If an object type plays more than one role in a fact type, the
 separate roles must be distinguished by either adjectives or a
-defined role name. See the resolution rules under Readings for
+defined role name. See the resolution rules under Resolving roles for
 more details.
 </p>
 
+<h3>Certainty and Qualifiers</h3>
+
+<p>Certainty TBC</p>
+
 <p>The qualifiers are encased in square brackets, and are most commonly
 used for ring constraints. See the section on constraints for more
-details. The <em>'maybe'</em> outer-join qualifier is only used in
+details. The <tt>maybe</tt> outer-join qualifier is only used in
 derivation clauses. Derivations are discussed below, under queries.</p>
-
-<dl>
-  <dt>derivation:
+	   
+<dl>	   
+  <dt>qualified_clauses:
+  <dd>
+	  <script>
+	  Diagram(
+	  	     Sequence(
+                 NonTerminal('certainty'),	  		   
+                 NonTerminal('contracted_clauses'),
+                 Optional(NonTerminal('qualifiers'))
+	   	   )).addTo();
+	  </script>
+  <dt>certainty:
+  <dd>
+	  <script>
+	  Diagram(
+ 		   Choice(0,
+                 Skip(),
+                "'definitely'",
+                "'maybe'",
+                "'it is not the case that'"
+            )
+	  ).addTo();
+	  </script>
+  <dt>qualifiers:
   <dd>
 	  <script>
 	  Diagram(
 	     Sequence(
-	        Optional(
+	       "'['",
+	       NonTerminal('qualifier'),
+	       ZeroOrMore(
 	            Sequence(
-	                "'where'",
-	                NonTerminal('condition_list')
+	               "','",
+	               NonTerminal('qualifier')
 	            )
-	       ),
-	       Optional(
-	           NonTerminal('returning')
-	       )
+	        ),
+	       "']'"
 	   )).addTo();
 	  </script>
-	  <img src="../images/syntax/derivation.png" class="hangleft">
+  <dt>qualifier:
+  <dd>
+	  <script>
+	  Diagram(
+  	     Choice(0,
+           "'static'",
+           "'transient'",
+           "'intransitive'",
+           "'strongly intransitive'",
+           "'transitive'",
+           "'acyclic'",
+           "'symmetric'",
+           "'antisymmetric'",
+           "'reflexive'",
+           "'irreflexive'"
+	   	   )).addTo();
+	  </script>
 </dl>
 
-<h3>Readings</h3>
+<pre>
+Product may be substituted by alternate-Product in Season [acyclic, intransitive]
+Topic belongs to at most one parent-Topic [acyclic];
+Girl (as Girlfriend) is going out with at most one Boy (as Boyfriend) [symmetric]
+</pre>
 
-<p>
-Fact type readings are a sequence of roles and linking words:
-</p>
+<h3>Contraction</h3>
 
-<dl>
-<dt>reading:
-<dd>
-	<script>
-	Diagram(
-	   Sequence(
-	      ZeroOrMore(
-	          Choice(0,
-	              'ID',
-	              NonTerminal('fact_role')
-	          )
-	     ),
-	     Optional(
-	         NonTerminal('qualifier')
-	     ),
-	    NonTerminal('fact_role')
-	 )).addTo();
-	</script>
-	<img src="../images/syntax/reading.png" class="hangleft">
-<dt>fact_role:
-<dd>
-	<script>
-	Diagram(
-	   Sequence(
-	      NonTerminal('role_ref'),
-	      Optional(
-	          NonTerminal('role_name_ref')
-	      ),
-	      Optional(
-	            NonTerminal('values')
-	      )
-	 )).addTo();
-	</script>
-	<img src="../images/syntax/fact_role.png" class="hangleft">
-<dt>role_name_def:
-<dd>
-	<script>
-	Diagram(
-	   Sequence(
-	      "'('", "'as'", 'ID', "')'"
-	 )).addTo();
-	</script>
-	<img src="../images/syntax/role_name_def.png">
+<dl>  
+   <dt>contracted_clauses:
+   <dd>
+ 	  <script>
+	   Diagram(
+   	     Choice(0,
+	           NonTerminal('comparison'),
+	           OneOrMore(
+	               Choice(0,
+	                  NonTerminal('contraction'),
+	                  NonTerminal('phrase')
+	               )
+	           )
+	   	   )).addTo();
+	  </script>
+   <dt>contraction:
+   <dd>
+ 	  <script>
+	   Diagram(
+   	     Choice(0,
+               NonTerminal('reading_contraction'),
+               NonTerminal('condition_contraction')
+	   	   )).addTo();
+	  </script>
+   <dt>reading_contraction:
+   <dd>
+ 	  <script>
+	   Diagram(
+   	     Sequence(
+               NonTerminal('role'),
+               Optional(NonTerminal('qualifiers')),
+               Choice(0, "'that'","'who'"),
+               NonTerminal('certainty'),
+               NonTerminal('contracted_clauses')
+	   	   )).addTo();
+	  </script>
+   <dt>condition_contraction:
+   <dd>
+ 	  <script>
+	   Diagram(
+	   	     Sequence(
+	                   NonTerminal('role'),
+	                   Optional(NonTerminal('qualifiers')),
+	                   NonTerminal('certainty'),
+	                   NonTerminal('comparator'),
+	                   NonTerminal('expression')
+	   	   )).addTo();
+	  </script>
+   <dt>comparison:
+   <dd>
+ 	  <script>
+	   Diagram(
+	     Choice(0,
+	   	     Sequence(
+	                   NonTerminal('expression'),
+	                   NonTerminal('certainty'),
+	                   NonTerminal('comparator'),
+	                   NonTerminal('contraction'),
+	                   Optional(NonTerminal('qualifiers'))
+	               ),
+	              Sequence(
+	                  NonTerminal('certainty'),
+	                  NonTerminal('expression'),
+	                  NonTerminal('comparator'),
+	                  NonTerminal('expression')
+	              )
+	   	   )).addTo();
+	  </script>	   
+</dl>
+
+<h3>Roles in Fact Types</h3>
+
+<dl>  
+   <dt>phrase:
+   <dd>
+ 	  <script>
+	   Diagram(
+	      Choice(0,
+	   	      NonTerminal('role'),
+	          NonTerminal('role_ref')
+	   	   )).addTo();
+	  </script>
+   <dt>role:
+   <dd>
+ 	  <script>
+	   Diagram(
+	        Choice(0,
+	            NonTerminal('aggregate'),
+	            NonTerminal('simple_role')
+	   	   )).addTo();
+	  </script>
+   <dt>aggregate:
+   <dd>
+ 	  <script>
+	   Diagram(
+        Sequence(
+            NonTerminal('ID'),
+            "'of'",
+            NonTerminal('role_ref'),
+            "'in'",
+            "'('",
+            NonTerminal('reading'),
+            "')'"
+	   	   )).addTo();
+	  </script>
+   <dt>simple_role:
+   <dd>
+ 	  <script>
+	   Diagram(
+        Sequence(
+            Optional(
+                 Sequence(
+                     NonTerminal('qualifier'),
+                     NonTerminal('enforcement')
+                 )
+            ),
+            NonTerminal('role_ref'),
+            Choice(0,
+                  Sequence(
+                        NonTerminal('literal'),
+                        Optional(NonTerminal('unit'))
+                  ),
+                  Sequence(
+                        NonTerminal('value_constraint'),
+                        NonTerminal('enforcement')
+                   )                  
+             ),
+            Optional(NonTerminal('objectification'))
+	   	   )).addTo();
+	  </script>
 </dl>
 
 <p>
@@ -778,16 +924,16 @@ adjectives in the definition of the invoked fact type. These also
 must be matched in the reading.
 </p>
 
-<h4>Embedded Presence Constraints</h4>
+<h4>Quantifiers</h4>
 
 <p>
 The final role in a reading may be preceeded by a quantifier, which does
 not form a part of the reading. These are normally used to apply a
-uniqueness constraint (<em>at most one</em>), a mandatory constraint
-(<em>at least one</em>) or both (<em>exactly one</em> or just
-<em>one</em>). Other forms allow various other role frequency
-constraints. The <em>quantity</em> here may be a positive integer or the
-word <em>one</em>. Note that some quantifiers are only used in derivations
+uniqueness constraint (<tt>at most one</tt>), a mandatory constraint
+(<tt>at least one</tt>) or both (<tt>exactly one</tt> or just
+<tt>one</tt>). Other forms allow various other role frequency
+constraints. The <tt>quantity</tt> here may be a positive integer or the
+word <tt>one</tt>. Note that some quantifiers are only used in derivations
 or in constraints.
 </p>
 
@@ -801,18 +947,23 @@ or in constraints.
 	      "'that'",
 	      "'one'",
 	      Sequence("'exactly'", NonTerminal('quantity')),
-	      Sequence("'at'", "'least'", NonTerminal('quantity')),
-	      Sequence("'at'", "'most'", NonTerminal('quantity')),
+	      Sequence("'at least'", NonTerminal('quantity')),
+	      Sequence("'at most'", NonTerminal('quantity')),
 	      Sequence(
-	            "'at'", "'least'", NonTerminal('quantity'), "'and'",
-	            "'at'", "'most'", NonTerminal('quantity')
+	            "'at least'", NonTerminal('quantity'), "'and at most'", NonTerminal('quantity')
 	      ),
 	      Sequence(
-	           "'from'", "DECIMAL", "'to'", 'DECIMAL'
+	           "'from'", NonTerminal("decimal"), "'to'", NonTerminal('decimal')
 	      )
 	 )).addTo();
 	</script>
-	<img src="../images/syntax/quantifier.png" class="hangleft">
+<dt>quantity:
+<dd>
+	<script>
+	Diagram(
+		Choice(0, "'one'", NonTerminal('number'))
+	).addTo();
+	</script>
 </dl>
 
 <p>In this way, CQL absorbs many of the uniqueness, mandatory and
@@ -831,10 +982,10 @@ constraint may be expressed in CQL using the <b>maybe</b>
 qualifier, which is also used in outer join derivations.</p>
 
 <pre>
-    <b><em>maybe</em></b><em> Participant entered at least 8 Tips
-</em></pre>
+    maybe Participant entered at least 8 Tips
+</pre>
 
-<h4>Value Restrictions</h4>
+<h3>Value Restrictions</h4>
 
 <p>
 A value restriction may follow a role reference where the role is
@@ -845,88 +996,25 @@ a value or a value restriction may be applied to fact instances
 and in derivations, where it has the obvious effect.
 </p>
 
-<p>In addition to the value restrictions that can apply to value
-types, a role played by a value type may be restricted to specified
-values or value ranges:</p>
+<h3>Objectification</h3>
 
 <dl>
-<dt>restriction:
-<dd>
-	<script>
-	Diagram(
-	   Sequence(
-	      "'restricted'",
-	      "'to'",
-	      "'{'",
-	      NonTerminal('range'),
-	      ZeroOrMore(
-	         Sequence(
-	            "','",
-	            NonTerminal('range')
-	         )
-	      ),
-	     "'}'"
-	 )).addTo();
-	</script>
-	<img src="../images/syntax/restriction.png" class="hangleft">
-<dt>range:
-<dd>
-	<script>
-	Diagram(
-	    Choice(0,
-	       NonTerminal('numeric_range'),
-	       NonTerminal('string_range')
-	 )).addTo();
-	</script>
-	<img src="../images/syntax/range.gif">
-<dt>numeric_range:
-<dd>
-	<script>
-	Diagram(
-	    Choice(0,
-	       Sequence(
-	            NonTerminal('number'),
-	            Optional(
-	                Sequence(
-	                    "'..'",
-	                    Optional(NonTerminal('number'))
-	                )
-	            )
-	       ),
-	      Sequence(
-	           "'..'",
-	           NonTerminal('number')
-	       )
-	 )).addTo();
-	</script>
-	<img src="../images/syntax/numeric_range.png">
-<dt>string_range:
-<dd>
-	<script>
-	Diagram(
-	    Choice(0,
-	       Sequence(
-	            'STRING',
-	            Optional(
-	                Sequence(
-	                    "'..'",
-	                    'STRING'
-	                )
-	            )
-	       ),
-	      Sequence(
-	           "'..'",
-	           'STRING'
-	       )
-	 )).addTo();
-	</script>
-	<img src="../images/syntax/string_range.png">
+   <dt>objectification:
+   <dd>
+ 	  <script>
+	   Diagram(
+        Sequence(
+            "'('", "'in which'", NonTerminal('reading'), "')'"
+	   	   )).addTo();
+	  </script>
 </dl>
 
-<p>Note that the ranges in a value restriction may be open ended at
-one end.</p>
 
-<h3>Constraints</h3>
+<pre>
+Service (in which Waiter served Meal) earned a tip of Amount
+</pre>
+
+<h2>Constraints</h2>
 
 <p>Quantifiers allow the definition of the most common kinds of
 constraints, the mandatory, uniqueness and frequency constraints
@@ -942,130 +1030,206 @@ definition, or with a ring constraint qualifier.</p>
 	<script>
 	Diagram(
 	    Choice(0,
-	       NonTerminal('mandatory_or_exclusive_constraint'),
-	       Sequence(
-	            NonTerminal('reading_list'),
-	            "'only'", "'if'",
-	            NonTerminal('reading_list')
-	       ),
-	      Sequence(
-	           NonTerminal('reading_list'),
-	           "'if'", "'and'", "'only'", "'if'",
-	           NonTerminal('reading_list')
-	       )
+	       NonTerminal('presence_constraint'),
+	       NonTerminal('subset_constraint'),
+	       NonTerminal('set_constraint'),
+	       NonTerminal('equality_constraint')
 	 )).addTo();
 	</script>
-	<img src="../images/syntax/constraint.png" class="hangleft">
-<dt>mandatory_or_exclusive_constraint
-<dd>
-	<script>
-	Diagram(
-	    Choice(0,
-	       Sequence(
-	          Choice(0,
-	             Sequence(
-	                "'for'", "'each'",
-	                NonTerminal('role_list'),
-	                NonTerminal('quantifier'),
-	                "'of'", "'these'", "'holds'", "':'"
-	              ),
-	             Sequence(
-	                 "'each'",
-	                 NonTerminal('role_list'),
-	                 "'occurs'",
-	                NonTerminal('quantifier'),
-	                "'time'", "'in'"
-	             )
-	           ),
-	          NonTerminal('reading_list')
-	       ),
-	      Sequence(
-	           "'either'",
-	           NonTerminal('reading_list'),
-	           "'or'",
-	           NonTerminal('reading_list'),
-	           "'but'", "'not'", "'both'"
-	       )
-	 )).addTo();
-	</script>
-	<img src="../images/syntax/mandatory_or_exclusive_constraint.png" class="hangleft">
-</dl>
 
-<h4>Mandatory (and either-or) constraints</h4>
+</dl>
+	 
+<h3>Presence constraints</h3>
 
 <p>When a single role player must play one and only one (or at
 least one) of a set of roles, we can say:</p>
 
-<pre><b><em>each</em></b><em> Range <b>occurs</b> at least one <b>time in</b>
+<dl>
+<dt>presence_constraint:
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	        Sequence(
+	           "'each'",
+				Optional("'combination'"),
+			   NonTerminal('role_list'),
+	           "'occurs'",
+	           NonTerminal('quantifier'),
+	           Choice(0, "'time'", "'times'"), 
+	           NonTerminal('enforcement'),
+	           "'in'",
+	           NonTerminal('clauses_list')
+	        ),
+	       Sequence(
+	            Optional("'either'"),
+	            NonTerminal('clauses'),
+	            "'or'",
+	            NonTerminal('clauses'),
+	            NonTerminal('enforcement')
+	       )
+	 )).addTo();
+	</script>
+<dt>clauses_list:
+<dd>
+	<script>
+	Diagram(
+		Sequence(
+			NonTerminal('clauses'),
+			ZeroOrMore(
+				"','",
+				NonTerminal('clauses')
+			)
+		)
+	).addTo();
+	</script>
+<dt>clauses:
+<dd>
+	<script>
+	Diagram(
+		Sequence(
+			NonTerminal('contracted_clauses'),
+			ZeroOrMore(
+				"'and'",
+				NonTerminal('contracted_clauses')
+			)
+		)
+	).addTo();
+	</script>
+</dl>
+ 
+For example:
+ 
+<pre><b>each</b> Range <b>occurs</b> at least one <b>time in</b>
 	Range has minimum-Bound,
 	Range has maximum-Bound;
-<b>for each</b> ReceivedItem exactly one<b> of these holds:</b>
-	ReceivedItem is for PurchaseOrderItem,
-	ReceivedItem is for TransferRequest;</em></pre>
-
-<!--p>Where such constraints must be declared over fact types in which
-the same role player occurs in unrelated roles, the role players
-may be separated by the use of the keywords <b>some</b> and <b>
-that</b>. &ldquo;That&rdquo; means that this role player is the
-same one referred to earlier, and &ldquo;some&rdquo; means
-it&rsquo;s not. If that&rsquo;s still not enough, you can introduce
-adjectives and role names to separate the different instances of
-the same object typep-->
-
-<pre>
-<b><em>
-for each</em></b><em> Unit exactly one <b>of these holds</b>:
-	Unit is fundamental,
-	that Unit is derived from some base-Unit;
-</em></pre>
-
-In the case where one of two fact types applies, you can use the more
-natural form:
-
-<pre><em>
-<b>either</b> Unit is fundamental
-	<b>or</b>
-	Unit is derived from some base-Unit
-	<b>but not both</b>;
-</em></pre>
-
-<h4>External Uniqueness Constraints</h4>
+</pre>
 
 <p>For example, supposing that we were to identify Person instances
 by given name and family name (not a good idea in a real system!)
 we need to ensure that the <b>combination</b> given name, family
 name is unique. We can say:</p>
 
-<pre><em><b>each</b> family Name, given Name <b>occurs</b> at most one<b> time in</b>
+<pre>
+<b>each</b> family Name, given Name <b>occurs</b> at most one<b> time in</b>
 	Person is known by given-Name,
-	Person has family-Name;</em></pre>
+	Person has family-Name;
+</pre>
 
-<h4>Subset Constraints</h4>
+<h3>Set Constraints</h3>
+
+<dl>
+<dt>set_constraint
+<dd>
+	<script>
+	Diagram(
+	    Choice(0,
+	        Sequence(
+	           "'for each'",
+	           NonTerminal('role_list'),
+	           NonTerminal('quantifier'),
+	           "'of these holds'",
+	           NonTerminal('enforcement'),
+	           "':'",
+	           NonTerminal('clauses_list')
+	        ),
+	       Sequence(
+	            Optional("'either'"),
+	            NonTerminal('clauses'),
+	            "'or'",
+	            NonTerminal('clauses'),
+	            "'but not both'",
+	            NonTerminal('enforcement')
+	       )
+	 )).addTo();
+	</script>
+
+</dl>
+
+<pre>
+<b>for each</b> ReceivedItem exactly one<b> of these holds:</b>
+	ReceivedItem is for PurchaseOrderItem,
+	ReceivedItem is for TransferRequest;
+</pre>
+
+<pre>
+<b>for each</b> Unit exactly one <b>of these holds</b>:
+	Unit is fundamental,
+	that Unit is derived from some base-Unit;
+</pre>
+
+In the case where one of two fact types applies, you can use the more
+natural form:
+
+<pre>
+<b>either</b> Unit is fundamental
+<b>or</b> Unit is derived from some base-Unit
+<b>but not both</b>;
+</pre>
+
+<h3>Subset Constraints</h3>
 
 <p>When one role may be played only if another is, you can use a
 subset constraint:</p>
 
-<pre><em>Address has third-StreetLine
+<dl>
+<dt>subset_constraint
+<dd>
+	<script>
+Diagram(
+    Sequence(
+        NonTerminal('clauses'),
+                'only if', NonTerminal('clauses'),
+       NonTerminal('enforcement')
+ )).addTo();
+ </script>
+</dl>
+ 
+ For example:
+ 
+<pre>
+	Address has third-StreetLine
 	<b>only if</b>
-	Address has second-StreetLine;</em></pre>
+	Address has second-StreetLine;
+</pre>
 
 <p>Note that this example didn&rsquo;t use the first and second
 StreetLine, as we assume that the first StreetLine is a mandatory
 part of the address, so the subset constraint would be
 redundant.</p>
 
-<h4>Equality Constraints</h4>
+<h3>Equality Constraints</h3>
 
 <p>Equality constraints declare that the populations of two or more
 roles (or sequences of roles) are the same. They are expressed using
 &lsquo;if and only if&rsquo;:</p>
 
-<pre><em>
+<dl>
+<dt>equality_constraint
+<dd>
+	<script>
+	Diagram(
+	    Sequence(
+	        NonTerminal('clauses'),
+	        OneOrMore(
+	             Sequence(
+	                'if and only  if', NonTerminal('clauses')
+	             )
+	        ),
+	       NonTerminal('enforcement')
+	 )).addTo();
+	</script>
+</dl>
+
+For example:
+
+<pre>
 Competition is in Series
 	<b>if and only if</b>
-	Competition has series-Number;</em></pre>
+	Competition has series-Number;
+</pre>
 
-<h4>Ring Constraints</h4>
+<h3>Ring Constraints</h3>
 
 <p>When a fact type includes the same object type more than once, or
 includes a supertype and its subtype, there&rsquo;s the possibility
@@ -1086,7 +1250,7 @@ there is only one fact instance possible between A and B).</p>
 <p>This method for defining ring constraints is not fully general,
 and a new syntax is required for covering complex cases</p>
 
-<h4>Join constraints</h4>
+<h3>Join constraints</h3>
 
 <p>Most of the above constraint types may use joins, where more
 than one fact type is joined together with the <b>and</b> keyword.
@@ -1094,13 +1258,15 @@ A full discussion is beyond the scope of this paper, but
 here&rsquo;s a small example of a subset constraint using a
 join:</p>
 
-<pre><em>Diplomat speaks Language;
+<pre>
+Diplomat speaks Language;
 Country uses Language, Language is spoken in Country;
 Diplomat serves in Country;
 
 Diplomat serves in Country
 	<b>only if</b>
-	Country uses Language <b>and</b> Diplomat speaks Language;</em></pre>
+	Country uses Language <b>and</b> Diplomat speaks Language;
+</pre>
 
 <p>This constraint requires that in order to serve in a country, a
 diplomat must speak at least one language used in that country.
@@ -1108,20 +1274,56 @@ Many joins may be <em>contracted</em> using <em>who</em> or <em>that</em>.
 This example contracts like this:
 </p>
 
-<pre><em>
+<pre>
 Diplomat serves in Country
 	<b>only if</b>
-	Diplomat speaks Language <b>that</b> is spoken in Country;</em></pre>
+	Diplomat speaks Language <b>that</b> is spoken in Country;
+</pre>
 
+<h3>Enforcement</h3>
+
+<p>To be completed.</p>
+
+<dl>
+<dt>enforcement:
+<dd>
+	<script>
+	Diagram(
+	     Sequence(
+	         "'('",
+	         "'otherwise'",
+	         NonTerminal('action'),
+	        "')'"
+	   )).addTo();
+	</script>
+</dl>	
+
+<h2>Instances</h2>
+
+<h3>Value Instance</h3>
+
+<p>A value instance is defined by stating the name of the value type followed by
+the lexical representation of the value. An entity having a single identifying role
+may be defined exactly the same way, which also defines the required identifying
+instance (in the third example here, a value). Within a vocabulary, an instance
+is asserted into the sample population, but in other contexts another population
+may be the target (the metamodel supports arbitrary named populations).</p>
+
+<pre>
+    CompanyName 'Microsoft';
+    Year 1999;
+    Company 'Microsoft';
+</pre>
+	
 <h3>Fact Instances</h3>
 
 <p>When a fact reading is invoked with values, a fact instance
 is created. The simplest is where a declaration is just an object type
 name followed by a value:</p>
 
-<pre><em>
+<pre>
     Name &lsquo;Fred&rsquo;;
-</em></pre>
+</pre>
 
 <p>This form is allowed for any value type, or any entity type
 that&rsquo;s identified by a single value type (or an entity
@@ -1129,16 +1331,16 @@ identified by a single entity identified by a single value type,
 etc). In more complex cases, it might be necessary to invoke more
 than one fact type to define the instance:</p>
 
-<pre><em>
+<pre>
     Person is called given name &lsquo;Fred&rsquo;,
 	Person has family Name &lsquo;Bloggs&rsquo;;
-</em></pre>
+</pre>
 
 <p>or</p>
 
-<pre><em>
+<pre>
     given Name &lsquo;Fred&rsquo; is of Person <b>who</b> has family Name &lsquo;Bloggs&rsquo;;
-</em></pre>
+</pre>
 
 <p>The Person instance being defined is a reference to the same
 instance in each fact type reading; there is an implicit join over
@@ -1150,12 +1352,12 @@ An <em>objectification join</em> allows traversal of an objectified
 fact type:
 </p>
 
-<pre><em>
+<pre>
     Directorship <b>(where</b> Person &lsquo;Fred Bloggs&rsquo; directs Company &lsquo;Acme, Inc&rsquo;<b>)</b>
       began on appointment Date &lsquo;2010-04-27&rsquo;;
-</em></pre>
+</pre>
 
-<h3>Fact Derivation (Queries)</h3>
+<h2>Fact Derivation (Queries)</h3>
 
 <p>Fact derivation is a large subject by itself, so we&rsquo;ll
 leave a detailed coverage for a future paper. Here&rsquo;s a short
@@ -1184,15 +1386,17 @@ the word <b>no</b> into it as a quantifier, or <b>not</b> as an
 additional linking word. Here are some examples of fact type
 derivations (the full fact type definition is elided):</p>
 
-<pre><em>
+
+
+<pre>
     Person has family Name,
 	family Name = &lsquo;Bloggs&rsquo;,
 	Person is <b>not</b> called given Name &lsquo;Fred&rsquo;,
 	Person is a kind of Employee,
 	Employee is managed by <b>no</b> Manager<b>;</b>
-</em></pre>
+</pre>
 
-<h4>Result Constellations</h4>
+<h3>Result Constellations</h4>
 
 <p>A fact derivation may include a <b>returning</b> clause.
 Normally, when processing a query, only the object instances that
@@ -1220,6 +1424,329 @@ the defined fact type, it&rsquo;s merely a pragmatic instruction to
 the query engine about which additional instances will be useful to
 the calling program, and in what order.<br clear="all" />
 </p>
+
+
+<dl>
+  <dt>query:
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+			NonTerminal('query_clauses'), 
+	        Optional(
+	            Sequence(
+	                "'where'",
+	                NonTerminal('query_clauses')
+	            )
+	       ),
+	       Optional(
+	           NonTerminal('returning_clause')
+	       )
+	   )).addTo();
+	  </script>
+  <dt>returning_clause:
+  <dd>
+	  <script>
+	  Diagram(
+	     Sequence(
+			"'returning'", 
+	        ZeroOrMore(
+	            Sequence(
+	                "','",
+	                NonTerminal('phrase')
+	            )
+	       )
+	   )).addTo();	  
+	  </script>
+</dl>
+
+<h2>Unit Definitions</h2>
+
+<p>A unit definition defines a new unit identifier in terms of an
+optional coefficient (real number or integer fraction) multiplied by one
+or more base units, each raised to an integer power. It's common to
+define the singular form of a unit, then also define the plural as
+equivalent.
+</p>
+
+Units are defined by declaring conversion formulae involving base units. Both
+singular and plural names may be given. If a base unit is not otherwise defined,
+it is assumed to be fundamental. Formulae are limited to a coeficient and an
+offset (<it>ax</it> + <it>c</it>), where <it>x</it> may be any number of existing units each raised to
+any integer power. Conversion coeficients have a real numerator and an integral
+denominator which defaults to 1. The formula may be written in either direction,
+but the constants must be on the side of the base units. An extensive library
+of standard unit conversions is available. Ephemeral conversions can be defined;
+the conversion factor at a particular time is assumed to be available from some
+source. Approximate conversions can be annotated.
+
+<dl>
+<dt>unit_def:
+<dd>
+    <script>
+	Diagram(
+		  Sequence(
+			 Optional(NonTerminal('coefficient')),
+		     Optional(NonTerminal('units')),
+		     Optional(
+				 Sequence(
+					 "[+-]",
+				 	NonTerminal('number')
+				 )
+				 
+			 ),
+			 "'converts to'",
+			 'ID',
+			 Optional(
+			 	Sequence("'/'", 'ID')
+			 ),
+			 Choice(0,
+				 Skip(),
+			 	 "'approximately'",
+				 "'ephemera'"
+			 )
+		)).addTo();
+	</script>
+<dt>coefficient:
+<dd>
+	<script>
+	Diagram(
+	  Sequence(
+		  NonTerminal('number'),
+		  Optional(
+		  	Sequence("'/'", NonTerminal('number'))
+		  )
+	  )).addTo();
+	  </script>
+<dt>units:
+<dd>
+	<script>
+	Diagram(
+	  Sequence(
+	     NonTerminal('power_unit'),
+		 ZeroOrMore(NonTerminal('power_unit')),
+		 Optional(
+	         Sequence(
+	             "'/'",
+			     NonTerminal('power_unit'),
+				 ZeroOrMore(NonTerminal('power_unit'))
+	         )
+		)
+	)).addTo();
+	</script>
+<dt>power_unit:
+<dd>
+	<script>
+	Diagram(
+		Sequence(
+			'ID',
+			Optional(
+				Sequence(
+					"'^'",
+					Optional("'-'"),
+					'[0-9]' 
+				)	
+		)
+	)).addTo();
+	</script>
+</dl>
+
+<pre>
+25.4 millimeters converts to inch/inches;
+kelvin + 273.15 converts to celsius;
+9/5 celsius + 32 converts to fahrenheit;
+acceleration converts to metres second^-2;
+g converts to 9.8 acceleration approximately;
+0.853 dollarUS converts to dollarAU ephemeral;
+</pre>
+
+The use of units in defining value types and in query literals allows dimensional
+analysis and automatic conversions. This example shows a derived fact
+type ("Pane has Area") and a query that uses units conversion to list large
+panes of glass. Notice that the literal in last line has an associated unit (this line
+also has a contracted join, see below).
+
+<pre>
+Dimension is written as Real in millimeters;
+Width is written as Dimension; Height is written as Dimension;
+Pane has one Width; Pane has one Height;
+Pane has Area where
+Pane has Width, Pane has Height,
+Area = Width * Height;
+Pane has Area > 5 foot^2?
+</pre>
+
+<h2>Expressions and Lexical Rules</h2>
+
+Expressions and lexical rules follow standard C, UNIX and HTTP conventions.
+
+<dl>
+	<dt>expression:
+	<dd>
+		<script>
+		Diagram(
+			Sequence(
+				NonTerminal('sum'),
+				ZeroOrMore(
+					NonTerminal('comparator'),
+					NonTerminal('sum')
+				)
+			)
+		).addTo();
+		</script>
+	<dt>sum:
+	<dd>
+		<script>
+		Diagram(
+			Sequence(
+				NonTerminal('product'),
+				ZeroOrMore(
+					Choice(0, "'+'", "'-'"),
+					NonTerminal('product')
+				)
+			)
+		).addTo();
+		</script>
+	<dt>product:
+	<dd>
+		<script>
+		Diagram(
+			Sequence(
+				NonTerminal('factor'),
+				ZeroOrMore(
+					Choice(0, "'*'", "'/'", "'%'"),
+					NonTerminal('factor')
+				)
+			)
+		).addTo();
+		</script>
+   <dt>factor:
+   <dd>
+	<script>
+	Diagram(
+		Choice(0,
+			Sequence(
+				NonTerminal('literal'),
+				Optional(NonTerminal('unit'))
+			),
+			NonTerminal('role_ref'),
+			Sequence(
+				"'('",
+				NonTerminal('expression'),
+				"')'"
+			)
+		)
+	).addTo();
+	</script>
+   <dt>comparator:
+   <dd>
+ 	  <script>
+	   Diagram(
+            Choice(0,
+	   	       "'<='", "'<>'" , "'<'" , "'='" , "'>='" , "'>'" , '!='
+	   	   )).addTo();
+	  </script>
+	<dt>literal
+	<dd>
+		<script>
+		Diagram(
+			  Choice(0,
+		 	     NonTerminal('boolean'),
+	             NonTerminal('string'),
+	             NonTerminal('number')
+			)).addTo();
+		</script>
+	<dt>boolean
+	<dd>
+		<script>
+		Diagram(
+		    Choice(0,
+		        "'true'", "'false'"
+		 )).addTo();
+		</script>
+	<dt>string
+	<dd>
+		<script>
+		Diagram(
+		    Sequence(
+		        "'", ZeroOrMore('CHAR'), "'"
+		 )).addTo();
+		</script>
+	<dt>number
+	<dd>
+		<script>
+		Diagram(
+		  Choice(0,
+			 Sequence("'", 'CHAR', "'"),
+	 	     NonTerminal('decimal'),
+			 NonTerminal('real'),
+             NonTerminal('faction'),
+             NonTerminal('octalnumber'),
+             NonTerminal('hex number')
+		)).addTo();
+		</script>
+	<dt>decimal
+	<dd>
+		<script>
+		Diagram(
+				  Sequence(
+			 	     Choice(0, Skip(), "'+'", "'-'"),
+		             Choice(0,
+                          Sequence("[1-9]", ZeroOrMore("[0-9]")),
+                          "0"
+                     )
+				)).addTo();
+		</script>
+	<dt>real
+	<dd>
+		<script>
+		Diagram(
+				  Sequence(
+			 	     Choice(0, Skip(), "'+'", "'-'"),
+		                     Choice(0,
+		                          Sequence("[1-9]", ZeroOrMore("[0-9]"), Optional(NonTerminal('fraction'))),
+		                          Sequence("0", NonTerminal('fraction'))
+		                     ),
+		                    Optional('exponent')
+				)).addTo();
+		</script>
+	<dt>fraction
+	<dd>
+		<script>
+		Diagram(
+				  Sequence(
+			 	     "'.'", OneOrMore("[0-9]")
+				)).addTo();
+		</script>
+	<dt>exponent
+	<dd>
+		<script>
+		Diagram(
+				  Sequence(
+			 	     "'('", "[Ee]", Choice(0, Skip(), "'+'", "'-'"), OneOrMore("[0-9]"), "')'"
+				)).addTo();
+		</script>
+	<dt>hexnumber
+	<dd>
+		<script>
+		Diagram(
+				  Sequence(
+			 	     "'0x'", OneOrMore("[0-9A-Fa-f]")
+				)).addTo();
+		</script>
+	<dt>octalnumber
+	<dd>
+		<script>
+		Diagram(
+				  Sequence(
+			 	     "'0'", OneOrMore("[0-7]")
+				)).addTo();
+		</script>
+	<dt>regular_expression
+	<dd>UNIX-style regular expression
+	<dt>url
+	<dd>HTTP-stule URL
+</dl>
 
 <h4>Footnotes</h4>
 <ol>
