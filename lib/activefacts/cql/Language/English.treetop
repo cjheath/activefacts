@@ -131,7 +131,7 @@ module ActiveFacts
 
       # Subset constraint using "A only if B" syntax
       rule a_only_if_b
-	s clauses s only s if s r2:clauses s c:context_note? enforcement ';'
+	s clauses:query_clauses s only s if s r2:query_clauses s c:context_note? enforcement ';'
       end
 
       rule only_if
