@@ -122,12 +122,14 @@ module ActiveFacts
 	  table.foreign_keys.map do |fk|
 	    association_name = fk.rails_from_association_name
 
-	    foreign_key = ""
 	    if association_name != fk.to.rails_singular_name
 	      # A different class_name is implied, emit an explicit one:
 	      class_name = ", :class_name => '#{fk.to.rails_class_name}'"
-	      from_column = fk.from_columns
-	      foreign_key = ", :foreign_key => :#{fk.from_columns[0].rails_name}"
+	    end
+	    foreign_key = ", :foreign_key => :#{fk.from_columns[0].rails_name}"
+	    if foreign_key == fk.to.rails_singular_name+'_id'
+	      # See lib/active_record/reflection.rb, method #derive_foreign_key
+	      foreign_key = ''
 	    end
 
 	    %Q{
