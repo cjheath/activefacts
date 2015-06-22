@@ -1,11 +1,12 @@
 #
-# schema.rb auto-generated using ActiveFacts for Warehousing on 2015-06-01
+# schema.rb auto-generated using ActiveFacts for Warehousing on 2015-06-22
 #
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Schema.define(:version => 20150601193624) do
+ActiveRecord::Schema.define(:version => 20150622153354) do
   enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   create_table "back_order_allocations", :id => false, :force => true do |t|
+    t.column "back_order_allocation_id", :primary_key, :null => false
     t.column "purchase_order_item_id", :integer, :null => false
     t.column "sales_order_item_id", :integer, :null => false
     t.column "quantity", :integer, :limit => 32, :null => false

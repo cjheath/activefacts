@@ -1,9 +1,9 @@
 #
-# schema.rb auto-generated using ActiveFacts for Diplomacy on 2015-06-01
+# schema.rb auto-generated using ActiveFacts for Diplomacy on 2015-06-22
 #
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Schema.define(:version => 20150601193619) do
+ActiveRecord::Schema.define(:version => 20150622153353) do
   enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   create_table "countries", :id => false, :force => true do |t|
     t.column "country_id", :primary_key, :null => false
@@ -43,9 +43,10 @@ ActiveRecord::Schema.define(:version => 20150601193619) do
   add_index "language_uses", ["language_id", "country_id"], :name => :index_language_uses_on_language_id_country_id, :unique => true
 
   create_table "representations", :id => false, :force => true do |t|
-    t.column "represented_country_id", :integer, :null => false
-    t.column "country_id", :integer, :null => false
+    t.column "representation_id", :primary_key, :null => false
     t.column "ambassador_id", :integer, :null => false
+    t.column "country_id", :integer, :null => false
+    t.column "represented_country_id", :integer, :null => false
   end
 
   add_index "representations", ["represented_country_id", "country_id"], :name => :index_representations_on_represented_country_id_country_id, :unique => true
