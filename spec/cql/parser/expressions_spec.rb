@@ -157,7 +157,7 @@ describe "ASTs from Derived Fact Types with expressions" do
   it "should parse a comparison clause containing units" do
     %q{
       254 mm converts to foot/feet;
-      Width is written as Integer mm;
+      Width is written as Integer in mm;
       Window requires toughening where
         Window has Width,
         Window has Height,

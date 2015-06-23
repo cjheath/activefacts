@@ -14,9 +14,13 @@ module ActiveFacts
     class CQL
       # Read the specified file
       def self.readfile(filename)
-        File.open(filename) {|file|
-          read(file, filename)
-        }
+	if File.basename(filename, '.cql') == "-"
+	  read(STDIN, "<standard input>")
+	else
+	  File.open(filename) {|file|
+	    read(file, filename)
+	  }
+	end
       rescue => e
         # Augment the exception message, but preserve the backtrace
         ne = StandardError.new("In #{filename} #{e.message.strip}")

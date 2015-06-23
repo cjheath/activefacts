@@ -10,7 +10,7 @@ require 'helpers/test_parser'
 
 describe "Value Types" do
   ValueTypes = [
-    [ "a is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",
+    [ "a is written as b(1, 2) in inch restricted to { 3 .. 4 } inch ;",
       ['ValueType: a is written as b(1, 2) in [["inch", 1]] ValueConstraint to ([3..4]) in [["inch", 1]];']
     ],
 #    [ "a c  is written as b(1, 2) inch restricted to { 3 .. 4 } inch ;",

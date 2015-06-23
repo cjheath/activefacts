@@ -66,8 +66,7 @@ module ActiveFacts
 
     class ValueType
       def needs_surrogate
-	supertype_names = supertypes_transitive.map(&:name)
-	!(supertype_names.include?('Auto Counter') or supertype_names.include?('Guid') or supertype_names.include?('ID'))
+	!is_auto_assigned
       end
 
       def inject_surrogate
@@ -129,13 +128,19 @@ module ActiveFacts
 
 	  irf.flatten!
 
-	  # Multi-part identifiers are only allowed if each part is a foreign key (i.e. it's a join table) and the object is not the target of a foreign key:
+	  # Multi-part identifiers are only allowed if:
+	  # * each part is a foreign key (i.e. it's a join table),
+	  # * there are no other columns (that might require updating) and
+	  # * the object is not the target of a foreign key:
 	  if irf.size >= 2
 	    if pk_fks.include?(nil)
 	      trace :transform_surrogate, "#{self.name} needs a surrogate because its multi-part key contains a non-table"
 	      return true
 	    elsif references_to.size != 0
 	      trace :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect} but is also an FK target"
+	      return true
+	    elsif (references_from-identifying_refs_from).size > 0
+	      # There are other attributes to worry about
 	      return true
 	    else
 	      trace :transform_surrogate, "#{self.name} is a join table between #{pk_fks.map(&:name).inspect}"

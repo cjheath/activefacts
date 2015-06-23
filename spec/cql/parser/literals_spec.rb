@@ -114,31 +114,31 @@ describe "Valid Numbers, Strings and Ranges" do
     ],
 
     # Value types with units
-    [ "a is written as b inch;",                          # Value type declaration with unit
+    [ "a is written as b in inch;",                          # Value type declaration with unit
       ['ValueType: a is written as b in [["inch", 1]];']
     ],
-    [ "a is written as b() inch ; ",                      # Value type declaration with unit and whitespace
+    [ "a is written as b() in inch ; ",                      # Value type declaration with unit and whitespace
       ['ValueType: a is written as b in [["inch", 1]];']
     ],
-    [ "a is written as b() inch;",                        # Value type declaration with unit
+    [ "a is written as b() in inch;",                        # Value type declaration with unit
       ['ValueType: a is written as b in [["inch", 1]];']
     ],
-    [ "a is written as b inch^2;",                        # Value type declaration with unit and exponent
+    [ "a is written as b in inch^2;",                        # Value type declaration with unit and exponent
       ['ValueType: a is written as b in [["inch", 2]];']
     ],
-    [ "a is written as b() inch^2 ; ",                    # Value type declaration with unit and exponent with maximum whitespace
+    [ "a is written as b() in inch^2 ; ",                    # Value type declaration with unit and exponent with maximum whitespace
       ['ValueType: a is written as b in [["inch", 2]];']
     ],
-    [ "a is written as b second^-1;",                     # Value type declaration with unit and negative exponent
+    [ "a is written as b in second^-1;",                     # Value type declaration with unit and negative exponent
       ['ValueType: a is written as b in [["second", -1]];']
     ],
-    [ "a is written as b inch inch;",                     # Value type declaration with repeated unit
+    [ "a is written as b in inch inch;",                     # Value type declaration with repeated unit
       ['ValueType: a is written as b in [["inch", 1], ["inch", 1]];']
     ],
-    [ "a is written as b inch^2/minute^-1;",              # Value type declaration with unit and divided unit with exponents
+    [ "a is written as b in inch^2/minute^-1;",              # Value type declaration with unit and divided unit with exponents
       ['ValueType: a is written as b in [["inch", 2], ["minute", 1]];']
     ],
-    [ "a is written as b() second^-1/mm^-1 mm^-1;",       # Value type declaration with repeated divided unit
+    [ "a is written as b() in second^-1/mm^-1 mm^-1;",       # Value type declaration with repeated divided unit
       ['ValueType: a is written as b in [["second", -1], ["mm", 1], ["mm", 1]];']
     ],
 
@@ -281,7 +281,7 @@ describe "Valid Numbers, Strings and Ranges" do
     [ "a is written as b() restricted to {1} inches^2/second;",    # constraint with units and exponent
       ['ValueType: a is written as b ValueConstraint to ([1]) in [["inches", 2], ["second", -1]];']
     ],
-    [ "a is written as b() second^-1/mm^-1 mm^-1 restricted to {1} inches^2/second;",    # type with unit and constraint with units and exponent
+    [ "a is written as b() in second^-1/mm^-1 mm^-1 restricted to {1} inches^2/second;",    # type with unit and constraint with units and exponent
       #['a is written as b ValueConstraint to ([1]) in [["inches", 2], ["second", -1]];']
       ["ValueType: a is written as b in [[\"second\", -1], [\"mm\", 1], [\"mm\", 1]] ValueConstraint to ([1]) in [[\"inches\", 2], [\"second\", -1]];"]
     ],

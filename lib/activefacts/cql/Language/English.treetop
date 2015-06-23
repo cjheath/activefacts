@@ -14,6 +14,15 @@ module ActiveFacts
         s 'is' s 'written' S as s
       end
 
+      rule auto_assignment
+	'auto-assigned' S at s time:('assert' / 'commit') !alphanumeric s
+	{
+	  def auto_assigned_at
+	    time.text_value
+	  end
+	}
+      end
+
       # The pattern to introduce an Entity Type
       rule identified_by
         identified s by s
@@ -122,7 +131,7 @@ module ActiveFacts
 
       # Subset constraint using "A only if B" syntax
       rule a_only_if_b
-	s clauses s only s if s r2:clauses s c:context_note? enforcement ';'
+	s clauses:query_clauses s only s if s r2:query_clauses s c:context_note? enforcement ';'
       end
 
       rule only_if

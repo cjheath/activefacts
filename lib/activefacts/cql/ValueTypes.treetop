@@ -16,7 +16,8 @@ module ActiveFacts
 	any? s
         base:(term/implicit_value_type_name) s
         value_type_parameters
-        u:units?
+        u:in_units?
+	a:auto_assignment?
 	c:context_note?
         r:(value_constraint enforcement)?
         m2:mapping_pragmas
@@ -30,12 +31,17 @@ module ActiveFacts
 	    unless r.empty? 
 	      value_constraint = Compiler::ValueConstraint.new(r.value_constraint.ast, r.enforcement.ast)
 	    end
-	    units = u.empty? ? [] : u.value
+	    units = u.empty? ? [] : u.units.value
+	    auto_assigned_at = a.empty? ? nil : a.auto_assigned_at
 	    pragmas = m1.value+m2.value
 	    context_note = !c.empty? ? c.ast : (!c2.empty? ? c2.ast : nil)
-	    Compiler::ValueType.new name, base.value, params, units, value_constraint, pragmas, context_note
+	    Compiler::ValueType.new name, base.value, params, units, value_constraint, pragmas, context_note, auto_assigned_at
 	  end
         }
+      end
+
+      rule in_units
+	in S units
       end
 
       rule implicit_value_type_name
@@ -130,7 +136,7 @@ module ActiveFacts
       end
 
       rule non_unit
-        restricted_to / conversion / approximately / ephemera
+        restricted_to / conversion / approximately / ephemera / auto_assignment
       end
 
       rule unit
