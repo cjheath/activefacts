@@ -143,13 +143,14 @@ module ActiveFacts
 
 	      foreign_keys.concat(
 		if (from_columns.length == 1)
+		  index_name = Persistence.rails_name_trunc('index_'+fk.from.rails_name+'_on_'+from_columns[0])
 		  [
 		    "    add_foreign_key :#{fk.from.rails_name}, :#{fk.to.rails_name}, :column => :#{from_columns[0]}, :primary_key => :#{to_columns[0]}, :on_delete => :cascade"
 		  ]+
 		  Array(
 		    # Index it non-uniquely only if it's not unique already:
 		    fk.jump_reference.to_role.unique ? nil :
-		      "    add_index :#{fk.from.rails_name}, [:#{from_columns[0]}], :unique => false"
+		      "    add_index :#{fk.from.rails_name}, [:#{from_columns[0]}], :unique => false, :name => :#{index_name}"
 		  )
 		else
 		  # This probably isn't going to work without Dr Nic's CPK gem:

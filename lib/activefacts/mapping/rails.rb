@@ -5,6 +5,13 @@ require 'digest/sha1'
 
 module ActiveFacts
   module Persistence
+    def self.rails_name_trunc name
+      if name.length > 63
+	hash = Digest::SHA1.hexdigest name
+	name = name[0, 53] + '__' + hash[0, 8]
+      end
+      name
+    end
 
     def self.rails_plural_name name
       # Crunch spaces and pluralise the first part, all in snake_case
@@ -87,11 +94,7 @@ module ActiveFacts
       def rails_name
 	column_names = columns.map{|c| c.rails_name }
 	index_name = "index_#{on.rails_name+'_on_'+column_names*'_'}"
-	if index_name.length > 63
-	  hash = Digest::SHA1.hexdigest index_name
-	  index_name = index_name[0, 53] + '__' + hash[0, 8]
-	end
-	index_name
+	Persistence.rails_name_trunc index_name
       end
     end
 

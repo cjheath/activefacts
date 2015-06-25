@@ -122,7 +122,7 @@ module ActiveFacts
           if (pc)
             pc.is_preferred_identifier = true
             pc.name = "#{@entity_type.name}PK" unless pc.name
-            trace "Existing PC #{pc.verbalise} is now PK for #{@entity_type.name}"
+            trace :constraint, "Existing PC #{pc.verbalise} is now PK for #{@entity_type.name}"
           else
             # Add a unique constraint over all identifying roles
             pc = @constellation.PresenceConstraint(
@@ -254,7 +254,7 @@ module ActiveFacts
             @constellation.RoleRef(rs2, 0, :role => super_role)
             @constellation.RoleRef(rs2, 1, :role => sub_role)
             # Decide in which order to include is a/is an. Provide both, but in order.
-            n = 'aeiouh'.include?(sub_role.object_type.name.downcase[0]) ? 'n' : ''
+            n = 'aeioh'.include?(sub_role.object_type.name.downcase[0]) ? 'n' : ''
             @constellation.Reading(inheritance_fact, 2, :role_sequence => rs2, :text => "{0} is a#{n} {1}", :is_negative => false)
 
             if is_identifying_supertype

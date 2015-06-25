@@ -131,13 +131,16 @@ module ActiveFacts
             sorted.each{|o|
 		next if o.ordered_dumped	    # Already done
 
+		trace :ordered, "Panicing to dump #{panic.name}" if panic
                 # Can we do this yet?
+		remaining_precursors = Array(@precursors[o])-[o]
                 if (o != panic and                  # We don't *have* to do it (panic mode)
-                    (p = @precursors[o]) and        # There might be...
-                    p.size > 0)                     # precursors - still blocked
+                    remaining_precursors.size > 0)  # precursors - still blocked
+		  trace :ordered, "Can't dump #{o.name} despite panic for #{panic.name}, it still needs #{remaining_precursors.map(&:name)*', '}" if panic
                   skipped_this_pass += 1
                   next
                 end
+		trace :ordered, "Dumping #{o.name} in panic mode, even though it still needs #{remaining_precursors.map(&:name)*', '}" if panic
 
                 entity_type_banner unless done_banner
                 done_banner = true
@@ -162,26 +165,39 @@ module ActiveFacts
 
               # Check that we made progress if there's any to make:
               if count_this_pass == 0 && skipped_this_pass > 0
+=begin
                 if panic        # We were already panicing... what to do now?
                   # This won't happen again unless the above code is changed to decide it can't dump "panic".
+		  bad = sorted.select do |o|
+		      o.is_a?(ActiveFacts::Metamodel::EntityType) &&
+		      !o.ordered_dumped &&
+		      (Array(@precursors[o])-[o]).size > 0 &&
+		      (Array(@followers[o])-[o]).size > 0
+		    end
+
                   raise "Unresolvable cycle of forward references: " +
-                    (bad = sorted.select{|o| EntityType === o && !o.ordered_dumped}).map{|o| o.name }.inspect +
-                    ":\n\t" + bad.map{|o|
-                      o.name +
-                      ": " +
-                      @precursors[o].map{|p| p.name}.uniq.inspect
-                    } * "\n\t" + "\n"
-                else
+                    bad.map { |o| o.name }*', ' +
+                    ":\n\t" +
+		    (
+		      bad.map do |o|
+			o.name +
+			  " depends on " +
+			  (@precursors[o].uniq.map{|p| p.name}.sort*', ')
+		      end
+		    ) * "\n\t" +
+		    "\n"
+=end
+#                else
                   # Find the object that has the most followers and no fwd-ref'd supertypes:
                   # This selection might be better if we allow PI roles to be fwd-ref'd...
                   panic = sorted.
-                    select{|o| o.ordered_dumped }.
+                    select{|o| !o.ordered_dumped }.
                     sort_by{|o|
-                        f = @followers[o] || []; 
+                        f = (@followers[o] || []) - [o];
                         o.supertypes.detect{|s| !s.ordered_dumped } ? 0 : -f.size
                       }[0]
-                  # trace "Panic mode, selected #{panic.name} next"
-                end
+                  trace :ordered, "Panic mode, selected #{panic.name} next"
+#                end
               end
 
               break if skipped_this_pass == 0       # All done.
