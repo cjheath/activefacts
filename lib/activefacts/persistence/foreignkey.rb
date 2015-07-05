@@ -31,12 +31,11 @@ module ActiveFacts
 	"foreign key from #{from.name}(#{from_columns.map{|c| c.name}*', '}) to #{to.name}(#{to_columns.map{|c| c.name}*', '})"
       end
 
-      def verbalised_path
+      def verbalised_path reverse = false
 	# REVISIT: This should be a proper join path verbalisation:
-	references.map do |r|
-	  (r.fact_type.entity_type ? r.fact_type.entity_type.name + ' (in which ' : '') +
-	    r.fact_type.default_reading +
-	    (r.fact_type.entity_type ? ')' : '')
+	refs = reverse ? references.reverse : references
+	refs.map do |r|
+	  r.verbalised_path reverse
 	end * ' and '
       end
 
@@ -125,7 +124,7 @@ module ActiveFacts
       def foreign_keys
 
         # Get the ForeignKey object for each absorbed reference path
-	@foreign_keys ||= 
+	@foreign_keys ||=
 	  begin
 	    fk_ref_paths = all_absorbed_foreign_key_reference_path
 	    fk_ref_paths.map do |fk_ref_path|

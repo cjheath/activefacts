@@ -32,24 +32,24 @@ CREATE TABLE EventType (
 GO
 
 CREATE TABLE Friendship (
-	-- Friendship is confirmed,
+	-- Friendship is confirmed Boolean,
 	IsConfirmed                             bit NULL,
-	-- Friendship (in which User is friendly with other-User) and User has User ID,
+	-- Friendship involves User and User has User ID,
 	OtherUserID                             int NOT NULL,
-	-- Friendship (in which User is friendly with other-User) and User has User ID,
+	-- Friendship involves User and User has User ID,
 	UserID                                  int NOT NULL,
 	PRIMARY KEY(UserID, OtherUserID)
 )
 GO
 
 CREATE TABLE Participation (
-	-- Participation (in which Person played Role in Event according to Source) and Event has Event ID,
+	-- Participation involves Event and Event has Event ID,
 	EventID                                 int NOT NULL,
-	-- Participation (in which Person played Role in Event according to Source) and Person has Person ID,
+	-- Participation involves Person and Person has Person ID,
 	PersonID                                int NOT NULL,
-	-- Participation (in which Person played Role in Event according to Source) and Role has Role ID,
+	-- Participation involves Role and Role has Role ID,
 	RoleID                                  int NOT NULL,
-	-- Participation (in which Person played Role in Event according to Source) and Source has Source ID,
+	-- Participation involves Source and Source has Source ID,
 	SourceID                                int NOT NULL,
 	PRIMARY KEY(PersonID, RoleID, EventID, SourceID),
 	FOREIGN KEY (EventID) REFERENCES Event (EventID)

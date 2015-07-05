@@ -17,9 +17,9 @@ CREATE TABLE Comment (
 	ContentStyle                            varchar(20) NULL,
 	-- Comment consists of text-Content and Content has Text,
 	ContentText                             text NOT NULL,
-	-- Comment is on Paragraph and Paragraph (in which Post includes Ordinal paragraph) involves Ordinal,
+	-- Comment is on Paragraph and Paragraph involves Ordinal,
 	ParagraphOrdinal                        int NOT NULL,
-	-- Comment is on Paragraph and Paragraph (in which Post includes Ordinal paragraph) and Post has Post Id,
+	-- Comment is on Paragraph and Paragraph involves Post and Post has Post Id,
 	ParagraphPostId                         int NOT NULL,
 	PRIMARY KEY(CommentId),
 	FOREIGN KEY (AuthorId) REFERENCES Author (AuthorId)
@@ -31,9 +31,9 @@ CREATE TABLE Paragraph (
 	ContentStyle                            varchar(20) NULL,
 	-- Paragraph contains Content and Content has Text,
 	ContentText                             text NOT NULL,
-	-- Paragraph (in which Post includes Ordinal paragraph) involves Ordinal,
+	-- Paragraph involves Ordinal,
 	Ordinal                                 int NOT NULL,
-	-- Paragraph (in which Post includes Ordinal paragraph) and Post has Post Id,
+	-- Paragraph involves Post and Post has Post Id,
 	PostId                                  int NOT NULL,
 	PRIMARY KEY(PostId, Ordinal)
 )

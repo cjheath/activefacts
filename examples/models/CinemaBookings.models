@@ -5,13 +5,13 @@ module Concernz
     included do
       self.primary_key = 'booking_id'
 
-      # Booking (in which Person booked Session for Number of seats)
-      belongs_to :person
+      # Booking involves Person
+      belongs_to :person, :foreign_key => :person_id
 
-      # Booking (in which Person booked Session for Number of seats)
-      belongs_to :session
+      # Booking involves Session
+      belongs_to :session, :foreign_key => :session_id
 
-      # Seat Allocation (in which Booking has allocated-Seat)
+      # Booking is involved in Seat Allocation
       has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :booking_id, :dependent => :destroy
       has_many :seats, :through => :seat_allocations
 
@@ -28,11 +28,11 @@ module Concernz
     included do
       self.primary_key = 'cinema_id'
 
-      # Seat is in Row and Row is in Cinema
+      # Cinema contains Row and Row contains Seat
       has_many :seats_via_row, :class_name => 'Seat', :foreign_key => :row_cinema_id, :dependent => :destroy
       has_many :row_nrs, :through => :seats_via_row
 
-      # Session (in which Cinema shows Film on DateTime)
+      # Cinema is involved in Session
       has_many :sessions, :class_name => 'Session', :foreign_key => :cinema_id, :dependent => :destroy
     end
   end
@@ -44,7 +44,7 @@ module Concernz
     included do
       self.primary_key = 'film_id'
 
-      # Session (in which Cinema shows Film on DateTime)
+      # Film is involved in Session
       has_many :sessions, :class_name => 'Session', :foreign_key => :film_id, :dependent => :destroy
     end
   end
@@ -56,7 +56,7 @@ module Concernz
     included do
       self.primary_key = 'person_id'
 
-      # Booking (in which Person booked Session for Number of seats)
+      # Person is involved in Booking
       has_many :bookings, :class_name => 'Booking', :foreign_key => :person_id, :dependent => :destroy
 
       validates :login_name, :presence => true
@@ -73,7 +73,7 @@ module Concernz
       # Seat is in Row and Row is in Cinema
       belongs_to :cinema_via_row, :class_name => 'Cinema', :foreign_key => :row_cinema_id
 
-      # Seat Allocation (in which Booking has allocated-Seat)
+      # Seat is involved in Seat Allocation
       has_many :seat_allocations, :class_name => 'SeatAllocation', :foreign_key => :allocated_seat_id, :dependent => :destroy
       has_many :bookings, :through => :seat_allocations
 
@@ -88,10 +88,10 @@ module Concernz
   module SeatAllocation
     extend ActiveSupport::Concern
     included do
-      # Seat Allocation (in which Booking has allocated-Seat)
-      belongs_to :booking
+      # Seat Allocation involves Booking
+      belongs_to :booking, :foreign_key => :booking_id
 
-      # Seat Allocation (in which Booking has allocated-Seat)
+      # Seat Allocation involves Seat
       belongs_to :allocated_seat, :class_name => 'Seat', :foreign_key => :allocated_seat_id
 
       validates :booking_id, :presence => true
@@ -106,13 +106,13 @@ module Concernz
     included do
       self.primary_key = 'session_id'
 
-      # Session (in which Cinema shows Film on DateTime)
-      belongs_to :cinema
+      # Session involves Cinema
+      belongs_to :cinema, :foreign_key => :cinema_id
 
-      # Session (in which Cinema shows Film on DateTime)
-      belongs_to :film
+      # Session involves Film
+      belongs_to :film, :foreign_key => :film_id
 
-      # Booking (in which Person booked Session for Number of seats)
+      # Session is involved in Booking
       has_many :bookings, :class_name => 'Booking', :foreign_key => :session_id, :dependent => :destroy
 
       validates :cinema_id, :presence => true

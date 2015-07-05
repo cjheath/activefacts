@@ -19,9 +19,9 @@ CREATE TABLE Diplomat (
 GO
 
 CREATE TABLE Fluency (
-	-- Fluency (in which Diplomat speaks Language) and Diplomat has DiplomatName,
+	-- Fluency involves Diplomat and Diplomat has DiplomatName,
 	DiplomatName                            varchar NOT NULL,
-	-- Fluency (in which Diplomat speaks Language) and Language has LanguageName,
+	-- Fluency involves Language and Language has LanguageName,
 	LanguageName                            varchar NOT NULL,
 	PRIMARY KEY(DiplomatName, LanguageName),
 	FOREIGN KEY (DiplomatName) REFERENCES Diplomat (DiplomatName)
@@ -36,9 +36,9 @@ CREATE TABLE Language (
 GO
 
 CREATE TABLE LanguageUse (
-	-- LanguageUse (in which Language is spoken in Country) and Country has CountryName,
+	-- LanguageUse involves Country and Country has CountryName,
 	CountryName                             varchar NOT NULL,
-	-- LanguageUse (in which Language is spoken in Country) and Language has LanguageName,
+	-- LanguageUse involves Language and Language has LanguageName,
 	LanguageName                            varchar NOT NULL,
 	PRIMARY KEY(LanguageName, CountryName),
 	FOREIGN KEY (CountryName) REFERENCES Country (CountryName),
@@ -47,11 +47,11 @@ CREATE TABLE LanguageUse (
 GO
 
 CREATE TABLE Representation (
-	-- Representation (in which Ambassador is from Country to Country) and Ambassador is a kind of Diplomat and Diplomat has DiplomatName,
+	-- Representation involves Ambassador and Ambassador is a kind of Diplomat and Diplomat has DiplomatName,
 	AmbassadorName                          varchar NOT NULL,
-	-- Representation (in which Ambassador is from Country to Country) and Country has CountryName,
+	-- Representation involves Country and Country has CountryName,
 	CountryName                             varchar NOT NULL,
-	-- Representation (in which Ambassador is from Country to Country) and Country has CountryName,
+	-- Representation involves Country and Country has CountryName,
 	RepresentedCountryName                  varchar NOT NULL,
 	PRIMARY KEY(RepresentedCountryName, CountryName),
 	FOREIGN KEY (CountryName) REFERENCES Country (CountryName),

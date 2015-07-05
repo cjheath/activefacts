@@ -6,9 +6,9 @@ module Concernz
       self.primary_key = 'event_id'
 
       # Event is held at Venue
-      belongs_to :venue
+      belongs_to :venue, :foreign_key => :venue_id
 
-      # Ticket is for Event
+      # Event issued Ticket
       has_many :tickets, :class_name => 'Ticket', :foreign_key => :event_id, :dependent => :destroy
       has_many :seats, :through => :tickets
 
@@ -24,7 +24,7 @@ module Concernz
       self.primary_key = 'seat_id'
 
       # Seat is at Venue
-      belongs_to :venue
+      belongs_to :venue, :foreign_key => :venue_id
 
       # Ticket is for Seat
       has_many :tickets, :class_name => 'Ticket', :foreign_key => :seat_id, :dependent => :destroy
@@ -43,10 +43,10 @@ module Concernz
     extend ActiveSupport::Concern
     included do
       # Ticket is for Event
-      belongs_to :event
+      belongs_to :event, :foreign_key => :event_id
 
       # Ticket is for Seat
-      belongs_to :seat
+      belongs_to :seat, :foreign_key => :seat_id
 
       validates :event_id, :presence => true
       validates :seat_id, :presence => true
@@ -60,10 +60,10 @@ module Concernz
     included do
       self.primary_key = 'venue_id'
 
-      # Event is held at Venue
+      # Venue hosts Event
       has_many :events, :class_name => 'Event', :foreign_key => :venue_id, :dependent => :destroy
 
-      # Seat is at Venue
+      # Venue has Seat
       has_many :seats, :class_name => 'Seat', :foreign_key => :venue_id, :dependent => :destroy
     end
   end

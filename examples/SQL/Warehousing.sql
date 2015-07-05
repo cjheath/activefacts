@@ -1,13 +1,13 @@
 CREATE TABLE BackOrderAllocation (
-	-- Back Order Allocation (in which Purchase Order Item is allocated to Sales Order Item) and Purchase Order Item is for Product and Product has Product ID,
+	-- Back Order Allocation involves Purchase Order Item and Purchase Order Item is for Product and Product has Product ID,
 	PurchaseOrderItemProductID              int NOT NULL,
-	-- Back Order Allocation (in which Purchase Order Item is allocated to Sales Order Item) and Purchase Order Item is part of Purchase Order and Purchase Order has Purchase Order ID,
+	-- Back Order Allocation involves Purchase Order Item and Purchase Order Item is part of Purchase Order and Purchase Order has Purchase Order ID,
 	PurchaseOrderItemPurchaseOrderID        int NOT NULL,
 	-- Back Order Allocation is for Quantity,
 	Quantity                                int NOT NULL,
-	-- Back Order Allocation (in which Purchase Order Item is allocated to Sales Order Item) and Sales Order Item is for Product and Product has Product ID,
+	-- Back Order Allocation involves Sales Order Item and Sales Order Item is for Product and Product has Product ID,
 	SalesOrderItemProductID                 int NOT NULL,
-	-- Back Order Allocation (in which Purchase Order Item is allocated to Sales Order Item) and Sales Order Item is part of Sales Order and Sales Order has Sales Order ID,
+	-- Back Order Allocation involves Sales Order Item and Sales Order Item is part of Sales Order and Sales Order has Sales Order ID,
 	SalesOrderItemSalesOrderID              int NOT NULL,
 	PRIMARY KEY(PurchaseOrderItemPurchaseOrderID, PurchaseOrderItemProductID, SalesOrderItemSalesOrderID, SalesOrderItemProductID)
 )

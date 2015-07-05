@@ -92,7 +92,7 @@ module ActiveFacts
 
       # If this Reference is from an objectified FactType, there is no *from_role*
       def is_from_objectified_fact
-        @to && @to_role && !@from_role
+        @to && !@from_role && @to_role
       end
 
       # Is this reference an injected role as a result a ValueType being a table?
@@ -211,6 +211,25 @@ module ActiveFacts
         is_self_value ? "#{from.name} has value" : @fact_type.reading_preferably_starting_with_role(@from_role).expand
       end
 
+      def verbalised_path reverse = false
+	objectified = fact_type.entity_type 
+	f =	# Switch to the Link Fact Type if we're traversing an objectification
+	  (to_role && to_role.link_fact_type) ||
+	  (from_role && from_role.link_fact_type) ||
+	  fact_type
+
+	start_role =
+	  if objectified
+	    target = reverse ? to : from
+	    [to_role, from_role, f.all_role[0]].compact.detect{|role| role.object_type == target}
+	  else
+	    reverse ? to_role : from_role
+	  end
+	reading = f.reading_preferably_starting_with_role(start_role)
+	(is_mandatory || is_unary ? '' : 'maybe ') +
+	  reading.expand
+      end
+
       def inspect #:nodoc:
         to_s
       end
@@ -304,7 +323,8 @@ module ActiveFacts
         when :supertype   # A subtype absorbs a reference to its supertype when separate, or all when partitioned
           # REVISIT: Or when partitioned
           raise hell unless role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
-          if role.fact_type.assimilation  # assimilation == 'separate' or assimilation == 'partitioned'
+	  counterpart_role = (role.fact_type.all_role.to_a-[role])[0]
+          if role.fact_type.assimilation or counterpart_role.object_type.is_independent  # assimilation == 'separate' or assimilation == 'partitioned'
             trace :references, "supertype #{name} doesn't absorb a reference to separate subtype #{role.fact_type.subtype.name}"
           else
             r = ActiveFacts::Persistence::Reference.new(self, role)
@@ -314,7 +334,7 @@ module ActiveFacts
           end
 
         when :subtype    # This object is a supertype, which can absorb the subtype unless that's independent
-          if role.fact_type.assimilation
+          if role.fact_type.assimilation or is_independent
             ActiveFacts::Persistence::Reference.new(self, role).tabulate
             # If partitioned, the supertype is absorbed into *each* subtype; a reference to the supertype needs to know which
           else

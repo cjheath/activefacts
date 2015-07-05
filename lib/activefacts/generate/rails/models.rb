@@ -151,7 +151,7 @@ module ActiveFacts
 
 	    ref = fk.jump_reference
 	    [
-	      "\n    \# #{fk.verbalised_path}" +
+	      "\n    \# #{fk.verbalised_path(true)}" +
 	      "\n" +
 		%Q{    #{association_type} :#{association_name}} +
 		%Q{, :class_name => '#{fk.from.rails_class_name}'} +

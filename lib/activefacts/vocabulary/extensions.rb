@@ -166,6 +166,7 @@ module ActiveFacts
       end
 
       def is_mandatory
+	return fact_type.implying_role.is_mandatory if fact_type.is_a?(LinkFactType)
         all_role_ref.detect{|rr|
           rs = rr.role_sequence
           rs.all_role_ref.size == 1 and
@@ -194,6 +195,10 @@ module ActiveFacts
 	      pc.max_frequency == 1 and !pc.enforcement   # Alethic uniqueness constraint
 	    end
 	end
+      end
+
+      def name
+	role_name || object_type.name
       end
 
     end
@@ -862,7 +867,12 @@ module ActiveFacts
 	      self,
 	      implying_role.fact_type.entity_type ? "{0} involves {1}" : implying_role.fact_type.default_reading+" Boolean"
 	    )
-	  ]
+	  ] +
+	  Array(implying_role.fact_type.entity_type ? ImplicitReading.new(self, "{1} is involved in {0}") : nil)
+      end
+
+      def reading_preferably_starting_with_role role, negated = false
+        all_reading[role == implying_role ? 1 : 0]
       end
 
       # This is only used for debugging, from RoleRef#describe
@@ -899,6 +909,9 @@ module ActiveFacts
           def all_role_ref
             @role_refs
           end
+          def all_role_ref_in_order
+	    @role_refs
+	  end
           def describe
             '('+@role_refs.map(&:describe)*', '+')'
           end
@@ -914,7 +927,13 @@ module ActiveFacts
         def ordinal; 0; end
 
         def expand
-          @fact_type.default_reading
+	  text.gsub(/\{([01])\}/) do
+	    if $1 == '0'
+	      fact_type.all_role[0].object_type.name
+	    else
+	      fact_type.implying_role.object_type.name
+	    end
+	  end
         end
       end
     end

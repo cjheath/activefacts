@@ -11,17 +11,15 @@ module Concernz
       # Diplomat serves in Country
       has_many :diplomats, :class_name => 'Diplomat', :foreign_key => :served_country_id, :dependent => :destroy
 
-      # LanguageUse (in which Language is spoken in Country)
+      # Country is involved in LanguageUse
       has_many :language_uses, :class_name => 'LanguageUse', :foreign_key => :country_id, :dependent => :destroy
       has_many :languages, :through => :language_uses
 
-      # Representation (in which Ambassador is from Country to Country)
+      # Country is involved in Representation
       has_many :representations, :class_name => 'Representation', :foreign_key => :country_id, :dependent => :destroy
-      has_many :countries, :through => :representations
 
-      # Representation (in which Ambassador is from Country to Country)
+      # Country is involved in Representation
       has_many :representations, :class_name => 'Representation', :foreign_key => :represented_country_id, :dependent => :destroy
-      has_many :countries, :through => :representations
 
       validates :country_name, :presence => true
     end
@@ -40,14 +38,12 @@ module Concernz
       # Diplomat serves in Country
       belongs_to :served_country, :class_name => 'Country', :foreign_key => :served_country_id
 
-      # Fluency (in which Diplomat speaks Language)
+      # Diplomat is involved in Fluency
       has_many :fluencies, :class_name => 'Fluency', :foreign_key => :diplomat_id, :dependent => :destroy
       has_many :languages, :through => :fluencies
 
-      # Representation (in which Ambassador is from Country to Country) and Ambassador is a kind of Diplomat
+      # Diplomat is an Ambassador and Ambassador is involved in Representation
       has_many :representations_via_ambassador, :class_name => 'Representation', :foreign_key => :ambassador_id, :dependent => :destroy
-      has_many :countries, :through => :representations_via_ambassador
-      has_many :countries, :through => :representations_via_ambassador
 
       validates :diplomat_name, :presence => true
       validates :represented_country_id, :presence => true
@@ -60,11 +56,11 @@ module Concernz
   module Fluency
     extend ActiveSupport::Concern
     included do
-      # Fluency (in which Diplomat speaks Language)
-      belongs_to :diplomat
+      # Fluency involves Diplomat
+      belongs_to :diplomat, :foreign_key => :diplomat_id
 
-      # Fluency (in which Diplomat speaks Language)
-      belongs_to :language
+      # Fluency involves Language
+      belongs_to :language, :foreign_key => :language_id
 
       validates :diplomat_id, :presence => true
       validates :language_id, :presence => true
@@ -78,11 +74,11 @@ module Concernz
     included do
       self.primary_key = 'language_id'
 
-      # Fluency (in which Diplomat speaks Language)
+      # Language is involved in Fluency
       has_many :fluencies, :class_name => 'Fluency', :foreign_key => :language_id, :dependent => :destroy
       has_many :diplomats, :through => :fluencies
 
-      # LanguageUse (in which Language is spoken in Country)
+      # Language is involved in LanguageUse
       has_many :language_uses, :class_name => 'LanguageUse', :foreign_key => :language_id, :dependent => :destroy
       has_many :countries, :through => :language_uses
 
@@ -95,11 +91,11 @@ module Concernz
   module LanguageUse
     extend ActiveSupport::Concern
     included do
-      # LanguageUse (in which Language is spoken in Country)
-      belongs_to :country
+      # LanguageUse involves Country
+      belongs_to :country, :foreign_key => :country_id
 
-      # LanguageUse (in which Language is spoken in Country)
-      belongs_to :language
+      # LanguageUse involves Language
+      belongs_to :language, :foreign_key => :language_id
 
       validates :language_id, :presence => true
       validates :country_id, :presence => true
@@ -111,18 +107,20 @@ module Concernz
   module Representation
     extend ActiveSupport::Concern
     included do
-      # Representation (in which Ambassador is from Country to Country)
-      belongs_to :country
+      self.primary_key = 'representation_id'
 
-      # Representation (in which Ambassador is from Country to Country)
+      # Representation involves Country
+      belongs_to :country, :foreign_key => :country_id
+
+      # Representation involves Country
       belongs_to :represented_country, :class_name => 'Country', :foreign_key => :represented_country_id
 
-      # Representation (in which Ambassador is from Country to Country) and Ambassador is a kind of Diplomat
+      # Representation involves Ambassador and Ambassador is a kind of Diplomat
       belongs_to :diplomat_via_ambassador, :class_name => 'Diplomat', :foreign_key => :ambassador_id
 
-      validates :represented_country_id, :presence => true
-      validates :country_id, :presence => true
       validates :ambassador_id, :presence => true
+      validates :country_id, :presence => true
+      validates :represented_country_id, :presence => true
     end
   end
 end

@@ -9,15 +9,15 @@ CREATE TABLE Club (
 GO
 
 CREATE TABLE Entry (
-	-- Entry (in which Person entered Course of Event) involves Course,
+	-- Entry involves Course,
 	Course                                  varchar(16) NOT NULL CHECK((Course >= 'A' AND Course <= 'E') OR Course = 'PW'),
 	-- Entry has Entry ID,
 	EntryID                                 int IDENTITY NOT NULL,
-	-- Entry (in which Person entered Course of Event) and Event has Event ID,
+	-- Entry involves Event and Event has Event ID,
 	EventID                                 int NOT NULL,
 	-- maybe Entry finished in finish-Placing,
 	FinishPlacing                           int NULL,
-	-- Entry (in which Person entered Course of Event) and Person has Person ID,
+	-- Entry involves Person and Person has Person ID,
 	PersonID                                int NOT NULL,
 	-- maybe Entry received Score,
 	Score                                   int NULL,
@@ -66,9 +66,9 @@ CREATE UNIQUE CLUSTERED INDEX IX_EventBySeriesIDNumber ON dbo.Event_SeriesIDNumb
 GO
 
 CREATE TABLE EventControl (
-	-- Event Control (in which Event includes Control Number) involves Control Number,
+	-- Event Control involves Control Number,
 	ControlNumber                           int NOT NULL CHECK((ControlNumber >= 1 AND ControlNumber <= 1000)),
-	-- Event Control (in which Event includes Control Number) and Event has Event ID,
+	-- Event Control involves Event and Event has Event ID,
 	EventID                                 int NOT NULL,
 	-- maybe Event Control has Point Value,
 	PointValue                              int NULL,
@@ -78,11 +78,11 @@ CREATE TABLE EventControl (
 GO
 
 CREATE TABLE EventScoringMethod (
-	-- Event Scoring Method (in which Scoring Method is used for Course of Event) involves Course,
+	-- Event Scoring Method involves Course,
 	Course                                  varchar(16) NOT NULL CHECK((Course >= 'A' AND Course <= 'E') OR Course = 'PW'),
-	-- Event Scoring Method (in which Scoring Method is used for Course of Event) and Event has Event ID,
+	-- Event Scoring Method involves Event and Event has Event ID,
 	EventID                                 int NOT NULL,
-	-- Event Scoring Method (in which Scoring Method is used for Course of Event) involves Scoring Method,
+	-- Event Scoring Method involves Scoring Method,
 	ScoringMethod                           varchar(32) NOT NULL CHECK(ScoringMethod = 'Scatter' OR ScoringMethod = 'Score' OR ScoringMethod = 'Special'),
 	PRIMARY KEY(Course, EventID),
 	FOREIGN KEY (EventID) REFERENCES Event (EventID)
@@ -133,11 +133,11 @@ CREATE TABLE Punch (
 GO
 
 CREATE TABLE PunchPlacement (
-	-- Punch Placement (in which Punch is placed at Event Control) and Event Control (in which Event includes Control Number) and Event has Event ID,
+	-- Punch Placement involves Event Control and Event Control involves Event and Event has Event ID,
 	EventControlEventID                     int NOT NULL,
-	-- Punch Placement (in which Punch is placed at Event Control) and Event Control (in which Event includes Control Number) involves Control Number,
+	-- Punch Placement involves Event Control and Event Control involves Control Number,
 	EventControlNumber                      int NOT NULL,
-	-- Punch Placement (in which Punch is placed at Event Control) and Punch has Punch ID,
+	-- Punch Placement involves Punch and Punch has Punch ID,
 	PunchID                                 int NOT NULL,
 	PRIMARY KEY(PunchID, EventControlEventID, EventControlNumber),
 	FOREIGN KEY (EventControlEventID, EventControlNumber) REFERENCES EventControl (EventID, ControlNumber),
@@ -156,11 +156,11 @@ CREATE TABLE Series (
 GO
 
 CREATE TABLE Visit (
-	-- Visit (in which Punch was visited by Entry at Time) and Entry has Entry ID,
+	-- Visit involves Entry and Entry has Entry ID,
 	EntryID                                 int NOT NULL,
-	-- Visit (in which Punch was visited by Entry at Time) and Punch has Punch ID,
+	-- Visit involves Punch and Punch has Punch ID,
 	PunchID                                 int NOT NULL,
-	-- Visit (in which Punch was visited by Entry at Time) involves Time,
+	-- Visit involves Time,
 	Time                                    datetime NOT NULL,
 	PRIMARY KEY(PunchID, EntryID, Time),
 	FOREIGN KEY (EntryID) REFERENCES Entry (EntryID),
