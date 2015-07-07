@@ -66,6 +66,50 @@ module ActiveFacts
       end
     end
 
+    class Concept
+      def describe
+	'Concept(' +
+	case
+	when object_type; object_type.name
+	when fact_type; fact_type.describe
+	when role; "Role in #{role.fact_type.describe(role)}"
+	when constraint; constraint.describe
+	when instance; instance.verbalise
+	when fact; fact.verbalise
+	when query; query.describe
+	when context_note; context_note.verbalise
+	when unit; unit.describe
+	when population; 'Population: '+population.name
+	else
+	  debugger
+	  "ROGUE CONCEPT OF NO TYPE"
+	end +
+	')'
+      end
+    end
+
+    class Unit
+      def describe
+	'Unit' +
+	name +
+	(plural_name ? '/'+plural_name : '') +
+	'=' +
+	coefficient.to_s+'*' +
+	all_derivation_as_derived_unit.map do |derivation|
+	  derivation.base_unit.name +
+	  (derivation.exponent != 1 ? derivation.exponent.to_s : '')
+	end.join('') +
+	+ (offset ? ' + '+offset.to_s : '')
+      end
+    end
+
+    class Coefficient
+      def to_s
+	numerator.to_s +
+	(denominator != 1 ? '/' + denominator.to_s : '')
+      end
+    end
+
     class FactType
       attr_accessor :check_and_add_spanning_uniqueness_constraint
 
@@ -721,6 +765,37 @@ module ActiveFacts
       end
     end
 
+    class SubsetConstraint
+      def describe
+	'SubsetConstraint(' +
+	subset_role_sequence.describe 
+	' < ' +
+	superset_role_sequence.describe +
+	')'
+      end
+    end
+
+    class SetComparisonConstraint
+      def describe
+	self.class.basename+'(' +
+	all_set_comparison_roles.map do |scr|
+	  scr.role_sequence.describe
+	end*',' +
+	')'
+      end
+    end
+
+    class RingConstraint
+      def describe
+	'RingConstraint(' +
+	ring_type.to_s+': ' +
+	role.describe+', ' +
+	other_role.describe+' in ' +
+	role.fact_type.default_reading +
+	')'
+      end
+    end
+
     class TypeInheritance
       def describe(role = nil)
         "#{subtype.name} is a kind of #{supertype.name}"
@@ -789,6 +864,20 @@ module ActiveFacts
     end
 
     class Query
+      def describe
+        steps_shown = {}
+	'Query(' +
+          all_variable.sort_by{|var| var.ordinal}.map do |variable|
+	    variable.describe + ': ' +
+	    variable.all_step.map do |step|
+	      next if steps_shown[step]
+	      steps_shown[step] = true
+	      step.describe
+	    end.compact.join(',')
+	  end.join('; ') +
+	')'
+      end
+
       def show
         steps_shown = {}
         trace :query, "Displaying full contents of Query #{concept.guid}" do
