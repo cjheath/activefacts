@@ -16,7 +16,7 @@ Enforcement Code is written as String(16);
 Ephemera URL is written as String;
 Exponent is written as Signed Integer(16);
 Frequency is written as Unsigned Integer(32);
-Guid is written as Guid;
+Guid is written as Guid auto-assigned at assert;
 Implication Rule Name is written as String;
 Length is written as Unsigned Integer(32);
 Literal is written as String;
@@ -55,6 +55,11 @@ Coefficient is identified by Numerator and Denominator and Coefficient is precis
 Concept is identified by Guid where
 	Concept has one Guid,
 	Guid is of at most one Concept;
+
+// Topic is a way to work around the code's lack of support for multiple vocabularies
+Topic is identified by its Name;
+Concept belongs to at most one Topic,
+	Topic contains Concept;
 
 Constraint is identified by Concept where
 	Constraint is an instance of one Concept;

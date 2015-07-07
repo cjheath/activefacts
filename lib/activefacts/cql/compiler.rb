@@ -75,7 +75,16 @@ module ActiveFacts
               ast.vocabulary = @vocabulary
               value = compile_definition ast
               trace :definition, "Compiled to #{value.is_a?(Array) ? value.map{|v| v.verbalise}*', ' : value.verbalise}" if value
-              @vocabulary = value if ast.is_a?(Compiler::Vocabulary)
+	      if ast.is_a?(Compiler::Vocabulary)
+		@vocabulary = value
+		@topic = @constellation.Topic(@vocabulary.name)
+	      elsif @topic  # Mark any new Concepts as belonging to this topic
+		@constellation.Concept.each do |key, concept|
+		  next if concept.topic
+		  trace :topic, "Colouring #{concept.describe} with #{@topic.topic_name}"
+		  concept.topic = @topic
+		end
+	      end
             rescue => e
               # Augment the exception message, but preserve the backtrace
               start_line = @string.line_of(node.interval.first)
@@ -96,12 +105,17 @@ module ActiveFacts
         saved_block = @block
         saved_string = @string
         saved_input_length = @input_length
+        saved_topic = @topic
         old_filename = @filename
         @filename = File.dirname(old_filename)+'/'+file+'.cql'
 
         # REVISIT: Save and use another @vocabulary for this file?
         File.open(@filename) do |f|
-          ok = parse_all(f.read, nil, &@block)
+	  @topic = @constellation.Topic(File.basename(@filename, '.cql'))
+	  trace :import, "Importing #{@filename} as #{@topic.topic_name}" do
+	    ok = parse_all(f.read, nil, &@block)
+	  end
+	  @topic = saved_topic
         end
 
       rescue => e

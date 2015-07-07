@@ -131,6 +131,11 @@ module ActiveFacts
       value_type :length => 256
     end
 
+    class TopicName < Name
+      value_type 
+      one_to_one :topic                           # See Topic.topic_name
+    end
+
     class TransactionPhase < String
       value_type 
       restrict 'assert', 'commit'
@@ -171,6 +176,7 @@ module ActiveFacts
       identified_by :guid
       one_to_one :guid, :mandatory => true        # See Guid.concept
       has_one :implication_rule                   # See ImplicationRule.all_concept
+      has_one :topic                              # See Topic.all_concept
     end
 
     class Constraint
@@ -305,6 +311,11 @@ module ActiveFacts
     class SubsetConstraint < SetConstraint
       has_one :subset_role_sequence, :class => RoleSequence, :mandatory => true  # See RoleSequence.all_subset_constraint_as_subset_role_sequence
       has_one :superset_role_sequence, :class => RoleSequence, :mandatory => true  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
+    end
+
+    class Topic
+      identified_by :topic_name
+      one_to_one :topic_name, :mandatory => true  # See TopicName.topic
     end
 
     class Unit
