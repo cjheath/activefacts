@@ -1,6 +1,6 @@
 Event: Certificate, Event.Date.Day, Event.Date.Max.Year, Event.Date.Min.Year, Event.Date.Month, Event.ID[*], Event.Location, Event.Type.ID, Official
 Event Type: Event.Type.ID[*], Event.Type.Name[1]
-Friendship: Is.Confirmed, Other.User.ID[*], User.ID[*]
+Friendship: Friendship.ID[*], Is.Confirmed, Other.User.ID[1], User.ID[1]
 Participation: Event.ID[*], Person.ID[*], Role.ID[*], Source.ID[*]
 Person: Address, Email, Family.Name, Gender, Given.Name, Occupation, Person.ID[*], Preferred.Picture
 Role: Event.Role.Name[1], Role.ID[*]

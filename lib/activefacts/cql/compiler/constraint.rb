@@ -47,8 +47,16 @@ module ActiveFacts
 
       class Constraint < Definition
         def initialize context_note, enforcement, clauses_lists = []
-          if context_note.is_a?(Treetop::Runtime::SyntaxNode)
+          if context_note.is_a?(Treetop::Runtime::SyntaxNode) && !context_note.empty?
             context_note = context_note.empty? ? nil : context_note.ast
+	  else
+	    context_note = nil	# Perhaps a context note got attached to one of the clauses. Steal it.
+	    clauses_lists.detect do |clauses_list|
+	      if c = clauses_list.last.context_note
+		context_note = c
+		clauses_list.last.context_note = nil
+	      end
+	    end
           end
           @context_note = context_note
           @enforcement = enforcement

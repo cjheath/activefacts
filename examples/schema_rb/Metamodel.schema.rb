@@ -1,9 +1,9 @@
 #
-# schema.rb auto-generated using ActiveFacts for Metamodel on 2015-06-02
+# schema.rb auto-generated using ActiveFacts for Metamodel on 2015-07-08
 #
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Schema.define(:version => 20150602173456) do
+ActiveRecord::Schema.define(:version => 20150708011602) do
   enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   create_table "aggregations", :id => false, :force => true do |t|
     t.column "aggregation_id", :primary_key, :null => false
@@ -59,6 +59,7 @@ ActiveRecord::Schema.define(:version => 20150602173456) do
     t.column "set_exclusion_constraint_is_mandatory", :boolean, :null => true
     t.column "subset_constraint_subset_role_sequence_guid", :uuid, :null => true
     t.column "subset_constraint_superset_role_sequence_guid", :uuid, :null => true
+    t.column "topic_name", :string, :limit => 64, :null => true
     t.column "unit_coefficient_denominator", :integer, :limit => 32, :null => true
     t.column "unit_coefficient_is_precise", :boolean, :null => true
     t.column "unit_coefficient_numerator", :decimal, :null => true
@@ -326,146 +327,146 @@ ActiveRecord::Schema.define(:version => 20150602173456) do
 
   unless ENV["EXCLUDE_FKS"]
     add_foreign_key :aggregations, :variables, :column => :aggregated_variable_id, :primary_key => :variable_id, :on_delete => :cascade
-    add_index :aggregations, [:aggregated_variable_id], :unique => false
+    add_index :aggregations, [:aggregated_variable_id], :unique => false, :name => :index_aggregations_on_aggregated_variable_id
     add_foreign_key :aggregations, :variables, :column => :variable_id, :primary_key => :variable_id, :on_delete => :cascade
-    add_index :aggregations, [:variable_id], :unique => false
+    add_index :aggregations, [:variable_id], :unique => false, :name => :index_aggregations_on_variable_id
     add_foreign_key :allowed_ranges, :concepts, :column => :value_constraint_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :allowed_ranges, [:value_constraint_concept_guid], :unique => false
+    add_index :allowed_ranges, [:value_constraint_concept_guid], :unique => false, :name => :index_allowed_ranges_on_value_constraint_concept_guid
     add_foreign_key :allowed_ranges, :values, :column => :value_range_maximum_bound_value_id, :primary_key => :value_id, :on_delete => :cascade
-    add_index :allowed_ranges, [:value_range_maximum_bound_value_id], :unique => false
+    add_index :allowed_ranges, [:value_range_maximum_bound_value_id], :unique => false, :name => :index_allowed_ranges_on_value_range_maximum_bound_value_id
     add_foreign_key :allowed_ranges, :values, :column => :value_range_minimum_bound_value_id, :primary_key => :value_id, :on_delete => :cascade
-    add_index :allowed_ranges, [:value_range_minimum_bound_value_id], :unique => false
+    add_index :allowed_ranges, [:value_range_minimum_bound_value_id], :unique => false, :name => :index_allowed_ranges_on_value_range_minimum_bound_value_id
     add_foreign_key :concepts, :concepts, :column => :context_note_relevant_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :concepts, [:context_note_relevant_concept_guid], :unique => false
+    add_index :concepts, [:context_note_relevant_concept_guid], :unique => false, :name => :index_concepts_on_context_note_relevant_concept_guid
     add_foreign_key :concepts, :concepts, :column => :instance_fact_concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_foreign_key :concepts, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
-    add_index :concepts, [:fact_type_concept_guid], :unique => false
+    add_index :concepts, [:fact_type_concept_guid], :unique => false, :name => :index_concepts_on_fact_type_concept_guid
     add_foreign_key :concepts, :object_types, :column => :instance_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :concepts, [:instance_object_type_id], :unique => false
+    add_index :concepts, [:instance_object_type_id], :unique => false, :name => :index_concepts_on_instance_object_type_id
     add_foreign_key :concepts, :populations, :column => :fact_population_id, :primary_key => :population_id, :on_delete => :cascade
-    add_index :concepts, [:fact_population_id], :unique => false
+    add_index :concepts, [:fact_population_id], :unique => false, :name => :index_concepts_on_fact_population_id
     add_foreign_key :concepts, :populations, :column => :instance_population_id, :primary_key => :population_id, :on_delete => :cascade
-    add_index :concepts, [:instance_population_id], :unique => false
+    add_index :concepts, [:instance_population_id], :unique => false, :name => :index_concepts_on_instance_population_id
     add_foreign_key :concepts, :roles, :column => :ring_constraint_other_role_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :concepts, [:ring_constraint_other_role_id], :unique => false
+    add_index :concepts, [:ring_constraint_other_role_id], :unique => false, :name => :index_concepts_on_ring_constraint_other_role_id
     add_foreign_key :concepts, :roles, :column => :ring_constraint_role_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :concepts, [:ring_constraint_role_id], :unique => false
+    add_index :concepts, [:ring_constraint_role_id], :unique => false, :name => :index_concepts_on_ring_constraint_role_id
     add_foreign_key :concepts, :roles, :column => :value_constraint_role_id, :primary_key => :role_id, :on_delete => :cascade
     add_foreign_key :concepts, :role_sequences, :column => :presence_constraint_role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :concepts, [:presence_constraint_role_sequence_guid], :unique => false
+    add_index :concepts, [:presence_constraint_role_sequence_guid], :unique => false, :name => :index_concepts_on_presence_constraint_role_sequence_guid
     add_foreign_key :concepts, :role_sequences, :column => :subset_constraint_subset_role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :concepts, [:subset_constraint_subset_role_sequence_guid], :unique => false
+    add_index :concepts, [:subset_constraint_subset_role_sequence_guid], :unique => false, :name => :index_concepts_on_subset_constraint_subset_role_sequence_guid
     add_foreign_key :concepts, :role_sequences, :column => :subset_constraint_superset_role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :concepts, [:subset_constraint_superset_role_sequence_guid], :unique => false
+    add_index :concepts, [:subset_constraint_superset_role_sequence_guid], :unique => false, :name => :index_concepts_on_subset_constraint_superset_role_sequence_guid
     add_foreign_key :concepts, :values, :column => :instance_value_id, :primary_key => :value_id, :on_delete => :cascade
-    add_index :concepts, [:instance_value_id], :unique => false
+    add_index :concepts, [:instance_value_id], :unique => false, :name => :index_concepts_on_instance_value_id
     add_foreign_key :context_according_tos, :concepts, :column => :context_note_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :context_according_tos, [:context_note_concept_guid], :unique => false
+    add_index :context_according_tos, [:context_note_concept_guid], :unique => false, :name => :index_context_according_tos_on_context_note_concept_guid
     add_foreign_key :context_agreed_bies, :concepts, :column => :agreement_context_note_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :context_agreed_bies, [:agreement_context_note_concept_guid], :unique => false
+    add_index :context_agreed_bies, [:agreement_context_note_concept_guid], :unique => false, :name => :index_context_agreed_bies_on_agreement_context_note_c__b36b03bb
     add_foreign_key :derivations, :concepts, :column => :base_unit_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :derivations, [:base_unit_concept_guid], :unique => false
+    add_index :derivations, [:base_unit_concept_guid], :unique => false, :name => :index_derivations_on_base_unit_concept_guid
     add_foreign_key :derivations, :concepts, :column => :derived_unit_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :derivations, [:derived_unit_concept_guid], :unique => false
+    add_index :derivations, [:derived_unit_concept_guid], :unique => false, :name => :index_derivations_on_derived_unit_concept_guid
     add_foreign_key :facets, :object_types, :column => :facet_value_type_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :facets, [:facet_value_type_object_type_id], :unique => false
+    add_index :facets, [:facet_value_type_object_type_id], :unique => false, :name => :index_facets_on_facet_value_type_object_type_id
     add_foreign_key :facets, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :facets, [:value_type_object_type_id], :unique => false
+    add_index :facets, [:value_type_object_type_id], :unique => false, :name => :index_facets_on_value_type_object_type_id
     add_foreign_key :facet_restrictions, :facets, :column => :facet_id, :primary_key => :facet_id, :on_delete => :cascade
-    add_index :facet_restrictions, [:facet_id], :unique => false
+    add_index :facet_restrictions, [:facet_id], :unique => false, :name => :index_facet_restrictions_on_facet_id
     add_foreign_key :facet_restrictions, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :facet_restrictions, [:value_type_object_type_id], :unique => false
+    add_index :facet_restrictions, [:value_type_object_type_id], :unique => false, :name => :index_facet_restrictions_on_value_type_object_type_id
     add_foreign_key :facet_restrictions, :values, :column => :value_id, :primary_key => :value_id, :on_delete => :cascade
-    add_index :facet_restrictions, [:value_id], :unique => false
+    add_index :facet_restrictions, [:value_id], :unique => false, :name => :index_facet_restrictions_on_value_id
     add_foreign_key :fact_types, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_foreign_key :fact_types, :object_types, :column => :entity_type_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
     add_foreign_key :fact_types, :object_types, :column => :type_inheritance_subtype_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :fact_types, [:type_inheritance_subtype_object_type_id], :unique => false
+    add_index :fact_types, [:type_inheritance_subtype_object_type_id], :unique => false, :name => :index_fact_types_on_type_inheritance_subtype_object_type_id
     add_foreign_key :fact_types, :object_types, :column => :type_inheritance_supertype_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :fact_types, [:type_inheritance_supertype_object_type_id], :unique => false
+    add_index :fact_types, [:type_inheritance_supertype_object_type_id], :unique => false, :name => :index_fact_types_on_type_inheritance_supertype_object_type_id
     add_foreign_key :object_types, :concepts, :column => :value_type_value_constraint_concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_foreign_key :object_types, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_foreign_key :object_types, :concepts, :column => :value_type_unit_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :object_types, [:value_type_unit_concept_guid], :unique => false
+    add_index :object_types, [:value_type_unit_concept_guid], :unique => false, :name => :index_object_types_on_value_type_unit_concept_guid
     add_foreign_key :object_types, :object_types, :column => :value_type_supertype_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :object_types, [:value_type_supertype_object_type_id], :unique => false
+    add_index :object_types, [:value_type_supertype_object_type_id], :unique => false, :name => :index_object_types_on_value_type_supertype_object_type_id
     add_foreign_key :plays, :roles, :column => :role_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :plays, [:role_id], :unique => false
+    add_index :plays, [:role_id], :unique => false, :name => :index_plays_on_role_id
     add_foreign_key :plays, :steps, :column => :step_id, :primary_key => :step_id, :on_delete => :cascade
-    add_index :plays, [:step_id], :unique => false
+    add_index :plays, [:step_id], :unique => false, :name => :index_plays_on_step_id
     add_foreign_key :plays, :variables, :column => :variable_id, :primary_key => :variable_id, :on_delete => :cascade
-    add_index :plays, [:variable_id], :unique => false
+    add_index :plays, [:variable_id], :unique => false, :name => :index_plays_on_variable_id
     add_foreign_key :populations, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_foreign_key :readings, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
-    add_index :readings, [:fact_type_concept_guid], :unique => false
+    add_index :readings, [:fact_type_concept_guid], :unique => false, :name => :index_readings_on_fact_type_concept_guid
     add_foreign_key :readings, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :readings, [:role_sequence_guid], :unique => false
+    add_index :readings, [:role_sequence_guid], :unique => false, :name => :index_readings_on_role_sequence_guid
     add_foreign_key :roles, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_foreign_key :roles, :fact_types, :column => :role_proxy_link_fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
     add_foreign_key :roles, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
-    add_index :roles, [:fact_type_concept_guid], :unique => false
+    add_index :roles, [:fact_type_concept_guid], :unique => false, :name => :index_roles_on_fact_type_concept_guid
     add_foreign_key :roles, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :roles, [:object_type_id], :unique => false
+    add_index :roles, [:object_type_id], :unique => false, :name => :index_roles_on_object_type_id
     add_foreign_key :roles, :roles, :column => :role_proxy_role_id, :primary_key => :role_id, :on_delete => :cascade
     add_foreign_key :role_displays, :roles, :column => :role_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :role_displays, [:role_id], :unique => false
+    add_index :role_displays, [:role_id], :unique => false, :name => :index_role_displays_on_role_id
     add_foreign_key :role_displays, :shapes, :column => :fact_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :role_displays, [:fact_type_shape_guid], :unique => false
+    add_index :role_displays, [:fact_type_shape_guid], :unique => false, :name => :index_role_displays_on_fact_type_shape_guid
     add_foreign_key :role_refs, :plays, :column => :play_id, :primary_key => :play_id, :on_delete => :cascade
     add_foreign_key :role_refs, :roles, :column => :role_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :role_refs, [:role_id], :unique => false
+    add_index :role_refs, [:role_id], :unique => false, :name => :index_role_refs_on_role_id
     add_foreign_key :role_refs, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :role_refs, [:role_sequence_guid], :unique => false
+    add_index :role_refs, [:role_sequence_guid], :unique => false, :name => :index_role_refs_on_role_sequence_guid
     add_foreign_key :role_values, :concepts, :column => :fact_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :role_values, [:fact_concept_guid], :unique => false
+    add_index :role_values, [:fact_concept_guid], :unique => false, :name => :index_role_values_on_fact_concept_guid
     add_foreign_key :role_values, :concepts, :column => :instance_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :role_values, [:instance_concept_guid], :unique => false
+    add_index :role_values, [:instance_concept_guid], :unique => false, :name => :index_role_values_on_instance_concept_guid
     add_foreign_key :role_values, :populations, :column => :population_id, :primary_key => :population_id, :on_delete => :cascade
-    add_index :role_values, [:population_id], :unique => false
+    add_index :role_values, [:population_id], :unique => false, :name => :index_role_values_on_population_id
     add_foreign_key :role_values, :roles, :column => :role_id, :primary_key => :role_id, :on_delete => :cascade
-    add_index :role_values, [:role_id], :unique => false
+    add_index :role_values, [:role_id], :unique => false, :name => :index_role_values_on_role_id
     add_foreign_key :set_comparison_roles, :concepts, :column => :set_comparison_constraint_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :set_comparison_roles, [:set_comparison_constraint_concept_guid], :unique => false
+    add_index :set_comparison_roles, [:set_comparison_constraint_concept_guid], :unique => false, :name => :index_set_comparison_roles_on_set_comparison_constrai__66c96563
     add_foreign_key :set_comparison_roles, :role_sequences, :column => :role_sequence_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :set_comparison_roles, [:role_sequence_guid], :unique => false
+    add_index :set_comparison_roles, [:role_sequence_guid], :unique => false, :name => :index_set_comparison_roles_on_role_sequence_guid
     add_foreign_key :shapes, :concepts, :column => :constraint_shape_constraint_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :shapes, [:constraint_shape_constraint_concept_guid], :unique => false
+    add_index :shapes, [:constraint_shape_constraint_concept_guid], :unique => false, :name => :index_shapes_on_constraint_shape_constraint_concept_guid
     add_foreign_key :shapes, :concepts, :column => :model_note_shape_context_note_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :shapes, [:model_note_shape_context_note_concept_guid], :unique => false
+    add_index :shapes, [:model_note_shape_context_note_concept_guid], :unique => false, :name => :index_shapes_on_model_note_shape_context_note_concept_guid
     add_foreign_key :shapes, :diagrams, :column => :orm_diagram_id, :primary_key => :diagram_id, :on_delete => :cascade
-    add_index :shapes, [:orm_diagram_id], :unique => false
+    add_index :shapes, [:orm_diagram_id], :unique => false, :name => :index_shapes_on_orm_diagram_id
     add_foreign_key :shapes, :fact_types, :column => :fact_type_shape_fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
-    add_index :shapes, [:fact_type_shape_fact_type_concept_guid], :unique => false
+    add_index :shapes, [:fact_type_shape_fact_type_concept_guid], :unique => false, :name => :index_shapes_on_fact_type_shape_fact_type_concept_guid
     add_foreign_key :shapes, :object_types, :column => :object_type_shape_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :shapes, [:object_type_shape_object_type_id], :unique => false
+    add_index :shapes, [:object_type_shape_object_type_id], :unique => false, :name => :index_shapes_on_object_type_shape_object_type_id
     add_foreign_key :shapes, :readings, :column => :reading_shape_reading_id, :primary_key => :reading_id, :on_delete => :cascade
-    add_index :shapes, [:reading_shape_reading_id], :unique => false
+    add_index :shapes, [:reading_shape_reading_id], :unique => false, :name => :index_shapes_on_reading_shape_reading_id
     add_foreign_key :shapes, :role_displays, :column => :value_constraint_shape_role_display_id, :primary_key => :role_display_id, :on_delete => :cascade
     add_foreign_key :shapes, :role_displays, :column => :role_name_shape_role_display_id, :primary_key => :role_display_id, :on_delete => :cascade
     add_foreign_key :shapes, :shapes, :column => :ring_constraint_shape_fact_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :shapes, [:ring_constraint_shape_fact_type_shape_guid], :unique => false
+    add_index :shapes, [:ring_constraint_shape_fact_type_shape_guid], :unique => false, :name => :index_shapes_on_ring_constraint_shape_fact_type_shape_guid
     add_foreign_key :shapes, :shapes, :column => :value_constraint_shape_object_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :shapes, [:value_constraint_shape_object_type_shape_guid], :unique => false
+    add_index :shapes, [:value_constraint_shape_object_type_shape_guid], :unique => false, :name => :index_shapes_on_value_constraint_shape_object_type_shape_guid
     add_foreign_key :shapes, :shapes, :column => :objectified_fact_type_name_shape_fact_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
     add_foreign_key :shapes, :shapes, :column => :reading_shape_fact_type_shape_guid, :primary_key => :guid, :on_delete => :cascade
     add_foreign_key :steps, :alternative_sets, :column => :alternative_set_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :steps, [:alternative_set_guid], :unique => false
+    add_index :steps, [:alternative_set_guid], :unique => false, :name => :index_steps_on_alternative_set_guid
     add_foreign_key :steps, :fact_types, :column => :fact_type_concept_guid, :primary_key => :concept_guid, :on_delete => :cascade
-    add_index :steps, [:fact_type_concept_guid], :unique => false
+    add_index :steps, [:fact_type_concept_guid], :unique => false, :name => :index_steps_on_fact_type_concept_guid
     add_foreign_key :steps, :plays, :column => :input_play_id, :primary_key => :play_id, :on_delete => :cascade
-    add_index :steps, [:input_play_id], :unique => false
+    add_index :steps, [:input_play_id], :unique => false, :name => :index_steps_on_input_play_id
     add_foreign_key :steps, :plays, :column => :output_play_id, :primary_key => :play_id, :on_delete => :cascade
-    add_index :steps, [:output_play_id], :unique => false
+    add_index :steps, [:output_play_id], :unique => false, :name => :index_steps_on_output_play_id
     add_foreign_key :values, :concepts, :column => :unit_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :values, [:unit_concept_guid], :unique => false
+    add_index :values, [:unit_concept_guid], :unique => false, :name => :index_values_on_unit_concept_guid
     add_foreign_key :values, :object_types, :column => :value_type_object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :values, [:value_type_object_type_id], :unique => false
+    add_index :values, [:value_type_object_type_id], :unique => false, :name => :index_values_on_value_type_object_type_id
     add_foreign_key :variables, :concepts, :column => :query_concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :variables, [:query_concept_guid], :unique => false
+    add_index :variables, [:query_concept_guid], :unique => false, :name => :index_variables_on_query_concept_guid
     add_foreign_key :variables, :object_types, :column => :object_type_id, :primary_key => :object_type_id, :on_delete => :cascade
-    add_index :variables, [:object_type_id], :unique => false
+    add_index :variables, [:object_type_id], :unique => false, :name => :index_variables_on_object_type_id
     add_foreign_key :variables, :roles, :column => :projection_id, :primary_key => :role_id, :on_delete => :cascade
     add_foreign_key :variables, :values, :column => :value_id, :primary_key => :value_id, :on_delete => :cascade
-    add_index :variables, [:value_id], :unique => false
+    add_index :variables, [:value_id], :unique => false, :name => :index_variables_on_value_id
   end
 end

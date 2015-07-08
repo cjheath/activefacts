@@ -68,23 +68,94 @@ module ActiveFacts
 
     class Concept
       def describe
-	'Concept(' +
 	case
-	when object_type; object_type.name
-	when fact_type; fact_type.describe
+	when object_type; "#{object_type.class.basename} #{object_type.name.inspect}"
+	when fact_type; "FactType #{fact_type.default_reading.inspect}"
 	when role; "Role in #{role.fact_type.describe(role)}"
 	when constraint; constraint.describe
-	when instance; instance.verbalise
-	when fact; fact.verbalise
+	when instance; "Instance #{instance.verbalise}"
+	when fact; "Fact #{fact.verbalise}"
 	when query; query.describe
-	when context_note; context_note.verbalise
-	when unit; unit.describe
-	when population; 'Population: '+population.name
+	when context_note; "ContextNote#{context_note.verbalise}"
+	when unit; "Unit #{unit.describe}"
+	when population; "Population: #{population.name}"
 	else
-	  debugger
-	  "ROGUE CONCEPT OF NO TYPE"
-	end +
-	')'
+	  raise "ROGUE CONCEPT OF NO TYPE"
+	end
+      end
+
+      def embodied_as
+	case
+	when object_type; object_type
+	when fact_type; fact_type
+	when role; role
+	when constraint; constraint
+	when instance; instance
+	when fact; fact
+	when query; query
+	when context_note; context_note
+	when unit; unit
+	when population; population
+	else
+	  raise "ROGUE CONCEPT OF NO TYPE"
+	end
+      end
+
+      # Return an array of all Concepts that must be defined before this concept can be defined:
+      def precursors
+	case body = embodied_as
+	when ActiveFacts::Metamodel::ValueType
+	  [ body.supertype, body.unit ] +
+	  body.all_facet.map{|f| f.facet_value_type } +
+	  body.all_facet_restriction.map{|vr| vr.value.unit}
+	when ActiveFacts::Metamodel::EntityType
+	  # You can't define the preferred_identifier fact types until you define the entity type,
+	  # but the objects which play the identifying roles must be defined:
+	  body.preferred_identifier.role_sequence.all_role_ref.map {|rr| rr.role.object_type } +
+	  # You can't define the objectified fact type until you define the entity type:
+	  # [ body.fact_type ]	# If it's an objectification
+	  body.all_type_inheritance_as_subtype.map{|ti| ti.supertype}	# If it's a subtype
+	when FactType
+	  body.all_role.map(&:object_type)
+	when Role   # We don't consider roles as they cannot be separately defined
+	  []
+	when ActiveFacts::Metamodel::PresenceConstraint
+	  body.role_sequence.all_role_ref.map do |rr|
+	    rr.role.fact_type
+	  end
+	when ActiveFacts::Metamodel::ValueConstraint
+	  [ body.role ? body.role.fact_type : nil, body.value_type ] +
+	  body.all_allowed_range.map do |ar|
+	    [ ar.value_range.minimum_bound, ar.value_range.maximum_bound ].compact.map{|b| b.value.unit}
+	  end
+	when ActiveFacts::Metamodel::SubsetConstraint
+	  body.subset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type } +
+	  body.superset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }
+	when ActiveFacts::Metamodel::SetComparisonConstraint
+	  body.all_set_comparison_roles.map{|scr| scr.role_sequence.all_role_ref.map{|rr| rr.role.fact_type } }
+	when ActiveFacts::Metamodel::RingConstraint
+	  [ body.role.fact_type, body.other_role.fact_type ]
+	when Instance
+	  [ body.population, body.object_type, body.value ? body.value.unit : nil ]
+	when Fact
+	  [ body.population, body.fact_type ]
+	when Query
+	  body.all_variable.map do |v|
+	    [ v.object_type,
+	      v.value ? v.value.unit : nil,
+	      v.step ? v.step.fact_type : nil
+	    ] +
+	    v.all_play.map{|p| p.role.fact_type }
+	  end
+	when ContextNote
+	  []
+	when Unit
+	  body.all_derivation_as_derived_unit.map{|d| d.base_unit }
+	when Population
+	  []
+	else
+	  raise "ROGUE CONCEPT OF NO TYPE"
+	end.flatten.compact.uniq.map{|c| c.concept }
       end
     end
 
@@ -99,7 +170,7 @@ module ActiveFacts
 	  derivation.base_unit.name +
 	  (derivation.exponent != 1 ? derivation.exponent.to_s : '')
 	end.join('') +
-	+ (offset ? ' + '+offset.to_s : '')
+	(offset ? ' + '+offset.to_s : '')
       end
     end
 
@@ -155,8 +226,8 @@ module ActiveFacts
       end
 
       def implicit_boolean_type vocabulary
-        @constellation.ImplicitBooleanValueType[[vocabulary.identifying_role_values, "_ImplicitBooleanValueType"]] ||
-        @constellation.ImplicitBooleanValueType(vocabulary.identifying_role_values, "_ImplicitBooleanValueType", :concept => :new)
+        @constellation.ImplicitBooleanValueType[[vocabulary.identifying_role_values, "_ImplicitBooleanValueType"]] or
+        @constellation.ImplicitBooleanValueType(vocabulary.identifying_role_values, "_ImplicitBooleanValueType", :concept => [:new, :implication_rule => 'unary'])
       end
 
       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
@@ -166,6 +237,7 @@ module ActiveFacts
         # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
         # We only do it when the unary fact type is not objectified
         link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
+	link_fact_type.concept.implication_rule = 'unary'
         entity_type = @entity_type || implicit_boolean_type(role.object_type.vocabulary)
         phantom_role = @constellation.Role(link_fact_type, 0, :object_type => entity_type, :concept => :new)
       end
@@ -546,6 +618,7 @@ module ActiveFacts
         fact_type.all_role.map do |role|
           next if role.link_fact_type     # Already exists
           link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
+	  link_fact_type.concept.implication_rule = 'objectification'
           phantom_role = @constellation.Role(link_fact_type, 0, :object_type => self, :concept => :new)
           # We could create a copy of the visible external role here, but there's no need yet...
           # Nor is there a need for a presence constraint, readings, etc.
@@ -668,6 +741,10 @@ module ActiveFacts
 
     class ValueConstraint
       def describe
+	as_cql
+      end
+
+      def as_cql
         "restricted to "+
 	  ( if regular_expression
 	      '/' + regular_expression + '/'
@@ -761,7 +838,7 @@ module ActiveFacts
       def describe
         min = min_frequency
         max = max_frequency
-        role_sequence.describe + " occurs " + frequency + " time#{(min&&min>1)||(max&&max>1) ? 's' : ''}"
+        'PresenceConstraint over '+role_sequence.describe + " occurs " + frequency + " time#{(min&&min>1)||(max&&max>1) ? 's' : ''}"
       end
     end
 
@@ -1193,6 +1270,10 @@ module ActiveFacts
 
     class ContextNote
       def verbalise(context=nil)
+	as_cql
+      end
+
+      def as_cql
 	' (' +
 	( if all_context_according_to
 	    'according to '
@@ -1206,7 +1287,7 @@ module ActiveFacts
 	discussion +
 	( if agreement
 	    ', as agreed ' +
-	    (agreement.date ? ' on '+agreement.date+' ' : '') +
+	    (agreement.date ? ' on '+agreement.date.iso8601.inspect+' ' : '') +
 	    'by '
 	    agreement.all_context_agreed_by.map do |acab|
 	      acab.agent.agent_name+', '

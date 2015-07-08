@@ -31,6 +31,7 @@ Rotation Setting is written as String restricted to {'left', 'right'};
 Scale is written as Unsigned Integer(32);
 Subscript is written as Unsigned Integer(16);
 Text is written as String(256);
+Topic Name is written as Name;
 Transaction Phase is written as String restricted to {'assert', 'commit'};
 X is written as Signed Integer(32);
 Y is written as Signed Integer(32);
@@ -55,11 +56,6 @@ Coefficient is identified by Numerator and Denominator and Coefficient is precis
 Concept is identified by Guid where
 	Concept has one Guid,
 	Guid is of at most one Concept;
-
-// Topic is a way to work around the code's lack of support for multiple vocabularies
-Topic is identified by its Name;
-Concept belongs to at most one Topic,
-	Topic contains Concept;
 
 Constraint is identified by Concept where
 	Constraint is an instance of one Concept;
@@ -169,6 +165,10 @@ Shape is expanded;
 Subset Constraint is a kind of Set Constraint;
 Subset Constraint covers one subset-Role Sequence;
 Subset Constraint covers one superset-Role Sequence;
+
+Topic is identified by its Name;
+Concept belongs to at most one Topic,
+	Topic contains Concept;
 
 Unit is identified by Concept where
 	Unit is an instance of one Concept;

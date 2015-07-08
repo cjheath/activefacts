@@ -114,6 +114,8 @@ CREATE TABLE Concept (
 	SubsetConstraintSubsetRoleSequenceGuid  uniqueidentifier NULL,
 	-- maybe Constraint is an instance of Concept and maybe Constraint is a Set Constraint and maybe Set Constraint is a Subset Constraint and Subset Constraint covers superset-Role Sequence and Role Sequence has Guid,
 	SubsetConstraintSupersetRoleSequenceGuid uniqueidentifier NULL,
+	-- maybe Concept belongs to Topic and Topic has Topic Name,
+	TopicName                               varchar(64) NULL,
 	-- maybe Unit is an instance of Concept and maybe Unit has Coefficient and Coefficient has Denominator,
 	UnitCoefficientDenominator              int NULL,
 	-- maybe Unit is an instance of Concept and maybe Unit has Coefficient and Coefficient is precise,

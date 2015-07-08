@@ -212,6 +212,7 @@ module ActiveFacts
       end
 
       def verbalised_path reverse = false
+	return "#{from.name} Value" if is_self_value
 	objectified = fact_type.entity_type 
 	f =	# Switch to the Link Fact Type if we're traversing an objectification
 	  (to_role && to_role.link_fact_type) ||

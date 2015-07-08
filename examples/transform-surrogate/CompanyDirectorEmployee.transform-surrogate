@@ -1,6 +1,6 @@
 Attendance: Attendee.ID[*], Meeting.ID[*]
 Company: Company.ID[*], Company.Name[1], Is.Listed
-Directorship: Appointment.Date, Company.ID[*], Director.ID[*]
+Directorship: Appointment.Date, Company.ID[1], Director.ID[1], Directorship.ID[*]
 Employee: Company.ID, Employee.ID[*], Employee.Nr[1], Manager.ID, Manager.Is.Ceo
 Employment: Employee.ID[*], Person.ID[*]
 Meeting: Company.ID[1], Date[1], Is.Board.Meeting[1], Meeting.ID[*]

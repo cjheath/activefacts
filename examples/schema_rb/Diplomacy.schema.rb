@@ -1,9 +1,9 @@
 #
-# schema.rb auto-generated using ActiveFacts for Diplomacy on 2015-06-22
+# schema.rb auto-generated using ActiveFacts for Diplomacy on 2015-07-08
 #
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Schema.define(:version => 20150622153353) do
+ActiveRecord::Schema.define(:version => 20150708011557) do
   enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   create_table "countries", :id => false, :force => true do |t|
     t.column "country_id", :primary_key, :null => false
@@ -53,22 +53,22 @@ ActiveRecord::Schema.define(:version => 20150622153353) do
 
   unless ENV["EXCLUDE_FKS"]
     add_foreign_key :diplomats, :countries, :column => :represented_country_id, :primary_key => :country_id, :on_delete => :cascade
-    add_index :diplomats, [:represented_country_id], :unique => false
+    add_index :diplomats, [:represented_country_id], :unique => false, :name => :index_diplomats_on_represented_country_id
     add_foreign_key :diplomats, :countries, :column => :served_country_id, :primary_key => :country_id, :on_delete => :cascade
-    add_index :diplomats, [:served_country_id], :unique => false
+    add_index :diplomats, [:served_country_id], :unique => false, :name => :index_diplomats_on_served_country_id
     add_foreign_key :fluencies, :diplomats, :column => :diplomat_id, :primary_key => :diplomat_id, :on_delete => :cascade
-    add_index :fluencies, [:diplomat_id], :unique => false
+    add_index :fluencies, [:diplomat_id], :unique => false, :name => :index_fluencies_on_diplomat_id
     add_foreign_key :fluencies, :languages, :column => :language_id, :primary_key => :language_id, :on_delete => :cascade
-    add_index :fluencies, [:language_id], :unique => false
+    add_index :fluencies, [:language_id], :unique => false, :name => :index_fluencies_on_language_id
     add_foreign_key :language_uses, :countries, :column => :country_id, :primary_key => :country_id, :on_delete => :cascade
-    add_index :language_uses, [:country_id], :unique => false
+    add_index :language_uses, [:country_id], :unique => false, :name => :index_language_uses_on_country_id
     add_foreign_key :language_uses, :languages, :column => :language_id, :primary_key => :language_id, :on_delete => :cascade
-    add_index :language_uses, [:language_id], :unique => false
+    add_index :language_uses, [:language_id], :unique => false, :name => :index_language_uses_on_language_id
     add_foreign_key :representations, :countries, :column => :country_id, :primary_key => :country_id, :on_delete => :cascade
-    add_index :representations, [:country_id], :unique => false
+    add_index :representations, [:country_id], :unique => false, :name => :index_representations_on_country_id
     add_foreign_key :representations, :countries, :column => :represented_country_id, :primary_key => :country_id, :on_delete => :cascade
-    add_index :representations, [:represented_country_id], :unique => false
+    add_index :representations, [:represented_country_id], :unique => false, :name => :index_representations_on_represented_country_id
     add_foreign_key :representations, :diplomats, :column => :ambassador_id, :primary_key => :diplomat_id, :on_delete => :cascade
-    add_index :representations, [:ambassador_id], :unique => false
+    add_index :representations, [:ambassador_id], :unique => false, :name => :index_representations_on_ambassador_id
   end
 end

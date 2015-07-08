@@ -1,9 +1,9 @@
 #
-# schema.rb auto-generated using ActiveFacts for Warehousing on 2015-06-22
+# schema.rb auto-generated using ActiveFacts for Warehousing on 2015-07-08
 #
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Schema.define(:version => 20150622153354) do
+ActiveRecord::Schema.define(:version => 20150708011604) do
   enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   create_table "back_order_allocations", :id => false, :force => true do |t|
     t.column "back_order_allocation_id", :primary_key, :null => false
@@ -100,46 +100,46 @@ ActiveRecord::Schema.define(:version => 20150622153354) do
 
   unless ENV["EXCLUDE_FKS"]
     add_foreign_key :back_order_allocations, :purchase_order_items, :column => :purchase_order_item_id, :primary_key => :purchase_order_item_id, :on_delete => :cascade
-    add_index :back_order_allocations, [:purchase_order_item_id], :unique => false
+    add_index :back_order_allocations, [:purchase_order_item_id], :unique => false, :name => :index_back_order_allocations_on_purchase_order_item_id
     add_foreign_key :back_order_allocations, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :on_delete => :cascade
-    add_index :back_order_allocations, [:sales_order_item_id], :unique => false
+    add_index :back_order_allocations, [:sales_order_item_id], :unique => false, :name => :index_back_order_allocations_on_sales_order_item_id
     add_foreign_key :bins, :products, :column => :product_id, :primary_key => :product_id, :on_delete => :cascade
-    add_index :bins, [:product_id], :unique => false
+    add_index :bins, [:product_id], :unique => false, :name => :index_bins_on_product_id
     add_foreign_key :bins, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :on_delete => :cascade
-    add_index :bins, [:warehouse_id], :unique => false
+    add_index :bins, [:warehouse_id], :unique => false, :name => :index_bins_on_warehouse_id
     add_foreign_key :dispatch_items, :products, :column => :product_id, :primary_key => :product_id, :on_delete => :cascade
-    add_index :dispatch_items, [:product_id], :unique => false
+    add_index :dispatch_items, [:product_id], :unique => false, :name => :index_dispatch_items_on_product_id
     add_foreign_key :dispatch_items, :sales_order_items, :column => :sales_order_item_id, :primary_key => :sales_order_item_id, :on_delete => :cascade
-    add_index :dispatch_items, [:sales_order_item_id], :unique => false
+    add_index :dispatch_items, [:sales_order_item_id], :unique => false, :name => :index_dispatch_items_on_sales_order_item_id
     add_foreign_key :dispatch_items, :transfer_requests, :column => :transfer_request_id, :primary_key => :transfer_request_id, :on_delete => :cascade
-    add_index :dispatch_items, [:transfer_request_id], :unique => false
+    add_index :dispatch_items, [:transfer_request_id], :unique => false, :name => :index_dispatch_items_on_transfer_request_id
     add_foreign_key :purchase_orders, :parties, :column => :supplier_id, :primary_key => :party_id, :on_delete => :cascade
-    add_index :purchase_orders, [:supplier_id], :unique => false
+    add_index :purchase_orders, [:supplier_id], :unique => false, :name => :index_purchase_orders_on_supplier_id
     add_foreign_key :purchase_orders, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :on_delete => :cascade
-    add_index :purchase_orders, [:warehouse_id], :unique => false
+    add_index :purchase_orders, [:warehouse_id], :unique => false, :name => :index_purchase_orders_on_warehouse_id
     add_foreign_key :purchase_order_items, :products, :column => :product_id, :primary_key => :product_id, :on_delete => :cascade
-    add_index :purchase_order_items, [:product_id], :unique => false
+    add_index :purchase_order_items, [:product_id], :unique => false, :name => :index_purchase_order_items_on_product_id
     add_foreign_key :purchase_order_items, :purchase_orders, :column => :purchase_order_id, :primary_key => :purchase_order_id, :on_delete => :cascade
-    add_index :purchase_order_items, [:purchase_order_id], :unique => false
+    add_index :purchase_order_items, [:purchase_order_id], :unique => false, :name => :index_purchase_order_items_on_purchase_order_id
     add_foreign_key :received_items, :products, :column => :product_id, :primary_key => :product_id, :on_delete => :cascade
-    add_index :received_items, [:product_id], :unique => false
+    add_index :received_items, [:product_id], :unique => false, :name => :index_received_items_on_product_id
     add_foreign_key :received_items, :purchase_order_items, :column => :purchase_order_item_id, :primary_key => :purchase_order_item_id, :on_delete => :cascade
-    add_index :received_items, [:purchase_order_item_id], :unique => false
+    add_index :received_items, [:purchase_order_item_id], :unique => false, :name => :index_received_items_on_purchase_order_item_id
     add_foreign_key :received_items, :transfer_requests, :column => :transfer_request_id, :primary_key => :transfer_request_id, :on_delete => :cascade
-    add_index :received_items, [:transfer_request_id], :unique => false
+    add_index :received_items, [:transfer_request_id], :unique => false, :name => :index_received_items_on_transfer_request_id
     add_foreign_key :sales_orders, :parties, :column => :customer_id, :primary_key => :party_id, :on_delete => :cascade
-    add_index :sales_orders, [:customer_id], :unique => false
+    add_index :sales_orders, [:customer_id], :unique => false, :name => :index_sales_orders_on_customer_id
     add_foreign_key :sales_orders, :warehouses, :column => :warehouse_id, :primary_key => :warehouse_id, :on_delete => :cascade
-    add_index :sales_orders, [:warehouse_id], :unique => false
+    add_index :sales_orders, [:warehouse_id], :unique => false, :name => :index_sales_orders_on_warehouse_id
     add_foreign_key :sales_order_items, :products, :column => :product_id, :primary_key => :product_id, :on_delete => :cascade
-    add_index :sales_order_items, [:product_id], :unique => false
+    add_index :sales_order_items, [:product_id], :unique => false, :name => :index_sales_order_items_on_product_id
     add_foreign_key :sales_order_items, :sales_orders, :column => :sales_order_id, :primary_key => :sales_order_id, :on_delete => :cascade
-    add_index :sales_order_items, [:sales_order_id], :unique => false
+    add_index :sales_order_items, [:sales_order_id], :unique => false, :name => :index_sales_order_items_on_sales_order_id
     add_foreign_key :transfer_requests, :products, :column => :product_id, :primary_key => :product_id, :on_delete => :cascade
-    add_index :transfer_requests, [:product_id], :unique => false
+    add_index :transfer_requests, [:product_id], :unique => false, :name => :index_transfer_requests_on_product_id
     add_foreign_key :transfer_requests, :warehouses, :column => :from_warehouse_id, :primary_key => :warehouse_id, :on_delete => :cascade
-    add_index :transfer_requests, [:from_warehouse_id], :unique => false
+    add_index :transfer_requests, [:from_warehouse_id], :unique => false, :name => :index_transfer_requests_on_from_warehouse_id
     add_foreign_key :transfer_requests, :warehouses, :column => :to_warehouse_id, :primary_key => :warehouse_id, :on_delete => :cascade
-    add_index :transfer_requests, [:to_warehouse_id], :unique => false
+    add_index :transfer_requests, [:to_warehouse_id], :unique => false, :name => :index_transfer_requests_on_to_warehouse_id
   end
 end

@@ -188,7 +188,7 @@ module ActiveFacts
 
         # If we emitted a reading for the refmode, it'll include any role_value_constraint already
         if nonstandard_readings.size == 0 and c = value_role.role_value_constraint
-          constraint_text = " "+c.describe
+          constraint_text = " "+c.as_cql
         end
         (entity_type.is_independent ? ' independent' : '') +
           " identified by its #{value_residual}#{constraint_text}#{mapping_pragma(entity_type, true)}" +
@@ -651,6 +651,8 @@ module ActiveFacts
             parameters
           }#{
             unit && " "+unit.name
+          }#{
+	    transaction_phase && " auto-assigned at "+transaction_phase
           }#{
 	    concept.all_context_note_as_relevant_concept.map do |cn|
 	      cn.verbalise
