@@ -116,7 +116,11 @@ module ActiveFacts
         end
 
         def compile
-          @constellation.Vocabulary @name
+          if @constellation.Vocabulary.size > 0
+	    @constellation.Topic @name
+	  else
+	    @constellation.Vocabulary @name
+	  end
         end
 
         def to_s
