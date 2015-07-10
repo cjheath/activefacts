@@ -52,6 +52,33 @@ module ActiveFacts
       end
     end
 
+    def tsort &block
+      analyse_precursors unless @precursors
+      emitted = {}
+      pass = 0
+      until emitted.size == @enumerable.size
+	next_items = []
+	blocked =
+	  @enumerable.inject({}) do |hash, item|
+	    next hash if emitted[item]
+	    blockers = item.precursors.select{|precursor| !emitted[precursor]}
+	    if blockers.size > 0
+	      hash[item] = blockers
+	    else
+	      next_items << item
+	    end
+	    hash
+	  end
+	return blocked if next_items.size == 0	# Cannot make progress
+	# puts "PASS #{pass += 1}"
+	next_items.each do |item|
+	  block.call(item)
+	  emitted[item] = true
+	end
+      end
+      nil
+    end
+
     def each &b
       if block_given?
 	@enumerable.each { |item| yield item}

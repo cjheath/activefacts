@@ -159,6 +159,13 @@ module ActiveFacts
       end
     end
 
+    class Topic
+      def precursors
+	# Precursors of a topic are the topics of all precursors of items in this topic
+	all_concept.map{|c| c.precursors }.flatten.uniq.map{|c| c.topic}.uniq-[self]
+      end
+    end
+
     class Unit
       def describe
 	'Unit' +
