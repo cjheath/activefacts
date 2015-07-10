@@ -350,6 +350,38 @@ module ActiveFacts
         return separator ? Array(name_array)*separator : Array(name_array)
       end
 
+      def cql_leading_adjective
+	if leading_adjective
+	  # 'foo' => "foo-"
+	  # 'foo bar' => "foo- bar "
+	  # 'foo-bar' => "foo-- bar "
+	  # 'foo-bar baz' => "foo-- bar baz "
+	  # 'bat foo-bar baz' => "bat- foo-bar baz "
+	  leading_adjective.strip.
+	    sub(/[- ]|$/, '-\0 ').sub(/  /, ' ').sub(/[^-]$/, '\0 ').sub(/-  $/,'-')
+	else
+	  ''
+	end
+      end
+
+      def cql_trailing_adjective
+	if trailing_adjective
+	  # 'foo' => "-foo"
+	  # 'foo bar' => " foo -bar"
+	  # 'foo-bar' => " foo --bar"
+	  # 'foo-bar baz' => " foo-bar -baz"
+	  # 'bat foo-bar baz' => " bat foo-bar -baz"
+	  trailing_adjective.
+	    strip.
+	    sub(/(?<a>.*) (?<b>[^- ]+$)|(?<a>.*)(?<b>-[^- ]*)$|(?<a>)(?<b>.*)/) {
+	      " #{$~[:a]} -#{$~[:b]}"
+	    }.
+	    sub(/^ *-/, '-')  # A leading space is not needed if the hyphen is at the start
+	else
+	  ''
+	end
+      end
+
       def cql_name
         if role.fact_type.all_role.size == 1
           role_name
@@ -357,9 +389,9 @@ module ActiveFacts
           role.role_name
         else
           # Where an adjective has multiple words, the hyphen is inserted outside the outermost space, leaving the space
-          (leading_adjective ? leading_adjective.strip.sub(/ |$/, '-\0').sub(/[^-]$/,'\0 ') : '') +
+	  cql_leading_adjective +
             role.object_type.name+
-            (trailing_adjective ? ' '+trailing_adjective.strip.sub(/.* |^/, '\0-').sub(/^[^-]/,' \0') : '')
+	    cql_trailing_adjective
         end
       end
     end
