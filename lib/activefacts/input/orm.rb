@@ -382,7 +382,7 @@ module ActiveFacts
             rs2 = @constellation.RoleSequence(:new)
             @constellation.RoleRef(rs2, 0, :role => supertype_role)
             @constellation.RoleRef(rs2, 1, :role => subtype_role)
-            n = 'aeiouh'.include?(subtype_role.object_type.name.downcase[0]) ? 1 : 0
+            n = 'aeioh'.include?(subtype_role.object_type.name.downcase[0]) ? 1 : 0
             @constellation.Reading(inheritance_fact, 2+n, :role_sequence => rs2, :text => "{0} is a {1}", :is_negative => false)
             @constellation.Reading(inheritance_fact, 3-n, :role_sequence => rs2, :text => "{0} is an {1}", :is_negative => false)
           }
@@ -867,6 +867,152 @@ module ActiveFacts
           [subtype_step(query, ti)]
       end
 
+      # If there's a query, build it and return a new RoleSequence containing the projected roles:
+      def query_over_role_sequence(role_sequence, join_over, joined_roles, end_points)
+	# Skip if there's no query here (sequence join nor end-point subset join)
+	role_refs = role_sequence.all_role_ref_in_order
+	if !join_over and !role_refs.detect{|rr| rr.role.object_type != end_points[rr.ordinal]}
+	  # No sequence join nor end_point join here
+	  return role_sequence
+	end
+
+	# A RoleSequence for the actual query end-points
+	replacement_rs = @constellation.RoleSequence(:new)
+
+	query = @constellation.Query(:new)
+	variable = nil
+	query_role = nil
+	role_refs.zip(joined_roles||[]).each_with_index do |(role_ref, joined_role), i|
+
+	  # Each role_ref is to an object joined via joined_role to variable (or which will be the variable)
+
+	  # Create a variable for the actual end-point (supertype of the constrained roles)
+	  end_point = end_points[i]
+	  unless end_point
+	    raise "In #{constraint_type} #{name}, there is a faulty or non-translated query"
+	  end
+	  trace :query, "Variable #{query.all_variable.size} is for #{end_point.name}"
+	  end_node = @constellation.Variable(query, query.all_variable.size, :object_type => end_point)
+
+	  # We're going to rewrite the constraint to constrain the supertype roles, but assume they're the same:
+	  role_node = end_node
+	  end_role = role_ref.role
+
+	  # Create subtyping steps at the end-point, if needed:
+	  projecting_play = nil
+	  constrained_play = nil
+	  if (subtype = role_ref.role.object_type) != end_point
+	    trace :query, "Making subtyping steps from #{subtype.name} to #{end_point.name}" do
+	      # There may be more than one supertyping level. Make the steps:
+	      subtyping_steps = subtype_steps(query, subtype, end_point)
+	      step = subtyping_steps[0]
+	      #constrained_play = subtyping_steps[-1].all_play.detect{|p| p.role.object_type == end_point}
+	      subtyping_steps.detect{|s| constrained_play = s.all_play.detect{|p| p.role.object_type == end_point}}
+
+	      # Replace the constrained role and node with the supertype ones:
+	      end_node = query.all_variable.detect{|jn| jn.object_type == end_point }
+	      #projecting_play = step.all_play.detect{|p| p.role.object_type == subtype}
+	      subtyping_steps.detect{|s| projecting_play = s.all_play.detect{|p| p.role.object_type == subtype}}
+	      end_role = step.fact_type.all_role.detect{|r| r.object_type == end_point }
+	      role_node = query.all_variable.detect{|jn| jn.object_type == role_ref.role.object_type }
+	    end
+	  end
+
+	  if end_role.object_type != end_node.object_type
+	    raise "Internal error in #{constraint_type} #{name}: making illegal reference to variable, end role mismatch"
+	  end
+
+	  if join_over
+	    if !variable     # Create the Variable when processing the first role
+	      trace :query, "Variable #{query.all_variable.size} is over #{join_over.name}"
+	      variable = @constellation.Variable(query, query.all_variable.size, :object_type => join_over)
+	    end
+	    trace :query, "Making step from #{end_point.name} to #{join_over.name}" do
+	      rs = @constellation.RoleSequence(:new)
+	      # Detect the fact type over which we're stepping (may involve objectification)
+	      raise "Internal error in #{constraint_type} #{name}: making illegal reference to variable, object type mismatch" if role_ref.role.object_type != role_node.object_type
+	      step = @constellation.Step(:guid => :new, :fact_type => joined_role.fact_type)
+	      @constellation.RoleRef(rs, 0, :role => role_ref.role)
+	      role_play = @constellation.Play(:step => step, :variable => role_node, :role => role_ref.role, :is_input => true)
+	      # Make the projected RoleRef:
+	      rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => role_ref.role, :play => role_play)
+	      raise "Internal error in #{constraint_type} #{name}: making illegal reference to variable, joined_role mismatch" if joined_role.object_type != variable.object_type
+	      @constellation.RoleRef(rs, 1, :role => joined_role)
+	      join_play = @constellation.Play(:step => step, :variable => variable, :role => joined_role)
+	      trace :query, "New step #{step.describe}"
+	    end
+	  else
+	    trace :query, "Need step for non-join_over role #{end_point.name} #{role_ref.describe} in #{role_ref.role.fact_type.default_reading}"
+	    if (roles = role_ref.role.fact_type.all_role.to_a).size > 1
+	      # Here we have an end join (step already created) but no sequence join
+	      if variable
+		raise "Internal error in #{constraint_type} #{name}: making illegal step" if role_ref.role.object_type != role_node.object_type
+		step = @constellation.Step(:guid => :new, :fact_type => role_ref.role.fact_type)
+		join_play = @constellation.Play(:step => step, :variable => variable, :role => query_role, :is_input => true)
+		role_play = @constellation.Play(:step => step, :variable => role_node, :role => role_ref.role)
+		# Make the projected RoleRef:
+		rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => role_ref.role, :play => role_play)
+		roles -= [query_role, role_ref.role]
+		roles.each do |incidental_role|
+		  jn = @constellation.Variable(query, query.all_variable.size, :object_type => incidental_role.object_type)
+		  play = @constellation.Play(:step => step, :variable => jn, :role => incidental_role, :step => step)
+		end
+	      else
+
+		if role_sequence.all_role_ref.size > 1
+		  variable = role_node
+		  query_role = role_ref.role
+
+		  # Make the projected RoleRef:
+		  rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => constrained_play.role, :play => constrained_play)
+		else
+		  # We enter this fact type (requiring that a role be played) but don't exit it.
+                  # I think this can only happen where we have subtyping steps, above.
+
+		  # There's no query in this role sequence, so we'd drop off the bottom without doing the right things. Why?
+		  # Without this case, Supervision.orm omits "that runs Company" from the exclusion constraint, and I'm not sure why.
+		  # I think the "then" code causes it to drop out the bottom without making the step (which is otherwise made in every case, see CompanyDirectorEmployee for example)
+		  step = @constellation.Step(:guid => :new, :fact_type => role_ref.role.fact_type)
+
+		  # p constrained_play.role.object_type.name
+		  # p projecting_play.role.object_type.name
+		  # debugger
+
+		  role_play = @constellation.Play(:step => step, :variable => role_node, :role => role_ref.role, :is_input => true)
+
+		  # Make the projected RoleRef:
+		  rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => constrained_play.role, :play => constrained_play)
+
+#		  role_ref.role.fact_type.all_role.each do |role|
+#		    next if role == role_play.role
+#		    next if role_sequence.all_role_ref.detect{|rr| rr.role == role}
+#		    jn = @constellation.Variable(query, query.all_variable.size, :object_type => role.object_type)
+#		    play = @constellation.Play(:step => step, :variable => jn, :role => role)
+#		    if role == role_ref.role
+#		      # Make the projected RoleRef:
+#		      rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => role, :play => play)
+#		    end
+#		  end
+
+		end
+	      end
+	    else
+	      # Unary fact type, make a Step from and to the constrained_play
+	      step = @constellation.Step(:guid => :new, :fact_type => role_ref.role.fact_type)
+	      play = @constellation.Play(:step => step, :variable => constrained_play.variable, :role => role_ref.role, :is_input => true)
+	      # Make the projected RoleRef:
+	      rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => role_ref.role, :play => play)
+	    end
+	  end
+	end
+	raise "hell" if replacement_rs.all_role_ref.size != role_sequence.all_role_ref.size
+
+	# Thoroughly check that this is a valid query
+	query.validate
+	trace :query, "Query has projected nodes #{replacement_rs.describe}"
+	replacement_rs 
+      end
+
       # Equality and subset join constraints involve two or more role sequences,
       # and the respective roles from each sequence must be compatible,
       # Compatibility might involve subtyping steps but not objectification steps
@@ -879,7 +1025,7 @@ module ActiveFacts
           # Get the object types constrained for each position in the role sequences.
           # Supertyping steps may be needed to reach them.
           end_points = []   # An array of the common supertype for matching role_refs across the sequences
-          end_steps = []    # An array of booleans indicating whether any role_sequence requires subtyping steps
+          end_step_needed = []    # An array of booleans indicating whether any role_sequence requires subtyping steps
           role_sequences[0].all_role_ref.size.times do |i|
             role_refs = role_sequences.map{|rs| rs.all_role_ref.detect{|rr| rr.ordinal == i}}
             if (fact_types = role_refs.map{|rr| rr.role.fact_type}).uniq.size == 1
@@ -887,8 +1033,9 @@ module ActiveFacts
               raise "In #{constraint_type} #{name} role sequence #{i}, there is a faulty join involving just 1 fact type: '#{fact_types[0].default_reading}'"
             end
             if (players = role_refs.map{|rr| rr.role.object_type}).uniq.size == 1
+	      # All roles in this set are played by the same object type
               end_point = players[0]
-              end_steps[i] = false
+              end_step_needed[i] = false
             else
               # Can the players be joined using subtyping steps?
               common_supertypes = players[1..-1].
@@ -898,7 +1045,7 @@ module ActiveFacts
               end_point = common_supertypes[0]
 
               raise "constrained roles of #{constraint_type} #{name} are incompatible (#{players.map(&:name)*', '})" if common_supertypes.size == 0
-              end_steps[i] = true
+              end_step_needed[i] = true
             end
             end_points[i] = end_point
           end
@@ -916,7 +1063,7 @@ module ActiveFacts
           end
 
           # If there are no queries, we can drop out here.
-          if sequence_join_over.compact.empty? && !end_steps.detect{|e| true}
+          if sequence_join_over.compact.empty? && !end_step_needed.detect{|e| e}
             return true
           end
 
@@ -924,7 +1071,7 @@ module ActiveFacts
 
           query = nil
           trace :query, "#{constraint_type} join constraint #{name} constrains #{
-              end_points.zip(end_steps).map{|(p,j)| (p ? p.name : 'NULL')+(j ? ' & subtypes':'')}*', '
+              end_points.zip(end_step_needed).map{|(p,j)| (p ? p.name : 'NULL')+(j ? ' & subtypes':'')}*', '
             }#{
             if role_sequences[0].all_role_ref.size > 1
               ", joined over #{
@@ -939,123 +1086,13 @@ module ActiveFacts
 
             # There may be one query per role sequence:
             role_sequences.zip(sequence_join_over||[], sequence_joined_roles||[]).map do |role_sequence, join_over, joined_roles|
-              # Skip if there's no query here (sequence join nor end-point subset join)
-              role_refs = role_sequence.all_role_ref_in_order
-              if !join_over and !role_refs.detect{|rr| rr.role.object_type != end_points[rr.ordinal]}
-                # No sequence join nor end_point join here
-                next
-              end
+	      position = role_sequences.index(role_sequence)
+	      replacement_rs = query_over_role_sequence(role_sequence, join_over, joined_roles, end_points)
+	      if role_sequence != replacement_rs
+		role_sequences[position] = replacement_rs
+	      end
+	    end
 
-              # A RoleSequence for the actual query end-points
-              replacement_rs = @constellation.RoleSequence(:new)
-
-              query = @constellation.Query(:new)
-              variable = nil
-              query_role = nil
-              role_refs.zip(joined_roles||[]).each_with_index do |(role_ref, joined_role), i|
-
-                # Each role_ref is to an object joined via joined_role to variable (or which will be the variable)
-
-                # Create a variable for the actual end-point (supertype of the constrained roles)
-                end_point = end_points[i]
-                unless end_point
-                  raise "In #{constraint_type} #{name}, there is a faulty or non-translated query"
-                end
-                trace :query, "Variable #{query.all_variable.size} is for #{end_point.name}"
-                end_node = @constellation.Variable(query, query.all_variable.size, :object_type => end_point)
-
-                # We're going to rewrite the constraint to constrain the supertype roles, but assume they're the same:
-                role_node = end_node
-                end_role = role_ref.role
-
-                # Create subtyping steps at the end-point, if needed:
-                projecting_play = nil
-                constrained_play = nil
-                if (subtype = role_ref.role.object_type) != end_point
-                  trace :query, "Making subtyping steps from #{subtype.name} to #{end_point.name}" do
-                    # There may be more than one supertyping level. Make the steps:
-                    subtyping_steps = subtype_steps(query, subtype, end_point)
-                    step = subtyping_steps[0]
-                    constrained_play = subtyping_steps[-1].all_play.detect{|p| p.role.object_type == end_point}
-
-                    # Replace the constrained role and node with the supertype ones:
-                    end_node = query.all_variable.detect{|jn| jn.object_type == end_point }
-                    projecting_play = step.all_play.detect{|p| p.role.object_type == subtype}
-                    end_role = step.fact_type.all_role.detect{|r| r.object_type == end_point }
-                    role_node = query.all_variable.detect{|jn| jn.object_type == role_ref.role.object_type }
-                  end
-                end
-
-                raise "Internal error in #{constraint_type} #{name}: making illegal reference to variable, end role mismatch" if end_role.object_type != end_node.object_type
-                rr = @constellation.RoleRef(replacement_rs, replacement_rs.all_role_ref.size, :role => end_role)
-                projecting_play ||= (constrained_play = @constellation.Play(:variable => end_node, :role => end_role))
-                projecting_play.role_ref = rr   # Project this RoleRef
-                # projecting_play.variable.projection = rr.role   # REVISIT: The variable should project a role, not the Play a RoleRef
-
-                if join_over
-                  if !variable     # Create the Variable when processing the first role
-                    trace :query, "Variable #{query.all_variable.size} is over #{join_over.name}"
-                    variable = @constellation.Variable(query, query.all_variable.size, :object_type => join_over)
-                  end
-                  trace :query, "Making step from #{end_point.name} to #{join_over.name}" do
-                    rs = @constellation.RoleSequence(:new)
-                    # Detect the fact type over which we're stepping (may involve objectification)
-                    raise "Internal error in #{constraint_type} #{name}: making illegal reference to variable, object type mismatch" if role_ref.role.object_type != role_node.object_type
-		    step = @constellation.Step(:guid => :new, :fact_type => joined_role.fact_type)
-                    @constellation.RoleRef(rs, 0, :role => role_ref.role)
-                    role_play = @constellation.Play(:step => step, :variable => role_node, :role => role_ref.role, :is_input => true)
-                    raise "Internal error in #{constraint_type} #{name}: making illegal reference to variable, joined_role mismatch" if joined_role.object_type != variable.object_type
-                    @constellation.RoleRef(rs, 1, :role => joined_role)
-                    join_play = @constellation.Play(:step => step, :variable => variable, :role => joined_role)
-                    trace :query, "New step #{step.describe}"
-                  end
-                else
-                  trace :query, "Need step for non-join_over role #{end_point.name} #{role_ref.describe} in #{role_ref.role.fact_type.default_reading}"
-                  if (roles = role_ref.role.fact_type.all_role.to_a).size > 1
-                    # Here we have an end join (step already created) but no sequence join
-                    if variable
-                      raise "Internal error in #{constraint_type} #{name}: making illegal step" if role_ref.role.object_type != role_node.object_type
-		      step = @constellation.Step(:guid => :new, :fact_type => role_ref.role.fact_type)
-                      join_play = @constellation.Play(:step => step, :variable => variable, :role => query_role, :is_input => true)
-                      role_play = @constellation.Play(:step => step, :variable => role_node, :role => role_ref.role)
-                      roles -= [query_role, role_ref.role]
-                      roles.each do |incidental_role|
-                        jn = @constellation.Variable(query, query.all_variable.size, :object_type => incidental_role.object_type)
-                        play = @constellation.Play(:step => step, :variable => jn, :role => incidental_role, :step => step)
-                      end
-                    else
-                      if role_sequence.all_role_ref.size > 1
-                        variable = role_node
-                        query_role = role_ref.role
-                      else
-                        # There's no query in this role sequence, so we'd drop off the bottom without doing the right things. Why?
-                        # Without this case, Supervision.orm omits "that runs Company" from the exclusion constraint, and I'm not sure why.
-                        # I think the "then" code causes it to drop out the bottom without making the step (which is otherwise made in every case, see CompanyDirectorEmployee for example)
-			step = @constellation.Step(:guid => :new, :fact_type => role_ref.role.fact_type)
-                        role_play = @constellation.Play(:step => step, :variable => role_node, :role => role_ref.role, :is_input => true)
-                        role_ref.role.fact_type.all_role.each do |role|
-                          next if role == role_play.role
-                          next if role_sequence.all_role_ref.detect{|rr| rr.role == role}
-                          jn = @constellation.Variable(query, query.all_variable.size, :object_type => role.object_type)
-                          play = @constellation.Play(:step => step, :variable => jn, :role => role)
-                        end
-                      end
-                    end
-                  else
-                    # Unary fact type, make a Step from and to the constrained_play
-                    step = @constellation.Step(:guid => :new, :fact_type => role_ref.role.fact_type)
-                    play = @constellation.Play(:step => step, :variable => constrained_play.variable, :role => role_ref.role, :is_input => true)
-                  end
-                end
-              end
-
-              # Thoroughly check that this is a valid query
-              query.validate
-              trace :query, "Query has projected nodes #{replacement_rs.describe}"
-
-              # Constrain the replacement role sequence, which has the attached query:
-              role_sequences[role_sequences.index(role_sequence)] = replacement_rs
-            end
             return true
           end
         rescue => e

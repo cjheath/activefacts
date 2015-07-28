@@ -36,9 +36,14 @@ module ActiveFacts
 	# list_chasers(@concept_deps)
 	# list_ranks(@concept_deps)
 
+#	@constellation.Topic.values.each do |topic|
+#	  puts "#{topic.topic_name} depends on #{topic.precursors.map(&:topic_name)*', '}"
+#	end
+
 	# analyse_topic_sequence
 
 	list_groups_by_rank @concept_deps
+
       end
 
       def list_concepts concept_deps
