@@ -56,6 +56,15 @@ module ActiveFacts
         extend language_module
       end
 
+      # Mark any new Concepts as belonging to this topic
+      def topic_flood
+	@constellation.Concept.each do |key, concept|
+	  next if concept.topic
+	  trace :topic, "Colouring #{concept.describe} with #{@topic.topic_name}"
+	  concept.topic = @topic
+	end
+      end
+
       def compile input
         include_language
 
@@ -75,15 +84,13 @@ module ActiveFacts
               ast.vocabulary = @vocabulary
               value = compile_definition ast
               trace :definition, "Compiled to #{value.is_a?(Array) ? value.map{|v| v.verbalise}*', ' : value.verbalise}" if value
-	      if ast.is_a?(Compiler::Vocabulary)
+	      if value.is_a?(ActiveFacts::Metamodel::Topic)
+		topic_flood if @topic
+		@topic = value
+	      elsif ast.is_a?(Compiler::Vocabulary)
+		topic_flood if @topic
 		@vocabulary = value
 		@topic = @constellation.Topic(@vocabulary.name)
-	      elsif @topic  # Mark any new Concepts as belonging to this topic
-		@constellation.Concept.each do |key, concept|
-		  next if concept.topic
-		  trace :topic, "Colouring #{concept.describe} with #{@topic.topic_name}"
-		  concept.topic = @topic
-		end
 	      end
             rescue => e
               # Augment the exception message, but preserve the backtrace
@@ -95,6 +102,7 @@ module ActiveFacts
               raise ne
             end
           end
+	  topic_flood if @topic
         end
         raise failure_reason unless ok
         vocabulary
@@ -111,6 +119,7 @@ module ActiveFacts
 
         # REVISIT: Save and use another @vocabulary for this file?
         File.open(@filename) do |f|
+	  topic_flood if @topic
 	  @topic = @constellation.Topic(File.basename(@filename, '.cql'))
 	  trace :import, "Importing #{@filename} as #{@topic.topic_name}" do
 	    ok = parse_all(f.read, nil, &@block)

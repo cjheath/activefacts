@@ -323,6 +323,7 @@ module ActiveFacts
 		:max_frequency => 1,
 		:is_preferred_identifier => true # (prefer || !!@fact_type.entity_type)
 	      )
+	      pc.concept.topic = @fact_type.concept.topic
 	      trace :constraint, "Made new fact type implicit PC GUID=#{pc.concept.guid} #{pc.name} min=nil max=1 over #{rs.describe}"
 	    elsif pc
 	      trace :constraint, "Will rely on existing UC GUID=#{pc.concept.guid} #{pc.name} to be used as PI over #{rs.describe}"
