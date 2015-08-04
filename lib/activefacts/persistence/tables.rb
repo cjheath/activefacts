@@ -28,8 +28,8 @@ module ActiveFacts
         return @is_table if @is_table != nil
 
         # Always a table if marked so:
-        if is_independent
-          trace :absorption, "ValueType #{name} is declared independent"
+        if is_separate
+          trace :absorption, "ValueType #{name} is declared independent or separate"
           @tentative = false
           return @is_table = true
         end
@@ -73,8 +73,8 @@ module ActiveFacts
         @tentative = false
 
         # Always a table if marked so
-        if is_independent or concept.all_mapping_annotation.include?('separate')
-          trace :absorption, "EntityType #{name} is declared independent"
+        if is_separate
+          trace :absorption, "EntityType #{name} is declared independent or separate"
           return @is_table = true
         end
 
@@ -199,7 +199,7 @@ module ActiveFacts
         # Strategy:
         # 1) Populate references for all ObjectTypes
         # 2) Decide which ObjectTypes must be and must not be tables
-        #  a. ObjectTypes labelled is_independent are tables (See the is_table methods above)
+        #  a. ObjectTypes labelled is_independent/separate are tables (See the is_table methods above)
         #  b. Entity types having no references to them must be tables
         #  c. subtypes are not tables unless marked with assimilation = separate or partitioned
         #  d. ValueTypes are never tables unless they independent or can have references (to other ValueTypes)

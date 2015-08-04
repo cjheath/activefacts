@@ -18,7 +18,6 @@ module ::Metamodel
 
   class Annotation < String
     value_type 
-    has_one :concept, :counterpart => :mapping_annotation  # See Concept.all_mapping_annotation
   end
 
   class Assimilation < String
@@ -177,6 +176,12 @@ module ::Metamodel
     one_to_one :guid, :mandatory => true        # See Guid.concept
     has_one :implication_rule                   # See ImplicationRule.all_concept
     has_one :topic                              # See Topic.all_concept
+  end
+
+  class ConceptAnnotation
+    identified_by :concept, :mapping_annotation
+    has_one :concept, :mandatory => true        # See Concept.all_concept_annotation
+    has_one :mapping_annotation, :class => Annotation, :mandatory => true  # See Annotation.all_concept_annotation_as_mapping_annotation
   end
 
   class Constraint

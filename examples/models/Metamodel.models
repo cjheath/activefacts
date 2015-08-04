@@ -51,20 +51,6 @@ module Concernz
 end
 
 module Concernz
-  module Annotation
-    extend ActiveSupport::Concern
-    included do
-      self.primary_key = 'annotation_id'
-
-      # maybe Annotation applies to Concept
-      belongs_to :concept, :foreign_key => :concept_guid
-
-      validates :annotation_value, :presence => true
-    end
-  end
-end
-
-module Concernz
   module Concept
     extend ActiveSupport::Concern
     included do
@@ -112,8 +98,8 @@ module Concernz
       # Constraint is an instance of Concept and Constraint is a Value Constraint and Value Constraint is involved in Allowed Range
       has_many :allowed_ranges_via_value_constraint_constraint, :class_name => 'AllowedRange', :foreign_key => :value_constraint_concept_guid, :dependent => :destroy
 
-      # maybe Concept has mapping-Annotation
-      has_many :mapping_annotations, :class_name => 'Annotation', :foreign_key => :concept_guid, :dependent => :destroy
+      # Concept is involved in Concept Annotation
+      has_many :concept_annotations, :class_name => 'ConceptAnnotation', :foreign_key => :concept_guid, :dependent => :destroy
 
       # maybe Concept has Context Note and maybe Context Note is an instance of Concept
       has_many :concepts_via_context_note, :class_name => 'Concept', :foreign_key => :context_note_relevant_concept_guid, :dependent => :destroy
@@ -171,6 +157,21 @@ module Concernz
 
       # Query is an instance of Concept and Query includes Variable
       has_many :variables_via_query, :class_name => 'Variable', :foreign_key => :query_concept_guid, :dependent => :destroy
+    end
+  end
+end
+
+module Concernz
+  module ConceptAnnotation
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'concept_annotation_id'
+
+      # Concept Annotation involves Concept
+      belongs_to :concept, :foreign_key => :concept_guid
+
+      validates :concept_guid, :presence => true
+      validates :mapping_annotation, :presence => true
     end
   end
 end

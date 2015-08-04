@@ -39,7 +39,7 @@ module ActiveFacts
             add_supertype(supertype_name, @identification || i > 0)
           end
 	  @pragmas.each do |p|
-	    @constellation.Annotation(p, :concept => @entity_type.concept)
+	    @constellation.ConceptAnnotation(:concept => @entity_type.concept, :mapping_annotation => p)
 	  end if @pragmas
 
           context = CompilationContext.new(@vocabulary)

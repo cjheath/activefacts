@@ -45,15 +45,6 @@ CREATE TABLE AlternativeSet (
 )
 GO
 
-CREATE TABLE Annotation (
-	-- Annotation Value,
-	AnnotationValue                         varchar NOT NULL,
-	-- maybe Annotation applies to Concept and Concept has Guid,
-	ConceptGuid                             uniqueidentifier NULL,
-	PRIMARY KEY(AnnotationValue)
-)
-GO
-
 CREATE TABLE Concept (
 	-- maybe Constraint is an instance of Concept and maybe Constraint requires Enforcement and maybe Enforcement notifies Agent and Agent has Agent Name,
 	ConstraintAgentName                     varchar NULL,
@@ -213,6 +204,16 @@ CREATE VIEW dbo.ValueConstraintInConcept_ValueConstraintRoleFactTypeConceptGuidV
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConceptByValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal ON dbo.ValueConstraintInConcept_ValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal)
+GO
+
+CREATE TABLE ConceptAnnotation (
+	-- Concept Annotation involves Concept and Concept has Guid,
+	ConceptGuid                             uniqueidentifier NOT NULL,
+	-- Concept Annotation involves Annotation,
+	MappingAnnotation                       varchar NOT NULL,
+	PRIMARY KEY(ConceptGuid, MappingAnnotation),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
+)
 GO
 
 CREATE TABLE ContextAccordingTo (
@@ -793,10 +794,6 @@ GO
 
 ALTER TABLE AllowedRange
 	ADD FOREIGN KEY (ValueRangeMinimumBoundValueLiteral, ValueRangeMinimumBoundValueIsLiteralString, ValueRangeMinimumBoundValueUnitConceptGuid) REFERENCES Value (Literal, IsLiteralString, UnitConceptGuid)
-GO
-
-ALTER TABLE Annotation
-	ADD FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 GO
 
 ALTER TABLE Concept

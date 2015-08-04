@@ -323,9 +323,9 @@ module ActiveFacts
 
         when :supertype   # A subtype absorbs a reference to its supertype when separate, or all when partitioned
           # REVISIT: Or when partitioned
-          raise hell unless role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
+          raise "Internal error, expected TypeInheritance" unless role.fact_type.is_a?(ActiveFacts::Metamodel::TypeInheritance)
 	  counterpart_role = (role.fact_type.all_role.to_a-[role])[0]
-          if role.fact_type.assimilation or counterpart_role.object_type.is_independent  # assimilation == 'separate' or assimilation == 'partitioned'
+          if role.fact_type.assimilation or counterpart_role.object_type.is_separate
             trace :references, "supertype #{name} doesn't absorb a reference to separate subtype #{role.fact_type.subtype.name}"
           else
             r = ActiveFacts::Persistence::Reference.new(self, role)
@@ -335,7 +335,7 @@ module ActiveFacts
           end
 
         when :subtype    # This object is a supertype, which can absorb the subtype unless that's independent
-          if role.fact_type.assimilation or is_independent
+          if role.fact_type.assimilation or is_separate
             ActiveFacts::Persistence::Reference.new(self, role).tabulate
             # If partitioned, the supertype is absorbed into *each* subtype; a reference to the supertype needs to know which
           else
@@ -348,8 +348,8 @@ module ActiveFacts
           # Decide which way the one-to-one is likely to go; it will be flipped later if necessary.
           # Force the decision if just one is independent:
           # REVISIT: Decide whether supertype assimilation can affect this
-          r.tabulate and return if is_independent and !r.to.is_independent
-          return if !is_independent and r.to.is_independent
+          r.tabulate and return if is_separate and !r.to.is_separate
+          return if !is_separate and r.to.is_separate
 
           if is_a?(ValueType)
             # Never absorb an entity type into a value type

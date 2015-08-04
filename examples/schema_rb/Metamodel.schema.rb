@@ -3,7 +3,7 @@
 #
 
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Schema.define(:version => 20150804132325) do
+ActiveRecord::Schema.define(:version => 20150804175251) do
   enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   create_table "aggregations", :id => false, :force => true do |t|
     t.column "aggregation_id", :primary_key, :null => false
@@ -30,14 +30,6 @@ ActiveRecord::Schema.define(:version => 20150804132325) do
     t.column "members_are_exclusive", :boolean, :null => true
   end
 
-
-  create_table "annotations", :id => false, :force => true do |t|
-    t.column "annotation_id", :primary_key, :null => false
-    t.column "concept_guid", :uuid, :null => true
-    t.column "annotation_value", :string, :null => false
-  end
-
-  add_index "annotations", ["annotation_value"], :name => :index_annotations_on_annotation_value, :unique => true
 
   create_table "concepts", :id => false, :force => true do |t|
     t.column "guid", :uuid, :default => 'gen_random_uuid()', :primary_key => true, :null => false
@@ -88,6 +80,14 @@ ActiveRecord::Schema.define(:version => 20150804132325) do
   add_index "concepts", ["unit_plural_name"], :name => :index_concepts_on_unit_plural_name
   add_index "concepts", ["unit_vocabulary_name", "unit_name"], :name => :index_concepts_on_unit_vocabulary_name_unit_name
   add_index "concepts", ["value_constraint_role_id"], :name => :index_concepts_on_value_constraint_role_id
+
+  create_table "concept_annotations", :id => false, :force => true do |t|
+    t.column "concept_annotation_id", :primary_key, :null => false
+    t.column "concept_guid", :uuid, :null => false
+    t.column "mapping_annotation", :string, :null => false
+  end
+
+  add_index "concept_annotations", ["concept_guid", "mapping_annotation"], :name => :index_concept_annotations_on_concept_guid_mapping_annotation, :unique => true
 
   create_table "context_according_tos", :id => false, :force => true do |t|
     t.column "context_according_to_id", :primary_key, :null => false
@@ -342,8 +342,6 @@ ActiveRecord::Schema.define(:version => 20150804132325) do
     add_index :allowed_ranges, [:value_range_maximum_bound_value_id], :unique => false, :name => :index_allowed_ranges_on_value_range_maximum_bound_value_id
     add_foreign_key :allowed_ranges, :values, :column => :value_range_minimum_bound_value_id, :primary_key => :value_id, :on_delete => :cascade
     add_index :allowed_ranges, [:value_range_minimum_bound_value_id], :unique => false, :name => :index_allowed_ranges_on_value_range_minimum_bound_value_id
-    add_foreign_key :annotations, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
-    add_index :annotations, [:concept_guid], :unique => false, :name => :index_annotations_on_concept_guid
     add_foreign_key :concepts, :concepts, :column => :context_note_relevant_concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :concepts, [:context_note_relevant_concept_guid], :unique => false, :name => :index_concepts_on_context_note_relevant_concept_guid
     add_foreign_key :concepts, :concepts, :column => :instance_fact_concept_guid, :primary_key => :guid, :on_delete => :cascade
@@ -368,6 +366,8 @@ ActiveRecord::Schema.define(:version => 20150804132325) do
     add_index :concepts, [:subset_constraint_superset_role_sequence_guid], :unique => false, :name => :index_concepts_on_subset_constraint_superset_role_sequence_guid
     add_foreign_key :concepts, :values, :column => :instance_value_id, :primary_key => :value_id, :on_delete => :cascade
     add_index :concepts, [:instance_value_id], :unique => false, :name => :index_concepts_on_instance_value_id
+    add_foreign_key :concept_annotations, :concepts, :column => :concept_guid, :primary_key => :guid, :on_delete => :cascade
+    add_index :concept_annotations, [:concept_guid], :unique => false, :name => :index_concept_annotations_on_concept_guid
     add_foreign_key :context_according_tos, :concepts, :column => :context_note_concept_guid, :primary_key => :guid, :on_delete => :cascade
     add_index :context_according_tos, [:context_note_concept_guid], :unique => false, :name => :index_context_according_tos_on_context_note_concept_guid
     add_foreign_key :context_agreed_bies, :concepts, :column => :agreement_context_note_concept_guid, :primary_key => :guid, :on_delete => :cascade

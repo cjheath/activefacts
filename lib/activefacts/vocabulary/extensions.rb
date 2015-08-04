@@ -411,6 +411,10 @@ module ActiveFacts
     class ObjectType
       # Placeholder for the surrogate transform
       attr_reader :injected_surrogate_role
+
+      def is_separate
+	is_independent or concept.all_concept_annotation.detect{|ca| ca.mapping_annotation == 'separate'}
+      end
     end
 
     class ValueType

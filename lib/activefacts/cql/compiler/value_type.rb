@@ -115,7 +115,7 @@ module ActiveFacts
 	    @constellation.ValueType(@vocabulary, @name, :concept => :new)
           vt.is_independent = true if @pragmas.delete('independent')
 	  @pragmas.each do |p|
-	    @constellation.Annotation(p, :concept => vt.concept)
+	    @constellation.ConceptAnnotation(:concept => vt.concept, :mapping_annotation => p)
 	  end if @pragmas
           vt.supertype = base_type if base_type
           vt.length = length if length

@@ -56,10 +56,12 @@ Coefficient is identified by Numerator and Denominator and Coefficient is precis
 Concept is identified by Guid where
 	Concept has one Guid,
 	Guid is of at most one Concept;
-Concept has mapping-Annotation,
-	Annotation applies to at most one Concept;
 
-Constraint is identified by Concept where
+Concept Annotation is where
+	Concept has mapping-Annotation,
+	Annotation applies to Concept;
+
+Constraint [separate] is identified by Concept where
 	Constraint is an instance of one Concept;
 Name is of Constraint,
 	Constraint is called at most one Name;
