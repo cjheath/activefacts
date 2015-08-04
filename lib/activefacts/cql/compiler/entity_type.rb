@@ -31,13 +31,16 @@ module ActiveFacts
         def compile
           @entity_type = @vocabulary.valid_entity_type_name(@name) ||
 	    @constellation.EntityType(@vocabulary, @name, :concept => :new)
-          @entity_type.is_independent = true if (@pragmas.include? 'independent')
+          @entity_type.is_independent = true if @pragmas.delete('independent')
 
           # REVISIT: CQL needs a way to indicate whether subtype migration can occur.
           # For example by saying "Xyz is a role of Abc".
           @supertypes.each_with_index do |supertype_name, i|
             add_supertype(supertype_name, @identification || i > 0)
           end
+	  @pragmas.each do |p|
+	    @constellation.Annotation(p, :concept => @entity_type.concept)
+	  end if @pragmas
 
           context = CompilationContext.new(@vocabulary)
 
@@ -237,7 +240,9 @@ module ActiveFacts
 
             inheritance_fact = @constellation.TypeInheritance(@entity_type, supertype, :concept => :new)
 
-            assimilations = @pragmas.select { |p| ['absorbed', 'separate', 'partitioned'].include? p}
+	    assimilation_pragmas = ['absorbed', 'separate', 'partitioned']
+            assimilations = @pragmas.select { |p| assimilation_pragmas.include? p}
+	    @pragmas -= assimilation_pragmas
             raise "Conflicting assimilation pragmas #{assimilations*', '}" if assimilations.size > 1
             inheritance_fact.assimilation = assimilations[0]
 

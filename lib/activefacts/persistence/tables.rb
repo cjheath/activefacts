@@ -73,7 +73,7 @@ module ActiveFacts
         @tentative = false
 
         # Always a table if marked so
-        if is_independent
+        if is_independent or concept.all_mapping_annotation.include?('separate')
           trace :absorption, "EntityType #{name} is declared independent"
           return @is_table = true
         end

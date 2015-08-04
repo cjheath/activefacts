@@ -113,7 +113,10 @@ module ActiveFacts
           # Create and initialise the ValueType:
 	  vt = @vocabulary.valid_value_type_name(@name) ||
 	    @constellation.ValueType(@vocabulary, @name, :concept => :new)
-          vt.is_independent = true if (@pragmas.include? 'independent')
+          vt.is_independent = true if @pragmas.delete('independent')
+	  @pragmas.each do |p|
+	    @constellation.Annotation(p, :concept => vt.concept)
+	  end if @pragmas
           vt.supertype = base_type if base_type
           vt.length = length if length
           vt.scale = scale if scale

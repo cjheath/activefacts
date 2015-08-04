@@ -169,10 +169,10 @@ module ActiveFacts
             if @pragmas
               @entity_type.is_independent = true if @pragmas.delete('independent')
             end
-            if @pragmas && @pragmas.size > 0
-              $stderr.puts "Mapping pragmas #{@pragmas.inspect} are ignored for objectified fact type #{@name}"
-            end
           end
+	  @pragmas.each do |p|
+	    @constellation.Annotation(p, :concept => @fact_type.concept)
+	  end if @pragmas
 
           @clauses.each do |clause|
             next unless clause.context_note
