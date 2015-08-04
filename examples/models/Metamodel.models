@@ -51,6 +51,20 @@ module Concernz
 end
 
 module Concernz
+  module Annotation
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'annotation_id'
+
+      # maybe Annotation applies to Concept
+      belongs_to :concept, :foreign_key => :concept_guid
+
+      validates :annotation_value, :presence => true
+    end
+  end
+end
+
+module Concernz
   module Concept
     extend ActiveSupport::Concern
     included do
@@ -97,6 +111,9 @@ module Concernz
 
       # Constraint is an instance of Concept and Constraint is a Value Constraint and Value Constraint is involved in Allowed Range
       has_many :allowed_ranges_via_value_constraint_constraint, :class_name => 'AllowedRange', :foreign_key => :value_constraint_concept_guid, :dependent => :destroy
+
+      # maybe Concept has mapping-Annotation
+      has_many :mapping_annotations, :class_name => 'Annotation', :foreign_key => :concept_guid, :dependent => :destroy
 
       # maybe Concept has Context Note and maybe Context Note is an instance of Concept
       has_many :concepts_via_context_note, :class_name => 'Concept', :foreign_key => :context_note_relevant_concept_guid, :dependent => :destroy
@@ -222,50 +239,6 @@ module Concernz
 end
 
 module Concernz
-  module Facet
-    extend ActiveSupport::Concern
-    included do
-      self.primary_key = 'facet_id'
-
-      # Facet requires value of facet-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
-      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :facet_value_type_object_type_id
-
-      # Facet involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
-      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_object_type_id
-
-      # Facet is involved in Facet Restriction
-      has_many :facet_restrictions, :class_name => 'FacetRestriction', :foreign_key => :facet_id, :dependent => :destroy
-
-      validates :name, :presence => true
-      validates :value_type_object_type_id, :presence => true
-      validates :facet_value_type_object_type_id, :presence => true
-    end
-  end
-end
-
-module Concernz
-  module FacetRestriction
-    extend ActiveSupport::Concern
-    included do
-      self.primary_key = 'facet_restriction_id'
-
-      # Facet Restriction involves Facet
-      belongs_to :facet, :foreign_key => :facet_id
-
-      # Facet Restriction involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
-      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_object_type_id
-
-      # Facet Restriction has Value
-      belongs_to :value, :foreign_key => :value_id
-
-      validates :facet_id, :presence => true
-      validates :value_id, :presence => true
-      validates :value_type_object_type_id, :presence => true
-    end
-  end
-end
-
-module Concernz
   module FactType
     extend ActiveSupport::Concern
     included do
@@ -292,8 +265,8 @@ module Concernz
       # Fact Type contains Role
       has_many :roles, :class_name => 'Role', :foreign_key => :fact_type_concept_guid, :dependent => :destroy
 
-      # Fact Type is a Link Fact Type and maybe Link Fact Type has Role Proxy and maybe Role Proxy is a kind of Role
-      has_one :role_via_role_proxy_link_fact_type, :class_name => 'Role', :foreign_key => :role_proxy_link_fact_type_concept_guid, :dependent => :destroy
+      # Fact Type is a Link Fact Type and maybe Link Fact Type has implying-Role
+      has_one :implying_role_via_link_fact_type, :class_name => 'Role', :foreign_key => :link_fact_type_concept_guid, :dependent => :destroy
 
       # Fact Type has Fact Type Shape and maybe Fact Type Shape is a kind of Shape
       has_many :shapes_via_fact_type_shape, :class_name => 'Shape', :foreign_key => :fact_type_shape_fact_type_concept_guid, :dependent => :destroy
@@ -327,15 +300,6 @@ module Concernz
       # Instance is of Object Type and maybe Instance is an instance of Concept
       has_many :concepts_via_instance, :class_name => 'Concept', :foreign_key => :instance_object_type_id, :dependent => :destroy
 
-      # Object Type is a Domain Object Type and Domain Object Type is a Value Type and Value Type is involved in Facet Restriction
-      has_many :facet_restrictions_via_value_type_domain_object_type, :class_name => 'FacetRestriction', :foreign_key => :value_type_object_type_id, :dependent => :destroy
-
-      # Object Type is a Domain Object Type and Domain Object Type is a Value Type and Facet requires value of facet-Value Type
-      has_many :facets_via_value_type_domain_object_type, :class_name => 'Facet', :foreign_key => :facet_value_type_object_type_id, :dependent => :destroy
-
-      # Object Type is a Domain Object Type and Domain Object Type is a Value Type and Value Type is involved in Facet
-      has_many :facets_via_value_type_domain_object_type, :class_name => 'Facet', :foreign_key => :value_type_object_type_id, :dependent => :destroy
-
       # Object Type is a Domain Object Type and Domain Object Type is an Entity Type and maybe Entity Type nests Fact Type
       has_one :fact_type_via_entity_type_domain_object_type, :class_name => 'FactType', :foreign_key => :entity_type_object_type_id, :dependent => :destroy
 
@@ -355,6 +319,15 @@ module Concernz
 
       # Object Type has Object Type Shape and maybe Object Type Shape is a kind of Shape
       has_many :shapes_via_object_type_shape, :class_name => 'Shape', :foreign_key => :object_type_shape_object_type_id, :dependent => :destroy
+
+      # Object Type is a Domain Object Type and Domain Object Type is a Value Type and Value Type is involved in Value Type Parameter Restriction
+      has_many :value_type_parameter_restrictions_via_value_type_domain_object_type, :class_name => 'ValueTypeParameterRestriction', :foreign_key => :value_type_object_type_id, :dependent => :destroy
+
+      # Object Type is a Domain Object Type and Domain Object Type is a Value Type and Value Type Parameter requires value of facet-Value Type
+      has_many :value_type_parameters_via_value_type_domain_object_type, :class_name => 'ValueTypeParameter', :foreign_key => :facet_value_type_object_type_id, :dependent => :destroy
+
+      # Object Type is a Domain Object Type and Domain Object Type is a Value Type and Value Type is involved in Value Type Parameter
+      has_many :value_type_parameters_via_value_type_domain_object_type, :class_name => 'ValueTypeParameter', :foreign_key => :value_type_object_type_id, :dependent => :destroy
 
       # Object Type is a Domain Object Type and Domain Object Type is a Value Type and Value Type has Value
       has_many :values_via_value_type_domain_object_type, :class_name => 'Value', :foreign_key => :value_type_object_type_id, :dependent => :destroy
@@ -378,8 +351,8 @@ module Concernz
       # Play involves Role
       belongs_to :role, :foreign_key => :role_id
 
-      # maybe Play is incidentally involved in Step
-      belongs_to :step, :foreign_key => :step_id
+      # Play involves Step
+      belongs_to :step, :foreign_key => :step_guid
 
       # Play involves Variable
       belongs_to :variable, :foreign_key => :variable_id
@@ -387,13 +360,8 @@ module Concernz
       # maybe Play projects Role Ref
       has_one :role_ref, :class_name => 'RoleRef', :foreign_key => :play_id, :dependent => :destroy
 
-      # Step has input-Play
-      has_many :steps, :class_name => 'Step', :foreign_key => :input_play_id, :dependent => :destroy
-
-      # maybe Step has output-Play
-      has_many :steps, :class_name => 'Step', :foreign_key => :output_play_id, :dependent => :destroy
-
       validates :role_id, :presence => true
+      validates :step_guid, :presence => true
       validates :variable_id, :presence => true
     end
   end
@@ -455,17 +423,14 @@ module Concernz
       # Role is an instance of Concept
       belongs_to :concept, :foreign_key => :concept_guid
 
-      # maybe Role is a Role Proxy and maybe Role Proxy is of Link Fact Type and Link Fact Type is a kind of Fact Type
-      belongs_to :fact_type_via_role_proxy_link_fact_type, :class_name => 'FactType', :foreign_key => :role_proxy_link_fact_type_concept_guid
+      # maybe implying-Role implies Link Fact Type and Link Fact Type is a kind of Fact Type
+      belongs_to :fact_type_via_link_fact_type, :class_name => 'FactType', :foreign_key => :link_fact_type_concept_guid
 
       # Role belongs to Fact Type
       belongs_to :fact_type, :foreign_key => :fact_type_concept_guid
 
       # Role is played by Object Type
       belongs_to :object_type, :foreign_key => :object_type_id
-
-      # maybe Role is a Role Proxy and maybe Role Proxy is for Role
-      belongs_to :role_via_role_proxy, :class_name => 'Role', :foreign_key => :role_proxy_role_id
 
       # maybe other-Role is of Ring Constraint and maybe Ring Constraint is a kind of Constraint and maybe Constraint is an instance of Concept
       has_many :concepts_via_constraint_ring_constraint, :class_name => 'Concept', :foreign_key => :ring_constraint_other_role_id, :dependent => :destroy
@@ -487,9 +452,6 @@ module Concernz
 
       # Role Value is of Role
       has_many :role_values, :class_name => 'RoleValue', :foreign_key => :role_id, :dependent => :destroy
-
-      # maybe Role has Role Proxy and maybe Role Proxy is a kind of Role
-      has_one :role_via_role_proxy, :class_name => 'Role', :foreign_key => :role_proxy_role_id, :dependent => :destroy
 
       # maybe Role is projected from Variable
       has_one :variable, :class_name => 'Variable', :foreign_key => :projection_id, :dependent => :destroy
@@ -533,7 +495,7 @@ module Concernz
     included do
       self.primary_key = 'role_ref_id'
 
-      # maybe Play projects Role Ref
+      # maybe Role Ref is projected from Play
       belongs_to :play, :foreign_key => :play_id
 
       # Role Ref involves Role
@@ -687,7 +649,7 @@ module Concernz
   module Step
     extend ActiveSupport::Concern
     included do
-      self.primary_key = 'step_id'
+      self.primary_key = 'guid'
 
       # maybe Step falls under Alternative Set
       belongs_to :alternative_set, :foreign_key => :alternative_set_guid
@@ -695,17 +657,13 @@ module Concernz
       # Step specifies Fact Type
       belongs_to :fact_type, :foreign_key => :fact_type_concept_guid
 
-      # Step has input-Play
-      belongs_to :input_play, :class_name => 'Play', :foreign_key => :input_play_id
+      # Step is involved in Play
+      has_many :plays, :class_name => 'Play', :foreign_key => :step_guid, :dependent => :destroy
 
-      # maybe Step has output-Play
-      belongs_to :output_play, :class_name => 'Play', :foreign_key => :output_play_id
-
-      # maybe Step involves incidental-Play
-      has_many :incidental_plays, :class_name => 'Play', :foreign_key => :step_id, :dependent => :destroy
+      # maybe Step nests as Variable
+      has_one :objectification_variable, :class_name => 'Variable', :foreign_key => :step_guid, :dependent => :destroy
 
       validates :fact_type_concept_guid, :presence => true
-      validates :input_play_id, :presence => true
     end
   end
 end
@@ -731,14 +689,58 @@ module Concernz
       # maybe Instance has Value and maybe Instance is an instance of Concept
       has_many :concepts_via_instance, :class_name => 'Concept', :foreign_key => :instance_value_id, :dependent => :destroy
 
-      # Facet Restriction has Value
-      has_many :facet_restrictions, :class_name => 'FacetRestriction', :foreign_key => :value_id, :dependent => :destroy
+      # Value Type Parameter Restriction has Value
+      has_many :value_type_parameter_restrictions, :class_name => 'ValueTypeParameterRestriction', :foreign_key => :value_id, :dependent => :destroy
 
       # maybe Variable is bound to Value
       has_many :variables, :class_name => 'Variable', :foreign_key => :value_id, :dependent => :destroy
 
       validates :literal, :presence => true
       validates :value_type_object_type_id, :presence => true
+    end
+  end
+end
+
+module Concernz
+  module ValueTypeParameter
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'value_type_parameter_id'
+
+      # Value Type Parameter requires value of facet-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :facet_value_type_object_type_id
+
+      # Value Type Parameter involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_object_type_id
+
+      # Value Type Parameter is involved in Value Type Parameter Restriction
+      has_many :value_type_parameter_restrictions, :class_name => 'ValueTypeParameterRestriction', :foreign_key => :value_type_parameter_id, :dependent => :destroy
+
+      validates :name, :presence => true
+      validates :value_type_object_type_id, :presence => true
+      validates :facet_value_type_object_type_id, :presence => true
+    end
+  end
+end
+
+module Concernz
+  module ValueTypeParameterRestriction
+    extend ActiveSupport::Concern
+    included do
+      self.primary_key = 'value_type_parameter_restriction_id'
+
+      # Value Type Parameter Restriction involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type
+      belongs_to :object_type_via_value_type_domain_object_type, :class_name => 'ObjectType', :foreign_key => :value_type_object_type_id
+
+      # Value Type Parameter Restriction has Value
+      belongs_to :value, :foreign_key => :value_id
+
+      # Value Type Parameter Restriction involves Value Type Parameter
+      belongs_to :value_type_parameter, :foreign_key => :value_type_parameter_id
+
+      validates :value_id, :presence => true
+      validates :value_type_object_type_id, :presence => true
+      validates :value_type_parameter_id, :presence => true
     end
   end
 end
@@ -757,6 +759,9 @@ module Concernz
 
       # maybe Variable projects Role
       belongs_to :projection, :class_name => 'Role', :foreign_key => :projection_id
+
+      # maybe Variable matches nesting over Step
+      belongs_to :step, :foreign_key => :step_guid
 
       # maybe Variable is bound to Value
       belongs_to :value, :foreign_key => :value_id

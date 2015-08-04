@@ -38,10 +38,19 @@ GO
 
 CREATE TABLE AlternativeSet (
 	-- Alternative Set has Guid,
-	Guid                                    uniqueidentifier IDENTITY NOT NULL,
+	Guid                                    uniqueidentifier NOT NULL,
 	-- Alternative Set members are exclusive Boolean,
 	MembersAreExclusive                     bit NULL,
 	PRIMARY KEY(Guid)
+)
+GO
+
+CREATE TABLE Annotation (
+	-- Annotation Value,
+	AnnotationValue                         varchar NOT NULL,
+	-- maybe Annotation applies to Concept and Concept has Guid,
+	ConceptGuid                             uniqueidentifier NULL,
+	PRIMARY KEY(AnnotationValue)
 )
 GO
 
@@ -69,7 +78,7 @@ CREATE TABLE Concept (
 	-- maybe Fact is an instance of Concept and Fact is of Fact Type and Fact Type is an instance of Concept and Concept has Guid,
 	FactTypeConceptGuid                     uniqueidentifier NULL,
 	-- Concept has Guid,
-	Guid                                    uniqueidentifier IDENTITY NOT NULL,
+	Guid                                    uniqueidentifier NOT NULL,
 	-- maybe Concept is implied by Implication Rule and Implication Rule has Implication Rule Name,
 	ImplicationRuleName                     varchar NULL,
 	-- maybe Instance is an instance of Concept and maybe Instance objectifies Fact and Fact is an instance of Concept and Concept has Guid,
@@ -114,7 +123,7 @@ CREATE TABLE Concept (
 	SubsetConstraintSubsetRoleSequenceGuid  uniqueidentifier NULL,
 	-- maybe Constraint is an instance of Concept and maybe Constraint is a Set Constraint and maybe Set Constraint is a Subset Constraint and Subset Constraint covers superset-Role Sequence and Role Sequence has Guid,
 	SubsetConstraintSupersetRoleSequenceGuid uniqueidentifier NULL,
-	-- maybe Concept belongs to Topic and Topic has Topic Name,
+	-- maybe Concept belongs to Topic and Topic has topic-Name,
 	TopicName                               varchar(64) NULL,
 	-- maybe Unit is an instance of Concept and maybe Unit has Coefficient and Coefficient has Denominator,
 	UnitCoefficientDenominator              int NULL,
@@ -250,43 +259,6 @@ CREATE TABLE Diagram (
 )
 GO
 
-CREATE TABLE Facet (
-	-- Facet requires value of facet-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type is called Name,
-	FacetValueTypeName                      varchar(64) NOT NULL,
-	-- Facet requires value of facet-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
-	FacetValueTypeVocabularyName            varchar(64) NOT NULL,
-	-- Facet involves Name,
-	Name                                    varchar(64) NOT NULL,
-	-- Facet involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type is called Name,
-	ValueTypeName                           varchar(64) NOT NULL,
-	-- Facet involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
-	ValueTypeVocabularyName                 varchar(64) NOT NULL,
-	PRIMARY KEY(ValueTypeVocabularyName, ValueTypeName, Name)
-)
-GO
-
-CREATE TABLE FacetRestriction (
-	-- Facet Restriction involves Facet and Facet involves Name,
-	FacetName                               varchar(64) NOT NULL,
-	-- Facet Restriction involves Facet and Facet involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type is called Name,
-	FacetValueTypeName                      varchar(64) NOT NULL,
-	-- Facet Restriction involves Facet and Facet involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
-	FacetValueTypeVocabularyName            varchar(64) NOT NULL,
-	-- Facet Restriction has Value and Value is literal string,
-	ValueIsLiteralString                    bit NULL,
-	-- Facet Restriction has Value and Value is represented by Literal,
-	ValueLiteral                            varchar NOT NULL,
-	-- Facet Restriction involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type is called Name,
-	ValueTypeName                           varchar(64) NOT NULL,
-	-- Facet Restriction involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
-	ValueTypeVocabularyName                 varchar(64) NOT NULL,
-	-- Facet Restriction has Value and maybe Value is in Unit and Unit is an instance of Concept and Concept has Guid,
-	ValueUnitConceptGuid                    uniqueidentifier NULL,
-	PRIMARY KEY(ValueTypeVocabularyName, ValueTypeName, FacetValueTypeVocabularyName, FacetValueTypeName, FacetName),
-	FOREIGN KEY (FacetValueTypeVocabularyName, FacetValueTypeName, FacetName) REFERENCES Facet (ValueTypeVocabularyName, ValueTypeName, Name)
-)
-GO
-
 CREATE TABLE FactType (
 	-- Fact Type is an instance of Concept and Concept has Guid,
 	ConceptGuid                             uniqueidentifier NOT NULL,
@@ -398,31 +370,19 @@ CREATE UNIQUE CLUSTERED INDEX IX_ValueTypeInObjectTypeByValueTypeValueConstraint
 GO
 
 CREATE TABLE Play (
+	-- Play is input Boolean,
+	IsInput                                 bit NULL,
 	-- Play involves Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
 	RoleFactTypeConceptGuid                 uniqueidentifier NOT NULL,
 	-- Play involves Role and Role fills Ordinal,
 	RoleOrdinal                             smallint NOT NULL,
-	-- maybe Play is incidentally involved in Step and Step has input-Play and Play involves Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	StepInputPlayRoleFactTypeConceptGuid    uniqueidentifier NULL,
-	-- maybe Play is incidentally involved in Step and Step has input-Play and Play involves Role and Role fills Ordinal,
-	StepInputPlayRoleOrdinal                smallint NULL,
-	-- maybe Play is incidentally involved in Step and Step has input-Play and Play involves Variable and Variable has Ordinal position,
-	StepInputPlayVariableOrdinal            smallint NULL,
-	-- maybe Play is incidentally involved in Step and Step has input-Play and Play involves Variable and Variable is in Query and Query is an instance of Concept and Concept has Guid,
-	StepInputPlayVariableQueryConceptGuid   uniqueidentifier NULL,
-	-- maybe Play is incidentally involved in Step and maybe Step has output-Play and Play involves Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	StepOutputPlayRoleFactTypeConceptGuid   uniqueidentifier NULL,
-	-- maybe Play is incidentally involved in Step and maybe Step has output-Play and Play involves Role and Role fills Ordinal,
-	StepOutputPlayRoleOrdinal               smallint NULL,
-	-- maybe Play is incidentally involved in Step and maybe Step has output-Play and Play involves Variable and Variable has Ordinal position,
-	StepOutputPlayVariableOrdinal           smallint NULL,
-	-- maybe Play is incidentally involved in Step and maybe Step has output-Play and Play involves Variable and Variable is in Query and Query is an instance of Concept and Concept has Guid,
-	StepOutputPlayVariableQueryConceptGuid  uniqueidentifier NULL,
+	-- Play involves Step and Step has Guid,
+	StepGuid                                uniqueidentifier NOT NULL,
 	-- Play involves Variable and Variable has Ordinal position,
 	VariableOrdinal                         smallint NOT NULL,
 	-- Play involves Variable and Variable is in Query and Query is an instance of Concept and Concept has Guid,
 	VariableQueryConceptGuid                uniqueidentifier NOT NULL,
-	PRIMARY KEY(VariableQueryConceptGuid, VariableOrdinal, RoleFactTypeConceptGuid, RoleOrdinal)
+	PRIMARY KEY(StepGuid, RoleFactTypeConceptGuid, RoleOrdinal)
 )
 GO
 
@@ -460,6 +420,8 @@ CREATE TABLE Role (
 	ConceptGuid                             uniqueidentifier NOT NULL,
 	-- Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
 	FactTypeConceptGuid                     uniqueidentifier NOT NULL,
+	-- maybe implying-Role implies Link Fact Type and Link Fact Type is a kind of Fact Type and Fact Type is an instance of Concept and Concept has Guid,
+	LinkFactTypeConceptGuid                 uniqueidentifier NULL,
 	-- Role is played by Object Type and Object Type is called Name,
 	ObjectTypeName                          varchar(64) NOT NULL,
 	-- Role is played by Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
@@ -468,37 +430,21 @@ CREATE TABLE Role (
 	Ordinal                                 smallint NOT NULL,
 	-- maybe Role has role-Name,
 	RoleName                                varchar(64) NULL,
-	-- maybe Role is a Role Proxy and maybe Role Proxy is of Link Fact Type and Link Fact Type is a kind of Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	RoleProxyLinkFactTypeConceptGuid        uniqueidentifier NULL,
-	-- maybe Role is a Role Proxy and maybe Role Proxy is for Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	RoleProxyRoleFactTypeConceptGuid        uniqueidentifier NULL,
-	-- maybe Role is a Role Proxy and maybe Role Proxy is for Role and Role fills Ordinal,
-	RoleProxyRoleOrdinal                    smallint NULL,
 	PRIMARY KEY(FactTypeConceptGuid, Ordinal),
 	UNIQUE(ConceptGuid),
 	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid),
-	FOREIGN KEY (RoleProxyLinkFactTypeConceptGuid) REFERENCES FactType (ConceptGuid),
+	FOREIGN KEY (LinkFactTypeConceptGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (FactTypeConceptGuid) REFERENCES FactType (ConceptGuid),
-	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name),
-	FOREIGN KEY (RoleProxyRoleFactTypeConceptGuid, RoleProxyRoleOrdinal) REFERENCES Role (FactTypeConceptGuid, Ordinal)
+	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name)
 )
 GO
 
-CREATE VIEW dbo.RoleProxyInRole_RoleProxyLinkFactTypeConceptGuid (RoleProxyLinkFactTypeConceptGuid) WITH SCHEMABINDING AS
-	SELECT RoleProxyLinkFactTypeConceptGuid FROM dbo.Role
-	WHERE	RoleProxyLinkFactTypeConceptGuid IS NOT NULL
+CREATE VIEW dbo.Role_LinkFactTypeConceptGuid (LinkFactTypeConceptGuid) WITH SCHEMABINDING AS
+	SELECT LinkFactTypeConceptGuid FROM dbo.Role
+	WHERE	LinkFactTypeConceptGuid IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_RoleProxyInRoleByRoleProxyLinkFactTypeConceptGuid ON dbo.RoleProxyInRole_RoleProxyLinkFactTypeConceptGuid(RoleProxyLinkFactTypeConceptGuid)
-GO
-
-CREATE VIEW dbo.RoleProxyInRole_RoleProxyRoleFactTypeConceptGuidRoleProxyRoleOrdinal (RoleProxyRoleFactTypeConceptGuid, RoleProxyRoleOrdinal) WITH SCHEMABINDING AS
-	SELECT RoleProxyRoleFactTypeConceptGuid, RoleProxyRoleOrdinal FROM dbo.Role
-	WHERE	RoleProxyRoleFactTypeConceptGuid IS NOT NULL
-	  AND	RoleProxyRoleOrdinal IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_RoleProxyInRoleByRoleProxyRoleFactTypeConceptGuidRoleProxyRoleOrdinal ON dbo.RoleProxyInRole_RoleProxyRoleFactTypeConceptGuidRoleProxyRoleOrdinal(RoleProxyRoleFactTypeConceptGuid, RoleProxyRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX IX_RoleByLinkFactTypeConceptGuid ON dbo.Role_LinkFactTypeConceptGuid(LinkFactTypeConceptGuid)
 GO
 
 CREATE TABLE RoleDisplay (
@@ -520,14 +466,12 @@ CREATE TABLE RoleRef (
 	LeadingAdjective                        varchar(64) NULL,
 	-- Role Ref involves Ordinal,
 	Ordinal                                 smallint NOT NULL,
-	-- maybe Play projects Role Ref and Play involves Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
+	-- maybe Role Ref is projected from Play and Play involves Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
 	PlayRoleFactTypeConceptGuid             uniqueidentifier NULL,
-	-- maybe Play projects Role Ref and Play involves Role and Role fills Ordinal,
+	-- maybe Role Ref is projected from Play and Play involves Role and Role fills Ordinal,
 	PlayRoleOrdinal                         smallint NULL,
-	-- maybe Play projects Role Ref and Play involves Variable and Variable has Ordinal position,
-	PlayVariableOrdinal                     smallint NULL,
-	-- maybe Play projects Role Ref and Play involves Variable and Variable is in Query and Query is an instance of Concept and Concept has Guid,
-	PlayVariableQueryConceptGuid            uniqueidentifier NULL,
+	-- maybe Role Ref is projected from Play and Play involves Step and Step has Guid,
+	PlayStepGuid                            uniqueidentifier NULL,
 	-- Role Ref involves Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
 	RoleFactTypeConceptGuid                 uniqueidentifier NOT NULL,
 	-- Role Ref involves Role and Role fills Ordinal,
@@ -538,25 +482,24 @@ CREATE TABLE RoleRef (
 	TrailingAdjective                       varchar(64) NULL,
 	PRIMARY KEY(RoleSequenceGuid, Ordinal),
 	UNIQUE(RoleFactTypeConceptGuid, RoleOrdinal, RoleSequenceGuid),
-	FOREIGN KEY (PlayVariableQueryConceptGuid, PlayVariableOrdinal, PlayRoleFactTypeConceptGuid, PlayRoleOrdinal) REFERENCES Play (VariableQueryConceptGuid, VariableOrdinal, RoleFactTypeConceptGuid, RoleOrdinal),
+	FOREIGN KEY (PlayStepGuid, PlayRoleFactTypeConceptGuid, PlayRoleOrdinal) REFERENCES Play (StepGuid, RoleFactTypeConceptGuid, RoleOrdinal),
 	FOREIGN KEY (RoleFactTypeConceptGuid, RoleOrdinal) REFERENCES Role (FactTypeConceptGuid, Ordinal)
 )
 GO
 
-CREATE VIEW dbo.RoleRef_PlayVariableQueryConceptGuidPlayVariableOrdinalPlayRoleFactTypeConceptGuidPlayRoleOrdinal (PlayVariableQueryConceptGuid, PlayVariableOrdinal, PlayRoleFactTypeConceptGuid, PlayRoleOrdinal) WITH SCHEMABINDING AS
-	SELECT PlayVariableQueryConceptGuid, PlayVariableOrdinal, PlayRoleFactTypeConceptGuid, PlayRoleOrdinal FROM dbo.RoleRef
-	WHERE	PlayVariableQueryConceptGuid IS NOT NULL
-	  AND	PlayVariableOrdinal IS NOT NULL
+CREATE VIEW dbo.RoleRef_PlayStepGuidPlayRoleFactTypeConceptGuidPlayRoleOrdinal (PlayStepGuid, PlayRoleFactTypeConceptGuid, PlayRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT PlayStepGuid, PlayRoleFactTypeConceptGuid, PlayRoleOrdinal FROM dbo.RoleRef
+	WHERE	PlayStepGuid IS NOT NULL
 	  AND	PlayRoleFactTypeConceptGuid IS NOT NULL
 	  AND	PlayRoleOrdinal IS NOT NULL
 GO
 
-CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByPlayVariableQueryConceptGuidPlayVariableOrdinalPlayRoleFactTypeConceptGuidPlayRoleOrdinal ON dbo.RoleRef_PlayVariableQueryConceptGuidPlayVariableOrdinalPlayRoleFactTypeConceptGuidPlayRoleOrdinal(PlayVariableQueryConceptGuid, PlayVariableOrdinal, PlayRoleFactTypeConceptGuid, PlayRoleOrdinal)
+CREATE UNIQUE CLUSTERED INDEX IX_RoleRefByPlayStepGuidPlayRoleFactTypeConceptGuidPlayRoleOrdinal ON dbo.RoleRef_PlayStepGuidPlayRoleFactTypeConceptGuidPlayRoleOrdinal(PlayStepGuid, PlayRoleFactTypeConceptGuid, PlayRoleOrdinal)
 GO
 
 CREATE TABLE RoleSequence (
 	-- Role Sequence has Guid,
-	Guid                                    uniqueidentifier IDENTITY NOT NULL,
+	Guid                                    uniqueidentifier NOT NULL,
 	-- Role Sequence has unused dependency to force table in norma Boolean,
 	HasUnusedDependencyToForceTableInNorma  bit NULL,
 	PRIMARY KEY(Guid)
@@ -608,7 +551,7 @@ CREATE TABLE Shape (
 	-- maybe Shape is a Fact Type Shape and maybe Fact Type Shape has Rotation Setting,
 	FactTypeShapeRotationSetting            varchar NULL CHECK(FactTypeShapeRotationSetting = 'left' OR FactTypeShapeRotationSetting = 'right'),
 	-- Shape has Guid,
-	Guid                                    uniqueidentifier IDENTITY NOT NULL,
+	Guid                                    uniqueidentifier NOT NULL,
 	-- Shape is expanded Boolean,
 	IsExpanded                              bit NULL,
 	-- maybe Shape is at Location and Location is at X,
@@ -711,31 +654,15 @@ CREATE TABLE Step (
 	AlternativeSetGuid                      uniqueidentifier NULL,
 	-- Step specifies Fact Type and Fact Type is an instance of Concept and Concept has Guid,
 	FactTypeConceptGuid                     uniqueidentifier NOT NULL,
-	-- Step has input-Play and Play involves Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	InputPlayRoleFactTypeConceptGuid        uniqueidentifier NOT NULL,
-	-- Step has input-Play and Play involves Role and Role fills Ordinal,
-	InputPlayRoleOrdinal                    smallint NOT NULL,
-	-- Step has input-Play and Play involves Variable and Variable has Ordinal position,
-	InputPlayVariableOrdinal                smallint NOT NULL,
-	-- Step has input-Play and Play involves Variable and Variable is in Query and Query is an instance of Concept and Concept has Guid,
-	InputPlayVariableQueryConceptGuid       uniqueidentifier NOT NULL,
+	-- Step has Guid,
+	Guid                                    uniqueidentifier NOT NULL,
 	-- Step is disallowed Boolean,
 	IsDisallowed                            bit NULL,
 	-- Step is optional Boolean,
 	IsOptional                              bit NULL,
-	-- maybe Step has output-Play and Play involves Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	OutputPlayRoleFactTypeConceptGuid       uniqueidentifier NULL,
-	-- maybe Step has output-Play and Play involves Role and Role fills Ordinal,
-	OutputPlayRoleOrdinal                   smallint NULL,
-	-- maybe Step has output-Play and Play involves Variable and Variable has Ordinal position,
-	OutputPlayVariableOrdinal               smallint NULL,
-	-- maybe Step has output-Play and Play involves Variable and Variable is in Query and Query is an instance of Concept and Concept has Guid,
-	OutputPlayVariableQueryConceptGuid      uniqueidentifier NULL,
-	UNIQUE(InputPlayVariableQueryConceptGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeConceptGuid, InputPlayRoleOrdinal, OutputPlayVariableQueryConceptGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeConceptGuid, OutputPlayRoleOrdinal),
+	PRIMARY KEY(Guid),
 	FOREIGN KEY (AlternativeSetGuid) REFERENCES AlternativeSet (Guid),
-	FOREIGN KEY (FactTypeConceptGuid) REFERENCES FactType (ConceptGuid),
-	FOREIGN KEY (InputPlayVariableQueryConceptGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeConceptGuid, InputPlayRoleOrdinal) REFERENCES Play (VariableQueryConceptGuid, VariableOrdinal, RoleFactTypeConceptGuid, RoleOrdinal),
-	FOREIGN KEY (OutputPlayVariableQueryConceptGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeConceptGuid, OutputPlayRoleOrdinal) REFERENCES Play (VariableQueryConceptGuid, VariableOrdinal, RoleFactTypeConceptGuid, RoleOrdinal)
+	FOREIGN KEY (FactTypeConceptGuid) REFERENCES FactType (ConceptGuid)
 )
 GO
 
@@ -756,6 +683,47 @@ CREATE TABLE Value (
 )
 GO
 
+CREATE TABLE ValueTypeParameter (
+	-- Value Type Parameter requires value of facet-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type is called Name,
+	FacetValueTypeName                      varchar(64) NOT NULL,
+	-- Value Type Parameter requires value of facet-Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	FacetValueTypeVocabularyName            varchar(64) NOT NULL,
+	-- Value Type Parameter involves Name,
+	Name                                    varchar(64) NOT NULL,
+	-- Value Type Parameter involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type is called Name,
+	ValueTypeName                           varchar(64) NOT NULL,
+	-- Value Type Parameter involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ValueTypeVocabularyName                 varchar(64) NOT NULL,
+	PRIMARY KEY(ValueTypeVocabularyName, ValueTypeName, Name),
+	FOREIGN KEY (FacetValueTypeVocabularyName, FacetValueTypeName) REFERENCES ObjectType (VocabularyName, Name),
+	FOREIGN KEY (ValueTypeVocabularyName, ValueTypeName) REFERENCES ObjectType (VocabularyName, Name)
+)
+GO
+
+CREATE TABLE ValueTypeParameterRestriction (
+	-- Value Type Parameter Restriction has Value and Value is literal string,
+	ValueIsLiteralString                    bit NULL,
+	-- Value Type Parameter Restriction has Value and Value is represented by Literal,
+	ValueLiteral                            varchar NOT NULL,
+	-- Value Type Parameter Restriction involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type is called Name,
+	ValueTypeName                           varchar(64) NOT NULL,
+	-- Value Type Parameter Restriction involves Value Type Parameter and Value Type Parameter involves Name,
+	ValueTypeParameterName                  varchar(64) NOT NULL,
+	-- Value Type Parameter Restriction involves Value Type Parameter and Value Type Parameter involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type is called Name,
+	ValueTypeParameterValueTypeName         varchar(64) NOT NULL,
+	-- Value Type Parameter Restriction involves Value Type Parameter and Value Type Parameter involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ValueTypeParameterValueTypeVocabularyName varchar(64) NOT NULL,
+	-- Value Type Parameter Restriction involves Value Type and Value Type is a kind of Domain Object Type and Domain Object Type is a kind of Object Type and Object Type belongs to Vocabulary and Vocabulary is called Name,
+	ValueTypeVocabularyName                 varchar(64) NOT NULL,
+	-- Value Type Parameter Restriction has Value and maybe Value is in Unit and Unit is an instance of Concept and Concept has Guid,
+	ValueUnitConceptGuid                    uniqueidentifier NULL,
+	PRIMARY KEY(ValueTypeVocabularyName, ValueTypeName, ValueTypeParameterValueTypeVocabularyName, ValueTypeParameterValueTypeName, ValueTypeParameterName),
+	FOREIGN KEY (ValueTypeVocabularyName, ValueTypeName) REFERENCES ObjectType (VocabularyName, Name),
+	FOREIGN KEY (ValueLiteral, ValueIsLiteralString, ValueUnitConceptGuid) REFERENCES Value (Literal, IsLiteralString, UnitConceptGuid),
+	FOREIGN KEY (ValueTypeParameterValueTypeVocabularyName, ValueTypeParameterValueTypeName, ValueTypeParameterName) REFERENCES ValueTypeParameter (ValueTypeVocabularyName, ValueTypeName, Name)
+)
+GO
+
 CREATE TABLE Variable (
 	-- Variable is for Object Type and Object Type is called Name,
 	ObjectTypeName                          varchar(64) NOT NULL,
@@ -771,6 +739,8 @@ CREATE TABLE Variable (
 	QueryConceptGuid                        uniqueidentifier NOT NULL,
 	-- maybe Variable has role-Name,
 	RoleName                                varchar(64) NULL,
+	-- maybe Variable matches nesting over Step and Step has Guid,
+	StepGuid                                uniqueidentifier NULL,
 	-- maybe Variable has Subscript,
 	Subscript                               smallint NULL,
 	-- maybe Variable is bound to Value and Value is literal string,
@@ -783,6 +753,7 @@ CREATE TABLE Variable (
 	FOREIGN KEY (QueryConceptGuid) REFERENCES Concept (Guid),
 	FOREIGN KEY (ObjectTypeVocabularyName, ObjectTypeName) REFERENCES ObjectType (VocabularyName, Name),
 	FOREIGN KEY (ProjectionFactTypeConceptGuid, ProjectionOrdinal) REFERENCES Role (FactTypeConceptGuid, Ordinal),
+	FOREIGN KEY (StepGuid) REFERENCES Step (Guid),
 	FOREIGN KEY (ValueLiteral, ValueIsLiteralString, ValueUnitConceptGuid) REFERENCES Value (Literal, IsLiteralString, UnitConceptGuid)
 )
 GO
@@ -794,6 +765,14 @@ CREATE VIEW dbo.Variable_ProjectionFactTypeConceptGuidProjectionOrdinal (Project
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_VariableByProjectionFactTypeConceptGuidProjectionOrdinal ON dbo.Variable_ProjectionFactTypeConceptGuidProjectionOrdinal(ProjectionFactTypeConceptGuid, ProjectionOrdinal)
+GO
+
+CREATE VIEW dbo.Variable_StepGuid (StepGuid) WITH SCHEMABINDING AS
+	SELECT StepGuid FROM dbo.Variable
+	WHERE	StepGuid IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_VariableByStepGuid ON dbo.Variable_StepGuid(StepGuid)
 GO
 
 ALTER TABLE Aggregation
@@ -814,6 +793,10 @@ GO
 
 ALTER TABLE AllowedRange
 	ADD FOREIGN KEY (ValueRangeMinimumBoundValueLiteral, ValueRangeMinimumBoundValueIsLiteralString, ValueRangeMinimumBoundValueUnitConceptGuid) REFERENCES Value (Literal, IsLiteralString, UnitConceptGuid)
+GO
+
+ALTER TABLE Annotation
+	ADD FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 GO
 
 ALTER TABLE Concept
@@ -860,22 +843,6 @@ ALTER TABLE Concept
 	ADD FOREIGN KEY (InstanceValueLiteral, InstanceValueIsLiteralString, InstanceValueUnitConceptGuid) REFERENCES Value (Literal, IsLiteralString, UnitConceptGuid)
 GO
 
-ALTER TABLE Facet
-	ADD FOREIGN KEY (FacetValueTypeVocabularyName, FacetValueTypeName) REFERENCES ObjectType (VocabularyName, Name)
-GO
-
-ALTER TABLE Facet
-	ADD FOREIGN KEY (ValueTypeVocabularyName, ValueTypeName) REFERENCES ObjectType (VocabularyName, Name)
-GO
-
-ALTER TABLE FacetRestriction
-	ADD FOREIGN KEY (ValueTypeVocabularyName, ValueTypeName) REFERENCES ObjectType (VocabularyName, Name)
-GO
-
-ALTER TABLE FacetRestriction
-	ADD FOREIGN KEY (ValueLiteral, ValueIsLiteralString, ValueUnitConceptGuid) REFERENCES Value (Literal, IsLiteralString, UnitConceptGuid)
-GO
-
 ALTER TABLE FactType
 	ADD FOREIGN KEY (EntityTypeVocabularyName, EntityTypeName) REFERENCES ObjectType (VocabularyName, Name)
 GO
@@ -893,7 +860,7 @@ ALTER TABLE Play
 GO
 
 ALTER TABLE Play
-	ADD FOREIGN KEY (StepInputPlayVariableQueryConceptGuid, StepInputPlayVariableOrdinal, StepInputPlayRoleFactTypeConceptGuid, StepInputPlayRoleOrdinal, StepOutputPlayVariableQueryConceptGuid, StepOutputPlayVariableOrdinal, StepOutputPlayRoleFactTypeConceptGuid, StepOutputPlayRoleOrdinal) REFERENCES Step (InputPlayVariableQueryConceptGuid, InputPlayVariableOrdinal, InputPlayRoleFactTypeConceptGuid, InputPlayRoleOrdinal, OutputPlayVariableQueryConceptGuid, OutputPlayVariableOrdinal, OutputPlayRoleFactTypeConceptGuid, OutputPlayRoleOrdinal)
+	ADD FOREIGN KEY (StepGuid) REFERENCES Step (Guid)
 GO
 
 ALTER TABLE Play

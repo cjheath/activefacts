@@ -165,7 +165,8 @@ module ActiveFacts
                   "(" + length.to_s + (scale ? ", #{scale}" : "") + ")"
                 end
                 }"
-              identity = column == identity_column ? " IDENTITY" : ""
+	      # Emit IDENTITY for auto-assigned columns, unless it's assigned at assert:
+              identity = column == identity_column && column.references[-1].to.transaction_phase != 'assert' ? " IDENTITY" : ""
               null = (column.is_mandatory ? "NOT " : "") + "NULL"
               check = check_clause(name, constraints)
               comment = column.comment

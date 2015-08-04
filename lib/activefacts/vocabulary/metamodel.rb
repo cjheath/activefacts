@@ -17,6 +17,11 @@ module ActiveFacts
       one_to_one :aggregate                       # See Aggregate.aggregate_code
     end
 
+    class Annotation < String
+      value_type 
+      has_one :concept, :counterpart => :mapping_annotation  # See Concept.all_mapping_annotation
+    end
+
     class Assimilation < String
       value_type 
       restrict 'absorbed', 'partitioned', 'separate'
@@ -85,6 +90,7 @@ module ActiveFacts
     class Name < String
       value_type :length => 64
       one_to_one :plural_named_unit, :class => "Unit", :counterpart => :plural_name  # See Unit.plural_name
+      one_to_one :topic, :counterpart => :topic_name  # See Topic.topic_name
       one_to_one :unit                            # See Unit.name
       one_to_one :vocabulary                      # See Vocabulary.name
     end
@@ -129,11 +135,6 @@ module ActiveFacts
 
     class Text < String
       value_type :length => 256
-    end
-
-    class TopicName < Name
-      value_type 
-      one_to_one :topic                           # See Topic.topic_name
     end
 
     class TransactionPhase < String
@@ -315,7 +316,7 @@ module ActiveFacts
 
     class Topic
       identified_by :topic_name
-      one_to_one :topic_name, :mandatory => true  # See TopicName.topic
+      one_to_one :topic_name, :class => Name, :mandatory => true  # See Name.topic_as_topic_name
     end
 
     class Unit
@@ -543,18 +544,18 @@ module ActiveFacts
       one_to_one :value_constraint                # See ValueConstraint.value_type
     end
 
-    class Facet
+    class ValueTypeParameter
       identified_by :value_type, :name
-      has_one :name, :mandatory => true           # See Name.all_facet
-      has_one :value_type, :mandatory => true     # See ValueType.all_facet
-      has_one :facet_value_type, :class => ValueType, :mandatory => true  # See ValueType.all_facet_as_facet_value_type
+      has_one :name, :mandatory => true           # See Name.all_value_type_parameter
+      has_one :value_type, :mandatory => true     # See ValueType.all_value_type_parameter
+      has_one :facet_value_type, :class => ValueType, :mandatory => true  # See ValueType.all_value_type_parameter_as_facet_value_type
     end
 
-    class FacetRestriction
-      identified_by :value_type, :facet
-      has_one :facet, :mandatory => true          # See Facet.all_facet_restriction
-      has_one :value_type, :mandatory => true     # See ValueType.all_facet_restriction
-      has_one :value, :mandatory => true          # See Value.all_facet_restriction
+    class ValueTypeParameterRestriction
+      identified_by :value_type, :value_type_parameter
+      has_one :value_type, :mandatory => true     # See ValueType.all_value_type_parameter_restriction
+      has_one :value_type_parameter, :mandatory => true  # See ValueTypeParameter.all_value_type_parameter_restriction
+      has_one :value, :mandatory => true          # See Value.all_value_type_parameter_restriction
     end
 
     class ImplicitBooleanValueType < ValueType

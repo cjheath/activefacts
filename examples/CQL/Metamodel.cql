@@ -6,6 +6,7 @@ vocabulary Metamodel;
 Adjective is written as String(64);
 Agent Name is written as String;
 Aggregate Code is written as String(32);
+Annotation is written as String;
 Assimilation is written as String restricted to {'absorbed', 'partitioned', 'separate'};
 Context Note Kind is written as String restricted to {'as_opposed_to', 'because', 'so_that', 'to_avoid'};
 Date is written as Date;
@@ -31,7 +32,6 @@ Rotation Setting is written as String restricted to {'left', 'right'};
 Scale is written as Unsigned Integer(32);
 Subscript is written as Unsigned Integer(16);
 Text is written as String(256);
-Topic Name is written as Name;
 Transaction Phase is written as String restricted to {'assert', 'commit'};
 X is written as Signed Integer(32);
 Y is written as Signed Integer(32);
@@ -56,6 +56,8 @@ Coefficient is identified by Numerator and Denominator and Coefficient is precis
 Concept is identified by Guid where
 	Concept has one Guid,
 	Guid is of at most one Concept;
+Concept has mapping-Annotation,
+	Annotation applies to at most one Concept;
 
 Constraint is identified by Concept where
 	Constraint is an instance of one Concept;
@@ -124,6 +126,8 @@ Role is identified by Fact Type and Ordinal where
 	Fact Type contains Role,
 	Role fills one Ordinal,
 	Ordinal applies to Role;
+Link Fact Type has one implying-Role,
+	implying-Role implies at most one Link Fact Type;
 Ring Constraint has at most one other-Role,
 	other-Role is of Ring Constraint;
 Role is an instance of one Concept;
@@ -132,12 +136,6 @@ Role is of Ring Constraint,
 	Ring Constraint has at most one Role;
 Role has at most one role-Name,
 	role-Name is name of at least one Role;
-
-Role Proxy is a kind of Role;
-Link Fact Type has one Role Proxy,
-	Role Proxy is of at most one Link Fact Type;
-Role Proxy is for at most one Role,
-	Role has at most one Role Proxy;
 
 Role Sequence is identified by Guid where
 	Role Sequence has one Guid,
@@ -162,11 +160,23 @@ Shape is identified by Guid where
 Shape is at at most one Location;
 Shape is expanded;
 
+Step is identified by Guid where
+	Step has one Guid,
+	Guid is of at most one Step;
+Step falls under at most one Alternative Set,
+	Alternative Set covers at least one Step;
+Step specifies one Fact Type,
+	Fact Type directs Step;
+Step is disallowed;
+Step is optional;
+
 Subset Constraint is a kind of Set Constraint;
 Subset Constraint covers one subset-Role Sequence;
 Subset Constraint covers one superset-Role Sequence;
 
-Topic is identified by its Name;
+Topic is identified by topic-Name where
+	Topic has one topic-Name,
+	topic-Name is of at most one Topic;
 Concept belongs to at most one Topic,
 	Topic contains Concept;
 
@@ -202,6 +212,8 @@ Variable is identified by Query and Ordinal where
 	Variable has one Ordinal position;
 Variable projects at most one Role (as Projection),
 	Projection is projected from at most one Variable;
+Variable (as Objectification Variable) matches nesting over at most one Step,
+	Step nests as at most one Objectification Variable;
 Variable has at most one Subscript,
 	Subscript is of Variable;
 Variable is bound to at most one Value;
@@ -287,8 +299,9 @@ Objectified Fact Type Name Shape is for one Fact Type Shape,
 	Fact Type Shape has at most one Objectified Fact Type Name Shape;
 
 Play is where
-	Variable is restricted by Role,
-	Role controls Variable;
+	Variable is restricted by Role of Step,
+	Step contains Role restricting one Variable;
+Play is input;
 
 Population is identified by Vocabulary and Name where
 	Vocabulary includes Population,
@@ -325,7 +338,8 @@ Role Ref is where
 	Role is in Role Sequence in one Ordinal place,
 	Role Sequence includes Role in Ordinal place,
 	Role has Ordinal place in Role Sequence;
-Play projects at most one Role Ref;
+Play projects at most one Role Ref,
+	Role Ref is projected from at most one Play;
 Role Ref has at most one leading-Adjective;
 Role Ref has at most one trailing-Adjective;
 
@@ -341,18 +355,6 @@ Set Equality Constraint is a kind of Set Comparison Constraint;
 
 Set Exclusion Constraint is a kind of Set Comparison Constraint;
 Set Exclusion Constraint is mandatory;
-
-Step is identified by input-Play and output-Play where
-	Step has one input-Play,
-	Step has at most one output-Play;
-Step falls under at most one Alternative Set,
-	Alternative Set covers at least one Step;
-Step specifies one Fact Type,
-	Fact Type directs Step;
-Step involves incidental-Play,
-	Play is incidentally involved in at most one Step;
-Step is disallowed;
-Step is optional;
 
 Value Constraint Shape is a kind of Constraint Shape;
 Role Display has at most one Value Constraint Shape,
@@ -394,15 +396,15 @@ Value Type has at most one Value Constraint,
 Value Type is subtype of at most one super-Value Type (as Supertype) [acyclic, transitive],
 	Supertype is supertype of Value Type;
 
-Facet is where
+Value Type Parameter is where
 	Value Type has facet called Name,
 	Name is a facet of Value Type;
-Facet requires value of one facet-Value Type;
+Value Type Parameter requires value of one facet-Value Type;
 
-Facet Restriction is where
-	Value Type applies Facet,
-	Facet applies to Value Type;
-Facet Restriction has one Value;
+Value Type Parameter Restriction is where
+	Value Type receives Value Type Parameter,
+	Value Type Parameter applies to Value Type;
+Value Type Parameter Restriction has one Value;
 
 Implicit Boolean Value Type is a kind of Value Type;
 
@@ -441,27 +443,24 @@ either Value Constraint constrains Value Type or Value Constraint applies to Rol
 for each Instance at most one of these holds:
 	Instance has Value,
 	Instance objectifies Fact;
-for each Play at most one of these holds:
-	Step (1) has input-Play,
-	Play is incidentally involved in Step;
-for each Play at most one of these holds:
-	Step (1) has output-Play,
-	Play is incidentally involved in Step;
 Role Value is of Instance that is of Object Type
 	if and only if
 	Role Value is of Role that is played by Object Type;
 Role Value fulfils Fact that is of Fact Type
 	if and only if
 	Role Value is of Role that belongs to Fact Type;
+Step specifies Fact Type that contains Role
+	if and only if
+	Step contains Role restricting Variable;
 Variable is for Object Type that plays Role
 	if and only if
-	Variable is restricted by Role;
+	Variable is restricted by Role of Step;
 Presence Constraint is preferred identifier
 	only if Presence Constraint has max Frequency;
-Step involves incidental Play
-	only if Step has output Play;
 Value Type has Scale
 	only if Value Type has Length;
+Variable matches nesting over Step
+	only if Variable is for Object Type and Step specifies Fact Type;
 either Agreement was reached by Agent or Agreement was on Date;
 each Concept occurs at most one time in
 	Object Type is an instance of Concept;
@@ -479,8 +478,6 @@ each Presence Constraint occurs at least one time in
 	Presence Constraint has min Frequency(2),
 	Presence Constraint has max Frequency(1),
 	Presence Constraint is mandatory;
-each Role Ref occurs at most one time in
-	Play projects Role Ref;
 each Role Sequence occurs at least one time in
 	Role Sequence in Ordinal position includes Role;
 each Set Comparison Constraint occurs at least 2 times in

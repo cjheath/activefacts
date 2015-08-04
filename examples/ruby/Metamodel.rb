@@ -16,6 +16,11 @@ module ::Metamodel
     one_to_one :aggregate                       # See Aggregate.aggregate_code
   end
 
+  class Annotation < String
+    value_type 
+    has_one :concept, :counterpart => :mapping_annotation  # See Concept.all_mapping_annotation
+  end
+
   class Assimilation < String
     value_type 
     restrict 'absorbed', 'partitioned', 'separate'
@@ -65,6 +70,7 @@ module ::Metamodel
     one_to_one :concept                         # See Concept.guid
     one_to_one :role_sequence                   # See RoleSequence.guid
     one_to_one :shape                           # See Shape.guid
+    one_to_one :step                            # See Step.guid
   end
 
   class ImplicationRuleName < String
@@ -83,6 +89,7 @@ module ::Metamodel
   class Name < String
     value_type :length => 64
     one_to_one :plural_named_unit, :class => "Unit", :counterpart => :plural_name  # See Unit.plural_name
+    one_to_one :topic, :counterpart => :topic_name  # See Topic.topic_name
     one_to_one :unit                            # See Unit.name
     one_to_one :vocabulary                      # See Vocabulary.name
   end
@@ -127,11 +134,6 @@ module ::Metamodel
 
   class Text < String
     value_type :length => 256
-  end
-
-  class TopicName < Name
-    value_type 
-    one_to_one :topic                           # See Topic.topic_name
   end
 
   class TransactionPhase < String
@@ -266,14 +268,10 @@ module ::Metamodel
     identified_by :fact_type, :ordinal
     one_to_one :concept, :mandatory => true     # See Concept.role
     has_one :fact_type, :mandatory => true      # See FactType.all_role
+    one_to_one :link_fact_type, :counterpart => :implying_role  # See LinkFactType.implying_role
     has_one :object_type, :mandatory => true    # See ObjectType.all_role
     has_one :ordinal, :mandatory => true        # See Ordinal.all_role
     has_one :role_name, :class => Name          # See Name.all_role_as_role_name
-  end
-
-  class RoleProxy < Role
-    one_to_one :link_fact_type                  # See LinkFactType.role_proxy
-    one_to_one :role                            # See Role.role_proxy
   end
 
   class RoleSequence
@@ -301,6 +299,15 @@ module ::Metamodel
     has_one :orm_diagram, :class => "ORMDiagram", :mandatory => true  # See ORMDiagram.all_shape
   end
 
+  class Step
+    identified_by :guid
+    has_one :alternative_set                    # See AlternativeSet.all_step
+    has_one :fact_type, :mandatory => true      # See FactType.all_step
+    one_to_one :guid, :mandatory => true        # See Guid.step
+    maybe :is_disallowed
+    maybe :is_optional
+  end
+
   class SubsetConstraint < SetConstraint
     has_one :subset_role_sequence, :class => RoleSequence, :mandatory => true  # See RoleSequence.all_subset_constraint_as_subset_role_sequence
     has_one :superset_role_sequence, :class => RoleSequence, :mandatory => true  # See RoleSequence.all_subset_constraint_as_superset_role_sequence
@@ -308,7 +315,7 @@ module ::Metamodel
 
   class Topic
     identified_by :topic_name
-    one_to_one :topic_name, :mandatory => true  # See TopicName.topic
+    one_to_one :topic_name, :class => Name, :mandatory => true  # See Name.topic_as_topic_name
   end
 
   class Unit
@@ -343,6 +350,7 @@ module ::Metamodel
     one_to_one :projection, :class => Role      # See Role.variable_as_projection
     has_one :query, :mandatory => true          # See Query.all_variable
     has_one :role_name, :class => Name          # See Name.all_variable_as_role_name
+    one_to_one :step, :counterpart => :objectification_variable  # See Step.objectification_variable
     has_one :subscript                          # See Subscript.all_variable
     has_one :value                              # See Value.all_variable
   end
@@ -433,10 +441,11 @@ module ::Metamodel
   end
 
   class Play
-    identified_by :variable, :role
+    identified_by :step, :role
     has_one :role, :mandatory => true           # See Role.all_play
+    has_one :step, :mandatory => true           # See Step.all_play
     has_one :variable, :mandatory => true       # See Variable.all_play
-    has_one :step, :counterpart => :incidental_play  # See Step.all_incidental_play
+    maybe :is_input
   end
 
   class Population
@@ -493,16 +502,6 @@ module ::Metamodel
     maybe :is_mandatory
   end
 
-  class Step
-    identified_by :input_play, :output_play
-    has_one :alternative_set                    # See AlternativeSet.all_step
-    has_one :fact_type, :mandatory => true      # See FactType.all_step
-    has_one :input_play, :class => Play, :mandatory => true  # See Play.all_step_as_input_play
-    maybe :is_disallowed
-    maybe :is_optional
-    has_one :output_play, :class => Play        # See Play.all_step_as_output_play
-  end
-
   class ValueConstraintShape < ConstraintShape
     has_one :object_type_shape                  # See ObjectTypeShape.all_value_constraint_shape
     one_to_one :role_display                    # See RoleDisplay.value_constraint_shape
@@ -544,18 +543,18 @@ module ::Metamodel
     one_to_one :value_constraint                # See ValueConstraint.value_type
   end
 
-  class Facet
+  class ValueTypeParameter
     identified_by :value_type, :name
-    has_one :name, :mandatory => true           # See Name.all_facet
-    has_one :value_type, :mandatory => true     # See ValueType.all_facet
-    has_one :facet_value_type, :class => ValueType, :mandatory => true  # See ValueType.all_facet_as_facet_value_type
+    has_one :name, :mandatory => true           # See Name.all_value_type_parameter
+    has_one :value_type, :mandatory => true     # See ValueType.all_value_type_parameter
+    has_one :facet_value_type, :class => ValueType, :mandatory => true  # See ValueType.all_value_type_parameter_as_facet_value_type
   end
 
-  class FacetRestriction
-    identified_by :value_type, :facet
-    has_one :facet, :mandatory => true          # See Facet.all_facet_restriction
-    has_one :value_type, :mandatory => true     # See ValueType.all_facet_restriction
-    has_one :value, :mandatory => true          # See Value.all_facet_restriction
+  class ValueTypeParameterRestriction
+    identified_by :value_type, :value_type_parameter
+    has_one :value_type, :mandatory => true     # See ValueType.all_value_type_parameter_restriction
+    has_one :value_type_parameter, :mandatory => true  # See ValueTypeParameter.all_value_type_parameter_restriction
+    has_one :value, :mandatory => true          # See Value.all_value_type_parameter_restriction
   end
 
   class ImplicitBooleanValueType < ValueType
