@@ -68,94 +68,94 @@ module ActiveFacts
 
     class Concept
       def describe
-	case
-	when object_type; "#{object_type.class.basename} #{object_type.name.inspect}"
-	when fact_type; "FactType #{fact_type.default_reading.inspect}"
-	when role; "Role in #{role.fact_type.describe(role)}"
-	when constraint; constraint.describe
-	when instance; "Instance #{instance.verbalise}"
-	when fact; "Fact #{fact.verbalise}"
-	when query; query.describe
-	when context_note; "ContextNote#{context_note.verbalise}"
-	when unit; "Unit #{unit.describe}"
-	when population; "Population: #{population.name}"
-	else
-	  raise "ROGUE CONCEPT OF NO TYPE"
-	end
+        case
+        when object_type; "#{object_type.class.basename} #{object_type.name.inspect}"
+        when fact_type; "FactType #{fact_type.default_reading.inspect}"
+        when role; "Role in #{role.fact_type.describe(role)}"
+        when constraint; constraint.describe
+        when instance; "Instance #{instance.verbalise}"
+        when fact; "Fact #{fact.verbalise}"
+        when query; query.describe
+        when context_note; "ContextNote#{context_note.verbalise}"
+        when unit; "Unit #{unit.describe}"
+        when population; "Population: #{population.name}"
+        else
+          raise "ROGUE CONCEPT OF NO TYPE"
+        end
       end
 
       def embodied_as
-	case
-	when object_type; object_type
-	when fact_type; fact_type
-	when role; role
-	when constraint; constraint
-	when instance; instance
-	when fact; fact
-	when query; query
-	when context_note; context_note
-	when unit; unit
-	when population; population
-	else
-	  raise "ROGUE CONCEPT OF NO TYPE"
-	end
+        case
+        when object_type; object_type
+        when fact_type; fact_type
+        when role; role
+        when constraint; constraint
+        when instance; instance
+        when fact; fact
+        when query; query
+        when context_note; context_note
+        when unit; unit
+        when population; population
+        else
+          raise "ROGUE CONCEPT OF NO TYPE"
+        end
       end
 
       # Return an array of all Concepts that must be defined before this concept can be defined:
       def precursors
-	case body = embodied_as
-	when ActiveFacts::Metamodel::ValueType
-	  [ body.supertype, body.unit ] +
-	  body.all_facet.map{|f| f.facet_value_type } +
-	  body.all_facet_restriction.map{|vr| vr.value.unit}
-	when ActiveFacts::Metamodel::EntityType
-	  # You can't define the preferred_identifier fact types until you define the entity type,
-	  # but the objects which play the identifying roles must be defined:
-	  body.preferred_identifier.role_sequence.all_role_ref.map {|rr| rr.role.object_type } +
-	  # You can't define the objectified fact type until you define the entity type:
-	  # [ body.fact_type ]	# If it's an objectification
-	  body.all_type_inheritance_as_subtype.map{|ti| ti.supertype}	# If it's a subtype
-	when FactType
-	  body.all_role.map(&:object_type)
-	when Role   # We don't consider roles as they cannot be separately defined
-	  []
-	when ActiveFacts::Metamodel::PresenceConstraint
-	  body.role_sequence.all_role_ref.map do |rr|
-	    rr.role.fact_type
-	  end
-	when ActiveFacts::Metamodel::ValueConstraint
-	  [ body.role ? body.role.fact_type : nil, body.value_type ] +
-	  body.all_allowed_range.map do |ar|
-	    [ ar.value_range.minimum_bound, ar.value_range.maximum_bound ].compact.map{|b| b.value.unit}
-	  end
-	when ActiveFacts::Metamodel::SubsetConstraint
-	  body.subset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type } +
-	  body.superset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }
-	when ActiveFacts::Metamodel::SetComparisonConstraint
-	  body.all_set_comparison_roles.map{|scr| scr.role_sequence.all_role_ref.map{|rr| rr.role.fact_type } }
-	when ActiveFacts::Metamodel::RingConstraint
-	  [ body.role.fact_type, body.other_role.fact_type ]
-	when Instance
-	  [ body.population, body.object_type, body.value ? body.value.unit : nil ]
-	when Fact
-	  [ body.population, body.fact_type ]
-	when Query
-	  body.all_variable.map do |v|
-	    [ v.object_type,
-	      v.value ? v.value.unit : nil,
-	      v.step ? v.step.fact_type : nil
-	    ] +
-	    v.all_play.map{|p| p.role.fact_type }
-	  end
-	when ContextNote
-	  []
-	when Unit
-	  body.all_derivation_as_derived_unit.map{|d| d.base_unit }
-	when Population
-	  []
-	else
-	  raise "ROGUE CONCEPT OF NO TYPE"
-	end.flatten.compact.uniq.map{|c| c.concept }
+        case body = embodied_as
+        when ActiveFacts::Metamodel::ValueType
+          [ body.supertype, body.unit ] +
+          body.all_facet.map{|f| f.facet_value_type } +
+          body.all_facet_restriction.map{|vr| vr.value.unit}
+        when ActiveFacts::Metamodel::EntityType
+          # You can't define the preferred_identifier fact types until you define the entity type,
+          # but the objects which play the identifying roles must be defined:
+          body.preferred_identifier.role_sequence.all_role_ref.map {|rr| rr.role.object_type } +
+          # You can't define the objectified fact type until you define the entity type:
+          # [ body.fact_type ]  # If it's an objectification
+          body.all_type_inheritance_as_subtype.map{|ti| ti.supertype}   # If it's a subtype
+        when FactType
+          body.all_role.map(&:object_type)
+        when Role   # We don't consider roles as they cannot be separately defined
+          []
+        when ActiveFacts::Metamodel::PresenceConstraint
+          body.role_sequence.all_role_ref.map do |rr|
+            rr.role.fact_type
+          end
+        when ActiveFacts::Metamodel::ValueConstraint
+          [ body.role ? body.role.fact_type : nil, body.value_type ] +
+          body.all_allowed_range.map do |ar|
+            [ ar.value_range.minimum_bound, ar.value_range.maximum_bound ].compact.map{|b| b.value.unit}
+          end
+        when ActiveFacts::Metamodel::SubsetConstraint
+          body.subset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type } +
+          body.superset_role_sequence.all_role_ref.map{|rr| rr.role.fact_type }
+        when ActiveFacts::Metamodel::SetComparisonConstraint
+          body.all_set_comparison_roles.map{|scr| scr.role_sequence.all_role_ref.map{|rr| rr.role.fact_type } }
+        when ActiveFacts::Metamodel::RingConstraint
+          [ body.role.fact_type, body.other_role.fact_type ]
+        when Instance
+          [ body.population, body.object_type, body.value ? body.value.unit : nil ]
+        when Fact
+          [ body.population, body.fact_type ]
+        when Query
+          body.all_variable.map do |v|
+            [ v.object_type,
+              v.value ? v.value.unit : nil,
+              v.step ? v.step.fact_type : nil
+            ] +
+            v.all_play.map{|p| p.role.fact_type }
+          end
+        when ContextNote
+          []
+        when Unit
+          body.all_derivation_as_derived_unit.map{|d| d.base_unit }
+        when Population
+          []
+        else
+          raise "ROGUE CONCEPT OF NO TYPE"
+        end.flatten.compact.uniq.map{|c| c.concept }
       end
     end
 
@@ -168,23 +168,23 @@ module ActiveFacts
 
     class Unit
       def describe
-	'Unit' +
-	name +
-	(plural_name ? '/'+plural_name : '') +
-	'=' +
-	coefficient.to_s+'*' +
-	all_derivation_as_derived_unit.map do |derivation|
-	  derivation.base_unit.name +
-	  (derivation.exponent != 1 ? derivation.exponent.to_s : '')
-	end.join('') +
-	(offset ? ' + '+offset.to_s : '')
+        'Unit' +
+        name +
+        (plural_name ? '/'+plural_name : '') +
+        '=' +
+        coefficient.to_s+'*' +
+        all_derivation_as_derived_unit.map do |derivation|
+          derivation.base_unit.name +
+          (derivation.exponent != 1 ? derivation.exponent.to_s : '')
+        end.join('') +
+        (offset ? ' + '+offset.to_s : '')
       end
     end
 
     class Coefficient
       def to_s
-	numerator.to_s +
-	(denominator != 1 ? '/' + denominator.to_s : '')
+        numerator.to_s +
+        (denominator != 1 ? '/' + denominator.to_s : '')
       end
     end
 
@@ -212,14 +212,14 @@ module ActiveFacts
 
       # Does any role of this fact type participate in a preferred identifier?
       def is_existential
-	return false if all_role.size > 2
-	all_role.detect do |role|
-	  role.all_role_ref.detect do |rr|
-	    rr.role_sequence.all_presence_constraint.detect do |pc|
-	      pc.is_preferred_identifier
-	    end
-	  end
-	end
+        return false if all_role.size > 2
+        all_role.detect do |role|
+          role.all_role_ref.detect do |rr|
+            rr.role_sequence.all_presence_constraint.detect do |pc|
+              pc.is_preferred_identifier
+            end
+          end
+        end
       end
 
       def internal_presence_constraints
@@ -244,7 +244,7 @@ module ActiveFacts
         # NORMA doesn't create an implicit fact type here, rather the fact type has an implicit extra role, so looks like a binary
         # We only do it when the unary fact type is not objectified
         link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
-	link_fact_type.concept.implication_rule = 'unary'
+        link_fact_type.concept.implication_rule = 'unary'
         entity_type = @entity_type || implicit_boolean_type(role.object_type.vocabulary)
         phantom_role = @constellation.Role(link_fact_type, 0, :object_type => entity_type, :concept => :new)
       end
@@ -262,13 +262,13 @@ module ActiveFacts
       end
 
       def compatible_readings types_array
-	all_reading.select do |reading|
-	  ok = true
-	  reading.role_sequence.all_role_ref_in_order.each_with_index do |rr, i|
-	    ok = false unless types_array[i].include?(rr.role.object_type)
-	  end
-	  ok
-	end
+        all_reading.select do |reading|
+          ok = true
+          reading.role_sequence.all_role_ref_in_order.each_with_index do |rr, i|
+            ok = false unless types_array[i].include?(rr.role.object_type)
+          end
+          ok
+        end
       end
     end
 
@@ -289,7 +289,7 @@ module ActiveFacts
       end
 
       def is_mandatory
-	return fact_type.implying_role.is_mandatory if fact_type.is_a?(LinkFactType)
+        return fact_type.implying_role.is_mandatory if fact_type.is_a?(LinkFactType)
         all_role_ref.detect{|rr|
           rs = rr.role_sequence
           rs.all_role_ref.size == 1 and
@@ -308,20 +308,20 @@ module ActiveFacts
       def is_functional
         fact_type.entity_type or
         fact_type.all_role.size != 2 or
-	is_unique
+        is_unique
       end
 
       def is_unique
-	all_role_ref.detect do |rr|
-	  rr.role_sequence.all_role_ref.size == 1 and
-	    rr.role_sequence.all_presence_constraint.detect do |pc|
-	      pc.max_frequency == 1 and !pc.enforcement   # Alethic uniqueness constraint
-	    end
-	end
+        all_role_ref.detect do |rr|
+          rr.role_sequence.all_role_ref.size == 1 and
+            rr.role_sequence.all_presence_constraint.detect do |pc|
+              pc.max_frequency == 1 and !pc.enforcement   # Alethic uniqueness constraint
+            end
+        end
       end
 
       def name
-	role_name || object_type.name
+        role_name || object_type.name
       end
 
     end
@@ -336,7 +336,7 @@ module ActiveFacts
       end
 
       def role_name(separator = "-")
-	return 'UNKNOWN' unless role
+        return 'UNKNOWN' unless role
         name_array =
           if role.fact_type.all_role.size == 1
             if role.fact_type.is_a?(LinkFactType)
@@ -427,10 +427,10 @@ module ActiveFacts
       end
 
       def common_supertype(other)
-	return nil unless other.is_?(ActiveFacts::Metamodel::ValueType)
-	return self if other.supertypes_transitive.include?(self)
-	return other if supertypes_transitive.include(other)
-	nil
+        return nil unless other.is_?(ActiveFacts::Metamodel::ValueType)
+        return self if other.supertypes_transitive.include?(self)
+        return other if supertypes_transitive.include(other)
+        nil
       end
     end
 
@@ -573,14 +573,14 @@ module ActiveFacts
               #pi = supertype.preferred_identifier
               #return nil
             elsif fact_type
-	      possible_pi = nil
+              possible_pi = nil
               fact_type.all_role.each{|role|
                 role.all_role_ref.each{|role_ref|
                   # Discount role sequences that contain roles not in this fact type:
                   next if role_ref.role_sequence.all_role_ref.detect{|rr| rr.role.fact_type != fact_type }
                   role_ref.role_sequence.all_presence_constraint.each{|pc|
-		    next unless pc.max_frequency == 1
-		    possible_pi = pc
+                    next unless pc.max_frequency == 1
+                    possible_pi = pc
                     next unless pc.is_preferred_identifier
                     pi = pc
                     break
@@ -589,11 +589,12 @@ module ActiveFacts
                 }
                 break if pi
               }
-	      if !pi && possible_pi
-		trace :pi, "Using existing PC as PI for #{name}"
-		pi = possible_pi
-	      end
+              if !pi && possible_pi
+                trace :pi, "Using existing PC as PI for #{name}"
+                pi = possible_pi
+              end
             else
+              byebug
               trace :pi, "No PI found for #{name}"
             end
           end
@@ -646,10 +647,10 @@ module ActiveFacts
       end
 
       def common_supertype(other)
-	return nil unless other.is_?(ActiveFacts::Metamodel::EntityType)
-	candidates = supertypes_transitive & other.supertypes_transitive
-	return candidates[0] if candidates.size <= 1
-	candidates[0] # REVISIT: This might not be the closest supertype
+        return nil unless other.is_?(ActiveFacts::Metamodel::EntityType)
+        candidates = supertypes_transitive & other.supertypes_transitive
+        return candidates[0] if candidates.size <= 1
+        candidates[0] # REVISIT: This might not be the closest supertype
       end
 
       # This entity type has just objectified a fact type. Create the necessary ImplicitFactTypes with phantom roles
@@ -657,11 +658,11 @@ module ActiveFacts
         fact_type.all_role.map do |role|
           next if role.link_fact_type     # Already exists
           link_fact_type = @constellation.LinkFactType(:new, :implying_role => role)
-	  link_fact_type.concept.implication_rule = 'objectification'
+          link_fact_type.concept.implication_rule = 'objectification'
           phantom_role = @constellation.Role(link_fact_type, 0, :object_type => self, :concept => :new)
           # We could create a copy of the visible external role here, but there's no need yet...
           # Nor is there a need for a presence constraint, readings, etc.
-	  link_fact_type
+          link_fact_type
         end
       end
     end
@@ -690,27 +691,27 @@ module ActiveFacts
 
             expanded.gsub!(/\{#{i}\}/) do
                 role_ref = role_refs[i]
-		if role_ref.role
-		  player = role_ref.role.object_type
-		  role_name = role.role_name
-		  role_name = nil if role_name == ""
-		  if role_name && define_role_names == false
-		    l_adj = t_adj = nil   # When using role names, don't add adjectives
-		  end
+                if role_ref.role
+                  player = role_ref.role.object_type
+                  role_name = role.role_name
+                  role_name = nil if role_name == ""
+                  if role_name && define_role_names == false
+                    l_adj = t_adj = nil   # When using role names, don't add adjectives
+                  end
 
-		  freq_con = frequency_constraints[i]
-		  freq_con = freq_con.frequency if freq_con && freq_con.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
-		  if freq_con.is_a?(Array)
-		    freq_con, player_name = *freq_con
-		  else
-		    player_name = player.name
-		  end
-		else
-		  # We have an unknown role. The reading cannot be correctly expanded
-		  player_name = "UNKNOWN"
-		  role_name = nil
-		  freq_con = nil
-		end
+                  freq_con = frequency_constraints[i]
+                  freq_con = freq_con.frequency if freq_con && freq_con.is_a?(ActiveFacts::Metamodel::PresenceConstraint)
+                  if freq_con.is_a?(Array)
+                    freq_con, player_name = *freq_con
+                  else
+                    player_name = player.name
+                  end
+                else
+                  # We have an unknown role. The reading cannot be correctly expanded
+                  player_name = "UNKNOWN"
+                  role_name = nil
+                  freq_con = nil
+                end
 
                 literal = literals[i]
                 words = [
@@ -780,17 +781,17 @@ module ActiveFacts
 
     class ValueConstraint
       def describe
-	as_cql
+        as_cql
       end
 
       def as_cql
         "restricted to "+
-	  ( if regular_expression
-	      '/' + regular_expression + '/'
-	    else
-	      '{' + all_allowed_range_sorted.map{|ar| ar.to_s(false) }*', ' + '}'
-	    end
-	  )
+          ( if regular_expression
+              '/' + regular_expression + '/'
+            else
+              '{' + all_allowed_range_sorted.map{|ar| ar.to_s(false) }*', ' + '}'
+            end
+          )
       end
 
       def all_allowed_range_sorted
@@ -883,32 +884,32 @@ module ActiveFacts
 
     class SubsetConstraint
       def describe
-	'SubsetConstraint(' +
-	subset_role_sequence.describe 
-	' < ' +
-	superset_role_sequence.describe +
-	')'
+        'SubsetConstraint(' +
+        subset_role_sequence.describe 
+        ' < ' +
+        superset_role_sequence.describe +
+        ')'
       end
     end
 
     class SetComparisonConstraint
       def describe
-	self.class.basename+'(' +
-	all_set_comparison_roles.map do |scr|
-	  scr.role_sequence.describe
-	end*',' +
-	')'
+        self.class.basename+'(' +
+        all_set_comparison_roles.map do |scr|
+          scr.role_sequence.describe
+        end*',' +
+        ')'
       end
     end
 
     class RingConstraint
       def describe
-	'RingConstraint(' +
-	ring_type.to_s+': ' +
-	role.describe+', ' +
-	other_role.describe+' in ' +
-	role.fact_type.default_reading +
-	')'
+        'RingConstraint(' +
+        ring_type.to_s+': ' +
+        role.describe+', ' +
+        other_role.describe+' in ' +
+        role.fact_type.default_reading +
+        ')'
       end
     end
 
@@ -938,11 +939,11 @@ module ActiveFacts
       end
 
       def input_play
-	all_play.detect{|p| p.is_input}
+        all_play.detect{|p| p.is_input}
       end
 
       def output_plays
-	all_play.reject{|p| p.is_input}
+        all_play.reject{|p| p.is_input}
       end
 
       def is_unary_step
@@ -982,16 +983,16 @@ module ActiveFacts
     class Query
       def describe
         steps_shown = {}
-	'Query(' +
+        'Query(' +
           all_variable.sort_by{|var| var.ordinal}.map do |variable|
-	    variable.describe + ': ' +
-	    variable.all_step.map do |step|
-	      next if steps_shown[step]
-	      steps_shown[step] = true
-	      step.describe
-	    end.compact.join(',')
-	  end.join('; ') +
-	')'
+            variable.describe + ': ' +
+            variable.all_step.map do |step|
+              next if steps_shown[step]
+              steps_shown[step] = true
+              step.describe
+            end.compact.join(',')
+          end.join('; ') +
+        ')'
       end
 
       def show
@@ -1062,18 +1063,18 @@ module ActiveFacts
       end
 
       def add_reading implicit_reading
-	@readings ||= []
-	@readings << implicit_reading
+        @readings ||= []
+        @readings << implicit_reading
       end
 
       def all_reading
         @readings ||=
-	  [ ImplicitReading.new(
-	      self,
-	      implying_role.fact_type.entity_type ? "{0} involves {1}" : implying_role.fact_type.default_reading+" Boolean"
-	    )
-	  ] +
-	  Array(implying_role.fact_type.entity_type ? ImplicitReading.new(self, "{1} is involved in {0}") : nil)
+          [ ImplicitReading.new(
+              self,
+              implying_role.fact_type.entity_type ? "{0} involves {1}" : implying_role.fact_type.default_reading+" Boolean"
+            )
+          ] +
+          Array(implying_role.fact_type.entity_type ? ImplicitReading.new(self, "{1} is involved in {0}") : nil)
       end
 
       def reading_preferably_starting_with_role role, negated = false
@@ -1083,7 +1084,7 @@ module ActiveFacts
       # This is only used for debugging, from RoleRef#describe
       class ImplicitReading
         attr_accessor :fact_type, :text
-	attr_reader :is_negative  # Never true
+        attr_reader :is_negative  # Never true
 
         def initialize(fact_type, text)
           @fact_type = fact_type
@@ -1115,8 +1116,8 @@ module ActiveFacts
             @role_refs
           end
           def all_role_ref_in_order
-	    @role_refs
-	  end
+            @role_refs
+          end
           def describe
             '('+@role_refs.map(&:describe)*', '+')'
           end
@@ -1132,13 +1133,13 @@ module ActiveFacts
         def ordinal; 0; end
 
         def expand
-	  text.gsub(/\{([01])\}/) do
-	    if $1 == '0'
-	      fact_type.all_role[0].object_type.name
-	    else
-	      fact_type.implying_role.object_type.name
-	    end
-	  end
+          text.gsub(/\{([01])\}/) do
+            if $1 == '0'
+              fact_type.all_role[0].object_type.name
+            else
+              fact_type.implying_role.object_type.name
+            end
+          end
         end
       end
     end
@@ -1260,33 +1261,33 @@ module ActiveFacts
         # It's an entity that's not an objectified fact type
 
         # If it has a simple identifier, there's no need to fully verbalise the identifying facts.
-	# This recursive block returns either the identifying value or nil
-	simple_identifier = proc do |instance|
-	    if instance.object_type.is_a?(ActiveFacts::Metamodel::ValueType)
-	      instance
-	    else
-	      pi = instance.object_type.preferred_identifier
-	      identifying_role_refs = pi.role_sequence.all_role_ref_in_order
-	      if identifying_role_refs.size != 1
-		nil
-	      else
-		role = identifying_role_refs[0].role
-		my_role = (role.fact_type.all_role.to_a-[role])[0]
-		identifying_fact = my_role.all_role_value.detect{|rv| rv.instance == self}.fact
-		irv = identifying_fact.all_role_value.detect{|rv| rv.role == role}
-		identifying_instance = irv.instance
-		simple_identifier.call(identifying_instance)
-	      end
-	    end
-	  end
+        # This recursive block returns either the identifying value or nil
+        simple_identifier = proc do |instance|
+            if instance.object_type.is_a?(ActiveFacts::Metamodel::ValueType)
+              instance
+            else
+              pi = instance.object_type.preferred_identifier
+              identifying_role_refs = pi.role_sequence.all_role_ref_in_order
+              if identifying_role_refs.size != 1
+                nil
+              else
+                role = identifying_role_refs[0].role
+                my_role = (role.fact_type.all_role.to_a-[role])[0]
+                identifying_fact = my_role.all_role_value.detect{|rv| rv.instance == self}.fact
+                irv = identifying_fact.all_role_value.detect{|rv| rv.role == role}
+                identifying_instance = irv.instance
+                simple_identifier.call(identifying_instance)
+              end
+            end
+          end
 
-	if (id = simple_identifier.call(self))
-	  "#{object_type.name} #{id.value}"
-	else
-	  pi = object_type.preferred_identifier
-	  identifying_role_refs = pi.role_sequence.all_role_ref_in_order
-	  "#{object_type.name}" +
-	    " is identified by " +      # REVISIT: Where the single fact type is TypeInheritance, we can shrink this
+        if (id = simple_identifier.call(self))
+          "#{object_type.name} #{id.value}"
+        else
+          pi = object_type.preferred_identifier
+          identifying_role_refs = pi.role_sequence.all_role_ref_in_order
+          "#{object_type.name}" +
+            " is identified by " +      # REVISIT: Where the single fact type is TypeInheritance, we can shrink this
             identifying_role_refs.map do |rr|
               rr = rr.preferred_reference
               [ (l = rr.leading_adjective) ? l+"-" : nil,
@@ -1302,40 +1303,40 @@ module ActiveFacts
               #identifying_instance = counterpart_role.all_role_value.detect{|rv| rv.fact == identifying_fact}.instance
               identifying_fact.verbalise(context)
             end*", "
-	end
+        end
 
       end
     end
 
     class ContextNote
       def verbalise(context=nil)
-	as_cql
+        as_cql
       end
 
       def as_cql
-	' (' +
-	( if all_context_according_to
-	    'according to '
-	    all_context_according_to.map do |act|
-	      act.agent.agent_name+', '
-	    end.join('')
-	  end
-	) +
-	context_note_kind.gsub(/_/, ' ') +
-	' ' +
-	discussion +
-	( if agreement
-	    ', as agreed ' +
-	    (agreement.date ? ' on '+agreement.date.iso8601.inspect+' ' : '') +
-	    'by '
-	    agreement.all_context_agreed_by.map do |acab|
-	      acab.agent.agent_name+', '
-	    end.join('')
-	  else
-	    ''
-	  end
-	) +
-	')'
+        ' (' +
+        ( if all_context_according_to
+            'according to '
+            all_context_according_to.map do |act|
+              act.agent.agent_name+', '
+            end.join('')
+          end
+        ) +
+        context_note_kind.gsub(/_/, ' ') +
+        ' ' +
+        discussion +
+        ( if agreement
+            ', as agreed ' +
+            (agreement.date ? ' on '+agreement.date.iso8601.inspect+' ' : '') +
+            'by '
+            agreement.all_context_agreed_by.map do |acab|
+              acab.agent.agent_name+', '
+            end.join('')
+          else
+            ''
+          end
+        ) +
+        ')'
       end
     end
 
