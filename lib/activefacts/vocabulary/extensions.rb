@@ -106,8 +106,8 @@ module ActiveFacts
         case body = embodied_as
         when ActiveFacts::Metamodel::ValueType
           [ body.supertype, body.unit ] +
-          body.all_facet.map{|f| f.facet_value_type } +
-          body.all_facet_restriction.map{|vr| vr.value.unit}
+          body.all_value_type_parameter.map{|f| f.facet_value_type } +
+          body.all_value_type_parameter_restriction.map{|vr| vr.value.unit}
         when ActiveFacts::Metamodel::EntityType
           # You can't define the preferred_identifier fact types until you define the entity type,
           # but the objects which play the identifying roles must be defined:
