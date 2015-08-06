@@ -283,9 +283,23 @@ module ActiveFacts
 	}
       end
 
+      rule role_quantifier
+	quantifier mapping_pragmas enforcement cn:context_note?
+	{
+	  def ast
+	    Compiler::Quantifier.new(
+	      quantifier.value[0],
+	      quantifier.value[1],
+	      enforcement.ast,
+	      cn.empty? ? nil : cn.ast
+	    )
+	  end
+	}
+      end
+
       # This is the rule that causes most back-tracking. I think you can see why.
       rule simple_role
-	q:( quantifier enforcement cn:context_note? )?
+	q:role_quantifier?
         player:derived_variable
         lr:(
 	  literal u:unit?
@@ -296,12 +310,7 @@ module ActiveFacts
         {
 	  def ast
 	    if !q.empty? && q.quantifier.value
-	      quantifier = Compiler::Quantifier.new(
-		q.quantifier.value[0],
-		q.quantifier.value[1],
-		q.enforcement.ast,
-		q.cn.empty? ? nil : q.cn.ast
-	      )
+	      quantifier = q.ast
 	    end
 	    if !lr.empty?
 	      if lr.respond_to?(:literal)
