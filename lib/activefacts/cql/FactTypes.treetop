@@ -291,7 +291,8 @@ module ActiveFacts
 	      quantifier.value[0],
 	      quantifier.value[1],
 	      enforcement.ast,
-	      cn.empty? ? nil : cn.ast
+	      cn.empty? ? nil : cn.ast,
+	      mapping_pragmas.value
 	    )
 	  end
 	}

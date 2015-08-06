@@ -233,6 +233,11 @@ module ActiveFacts
               :is_preferred_identifier => false,
               :is_mandatory => @quantifier.min && @quantifier.min > 0
             )
+	  if @quantifier.pragmas
+	    @quantifier.pragmas.each do |p|
+	      @constellation.ConceptAnnotation(:concept => @constraint.concept, :mapping_annotation => p)
+	    end
+	  end
           @enforcement.compile(@constellation, @constraint) if @enforcement
 	  trace :constraint, "Made new PC GUID=#{@constraint.concept.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{role_sequence.describe}"
           super
@@ -385,6 +390,11 @@ module ActiveFacts
             :vocabulary => @vocabulary,
             :is_mandatory => @quantifier.min == 1
           )
+	  if @quantifier.pragmas
+	    @quantifier.pragmas.each do |p|
+	      @constellation.ConceptAnnotation(:concept => @constraint.concept, :mapping_annotation => p)
+	    end
+	  end
           @enforcement.compile(@constellation, @constraint) if @enforcement
           role_sequences.each_with_index do |role_sequence, i|
             @constellation.SetComparisonRoles(@constraint, i, :role_sequence => role_sequence)

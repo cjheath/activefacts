@@ -46,14 +46,6 @@ CREATE TABLE AlternativeSet (
 GO
 
 CREATE TABLE Concept (
-	-- maybe Constraint is an instance of Concept and maybe Constraint requires Enforcement and maybe Enforcement notifies Agent and Agent has Agent Name,
-	ConstraintAgentName                     varchar NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint requires Enforcement and Enforcement has Enforcement Code,
-	ConstraintEnforcementCode               varchar(16) NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is called Name,
-	ConstraintName                          varchar(64) NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint belongs to Vocabulary and Vocabulary is called Name,
-	ConstraintVocabularyName                varchar(64) NULL,
 	-- maybe Context Note is an instance of Concept and maybe Context Note was added by Agreement and maybe Agreement was on Date,
 	ContextNoteDate                         datetime NULL,
 	-- maybe Context Note is an instance of Concept and Context Note has Discussion,
@@ -88,32 +80,6 @@ CREATE TABLE Concept (
 	InstanceValueLiteral                    varchar NULL,
 	-- maybe Instance is an instance of Concept and maybe Instance has Value and maybe Value is in Unit and Unit is an instance of Concept and Concept has Guid,
 	InstanceValueUnitConceptGuid            uniqueidentifier NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Presence Constraint and Presence Constraint is mandatory Boolean,
-	PresenceConstraintIsMandatory           bit NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Presence Constraint and Presence Constraint is preferred identifier Boolean,
-	PresenceConstraintIsPreferredIdentifier bit NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Presence Constraint and maybe Presence Constraint has max-Frequency,
-	PresenceConstraintMaxFrequency          int NULL CHECK(PresenceConstraintMaxFrequency >= 1),
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Presence Constraint and maybe Presence Constraint has min-Frequency,
-	PresenceConstraintMinFrequency          int NULL CHECK(PresenceConstraintMinFrequency >= 2),
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Presence Constraint and Presence Constraint covers Role Sequence and Role Sequence has Guid,
-	PresenceConstraintRoleSequenceGuid      uniqueidentifier NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Ring Constraint and maybe Ring Constraint has other-Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	RingConstraintOtherRoleFactTypeConceptGuid uniqueidentifier NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Ring Constraint and maybe Ring Constraint has other-Role and Role fills Ordinal,
-	RingConstraintOtherRoleOrdinal          smallint NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Ring Constraint and Ring Constraint is of Ring Type,
-	RingConstraintRingType                  varchar NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Ring Constraint and maybe Ring Constraint has Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	RingConstraintRoleFactTypeConceptGuid   uniqueidentifier NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Ring Constraint and maybe Ring Constraint has Role and Role fills Ordinal,
-	RingConstraintRoleOrdinal               smallint NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Set Constraint and maybe Set Constraint is a Set Comparison Constraint and maybe Set Comparison Constraint is a Set Exclusion Constraint and Set Exclusion Constraint is mandatory Boolean,
-	SetExclusionConstraintIsMandatory       bit NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Set Constraint and maybe Set Constraint is a Subset Constraint and Subset Constraint covers subset-Role Sequence and Role Sequence has Guid,
-	SubsetConstraintSubsetRoleSequenceGuid  uniqueidentifier NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Set Constraint and maybe Set Constraint is a Subset Constraint and Subset Constraint covers superset-Role Sequence and Role Sequence has Guid,
-	SubsetConstraintSupersetRoleSequenceGuid uniqueidentifier NULL,
 	-- maybe Concept belongs to Topic and Topic has topic-Name,
 	TopicName                               varchar(64) NULL,
 	-- maybe Unit is an instance of Concept and maybe Unit has Coefficient and Coefficient has Denominator,
@@ -134,25 +100,10 @@ CREATE TABLE Concept (
 	UnitPluralName                          varchar(64) NULL,
 	-- maybe Unit is an instance of Concept and Unit is in Vocabulary and Vocabulary is called Name,
 	UnitVocabularyName                      varchar(64) NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Value Constraint and maybe Value Constraint requires matching Regular Expression,
-	ValueConstraintRegularExpression        varchar NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Value Constraint and maybe Value Constraint applies to Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
-	ValueConstraintRoleFactTypeConceptGuid  uniqueidentifier NULL,
-	-- maybe Constraint is an instance of Concept and maybe Constraint is a Value Constraint and maybe Value Constraint applies to Role and Role fills Ordinal,
-	ValueConstraintRoleOrdinal              smallint NULL,
 	PRIMARY KEY(Guid),
 	FOREIGN KEY (ContextNoteRelevantConceptGuid) REFERENCES Concept (Guid),
 	FOREIGN KEY (InstanceFactConceptGuid) REFERENCES Concept (Guid)
 )
-GO
-
-CREATE VIEW dbo.ConstraintInConcept_VocabularyNameName (ConstraintVocabularyName, ConstraintName) WITH SCHEMABINDING AS
-	SELECT ConstraintVocabularyName, ConstraintName FROM dbo.Concept
-	WHERE	ConstraintVocabularyName IS NOT NULL
-	  AND	ConstraintName IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_ConstraintInConceptByConstraintVocabularyNameConstraintName ON dbo.ConstraintInConcept_VocabularyNameName(ConstraintVocabularyName, ConstraintName)
 GO
 
 CREATE VIEW dbo.InstanceInConcept_FactConceptGuid (InstanceFactConceptGuid) WITH SCHEMABINDING AS
@@ -161,15 +112,6 @@ CREATE VIEW dbo.InstanceInConcept_FactConceptGuid (InstanceFactConceptGuid) WITH
 GO
 
 CREATE UNIQUE CLUSTERED INDEX IX_InstanceInConceptByInstanceFactConceptGuid ON dbo.InstanceInConcept_FactConceptGuid(InstanceFactConceptGuid)
-GO
-
-CREATE VIEW dbo.SubsetConstraintInConcept_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid (SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid) WITH SCHEMABINDING AS
-	SELECT SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid FROM dbo.Concept
-	WHERE	SubsetConstraintSubsetRoleSequenceGuid IS NOT NULL
-	  AND	SubsetConstraintSupersetRoleSequenceGuid IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConcept_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
 GO
 
 CREATE VIEW dbo.UnitInConcept_Name (UnitName) WITH SCHEMABINDING AS
@@ -197,15 +139,6 @@ GO
 CREATE UNIQUE CLUSTERED INDEX IX_UnitInConceptByUnitVocabularyNameUnitName ON dbo.UnitInConcept_VocabularyNameName(UnitVocabularyName, UnitName)
 GO
 
-CREATE VIEW dbo.ValueConstraintInConcept_ValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal (ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
-	SELECT ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal FROM dbo.Concept
-	WHERE	ValueConstraintRoleFactTypeConceptGuid IS NOT NULL
-	  AND	ValueConstraintRoleOrdinal IS NOT NULL
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConceptByValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal ON dbo.ValueConstraintInConcept_ValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal)
-GO
-
 CREATE TABLE ConceptAnnotation (
 	-- Concept Annotation involves Concept and Concept has Guid,
 	ConceptGuid                             uniqueidentifier NOT NULL,
@@ -214,6 +147,90 @@ CREATE TABLE ConceptAnnotation (
 	PRIMARY KEY(ConceptGuid, MappingAnnotation),
 	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
 )
+GO
+
+CREATE TABLE [Constraint] (
+	-- Constraint is an instance of Concept and Concept has Guid,
+	ConceptGuid                             uniqueidentifier NOT NULL,
+	-- maybe Constraint requires Enforcement and maybe Enforcement notifies Agent and Agent has Agent Name,
+	EnforcementAgentName                    varchar NULL,
+	-- maybe Constraint requires Enforcement and Enforcement has Enforcement Code,
+	EnforcementCode                         varchar(16) NULL,
+	-- maybe Constraint is called Name,
+	Name                                    varchar(64) NULL,
+	-- maybe Constraint is a Presence Constraint and Presence Constraint is mandatory Boolean,
+	PresenceConstraintIsMandatory           bit NULL,
+	-- maybe Constraint is a Presence Constraint and Presence Constraint is preferred identifier Boolean,
+	PresenceConstraintIsPreferredIdentifier bit NULL,
+	-- maybe Constraint is a Presence Constraint and maybe Presence Constraint has max-Frequency,
+	PresenceConstraintMaxFrequency          int NULL CHECK(PresenceConstraintMaxFrequency >= 1),
+	-- maybe Constraint is a Presence Constraint and maybe Presence Constraint has min-Frequency,
+	PresenceConstraintMinFrequency          int NULL CHECK(PresenceConstraintMinFrequency >= 2),
+	-- maybe Constraint is a Presence Constraint and Presence Constraint covers Role Sequence and Role Sequence has Guid,
+	PresenceConstraintRoleSequenceGuid      uniqueidentifier NULL,
+	-- maybe Constraint is a Ring Constraint and maybe Ring Constraint has other-Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
+	RingConstraintOtherRoleFactTypeConceptGuid uniqueidentifier NULL,
+	-- maybe Constraint is a Ring Constraint and maybe Ring Constraint has other-Role and Role fills Ordinal,
+	RingConstraintOtherRoleOrdinal          smallint NULL,
+	-- maybe Constraint is a Ring Constraint and Ring Constraint is of Ring Type,
+	RingConstraintRingType                  varchar NULL,
+	-- maybe Constraint is a Ring Constraint and maybe Ring Constraint has Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
+	RingConstraintRoleFactTypeConceptGuid   uniqueidentifier NULL,
+	-- maybe Constraint is a Ring Constraint and maybe Ring Constraint has Role and Role fills Ordinal,
+	RingConstraintRoleOrdinal               smallint NULL,
+	-- maybe Constraint is a Set Constraint and maybe Set Constraint is a Set Comparison Constraint and maybe Set Comparison Constraint is a Set Exclusion Constraint and Set Exclusion Constraint is mandatory Boolean,
+	SetExclusionConstraintIsMandatory       bit NULL,
+	-- maybe Constraint is a Set Constraint and maybe Set Constraint is a Subset Constraint and Subset Constraint covers subset-Role Sequence and Role Sequence has Guid,
+	SubsetConstraintSubsetRoleSequenceGuid  uniqueidentifier NULL,
+	-- maybe Constraint is a Set Constraint and maybe Set Constraint is a Subset Constraint and Subset Constraint covers superset-Role Sequence and Role Sequence has Guid,
+	SubsetConstraintSupersetRoleSequenceGuid uniqueidentifier NULL,
+	-- maybe Constraint is a Value Constraint and maybe Value Constraint requires matching Regular Expression,
+	ValueConstraintRegularExpression        varchar NULL,
+	-- maybe Constraint is a Value Constraint and maybe Value Constraint applies to Role and Role belongs to Fact Type and Fact Type is an instance of Concept and Concept has Guid,
+	ValueConstraintRoleFactTypeConceptGuid  uniqueidentifier NULL,
+	-- maybe Constraint is a Value Constraint and maybe Value Constraint applies to Role and Role fills Ordinal,
+	ValueConstraintRoleOrdinal              smallint NULL,
+	-- maybe Constraint belongs to Vocabulary and Vocabulary is called Name,
+	VocabularyName                          varchar(64) NULL,
+	PRIMARY KEY(ConceptGuid),
+	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid)
+)
+GO
+
+CREATE VIEW dbo.Constraint_EnforcementAgentNameEnforcementCode (EnforcementAgentName, EnforcementCode) WITH SCHEMABINDING AS
+	SELECT EnforcementAgentName, EnforcementCode FROM dbo.[Constraint]
+	WHERE	EnforcementAgentName IS NOT NULL
+	  AND	EnforcementCode IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByEnforcementAgentNameEnforcementCode ON dbo.Constraint_EnforcementAgentNameEnforcementCode(EnforcementAgentName, EnforcementCode)
+GO
+
+CREATE VIEW dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid (SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid) WITH SCHEMABINDING AS
+	SELECT SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid FROM dbo.[Constraint]
+	WHERE	SubsetConstraintSubsetRoleSequenceGuid IS NOT NULL
+	  AND	SubsetConstraintSupersetRoleSequenceGuid IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX SetConstraintMustHaveSupertypeConstraint ON dbo.SubsetConstraintInConstraint_SubsetConstraintSubsetRoleSequenceGuidSubsetConstraintSupersetRoleSequenceGuid(SubsetConstraintSubsetRoleSequenceGuid, SubsetConstraintSupersetRoleSequenceGuid)
+GO
+
+CREATE VIEW dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal (ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal) WITH SCHEMABINDING AS
+	SELECT ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal FROM dbo.[Constraint]
+	WHERE	ValueConstraintRoleFactTypeConceptGuid IS NOT NULL
+	  AND	ValueConstraintRoleOrdinal IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ValueConstraintInConstraintByValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal ON dbo.ValueConstraintInConstraint_ValueConstraintRoleFactTypeConceptGuidValueConstraintRoleOrdinal(ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal)
+GO
+
+CREATE VIEW dbo.Constraint_VocabularyNameName (VocabularyName, Name) WITH SCHEMABINDING AS
+	SELECT VocabularyName, Name FROM dbo.[Constraint]
+	WHERE	VocabularyName IS NOT NULL
+	  AND	Name IS NOT NULL
+GO
+
+CREATE UNIQUE CLUSTERED INDEX IX_ConstraintByVocabularyNameName ON dbo.Constraint_VocabularyNameName(VocabularyName, Name)
 GO
 
 CREATE TABLE ContextAccordingTo (
@@ -341,9 +358,9 @@ CREATE TABLE ObjectType (
 	VocabularyName                          varchar(64) NOT NULL,
 	PRIMARY KEY(VocabularyName, Name),
 	UNIQUE(ConceptGuid),
-	FOREIGN KEY (ValueTypeValueConstraintConceptGuid) REFERENCES Concept (Guid),
 	FOREIGN KEY (ConceptGuid) REFERENCES Concept (Guid),
 	FOREIGN KEY (ValueTypeUnitConceptGuid) REFERENCES Concept (Guid),
+	FOREIGN KEY (ValueTypeValueConstraintConceptGuid) REFERENCES [Constraint] (ConceptGuid),
 	FOREIGN KEY (ValueTypeSupertypeVocabularyName, ValueTypeSupertypeName) REFERENCES ObjectType (VocabularyName, Name)
 )
 GO
@@ -537,7 +554,7 @@ CREATE TABLE SetComparisonRoles (
 	SetComparisonConstraintConceptGuid      uniqueidentifier NOT NULL,
 	PRIMARY KEY(SetComparisonConstraintConceptGuid, Ordinal),
 	UNIQUE(SetComparisonConstraintConceptGuid, RoleSequenceGuid),
-	FOREIGN KEY (SetComparisonConstraintConceptGuid) REFERENCES Concept (Guid),
+	FOREIGN KEY (SetComparisonConstraintConceptGuid) REFERENCES [Constraint] (ConceptGuid),
 	FOREIGN KEY (RoleSequenceGuid) REFERENCES RoleSequence (Guid)
 )
 GO
@@ -592,8 +609,8 @@ CREATE TABLE Shape (
 	-- maybe Shape is a Constraint Shape and maybe Constraint Shape is a Value Constraint Shape and maybe Value Constraint Shape is for Role Display and Role Display involves Ordinal,
 	ValueConstraintShapeRoleDisplayOrdinal  smallint NULL,
 	PRIMARY KEY(Guid),
-	FOREIGN KEY (ConstraintShapeConstraintConceptGuid) REFERENCES Concept (Guid),
 	FOREIGN KEY (ModelNoteShapeContextNoteConceptGuid) REFERENCES Concept (Guid),
+	FOREIGN KEY (ConstraintShapeConstraintConceptGuid) REFERENCES [Constraint] (ConceptGuid),
 	FOREIGN KEY (ORMDiagramVocabularyName, ORMDiagramName) REFERENCES Diagram (VocabularyName, Name),
 	FOREIGN KEY (FactTypeShapeFactTypeConceptGuid) REFERENCES FactType (ConceptGuid),
 	FOREIGN KEY (ObjectTypeShapeObjectTypeVocabularyName, ObjectTypeShapeObjectTypeName) REFERENCES ObjectType (VocabularyName, Name),
@@ -785,7 +802,7 @@ ALTER TABLE Aggregation
 GO
 
 ALTER TABLE AllowedRange
-	ADD FOREIGN KEY (ValueConstraintConceptGuid) REFERENCES Concept (Guid)
+	ADD FOREIGN KEY (ValueConstraintConceptGuid) REFERENCES [Constraint] (ConceptGuid)
 GO
 
 ALTER TABLE AllowedRange
@@ -813,31 +830,31 @@ ALTER TABLE Concept
 GO
 
 ALTER TABLE Concept
+	ADD FOREIGN KEY (InstanceValueLiteral, InstanceValueIsLiteralString, InstanceValueUnitConceptGuid) REFERENCES Value (Literal, IsLiteralString, UnitConceptGuid)
+GO
+
+ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (RingConstraintOtherRoleFactTypeConceptGuid, RingConstraintOtherRoleOrdinal) REFERENCES Role (FactTypeConceptGuid, Ordinal)
 GO
 
-ALTER TABLE Concept
+ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (RingConstraintRoleFactTypeConceptGuid, RingConstraintRoleOrdinal) REFERENCES Role (FactTypeConceptGuid, Ordinal)
 GO
 
-ALTER TABLE Concept
+ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (ValueConstraintRoleFactTypeConceptGuid, ValueConstraintRoleOrdinal) REFERENCES Role (FactTypeConceptGuid, Ordinal)
 GO
 
-ALTER TABLE Concept
+ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (PresenceConstraintRoleSequenceGuid) REFERENCES RoleSequence (Guid)
 GO
 
-ALTER TABLE Concept
+ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (SubsetConstraintSubsetRoleSequenceGuid) REFERENCES RoleSequence (Guid)
 GO
 
-ALTER TABLE Concept
+ALTER TABLE [Constraint]
 	ADD FOREIGN KEY (SubsetConstraintSupersetRoleSequenceGuid) REFERENCES RoleSequence (Guid)
-GO
-
-ALTER TABLE Concept
-	ADD FOREIGN KEY (InstanceValueLiteral, InstanceValueIsLiteralString, InstanceValueUnitConceptGuid) REFERENCES Value (Literal, IsLiteralString, UnitConceptGuid)
 GO
 
 ALTER TABLE FactType

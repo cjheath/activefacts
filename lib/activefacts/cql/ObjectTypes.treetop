@@ -167,25 +167,31 @@ module ActiveFacts
 
       rule mapping_pragmas
         '[' s h:mapping_pragma t:(s ',' s mapping_pragma)* s ']' s
-          { def value; [t.elements.inject([h.value]) { |a, e| a << e.mapping_pragma.value }.flatten*' ']; end }
+          {
+	    def value
+	      t.elements.inject([h.value*' ']) do |a, e|
+		a << e.mapping_pragma.value*' '
+	      end
+	    end
+	  }
         /
         s
           { def value; []; end }
       end
 
+      # Each mapping_pragma returns an array of words
       rule mapping_pragma
 	was s names:(id s)+
 	{   # Old or previous name of an object type:
 	  def value
-	    [ was.text_value, names.elements.map{|n|n.text_value} ]
+	    [ was.text_value ] + names.elements.map{|n|n.text_value}
 	  end
 	}
 	/
 	head:id tail:(s id)*
 	{   # A sequence of one or more words denoting a pragma:
 	  def value
-	    ([head]+tail.elements.map(&:id)).
-	      map(&:text_value)*' '
+	    ([head]+tail.elements.map(&:id)).map(&:text_value)
 	  end
 	}
       end

@@ -150,6 +150,7 @@ module ActiveFacts
                 (rr = c.role_sequence.all_role_ref.single) and
                 rr.role == self
             end
+	# REVISIT: check mapping pragmas, e.g. by to_1.concept.all_concept_annotation.detect{|ca| ca.mapping_annotation == 'separate'}
 
         if fact_type.entity_type
           # This is a role in an objectified fact type

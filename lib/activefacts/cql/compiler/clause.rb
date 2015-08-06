@@ -1079,6 +1079,11 @@ module ActiveFacts
                   :max_frequency => @quantifier.max,
                   :min_frequency => @quantifier.min
                 )
+	      if @quantifier.pragmas
+		@quantifier.pragmas.each do |p|
+		  constellation.ConceptAnnotation(:concept => constraint.concept, :mapping_annotation => p)
+		end
+	      end
               trace :constraint, "Made new embedded PC GUID=#{constraint.concept.guid} min=#{@quantifier.min.inspect} max=#{@quantifier.max.inspect} over #{(e = fact_type.entity_type) ? e.name : role_sequence.describe} in #{fact_type.describe}"
               @quantifier.enforcement.compile(constellation, constraint) if @quantifier.enforcement
               @embedded_presence_constraint = constraint
@@ -1097,13 +1102,15 @@ module ActiveFacts
       class Quantifier
         attr_accessor :enforcement
         attr_accessor :context_note
+        attr_accessor :pragmas
         attr_reader :min, :max
 
-        def initialize min, max, enforcement = nil, context_note = nil
+        def initialize min, max, enforcement = nil, context_note = nil, pragmas = nil
           @min = min
           @max = max
           @enforcement = enforcement
           @context_note = context_note
+	  @pragmas = pragmas
         end
 
         def is_unique
