@@ -256,6 +256,10 @@ module ActiveFacts
         @columns =
           all_columns({})
       end
+
+      def wipe_columns
+	@columns = nil
+      end
     end
 
     # The ValueType class is defined in the metamodel; full documentation is not generated.

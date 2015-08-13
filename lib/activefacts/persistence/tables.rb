@@ -191,6 +191,7 @@ module ActiveFacts
       def wipe_existing_mapping
         all_object_type.each do |object_type|
           object_type.clear_references
+          object_type.wipe_columns
           object_type.is_table = nil      # Undecided; force an attempt to decide
           object_type.tentative = true    # Uncertain
         end

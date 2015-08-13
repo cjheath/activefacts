@@ -58,14 +58,19 @@ module ActiveFacts
 	  end
 	end
 
-	def inject_required_surrogates
-	  trace :datavault, "Injecting any required surrogates" do
-	    injections =
+	def detect_required_surrogates
+	  trace :datavault, "Detecting required surrogates" do
+	    @required_surrogates =
 	      (@hub_tables+@link_tables).select do |table|
 		table.dv_needs_surrogate
 	      end
-	    trace :datavault, "Need to inject surrogates into #{injections.map(&:name)*', '}"
-	    injections.each do |table|
+	  end
+	end
+
+	def inject_required_surrogates
+	  trace :datavault, "Injecting any required surrogates" do
+	    trace :datavault, "Need to inject surrogates into #{@required_surrogates.map(&:name)*', '}"
+	    @required_surrogates.each do |table|
 	      table.dv_inject_surrogate
 	    end
 	  end
@@ -77,7 +82,9 @@ module ActiveFacts
 
 	  # Skip this table if no satellite data is needed
 	  # REVISIT: Needed anyway for a link?
-	  return nil if non_identifying_references.size == 0
+	  if non_identifying_references.size == 0
+	    return nil
+	  end
 
 	  satellites = non_identifying_references.inject({}) do |hash, ref|
 	      satellite_name =
@@ -141,7 +148,7 @@ module ActiveFacts
 	  pc = @constellation.PresenceConstraint(
 	      :concept => :new,
 	      :vocabulary => @vocabulary,
-	      :name => r1.object_type.name+'_'+r1.object_type.name+'PK',
+	      :name => r1.object_type.name+' '+r1.object_type.name+'PK',
 	      :role_sequence => [:new],
 	      :is_mandatory => true,
 	      :min_frequency => 1,
@@ -157,13 +164,12 @@ module ActiveFacts
 	  trace :datavault, "Creating #{satellite_name} for #{table.name} with #{references.size} references" do
 	    # Create a new entity type with record-date fields in its identifier
 
-	    satellite = @constellation.EntityType(:vocabulary => @vocabulary, :name => "#{table.name}_#{satellite_name}", :concept => [:new, :implication_rule => "datavault"])
+	    satellite = @constellation.EntityType(:vocabulary => @vocabulary, :name => "#{table.name} #{satellite_name}", :concept => [:new, :implication_rule => "datavault"])
 	    satellite.definitely_table
 
 	    date_time = add_datetime(satellite)
 	    table_role = create_one_to_many(table, satellite)
 	    date_time_role = create_one_to_many(date_time, satellite, 'is of', 'was loaded at')
-	    #debugger
 	    create_two_role_identifier(table_role, date_time_role)
 
 	    # Move all roles across to it from the parent table.
@@ -201,7 +207,7 @@ module ActiveFacts
 
 	  classify_tables
 
-	  inject_required_surrogates
+	  detect_required_surrogates
 
 	  trace :datavault, "Creating satellites" do
 	    (@hub_tables+@link_tables).each do |table|
@@ -215,6 +221,8 @@ module ActiveFacts
 	      end
 	    end
 	  end
+
+	  inject_required_surrogates
 
 	  # Now, redo the E-R mapping using the revised schema:
           @vocabulary.decide_tables
