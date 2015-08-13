@@ -171,7 +171,7 @@ module ActiveFacts
             end
           end
 	  @pragmas.each do |p|
-	    @constellation.ConceptAnnotation(:concept => @fact_type.concept, :mapping_annotation => p)
+	    @constellation.ConceptAnnotation(:concept => (@entity_type||@fact_type).concept, :mapping_annotation => p)
 	  end if @pragmas
 
           @clauses.each do |clause|

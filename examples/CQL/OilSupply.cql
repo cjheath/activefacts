@@ -16,7 +16,7 @@ Year Nr is written as Signed Integer(32);
 /*
  * Entity Types
  */
-Month is identified by its Nr restricted to {1..12};
+Month [static] is identified by its Nr restricted to {1..12};
 Month is in one Season;
 
 Product is independent identified by its Name;
@@ -36,7 +36,7 @@ Acceptable Substitution is where
 	Product may be substituted by alternate-Product in Season [acyclic, intransitive],
 	alternate-Product is an acceptable substitute for Product in Season;
 
-Supply Period is identified by Year and Month where
+Supply Period [separate, static] is identified by Year and Month where
 	Supply Period is in one Year,
 	Supply Period is in one Month;
 
