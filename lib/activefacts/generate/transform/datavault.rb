@@ -181,7 +181,7 @@ module ActiveFacts
 		  table_role.object_type = satellite
 		else
 		  #debugger  # Bum, the crappy Reference object bites again.
-		  puts "REVISIT: Can't move this role across without mangling the Reference. Later, doodz!"
+		  puts "REVISIT: Can't move the role for #{ref.inspect} without mangling the Reference. Later, doodz!"
 		end
 	      end
 	    end
