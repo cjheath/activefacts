@@ -230,6 +230,7 @@ module ActiveFacts
 	  # Before departing, ensure we don't emit the reference tables!
 	  @reference_tables.each do |table|
 	    table.definitely_not_table
+	    @vocabulary.tables.delete(table)
 	  end
 
 	end # generate
