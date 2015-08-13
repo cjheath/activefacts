@@ -11,110 +11,12 @@ require 'activefacts/generate/traits/datavault'
 
 module ActiveFacts
 
-=begin
-      def add_datetime type_name = 'Date Time'
-	# Find or assert the surrogate value type
-	datetime = vocabulary.valid_value_type_name(type_name) ||
-	  constellation.ValueType(:vocabulary => vocabulary, :name => type_name, :concept => :new)
-
-	# Create a fact type
-	datetime_fact_type = constellation.FactType(:concept => :new)
-	my_role = constellation.Role(:concept => :new, :fact_type => datetime_fact_type, :ordinal => 0, :object_type => self)
-	dt_role = constellation.Role(:concept => :new, :fact_type => datetime_fact_type, :ordinal => 1, :object_type => datetime)
-
-	# Create a reading (which needs a RoleSequence)
-	reading = constellation.Reading(
-	  :fact_type => datetime_fact_type,
-	  :ordinal => 0,
-	  :role_sequence => [:new],
-	  :text => "{0} has {1}"
-	)
-	constellation.RoleRef(:role_sequence => reading.role_sequence, :ordinal => 0, :role => my_role)
-	constellation.RoleRef(:role_sequence => reading.role_sequence, :ordinal => 1, :role => dt_role)
-
-	# Create one uniqueness constraints for the many-to-one. Each needs a RoleSequence (two RoleRefs)
-	one_id = constellation.PresenceConstraint(
-	    :concept => :new,
-	    :vocabulary => vocabulary,
-	    :name => self.name+'HasOneDT',
-	    :role_sequence => [:new],
-	    :is_mandatory => true,
-	    :min_frequency => 1,
-	    :max_frequency => 1,
-	    :is_preferred_identifier => false
-	  )
-	@constellation.RoleRef(:role_sequence => one_id.role_sequence, :ordinal => 0, :role => my_role)
-
-	# one_me = constellation.PresenceConstraint(
-	#     :concept => :new,
-	#     :vocabulary => vocabulary,
-	#     :name => self.name+suffix+'IsOfOne'+self.name,
-	#     :role_sequence => [:new],
-	#     :is_mandatory => false,
-	#     :min_frequency => 0,
-	#     :max_frequency => 1,
-	#     :is_preferred_identifier => true
-	#   )
-	# @constellation.RoleRef(:role_sequence => one_me.role_sequence, :ordinal => 0, :role => id_role)
-      end
-
-      def add_fk foreign_key
-	# Create a fact type
-	byebug
-	link_fact_type = constellation.FactType(:concept => :new)
-	my_role = constellation.Role(:concept => :new, :fact_type => link_fact_type, :ordinal => 0, :object_type => self)
-	ft_role = constellation.Role(:concept => :new, :fact_type => link_fact_type, :ordinal => 1, :object_type => foreign_key)
-
-	# Create a reading (which needs a RoleSequence)
-	reading = constellation.Reading(
-	  :fact_type => link_fact_type,
-	  :ordinal => 0,
-	  :role_sequence => [:new],
-	  :text => "{0} has {1}"
-	)
-	constellation.RoleRef(:role_sequence => reading.role_sequence, :ordinal => 0, :role => my_role)
-	constellation.RoleRef(:role_sequence => reading.role_sequence, :ordinal => 1, :role => ft_role)
-
-	# Create one uniqueness constraints for the many-to-one. Each needs a RoleSequence (two RoleRefs)
-	one_id = constellation.PresenceConstraint(
-	    :concept => :new,
-	    :vocabulary => vocabulary,
-	    :name => self.name+'HasOneFK',
-	    :role_sequence => [:new],
-	    :is_mandatory => true,
-	    :min_frequency => 1,
-	    :max_frequency => 1,
-	    :is_preferred_identifier => false
-	  )
-	@constellation.RoleRef(:role_sequence => one_id.role_sequence, :ordinal => 0, :role => my_role)
-
-	# one_me = constellation.PresenceConstraint(
-	#     :concept => :new,
-	#     :vocabulary => vocabulary,
-	#     :name => self.name+suffix+'IsOfOne'+self.name,
-	#     :role_sequence => [:new],
-	#     :is_mandatory => false,
-	#     :min_frequency => 0,
-	#     :max_frequency => 1,
-	#     :is_preferred_identifier => true
-	#   )
-	# @constellation.RoleRef(:role_sequence => one_me.role_sequence, :ordinal => 0, :role => id_role)
-      end
-
-      def inject_fk foreign_key
-	trace :datavault, "Injecting a foreign key into #{self.name}"
-	@preferred_identifier = nil   # Kill the cache
-	add_fk foreign_key
-	trace :datavault, "pi for #{name} is now '#{preferred_identifier.describe}'"
-	@preferred_identifier = preferred_identifier
-      end
-=end
-
   module Generate #:nodoc:
     module Transform #:nodoc:
       class DataVault
 	def initialize(vocabulary, *options)
 	  @vocabulary = vocabulary
+	  @constellation = vocabulary.constellation
 	end
 
 	def classify_tables
@@ -199,24 +101,22 @@ module ActiveFacts
 	end
 
 	def create_one_to_many(table, satellite, predicate_1 = 'has', predicate_2 = 'is of')
-	  constellation = table.constellation
-
 	  # Create a fact type
-	  fact_type = constellation.FactType(:concept => :new)
-	  table_role = constellation.Role(:concept => :new, :fact_type => fact_type, :ordinal => 0, :object_type => table)
-	  sat_role = constellation.Role(:concept => :new, :fact_type => fact_type, :ordinal => 1, :object_type => satellite)
+	  fact_type = @constellation.FactType(:concept => :new)
+	  table_role = @constellation.Role(:concept => :new, :fact_type => fact_type, :ordinal => 0, :object_type => table)
+	  sat_role = @constellation.Role(:concept => :new, :fact_type => fact_type, :ordinal => 1, :object_type => satellite)
 
 	  # Create two readings
-	  reading1 = constellation.Reading(:fact_type => fact_type, :ordinal => 0, :role_sequence => [:new], :text => "{0} #{predicate_1} {1}")
-	  constellation.RoleRef(:role_sequence => reading1.role_sequence, :ordinal => 0, :role => table_role)
-	  constellation.RoleRef(:role_sequence => reading1.role_sequence, :ordinal => 1, :role => sat_role)
-	  reading2 = constellation.Reading(:fact_type => fact_type, :ordinal => 1, :role_sequence => [:new], :text => "{0} #{predicate_2} {1}")
-	  constellation.RoleRef(:role_sequence => reading2.role_sequence, :ordinal => 0, :role => sat_role)
-	  constellation.RoleRef(:role_sequence => reading2.role_sequence, :ordinal => 1, :role => table_role)
+	  reading1 = @constellation.Reading(:fact_type => fact_type, :ordinal => 0, :role_sequence => [:new], :text => "{0} #{predicate_1} {1}")
+	  @constellation.RoleRef(:role_sequence => reading1.role_sequence, :ordinal => 0, :role => table_role)
+	  @constellation.RoleRef(:role_sequence => reading1.role_sequence, :ordinal => 1, :role => sat_role)
+	  reading2 = @constellation.Reading(:fact_type => fact_type, :ordinal => 1, :role_sequence => [:new], :text => "{0} #{predicate_2} {1}")
+	  @constellation.RoleRef(:role_sequence => reading2.role_sequence, :ordinal => 0, :role => sat_role)
+	  @constellation.RoleRef(:role_sequence => reading2.role_sequence, :ordinal => 1, :role => table_role)
 
-	  one_id = constellation.PresenceConstraint(
+	  one_id = @constellation.PresenceConstraint(
 	      :concept => :new,
-	      :vocabulary => table.vocabulary,
+	      :vocabulary => @vocabulary,
 	      :name => table.name+'HasOne'+satellite.name,
 	      :role_sequence => [:new],
 	      :is_mandatory => true,
@@ -224,27 +124,23 @@ module ActiveFacts
 	      :max_frequency => 1,
 	      :is_preferred_identifier => false
 	    )
-	  constellation.RoleRef(:role_sequence => one_id.role_sequence, :ordinal => 0, :role => sat_role)
+	  @constellation.RoleRef(:role_sequence => one_id.role_sequence, :ordinal => 0, :role => sat_role)
 	  table_role
 	end
 
 	def add_datetime table
 	  # Add a new fact where this table has a new DateTime field
 	  type_name = 'Date Time'
-	  vocabulary = table.vocabulary
-	  constellation = table.constellation
-	  datetime = vocabulary.valid_value_type_name(type_name) ||
-	    constellation.ValueType(:vocabulary => vocabulary, :name => type_name, :concept => :new)
+	  datetime = @constellation.ValueType(:vocabulary => @vocabulary, :name => type_name, :concept => :new)
 
 	  datetime
 	end
 
 	# Create a PresenceConstraint with two roles, marked as preferred_identifier
 	def create_two_role_identifier(r1, r2)
-	  constellation = r1.constellation
-	  pc = constellation.PresenceConstraint(
+	  pc = @constellation.PresenceConstraint(
 	      :concept => :new,
-	      :vocabulary => r1.object_type.vocabulary,
+	      :vocabulary => @vocabulary,
 	      :name => r1.object_type.name+'_'+r1.object_type.name+'PK',
 	      :role_sequence => [:new],
 	      :is_mandatory => true,
@@ -252,18 +148,16 @@ module ActiveFacts
 	      :max_frequency => 1,
 	      :is_preferred_identifier => true
 	    )
-	  constellation.RoleRef(:role_sequence => pc.role_sequence, :ordinal => 0, :role => r1)
-	  constellation.RoleRef(:role_sequence => pc.role_sequence, :ordinal => 1, :role => r2)
+	  @constellation.RoleRef(:role_sequence => pc.role_sequence, :ordinal => 0, :role => r1)
+	  @constellation.RoleRef(:role_sequence => pc.role_sequence, :ordinal => 1, :role => r2)
 	end
 
 	def create_satellite(table, satellite_name, references)
-	  constellation = table.constellation
-
 	  satellite_name = satellite_name.words.titlewords*' '
 	  trace :datavault, "Creating #{satellite_name} for #{table.name} with #{references.size} references" do
 	    # Create a new entity type with record-date fields in its identifier
 
-	    satellite = constellation.EntityType(:vocabulary => table.vocabulary, :name => "#{table.name}_#{satellite_name}", :concept => [:new, :implication_rule => "datavault"])
+	    satellite = @constellation.EntityType(:vocabulary => @vocabulary, :name => "#{table.name}_#{satellite_name}", :concept => [:new, :implication_rule => "datavault"])
 	    satellite.definitely_table
 
 	    date_time = add_datetime(satellite)
