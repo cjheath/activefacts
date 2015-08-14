@@ -87,7 +87,7 @@ module ActiveFacts
 	  end
 
 	  satellites = non_identifying_references.inject({}) do |hash, ref|
-	      satellite_name =
+	      satellite_subname =
 		ref.fact_type.internal_presence_constraints.map do |pc|
 		  next if !pc.max_frequency || pc.max_frequency > 1 # Not a Uniqueness Constraint
 		  next if pc.role_sequence.all_role_ref.size > 1    # Covers more than one role
@@ -99,11 +99,12 @@ module ActiveFacts
 		      nil
 		    end
 		  end
-		end.flatten.compact.uniq[0] || 'satellite'
+		end.flatten.compact.uniq[0] || "satellite"
+	      satellite_name = "#{satellite_subname}"
 	      (hash[satellite_name] ||= []) << ref
 	      hash
 	    end
-	  # trace :datavault, "#{table.name} satellites are #{satellites.inspect}"
+	  trace :datavault, "#{table.name} satellites are #{satellites.inspect}"
 	  satellites
 	end
 
@@ -142,6 +143,14 @@ module ActiveFacts
 
 	  datetime
 	end
+	
+	def add_recordsource table
+	  # Add a new fact where this table has a new RecordSource field
+	  type_name = 'Record Source'
+	  recordsource = @constellation.ValueType(:vocabulary => @vocabulary, :name => type_name, :concept => :new)
+
+	  recordsource
+	end
 
 	# Create a PresenceConstraint with two roles, marked as preferred_identifier
 	def create_two_role_identifier(r1, r2)
@@ -167,10 +176,14 @@ module ActiveFacts
 	    satellite = @constellation.EntityType(:vocabulary => @vocabulary, :name => "#{table.name} #{satellite_name}", :concept => [:new, :implication_rule => "datavault"])
 	    satellite.definitely_table
 
-	    date_time = add_datetime(satellite)
 	    table_role = create_one_to_many(table, satellite)
+
+	    date_time = add_datetime(satellite)
 	    date_time_role = create_one_to_many(date_time, satellite, 'is of', 'was loaded at')
 	    create_two_role_identifier(table_role, date_time_role)
+	    
+	    record_source = add_recordsource(satellite)
+	    record_source_role = create_one_to_many(record_source, satellite, 'is of', 'was loaded from')
 
 	    # Move all roles across to it from the parent table.
 	    references.each do |ref|
@@ -199,9 +212,9 @@ module ActiveFacts
 	  #   Detect references (fact types) leading to all attributes (non-identifying columns)
 	  #   Group attribute facts into satellites (use the satellite annotation if present)
 	  #   For each satellite
-	  #	Create a new entity type with a (hub-key, record-date key)
-	  #	Make new one->many fact type between hub and satellite
-	  #	Modify all attribute facts in this group to attach to the satellite
+	  #     Create a new entity type with a (hub-key, record-date key)
+	  #     Make new one->many fact type between hub and satellite
+	  #     Modify all attribute facts in this group to attach to the satellite
 	  # Compute a gresh relational mapping
 	  # Exclude reference tables and disable enforcement to them
 
@@ -221,11 +234,21 @@ module ActiveFacts
 	      end
 	    end
 	  end
-
+	  
 	  inject_required_surrogates
-
+	  
+	  trace :datavault, "Adding standard fields to hubs and links" do
+	    (@hub_tables+@link_tables).each do |table|
+	      date_time = add_datetime(table)
+	      date_time_role = create_one_to_many(date_time, table, 'is of', 'was loaded at')
+	    
+	      record_source = add_recordsource(table)
+	      record_source_role = create_one_to_many(record_source, table, 'is of', 'was loaded from')
+	    end
+	  end
+	  
 	  # Now, redo the E-R mapping using the revised schema:
-          @vocabulary.decide_tables
+	  @vocabulary.decide_tables
 
 	  # Before departing, ensure we don't emit the reference tables!
 	  @reference_tables.each do |table|
