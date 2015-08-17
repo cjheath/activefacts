@@ -100,8 +100,8 @@ module ActiveFacts
 		      nil
 		    end
 		  end
-		end.flatten.compact.uniq[0] || "satellite"
-	      satellite_name = "#{satellite_subname}"
+		end.flatten.compact.uniq[0] || table.name
+	      satellite_name = satellite_subname
 	      (hash[satellite_name] ||= []) << ref
 	      hash
 	    end
@@ -168,37 +168,37 @@ module ActiveFacts
 	end
 
 	def create_satellite(table, satellite_name, references)
-	  satellite_name = satellite_name.words.titlewords*' '
-	  trace :datavault, "Creating #{satellite_name} for #{table.name} with #{references.size} references" do
-	    # Create a new entity type with record-date fields in its identifier
+	  satellite_name = satellite_name.words.titlewords*' '+' SAT'
+	  
+	  # Create a new entity type with record-date fields in its identifier
+	  trace :datavault, "Creating #{satellite_name} with #{references.size} references"
+	  satellite = @constellation.EntityType(:vocabulary => @vocabulary, :name => "#{satellite_name}", :concept => [:new, :implication_rule => "datavault"])
+	  satellite.definitely_table
 
-	    satellite = @constellation.EntityType(:vocabulary => @vocabulary, :name => "#{table.name} #{satellite_name}", :concept => [:new, :implication_rule => "datavault"])
-	    satellite.definitely_table
+	  table_role = create_one_to_many(table, satellite)
 
-	    table_role = create_one_to_many(table, satellite)
+	  date_time = assert_date_time
+	  date_time_role = create_one_to_many(date_time, satellite, 'is of', 'was loaded at', 'load')
+	  create_two_role_identifier(table_role, date_time_role)
 
-	    date_time = assert_date_time
-	    date_time_role = create_one_to_many(date_time, satellite, 'is of', 'was loaded at', 'load')
-	    create_two_role_identifier(table_role, date_time_role)
+	  record_source = assert_record_source
+	  record_source.length = 64
+	  record_source_role = create_one_to_many(record_source, satellite, 'is of', 'was loaded from')
 
-	    record_source = assert_record_source
-	    record_source.length = 64
-	    record_source_role = create_one_to_many(record_source, satellite, 'is of', 'was loaded from')
-
-	    # Move all roles across to it from the parent table.
-	    references.each do |ref|
-	      trace :datavault, "Moving #{ref} across to #{table.name}_#{satellite_name}" do
-		table_role = ref.fact_type.all_role.detect{|r| r.object_type == table}
-		# Reassign the role player to the satellite:
-		if table_role
-		  table_role.object_type = satellite
-		else
-		  #debugger  # Bum, the crappy Reference object bites again.
-		  $stderr.puts "REVISIT: Can't move the role for #{ref.inspect} without mangling the Reference"
-		end
+	  # Move all roles across to it from the parent table.
+	  references.each do |ref|
+	    trace :datavault, "Moving #{ref} across to #{table.name}_#{satellite_name}" do
+	      table_role = ref.fact_type.all_role.detect{|r| r.object_type == table}
+	      # Reassign the role player to the satellite:
+	      if table_role
+		table_role.object_type = satellite
+	      else
+		#debugger  # Bum, the crappy Reference object bites again.
+		$stderr.puts "REVISIT: Can't move the role for #{ref.inspect} without mangling the Reference"
 	      end
 	    end
 	  end
+	  satellite
 	end
 
 	def generate(out = $stdout)
@@ -222,6 +222,7 @@ module ActiveFacts
 
 	  detect_required_surrogates
 
+	  @sat_tables = []
 	  trace :datavault, "Creating satellites" do
 	    (@hub_tables+@link_tables).each do |table|
 	      satellites = classify_satellite_references table
@@ -229,11 +230,12 @@ module ActiveFacts
 
 	      trace :datavault, "Creating #{satellites.size} satellites for #{table.name}" do
 		satellites.each do |satellite_name, references|
-		  create_satellite(table, satellite_name, references)
+		  @sat_tables << create_satellite(table, satellite_name, references)
 		end
 	      end
 	    end
 	  end
+	  trace :datavault, "#{@sat_tables.size} satelite tables created"
 
 	  inject_required_surrogates
 
@@ -247,6 +249,10 @@ module ActiveFacts
 	    end
 	  end
 
+	  # Suffix Hub and Link tables with HUB and LINK
+	  @hub_tables.each { |h| h.name = "#{h.name} HUB"}
+	  @link_tables.each { |l| l.name = "#{l.name} LINK"}
+	  
 	  # Now, redo the E-R mapping using the revised schema:
 	  @vocabulary.decide_tables
 
