@@ -87,6 +87,7 @@ module ActiveFacts
 	  end
 
 	  satellites = non_identifying_references.inject({}) do |hash, ref|
+	      # Extract the declared satellite name, or use just "satellite"
 	      satellite_subname =
 		ref.fact_type.internal_presence_constraints.map do |pc|
 		  next if !pc.max_frequency || pc.max_frequency > 1 # Not a Uniqueness Constraint
@@ -108,48 +109,46 @@ module ActiveFacts
 	  satellites
 	end
 
-	def create_one_to_many(table, satellite, predicate_1 = 'has', predicate_2 = 'is of')
+	def create_one_to_many(one, many, predicate_1 = 'has', predicate_2 = 'is of', one_adj = nil)
 	  # Create a fact type
 	  fact_type = @constellation.FactType(:concept => :new)
-	  table_role = @constellation.Role(:concept => :new, :fact_type => fact_type, :ordinal => 0, :object_type => table)
-	  sat_role = @constellation.Role(:concept => :new, :fact_type => fact_type, :ordinal => 1, :object_type => satellite)
+	  one_role = @constellation.Role(:concept => :new, :fact_type => fact_type, :ordinal => 0, :object_type => one)
+	  many_role = @constellation.Role(:concept => :new, :fact_type => fact_type, :ordinal => 1, :object_type => many)
 
 	  # Create two readings
-	  reading1 = @constellation.Reading(:fact_type => fact_type, :ordinal => 0, :role_sequence => [:new], :text => "{0} #{predicate_1} {1}")
-	  @constellation.RoleRef(:role_sequence => reading1.role_sequence, :ordinal => 0, :role => table_role)
-	  @constellation.RoleRef(:role_sequence => reading1.role_sequence, :ordinal => 1, :role => sat_role)
-	  reading2 = @constellation.Reading(:fact_type => fact_type, :ordinal => 1, :role_sequence => [:new], :text => "{0} #{predicate_2} {1}")
-	  @constellation.RoleRef(:role_sequence => reading2.role_sequence, :ordinal => 0, :role => sat_role)
-	  @constellation.RoleRef(:role_sequence => reading2.role_sequence, :ordinal => 1, :role => table_role)
+	  reading2 = @constellation.Reading(:fact_type => fact_type, :ordinal => 0, :role_sequence => [:new], :text => "{0} #{predicate_2} {1}")
+	  @constellation.RoleRef(:role_sequence => reading2.role_sequence, :ordinal => 0, :role => many_role)
+	  @constellation.RoleRef(:role_sequence => reading2.role_sequence, :ordinal => 1, :role => one_role, :leading_adjective => one_adj)
+
+	  reading1 = @constellation.Reading(:fact_type => fact_type, :ordinal => 1, :role_sequence => [:new], :text => "{0} #{predicate_1} {1}")
+	  @constellation.RoleRef(:role_sequence => reading1.role_sequence, :ordinal => 0, :role => one_role, :leading_adjective => one_adj)
+	  @constellation.RoleRef(:role_sequence => reading1.role_sequence, :ordinal => 1, :role => many_role)
 
 	  one_id = @constellation.PresenceConstraint(
 	      :concept => :new,
 	      :vocabulary => @vocabulary,
-	      :name => table.name+'HasOne'+satellite.name,
+	      :name => one.name+'HasOne'+many.name,
 	      :role_sequence => [:new],
 	      :is_mandatory => true,
 	      :min_frequency => 1,
 	      :max_frequency => 1,
 	      :is_preferred_identifier => false
 	    )
-	  @constellation.RoleRef(:role_sequence => one_id.role_sequence, :ordinal => 0, :role => sat_role)
-	  table_role
+	  @constellation.RoleRef(:role_sequence => one_id.role_sequence, :ordinal => 0, :role => many_role)
+	  one_role
 	end
 
-	def add_datetime table
-	  # Add a new fact where this table has a new DateTime field
-	  type_name = 'Date Time'
-	  datetime = @constellation.ValueType(:vocabulary => @vocabulary, :name => type_name, :concept => :new)
-
-	  datetime
+	def assert_value_type name, supertype = nil
+	  @vocabulary.valid_value_type_name(name) ||
+	    @constellation.ValueType(:vocabulary => @vocabulary, :name => name, :supertype => supertype, :concept => :new)
 	end
-	
-	def add_recordsource table
-	  # Add a new fact where this table has a new RecordSource field
-	  type_name = 'Record Source'
-	  recordsource = @constellation.ValueType(:vocabulary => @vocabulary, :name => type_name, :concept => :new)
 
-	  recordsource
+	def assert_record_source
+	  assert_value_type('Record Source', assert_value_type('String'))
+	end
+
+	def assert_date_time
+	  assert_value_type('Date Time')
 	end
 
 	# Create a PresenceConstraint with two roles, marked as preferred_identifier
@@ -178,11 +177,12 @@ module ActiveFacts
 
 	    table_role = create_one_to_many(table, satellite)
 
-	    date_time = add_datetime(satellite)
-	    date_time_role = create_one_to_many(date_time, satellite, 'is of', 'was loaded at')
+	    date_time = assert_date_time
+	    date_time_role = create_one_to_many(date_time, satellite, 'is of', 'was loaded at', 'load')
 	    create_two_role_identifier(table_role, date_time_role)
-	    
-	    record_source = add_recordsource(satellite)
+
+	    record_source = assert_record_source
+	    record_source.length = 64
 	    record_source_role = create_one_to_many(record_source, satellite, 'is of', 'was loaded from')
 
 	    # Move all roles across to it from the parent table.
@@ -194,7 +194,7 @@ module ActiveFacts
 		  table_role.object_type = satellite
 		else
 		  #debugger  # Bum, the crappy Reference object bites again.
-		  puts "REVISIT: Can't move the role for #{ref.inspect} without mangling the Reference. Later, doodz!"
+		  $stderr.puts "REVISIT: Can't move the role for #{ref.inspect} without mangling the Reference"
 		end
 	      end
 	    end
@@ -234,19 +234,19 @@ module ActiveFacts
 	      end
 	    end
 	  end
-	  
+
 	  inject_required_surrogates
-	  
+
 	  trace :datavault, "Adding standard fields to hubs and links" do
 	    (@hub_tables+@link_tables).each do |table|
-	      date_time = add_datetime(table)
-	      date_time_role = create_one_to_many(date_time, table, 'is of', 'was loaded at')
-	    
-	      record_source = add_recordsource(table)
+	      date_time = assert_date_time
+	      date_time_role = create_one_to_many(date_time, table, 'is of', 'was loaded at', 'load')
+
+	      record_source = assert_record_source
 	      record_source_role = create_one_to_many(record_source, table, 'is of', 'was loaded from')
 	    end
 	  end
-	  
+
 	  # Now, redo the E-R mapping using the revised schema:
 	  @vocabulary.decide_tables
 
