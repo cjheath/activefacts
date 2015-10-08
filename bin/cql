@@ -1,0 +1,586 @@
+#! /usr/bin/env ruby
+# encoding: UTF-8
+#
+#       ActiveFacts: Interactive CQL command-line. Incomplete; only parses CQL and shows the parse trees
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
+ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
+require 'bundler/setup' # Set up gems listed in the Gemfile.
+$:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
+
+require 'readline'
+
+require 'activefacts'
+require 'activefacts/cql/compiler'
+require 'activefacts/query/evaluator'
+
+class InteractiveCQL < ActiveFacts::CQL::Compiler
+  def initialize *a
+    @show_tree = false  # Show the raw Treetop parse tree
+    @show_highlight = false  # Show the highlighted CQL text from the parse tree
+    super *a
+    self.root = :definition
+    @population_name = ''	# Use the default population
+  end
+
+  def add_logger logger
+    @constellation.loggers << logger
+    @constellation.loggers.uniq!
+  end
+
+  def list_instances name
+    if (name.is_a?(ActiveFacts::Metamodel::ObjectType))
+      name.all_instance
+    end.map do |instance|
+      instance.verbalise
+    end.sort.each do |verbalisation|
+      puts verbalisation
+    end
+  end
+
+  def toggle_trace words
+    words.each { |word|
+      puts "#{word} #{trace.toggle(word) ? "en" : "dis"}abled"
+    }
+  end
+
+  def list_object_types
+    object_types_by_vocabulary = {}
+    @constellation.ObjectType.keys.
+      each do |v,t|
+	(object_types_by_vocabulary[v[0]] ||= []) << t
+      end
+    object_types_by_vocabulary.keys.sort.each do |v|
+      puts "#{v}:\n\t" + object_types_by_vocabulary[v].sort*"\n\t"
+    end
+  end
+
+  def list_connotations word
+    object_type = @constellation.ObjectType[[@vocabulary.identifying_role_values, word]]
+    unless object_type
+      puts "Object type '#{word}' is unknown in #{@vocabulary.name}"
+      return
+    end
+    puts "Fact types in which '#{word}' plays a part:"
+    if object_type.is_a?(ActiveFacts::Metamodel::ValueType)
+      puts "\t#{object_type.name} is written as #{object_type.supertype.name};" if object_type.supertype
+      object_type.all_value_type_as_supertype.each do |st|
+	puts "#{st.name} is written as #{object_type.name};"
+      end
+    end
+    object_type.all_role.map{|role| role.fact_type}.uniq.each do |fact_type|
+      puts "\t" + fact_type.all_reading.map{|r| r.expand}*', '
+    end
+  end
+
+  def metacommand(line)
+    # meta-commands start with /
+    cmd = line.sub(/(\A\/\p{Alpha}*).*/,'\1')
+    words = line[cmd.size..-1].split
+    case cmd
+    when "/about"
+      list_connotations (words*' ')
+    when "/cql"
+      process(words*' ')
+    when "/highlight"
+      @show_highlight = !@show_highlight
+      puts "Will #{@show_highlight ? "" : "not "}show the highlighted parse"
+    when "/list"
+      list_object_types
+    when "/load"
+      load_file(words*' ')
+    when "/log"
+      @logger ||= proc {|*a|
+	unless @undoing
+	  print "LOG: "; p a
+	end
+      }
+      add_logger @logger
+    when "/population"
+      # REVISIT: Set default population for queries
+      if words == ['?']
+	puts "Defined populations are: "+@constellation.Population.keys.map{|v, p| p.empty? ? "<default>" : p}*', '
+      else
+	@population_name = words[0] || ''
+	@vocabulary = @constellation.Vocabulary.values.first
+	@population =
+	  if @vocabulary
+	    @constellation.Population[[[@vocabulary.name], @population_name]]
+	  else
+	    nil
+	  end
+	puts "Using #{@population ? 'existing ' : ''}population #{@population_name}"
+      end
+    when "/root"
+      self.root = words[0] && words[0].to_sym || :definition
+      puts "Looking for a #{self.root}"
+    when "/timings"
+      $show_timings = !$show_timings
+      puts "Will #{$show_timings ? "" : "not "}show command timings"
+    when "/trace"
+      if words.empty?
+	puts trace_keys*", "
+      else
+	toggle_trace words
+      end
+    when "/tree"
+      @show_tree = !@show_tree
+      puts "Will #{@show_tree ? "" : "not "}show the parse tree"
+    when "/quit"
+      exit
+    when "/help", "/"
+      help words
+    else
+      puts "Unknown metacommand #{line}"
+      help
+    end
+  end
+
+  def load_file filename
+    begin
+      vocabularies = @constellation.Vocabulary.keys
+      @results = []
+      compile_file filename
+      new_vocabularies = @constellation.Vocabulary.keys-vocabularies
+      puts "Loaded new vocabularies: #{new_vocabularies*', '}" unless new_vocabularies.empty?
+    rescue Errno::ENOENT => e
+      $stderr.puts e.message
+    rescue => e
+      puts e.message
+      puts "\t#{e.backtrace*"\n\t"}" if trace :exception
+    end
+  end
+
+  def query(query)
+    @population = @constellation.Population[[[@vocabulary.name], @population_name]]
+    unless @population
+      puts "Population #{@population_name.inspect} has not yet been instantiated"
+      return
+    end
+
+    q = ActiveFacts::Metamodel::QueryEvaluator.new(query, @population)
+    results = q.evaluate
+    verbalise_results(q, results)
+  end
+
+  def verbalise_results(q, results)
+    trace :result, "Found #{results.size} results:"
+    if q.free_variables.size == 0
+      if results.size > 0
+	puts "Yes."
+      else
+	puts "No."
+      end
+      return
+    end
+
+    return if verbalise_single_fact_result(q, results)
+
+    # No smart verbalisation for this scenario, just show the variable values:
+    results.map do |result, _|
+      puts(result.map{|var, i| i.verbalise }.join(', '))
+    end
+  end
+
+  def verbalise_single_fact_result(q, results)
+    # If all unbound variables play in the same step, just expand the fact type's reading with the values
+    # REVISIT: Ignore steps over facts that are existential for other variable's object types
+    trace :result, "Attempting single fact verbalisation" do
+      common_steps =
+	q.free_variables.inject(nil) do |memo, var|
+	  steps = (var.all_play.map{|p| p.step} + Array(var.step)).uniq
+	  trace :result, "variable #{var.object_type.name} spans steps #{steps.map(&:fact_type).map(&:default_reading).inspect}"
+	  steps.reject! do |step|
+	    step.fact_type.is_existential
+	  end
+	  memo ? memo & steps : steps
+	end
+      trace :result, "There are #{common_steps.size} common steps for attempted single fact verbalisation"
+      if step = common_steps[0]
+	reading = step.fact_type.preferred_reading
+	reading_roles = reading.role_sequence.all_role_ref_in_order.map(&:role)
+	reading_variables = reading_roles.map { |role| step.all_play.detect{|p| p.role == role}.variable }
+
+	results.map do |result, _|
+	  # Verbalise result the fact, don't just dump the variable values
+	  literals = reading_variables.map{|v| [nil, result[v].verbalise] }
+	  puts (step.is_disallowed ? 'it is not the case that ' : '') +
+	    reading.expand(literals) +
+	    ';'
+	end
+	return true
+      end
+      return false
+    end
+  end
+
+  def process(statement)
+    begin
+      @results = []
+      compile(statement)
+      if @results.size == 1 && @results[0].is_a?(ActiveFacts::Metamodel::Query)
+	query(@results[0])
+      else
+	puts(@results.map{|r| "\t"+r.inspect}*"\n")
+      end
+    rescue => e
+      puts e
+      puts "\t"+e.backtrace*"\n\t" if trace :exception
+    end
+  end
+
+  def start_log
+    @constellation.loggers << proc{|*a| self.log(*a) }
+    @logged = []
+  end
+
+  def log *a
+    if @undoing
+      print 'UNDO: '; p a
+    else
+      @logged << a
+    end
+  end
+
+  def undo
+    puts '>'*30+' UNDO '+'<'*30
+    @undoing = true
+    @logged.reverse.each do |a|
+      case a[0]
+      when :assert
+	action, klass, identifying_role_values = *a
+	# puts "retracting #{klass.basename} #{identifying_role_values.inspect}"
+	object = @constellation.instances[klass][identifying_role_values]
+	object && object.retract
+
+      when :retract
+	action, klass, identifying_role_values = *a
+	# puts "reasserting #{klass.basename}(#{identifying_role_values.inspect})"
+	@constellation.assert(klass, identifying_role_values)
+
+      when :assign
+	action, klass, role, object_id, old, new = *a
+	# puts "de-assigning #{klass.basename}(#{object_id.inspect}).#{role.name} from #{new.inspect} back to #{old.inspect}"
+	object = @constellation.instances[klass][object_id]
+	object.send(role.setter, old)
+
+      else raise "Unexpected log action #{a[0]}"
+      end
+    end
+    @undoing = false
+  end
+
+  def compile_definition ast
+    # Accumulate the results:
+    p ast if @show_tree
+    puts highlight_tree(ast.tree) if @show_highlight
+    begin
+      start_log
+      result = super
+    rescue => e
+      undo
+      raise
+    ensure
+      @constellation.loggers.pop
+    end
+    @results += Array(result)
+    result
+  end
+
+  # Return an HTML representation of the source text with classed spans surrounding types of text
+  def highlight_tree(ast, prev = nil)
+    if ast.node_type == :composite
+      wrap = prev != :keyword
+      (wrap ? "<span class='keyword'>" : '') +
+	(ast.elements.map do |e|
+	  highlight_tree(e, :keyword)
+	end * '').
+	  gsub(%r{(<span class='([a-z]*)'>[^<]*)</span><span class='\2'>},'\1') +
+	(wrap ? "</span>" : '')
+    else
+      t = ast.text_value.gsub('<', '&lt;').gsub('>', '&gt;')
+      if t == ''
+	t
+      else
+	n = ast.node_type
+	n == prev ? t : "<span class='#{n}'>#{ast.text_value}</span>"
+      end
+    end
+  end
+
+  def help words = []
+    if words.empty?
+      puts %Q{
+Meta-commands are:
+  /about term\t\tDisplay the fact types in which term plays a part
+  /cql text\t\tProcess this single CQL definition or query
+  /help topic\t\thelp on a specific topic
+  /help topics\t\tList the available help topics
+  /help\t\t\tThis help message
+  /highlight\t\tRe-display the parsed CQL with HTML highlighting markup
+  /list\t\t\tList all object type names (terms)
+  /load file.cql\tLoad a CQL file
+  /population [? | name] List or set the active population
+  /quit\t\t\tExit CQL
+  /root rule\t\tParse just a fragment of a CQL statement, matching syntax rule only
+  /timings\t\tDisplay the elapsed time to execute each command
+  /trace key\t\tToggle tracing key, or list available keys
+  /tree\t\t\tDisplay the abstract syntax tree from each statement parsed
+
+Meta-commands are available on the shell command-line - use -- instead of /
+}
+    else
+      words.each do |word|
+	case word
+	when /topics/
+	  puts %Q{
+constraint\tHow to enter external constraints
+entity\t\tHow to define a new entity type
+fact\t\tHow to define a new fact type
+instance\tHow to assert instance data (facts)
+query\tHow to formulate queries (and derived fact types)
+term\t\tHow to name object types
+value\t\tHow to define a new value type
+vocabulary\tHow to specify the target vocabulary
+}
+	when /constraint/
+	  puts %Q{
+External Constraints are of various types, and use fact readings with
+role players that may occur in more than one reading. Adjectives, role
+names and subscripts may be used to disambiguate multiple occurrences
+of the same term.
+
+	// A subset constraint:
+	Person is an Employee
+		only if Person has Tax File Number;
+
+	// Mandatory constraint:
+	each Person occurs at least one time in
+		Person has mobile Phone Nr,
+		Person has mailing Address;
+	// Alternate syntax:
+	either Person has mobile Phone Nr or Phone has mailing Address;
+
+	// Uniqueness constraint:
+	each combination Series, Number occurs at most one time in
+		Event is in Series,
+		Event has Number;
+
+	// Disjunctive mandatory constraint:
+	each Person occurs one time in
+		Person is employeed by Company,
+		Person receives Unemployment Benefits;
+		Person is unsupported,
+	// Alternate syntax
+	either Employee reports to Manager or Employee runs Company but not both;
+
+	// Equality constraint with joins:
+	Ticket is for Seat that is at Venue
+		if and only if
+		Ticket is for Event that is held at Venue;
+}
+	when /entity/
+	  puts %q{
+Entity Type with simple identification (a one-to-one with a value type):
+
+	Employee is identified by its Nr; // Asserts the value type 'Employee Nr'
+
+The Value Type 'Employee Nr' is created if necessary, and the supertype 'Nr'
+also.  You may add alternate readings (to "...has..." and "...is for...")
+in a where clause.
+
+Entity Type with a compound identifier:
+
+	Person is identified by given Name and family Name where
+		Person is called given-Name,
+		Person has family-Name;
+
+An Entity Type may be a subtype of one or more other Entity Types.
+If no identification is declared for a subtype, it uses the identification
+of its first supertype:
+
+Vehicle Policy is a kind of Insurance Policy;
+}
+	when /fact/
+	  puts %Q{
+A Fact Type consists of one or more readings, where every reading has
+the same role players interspersed amongst unrestricted (almost!) text.
+Each role player is a Term (/help term) which denotes a Value Type or
+Entity Type (including an objectified Fact Type). Terms are always
+singular (except where a singular group is indicated).
+
+The last role player in each reading may be preceded by a quantifier
+(one, at most one, at least one, etc). Note that "one" or "at least one"
+make the relevant fact instance mandatory:
+
+	Person directs Company,
+		Company is directed by at least 2 Person;
+
+Any role player may be preceeded or followed by an adjective, using
+an adjacent hyphen to indicate the adjective. The hyphen is required
+only for one occurrence of the adjective, and other occurrences will
+be recognised.  Other hyphenated words are allowed in readings, as
+long as neither word is an existing term.
+
+	// Using the Entity Type 'Person' and Value Type 'Name':
+	Person has one family Name, family-Name is of Person;
+
+	// Using the Entity Type 'Personne' and Value Type 'Nom':
+	Personne à Nom-donné;
+
+Multiple adjectives may be used, as long as the hyphen has adjacent space:
+
+	Person driving semi-trailer avoided stray- farm Animal;
+
+Any role player may define a Role Name, which is used to refer to
+this player in other readings of this fact type:
+
+	Person (as Director) directs Company,
+		Company is directed by Director;
+
+Any role player may be followed by a role value restriction (/help constraint):
+
+	Person was born on one birth-Date restricted to {'1900/01/01'..};
+
+A Fact Type which has no embedded uniqueness constraint must be
+objectified (named) by prefixing it with an "is where" clause.
+An objectified fact type is an Entity Type, so maye be used as a
+player in subsequent Fact Types:
+
+	Directorship is where
+		Person directs Company;
+	Directorship began on at most one appointment-Date;
+
+Finally, an objectified Fact Type may be a subtype, and may also have
+separate identification like an Entity Type (/help entity):
+
+	Vehicle Claim is a kind of Insurance Claim identified by Incident ID where
+		Incident ID is of one Vehicle Claim,
+		Vehicle Claim has one Incident ID,
+		Insured Person claimed against Policy on Date;
+}
+	when /instance/
+	  puts %Q{
+An instance (or a collection of instances) is a reading or term (or
+joined collection of readings) with values following the Value Types.
+Simply-identified entities may be contracted by providing the value directly.
+Adjectives, role names and subscripts may be used to differentiate multiple
+occurrences of the same object types.
+
+	Company Name 'Microsoft';   // An instance of Company Name (a Value Type)
+	Company 'Sun';		    // An instance of Company identified by the Company Name 'Sun'
+	Company 'Sun' was founded on Date '1982-02-24';	// A simple binary fact over two objects
+	family Name 'Smith' is of Person, Person has given Name 'Daniel'; // Two facts joined
+	family Name 'Smith' is of Person who has given Name 'Daniel'; // The same, contracted
+	// A collection of facts involving several kinds of join:
+	Directorship (where Person directs Company 'Sun') began in Year '1982',
+		family Name 'Joy' is of Person that has given Name 'Bill',
+		Person was born on Date '1954-11-8;
+}
+	when /query/
+	  puts %Q{
+Queries are not yet implemented
+}
+	when /term/
+	  puts %Q{
+A Term is used to identify a Value Type or Entity Type (collectively, Object
+Types). A Term may be any word or sequence of words, each word being one
+or more alphanumeric characters (or underscore) but not starting with a
+digit. Terms are preferably capitalised; this makes it easier to construct
+unambiguous fact type readings.
+
+Many keywords are disallowed as Terms, but not all.
+}
+	when /value/
+	  puts %Q{
+A Value Type is a kind of Object Type which has an accepted written form.
+For example, a Name or a Date can be written, but a Person cannot. A Year
+is not a Value Type, but a Year Number is.
+
+Every written value must uniquely identify one instance of that Value Type.
+A value may have more than one written form. For example, the number 10000
+may also be written 10E4. A written value may identify a single instance of
+more than one value type however; the string '9/11' may identify a fraction,
+or an event.
+
+Value Types are asserted by the phrase "is written as":
+
+	Birth Date is written as Date;
+	Employee Nr is written as Integer;
+
+If the supertype (the value type after "is written as") is unknown, it is
+also asserted as a Value Type.
+
+A Value Type may have implicit length and scale properties, and in future,
+may also have custom properties. Property values are defined in parentheses
+after the supertype:
+
+	Money Amount is written as Decimal(14, 2);
+	Company Name is written as String(60);
+
+After any parameter list, a Value Type may be associated with a Unit, and be
+subject to a Value Restriction (using "restricted to { <values or ranges> }").
+Either the low end or the high end of a range may be omitted for an open range.
+
+	Drill Size is written as Real in mm restricted to { 0.3, 0.5..15.0};
+}
+	when /vocabulary/
+	  %q{
+Every CQL definition or instance exists in some vocabulary, so you must
+specify a vocabulary name before any other definitions:
+
+	vocabulary Employment;
+	... definitions...
+}
+	else
+	  puts "topic #{word} is unknown"
+	end
+      end
+    end
+  end
+end
+
+compiler = InteractiveCQL.new
+statement = nil
+loaded_files = false
+args = ARGV.dup
+while !args.empty?
+  arg = args.shift    # Gather up the arguments until the next one starting with -
+  if arg =~ /^--(.*)/
+    arg = '/'+$1
+    while args[0] and args[0] !~ /^-/
+      arg = arg+' '+args.shift
+    end
+    compiler.metacommand arg
+  elsif arg == '-'  # Either "stdin" or immediate-command
+    unless args.empty?
+      compiler.process args*' '
+      exit
+    end
+    break
+  else		      # Just a file
+    compiler.load_file(arg)
+    exit if args.empty?
+  end
+end
+
+puts "Enter / for help on special commands"
+
+while line = Readline::readline(statement ? "CQL+ " : "CQL? ", [])
+  statement = statement ? statement + "\n"+line : line
+  start = Time.now
+  case
+  when line =~ %r{\A/}
+    compiler.metacommand(line)
+    statement = nil
+  when compiler.root != :definition || line.gsub(/(['"])([^\1\\]|\\.)*\1/,'') =~ /[;?]/
+    # After stripping string literals the line contains a ';' or /?', we've found the last line of the command:
+    compiler.process(statement)
+    statement = nil
+  end
+  if $show_timings && statement == nil
+    puts "Done in #{((Time.now.to_f-start.to_f)*1000000).to_i} usec"
+  end
+end
+puts

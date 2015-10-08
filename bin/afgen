@@ -1,0 +1,71 @@
+#! /usr/bin/env ruby
+#
+#       ActiveFacts: Read a Vocabulary (from a NORMA, CQL or other file) and run a generator
+#
+# Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
+#
+ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
+require 'bundler/setup' # Set up gems listed in the Gemfile.
+$:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
+
+require 'activefacts'
+require 'activefacts/metamodel'
+
+# Load the generators:
+generators = []
+arg = ARGV.shift || "--help"
+while arg =~ /^--([^=]*)(?:=(.*))?/
+  module_name, options = $1, ($2||"").split(/,/)
+  begin
+    base_generators = ActiveFacts::Registry.generators.keys
+
+    require "activefacts/generators/#{module_name}"
+
+    # One require may load more than one generator. Extract new ones.
+    new_generators = ActiveFacts::Registry.generators
+    generators += (new_generators.keys-base_generators).map do |gn|
+      [new_generators[gn], options]
+    end
+
+  rescue LoadError => e
+    $stderr.puts "Could not find output module #{module_name}. Try --help"
+    exit 1
+  end
+
+  arg = ARGV.shift
+end
+
+# Load the file type input method
+if arg
+  arg, *options = *arg.split(/=/)
+  extension = arg.sub(/\A.*\./,'').downcase
+  input_handler = "activefacts/input/#{extension}"
+  require input_handler
+
+  input_class = extension.upcase
+  input_klass = ActiveFacts::Input.const_get(input_class.to_sym)
+  raise "Expected #{input_handler} to define #{input_class}" unless input_klass
+end
+
+# Read the input file:
+begin
+  if input_klass
+    vocabulary = input_klass.readfile(arg, *options)
+  else
+    vocabulary = true
+  end
+
+  exit 0 unless vocabulary
+
+  vocabulary.finalise unless vocabulary == true
+
+  # Generate the output:
+  generators.each do |generator, options|
+    generator.new(vocabulary, *options).generate
+  end
+rescue => e
+  $stderr.puts "#{e.message}"
+  # puts "\t#{e.backtrace*"\n\t"}"
+  $stderr.puts "\t#{e.backtrace*"\n\t"}" if trace :exception
+  exit 1
+end
