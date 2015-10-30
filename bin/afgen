@@ -17,16 +17,9 @@ arg = ARGV.shift || "--help"
 while arg =~ /^--([^=]*)(?:=(.*))?/
   module_name, options = $1, ($2||"").split(/,/)
   begin
-    base_generators = ActiveFacts::Registry.generators.keys
-
     require "activefacts/generators/#{module_name}"
 
-    # One require may load more than one generator. Extract new ones.
-    new_generators = ActiveFacts::Registry.generators
-    generators += (new_generators.keys-base_generators).map do |gn|
-      [new_generators[gn], options]
-    end
-
+    generators += Array(ActiveFacts::Registry.generators[module_name])
   rescue LoadError => e
     $stderr.puts "Could not find output module #{module_name}. Try --help"
     exit 1
