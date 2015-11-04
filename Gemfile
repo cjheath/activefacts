@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gemspec
 
 if ENV['PWD'] =~ %r{\A#{ENV['HOME']}/work}
-  puts "Using work area gems for #{File.basename(File.dirname(__FILE__))}"
+  $stderr.puts "Using work area gems for #{File.basename(File.dirname(__FILE__))} from activefacts"
   gem 'activefacts-api', path: '/Users/cjh/work/activefacts/api'
   gem 'activefacts-metamodel', path: '/Users/cjh/work/activefacts/metamodel'
   gem 'activefacts-cql', path: '/Users/cjh/work/activefacts/cql'

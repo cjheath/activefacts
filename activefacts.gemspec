@@ -25,12 +25,11 @@ fact models in CQL and generates relational and object models in SQL, Ruby and o
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "~> 1.10.a"
+  spec.add_development_dependency "bundler", ">= 1.10", "~> 1.10.6"
   spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "rspec", "~> 3.3"
 
-  spec.add_runtime_dependency "activefacts-cql"
-  spec.add_runtime_dependency "activefacts-orm"
-  spec.add_runtime_dependency "activefacts-generators"
-  spec.add_runtime_dependency "nokogiri"
+  spec.add_runtime_dependency "activefacts-cql", ">= 1.8", "~> 1.8.0"
+  spec.add_runtime_dependency "activefacts-orm", ">= 1.8", "~> 1.8.0"
+  spec.add_runtime_dependency "activefacts-generators", ">= 1.8", "~> 1.8.0"
 end
