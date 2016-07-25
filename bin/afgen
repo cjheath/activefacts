@@ -19,7 +19,7 @@ while arg =~ /^--([^=]*)(?:=(.*))?/
   begin
     require "activefacts/generators/#{module_name}"
 
-    generators += Array(ActiveFacts::Registry.generators[module_name])
+    generators << [ActiveFacts::Registry.generators[module_name], options]
   rescue LoadError => e
     $stderr.puts "Could not find output module #{module_name}. Try --help"
     exit 1
