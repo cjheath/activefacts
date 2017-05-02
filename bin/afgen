@@ -4,9 +4,6 @@
 #
 # Copyright (c) 2009 Clifford Heath. Read the LICENSE file.
 #
-ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
-require 'bundler/setup' # Set up gems listed in the Gemfile.
-$:.unshift File.dirname(File.expand_path(__FILE__))+"/../lib"
 
 require 'activefacts'
 require 'activefacts/metamodel'
