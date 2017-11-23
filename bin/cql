@@ -19,7 +19,7 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
   def initialize *a
     @show_tree = false  # Show the raw Treetop parse tree
     @show_highlight = false  # Show the highlighted CQL text from the parse tree
-    super *a
+    super "<stdin>"
     self.root = :definition
     @population_name = ''	# Use the default population
   end
