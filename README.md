@@ -26,7 +26,9 @@ inefficiency.  The relational models it derives are highly efficient.
 
 ## SYNOPSIS:
 
-Note: The activefacts-compositions gem offers more generators and is more actively maintained than afgen.
+Note: ActiveFacts generators now belong in the activefacts-compositions
+gem, which offers better generators. This gem contains some important
+older ones that have not yet been migrated across.
 
 ```
 afgen --help
