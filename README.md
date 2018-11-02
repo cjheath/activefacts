@@ -26,7 +26,7 @@ inefficiency.  The relational models it derives are highly efficient.
 
 ## SYNOPSIS:
 
-Note: ActiveFacts generators now belong in the activefacts-compositions
+Note: ActiveFacts generators now belong in the [activefacts-compositions](https://github.com/cjheath/activefacts-compositions)
 gem, which offers better generators. This gem contains some important
 older ones that have not yet been migrated across.
 
