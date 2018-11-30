@@ -18,6 +18,7 @@ require 'activefacts/query/evaluator'
 class InteractiveCQL < ActiveFacts::CQL::Compiler
   def initialize *a
     @show_tree = false  # Show the raw Treetop parse tree
+    @show_ast = false   # Show the AST from the parser (extracted from the parse tree)
     @show_highlight = false  # Show the highlighted CQL text from the parse tree
     super "<stdin>"
     self.root = :definition
@@ -127,6 +128,9 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     when "/tree"
       @show_tree = !@show_tree
       puts "Will #{@show_tree ? "" : "not "}show the parse tree"
+    when "/ast"
+      @show_ast = !@show_ast
+      puts "Will #{@show_ast ? "" : "not "}show the abstract syntax tree"
     when "/quit"
       exit
     when "/help", "/"
@@ -271,10 +275,11 @@ class InteractiveCQL < ActiveFacts::CQL::Compiler
     @undoing = false
   end
 
-  def compile_definition ast
+  def compile_definition ast, tree
     # Accumulate the results:
-    p ast if @show_tree
-    puts highlight_tree(ast.tree) if @show_highlight
+    p ast if @show_ast
+    p tree if @show_tree
+    print highlight_tree(tree) if @show_highlight
     begin
       start_log
       result = super
